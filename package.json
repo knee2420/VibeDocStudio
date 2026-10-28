@@ -1,13 +1,15 @@
 {
   "name": "vibe-doc-studio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "PandaDoc 3-Pane Shell + AI WYSIWYG (Tiptap) + WYSIWYM (CSS Grid/Slot) + Component-Attached AI Composer Studio",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "pnpm --filter @vibe/studio dev",
+    "lint": "pnpm -r lint",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter @vibe/api test"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

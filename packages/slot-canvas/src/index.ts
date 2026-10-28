@@ -1,2 +1,1 @@
-export * from "./VibeDocStudioShell";
-
+export * from "./VDocPageSheet";

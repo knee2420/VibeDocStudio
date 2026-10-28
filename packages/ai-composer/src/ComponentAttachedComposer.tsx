@@ -9,14 +9,23 @@ import {
   FileText,
   Wand2,
   ListChecks,
-   Minimize2,
+  Minimize2,
 } from "lucide-react";
+
 import type { VDocSlot, BackdataChunk } from "@vibe/vdoc-schema";
+
+export interface SynthesizeSlotParams {
+  slot: VDocSlot;
+  chunks: BackdataChunk[];
+  prompt: string;
+  presetId?: string;
+}
 
 export interface ComponentAttachedComposerProps {
   targetSlot: VDocSlot;
   boundChunks: BackdataChunk[];
   onApplySlotContent: (slotId: string, newHtml: string) => void;
+  onSynthesizeSlotContent?: (params: SynthesizeSlotParams) => Promise<string>;
   onOpenBackdataDrawer?: (chunkId?: string) => void;
   onClose: () => void;
 }
@@ -49,40 +58,13 @@ const QUICK_PRESETS = [
 ];
 
 /**
- * Synthesizes grounded HTML from the target slot + bound backdata chunks
- * (Calls FastAPI `/api/ai/compose` if running, with deterministic grounded synthesis fallback).
+ * Pure deterministic grounded fallback synthesis when no external harness callback is injected.
  */
-async function synthesizeSlotContent(params: {
-  slot: VDocSlot;
-  chunks: BackdataChunk[];
-  prompt: string;
-  presetId?: string;
-}): Promise<string> {
+export async function synthesizeGroundedSlotFallback(
+  params: SynthesizeSlotParams
+): Promise<string> {
   const { slot, chunks, prompt, presetId } = params;
-
-  try {
-    const res = await fetch("http://127.0.0.1:8090/api/ai/compose", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        slotId: slot.slotId,
-        slotLabel: slot.label,
-        currentContent: slot.content,
-        prompt,
-        presetId,
-        backdata: chunks,
-        constraints: slot.constraints,
-      }),
-    });
-    if (res.ok) {
-      const data = (await res.json()) as { html?: string };
-      if (data.html) return data.html;
-    }
-  } catch {
-    // Fallback to local grounded synthesis when backend is offline
-  }
-
-  await new Promise((r) => setTimeout(r, 380));
+  await new Promise((r) => setTimeout(r, 240));
 
   const primaryExcerpt =
     chunks.map((c) => c.excerpt).join(" ") ||
@@ -109,7 +91,6 @@ async function synthesizeSlotContent(params: {
     return `<p><strong>■ ${slot.label}:</strong> ${sentences.slice(0, 2).join(" ")}${srcTag}</p>`;
   }
 
-  // Default: Grounded synthesis from bound backdata
   if (chunks.length > 0) {
     const bulletPoints = chunks
       .map(
@@ -134,6 +115,7 @@ export const ComponentAttachedComposer: React.FC<
   targetSlot,
   boundChunks,
   onApplySlotContent,
+  onSynthesizeSlotContent,
   onOpenBackdataDrawer,
   onClose,
 }) => {
@@ -147,7 +129,8 @@ export const ComponentAttachedComposer: React.FC<
     setIsGenerating(true);
     setLastPrompt(promptText);
     try {
-      const html = await synthesizeSlotContent({
+      const synthesize = onSynthesizeSlotContent ?? synthesizeGroundedSlotFallback;
+      const html = await synthesize({
         slot: targetSlot,
         chunks: boundChunks,
         prompt: promptText,
@@ -314,4 +297,3 @@ export const ComponentAttachedComposer: React.FC<
     </div>
   );
 };
-

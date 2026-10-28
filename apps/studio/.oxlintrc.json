@@ -1,0 +1,133 @@
+{
+  "plugins": [
+    "react",
+    "typescript",
+    "oxc",
+    "import"
+  ],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "import/no-cycle": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": [
+              "@/app/**"
+            ],
+            "message": "FSD: app 레이어는 어떤 하위 레이어에서도 import 할 수 없습니다."
+          },
+          {
+            "group": [
+              "@/pages/*/**",
+              "@/widgets/*/**",
+              "@/features/*/**",
+              "@/entities/*/**"
+            ],
+            "message": "FSD: 슬라이스 내부 경로 직접 참조 금지. Public API(@/<layer>/<slice>)만 사용하세요."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/pages/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/app/**", "@/pages/**"],
+                "message": "FSD: pages 레이어는 app, pages 를 import 할 수 없습니다."
+              },
+              {
+                "group": ["@/pages/*/**", "@/widgets/*/**", "@/features/*/**", "@/entities/*/**"],
+                "message": "FSD: 슬라이스 내부 경로 직접 참조 금지. Public API만 사용하세요."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/widgets/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/app/**", "@/pages/**", "@/widgets/**"],
+                "message": "FSD: widgets 레이어는 app, pages, widgets 를 import 할 수 없습니다."
+              },
+              {
+                "group": ["@/pages/*/**", "@/widgets/*/**", "@/features/*/**", "@/entities/*/**"],
+                "message": "FSD: 슬라이스 내부 경로 직접 참조 금지. Public API만 사용하세요."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/features/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/app/**", "@/pages/**", "@/widgets/**", "@/features/**"],
+                "message": "FSD: features 레이어는 app, pages, widgets, features 를 import 할 수 없습니다."
+              },
+              {
+                "group": ["@/pages/*/**", "@/widgets/*/**", "@/features/*/**", "@/entities/*/**"],
+                "message": "FSD: 슬라이스 내부 경로 직접 참조 금지. Public API만 사용하세요."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/entities/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/app/**", "@/pages/**", "@/widgets/**", "@/features/**", "@/entities/**"],
+                "message": "FSD: entities 레이어는 app, pages, widgets, features, entities 를 import 할 수 없습니다."
+              },
+              {
+                "group": ["@/pages/*/**", "@/widgets/*/**", "@/features/*/**", "@/entities/*/**"],
+                "message": "FSD: 슬라이스 내부 경로 직접 참조 금지. Public API만 사용하세요."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/shared/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/app/**", "@/pages/**", "@/widgets/**", "@/features/**", "@/entities/**"],
+                "message": "FSD: shared 레이어는 상위 레이어를 import 할 수 없습니다."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
+

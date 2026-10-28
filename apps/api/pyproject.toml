@@ -1,11 +1,125 @@
 [project]
 name = "vibe-doc-studio-api"
-version = "0.1.0"
-description = "VibeDocStudio Dual Import (.vdoc Template + Backdata Context) & Slot-Scoped AI Composer API"
+version = "0.2.0"
+description = "VibeDocStudio Hexagonal Domain-Sliced API (catalog · documents · backdata · composer)"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
     "pydantic>=2.9.0",
+    "dependency-injector>=4.42.0",
+    "pdf-vdoc-engine",
 ]
 
+[tool.pytest.ini_options]
+pythonpath = [".", "../../packages/pdf-vdoc-engine"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"main.py" = ["E402"]
+
+[tool.importlinter]
+root_packages = ["app", "pdf_vdoc_engine"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Core must not import domains"
+type = "forbidden"
+source_modules = ["app.core"]
+forbidden_modules = [
+    "app.catalog",
+    "app.documents",
+    "app.backdata",
+    "app.composer",
+]
+
+[[tool.importlinter.contracts]]
+name = "Pdf VDoc Engine is independent"
+type = "forbidden"
+source_modules = ["pdf_vdoc_engine"]
+forbidden_modules = [
+    "app.catalog",
+    "app.documents",
+    "app.backdata",
+    "app.composer",
+    "app.core",
+    "app.bootstrap",
+]
+
+[[tool.importlinter.contracts]]
+name = "Storage paths are known only to adapters and bootstrap"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.*.service",
+    "app.*.use_cases",
+    "app.*.agents",
+]
+forbidden_modules = ["app.core.config"]
+
+[[tool.importlinter.contracts]]
+name = "catalog must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.catalog.service",
+    "app.catalog.use_cases",
+    "app.catalog.adapters",
+    "app.catalog.ports",
+]
+forbidden_modules = [
+    "app.documents",
+    "app.backdata",
+    "app.composer",
+]
+
+[[tool.importlinter.contracts]]
+name = "documents must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.documents.service",
+    "app.documents.use_cases",
+    "app.documents.adapters",
+    "app.documents.ports",
+]
+forbidden_modules = [
+    "app.catalog",
+    "app.backdata",
+    "app.composer",
+]
+
+[[tool.importlinter.contracts]]
+name = "backdata must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.backdata.service",
+    "app.backdata.use_cases",
+    "app.backdata.adapters",
+    "app.backdata.ports",
+]
+forbidden_modules = [
+    "app.catalog",
+    "app.documents",
+    "app.composer",
+]
+
+[[tool.importlinter.contracts]]
+name = "composer must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.composer.service",
+    "app.composer.use_cases",
+    "app.composer.adapters",
+    "app.composer.agents",
+    "app.composer.ports",
+]
+forbidden_modules = [
+    "app.catalog",
+    "app.documents",
+    "app.backdata",
+]
