@@ -23,9 +23,19 @@
   margin-bottom: 0.2rem;
 }
 
+.vdoc-slot-editor,
+.vdoc-tiptap-slot {
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
+}
+
 .vdoc-tiptap-slot p {
   font-size: inherit;
   line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
   margin-bottom: 0.2rem;
 }
 
@@ -59,3 +69,40 @@
   font-size: 0.8em;
 }
 
+/* Atticus / Modern Clean Invoice Custom Typography Styles */
+.vdoc-slot-brand-logo {
+  display: flex;
+  align-items: center;
+}
+
+.vdoc-slot-brand-logo img {
+  height: 58px;
+  width: auto;
+  object-fit: contain;
+}
+
+.vdoc-slot-invoice-hero .vdoc-tiptap-slot,
+.vdoc-slot-invoice-hero .vdoc-tiptap-slot * {
+  text-align: right !important;
+}
+
+.vdoc-slot-invoice-hero .hero-amount,
+.vdoc-slot-invoice-hero strong {
+  font-size: 26px !important;
+  font-weight: 500 !important;
+  color: #383838 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.2 !important;
+}
+
+.text-right,
+.text-right .vdoc-tiptap-slot,
+.text-right .vdoc-tiptap-slot * {
+  text-align: right !important;
+}
+
+.text-center,
+.text-center .vdoc-tiptap-slot,
+.text-center .vdoc-tiptap-slot * {
+  text-align: center !important;
+}

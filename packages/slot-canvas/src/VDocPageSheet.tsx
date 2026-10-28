@@ -48,7 +48,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   totalPages,
   page,
   slots,
-  backdata,
+  backdata = {},
   mode,
   selectedSlotId,
   composerOpenSlotId,
@@ -61,11 +61,13 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   onDeleteBlock,
   renderInlineComposer,
 }) => {
+
   const renderSlotBox = (
     slotId: string,
     extraClass = "",
     darkTheme = false,
-    compact = false
+    compact = false,
+    styleOverride: React.CSSProperties = {}
   ) => {
     const slot = slots[slotId];
     if (!slot) return null;
@@ -80,6 +82,26 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
       .map((cid) => backdata[cid])
       .filter(Boolean);
 
+    const alignClass =
+      slot.constraints?.align === "right"
+        ? "text-right"
+        : slot.constraints?.align === "center"
+          ? "text-center"
+          : "";
+    const toneClass = slot.constraints?.tone
+      ? `vdoc-slot-${slot.constraints.tone}`
+      : "";
+
+    const slotStyle: React.CSSProperties = {
+      fontSize: slot.constraints?.fontSize,
+      lineHeight: slot.constraints?.lineHeight,
+      fontWeight: slot.constraints?.fontWeight,
+      color: slot.constraints?.color,
+      letterSpacing: slot.constraints?.letterSpacing,
+      textAlign: slot.constraints?.align,
+      ...styleOverride,
+    };
+
     return (
       <div
         key={slotId}
@@ -91,24 +113,24 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
           isSelected
             ? "ring-2 ring-[#248567] bg-emerald-50/25"
             : "hover:ring-1 hover:ring-[#248567]/60"
-        } ${extraClass}`}
+        } ${toneClass} ${alignClass} ${extraClass}`}
       >
         {mode === "Editing" && (
           <div
-            className={`absolute -top-6 left-0 z-20 flex items-center justify-between gap-2 px-2 py-0.5 text-[11px] rounded-t-md shadow-xs whitespace-nowrap transition-opacity ${
+            className={`absolute -top-6 left-0 z-20 flex items-center justify-between gap-2 px-2.5 py-0.5 text-[11px] rounded-t-md shadow-xs whitespace-nowrap transition-opacity ${
               isSelected
                 ? "opacity-100 bg-[#248567] text-white"
                 : "opacity-0 pointer-events-none group-hover/slot:opacity-100 group-hover/slot:pointer-events-auto bg-slate-800/95 text-slate-100"
             }`}
           >
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 max-w-[220px] truncate">
               {slot.constraints?.locked ? (
                 <Lock className="w-3 h-3 text-amber-300 shrink-0" />
               ) : (
                 <PenLine className="w-3 h-3 shrink-0" />
               )}
-              <span className="font-medium">{slot.label}</span>
-              <code className="text-[10px] opacity-75">({slot.slotId})</code>
+              <span className="font-medium truncate">{slot.label}</span>
+              <code className="text-[10px] opacity-75 shrink-0">({slot.slotId})</code>
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
@@ -143,24 +165,32 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         )}
 
         <div
+          style={slotStyle}
           className={`${
-            compact ? "px-1 py-0.5 leading-snug" : "px-3 py-2 leading-relaxed"
+            compact ? "px-1 py-0.5 leading-snug" : "px-2 py-1.5"
           } ${
-            extraClass.includes("text-")
+            slot.constraints?.fontSize || extraClass.includes("text-")
               ? ""
               : compact
                 ? "text-[12.5px]"
                 : "text-sm"
           } min-w-0 break-words ${darkTheme ? "text-white" : "text-slate-900"}`}
         >
-          <SlotRichTextEditor
-            slotId={slotId}
-            content={slot.content}
-            readOnly={isLocked}
-            placeholder={slot.constraints?.placeholder}
-            onSelectSlot={onSelectSlot}
-            onChangeContent={onUpdateSlotContent}
-          />
+          {slot.constraints?.tone === "brand-logo" ? (
+            <div
+              className="py-1 select-none flex items-center"
+              dangerouslySetInnerHTML={{ __html: slot.content }}
+            />
+          ) : (
+            <SlotRichTextEditor
+              slotId={slotId}
+              content={slot.content}
+              readOnly={isLocked}
+              placeholder={slot.constraints?.placeholder}
+              onSelectSlot={onSelectSlot}
+              onChangeContent={onUpdateSlotContent}
+            />
+          )}
         </div>
 
         {isComposerOpen && mode === "Editing" && renderInlineComposer && (
@@ -192,8 +222,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         <span>{page.pageLabel}</span>
       </div>
 
-      {/* Physical Page Sheet */}
-      <div className="bg-white rounded-sm shadow-md border border-slate-200/90 min-h-[880px] flex flex-col justify-between">
+      {/* Physical Page Sheet (A4 Pure DOM Container: 794px x 1123px @ 96 DPI) */}
+      <div className="bg-white rounded-xs shadow-lg border border-slate-200/90 w-full max-w-[794px] min-h-[1123px] mx-auto flex flex-col justify-between">
         {/* Layer 1: Document's header toggle area */}
         {!page.hideHeaderFooter && (
           <div className="px-10 pt-6 pb-3 border-b border-dashed border-slate-200 bg-slate-50/40">
@@ -257,26 +287,62 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
                 </div>
               )}
 
-              {block.kind === "form-title" && (
-                <div className="flex flex-col items-center justify-center pt-1 pb-3">
+              {(block.kind === "heading" || block.kind === "form-title") && (
+                <div
+                  className={`flex flex-col pt-1 pb-3 ${
+                    block.align === "left"
+                      ? "items-start text-left"
+                      : block.align === "right"
+                        ? "items-end text-right"
+                        : "items-center text-center"
+                  }`}
+                >
                   <div
-                    className="text-center font-bold text-slate-950"
+                    className="font-bold text-slate-950"
                     style={{
-                      letterSpacing: block.letterSpacing || "0.35em",
+                      letterSpacing: block.letterSpacing || (block.kind === "form-title" ? "0.35em" : undefined),
                     }}
                   >
                     {renderSlotBox(
                       block.slotId,
-                      "text-center text-[24px] font-bold",
+                      `${block.align === "left" ? "text-left" : block.align === "right" ? "text-right" : "text-center"} ${
+                        block.kind === "form-title" ? "text-[24px]" : "text-[20px]"
+                      } font-bold`,
                       false,
                       true
                     )}
                   </div>
-                  <div
-                    className="bg-slate-950 mt-1"
+                  {(block.underline || block.underlineWidth) && (
+                    <div
+                      style={{
+                        width: block.underline?.width || block.underlineWidth || "286px",
+                        height: block.underline?.thickness || block.underlineThickness || "2px",
+                        backgroundColor: block.underline?.color || "#0f172a",
+                        marginTop: block.underline?.marginTop || "4px",
+                      }}
+                    />
+                  )}
+                </div>
+              )}
+
+              {block.kind === "image" && (
+                <div
+                  className={`flex py-2 ${
+                    block.align === "right"
+                      ? "justify-end"
+                      : block.align === "center"
+                        ? "justify-center"
+                        : "justify-start"
+                  }`}
+                >
+                  <img
+                    src={block.src}
+                    alt={block.alt || block.title || "Image"}
                     style={{
-                      width: block.underlineWidth || "286px",
-                      height: block.underlineThickness || "2px",
+                      width: block.width || "auto",
+                      height: block.height || "auto",
+                      maxHeight: block.maxHeight,
+                      objectFit: block.objectFit || "contain",
                     }}
                   />
                 </div>
@@ -347,7 +413,14 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
                                         cell.slotId,
                                         "",
                                         false,
-                                        Boolean(cell.compact || cell.padding)
+                                        Boolean(cell.compact || cell.padding),
+                                        {
+                                          fontSize: cell.fontSize,
+                                          lineHeight: cell.lineHeight,
+                                          color: cell.color,
+                                          fontWeight: cell.fontWeight,
+                                          textAlign: cell.hAlign,
+                                        }
                                       )}
                                     </td>
                                   );
@@ -400,56 +473,243 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
 
               {block.kind === "columns-grid" && (
                 <div
-                  className="grid gap-4 items-stretch w-full"
+                  className={`grid ${block.cardStyle === "plain" ? "gap-6" : "gap-4"} items-start w-full`}
                   style={{
                     gridTemplateColumns: block.widths
                       .map((w) => (w.endsWith("fr") ? `minmax(0, ${w})` : w))
                       .join(" "),
                   }}
                 >
-                  {block.slotIds.map((sid) => (
-                    <div
-                      key={sid}
-                      className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/50 p-2.5"
-                    >
-                      {renderSlotBox(sid)}
-                    </div>
-                  ))}
+                  {block.columns
+                    ? block.columns.map((col, cIdx) => (
+                        <div
+                          key={cIdx}
+                          className={
+                            block.cardStyle === "plain"
+                              ? "min-w-0 bg-transparent p-0"
+                              : "min-w-0 rounded-lg border border-slate-200 bg-slate-50/50 p-2.5"
+                          }
+                        >
+                          {col.image ? (
+                            <div
+                              className={`flex py-1 ${
+                                col.image.align === "right"
+                                  ? "justify-end"
+                                  : col.image.align === "center"
+                                    ? "justify-center"
+                                    : "justify-start"
+                              }`}
+                            >
+                              <img
+                                src={col.image.src}
+                                alt={col.image.alt || "Image"}
+                                style={{
+                                  width: col.image.width || "auto",
+                                  height: col.image.height || "auto",
+                                  maxHeight: col.image.maxHeight || "90px",
+                                  objectFit: col.image.objectFit || "contain",
+                                }}
+                              />
+                            </div>
+                          ) : col.slotId ? (
+                            renderSlotBox(col.slotId)
+                          ) : null}
+                        </div>
+                      ))
+                    : block.slotIds?.map((sid) => (
+                        <div
+                          key={sid}
+                          className={
+                            block.cardStyle === "plain"
+                              ? "min-w-0 bg-transparent p-0"
+                              : "min-w-0 rounded-lg border border-slate-200 bg-slate-50/50 p-2.5"
+                          }
+                        >
+                          {renderSlotBox(sid)}
+                        </div>
+                      ))}
                 </div>
               )}
 
-              {block.kind === "structured-table" && (
-                <div className="rounded-lg border border-slate-300 bg-white">
-                  <table className="w-full border-collapse table-fixed">
-                    <colgroup>
-                      {block.columnWidths.map((w, i) => (
-                        <col key={i} style={{ width: w }} />
-                      ))}
-                    </colgroup>
-                    <tbody>
-                      {block.rows.map((row) => (
-                        <tr
-                          key={row.rowId}
-                          className="border-b border-slate-200 last:border-b-0"
-                        >
-                          {row.cells.map((cell) => (
-                            <td
-                              key={cell.cellId}
-                              colSpan={cell.colSpan}
-                              rowSpan={cell.rowSpan}
-                              className={`border-r border-slate-200 last:border-r-0 align-top p-1.5 ${
-                                cell.isHeader
-                                  ? "bg-slate-100/90 font-semibold"
-                                  : "bg-white"
-                              }`}
-                            >
-                              {renderSlotBox(cell.slotId)}
-                            </td>
+              {(block.kind === "structured-table" || block.kind === "table") && (() => {
+                const borderRules = block.borderRules || {
+                  outer: "1px solid #cbd5e1",
+                  rowBottom: "1px solid #e2e8f0",
+                  vertical: "1px solid #e2e8f0",
+                };
+
+                const headerStyle = block.headerStyle || {
+                  bg: "#f1f5f9",
+                  fontWeight: "600",
+                  padding: "8px 10px",
+                };
+
+                return (
+                  <div className="w-full">
+                    <div
+                      className="w-full overflow-hidden"
+                      style={{
+                        border: borderRules.outer === "none" ? undefined : (borderRules.outer || "1px solid #cbd5e1"),
+                        borderRadius: borderRules.outer && borderRules.outer !== "none" ? "6px" : undefined,
+                      }}
+                    >
+                      <table className="w-full border-collapse table-fixed">
+                        <colgroup>
+                          {block.columnWidths.map((w, i) => (
+                            <col key={i} style={{ width: w }} />
                           ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                        </colgroup>
+                        <tbody>
+                          {block.rows.map((row) => {
+                            const isHeaderRow = row.cells.some((c) => c.isHeader);
+                            return (
+                              <tr
+                                key={row.rowId}
+                                style={{
+                                  height: row.height,
+                                  borderTop: isHeaderRow ? (borderRules.headerTop || headerStyle.borderTop) : undefined,
+                                  borderBottom: isHeaderRow
+                                    ? (borderRules.headerBottom || headerStyle.borderBottom || borderRules.rowBottom || "1px solid #e2e8f0")
+                                    : (borderRules.rowBottom || "1px solid #e2e8f0"),
+                                }}
+                                className="last:border-b-0"
+                              >
+                                {row.cells.map((cell) => {
+                                  const vAlignClass =
+                                    cell.vAlign === "middle"
+                                      ? "align-middle"
+                                      : cell.vAlign === "bottom"
+                                        ? "align-bottom"
+                                        : "align-top";
+                                  const hAlignClass =
+                                    cell.hAlign === "center"
+                                      ? "text-center"
+                                      : cell.hAlign === "right"
+                                        ? "text-right"
+                                        : "text-left";
+
+                                  return (
+                                    <td
+                                      key={cell.cellId}
+                                      colSpan={cell.colSpan}
+                                      rowSpan={cell.rowSpan}
+                                      style={{
+                                        padding: cell.padding || block.cellPadding || (isHeaderRow ? (headerStyle.padding || "8px 10px") : "8px 10px"),
+                                        borderRight: borderRules.vertical === "none" ? undefined : (borderRules.vertical || "1px solid #e2e8f0"),
+                                        backgroundColor: cell.backgroundColor || (cell.isHeader ? (headerStyle.bg || (cell.whiteHeader ? "#ffffff" : "#f1f5f9")) : "transparent"),
+                                        color: cell.color || (cell.isHeader ? headerStyle.textColor : undefined),
+                                        fontWeight: cell.fontWeight || (cell.isHeader ? (headerStyle.fontWeight || "600") : undefined),
+                                        letterSpacing: cell.letterSpacing,
+                                      }}
+                                      className={`${vAlignClass} ${hAlignClass} last:border-r-0`}
+                                    >
+                                      {renderSlotBox(
+                                        cell.slotId,
+                                        hAlignClass,
+                                        false,
+                                        Boolean(cell.compact),
+                                        {
+                                          fontSize: cell.fontSize,
+                                          lineHeight: cell.lineHeight,
+                                          color: cell.color,
+                                          fontWeight: cell.fontWeight,
+                                          textAlign: cell.hAlign,
+                                        }
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {block.footerSummary && (
+                      <div
+                        className={`flex flex-col ${
+                          block.footerSummary.align === "left"
+                            ? "items-start"
+                            : block.footerSummary.align === "center"
+                              ? "items-center"
+                              : "items-end"
+                        } w-full mt-3 pr-1`}
+                      >
+                        <div style={{ width: block.footerSummary.width || "320px" }} className="space-y-1.5">
+                          {block.footerSummary.items.map((item) => (
+                            <div
+                              key={item.itemId}
+                              style={{
+                                borderTop: item.borderTop,
+                                paddingTop: item.borderTop ? "8px" : "2px",
+                                paddingBottom: "2px",
+                                color: item.textColor || (item.isTotal ? "#0f172a" : "#475569"),
+                                fontSize: item.fontSize || (item.isTotal ? "14.5px" : "13px"),
+                                fontWeight: item.fontWeight || (item.isTotal ? "700" : "500"),
+                              }}
+                              className="flex items-center justify-between"
+                            >
+                              {item.labelSlotId ? (
+                                renderSlotBox(item.labelSlotId, "text-left", false, true)
+                              ) : (
+                                <span>{item.label}</span>
+                              )}
+                              {item.valueSlotId ? (
+                                renderSlotBox(item.valueSlotId, "text-right", false, true)
+                              ) : (
+                                <span className={item.isTotal ? "font-bold text-slate-900" : "font-medium"}>
+                                  {item.value}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {block.kind === "summary-list" && (
+                <div
+                  className={`flex flex-col ${
+                    block.align === "left"
+                      ? "items-start"
+                      : block.align === "center"
+                        ? "items-center"
+                        : "items-end"
+                  } w-full my-2 pr-1`}
+                >
+                  <div style={{ width: block.width || "320px" }} className="space-y-1.5">
+                    {block.items.map((item) => (
+                      <div
+                        key={item.itemId}
+                        style={{
+                          borderTop: item.borderTop,
+                          paddingTop: item.borderTop ? "8px" : "2px",
+                          paddingBottom: "2px",
+                          color: item.textColor || (item.isTotal ? "#0f172a" : "#475569"),
+                          fontSize: item.fontSize || (item.isTotal ? "14.5px" : "13px"),
+                          fontWeight: item.fontWeight || (item.isTotal ? "700" : "500"),
+                        }}
+                        className="flex items-center justify-between"
+                      >
+                        {item.labelSlotId ? (
+                          renderSlotBox(item.labelSlotId, "text-left", false, true)
+                        ) : (
+                          <span>{item.label}</span>
+                        )}
+                        {item.valueSlotId ? (
+                          renderSlotBox(item.valueSlotId, "text-right", false, true)
+                        ) : (
+                          <span className={item.isTotal ? "font-bold text-slate-900" : "font-medium"}>
+                            {item.value}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

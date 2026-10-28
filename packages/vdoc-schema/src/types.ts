@@ -11,6 +11,20 @@ export interface SlotConstraints {
   tone?: string;
   placeholder?: string;
   locked?: boolean;
+  align?: "left" | "center" | "right";
+  fontSize?: string;    // e.g. "10pt", "12.5px", "22px"
+  lineHeight?: string;  // e.g. "1.2", "1.5", "24px"
+  fontWeight?: string;  // e.g. "normal", "600", "bold"
+  letterSpacing?: string;
+  color?: string;       // e.g. "#336699", "#383838"
+}
+
+export interface VDocSlotRect {
+  x: number;      // pt or %
+  y: number;      // pt or %
+  width: number;  // pt or %
+  height: number; // pt or %
+  unit?: "pt" | "%";
 }
 
 export interface VDocSlot {
@@ -23,6 +37,10 @@ export interface VDocSlot {
   constraints?: SlotConstraints;
   /** Linked BackdataChunk IDs from BackdataStore */
   backDataRefs: string[];
+  /** 2D Bounding Box for Interactive Slot Overlay (Figma/Acrobat/Typst Hybrid) */
+  rect?: VDocSlotRect;
+  /** Whether the slot content has been edited / customized */
+  isEdited?: boolean;
 }
 
 export interface BackdataChunk {
@@ -32,6 +50,57 @@ export interface BackdataChunk {
   excerpt: string;
   updatedAt: string;
   tags: string[];
+}
+
+export interface TableBorderRules {
+  outer?: string;        // e.g. "none" | "1px solid #e4e4e4" | "2px solid #0f172a"
+  headerTop?: string;    // e.g. "2px solid #336699"
+  headerBottom?: string; // e.g. "1px solid #e2e8f0"
+  rowBottom?: string;    // e.g. "1px solid #e2e8f0"
+  vertical?: string;     // e.g. "none" | "1px solid #0f172a"
+}
+
+export interface TableHeaderStyle {
+  bg?: string;           // e.g. "#f4f4f4" | "transparent"
+  textColor?: string;    // e.g. "#336699"
+  fontWeight?: string;   // e.g. "600"
+  fontSize?: string;     // e.g. "13px"
+  padding?: string;      // e.g. "8px 10px"
+  borderTop?: string;
+  borderBottom?: string;
+}
+
+export interface TableSummaryItem {
+  itemId: string;
+  label: string;
+  value: string;
+  slotId?: string;
+  labelSlotId?: string;
+  valueSlotId?: string;
+  isTotal?: boolean;
+  borderTop?: string;
+  textColor?: string;
+  fontSize?: string;
+  fontWeight?: string;
+}
+
+export interface TableSummarySection {
+  align?: "left" | "center" | "right";
+  width?: string;
+  items: TableSummaryItem[];
+}
+
+export interface GridColumnDef {
+  slotId?: string;
+  image?: {
+    src: string;
+    alt?: string;
+    width?: string;
+    height?: string;
+    maxHeight?: string;
+    align?: "left" | "center" | "right";
+    objectFit?: "contain" | "cover" | "fill";
+  };
 }
 
 /**
@@ -50,6 +119,12 @@ export interface TableCellSlotDef {
   compact?: boolean;
   padding?: string;
   letterSpacing?: string;
+  backgroundColor?: string;
+  color?: string;
+  border?: string;
+  fontWeight?: string;
+  fontSize?: string;
+  lineHeight?: string;
 }
 
 export interface StructuredTableSectionDef {
@@ -57,6 +132,8 @@ export interface StructuredTableSectionDef {
   title: string;
   columnWidths: string[];
   bottomBorderThick?: boolean;
+  borderRules?: TableBorderRules;
+  headerStyle?: TableHeaderStyle;
   rows: {
     rowId: string;
     height?: string;
@@ -67,18 +144,55 @@ export interface StructuredTableSectionDef {
 export type LayoutBlock =
   | {
       blockId: string;
+      kind: "image";
+      title: string;
+      src: string;
+      alt?: string;
+      width?: string;
+      height?: string;
+      maxHeight?: string;
+      align?: "left" | "center" | "right";
+      objectFit?: "contain" | "cover" | "fill";
+    }
+  | {
+      blockId: string;
+      kind: "heading";
+      title: string;
+      slotId: string;
+      level?: 1 | 2 | 3 | 4;
+      align?: "left" | "center" | "right";
+      letterSpacing?: string;
+      underlineWidth?: string;
+      underlineThickness?: string;
+      underline?: {
+        width?: string;
+        thickness?: string;
+        color?: string;
+        marginTop?: string;
+      };
+    }
+  | {
+      blockId: string;
       kind: "form-title";
       title: string;
       slotId: string;
+      align?: "left" | "center" | "right";
       underlineWidth?: string;
       underlineThickness?: string;
       letterSpacing?: string;
+      underline?: {
+        width?: string;
+        thickness?: string;
+        color?: string;
+        marginTop?: string;
+      };
     }
   | {
       blockId: string;
       kind: "composite-form-frame";
       title: string;
       outerBorderWidth?: string;
+      borderRules?: TableBorderRules;
       sections: StructuredTableSectionDef[];
     }
   | {
@@ -103,19 +217,34 @@ export type LayoutBlock =
       title: string;
       /** CSS Grid template columns, e.g. ["1fr", "1fr"] or ["1.2fr", "1fr"] */
       widths: string[];
-      slotIds: string[];
+      cardStyle?: "card" | "plain";
+      slotIds?: string[];
+      columns?: GridColumnDef[];
     }
   | {
       blockId: string;
-      kind: "structured-table";
+      kind: "structured-table" | "table";
       title: string;
       /** Explicit column widths, e.g. ["22%", "48%", "30%"] */
       columnWidths: string[];
+      borderRules?: TableBorderRules;
+      headerStyle?: TableHeaderStyle;
+      cellPadding?: string;
+      footerSummary?: TableSummarySection;
+      tableVariant?: "bordered" | "clean-invoice";
       rows: {
         rowId: string;
         height?: string;
         cells: TableCellSlotDef[];
       }[];
+    }
+  | {
+      blockId: string;
+      kind: "summary-list";
+      title: string;
+      align?: "left" | "center" | "right";
+      width?: string;
+      items: TableSummaryItem[];
     }
   | {
       blockId: string;
@@ -141,6 +270,10 @@ export interface VDocPage {
   blocks: LayoutBlock[];
   footerSlotId: string;
   hideHeaderFooter?: boolean;
+  engine?: "dom" | "typst";
+  typstSvg?: string;
+  typstTemplate?: string;
+  pageRect?: { width: number; height: number; unit?: "pt" | "mm" | "%" };
 }
 
 export interface VDocCatalogManifest {

@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 
+import type { SlotConstraints } from "@vibe/vdoc-schema";
+
 import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 
@@ -37,6 +39,45 @@ export function useSlotContentActions() {
         [slotId]: {
           ...prev.slots[slotId],
           content: html,
+          isEdited: true,
+        },
+      },
+    }));
+  };
+
+  const updateSlotConstraints = (
+    slotId: string,
+    constraints: Partial<SlotConstraints>
+  ) => {
+    updateCurrentDoc((prev) => {
+      const slot = prev.slots[slotId];
+      if (!slot) return prev;
+      return {
+        ...prev,
+        updatedAt: new Date().toISOString(),
+        slots: {
+          ...prev.slots,
+          [slotId]: {
+            ...slot,
+            constraints: {
+              ...slot.constraints,
+              ...constraints,
+            },
+          },
+        },
+      };
+    });
+  };
+
+  const resetSlotEdit = (slotId: string) => {
+    updateCurrentDoc((prev) => ({
+      ...prev,
+      updatedAt: new Date().toISOString(),
+      slots: {
+        ...prev.slots,
+        [slotId]: {
+          ...prev.slots[slotId],
+          isEdited: false,
         },
       },
     }));
@@ -66,6 +107,8 @@ export function useSlotContentActions() {
 
   return {
     updateSlotContent,
+    updateSlotConstraints,
+    resetSlotEdit,
     toggleSlotLock,
   };
 }

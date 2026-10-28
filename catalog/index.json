@@ -40,6 +40,21 @@
         "Proposal"
       ],
       "description": "REA 실시간 해부로 추출한 PandaDoc Kolas Editor 3페이지 투자 제안서 원본 복원 번들"
+    },
+    {
+      "catalogId": "atticus-invoice-000081709",
+      "title": "Atticus Invoice #000081709 (ThriveCart)",
+      "sourceOrigin": "Atticus LLC / ThriveCart",
+      "sourceId": "inv_000081709",
+      "category": "영문 결제 영수증·인보이스",
+      "tags": [
+        "Atticus",
+        "Invoice",
+        "Receipt",
+        "ThriveCart",
+        "CleanInvoice"
+      ],
+      "description": "Atticus LLC의 공식 결제 인보이스 정밀 조판 번들 ($147.00 일시불 결제 및 ThriveCart 처리 확인)"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "docId": "vdoc_meeting_minutes_1028",
-  "title": "10월 4주차 VibeDocStudio 아키텍처 정례 회의록",
+  "title": "10월 4주차 VibeDocStudio 아키텍처 정례 회의록 (+ Page 2 반상회 회의록 + Page 3 Atticus 인보이스)",
   "status": "Draft",
   "totalValueText": "2 Pages · 4 Decisions",
   "updatedAt": "2026-10-28T17:56:00+09:00",
@@ -676,6 +676,157 @@
           ]
         }
       ]
+    },
+    {
+      "pageId": "mm_page_3",
+      "pageNumber": 3,
+      "pageLabel": "Atticus Invoice #000081709",
+      "hideHeaderFooter": true,
+      "headerSlotId": "att_slot_header",
+      "footerSlotId": "att_slot_footer",
+      "blocks": [
+        {
+          "blockId": "att_blk_header_grid",
+          "kind": "columns-grid",
+          "title": "인보이스 헤더 (로고 & 회사 정보)",
+          "widths": [
+            "1.1fr",
+            "1fr"
+          ],
+          "cardStyle": "plain",
+          "columns": [
+            {
+              "image": {
+                "src": "/atticus_logo.png",
+                "alt": "Atticus",
+                "width": "155px",
+                "align": "left",
+                "objectFit": "contain"
+              }
+            },
+            {
+              "slotId": "att_slot_company_info"
+            }
+          ]
+        },
+        {
+          "blockId": "att_blk_mid_grid",
+          "kind": "columns-grid",
+          "title": "청구 정보 및 결제 요약",
+          "widths": [
+            "1fr",
+            "1fr"
+          ],
+          "cardStyle": "plain",
+          "columns": [
+            {
+              "slotId": "att_slot_billing_info"
+            },
+            {
+              "slotId": "att_slot_total_summary"
+            }
+          ]
+        },
+        {
+          "blockId": "att_blk_items_table",
+          "kind": "structured-table",
+          "title": "품목 명세서 (Invoice Line Items)",
+          "columnWidths": [
+            "66%",
+            "17%",
+            "17%"
+          ],
+          "borderRules": {
+            "outer": "none",
+            "headerTop": "2px solid #336699",
+            "headerBottom": "none",
+            "rowBottom": "1px solid #e2e8f0",
+            "vertical": "none"
+          },
+          "headerStyle": {
+            "textColor": "#336699",
+            "fontWeight": "600",
+            "padding": "10px 8px"
+          },
+          "rows": [
+            {
+              "rowId": "att_row_head",
+              "cells": [
+                {
+                  "cellId": "att_c_th_1",
+                  "slotId": "att_slot_th_desc",
+                  "isHeader": true,
+                  "hAlign": "left"
+                },
+                {
+                  "cellId": "att_c_th_2",
+                  "slotId": "att_slot_th_amount",
+                  "isHeader": true,
+                  "hAlign": "right"
+                },
+                {
+                  "cellId": "att_c_th_3",
+                  "slotId": "att_slot_th_total",
+                  "isHeader": true,
+                  "hAlign": "right"
+                }
+              ]
+            },
+            {
+              "rowId": "att_row_item1",
+              "cells": [
+                {
+                  "cellId": "att_c_td_1",
+                  "slotId": "att_slot_td_item1",
+                  "hAlign": "left"
+                },
+                {
+                  "cellId": "att_c_td_2",
+                  "slotId": "att_slot_td_amount1",
+                  "hAlign": "right"
+                },
+                {
+                  "cellId": "att_c_td_3",
+                  "slotId": "att_slot_td_total1",
+                  "hAlign": "right"
+                }
+              ]
+            }
+          ],
+          "footerSummary": {
+            "align": "right",
+            "width": "260px",
+            "items": [
+              {
+                "itemId": "subtotal",
+                "labelSlotId": "att_slot_td_label_sub",
+                "valueSlotId": "att_slot_td_val_sub"
+              },
+              {
+                "itemId": "total",
+                "labelSlotId": "att_slot_td_label_tot",
+                "valueSlotId": "att_slot_td_val_tot",
+                "isTotal": true,
+                "borderTop": "2px solid #336699"
+              }
+            ]
+          }
+        },
+        {
+          "blockId": "att_blk_footer",
+          "kind": "columns-grid",
+          "title": "인보이스 하단 정보",
+          "widths": [
+            "1fr"
+          ],
+          "cardStyle": "plain",
+          "columns": [
+            {
+              "slotId": "att_slot_footer_meta"
+            }
+          ]
+        }
+      ]
     }
   ],
   "slots": {
@@ -1317,6 +1468,303 @@
       "role": "editable-slot",
       "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
       "constraints": {},
+      "backDataRefs": []
+    },
+    "att_slot_header": {
+      "slotId": "att_slot_header",
+      "label": "인보이스 헤더 머리글",
+      "role": "boilerplate",
+      "content": "<p class=\"text-xs text-slate-400\">Atticus Receipt / Invoice #000081709</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_slot_footer": {
+      "slotId": "att_slot_footer",
+      "label": "인보이스 바닥글",
+      "role": "boilerplate",
+      "content": "<p class=\"text-xs text-slate-400\">ThriveCart Verified Receipt · Page 1 of 1</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_slot_logo": {
+      "slotId": "att_slot_logo",
+      "label": "Atticus 브랜드 로고",
+      "role": "boilerplate",
+      "content": "<img src=\"/atticus_logo.png\" alt=\"Atticus\" class=\"h-14 w-auto object-contain\" />",
+      "constraints": {
+        "locked": true,
+        "tone": "brand-logo"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_company_info": {
+      "slotId": "att_slot_company_info",
+      "label": "발행 회사 정보 & 인보이스 번호",
+      "role": "boilerplate",
+      "content": "<p class=\"text-xs text-[#383838] mb-2 leading-none\">August 25th 2026</p><p class=\"text-[13px] font-semibold text-[#336699] leading-snug\">Company info</p><p class=\"text-[13px] font-bold text-[#383838] leading-tight mt-1\">Atticus LLC</p><p class=\"text-[13px] text-[#383838] leading-tight\">1309 Coffeen Ave. Ste. 2513</p><p class=\"text-[13px] text-[#383838] leading-tight\">Sheridan</p><p class=\"text-[13px] text-[#383838] leading-tight\">Wyoming, 82801</p><p class=\"text-[13px] text-[#383838] leading-tight\">United States</p><p class=\"text-[9px] text-[#383838] leading-tight mt-1.5\">Sales tax ID: VAT - EU372031974 UK - GB383499055</p><p class=\"text-[13px] font-bold text-[#383838] leading-tight mt-3\">Invoice 000081709</p>",
+      "constraints": {
+        "locked": true,
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_billing_info": {
+      "slotId": "att_slot_billing_info",
+      "label": "청구 정보 (고객)",
+      "role": "editable-slot",
+      "content": "<p class=\"text-[13px] font-semibold text-[#336699] leading-snug mb-1\">Billing info</p><p class=\"text-[13px] text-[#383838] leading-tight\">qround</p><p class=\"text-[13px] text-[#383838] leading-tight\">SEO MINGYU</p><p class=\"text-[13px] text-[#383838] leading-tight\">seoul, 40-6</p><p class=\"text-[13px] text-[#383838] leading-tight\">South Korea</p>",
+      "backDataRefs": []
+    },
+    "att_slot_total_summary": {
+      "slotId": "att_slot_total_summary",
+      "label": "총 결제액 및 결제 수단",
+      "role": "editable-slot",
+      "content": "<p class=\"text-[13px] font-semibold text-[#336699] leading-snug mb-0.5\">Total (USD)</p><p class=\"hero-amount text-[26px] text-[#383838] font-normal leading-tight my-0.5\">$147.00</p><p class=\"text-xs text-[#383838] leading-none mt-1\">Paid via credit card</p>",
+      "constraints": {
+        "tone": "invoice-hero",
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_th_desc": {
+      "slotId": "att_th_desc",
+      "label": "테이블 헤더 Description",
+      "role": "boilerplate",
+      "content": "<p class=\"font-semibold text-slate-700 text-[12px]\">Description</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_th_amount": {
+      "slotId": "att_th_amount",
+      "label": "테이블 헤더 Amount",
+      "role": "boilerplate",
+      "content": "<p style=\"text-align: right;\" class=\"font-semibold text-slate-700 text-[12px] text-right\">Amount</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_th_total": {
+      "slotId": "att_th_total",
+      "label": "테이블 헤더 Total",
+      "role": "boilerplate",
+      "content": "<p style=\"text-align: right;\" class=\"font-semibold text-slate-700 text-[12px] text-right\">Total</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_item_desc": {
+      "slotId": "att_item_desc",
+      "label": "품목 내역",
+      "role": "editable-slot",
+      "content": "<p class=\"text-[12.5px]\"><span class=\"font-bold text-slate-900\">Atticus</span><br/><span class=\"text-slate-500 text-[11px]\">One-time payment ($147.00)</span></p>",
+      "backDataRefs": []
+    },
+    "att_item_amount": {
+      "slotId": "att_item_amount",
+      "label": "품목 단가",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: right;\" class=\"text-[12.5px] text-slate-800 text-right\">$147.00</p>",
+      "backDataRefs": []
+    },
+    "att_item_total": {
+      "slotId": "att_item_total",
+      "label": "품목 합계",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: right;\" class=\"text-[12.5px] text-slate-800 text-right\">$147.00</p>",
+      "backDataRefs": []
+    },
+    "att_subtotal_label": {
+      "slotId": "att_subtotal_label",
+      "label": "소계 라벨",
+      "role": "boilerplate",
+      "content": "<p style=\"text-align: right;\" class=\"text-[12px] text-slate-600 font-medium text-right\">Subtotal:</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_subtotal_value": {
+      "slotId": "att_subtotal_value",
+      "label": "소계 금액",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: right;\" class=\"text-[12px] text-slate-800 font-medium text-right\">$147.00</p>",
+      "backDataRefs": []
+    },
+    "att_total_label": {
+      "slotId": "att_total_label",
+      "label": "총계 라벨",
+      "role": "boilerplate",
+      "content": "<p style=\"text-align: right;\" class=\"text-[12.5px] text-slate-900 font-bold text-right\">Total:</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_total_value": {
+      "slotId": "att_total_value",
+      "label": "총계 금액",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: right;\" class=\"text-[12.5px] text-slate-900 font-bold text-right\">$147.00</p>",
+      "backDataRefs": []
+    },
+    "att_slot_spacer": {
+      "slotId": "att_slot_spacer",
+      "label": "하단 여백 스페이서",
+      "role": "boilerplate",
+      "content": "<div class=\"h-24\"></div>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_slot_footer_notes": {
+      "slotId": "att_slot_footer_notes",
+      "label": "고객지원 및 라이선스 안내",
+      "role": "boilerplate",
+      "content": "<div class=\"text-center text-[10.5px] text-slate-500 space-y-1 select-text pt-4 border-t border-slate-100\"><p>Contact support: <a href=\"mailto:support@atticus.io\" class=\"text-[#174883] underline hover:text-[#0f3460]\">support@atticus.io</a></p><p><a href=\"#\" class=\"text-[#174883] underline hover:text-[#0f3460]\">Click here to manage your billing details and view purchase history</a></p><p class=\"text-slate-400 mt-2\">Your order was processed by ThriveCart. Copyright © 2026. All rights reserved.</p><p class=\"text-slate-400 mt-4 text-[10px]\">Page 1 of 1</p></div>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_slot_th_desc": {
+      "slotId": "att_slot_th_desc",
+      "label": "헤더: 품목 설명",
+      "role": "boilerplate",
+      "content": "<span class=\"text-[13px] font-semibold text-[#336699]\">Description</span>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_slot_th_amount": {
+      "slotId": "att_slot_th_amount",
+      "label": "헤더: 단가",
+      "role": "boilerplate",
+      "content": "<span class=\"text-[13px] font-semibold text-[#336699]\">Amount</span>",
+      "constraints": {
+        "locked": true,
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_th_total": {
+      "slotId": "att_slot_th_total",
+      "label": "헤더: 소계",
+      "role": "boilerplate",
+      "content": "<span class=\"text-[13px] font-semibold text-[#336699]\">Total</span>",
+      "constraints": {
+        "locked": true,
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_td_item1": {
+      "slotId": "att_slot_td_item1",
+      "label": "품목 1: 설명",
+      "role": "editable-slot",
+      "content": "<p class=\"text-[13px] text-[#383838] leading-tight\">Atticus</p><p class=\"text-[10px] text-[#666666] leading-tight mt-0.5\">One-time payment ($147.00)</p>",
+      "backDataRefs": []
+    },
+    "att_slot_td_amount1": {
+      "slotId": "att_slot_td_amount1",
+      "label": "품목 1: 단가",
+      "role": "editable-slot",
+      "content": "<span class=\"text-[13px] text-[#383838]\">$147.00</span>",
+      "constraints": {
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_td_total1": {
+      "slotId": "att_slot_td_total1",
+      "label": "품목 1: 금액",
+      "role": "editable-slot",
+      "content": "<span class=\"text-[13px] text-[#383838]\">$147.00</span>",
+      "constraints": {
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_td_empty_sub": {
+      "slotId": "att_slot_td_empty_sub",
+      "label": "소계 공란",
+      "role": "boilerplate",
+      "content": "",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_slot_td_label_sub": {
+      "slotId": "att_slot_td_label_sub",
+      "label": "소계 라벨",
+      "role": "boilerplate",
+      "content": "<span class=\"text-xs text-[#383838]\">Subtotal:</span>",
+      "constraints": {
+        "locked": true,
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_td_val_sub": {
+      "slotId": "att_slot_td_val_sub",
+      "label": "소계 금액",
+      "role": "editable-slot",
+      "content": "<span class=\"text-xs text-[#383838]\">$147.00</span>",
+      "constraints": {
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_td_empty_tot": {
+      "slotId": "att_slot_td_empty_tot",
+      "label": "총계 공란",
+      "role": "boilerplate",
+      "content": "",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "att_slot_td_label_tot": {
+      "slotId": "att_slot_td_label_tot",
+      "label": "총계 라벨",
+      "role": "boilerplate",
+      "content": "<span class=\"text-xs text-[#383838]\">Total:</span>",
+      "constraints": {
+        "locked": true,
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_td_val_tot": {
+      "slotId": "att_slot_td_val_tot",
+      "label": "총계 금액",
+      "role": "editable-slot",
+      "content": "<span class=\"text-xs text-[#383838]\">$147.00</span>",
+      "constraints": {
+        "align": "right"
+      },
+      "backDataRefs": []
+    },
+    "att_slot_footer_meta": {
+      "slotId": "att_slot_footer_meta",
+      "label": "인보이스 하단 고객지원 & 법적 고지",
+      "role": "boilerplate",
+      "content": "<div class=\"text-center pt-28 pb-4 space-y-2.5\"><p class=\"text-xs text-[#8c8c8c]\">Contact support: <a href=\"mailto:support@atticus.io\" class=\"text-[#2774a8] underline\">support@atticus.io</a></p><p class=\"text-[10.5px] text-[#2774a8] underline\">Click here to manage your billing details and view purchase history</p><p class=\"text-[10px] text-[#999999] pt-2\">Your order was processed by ThriveCart. Copyright © 2026. All rights reserved.</p><p class=\"text-xs text-[#383838] pt-14\">Page 1 of 1</p></div>",
+      "constraints": {
+        "locked": true,
+        "align": "center"
+      },
       "backDataRefs": []
     }
   },
