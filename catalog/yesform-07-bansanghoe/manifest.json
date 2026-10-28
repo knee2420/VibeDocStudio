@@ -1,0 +1,14 @@
+{
+  "catalogId": "yesform-07-bansanghoe",
+  "title": "반상회 회의록 (예스폼 07번 정밀 조판)",
+  "sourceOrigin": "Tutorials/obsidian_tuning/실험실/typst_forms/반상회_회의록.typ",
+  "sourceId": "vform_159439",
+  "category": "행정·자치 회의록",
+  "tags": [
+    "반상회",
+    "관민2분할",
+    "15인출석부",
+    "A4정밀서식"
+  ],
+  "description": "pdfplumber 0.1pt 기계 추출 치수(449.4pt 6구역 프레임)와 15인 출석부 매트릭스를 1:1로 이식한 A4 완결형 회의록"
+}

@@ -5,13 +5,16 @@
   "description": "PandaDoc 3-Pane Shell + AI WYSIWYG (Tiptap) + WYSIWYM (CSS Grid/Slot) + Component-Attached AI Composer Studio",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "dev": "pnpm --r --parallel dev",
+    "dev": "pnpm --filter @vibe/studio dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint"
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.2"
   },
   "engines": {
     "node": ">=20.0.0"
   }
 }
-

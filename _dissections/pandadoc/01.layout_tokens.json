@@ -1,0 +1,70 @@
+{
+  "target": "https://app.pandadoc.com/a/#/documents/wMTYhqyhAsLuQZBtp5jwML",
+  "editor_codename": "PandaDoc Kolas Editor",
+  "editor_iframe_origin": "https://app.pandadoc.com/e/",
+  "captured_at": "2026-10-28T16:46:50+09:00",
+  "evidence_id": "ev_e23c1c44c6e3a509bd1e3958a2f05a7f3b3450f49ef3a2d31c0ef83173e792a0",
+  "shell_architecture": {
+    "outer_shell": {
+      "url": "https://app.pandadoc.com/a/",
+      "custom_web_components": [
+        "appjs-ai-chat",
+        "document-name",
+        "document-operations",
+        "upsell-host-service",
+        "workflow-runner-package"
+      ],
+      "module_federation_runtime": "tessera-transport-runtime (Webpack Module Federation)"
+    },
+    "inner_editor_frames": [
+      {
+        "frame_id": "63AAAAB7C8C997919B1EA7A3D4DDB0D2",
+        "url": "https://app.pandadoc.com/e/",
+        "role": "Primary Kolas Editor Workspace"
+      },
+      {
+        "frame_id": "9A59942A53D1AFF1CE2D47EB3B61C763",
+        "url": "https://app.pandadoc.com/e/",
+        "role": "Auxiliary / Preview Mirror Frame"
+      }
+    ]
+  },
+  "three_pane_layout": {
+    "top_header_bar": {
+      "document_title_input": "Venture Capital Proposal Template (plaintext editable textbox)",
+      "status_badge": "Draft",
+      "total_value_display": "$0.00",
+      "menu_bar": ["File", "Edit", "Insert", "View", "Format"],
+      "workflow_actions": ["Step 2 of 3", "Back", "Review and send", "Send via link"]
+    },
+    "formatting_sub_toolbar": {
+      "mode_switcher": "Editing",
+      "history": ["Undo", "Redo"],
+      "zoom": "100%",
+      "text_style": "Normal text",
+      "font_family": "IBM Plex Sans",
+      "inline_marks": ["Bold", "Italic", "Underline", "Color", "Highlight", "Link", "Clear formatting", "Alignment", "Lists", "Indent"]
+    },
+    "left_sidebar": {
+      "toggle_control": "Close left sidebar",
+      "title": "Document preview",
+      "meta": "Document · 4 pages",
+      "rendering_mechanism": "Live scaled DOM mirror of pages (1 · Page, 2 · Page, 3 · Page, 4 · Page)"
+    },
+    "center_canvas": {
+      "page_structure": [
+        "Page Index Header (e.g., '1 · Page')",
+        "Document's header toggle area ('Double click to edit header')",
+        "Page content area (Block & Slot Grid Container)",
+        "Document's footer toggle area ('Double click to edit footer')",
+        "Estimated automatic page break on PDF ('PDF page break' divider)"
+      ]
+    },
+    "right_sidebar": {
+      "toggle_control": "Close right sidebar",
+      "primary_section": "Add fillable fields",
+      "secondary_section": "MORE ACTIONS (Manage recipients, Manage variables, Review data)"
+    }
+  }
+}
+

@@ -1,0 +1,13 @@
+{
+  "catalogId": "pandadoc-vc-proposal",
+  "title": "Venture Capital Proposal Template",
+  "sourceOrigin": "_dissections/pandadoc/02.document_schema.json",
+  "category": "투자 제안서 (PandaDoc 실측)",
+  "tags": [
+    "PandaDoc",
+    "KolasEditor",
+    "VC",
+    "Proposal"
+  ],
+  "description": "REA 실시간 해부로 추출한 PandaDoc Kolas Editor 3페이지 투자 제안서 원본 복원 번들"
+}

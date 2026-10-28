@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-10-28T17:58:00+09:00",
+  "entries": [
+    {
+      "catalogId": "vibe-architecture-minutes",
+      "title": "10월 4주차 VibeDocStudio 아키텍처 정례 회의록 (+ Page 2 반상회 회의록)",
+      "sourceOrigin": "VibeDocStudio Internal + Yesform 07",
+      "category": "엔지니어링·자치 복합 회의록",
+      "tags": [
+        "GSV-01",
+        "반상회회의록",
+        "2Pages"
+      ],
+      "description": "Page 1 아키텍처 정례 회의록 + Page 2 예스폼 07번 반상회 회의록 정밀 이식본"
+    },
+    {
+      "catalogId": "yesform-07-bansanghoe",
+      "title": "반상회 회의록 (예스폼 07번 정밀 조판)",
+      "sourceOrigin": "Tutorials/obsidian_tuning/실험실/typst_forms/반상회_회의록.typ",
+      "sourceId": "vform_159439",
+      "category": "행정·자치 회의록",
+      "tags": [
+        "반상회",
+        "관민2분할",
+        "15인출석부",
+        "A4정밀서식"
+      ],
+      "description": "pdfplumber 0.1pt 기계 추출 치수(449.4pt 6구역 프레임)와 15인 출석부 매트릭스를 1:1로 이식한 A4 완결형 회의록"
+    },
+    {
+      "catalogId": "pandadoc-vc-proposal",
+      "title": "Venture Capital Proposal Template",
+      "sourceOrigin": "_dissections/pandadoc/02.document_schema.json",
+      "category": "투자 제안서 (PandaDoc 실측)",
+      "tags": [
+        "PandaDoc",
+        "KolasEditor",
+        "VC",
+        "Proposal"
+      ],
+      "description": "REA 실시간 해부로 추출한 PandaDoc Kolas Editor 3페이지 투자 제안서 원본 복원 번들"
+    }
+  ]
+}

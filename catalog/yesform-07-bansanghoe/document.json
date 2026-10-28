@@ -1,0 +1,1078 @@
+{
+  "version": "1.0.0",
+  "docId": "vdoc_yesform_07_bansanghoe",
+  "title": "반상회 회의록 (예스폼 07번 정밀 서식)",
+  "status": "Final",
+  "totalValueText": "15세대 출석",
+  "updatedAt": "2026-10-28T17:55:00+09:00",
+  "variables": {
+    "Meeting.Date": "2026-10-27",
+    "Official.Dept": "행복동 주민센터",
+    "Official.Name": "이동관"
+  },
+  "pages": [
+    {
+      "pageId": "bs_page_1",
+      "pageNumber": 1,
+      "pageLabel": "반상회 회의록 (A4 완결형)",
+      "headerSlotId": "bs_page_header",
+      "footerSlotId": "bs_page_footer",
+      "hideHeaderFooter": true,
+      "blocks": [
+        {
+          "blockId": "blk_bs_title",
+          "kind": "form-title",
+          "title": "문서 메인 타이틀 (반상회 회의록)",
+          "slotId": "bs_slot_main_title",
+          "underlineWidth": "286px",
+          "underlineThickness": "2px",
+          "letterSpacing": "0.35em"
+        },
+        {
+          "blockId": "blk_bs_composite_frame",
+          "kind": "composite-form-frame",
+          "title": "반상회 회의록 6구역 정밀 복합 프레임 (449.4pt)",
+          "outerBorderWidth": "2px",
+          "sections": [
+            {
+              "sectionId": "bs_sec_1",
+              "title": "1구역 · 일시 및 결재란",
+              "columnWidths": [
+                "66.33%",
+                "8.06%",
+                "8.81%",
+                "9.48%",
+                "7.32%"
+              ],
+              "rows": [
+                {
+                  "rowId": "bs_z1_r1",
+                  "height": "63px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z1_c1",
+                      "slotId": "bs_z1_datetime",
+                      "vAlign": "middle",
+                      "hAlign": "left",
+                      "padding": "6px 12px"
+                    },
+                    {
+                      "cellId": "bs_z1_c2",
+                      "slotId": "bs_z1_role1",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z1_c3",
+                      "slotId": "bs_z1_sign1",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z1_c4",
+                      "slotId": "bs_z1_role2",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z1_c5",
+                      "slotId": "bs_z1_seal2",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "sectionId": "bs_sec_2",
+              "title": "2구역 · 협의 및 결의사항",
+              "columnWidths": [
+                "12.04%",
+                "87.96%"
+              ],
+              "rows": [
+                {
+                  "rowId": "bs_z2_r1",
+                  "height": "250px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z2_c1",
+                      "slotId": "bs_z2_label",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z2_c2",
+                      "slotId": "bs_z2_body",
+                      "vAlign": "middle",
+                      "hAlign": "left",
+                      "padding": "14px 18px"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "sectionId": "bs_sec_3",
+              "title": "3구역 · 건의요망 사항요지 및 임석공무원",
+              "columnWidths": [
+                "12.04%",
+                "54.30%",
+                "33.66%"
+              ],
+              "rows": [
+                {
+                  "rowId": "bs_z3_r1",
+                  "height": "37px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z3_c1",
+                      "slotId": "bs_z3_label",
+                      "rowSpan": 2,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z3_c2",
+                      "slotId": "bs_z3_body",
+                      "rowSpan": 2,
+                      "vAlign": "middle",
+                      "hAlign": "left",
+                      "padding": "12px 16px"
+                    },
+                    {
+                      "cellId": "bs_z3_c3",
+                      "slotId": "bs_z3_official_hdr",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "letterSpacing": "0.15em"
+                    }
+                  ]
+                },
+                {
+                  "rowId": "bs_z3_r2",
+                  "height": "85px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z3_c4",
+                      "slotId": "bs_z3_official_body",
+                      "vAlign": "middle",
+                      "hAlign": "left",
+                      "padding": "8px 14px"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "sectionId": "bs_sec_4",
+              "title": "4구역 · 기타사항 및 윤독중인간행물",
+              "columnWidths": [
+                "12.04%",
+                "54.30%",
+                "33.66%"
+              ],
+              "bottomBorderThick": true,
+              "rows": [
+                {
+                  "rowId": "bs_z4_r1",
+                  "height": "35px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z4_c1",
+                      "slotId": "bs_z4_label",
+                      "rowSpan": 2,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "letterSpacing": "0.1em"
+                    },
+                    {
+                      "cellId": "bs_z4_c2",
+                      "slotId": "bs_z4_body",
+                      "rowSpan": 2,
+                      "vAlign": "middle",
+                      "hAlign": "left",
+                      "padding": "10px 16px"
+                    },
+                    {
+                      "cellId": "bs_z4_c3",
+                      "slotId": "bs_z4_pub_hdr",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "letterSpacing": "0.15em"
+                    }
+                  ]
+                },
+                {
+                  "rowId": "bs_z4_r2",
+                  "height": "56px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z4_c4",
+                      "slotId": "bs_z4_pub_body",
+                      "vAlign": "middle",
+                      "hAlign": "left",
+                      "padding": "6px 14px"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "sectionId": "bs_sec_5",
+              "title": "5구역 · 반원 출석 상황 헤더",
+              "columnWidths": [
+                "100%"
+              ],
+              "bottomBorderThick": true,
+              "rows": [
+                {
+                  "rowId": "bs_z5_r1",
+                  "height": "36px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z5_c1",
+                      "slotId": "bs_z5_title",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "letterSpacing": "0.6em"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "sectionId": "bs_sec_6",
+              "title": "6구역 · 15인 출석부 매트릭스",
+              "columnWidths": [
+                "26.06%",
+                "6.83%",
+                "27.61%",
+                "5.83%",
+                "26.35%",
+                "7.32%"
+              ],
+              "rows": [
+                {
+                  "rowId": "bs_z6_r_hdr",
+                  "height": "38px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z6_ch1",
+                      "slotId": "bs_z6_h_name_1",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "whiteHeader": true
+                    },
+                    {
+                      "cellId": "bs_z6_ch2",
+                      "slotId": "bs_z6_h_seal_1",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "whiteHeader": true
+                    },
+                    {
+                      "cellId": "bs_z6_ch3",
+                      "slotId": "bs_z6_h_name_2",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "whiteHeader": true
+                    },
+                    {
+                      "cellId": "bs_z6_ch4",
+                      "slotId": "bs_z6_h_seal_2",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "whiteHeader": true
+                    },
+                    {
+                      "cellId": "bs_z6_ch5",
+                      "slotId": "bs_z6_h_name_3",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "whiteHeader": true
+                    },
+                    {
+                      "cellId": "bs_z6_ch6",
+                      "slotId": "bs_z6_h_seal_3",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "whiteHeader": true
+                    }
+                  ]
+                },
+                {
+                  "rowId": "bs_z6_r_1",
+                  "height": "36px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z6_cell_n_1_1",
+                      "slotId": "bs_z6_r1c1_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_1_1",
+                      "slotId": "bs_z6_r1c1_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_1_2",
+                      "slotId": "bs_z6_r1c2_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_1_2",
+                      "slotId": "bs_z6_r1c2_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_1_3",
+                      "slotId": "bs_z6_r1c3_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_1_3",
+                      "slotId": "bs_z6_r1c3_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    }
+                  ]
+                },
+                {
+                  "rowId": "bs_z6_r_2",
+                  "height": "36px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z6_cell_n_2_1",
+                      "slotId": "bs_z6_r2c1_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_2_1",
+                      "slotId": "bs_z6_r2c1_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_2_2",
+                      "slotId": "bs_z6_r2c2_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_2_2",
+                      "slotId": "bs_z6_r2c2_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_2_3",
+                      "slotId": "bs_z6_r2c3_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_2_3",
+                      "slotId": "bs_z6_r2c3_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    }
+                  ]
+                },
+                {
+                  "rowId": "bs_z6_r_3",
+                  "height": "36px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z6_cell_n_3_1",
+                      "slotId": "bs_z6_r3c1_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_3_1",
+                      "slotId": "bs_z6_r3c1_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_3_2",
+                      "slotId": "bs_z6_r3c2_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_3_2",
+                      "slotId": "bs_z6_r3c2_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_3_3",
+                      "slotId": "bs_z6_r3c3_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_3_3",
+                      "slotId": "bs_z6_r3c3_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    }
+                  ]
+                },
+                {
+                  "rowId": "bs_z6_r_4",
+                  "height": "36px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z6_cell_n_4_1",
+                      "slotId": "bs_z6_r4c1_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_4_1",
+                      "slotId": "bs_z6_r4c1_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_4_2",
+                      "slotId": "bs_z6_r4c2_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_4_2",
+                      "slotId": "bs_z6_r4c2_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_4_3",
+                      "slotId": "bs_z6_r4c3_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_4_3",
+                      "slotId": "bs_z6_r4c3_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    }
+                  ]
+                },
+                {
+                  "rowId": "bs_z6_r_5",
+                  "height": "36px",
+                  "cells": [
+                    {
+                      "cellId": "bs_z6_cell_n_5_1",
+                      "slotId": "bs_z6_r5c1_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_5_1",
+                      "slotId": "bs_z6_r5c1_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_5_2",
+                      "slotId": "bs_z6_r5c2_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_5_2",
+                      "slotId": "bs_z6_r5c2_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_n_5_3",
+                      "slotId": "bs_z6_r5c3_name",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    },
+                    {
+                      "cellId": "bs_z6_cell_s_5_3",
+                      "slotId": "bs_z6_r5c3_stamp",
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "slots": {
+    "bs_page_header": {
+      "slotId": "bs_page_header",
+      "label": "반상회 회의록 상단 메타",
+      "role": "boilerplate",
+      "content": "<p>예스폼 07번 표준 서식 (vform_159439) · A4 정밀 조판 규격 (449.4pt Frame)</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_page_footer": {
+      "slotId": "bs_page_footer",
+      "label": "반상회 회의록 하단 메타",
+      "role": "boilerplate",
+      "content": "<p>관할 제출처: 행복동 주민센터 · 보존 분류: 기층 자치 회의록</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_slot_main_title": {
+      "slotId": "bs_slot_main_title",
+      "label": "문서 메인 타이틀",
+      "role": "boilerplate",
+      "content": "<p><strong>반 &nbsp;상 &nbsp;회 &nbsp;&nbsp;회 &nbsp;의 &nbsp;록</strong></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z1_datetime": {
+      "slotId": "bs_z1_datetime",
+      "label": "1구역 · 개최 일시",
+      "role": "editable-slot",
+      "content": "<p><strong>2026</strong>년 &nbsp;<strong>10</strong>월 &nbsp;<strong>27</strong>일 &nbsp;&nbsp;<strong>19</strong>시 <strong>30</strong>분부터 &nbsp;<strong>20</strong>시 <strong>45</strong>분 까지</p>",
+      "constraints": {},
+      "backDataRefs": [
+        "bd_bs_resident_voice"
+      ]
+    },
+    "bs_z1_role1": {
+      "slotId": "bs_z1_role1",
+      "label": "1구역 · 결재 1 직책",
+      "role": "boilerplate",
+      "content": "<p>몰름<br/>반장</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z1_sign1": {
+      "slotId": "bs_z1_sign1",
+      "label": "1구역 · 결재 1 서명",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"sign\" data-label=\"(서명)\">(서명)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z1_role2": {
+      "slotId": "bs_z1_role2",
+      "label": "1구역 · 결재 2 직책",
+      "role": "boilerplate",
+      "content": "<p>반 &nbsp;장</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z1_seal2": {
+      "slotId": "bs_z1_seal2",
+      "label": "1구역 · 결재 2 날인",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"金\">金</span><br/><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z2_label": {
+      "slotId": "bs_z2_label",
+      "label": "2구역 · 협의 및 결의사항 라벨",
+      "role": "boilerplate",
+      "content": "<p><strong>협의 및<br/>결의사항</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z2_body": {
+      "slotId": "bs_z2_body",
+      "label": "2구역 · 협의 및 결의사항 본문",
+      "role": "editable-slot",
+      "content": "<p><strong>1. 단지 내 재활용 분리수거 배출 체계 개선의 건</strong></p><p>&nbsp;&nbsp;• 기존 수시 배출로 인한 악취 및 통행 불편 해소를 위해 매주 화·금요일 18:00~23:00 지정 시간 집중 배출제로 전환하기로 만장일치 의결함.</p><p>&nbsp;&nbsp;• 분리수거장 내 노후 CCTV 교체 및 조명 보강은 관리비 예비비로 즉시 집행 결정.</p><p></p><p><strong>2. 동절기 대비 지하주차장 소방 안전 시설 전수 점검의 건</strong></p><p>&nbsp;&nbsp;• 주차구역 스프링클러 헤드 누수 및 피난 유도선 훼손 상태 11월 첫째 주 집중 점검.</p><p>&nbsp;&nbsp;• 소화전 앞 적치물 자진 수거 안내문을 10월 말까지 전 세대에 공지하기로 함.</p><p></p><p><strong>3. 가을맞이 마을 대청소 및 보행로 수목 전지 일정 수립의 건</strong></p><p>&nbsp;&nbsp;• 일시: 2026년 11월 7일(토) 오전 10:00 (각 통·반 자율 방범대 합동 실시)</p>",
+      "constraints": {},
+      "backDataRefs": [
+        "bd_bs_resident_voice"
+      ]
+    },
+    "bs_z3_label": {
+      "slotId": "bs_z3_label",
+      "label": "3구역 · 건의요망 사항요지 라벨",
+      "role": "boilerplate",
+      "content": "<p><strong>건의요망<br/>사항요지</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z3_body": {
+      "slotId": "bs_z3_body",
+      "label": "3구역 · 건의요망 사항요지 본문",
+      "role": "editable-slot",
+      "content": "<p><strong>1. 단지 후문 보행로 노후 보안등 LED 전면 교체 건의</strong></p><p>&nbsp;&nbsp;- 야간 통행 시 조도 미확보로 인한 안전사고 우려 해소 요망</p><p></p><p><strong>2. 어린이 놀이터 주변 불법 이륜차 진입 방지용 볼라드 설치 요청</strong></p>",
+      "constraints": {},
+      "backDataRefs": [
+        "bd_bs_resident_voice"
+      ]
+    },
+    "bs_z3_official_hdr": {
+      "slotId": "bs_z3_official_hdr",
+      "label": "3구역 · 임석공무원 헤더",
+      "role": "boilerplate",
+      "content": "<p><strong>임 석 공 무 원</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z3_official_body": {
+      "slotId": "bs_z3_official_body",
+      "label": "3구역 · 임석공무원 확인란",
+      "role": "fillable-field",
+      "content": "<p>소 &nbsp;&nbsp;속 : 행복동 주민센터</p><p>직 &nbsp;&nbsp;명 : 행정주무관</p><p>성 &nbsp;&nbsp;명 : 이 동 관 <span data-stamp=\"seal\" data-label=\"(인)\" data-float=\"right\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": [
+        "bd_bs_town_notice"
+      ]
+    },
+    "bs_z4_label": {
+      "slotId": "bs_z4_label",
+      "label": "4구역 · 기타사항 라벨",
+      "role": "boilerplate",
+      "content": "<p><strong>기타사항</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z4_body": {
+      "slotId": "bs_z4_body",
+      "label": "4구역 · 기타사항 본문",
+      "role": "editable-slot",
+      "content": "<p>• 2026년 하반기 독감 무료 예방접종 지정 의료기관 안내문 게시</p><p>• 동절기 에너지 바우처 접수 기간(11.1~12.31) 주민센터 홍보 협조</p>",
+      "constraints": {},
+      "backDataRefs": [
+        "bd_bs_town_notice"
+      ]
+    },
+    "bs_z4_pub_hdr": {
+      "slotId": "bs_z4_pub_hdr",
+      "label": "4구역 · 윤독중인간행물 헤더",
+      "role": "boilerplate",
+      "content": "<p><strong>윤독중인간행물</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z4_pub_body": {
+      "slotId": "bs_z4_pub_body",
+      "label": "4구역 · 윤독중인간행물 목록",
+      "role": "editable-slot",
+      "content": "<p>• 행복 시정소식지 (10월호)</p><p>• 우리마을 반상회보 제412호</p>",
+      "constraints": {},
+      "backDataRefs": [
+        "bd_bs_town_notice"
+      ]
+    },
+    "bs_z5_title": {
+      "slotId": "bs_z5_title",
+      "label": "5구역 · 반원 출석 상황 타이틀",
+      "role": "boilerplate",
+      "content": "<p><strong>반 원 출 석 상 황</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z6_h_name_1": {
+      "slotId": "bs_z6_h_name_1",
+      "label": "출석부 헤더 성명 1",
+      "role": "boilerplate",
+      "content": "<p><strong>성 &nbsp;&nbsp;&nbsp;&nbsp;명</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z6_h_seal_1": {
+      "slotId": "bs_z6_h_seal_1",
+      "label": "출석부 헤더 인 1",
+      "role": "boilerplate",
+      "content": "<p><strong>(인)</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z6_h_name_2": {
+      "slotId": "bs_z6_h_name_2",
+      "label": "출석부 헤더 성명 2",
+      "role": "boilerplate",
+      "content": "<p><strong>성 &nbsp;&nbsp;&nbsp;&nbsp;명</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z6_h_seal_2": {
+      "slotId": "bs_z6_h_seal_2",
+      "label": "출석부 헤더 인 2",
+      "role": "boilerplate",
+      "content": "<p><strong>(인)</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z6_h_name_3": {
+      "slotId": "bs_z6_h_name_3",
+      "label": "출석부 헤더 성명 3",
+      "role": "boilerplate",
+      "content": "<p><strong>성 &nbsp;&nbsp;&nbsp;&nbsp;명</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z6_h_seal_3": {
+      "slotId": "bs_z6_h_seal_3",
+      "label": "출석부 헤더 인 3",
+      "role": "boilerplate",
+      "content": "<p><strong>(인)</strong></p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "bs_z6_r1c1_name": {
+      "slotId": "bs_z6_r1c1_name",
+      "label": "출석 101호 김철수",
+      "role": "editable-slot",
+      "content": "<p>101호 &nbsp;김철수</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r1c1_stamp": {
+      "slotId": "bs_z6_r1c1_stamp",
+      "label": "날인 101호 김철수",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r1c2_name": {
+      "slotId": "bs_z6_r1c2_name",
+      "label": "출석 102호 이영희",
+      "role": "editable-slot",
+      "content": "<p>102호 &nbsp;이영희</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r1c2_stamp": {
+      "slotId": "bs_z6_r1c2_stamp",
+      "label": "날인 102호 이영희",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r1c3_name": {
+      "slotId": "bs_z6_r1c3_name",
+      "label": "출석 103호 박상우",
+      "role": "editable-slot",
+      "content": "<p>103호 &nbsp;박상우</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r1c3_stamp": {
+      "slotId": "bs_z6_r1c3_stamp",
+      "label": "날인 103호 박상우",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r2c1_name": {
+      "slotId": "bs_z6_r2c1_name",
+      "label": "출석 201호 정다은",
+      "role": "editable-slot",
+      "content": "<p>201호 &nbsp;정다은</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r2c1_stamp": {
+      "slotId": "bs_z6_r2c1_stamp",
+      "label": "날인 201호 정다은",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r2c2_name": {
+      "slotId": "bs_z6_r2c2_name",
+      "label": "출석 202호 최현우",
+      "role": "editable-slot",
+      "content": "<p>202호 &nbsp;최현우</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r2c2_stamp": {
+      "slotId": "bs_z6_r2c2_stamp",
+      "label": "날인 202호 최현우",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r2c3_name": {
+      "slotId": "bs_z6_r2c3_name",
+      "label": "출석 203호 강민서",
+      "role": "editable-slot",
+      "content": "<p>203호 &nbsp;강민서</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r2c3_stamp": {
+      "slotId": "bs_z6_r2c3_stamp",
+      "label": "날인 203호 강민서",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"sign\" data-label=\"(서명)\">(서명)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r3c1_name": {
+      "slotId": "bs_z6_r3c1_name",
+      "label": "출석 301호 윤재호",
+      "role": "editable-slot",
+      "content": "<p>301호 &nbsp;윤재호</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r3c1_stamp": {
+      "slotId": "bs_z6_r3c1_stamp",
+      "label": "날인 301호 윤재호",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r3c2_name": {
+      "slotId": "bs_z6_r3c2_name",
+      "label": "출석 302호 조은지",
+      "role": "editable-slot",
+      "content": "<p>302호 &nbsp;조은지</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r3c2_stamp": {
+      "slotId": "bs_z6_r3c2_stamp",
+      "label": "날인 302호 조은지",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r3c3_name": {
+      "slotId": "bs_z6_r3c3_name",
+      "label": "출석 303호 한승민",
+      "role": "editable-slot",
+      "content": "<p>303호 &nbsp;한승민</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r3c3_stamp": {
+      "slotId": "bs_z6_r3c3_stamp",
+      "label": "날인 303호 한승민",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r4c1_name": {
+      "slotId": "bs_z6_r4c1_name",
+      "label": "출석 401호 송예린",
+      "role": "editable-slot",
+      "content": "<p>401호 &nbsp;송예린</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r4c1_stamp": {
+      "slotId": "bs_z6_r4c1_stamp",
+      "label": "날인 401호 송예린",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"sign\" data-label=\"(서명)\">(서명)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r4c2_name": {
+      "slotId": "bs_z6_r4c2_name",
+      "label": "출석 402호 백동현",
+      "role": "editable-slot",
+      "content": "<p>402호 &nbsp;백동현</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r4c2_stamp": {
+      "slotId": "bs_z6_r4c2_stamp",
+      "label": "날인 402호 백동현",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r4c3_name": {
+      "slotId": "bs_z6_r4c3_name",
+      "label": "출석 403호 서유진",
+      "role": "editable-slot",
+      "content": "<p>403호 &nbsp;서유진</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r4c3_stamp": {
+      "slotId": "bs_z6_r4c3_stamp",
+      "label": "날인 403호 서유진",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r5c1_name": {
+      "slotId": "bs_z6_r5c1_name",
+      "label": "출석 501호 임태양",
+      "role": "editable-slot",
+      "content": "<p>501호 &nbsp;임태양</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r5c1_stamp": {
+      "slotId": "bs_z6_r5c1_stamp",
+      "label": "날인 501호 임태양",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r5c2_name": {
+      "slotId": "bs_z6_r5c2_name",
+      "label": "출석 502호 오세훈",
+      "role": "editable-slot",
+      "content": "<p>502호 &nbsp;오세훈</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r5c2_stamp": {
+      "slotId": "bs_z6_r5c2_stamp",
+      "label": "날인 502호 오세훈",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r5c3_name": {
+      "slotId": "bs_z6_r5c3_name",
+      "label": "출석 503호 배수현",
+      "role": "editable-slot",
+      "content": "<p>503호 &nbsp;배수현</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "bs_z6_r5c3_stamp": {
+      "slotId": "bs_z6_r5c3_stamp",
+      "label": "날인 503호 배수현",
+      "role": "editable-slot",
+      "content": "<p><span data-stamp=\"seal\" data-label=\"(인)\">(인)</span></p>",
+      "constraints": {},
+      "backDataRefs": []
+    }
+  },
+  "backdata": {
+    "bd_bs_town_notice": {
+      "chunkId": "bd_bs_town_notice",
+      "sourceTitle": "행복동_주민센터_10월_반상회_시책공문.pdf",
+      "sourceType": "pdf",
+      "updatedAt": "2026-10-27",
+      "tags": [
+        "행복동주민센터",
+        "예방접종",
+        "에너지바우처",
+        "윤독간행물"
+      ],
+      "excerpt": "1. 2026년 하반기 어르신·어린이 독감 무료 예방접종 지정 의료기관 안내문 각 동 게시판 부착 협조. 2. 동절기 에너지 바우처 집중 접수 기간(2026.11.1~12.31) 안내. 3. 배포 간행물: 행복 시정소식지(10월호), 우리마을 반상회보 제412호. 임석 담당: 행정주무관 이동관."
+    },
+    "bd_bs_resident_voice": {
+      "chunkId": "bd_bs_resident_voice",
+      "sourceTitle": "10월_반상회_현장_안건_및_건의사항_메모.txt",
+      "sourceType": "transcript",
+      "updatedAt": "2026-10-27",
+      "tags": [
+        "분리수거",
+        "소방점검",
+        "마을대청소",
+        "보안등건의"
+      ],
+      "excerpt": "[자체 의결] ① 재활용 분리수거를 매주 화·금 18:00~23:00 지정 시간 집중 배출제로 만장일치 전환, 노후 CCTV 및 조명 예비비 즉시 교체. ② 11월 첫째 주 지하주차장 스프링클러 누수 및 피난 유도선 점검. ③ 11월 7일(토) 10:00 가을맞이 마을 대청소. [관청 건의] ① 단지 후문 보행로 노후 보안등 LED 전면 교체 요망. ② 어린이 놀이터 주변 불법 이륜차 진입 방지 볼라드 설치 요청."
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schema_source": "REA Live DOM & Accessibility Tree Dissection of PandaDoc Kolas Editor",
+  "core_finding": "PandaDoc does NOT use a single monolithic contentEditable for the document. Every heading, text block, table cell, and fillable field is an isolated [textbox] slot instance mounted inside a structural layout container.",
+  "page_anatomy": {
+    "page_container": {
+      "header_slot": "Document's header toggle area (Double click to edit header)",
+      "body_container": "Page content area",
+      "footer_slot": "Document's footer toggle area (Double click to edit footer)",
+      "pagination_marker": "Estimated automatic page break on PDF"
+    },
+    "observed_block_and_slot_types": [
+      {
+        "type": "CoverHeadingSlot",
+        "ax_role": "textbox (multiline=true, editable=plaintext)",
+        "inner_element": "heading[level=1]",
+        "sample_value": "Venture Proposal Template"
+      },
+      {
+        "type": "RichTextSlotWithVariables",
+        "ax_role": "textbox (focusable=true)",
+        "sample_tokens": [
+          "Prepared by:",
+          "\u200b",
+          "서민규 서",
+          "[Sender.Company]"
+        ],
+        "variable_chip_isolation": "Zero-width space (\\u200b) delimiters around inline variable tokens ([Sender.Company], [Client.FirstName], [Client.LastName])"
+      },
+      {
+        "type": "TableGridBlock",
+        "ax_role": "table > rowgroup > row > columnheader | cell",
+        "cell_isolation": "Each individual <th> (columnheader) and <td> (cell) mounts its own independent [textbox] editor instance inside the cell."
+      },
+      {
+        "type": "FillableFieldSlot",
+        "ax_role": "group > LabelText > textbox + heading[level=4] (Assignee chip)",
+        "observed_samples": [
+          {
+            "placeholder": "Short Description of Business",
+            "assignee": "서민규 서"
+          },
+          {
+            "placeholder": "Area(s) of investment",
+            "assignee": "서민규 서"
+          }
+        ]
+      }
+    ]
+  },
+  "storage_and_state_keys": {
+    "localStorage": [
+      "editor_initial_data_ee6f32b2d1588cc5dfcb3dcc85cf2ebb559f7c28",
+      "editor_user_settings_u8KK8nBAbb2V8aBE5Tt2Kk_3pvHXnDnPhh4GCogezEJmF",
+      "ai_chat_display_mode_v2",
+      "notary_navigation_visibility:u8KK8nBAbb2V8aBE5Tt2Kk:3pvHXnDnPhh4GCogezEJmF"
+    ],
+    "sessionStorage": [
+      "availableFonts",
+      "tessera:current-tab-id"
+    ],
+    "indexedDB": [
+      "PD",
+      "PD_EDITOR",
+      "pd-token"
+    ]
+  }
+}
+
