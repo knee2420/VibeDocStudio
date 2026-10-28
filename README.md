@@ -35,3 +35,4 @@ VibeDocStudio/
 
 * **확장자**: `*.vdoc` (*Vibe Document*)
 * **내부 구조**: 100% 순수 UTF-8 JSON (`LayoutTree` + `SlotMap` + `BackdataStore`)
+
