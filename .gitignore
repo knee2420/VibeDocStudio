@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Build & Turbo
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+
+# Upstream Open-Source Clones (Read-Only Reference Warehouse)
+_upstreams/
+
+# Reverse-Engineered Dissection Captures (Large Assets / HARs)
+_dissections/**/*.har
+_dissections/**/*.bundle.js
+
+# Environment & OS
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
