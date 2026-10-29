@@ -1,11 +1,14 @@
 """catalog 도메인 서비스 (식별자 정규화 및 유스케이스 위임)."""
 from __future__ import annotations
 
+from typing import Any
+
 from .models import CatalogFormBundleRecord, CatalogManifestRecord
 from .use_cases import (
     GetCatalogBundleUseCase,
     IngestPdfToCatalogUseCase,
     ListCatalogFormsUseCase,
+    ScaffoldPdfToDocumentUseCase,
 )
 
 
@@ -15,10 +18,12 @@ class CatalogService:
         list_forms: ListCatalogFormsUseCase,
         get_bundle: GetCatalogBundleUseCase,
         ingest_pdf: IngestPdfToCatalogUseCase,
+        scaffold_pdf: ScaffoldPdfToDocumentUseCase,
     ) -> None:
         self._list_forms = list_forms
         self._get_bundle = get_bundle
         self._ingest_pdf = ingest_pdf
+        self._scaffold_pdf = scaffold_pdf
 
     def list_manifests(self) -> list[CatalogManifestRecord]:
         return self._list_forms.execute()
@@ -38,4 +43,16 @@ class CatalogService:
             title=title,
             category=category,
         )
+
+    def scaffold_pdf_document(
+        self,
+        *,
+        pdf_bytes: bytes,
+        title: str,
+    ) -> tuple[dict[str, Any], int, int, int]:
+        return self._scaffold_pdf.execute(
+            pdf_bytes=pdf_bytes,
+            title=title,
+        )
+
 

@@ -19,6 +19,7 @@ const initialEditableSlotId =
   null;
 
 export interface SlotSelectionState {
+  selectedBlockId: string | null;
   selectedSlotId: string | null;
   composerOpenSlotId: string | null;
   /** Prompt the inline composer runs on open (selection AI bar). */
@@ -27,6 +28,7 @@ export interface SlotSelectionState {
   leftSidebarOpen: boolean;
   rightSidebarOpen: boolean;
   showAddBackdataForm: boolean;
+  setSelectedBlockId: (blockId: string | null) => void;
   setSelectedSlotId: (slotId: string | null) => void;
   setComposerOpenSlotId: (slotId: string | null) => void;
   toggleComposerForSlot: (slotId: string) => void;
@@ -38,6 +40,7 @@ export interface SlotSelectionState {
 }
 
 export const useSlotSelectionStore = create<SlotSelectionState>((set) => ({
+  selectedBlockId: null,
   selectedSlotId: initialEditableSlotId,
   composerOpenSlotId: null,
   composerPrompt: null,
@@ -45,6 +48,7 @@ export const useSlotSelectionStore = create<SlotSelectionState>((set) => ({
   leftSidebarOpen: true,
   rightSidebarOpen: true,
   showAddBackdataForm: false,
+  setSelectedBlockId: (blockId) => set({ selectedBlockId: blockId }),
   setSelectedSlotId: (slotId) => set({ selectedSlotId: slotId }),
   setComposerOpenSlotId: (slotId) => set({ composerOpenSlotId: slotId, composerPrompt: null }),
   toggleComposerForSlot: (slotId) =>

@@ -8,12 +8,12 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
-import FontFamily from "@tiptap/extension-font-family";
+// import FontFamily from "@tiptap/extension-font-family";
 import Link from "@tiptap/extension-link";
 import { FileText, Languages, MessageSquareText, SpellCheck, Wand2 } from "lucide-react";
 
 import { VariableChipNode, StampChipNode } from "./variable-node";
-import { BlockStyle, FontSize, FontWeight, LetterSpacing, LineHeight, Indent } from "./format-extensions";
+import { BlockStyle, FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight, Indent, InlineMargin } from "./format-extensions";
 import { normalizeLegacyHtml } from "./legacy-html";
 import { useActiveSlotEditorStore } from "./active-editor-store";
 
@@ -78,6 +78,7 @@ export const SlotRichTextEditor: React.FC<SlotRichTextEditorProps> = ({
       FontSize,
       FontWeight,
       LetterSpacing,
+      InlineMargin,
       LineHeight,
       Indent,
       BlockStyle,

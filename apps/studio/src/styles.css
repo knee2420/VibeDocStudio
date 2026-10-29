@@ -2,6 +2,31 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
 
+@font-face {
+  font-family: "GulimChe";
+  src: url("/fonts/GulimChe.ttf") format("truetype");
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: "굴림체";
+  src: url("/fonts/GulimChe.ttf") format("truetype");
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: "Dotum";
+  src: url("/fonts/Dotum.ttf") format("truetype");
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: "돋움";
+  src: url("/fonts/Dotum.ttf") format("truetype");
+  font-weight: 400;
+  font-display: block;
+}
+
 /* DejaVu Sans (Bitstream Vera licence): the face of the Atticus invoice PDF, served locally. */
 @font-face {
   font-family: "DejaVu Sans";

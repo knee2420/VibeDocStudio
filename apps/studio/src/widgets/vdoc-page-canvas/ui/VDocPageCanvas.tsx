@@ -23,6 +23,8 @@ export const VDocPageCanvas: React.FC = () => {
   const setActivePageId = useStudioDocumentStore((s) => s.setActivePageId);
   const mode = useStudioDocumentStore((s) => s.mode);
 
+  const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
+  const setSelectedBlockId = useSlotSelectionStore((s) => s.setSelectedBlockId);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
   const composerOpenSlotId = useSlotSelectionStore((s) => s.composerOpenSlotId);
   const composerPrompt = useSlotSelectionStore((s) => s.composerPrompt);
@@ -34,8 +36,18 @@ export const VDocPageCanvas: React.FC = () => {
   const setTableSelection = useSlotSelectionStore((s) => s.setTableSelection);
 
   const { updateSlotContent } = useSlotContentActions();
-  const { moveBlock, moveBlockTo, deleteBlock, addBlockToPage, duplicateBlock, toggleBlockLock, moveBlockFrame, runTableCommand } =
-    useMutateCanvasBlocks();
+  const {
+    moveBlock,
+    moveBlockTo,
+    deleteBlock,
+    addBlockToPage,
+    duplicateBlock,
+    toggleBlockLock,
+    moveBlockFrame,
+    resizeBlockFrame,
+    updateBlock,
+    runTableCommand,
+  } = useMutateCanvasBlocks();
 
   const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
   if (!doc) return null;
@@ -51,9 +63,14 @@ export const VDocPageCanvas: React.FC = () => {
           slots={doc.slots}
           backdata={doc.backdata}
           mode={mode}
+          selectedBlockId={selectedBlockId}
           selectedSlotId={selectedSlotId}
           composerOpenSlotId={composerOpenSlotId}
           onSelectPage={setActivePageId}
+          onSelectBlock={(blkId) => {
+            setSelectedBlockId(blkId);
+            setRightSidebarOpen(true);
+          }}
           onSelectSlot={setSelectedSlotId}
           onToggleComposerForSlot={toggleComposerForSlot}
           onOpenBackdataDrawer={(slotId) => {
@@ -68,6 +85,8 @@ export const VDocPageCanvas: React.FC = () => {
           onDuplicateBlock={duplicateBlock}
           onToggleBlockLock={toggleBlockLock}
           onMoveBlockFrame={moveBlockFrame}
+          onResizeBlockFrame={resizeBlockFrame}
+          onUpdateBlock={updateBlock}
           onTableCommand={runTableCommand}
           onTableSelectionChange={setTableSelection}
           onSlotAiAction={(slotId, action, text) =>

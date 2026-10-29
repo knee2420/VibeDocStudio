@@ -22,10 +22,49 @@ declare module "@tiptap/core" {
       setLetterSpacing: (value: string) => ReturnType;
       unsetLetterSpacing: () => ReturnType;
     };
+    fontFamily: {
+      setFontFamily: (font: string) => ReturnType;
+      unsetFontFamily: () => ReturnType;
+    };
   }
 }
 
 /** yesform-style font size on the `textStyle` mark, stored as `"11pt"`. */
+
+/** Custom robust FontFamily on the `textStyle` mark. */
+export const FontFamily = Extension.create({
+  name: "fontFamily",
+  addOptions() {
+    return { types: ["textStyle"] };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          fontFamily: {
+            default: null,
+            parseHTML: (el) => el.style.fontFamily?.replace(/['"]+/g, "") || null,
+            renderHTML: (attrs) => (attrs.fontFamily ? { style: `font-family: "${attrs.fontFamily}"` } : {}),
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setFontFamily:
+        (font) =>
+        ({ chain }) =>
+          chain().setMark("textStyle", { fontFamily: font }).run(),
+      unsetFontFamily:
+        () =>
+        ({ chain }) =>
+          chain().setMark("textStyle", { fontFamily: null }).removeEmptyTextStyle().run(),
+    };
+  },
+});
+
 export const FontSize = Extension.create({
   name: "fontSize",
   addOptions() {
@@ -109,7 +148,13 @@ export const Indent = Extension.create({
         attributes: {
           indent: {
             default: 0,
-            parseHTML: (el) => Math.round((parseFloat(el.style.marginLeft) || 0) / INDENT_STEP_PX),
+            parseHTML: (el) => {
+              const val = parseFloat(el.style.marginLeft) || 0;
+              if (val > 0 && Math.abs(val % INDENT_STEP_PX) < 0.05) {
+                return Math.round(val / INDENT_STEP_PX);
+              }
+              return 0;
+            },
             renderHTML: (attrs) => (attrs.indent ? { style: `margin-left: ${attrs.indent * INDENT_STEP_PX}px` } : {}),
           },
         },
@@ -213,8 +258,32 @@ export const LetterSpacing = Extension.create({
   },
 });
 
+/**
+ * Inline margin-left on the `textStyle` mark (for sub-pixel inter-span coordinate alignment).
+ */
+export const InlineMargin = Extension.create({
+  name: "inlineMargin",
+  addOptions() {
+    return { types: ["textStyle"] };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          marginLeft: {
+            default: null,
+            parseHTML: (el) => el.style.marginLeft || null,
+            renderHTML: (attrs) => (attrs.marginLeft ? { style: `margin-left: ${attrs.marginLeft}; display: inline-block` } : {}),
+          },
+        },
+      },
+    ];
+  },
+});
+
 /** Properties other paragraph attributes own; `blockStyle` keeps everything else. */
-const OWNED_BLOCK_PROPS = new Set(["text-align", "line-height", "margin-left"]);
+const OWNED_BLOCK_PROPS = new Set(["text-align", "line-height"]);
 
 /**
  * Free-form paragraph CSS (margins, padding, borders, colour) kept verbatim, like yesform's

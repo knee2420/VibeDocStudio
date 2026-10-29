@@ -22,6 +22,9 @@ import {
   useBindSlotBackdata,
 } from "@/features/bind-slot-backdata";
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
+import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
+import type { ImageBlockDef } from "@vibe/vdoc-schema";
+import { ImageInspectorCard } from "./ImageInspectorCard";
 
 interface SlotTypographyCardProps {
   slot: VDocSlot;
@@ -295,6 +298,7 @@ export const SlotInspectorDrawer: React.FC = () => {
   const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
 
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
+  const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
   const rightSidebarOpen = useSlotSelectionStore((s) => s.rightSidebarOpen);
   const setRightSidebarOpen = useSlotSelectionStore(
     (s) => s.setRightSidebarOpen
@@ -316,8 +320,19 @@ export const SlotInspectorDrawer: React.FC = () => {
     updateSlotConstraints,
   } = useSlotContentActions();
   const { toggleBackdataRef } = useBindSlotBackdata();
+  const { updateBlock, deleteBlock } = useMutateCanvasBlocks();
 
   const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
+
+  const selectedBlockInfo = React.useMemo(() => {
+    if (!doc || !selectedBlockId) return null;
+    for (const page of doc.pages) {
+      const blk = page.blocks.find((b) => b.blockId === selectedBlockId);
+      if (blk) return { pageId: page.pageId, block: blk };
+    }
+    return null;
+  }, [doc, selectedBlockId]);
+
   if (!doc) return null;
 
   const selectedSlot: VDocSlot | undefined = selectedSlotId
@@ -363,9 +378,21 @@ export const SlotInspectorDrawer: React.FC = () => {
         </button>
       </div>
 
-      {selectedSlot ? (
+      {(selectedSlot || selectedBlockInfo) ? (
         <div className="flex-1 overflow-y-auto p-4 space-y-5">
-          <SlotMetadataCard
+          {selectedBlockInfo && selectedBlockInfo.block.kind === "image" && (
+            <ImageInspectorCard
+              key={selectedBlockInfo.block.blockId}
+              pageId={selectedBlockInfo.pageId}
+              block={selectedBlockInfo.block as ImageBlockDef}
+              onUpdateBlock={updateBlock}
+              onDeleteBlock={deleteBlock}
+            />
+          )}
+
+          {selectedSlot && (
+            <>
+              <SlotMetadataCard
             slot={selectedSlot}
             onToggleLock={toggleSlotLock}
             onToggleComposer={toggleComposerForSlot}
@@ -458,6 +485,8 @@ export const SlotInspectorDrawer: React.FC = () => {
               })}
             </div>
           </div>
+            </>
+          )}
         </div>
       ) : (
         <div className="p-6 text-center text-xs text-slate-400">

@@ -1,0 +1,22 @@
+{
+  "name": "@vibe/agent-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./agent-settings-ui/index.ts",
+  "types": "./agent-settings-ui/index.ts",
+  "exports": {
+    ".": "./agent-settings-ui/index.ts",
+    "./settings-ui": "./agent-settings-ui/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "^0.475.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
+

@@ -22,6 +22,9 @@ importers:
 
   apps/studio:
     dependencies:
+      '@vibe/agent-core':
+        specifier: workspace:*
+        version: link:../../packages/agent-core
       '@vibe/ai-composer':
         specifier: workspace:*
         version: link:../../packages/ai-composer
@@ -68,6 +71,18 @@ importers:
       vite:
         specifier: ^6.2.0
         version: 6.4.5(jiti@2.7.0)(lightningcss@1.32.0)
+
+  packages/agent-core:
+    dependencies:
+      lucide-react:
+        specifier: ^0.475.0
+        version: 0.475.0(react@19.3.1)
+      react:
+        specifier: ^19.0.0
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.3.1(react@19.3.1)
 
   packages/ai-composer:
     dependencies:

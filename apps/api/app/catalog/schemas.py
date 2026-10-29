@@ -27,3 +27,13 @@ class PdfIngestResponse(BaseModel):
     checkedTables: int
     checkedSlots: int
     document: dict[str, Any]
+
+
+class ScaffoldDocumentResponse(BaseModel):
+    docId: str
+    title: str
+    totalPages: int
+    checkedBlocks: int
+    checkedSlots: int
+    document: dict[str, Any]
+

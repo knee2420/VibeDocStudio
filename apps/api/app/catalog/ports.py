@@ -27,3 +27,16 @@ class PdfVDocExtractorPort(Protocol):
         title: str,
     ) -> tuple[dict[str, Any], int, int]: ...
 
+
+class FormScaffoldAgentPort(Protocol):
+    """PDF 바이트로부터 시맨틱 블록·조항 위계와 정규화된 프레임을 갖춘 `.vdoc` 문서를 스캐폴딩하는 에이전트 포트."""
+
+    def scaffold_document(
+        self,
+        *,
+        pdf_bytes: bytes,
+        doc_id: str,
+        title: str,
+    ) -> tuple[dict[str, Any], int, int]: ...
+
+

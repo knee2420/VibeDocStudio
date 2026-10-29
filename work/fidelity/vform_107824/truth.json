@@ -1,0 +1,3856 @@
+{
+ "source": {
+  "pdf": "C:\\AI_Projects\\WebNovelAssistant\\VibePatchNote\\work\\fidelity\\vform_107824\\source.pdf",
+  "page": 1
+ },
+ "unit": "css_px_96dpi",
+ "page": {
+  "width": 794,
+  "height": 1123
+ },
+ "page_layout": {
+  "content_box": [
+   94.43,
+   114.79,
+   699.81,
+   1025.23
+  ],
+  "content_width": 605.38,
+  "margins": {
+   "left": 94.43,
+   "right": 94.19,
+   "top": 114.79,
+   "bottom": 97.77
+  }
+ },
+ "spans": [
+  {
+   "text": "학술정보운영위원회 규정",
+   "x": 258.65,
+   "y": 114.79,
+   "x1": 534.91,
+   "y1": 138.79,
+   "x1_raw": 534.91,
+   "pt": 18.0,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 0,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 135.39,
+   "tokens": [
+    {
+     "t": "학술정보운영위원회",
+     "ls": 0.0459
+    },
+    {
+     "t": " ",
+     "ls": -0.16
+    },
+    {
+     "t": "규정",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "center"
+  },
+  {
+   "text": "y",
+   "x": 94.43,
+   "y": 151.69,
+   "x1": 101.15,
+   "y1": 165.13,
+   "x1_raw": 101.15,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#ffffff",
+   "bold": false,
+   "italic": false,
+   "block": 1,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 163.23,
+   "tokens": [
+    {
+     "t": "y",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 194.29,
+   "x1": 107.87,
+   "y1": 207.73,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 3,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 205.83,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "1",
+   "x": 111.07,
+   "y": 194.29,
+   "x1": 117.79,
+   "y1": 207.73,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 3,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 205.83,
+   "tokens": [
+    {
+     "t": "1",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 194.29,
+   "x1": 134.46,
+   "y1": 207.73,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 3,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 205.83,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 194.29,
+   "x1": 147.91,
+   "y1": 207.73,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 3,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 205.83,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "목  적",
+   "x": 151.11,
+   "y": 194.29,
+   "x1": 191.11,
+   "y1": 207.73,
+   "x1_raw": 191.11,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 3,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 205.83,
+   "tokens": [
+    {
+     "t": "목",
+     "ls": 0.0
+    },
+    {
+     "t": "  ",
+     "ls": -0.16
+    },
+    {
+     "t": "적",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 193.99,
+   "y": 194.29,
+   "x1": 207.43,
+   "y1": 207.73,
+   "x1_raw": 211.62,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 3,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 205.83,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.2933
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "이 규정은",
+   "x": 147.91,
+   "y": 215.73,
+   "x1": 210.31,
+   "y1": 229.17,
+   "x1_raw": 217.05,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "이",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 1.92
+    },
+    {
+     "t": "규정은",
+     "ls": 0.0089
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "○○",
+   "x": 218.97,
+   "y": 215.73,
+   "x1": 245.85,
+   "y1": 229.17,
+   "x1_raw": 245.85,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": false,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "○○",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "대학교(이하",
+   "x": 245.53,
+   "y": 215.73,
+   "x1": 319.17,
+   "y1": 229.17,
+   "x1_raw": 325.89,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "대학교(이하",
+     "ls": -0.0467
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "“",
+   "x": 327.81,
+   "y": 215.29,
+   "x1": 333.78,
+   "y1": 230.17,
+   "x1_raw": 333.78,
+   "pt": 10.08,
+   "font": "Times New Roman",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": false,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "“",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "본교",
+   "x": 333.57,
+   "y": 215.73,
+   "x1": 360.45,
+   "y1": 229.17,
+   "x1_raw": 360.45,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": false,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "본교",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "”",
+   "x": 360.16,
+   "y": 215.29,
+   "x1": 366.13,
+   "y1": 230.17,
+   "x1_raw": 366.13,
+   "pt": 10.08,
+   "font": "Times New Roman",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": false,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "”",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "라 한다) 학술정보운영위원회(이하",
+   "x": 366.24,
+   "y": 215.73,
+   "x1": 583.91,
+   "y1": 229.17,
+   "x1_raw": 590.63,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "라",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 1.92
+    },
+    {
+     "t": "한다)",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 1.92
+    },
+    {
+     "t": "학술정보운영위원회(이하",
+     "ls": -0.0744
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "“",
+   "x": 592.57,
+   "y": 215.29,
+   "x1": 598.54,
+   "y1": 230.17,
+   "x1_raw": 598.54,
+   "pt": 10.08,
+   "font": "Times New Roman",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": false,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "“",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "위원회",
+   "x": 598.33,
+   "y": 215.73,
+   "x1": 638.65,
+   "y1": 229.17,
+   "x1_raw": 638.65,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": false,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "위원회",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "”",
+   "x": 638.33,
+   "y": 215.29,
+   "x1": 644.3,
+   "y1": 230.17,
+   "x1_raw": 644.3,
+   "pt": 10.08,
+   "font": "Times New Roman",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": false,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "”",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "라 한다)",
+   "x": 644.41,
+   "y": 215.73,
+   "x1": 699.81,
+   "y1": 229.17,
+   "x1_raw": 706.21,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 4,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 227.27,
+   "tokens": [
+    {
+     "t": "라",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 1.92
+    },
+    {
+     "t": "한다)",
+     "ls": -0.2
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "right"
+  },
+  {
+   "text": "조직과 운영에 관한 사항을 규정함을 목적으로 한다.",
+   "x": 147.91,
+   "y": 237.17,
+   "x1": 475.07,
+   "y1": 250.61,
+   "x1_raw": 481.47,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 5,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 248.71,
+   "tokens": [
+    {
+     "t": "조직과",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.2933
+    },
+    {
+     "t": "운영에",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "관한",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.28
+    },
+    {
+     "t": "사항을",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "규정함을",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "목적으로",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "한다.",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 258.61,
+   "x1": 107.87,
+   "y1": 272.05,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 6,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 270.15,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "2",
+   "x": 111.07,
+   "y": 258.61,
+   "x1": 117.79,
+   "y1": 272.05,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 6,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 270.15,
+   "tokens": [
+    {
+     "t": "2",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 258.61,
+   "x1": 134.46,
+   "y1": 272.05,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 6,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 270.15,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 258.61,
+   "x1": 147.91,
+   "y1": 272.05,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 6,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 270.15,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "기  능",
+   "x": 151.11,
+   "y": 258.61,
+   "x1": 191.11,
+   "y1": 272.05,
+   "x1_raw": 191.11,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 6,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 270.15,
+   "tokens": [
+    {
+     "t": "기",
+     "ls": 0.0
+    },
+    {
+     "t": "  ",
+     "ls": -0.16
+    },
+    {
+     "t": "능",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 193.99,
+   "y": 258.61,
+   "x1": 207.43,
+   "y1": 272.05,
+   "x1_raw": 211.62,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 6,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 270.15,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.2933
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "위원회는 다음 각호의 사항을 심의한다.",
+   "x": 147.91,
+   "y": 280.08,
+   "x1": 395.04,
+   "y1": 293.52,
+   "x1_raw": 401.44,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 7,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 291.61,
+   "tokens": [
+    {
+     "t": "위원회는",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "다음",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "각호의",
+     "ls": -0.0933
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "사항을",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "심의한다.",
+     "ls": -0.1227
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "1. 연구비 관련 사항",
+   "x": 147.91,
+   "y": 301.52,
+   "x1": 274.97,
+   "y1": 314.96,
+   "x1_raw": 281.41,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 8,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 313.05,
+   "tokens": [
+    {
+     "t": "1.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "연구비",
+     "ls": -0.0978
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "관련",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "사항",
+     "ls": -0.14
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "2. 연구년제 교원 선발",
+   "x": 147.91,
+   "y": 322.64,
+   "x1": 288.09,
+   "y1": 336.08,
+   "x1_raw": 294.53,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 9,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 334.17,
+   "tokens": [
+    {
+     "t": "2.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "연구년제",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "교원",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "선발",
+     "ls": -0.3
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "3. 전산운영에 관한 사항",
+   "x": 147.91,
+   "y": 344.08,
+   "x1": 301.57,
+   "y1": 357.52,
+   "x1_raw": 307.97,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 10,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 355.61,
+   "tokens": [
+    {
+     "t": "3.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "전산운영에",
+     "ls": -0.0587
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "관한",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.28
+    },
+    {
+     "t": "사항",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "4. 도서관 운영에 관한 사항",
+   "x": 147.91,
+   "y": 365.52,
+   "x1": 321.73,
+   "y1": 378.96,
+   "x1_raw": 328.13,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 11,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 377.05,
+   "tokens": [
+    {
+     "t": "4.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "도서관",
+     "ls": -0.0978
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "운영에",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "관한",
+     "ls": -0.14
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "사항",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "5. 출판 및 교수매체운영에 관한 사항",
+   "x": 147.91,
+   "y": 386.96,
+   "x1": 381.6,
+   "y1": 400.4,
+   "x1_raw": 388.0,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 12,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 398.49,
+   "tokens": [
+    {
+     "t": "5.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "출판",
+     "ls": 0.0133
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "및",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "교수매체운영에",
+     "ls": -0.0857
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "관한",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.2933
+    },
+    {
+     "t": "사항",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "6. 학술정보처 업무의 중요사항",
+   "x": 147.91,
+   "y": 408.44,
+   "x1": 341.57,
+   "y1": 421.88,
+   "x1_raw": 347.97,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 13,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 419.97,
+   "tokens": [
+    {
+     "t": "6.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "학술정보처",
+     "ls": -0.0587
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "업무의",
+     "ls": -0.0933
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "중요사항",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "7. 기타 중요 사항",
+   "x": 147.91,
+   "y": 429.88,
+   "x1": 261.53,
+   "y1": 443.32,
+   "x1_raw": 267.93,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 14,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 441.41,
+   "tokens": [
+    {
+     "t": "7.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "기타",
+     "ls": 0.0133
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "중요",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "사항",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 451.0,
+   "x1": 107.87,
+   "y1": 464.44,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 15,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 462.53,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "3",
+   "x": 111.07,
+   "y": 451.0,
+   "x1": 117.79,
+   "y1": 464.44,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 15,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 462.53,
+   "tokens": [
+    {
+     "t": "3",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 451.0,
+   "x1": 134.46,
+   "y1": 464.44,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 15,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 462.53,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 451.0,
+   "x1": 147.91,
+   "y1": 464.44,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 15,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 462.53,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "구  성",
+   "x": 151.11,
+   "y": 451.0,
+   "x1": 191.11,
+   "y1": 464.44,
+   "x1_raw": 191.11,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 15,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 462.53,
+   "tokens": [
+    {
+     "t": "구",
+     "ls": 0.0
+    },
+    {
+     "t": "  ",
+     "ls": -0.16
+    },
+    {
+     "t": "성",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 193.99,
+   "y": 451.0,
+   "x1": 207.43,
+   "y1": 464.44,
+   "x1_raw": 211.62,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 15,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 462.53,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.2933
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "1. 위원장은 학술정보처장이 되며 위원회를 대표하고 위원회의 업무를 총괄한다.",
+   "x": 147.91,
+   "y": 472.44,
+   "x1": 648.57,
+   "y1": 485.88,
+   "x1_raw": 654.97,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 16,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 483.97,
+   "tokens": [
+    {
+     "t": "1.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "위원장은",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "학술정보처장이",
+     "ls": -0.1314
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "되며",
+     "ls": 0.0133
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "위원회를",
+     "ls": -0.08
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "대표하고",
+     "ls": -0.1533
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "위원회의",
+     "ls": -0.07
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "업무를",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 0.0267
+    },
+    {
+     "t": "총괄한다.",
+     "ls": -0.128
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "center"
+  },
+  {
+   "text": "2. 위원회는 학술정보처장의 제청을 받아 총장이 위촉하는 7인 이하 위원으로 구성한다.",
+   "x": 147.91,
+   "y": 493.88,
+   "x1": 695.01,
+   "y1": 507.32,
+   "x1_raw": 701.41,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 17,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 505.41,
+   "tokens": [
+    {
+     "t": "2.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "위원회는",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "학술정보처장의",
+     "ls": -0.1314
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "제청을",
+     "ls": -0.0978
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "받아",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "총장이",
+     "ls": -0.0978
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "위촉하는",
+     "ls": -0.08
+    },
+    {
+     "t": " ",
+     "ls": 0.04
+    },
+    {
+     "t": "7인",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "이하",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "위원으로",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "구성한다.",
+     "ls": -0.12
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "right"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 515.34,
+   "x1": 107.87,
+   "y1": 528.78,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 18,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 526.88,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "4",
+   "x": 111.07,
+   "y": 515.34,
+   "x1": 117.79,
+   "y1": 528.78,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 18,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 526.88,
+   "tokens": [
+    {
+     "t": "4",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 515.34,
+   "x1": 134.46,
+   "y1": 528.78,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 18,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 526.88,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 515.34,
+   "x1": 147.91,
+   "y1": 528.78,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 18,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 526.88,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "임  기",
+   "x": 151.11,
+   "y": 515.34,
+   "x1": 191.11,
+   "y1": 528.78,
+   "x1_raw": 191.11,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 18,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 526.88,
+   "tokens": [
+    {
+     "t": "임",
+     "ls": 0.0
+    },
+    {
+     "t": "  ",
+     "ls": -0.16
+    },
+    {
+     "t": "기",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 193.99,
+   "y": 515.34,
+   "x1": 207.43,
+   "y1": 528.78,
+   "x1_raw": 211.62,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 18,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 526.88,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.2933
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "위원 중 당연직 위원의 임기는 당해 보직 재임기간 중으로 하고 그외 위원의 임기는 1년",
+   "x": 147.91,
+   "y": 536.78,
+   "x1": 699.81,
+   "y1": 550.22,
+   "x1_raw": 699.81,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 19,
+   "line": 1,
+   "trailing_space": false,
+   "baseline": 548.32,
+   "tokens": [
+    {
+     "t": "위원",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "중",
+     "ls": 0.0267
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "당연직",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "위원의",
+     "ls": -0.0933
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "임기는",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "당해",
+     "ls": -0.1467
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "보직",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "재임기간",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "중으로",
+     "ls": 0.0133
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "하고",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "그외",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "위원의",
+     "ls": 0.0089
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "임기는",
+     "ls": -0.0933
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "1년",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "right"
+  },
+  {
+   "text": "으로 하며 연임할 수 있다.",
+   "x": 147.91,
+   "y": 558.22,
+   "x1": 315.01,
+   "y1": 571.66,
+   "x1_raw": 321.41,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 20,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 569.76,
+   "tokens": [
+    {
+     "t": "으로",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "하며",
+     "ls": -0.1467
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "연임할",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "수",
+     "ls": 0.04
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "있다.",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 579.66,
+   "x1": 107.87,
+   "y1": 593.1,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 21,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 591.2,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "5",
+   "x": 111.07,
+   "y": 579.66,
+   "x1": 117.79,
+   "y1": 593.1,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 21,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 591.2,
+   "tokens": [
+    {
+     "t": "5",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 579.66,
+   "x1": 134.46,
+   "y1": 593.1,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 21,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 591.2,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 579.66,
+   "x1": 147.91,
+   "y1": 593.1,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 21,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 591.2,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "회  의",
+   "x": 151.11,
+   "y": 579.66,
+   "x1": 191.11,
+   "y1": 593.1,
+   "x1_raw": 191.11,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 21,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 591.2,
+   "tokens": [
+    {
+     "t": "회",
+     "ls": 0.0
+    },
+    {
+     "t": "  ",
+     "ls": -0.16
+    },
+    {
+     "t": "의",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 193.99,
+   "y": 579.66,
+   "x1": 207.43,
+   "y1": 593.1,
+   "x1_raw": 211.62,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 21,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 591.2,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.2933
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "1. 위원장은 회의를 소집하고 그 의장이 된다.",
+   "x": 147.91,
+   "y": 600.78,
+   "x1": 435.04,
+   "y1": 614.22,
+   "x1_raw": 441.47,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 22,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 612.32,
+   "tokens": [
+    {
+     "t": "1.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "위원장은",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "회의를",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.28
+    },
+    {
+     "t": "소집하고",
+     "ls": -0.08
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "그",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.2933
+    },
+    {
+     "t": "의장이",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "된다.",
+     "ls": -0.0978
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "2. 위원회는 위원 과반수의 출석으로 개회하고 출석위원 과반수의 찬성으로 의결한다.",
+   "x": 147.91,
+   "y": 622.22,
+   "x1": 681.89,
+   "y1": 635.66,
+   "x1_raw": 688.29,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 23,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 633.76,
+   "tokens": [
+    {
+     "t": "2.",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "위원회는",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "위원",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "과반수의",
+     "ls": -0.07
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "출석으로",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "개회하고",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "출석위원",
+     "ls": -0.08
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "과반수의",
+     "ls": -0.07
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "찬성으로",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "의결한다.",
+     "ls": -0.12
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 643.69,
+   "x1": 107.87,
+   "y1": 657.13,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 24,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 655.23,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "6",
+   "x": 111.07,
+   "y": 643.69,
+   "x1": 117.79,
+   "y1": 657.13,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 24,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 655.23,
+   "tokens": [
+    {
+     "t": "6",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 643.69,
+   "x1": 134.46,
+   "y1": 657.13,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 24,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 655.23,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 643.69,
+   "x1": 147.91,
+   "y1": 657.13,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 24,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 655.23,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "간  사",
+   "x": 151.11,
+   "y": 643.69,
+   "x1": 191.11,
+   "y1": 657.13,
+   "x1_raw": 191.11,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 24,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 655.23,
+   "tokens": [
+    {
+     "t": "간",
+     "ls": 0.0
+    },
+    {
+     "t": "  ",
+     "ls": -0.16
+    },
+    {
+     "t": "사",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 193.99,
+   "y": 643.69,
+   "x1": 207.43,
+   "y1": 657.13,
+   "x1_raw": 211.62,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 24,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 655.23,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.2933
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "위원회의 원활한 회의진행을 위하여 간사 1인을 두며 간사는 학술정보처 연구지원팀장이",
+   "x": 147.91,
+   "y": 665.13,
+   "x1": 699.77,
+   "y1": 678.57,
+   "x1_raw": 706.21,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 25,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 676.67,
+   "tokens": [
+    {
+     "t": "위원회의",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "원활한",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "회의진행을",
+     "ls": -0.12
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "위하여",
+     "ls": -0.0978
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "간사",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "1인을",
+     "ls": -0.2044
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "두며",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "간사는",
+     "ls": -0.0933
+    },
+    {
+     "t": " ",
+     "ls": 0.32
+    },
+    {
+     "t": "학술정보처",
+     "ls": -0.1227
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "연구지원팀장이",
+     "ls": -0.1314
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "right"
+  },
+  {
+   "text": "된다.",
+   "x": 147.91,
+   "y": 686.57,
+   "x1": 181.51,
+   "y1": 700.01,
+   "x1_raw": 187.91,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 26,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 698.11,
+   "tokens": [
+    {
+     "t": "된다.",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 708.01,
+   "x1": 107.87,
+   "y1": 721.45,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 27,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 719.55,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "7",
+   "x": 111.07,
+   "y": 708.01,
+   "x1": 117.79,
+   "y1": 721.45,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 27,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 719.55,
+   "tokens": [
+    {
+     "t": "7",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 708.01,
+   "x1": 134.46,
+   "y1": 721.45,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 27,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 719.55,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 708.01,
+   "x1": 147.91,
+   "y1": 721.45,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 27,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 719.55,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "회의록 작성 및 보관",
+   "x": 151.11,
+   "y": 708.01,
+   "x1": 277.85,
+   "y1": 721.45,
+   "x1_raw": 277.85,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 27,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 719.55,
+   "tokens": [
+    {
+     "t": "회의록",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 0.0267
+    },
+    {
+     "t": "작성",
+     "ls": -0.16
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "및",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "보관",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 280.77,
+   "y": 708.01,
+   "x1": 294.21,
+   "y1": 721.45,
+   "x1_raw": 298.38,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 27,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 719.55,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.32
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "위원회의 간사는 회의록을 작성하여 위원장의 확인 후 총장에게 보고하여야 한다.",
+   "x": 147.91,
+   "y": 729.13,
+   "x1": 654.97,
+   "y1": 742.57,
+   "x1_raw": 661.37,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 28,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 740.67,
+   "tokens": [
+    {
+     "t": "위원회의",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "간사는",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "회의록을",
+     "ls": -0.07
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "작성하여",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "위원장의",
+     "ls": -0.08
+    },
+    {
+     "t": " ",
+     "ls": -0.2933
+    },
+    {
+     "t": "확인",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "후",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "총장에게",
+     "ls": -0.07
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "보고하여야",
+     "ls": -0.1227
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "한다.",
+     "ls": -0.2133
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "center"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 750.61,
+   "x1": 107.87,
+   "y1": 764.05,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 29,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 762.15,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "8",
+   "x": 111.07,
+   "y": 750.61,
+   "x1": 117.79,
+   "y1": 764.05,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 29,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 762.15,
+   "tokens": [
+    {
+     "t": "8",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 750.61,
+   "x1": 134.46,
+   "y1": 764.05,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 29,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 762.15,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 750.61,
+   "x1": 147.91,
+   "y1": 764.05,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 29,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 762.15,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "소관부서",
+   "x": 151.11,
+   "y": 750.61,
+   "x1": 204.54,
+   "y1": 764.05,
+   "x1_raw": 204.54,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 29,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 762.15,
+   "tokens": [
+    {
+     "t": "소관부서",
+     "ls": -0.0806
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 207.45,
+   "y": 750.61,
+   "x1": 220.89,
+   "y1": 764.05,
+   "x1_raw": 225.06,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 29,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 762.15,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.32
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "위원회의 소관부서는 사무처 학술정보처 연구지원팀으로 한다.",
+   "x": 147.91,
+   "y": 772.05,
+   "x1": 534.95,
+   "y1": 785.49,
+   "x1_raw": 541.35,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 30,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 783.59,
+   "tokens": [
+    {
+     "t": "위원회의",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "소관부서는",
+     "ls": -0.056
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "사무처",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "학술정보처",
+     "ls": -0.0587
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "연구지원팀으로",
+     "ls": -0.0876
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "한다.",
+     "ls": -0.2
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 793.49,
+   "x1": 107.87,
+   "y1": 806.93,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 31,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 805.03,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "9",
+   "x": 111.07,
+   "y": 793.49,
+   "x1": 117.79,
+   "y1": 806.93,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 31,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 805.03,
+   "tokens": [
+    {
+     "t": "9",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 793.49,
+   "x1": 134.46,
+   "y1": 806.93,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 31,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 805.03,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 793.49,
+   "x1": 147.91,
+   "y1": 806.93,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 31,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 805.03,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "기밀유지의무",
+   "x": 151.11,
+   "y": 793.49,
+   "x1": 231.1,
+   "y1": 806.93,
+   "x1_raw": 231.1,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 31,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 805.03,
+   "tokens": [
+    {
+     "t": "기밀유지의무",
+     "ls": -0.1075
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 234.33,
+   "y": 793.49,
+   "x1": 247.77,
+   "y1": 806.93,
+   "x1_raw": 251.94,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 31,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 805.03,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.32
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "위원회의 위원 및 참석자는 회의내용 및 제반 자료에 관하여 직무상 비밀을 유지하여야",
+   "x": 147.91,
+   "y": 814.93,
+   "x1": 699.77,
+   "y1": 828.37,
+   "x1_raw": 706.21,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 32,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 826.47,
+   "tokens": [
+    {
+     "t": "위원회의",
+     "ls": 0.0067
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "위원",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.96
+    },
+    {
+     "t": "및",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.96
+    },
+    {
+     "t": "참석자는",
+     "ls": -0.07
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "회의내용",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.96
+    },
+    {
+     "t": "및",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.96
+    },
+    {
+     "t": "제반",
+     "ls": -0.1467
+    },
+    {
+     "t": " ",
+     "ls": 0.96
+    },
+    {
+     "t": "자료에",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 0.96
+    },
+    {
+     "t": "관하여",
+     "ls": 0.0133
+    },
+    {
+     "t": " ",
+     "ls": 0.64
+    },
+    {
+     "t": "직무상",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.96
+    },
+    {
+     "t": "비밀을",
+     "ls": -0.0978
+    },
+    {
+     "t": " ",
+     "ls": 0.96
+    },
+    {
+     "t": "유지하여야",
+     "ls": -0.184
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "right"
+  },
+  {
+   "text": "한다.",
+   "x": 147.91,
+   "y": 836.37,
+   "x1": 181.51,
+   "y1": 849.81,
+   "x1_raw": 187.91,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 33,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 847.91,
+   "tokens": [
+    {
+     "t": "한다.",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "제10조",
+   "x": 94.43,
+   "y": 857.81,
+   "x1": 134.46,
+   "y1": 871.25,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 34,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 869.35,
+   "tokens": [
+    {
+     "t": "제10조",
+     "ls": -0.072
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.15,
+   "y": 857.81,
+   "x1": 147.59,
+   "y1": 871.25,
+   "x1_raw": 147.59,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 34,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 869.35,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "운영세칙",
+   "x": 150.79,
+   "y": 857.81,
+   "x1": 204.22,
+   "y1": 871.25,
+   "x1_raw": 204.22,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 34,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 869.35,
+   "tokens": [
+    {
+     "t": "운영세칙",
+     "ls": -0.0806
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 207.45,
+   "y": 857.81,
+   "x1": 220.89,
+   "y1": 871.25,
+   "x1_raw": 225.06,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 34,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 869.35,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.32
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "이 규정에서 정하지 아니한 사항은 위원회 설치 및 운영 규정에서 정한 바에 따른다.",
+   "x": 147.91,
+   "y": 878.96,
+   "x1": 675.17,
+   "y1": 892.4,
+   "x1_raw": 681.57,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 35,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 890.49,
+   "tokens": [
+    {
+     "t": "이",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "규정에서",
+     "ls": -0.0733
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "정하지",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.28
+    },
+    {
+     "t": "아니한",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "사항은",
+     "ls": -0.0978
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "위원회",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "설치",
+     "ls": -0.1467
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "및",
+     "ls": -0.0
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "운영",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "규정에서",
+     "ls": -0.07
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "정한",
+     "ls": 0.0133
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "바에",
+     "ls": 0.0
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "따른다.",
+     "ls": -0.15
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "부      칙",
+   "x": 356.96,
+   "y": 943.96,
+   "x1": 436.96,
+   "y1": 959.96,
+   "x1_raw": 436.96,
+   "pt": 12.0,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 38,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 957.69,
+   "tokens": [
+    {
+     "t": "부",
+     "ls": 0.0
+    },
+    {
+     "t": "      ",
+     "ls": 0.0
+    },
+    {
+     "t": "칙",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "center"
+  },
+  {
+   "text": "제",
+   "x": 94.43,
+   "y": 990.35,
+   "x1": 107.87,
+   "y1": 1003.79,
+   "x1_raw": 107.87,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 40,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 1001.89,
+   "tokens": [
+    {
+     "t": "제",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "1",
+   "x": 111.07,
+   "y": 990.35,
+   "x1": 117.79,
+   "y1": 1003.79,
+   "x1_raw": 117.79,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 40,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 1001.89,
+   "tokens": [
+    {
+     "t": "1",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "조",
+   "x": 121.02,
+   "y": 990.35,
+   "x1": 134.46,
+   "y1": 1003.79,
+   "x1_raw": 134.46,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 40,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 1001.89,
+   "tokens": [
+    {
+     "t": "조",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "【",
+   "x": 134.47,
+   "y": 990.35,
+   "x1": 147.91,
+   "y1": 1003.79,
+   "x1_raw": 147.91,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 40,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 1001.89,
+   "tokens": [
+    {
+     "t": "【",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "시행일",
+   "x": 151.11,
+   "y": 990.35,
+   "x1": 191.1,
+   "y1": 1003.79,
+   "x1_raw": 191.1,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 40,
+   "line": 0,
+   "trailing_space": false,
+   "baseline": 1001.89,
+   "tokens": [
+    {
+     "t": "시행일",
+     "ls": -0.1075
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "】",
+   "x": 193.99,
+   "y": 990.35,
+   "x1": 207.43,
+   "y1": 1003.79,
+   "x1_raw": 211.62,
+   "pt": 10.08,
+   "font": "µ¸¿ò",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 40,
+   "line": 0,
+   "trailing_space": true,
+   "baseline": 1001.89,
+   "tokens": [
+    {
+     "t": "】",
+     "ls": -0.2933
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    }
+   ],
+   "suggested_align": "left"
+  },
+  {
+   "text": "이 규정은 20  년   월   일부터 시행한다.",
+   "x": 121.02,
+   "y": 1011.79,
+   "x1": 388.0,
+   "y1": 1025.23,
+   "x1_raw": 394.4,
+   "pt": 10.08,
+   "font": "±¼¸²Ã¼",
+   "color": "#000000",
+   "bold": false,
+   "italic": false,
+   "block": 41,
+   "line": 1,
+   "trailing_space": true,
+   "baseline": 1023.33,
+   "tokens": [
+    {
+     "t": "이",
+     "ls": 0.0027
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    },
+    {
+     "t": "규정은",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.0
+    },
+    {
+     "t": "20",
+     "ls": -0.0
+    },
+    {
+     "t": "  ",
+     "ls": -0.1467
+    },
+    {
+     "t": "년",
+     "ls": 0.0
+    },
+    {
+     "t": "   ",
+     "ls": -0.1067
+    },
+    {
+     "t": "월",
+     "ls": 0.0
+    },
+    {
+     "t": "   ",
+     "ls": 0.0133
+    },
+    {
+     "t": "일부터",
+     "ls": -0.1067
+    },
+    {
+     "t": " ",
+     "ls": -0.32
+    },
+    {
+     "t": "시행한다.",
+     "ls": -0.1227
+    },
+    {
+     "t": " ",
+     "ls": 0.0
+    }
+   ],
+   "suggested_align": "left"
+  }
+ ],
+ "rules": [],
+ "fills": [],
+ "images": [],
+ "fonts": {
+  "굴림체": {
+   "file": "work/fidelity/vform_107824/fonts/GulimChe.ttf",
+   "ascent": 0.8584,
+   "descent": 0.1416,
+   "line_gap": 0.1484,
+   "content_height": 1.0
+  },
+  "돋움": {
+   "file": "work/fidelity/vform_107824/fonts/Dotum.ttf",
+   "ascent": 0.8584,
+   "descent": 0.1416,
+   "line_gap": 0.1484,
+   "content_height": 1.0
+  },
+  "Times New Roman": {
+   "file": "work/fidelity/vform_107824/fonts/TimesNewRoman.ttf",
+   "ascent": 0.8911,
+   "descent": 0.2163,
+   "line_gap": 0.0425,
+   "content_height": 1.1074
+  },
+  "Times New Roman,Bold": {
+   "file": "work/fidelity/vform_107824/fonts/TimesNewRoman-Bold.ttf",
+   "ascent": 0.8911,
+   "descent": 0.2163,
+   "line_gap": 0.0425,
+   "content_height": 1.1074
+  }
+ },
+ "render": {
+  "mupdf": "original_mupdf.png",
+  "size": [
+   794,
+   1123
+  ],
+  "pdfium": "original_pdfium.png",
+  "noise_floor": {
+   "px_within_16": 95.542,
+   "blur_within_16": 97.119,
+   "ink_f1_1px": 98.233,
+   "ink_iou": 57.634
+  }
+ },
+ "warnings": []
+}

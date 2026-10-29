@@ -1,0 +1,2493 @@
+{
+ "target_url": "http://localhost:5180/",
+ "page_rect": [
+  503.5,
+  229,
+  794,
+  1123
+ ],
+ "candidate_png": "candidate.png",
+ "spans": [
+  {
+   "x": 258.96875,
+   "y": 110.78125,
+   "x1": 535.234375,
+   "y1": 134.78125,
+   "lines": 1,
+   "font_size": "24px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "0.0459px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 9,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 151.6875,
+   "x1": 101.15625,
+   "y1": 165.6875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(255, 255, 255)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 194.28125,
+   "x1": 107.875,
+   "y1": 208.28125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 194.28125,
+   "x1": 117.796875,
+   "y1": 208.28125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 194.28125,
+   "x1": 134.46875,
+   "y1": 208.28125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 194.28125,
+   "x1": 147.921875,
+   "y1": 208.28125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 151.109375,
+   "y": 194.28125,
+   "x1": 194.328125,
+   "y1": 208.28125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 194.328125,
+   "y": 194.28125,
+   "x1": 207.484375,
+   "y1": 208.28125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.2933px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 215.71875,
+   "x1": 210.34375,
+   "y1": 229.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 232.453125,
+   "y": 215.71875,
+   "x1": 259.34375,
+   "y1": 229.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 2,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 259.34375,
+   "y": 215.71875,
+   "x1": 332.984375,
+   "y1": 229.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.0467px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 6,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 355.0625,
+   "y": 215.71875,
+   "x1": 361.03125,
+   "y1": 230.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "\"Times New Roman\"",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Times New Roman",
+     "postscript": "TimesNewRomanPSMT",
+     "glyphs": 1,
+     "custom": false
+    }
+   ]
+  },
+  {
+   "x": 361.03125,
+   "y": 215.71875,
+   "x1": 387.921875,
+   "y1": 229.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 2,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 387.921875,
+   "y": 215.71875,
+   "x1": 393.890625,
+   "y1": 230.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "\"Times New Roman\"",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Times New Roman",
+     "postscript": "TimesNewRomanPSMT",
+     "glyphs": 1,
+     "custom": false
+    }
+   ]
+  },
+  {
+   "x": 394,
+   "y": 215.71875,
+   "x1": 611.6875,
+   "y1": 229.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 633.90625,
+   "y": 215.71875,
+   "x1": 639.875,
+   "y1": 230.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "\"Times New Roman\"",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Times New Roman",
+     "postscript": "TimesNewRomanPSMT",
+     "glyphs": 1,
+     "custom": false
+    }
+   ]
+  },
+  {
+   "x": 639.875,
+   "y": 215.71875,
+   "x1": 680.203125,
+   "y1": 229.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 680.203125,
+   "y": 215.71875,
+   "x1": 686.171875,
+   "y1": 230.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "\"Times New Roman\"",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Times New Roman",
+     "postscript": "TimesNewRomanPSMT",
+     "glyphs": 1,
+     "custom": false
+    }
+   ]
+  },
+  {
+   "x": 686.28125,
+   "y": 215.71875,
+   "x1": 741.375,
+   "y1": 229.71875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 237.15625,
+   "x1": 474.828125,
+   "y1": 251.15625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 258.609375,
+   "x1": 107.875,
+   "y1": 272.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 258.609375,
+   "x1": 117.796875,
+   "y1": 272.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 258.609375,
+   "x1": 134.46875,
+   "y1": 272.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 258.609375,
+   "x1": 147.921875,
+   "y1": 272.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 151.109375,
+   "y": 258.609375,
+   "x1": 194.328125,
+   "y1": 272.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 194.328125,
+   "y": 258.609375,
+   "x1": 207.484375,
+   "y1": 272.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.2933px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 280.0625,
+   "x1": 394.765625,
+   "y1": 294.0625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.0733px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 4,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 301.5,
+   "x1": 274.734375,
+   "y1": 315.5,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 322.609375,
+   "x1": 287.84375,
+   "y1": 336.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 344.046875,
+   "x1": 301.296875,
+   "y1": 358.046875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 365.484375,
+   "x1": 321.46875,
+   "y1": 379.484375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 386.921875,
+   "x1": 381.34375,
+   "y1": 400.921875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 408.390625,
+   "x1": 341.296875,
+   "y1": 422.390625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 429.828125,
+   "x1": 261.25,
+   "y1": 443.828125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 451,
+   "x1": 107.875,
+   "y1": 465,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 451,
+   "x1": 117.796875,
+   "y1": 465,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 451,
+   "x1": 134.46875,
+   "y1": 465,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 451,
+   "x1": 147.921875,
+   "y1": 465,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 151.109375,
+   "y": 451,
+   "x1": 194.328125,
+   "y1": 465,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 194.328125,
+   "y": 451,
+   "x1": 207.484375,
+   "y1": 465,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.2933px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 146.859375,
+   "y": 472.4375,
+   "x1": 647.359375,
+   "y1": 486.4375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 493.875,
+   "x1": 694.859375,
+   "y1": 507.875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 515.328125,
+   "x1": 107.875,
+   "y1": 529.328125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 515.328125,
+   "x1": 117.796875,
+   "y1": 529.328125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 515.328125,
+   "x1": 134.46875,
+   "y1": 529.328125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 515.328125,
+   "x1": 147.921875,
+   "y1": 529.328125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 151.109375,
+   "y": 515.328125,
+   "x1": 194.328125,
+   "y1": 529.328125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 194.328125,
+   "y": 515.328125,
+   "x1": 207.484375,
+   "y1": 529.328125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.2933px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 536.765625,
+   "x1": 699.984375,
+   "y1": 550.765625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 2,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 558.203125,
+   "x1": 314.734375,
+   "y1": 572.203125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 579.65625,
+   "x1": 107.875,
+   "y1": 593.65625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 579.65625,
+   "x1": 117.796875,
+   "y1": 593.65625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 579.65625,
+   "x1": 134.46875,
+   "y1": 593.65625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 579.65625,
+   "x1": 147.921875,
+   "y1": 593.65625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 151.109375,
+   "y": 579.65625,
+   "x1": 194.328125,
+   "y1": 593.65625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 194.328125,
+   "y": 579.65625,
+   "x1": 207.484375,
+   "y1": 593.65625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.2933px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 600.765625,
+   "x1": 434.828125,
+   "y1": 614.765625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 622.203125,
+   "x1": 681.703125,
+   "y1": 636.203125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 643.6875,
+   "x1": 107.875,
+   "y1": 657.6875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 643.6875,
+   "x1": 117.796875,
+   "y1": 657.6875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 643.6875,
+   "x1": 134.46875,
+   "y1": 657.6875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 643.6875,
+   "x1": 147.921875,
+   "y1": 657.6875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 151.109375,
+   "y": 643.6875,
+   "x1": 194.328125,
+   "y1": 657.6875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 194.328125,
+   "y": 643.6875,
+   "x1": 207.484375,
+   "y1": 657.6875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.2933px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 665.125,
+   "x1": 699.65625,
+   "y1": 679.125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.0733px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 4,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 686.5625,
+   "x1": 181.171875,
+   "y1": 700.5625,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.1067px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 708,
+   "x1": 107.875,
+   "y1": 722,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 708,
+   "x1": 117.796875,
+   "y1": 722,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 708,
+   "x1": 134.46875,
+   "y1": 722,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 708,
+   "x1": 147.921875,
+   "y1": 722,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.921875,
+   "y": 708,
+   "x1": 281.078125,
+   "y1": 722.4375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.1067px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 281.078125,
+   "y": 708,
+   "x1": 294.203125,
+   "y1": 722,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.32px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 143.65625,
+   "y": 729.109375,
+   "x1": 650.5625,
+   "y1": 743.109375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.0733px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 4,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 750.609375,
+   "x1": 107.875,
+   "y1": 764.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 750.609375,
+   "x1": 117.796875,
+   "y1": 764.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 750.609375,
+   "x1": 134.46875,
+   "y1": 764.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 750.609375,
+   "x1": 147.921875,
+   "y1": 764.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.921875,
+   "y": 750.609375,
+   "x1": 201.375,
+   "y1": 764.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.0806px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 4,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 201.375,
+   "y": 750.609375,
+   "x1": 214.5,
+   "y1": 764.609375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.32px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 772.046875,
+   "x1": 534.6875,
+   "y1": 786.046875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.0733px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 4,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 793.484375,
+   "x1": 107.875,
+   "y1": 807.484375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 793.484375,
+   "x1": 117.796875,
+   "y1": 807.484375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 793.484375,
+   "x1": 134.46875,
+   "y1": 807.484375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 793.484375,
+   "x1": 147.921875,
+   "y1": 807.484375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.921875,
+   "y": 793.484375,
+   "x1": 227.921875,
+   "y1": 807.484375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.1075px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 6,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 227.921875,
+   "y": 793.484375,
+   "x1": 241.046875,
+   "y1": 807.484375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.32px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 814.921875,
+   "x1": 699.671875,
+   "y1": 828.921875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "0.0067px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 4,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 836.359375,
+   "x1": 181.171875,
+   "y1": 850.359375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.1067px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 857.796875,
+   "x1": 134.46875,
+   "y1": 871.796875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.072px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 4,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 857.796875,
+   "x1": 147.921875,
+   "y1": 871.796875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.921875,
+   "y": 857.796875,
+   "x1": 201.375,
+   "y1": 871.796875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.0806px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 4,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 201.375,
+   "y": 857.796875,
+   "x1": 214.5,
+   "y1": 871.796875,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.32px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.890625,
+   "y": 878.9375,
+   "x1": 675.015625,
+   "y1": 892.9375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 2,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 357.109375,
+   "y": 943.953125,
+   "x1": 437.109375,
+   "y1": 959.953125,
+   "lines": 1,
+   "font_size": "16px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 8,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 94.421875,
+   "y": 990.34375,
+   "x1": 107.875,
+   "y1": 1004.34375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 111.0625,
+   "y": 990.34375,
+   "x1": 117.796875,
+   "y1": 1004.34375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121.015625,
+   "y": 990.34375,
+   "x1": 134.46875,
+   "y1": 1004.34375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 134.46875,
+   "y": 990.34375,
+   "x1": 147.921875,
+   "y1": 1004.34375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "Dotum",
+   "font_weight": "400",
+   "color": "rgb(0, 0, 0)",
+   "letter_spacing": "normal",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "Dotum",
+     "postscript": "Dotum",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 147.921875,
+   "y": 990.34375,
+   "x1": 187.921875,
+   "y1": 1004.34375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.1075px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 3,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 187.921875,
+   "y": 990.34375,
+   "x1": 201.078125,
+   "y1": 1004.34375,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "-0.2933px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  },
+  {
+   "x": 121,
+   "y": 1011.78125,
+   "x1": 387.75,
+   "y1": 1025.78125,
+   "lines": 1,
+   "font_size": "13.44px",
+   "font_family": "GulimChe, Dotum, sans-serif",
+   "font_weight": "400",
+   "color": "oklch(0.208 0.042 265.755)",
+   "letter_spacing": "0.0027px",
+   "kerning": "none",
+   "underline": false,
+   "rendered_fonts": [
+    {
+     "family": "GulimChe",
+     "postscript": "GulimChe",
+     "glyphs": 1,
+     "custom": true
+    }
+   ]
+  }
+ ],
+ "candidates_per_span": [
+  1,
+  1,
+  14,
+  8,
+  12,
+  11,
+  1,
+  11,
+  2,
+  1,
+  1,
+  2,
+  1,
+  2,
+  1,
+  2,
+  13,
+  2,
+  2,
+  1,
+  14,
+  5,
+  12,
+  11,
+  1,
+  11,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  14,
+  2,
+  12,
+  11,
+  1,
+  11,
+  1,
+  1,
+  14,
+  2,
+  12,
+  11,
+  1,
+  11,
+  1,
+  1,
+  14,
+  2,
+  12,
+  11,
+  1,
+  11,
+  1,
+  1,
+  14,
+  2,
+  12,
+  11,
+  1,
+  11,
+  1,
+  2,
+  14,
+  3,
+  12,
+  11,
+  1,
+  11,
+  1,
+  14,
+  1,
+  12,
+  11,
+  2,
+  11,
+  1,
+  14,
+  1,
+  12,
+  11,
+  1,
+  11,
+  1,
+  9,
+  1,
+  11,
+  1,
+  11,
+  1,
+  1,
+  14,
+  8,
+  12,
+  11,
+  1,
+  11,
+  1
+ ],
+ "rules": [
+  {
+   "x": 0,
+   "y": 36,
+   "x1": 794,
+   "y1": 37,
+   "thickness": 1,
+   "orient": "h",
+   "color": "rgba(0, 0, 0, 0)"
+  },
+  {
+   "x": 0,
+   "y": 1098,
+   "x1": 794,
+   "y1": 1099,
+   "thickness": 1,
+   "orient": "h",
+   "color": "rgba(0, 0, 0, 0)"
+  }
+ ],
+ "images": [],
+ "blocks": [
+  {
+   "id": "acad_blk_title",
+   "x": 94.42,
+   "y": 110.78,
+   "x1": 699.8,
+   "y1": 134.78,
+   "w": 605.38,
+   "h": 24
+  },
+  {
+   "id": "acad_blk_mark_y",
+   "x": 94.42,
+   "y": 152.69,
+   "x1": 699.8,
+   "y1": 166.13,
+   "w": 605.38,
+   "h": 13.44
+  },
+  {
+   "id": "acad_blk_art1",
+   "x": 94.42,
+   "y": 195.28,
+   "x1": 699.8,
+   "y1": 251.59,
+   "w": 605.38,
+   "h": 56.31
+  },
+  {
+   "id": "acad_blk_art2",
+   "x": 94.42,
+   "y": 259.61,
+   "x1": 699.8,
+   "y1": 444.31,
+   "w": 605.38,
+   "h": 184.7
+  },
+  {
+   "id": "acad_blk_art3",
+   "x": 94.42,
+   "y": 452,
+   "x1": 699.8,
+   "y1": 508.31,
+   "w": 605.38,
+   "h": 56.31
+  },
+  {
+   "id": "acad_blk_art4",
+   "x": 94.42,
+   "y": 516.33,
+   "x1": 699.8,
+   "y1": 572.64,
+   "w": 605.38,
+   "h": 56.31
+  },
+  {
+   "id": "acad_blk_art5",
+   "x": 94.42,
+   "y": 580.66,
+   "x1": 699.8,
+   "y1": 636.66,
+   "w": 605.38,
+   "h": 56
+  },
+  {
+   "id": "acad_blk_art6",
+   "x": 94.42,
+   "y": 644.69,
+   "x1": 699.8,
+   "y1": 701,
+   "w": 605.38,
+   "h": 56.31
+  },
+  {
+   "id": "acad_blk_art7",
+   "x": 94.42,
+   "y": 709,
+   "x1": 699.8,
+   "y1": 743.55,
+   "w": 605.38,
+   "h": 34.55
+  },
+  {
+   "id": "acad_blk_art8",
+   "x": 94.42,
+   "y": 751.61,
+   "x1": 699.8,
+   "y1": 786.48,
+   "w": 605.38,
+   "h": 34.88
+  },
+  {
+   "id": "acad_blk_art9",
+   "x": 94.42,
+   "y": 794.48,
+   "x1": 699.8,
+   "y1": 850.8,
+   "w": 605.38,
+   "h": 56.31
+  },
+  {
+   "id": "acad_blk_art10",
+   "x": 94.42,
+   "y": 858.8,
+   "x1": 699.8,
+   "y1": 893.38,
+   "w": 605.38,
+   "h": 34.58
+  },
+  {
+   "id": "acad_blk_addendum_title",
+   "x": 94.42,
+   "y": 943.95,
+   "x1": 699.8,
+   "y1": 959.95,
+   "w": 605.38,
+   "h": 16
+  },
+  {
+   "id": "acad_blk_addendum_art1",
+   "x": 94.42,
+   "y": 991.34,
+   "x1": 699.8,
+   "y1": 1026.22,
+   "w": 605.38,
+   "h": 34.88
+  }
+ ],
+ "loaded_fonts": [
+  "GulimChe 400 normal",
+  "Dotum 400 normal",
+  "DejaVu Sans 400 normal",
+  "DejaVu Sans 700 normal"
+ ],
+ "visible_chrome": []
+}

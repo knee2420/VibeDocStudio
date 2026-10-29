@@ -11,6 +11,8 @@ import {
 import { SlotRichTextEditor, type SlotAiAction } from "@vibe/slot-editor";
 
 import { BlockFrame, type DropEdge, type QuickAddKind } from "./BlockFrame";
+import { BaseBlockWrapper } from "./base/BaseBlockWrapper";
+import { ImageBlockView } from "./blocks/ImageBlockView";
 import { InteractiveTable, type TableSelectionInfo } from "./InteractiveTable";
 import { ACCENT, BLOCK_DRAG_MIME, DROP_LINE, NEW_BLOCK_DRAG_MIME } from "./tokens";
 
@@ -27,9 +29,11 @@ export interface VDocPageSheetProps {
   slots: Record<string, VDocSlot>;
   backdata: Record<string, BackdataChunk>;
   mode: "Editing" | "Viewing";
+  selectedBlockId?: string | null;
   selectedSlotId: string | null;
   composerOpenSlotId: string | null;
   onSelectPage: (pageId: string) => void;
+  onSelectBlock?: (blockId: string) => void;
   onSelectSlot: (slotId: string) => void;
   onToggleComposerForSlot: (slotId: string) => void;
   onOpenBackdataDrawer: (slotId: string) => void;
@@ -42,6 +46,8 @@ export interface VDocPageSheetProps {
   onToggleBlockLock?: (pageId: string, blockId: string) => void;
   /** Framed blocks moved with the ⋮⋮ handle: new frame position in px. */
   onMoveBlockFrame?: (pageId: string, blockId: string, x: number, y: number) => void;
+  onResizeBlockFrame?: (pageId: string, blockId: string, dw: number, dh: number) => void;
+  onUpdateBlock?: (pageId: string, blockId: string, updater: (prev: LayoutBlock) => LayoutBlock) => void;
   onTableCommand?: (pageId: string, blockId: string, sectionId: string | null, cmd: TableCommand) => void;
   onTableSelectionChange?: (target: TableSelectionTarget | null) => void;
   onSlotAiAction?: (slotId: string, action: SlotAiAction, selectedText: string) => void;
@@ -75,9 +81,11 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   slots,
   backdata = {},
   mode,
+  selectedBlockId,
   selectedSlotId,
   composerOpenSlotId,
   onSelectPage,
+  onSelectBlock,
   onSelectSlot,
   onUpdateSlotContent,
   onMoveBlock,
@@ -87,6 +95,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   onDuplicateBlock,
   onToggleBlockLock,
   onMoveBlockFrame,
+  onResizeBlockFrame,
+  onUpdateBlock,
   onTableCommand,
   onTableSelectionChange,
   onSlotAiAction,
@@ -140,7 +150,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     if (!slot) return null;
     const isSelected = selectedSlotId === slotId;
     const isComposerOpen = composerOpenSlotId === slotId;
-    const isLocked = !editable || Boolean(slot.constraints?.locked) || slot.role === "boilerplate";
+    const isLocked = !editable || Boolean(slot.constraints?.locked);
     const slotChunks = slot.backDataRefs.map((cid) => backdata[cid]).filter(Boolean);
 
     const alignClass =
@@ -259,24 +269,17 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         );
       }
 
-      case "image":
+            case "image":
         return (
-          <div className={`flex ${block.frame ? "" : "py-2"} ${block.align === "right" ? "justify-end" : block.align === "center" ? "justify-center" : "justify-start"}`}>
-            <img
-              src={block.src}
-              alt={block.alt || block.title || "Image"}
-              draggable={false}
-              style={{
-                width: block.width || "auto",
-                height: block.height || "auto",
-                maxHeight: block.maxHeight,
-                objectFit: block.objectFit || "contain",
-              }}
-            />
-          </div>
+          <ImageBlockView
+            block={block}
+            editable={editable}
+            selected={selectedBlockId === block.blockId}
+            onUpdateBlock={(updater) => onUpdateBlock?.(page.pageId, block.blockId, updater as (prev: LayoutBlock) => LayoutBlock)}
+          />
         );
 
-      case "composite-form-frame":
+case "composite-form-frame":
         return (
           <div className="bg-white border-slate-950" style={{ borderWidth: block.outerBorderWidth || "2px", borderStyle: "solid" }}>
             {block.sections.map((sec, sIdx) => {
@@ -483,10 +486,14 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     const isTable = block.kind === "structured-table" || block.kind === "table" || block.kind === "composite-form-frame";
     const frame = block.frame;
     return (
-      <BlockFrame
+      <BaseBlockWrapper
+        block={block}
         editable={editable}
+        selected={selectedBlockId === block.blockId}
+        resizable={block.kind === "image" || Boolean(frame)}
         hasOwnGrip={isTable && !frame}
         locked={isBlockLocked(block, slots)}
+        onSelectBlock={onSelectBlock}
         dropEdge={!frame && dropTarget?.blockId === block.blockId ? dropTarget.edge : null}
         dragHandleProps={blockDragProps(block)}
         canMoveUp={bIdx > 0}
@@ -503,9 +510,10 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         onToggleLock={() => onToggleBlockLock?.(page.pageId, block.blockId)}
         onDelete={() => onDeleteBlock(page.pageId, block.blockId)}
         onFreeMove={frame ? (dx, dy) => onMoveBlockFrame?.(page.pageId, block.blockId, frame.x + dx, frame.y + dy) : undefined}
+        onResizeFrame={(dw, dh) => onResizeBlockFrame?.(page.pageId, block.blockId, dw, dh)}
       >
         {renderBlockBody(block)}
-      </BlockFrame>
+      </BaseBlockWrapper>
     );
   };
 
@@ -560,6 +568,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
           block.frame ? (
             <div
               key={block.blockId}
+              data-block-id={block.blockId}
               className="absolute"
               style={{ left: block.frame.x, top: block.frame.y, width: block.frame.w, height: block.frame.h }}
             >

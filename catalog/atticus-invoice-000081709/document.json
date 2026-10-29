@@ -169,10 +169,9 @@
     "att_slot_company_info": {
       "slotId": "att_slot_company_info",
       "label": "발행 회사 정보 & 인보이스 번호",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<p class=\"text-xs text-[#383838] mb-2 leading-none\">August 25th 2026</p><p class=\"text-[13px] font-semibold text-[#336699] leading-snug\">Company info</p><p class=\"text-[13px] font-bold text-[#383838] leading-tight mt-1\">Atticus LLC</p><p class=\"text-[13px] text-[#383838] leading-tight\">1309 Coffeen Ave. Ste. 2513</p><p class=\"text-[13px] text-[#383838] leading-tight\">Sheridan</p><p class=\"text-[13px] text-[#383838] leading-tight\">Wyoming, 82801</p><p class=\"text-[13px] text-[#383838] leading-tight\">United States</p><p class=\"text-[9.5px] text-[#666666] leading-tight mt-1.5\">Sales tax ID: VAT - EU372031974 UK - GB383499055</p><p class=\"text-[13px] font-bold text-[#383838] leading-tight mt-3\">Invoice 000081709</p>",
       "constraints": {
-        "locked": true,
         "align": "right",
         "fontSize": "12.5px",
         "lineHeight": "1.35"
@@ -207,20 +206,17 @@
     "att_slot_th_desc": {
       "slotId": "att_slot_th_desc",
       "label": "헤더: 품목 설명",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<span class=\"text-[13px] font-semibold text-[#336699]\">Description</span>",
-      "constraints": {
-        "locked": true
-      },
+      "constraints": {},
       "backDataRefs": []
     },
     "att_slot_th_amount": {
       "slotId": "att_slot_th_amount",
       "label": "헤더: 단가",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<span class=\"text-[13px] font-semibold text-[#336699]\">Amount</span>",
       "constraints": {
-        "locked": true,
         "align": "right"
       },
       "backDataRefs": []
@@ -228,10 +224,9 @@
     "att_slot_th_total": {
       "slotId": "att_slot_th_total",
       "label": "헤더: 소계",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<span class=\"text-[13px] font-semibold text-[#336699]\">Total</span>",
       "constraints": {
-        "locked": true,
         "align": "right"
       },
       "backDataRefs": []
@@ -276,10 +271,9 @@
     "att_slot_td_label_sub": {
       "slotId": "att_slot_td_label_sub",
       "label": "소계 라벨",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<span class=\"text-xs text-[#383838]\">Subtotal:</span>",
       "constraints": {
-        "locked": true,
         "align": "right"
       },
       "backDataRefs": []
@@ -307,10 +301,9 @@
     "att_slot_td_label_tot": {
       "slotId": "att_slot_td_label_tot",
       "label": "총계 라벨",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<span class=\"text-xs text-[#383838]\">Total:</span>",
       "constraints": {
-        "locked": true,
         "align": "right"
       },
       "backDataRefs": []
@@ -328,10 +321,9 @@
     "att_slot_footer_meta": {
       "slotId": "att_slot_footer_meta",
       "label": "인보이스 하단 고객지원 & 법적 고지",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<p class=\"text-[11px] text-[#94a3b8]\">Atticus LLC · Sheridan, Wyoming, USA · support@atticus.io · Thank you for your business!</p>",
       "constraints": {
-        "locked": true,
         "align": "center",
         "fontSize": "11px",
         "color": "#94a3b8"

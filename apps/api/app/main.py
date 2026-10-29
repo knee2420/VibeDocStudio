@@ -1,18 +1,52 @@
 """VibeDocStudio FastAPI 애플리케이션 엔트리 (`app.main`)."""
 from __future__ import annotations
 
+import shutil
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from app.backdata import router as backdata_router_module
 from app.bootstrap.container import Container
 from app.catalog import router as catalog_router_module
 from app.composer import router as composer_router_module
 from app.core.config import settings
+from app.core.llm.credentials import OsCredentialStore
+from app.core.llm.execution_policy import (
+    CLI_PROVIDER,
+    GOOGLE_PROVIDER,
+    RuntimeExecutionPolicy,
+    normalize_provider,
+)
 from app.documents import router as documents_router_module
+
+_credentials = OsCredentialStore()
+_runtime_policy = RuntimeExecutionPolicy(
+    primary_provider=CLI_PROVIDER,
+    fallback_provider=GOOGLE_PROVIDER,
+    google_api_model=settings.composer_model,
+    google_api_timeout_seconds=180,
+    agent_cli_model=settings.composer_model,
+    agent_cli_timeout_seconds=180,
+    agent_cli_bin="agy",
+)
+
+
+class RuntimePolicyUpdateRequest(BaseModel):
+    primaryProvider: Optional[str] = None
+    fallbackProvider: Optional[str] = None
+    primaryModel: Optional[str] = None
+    fallbackModel: Optional[str] = None
+    primaryTimeoutSeconds: Optional[int] = None
+    fallbackTimeoutSeconds: Optional[int] = None
+
+
+class GoogleApiKeyRequest(BaseModel):
+    api_key: str
+
 
 
 def create_app() -> FastAPI:
@@ -79,6 +113,135 @@ def create_app() -> FastAPI:
             },
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
+
+    @application.get("/api/runtime", tags=["runtime"])
+    def get_runtime_dashboard() -> dict[str, Any]:
+        return {
+            "policy": {
+                "primaryProvider": _runtime_policy.primary_provider,
+                "fallbackProvider": _runtime_policy.fallback_provider,
+                "primaryModel": _runtime_policy.primary_model,
+                "fallbackModel": (
+                    _runtime_policy.agent_cli_model
+                    if _runtime_policy.is_google_primary
+                    else _runtime_policy.google_api_model
+                ),
+                "primaryTimeoutSeconds": _runtime_policy.primary_timeout_seconds,
+                "fallbackTimeoutSeconds": (
+                    _runtime_policy.agent_cli_timeout_seconds
+                    if _runtime_policy.is_google_primary
+                    else _runtime_policy.google_api_timeout_seconds
+                ),
+                "agentCliBin": _runtime_policy.agent_cli_bin,
+            },
+            "googleConfigured": bool(_credentials.get_google_api_key()),
+            "cliAvailable": bool(
+                shutil.which(_runtime_policy.agent_cli_bin) or shutil.which("agy")
+            ),
+            "models": [
+                {
+                    "id": settings.tagger_model,
+                    "name": settings.tagger_model,
+                    "provider": "agy_cli",
+                    "description": "초경량 로컬/고속 서식 태깅",
+                },
+                {
+                    "id": settings.composer_model,
+                    "name": settings.composer_model,
+                    "provider": "agy_cli",
+                    "description": "균형 잡힌 주력 서식 스캐폴더",
+                    "recommended": True,
+                },
+                {
+                    "id": settings.pro_model,
+                    "name": settings.pro_model,
+                    "provider": "agy_cli",
+                    "description": "고난도 복합 조항 심층 분석",
+                },
+                {
+                    "id": settings.lite_model,
+                    "name": settings.lite_model,
+                    "provider": "agy_cli",
+                    "description": "초저비용 고속 분류",
+                },
+                {
+                    "id": settings.composer_model,
+                    "name": settings.composer_model,
+                    "provider": "google_api",
+                    "description": "Google Direct REST API 주력",
+                    "recommended": True,
+                },
+                {
+                    "id": settings.lite_model,
+                    "name": settings.lite_model,
+                    "provider": "google_api",
+                    "description": "Google Direct REST API Fallback",
+                },
+            ],
+        }
+
+    @application.put("/api/runtime/policy", tags=["runtime"])
+    def update_runtime_policy(req: RuntimePolicyUpdateRequest) -> dict[str, Any]:
+        if req.primaryProvider:
+            norm = normalize_provider(req.primaryProvider)
+            if norm:
+                _runtime_policy.primary_provider = norm
+        if req.fallbackProvider:
+            norm = normalize_provider(req.fallbackProvider)
+            if norm:
+                _runtime_policy.fallback_provider = norm
+        if req.primaryModel:
+            if _runtime_policy.is_google_primary:
+                _runtime_policy.google_api_model = req.primaryModel
+            else:
+                _runtime_policy.agent_cli_model = req.primaryModel
+        if req.fallbackModel:
+            if _runtime_policy.is_google_primary:
+                _runtime_policy.agent_cli_model = req.fallbackModel
+            else:
+                _runtime_policy.google_api_model = req.fallbackModel
+        if req.primaryTimeoutSeconds:
+            if _runtime_policy.is_google_primary:
+                _runtime_policy.google_api_timeout_seconds = req.primaryTimeoutSeconds
+            else:
+                _runtime_policy.agent_cli_timeout_seconds = req.primaryTimeoutSeconds
+        if req.fallbackTimeoutSeconds:
+            if _runtime_policy.is_google_primary:
+                _runtime_policy.agent_cli_timeout_seconds = req.fallbackTimeoutSeconds
+            else:
+                _runtime_policy.google_api_timeout_seconds = req.fallbackTimeoutSeconds
+
+        return {
+            "primaryProvider": _runtime_policy.primary_provider,
+            "fallbackProvider": _runtime_policy.fallback_provider,
+            "primaryModel": _runtime_policy.primary_model,
+            "fallbackModel": (
+                _runtime_policy.agent_cli_model
+                if _runtime_policy.is_google_primary
+                else _runtime_policy.google_api_model
+            ),
+            "primaryTimeoutSeconds": _runtime_policy.primary_timeout_seconds,
+            "fallbackTimeoutSeconds": (
+                _runtime_policy.agent_cli_timeout_seconds
+                if _runtime_policy.is_google_primary
+                else _runtime_policy.google_api_timeout_seconds
+            ),
+            "agentCliBin": _runtime_policy.agent_cli_bin,
+        }
+
+    @application.put("/api/providers/google-api", tags=["providers"])
+    def configure_google_api(req: GoogleApiKeyRequest) -> dict[str, Any]:
+        try:
+            _credentials.set_google_api_key(req.api_key)
+            return {"status": "ok", "configured": True}
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @application.delete("/api/providers/google-api", tags=["providers"])
+    def delete_google_api() -> Response:
+        _credentials.delete_google_api_key()
+        return Response(status_code=204)
+
 
     return application
 

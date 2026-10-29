@@ -11,6 +11,7 @@
     "lint": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\oxlint.CMD -c .oxlintrc.json src"
   },
   "dependencies": {
+    "@vibe/agent-core": "workspace:*",
     "@vibe/ai-composer": "workspace:*",
     "@vibe/slot-canvas": "workspace:*",
     "@vibe/slot-editor": "workspace:*",

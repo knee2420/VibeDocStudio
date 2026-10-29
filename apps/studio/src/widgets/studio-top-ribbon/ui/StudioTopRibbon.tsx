@@ -4,8 +4,10 @@ import {
   DocumentStatusBadges,
   useStudioDocumentStore,
 } from "@/entities/vdoc-document";
+import { StudioAgentSettingsButton } from "@/features/agent-settings";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
+import { ImportPdfButton } from "@/features/import-pdf-form";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { DocumentSwitcherBar } from "@/features/switch-catalog-form";
 
@@ -46,11 +48,14 @@ export const StudioTopRibbon: React.FC = () => {
           </div>
         </div>
 
-        <VDocFileActionButtons />
+        <div className="flex items-center gap-2">
+          <StudioAgentSettingsButton />
+          <ImportPdfButton />
+          <VDocFileActionButtons />
+        </div>
       </header>
 
       <SlotFormattingSubToolbar onTableCommand={runTableCommand} />
     </>
   );
 };
-

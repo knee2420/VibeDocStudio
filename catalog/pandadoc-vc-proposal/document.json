@@ -309,25 +309,23 @@
     "slot_p3_header": {
       "slotId": "slot_p3_header",
       "label": "Page 3 Header",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<p>Section 02 — Expected Returns & Capital Allocation</p>",
       "backDataRefs": []
     },
     "slot_p3_footer": {
       "slotId": "slot_p3_footer",
       "label": "Page 3 Footer",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<p>Page 3 of 3 · Confidential Proposal</p>",
       "backDataRefs": []
     },
     "slot_returns_heading": {
       "slotId": "slot_returns_heading",
       "label": "Expected Returns Heading",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<h2>Expected Returns</h2>",
-      "constraints": {
-        "locked": true
-      },
+      "constraints": {},
       "backDataRefs": []
     },
     "slot_returns_body": {
@@ -359,31 +357,25 @@
     "slot_tbl_h1": {
       "slotId": "slot_tbl_h1",
       "label": "Table Header 1",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<p><strong>투자 집행 영역</strong></p>",
-      "constraints": {
-        "locked": true
-      },
+      "constraints": {},
       "backDataRefs": []
     },
     "slot_tbl_h2": {
       "slotId": "slot_tbl_h2",
       "label": "Table Header 2",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<p><strong>핵심 마일스톤 및 산출물</strong></p>",
-      "constraints": {
-        "locked": true
-      },
+      "constraints": {},
       "backDataRefs": []
     },
     "slot_tbl_h3": {
       "slotId": "slot_tbl_h3",
       "label": "Table Header 3",
-      "role": "boilerplate",
+      "role": "editable-slot",
       "content": "<p><strong>배정 예산 (비중)</strong></p>",
-      "constraints": {
-        "locked": true
-      },
+      "constraints": {},
       "backDataRefs": []
     },
     "slot_tbl_r1c1": {

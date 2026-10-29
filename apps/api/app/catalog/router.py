@@ -12,6 +12,7 @@ from .schemas import (
     CatalogBundleResponse,
     CatalogManifestResponse,
     PdfIngestResponse,
+    ScaffoldDocumentResponse,
 )
 from .service import CatalogService
 
@@ -92,3 +93,37 @@ async def ingest_pdf_to_catalog(
         checkedSlots=checked_slots,
         document=bundle.document,
     )
+
+
+@router.post("/scaffold", response_model=ScaffoldDocumentResponse)
+@inject
+async def scaffold_pdf_form(
+    service: CatalogServiceDep,
+    file: UploadFile = File(...),
+    title: str = Form(default=""),
+) -> ScaffoldDocumentResponse:
+    try:
+        pdf_bytes = await file.read()
+        raw_name = file.filename or "추출된 양식 문서"
+        # 파일명에서 .pdf 확장자 제거
+        if raw_name.lower().endswith(".pdf"):
+            fallback_title = raw_name[:-4]
+        else:
+            fallback_title = raw_name
+        resolved_title = title.strip() or fallback_title
+        vdoc, total_pages, checked_blocks, checked_slots = service.scaffold_pdf_document(
+            pdf_bytes=pdf_bytes,
+            title=resolved_title,
+        )
+    except Exception as exc:
+        raise _translate_error(exc) from exc
+
+    return ScaffoldDocumentResponse(
+        docId=vdoc.get("docId", ""),
+        title=vdoc.get("title", resolved_title),
+        totalPages=total_pages,
+        checkedBlocks=checked_blocks,
+        checkedSlots=checked_slots,
+        document=vdoc,
+    )
+

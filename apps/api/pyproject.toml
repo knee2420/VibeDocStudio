@@ -9,10 +9,11 @@ dependencies = [
     "pydantic>=2.9.0",
     "dependency-injector>=4.42.0",
     "pdf-vdoc-engine",
+    "agent-core",
 ]
 
 [tool.pytest.ini_options]
-pythonpath = [".", "../../packages/pdf-vdoc-engine"]
+pythonpath = [".", "../../packages/pdf-vdoc-engine", "../../packages/agent-core"]
 testpaths = ["tests"]
 
 [tool.ruff]
@@ -70,6 +71,7 @@ source_modules = [
     "app.catalog.service",
     "app.catalog.use_cases",
     "app.catalog.adapters",
+    "app.catalog.agents",
     "app.catalog.ports",
 ]
 forbidden_modules = [

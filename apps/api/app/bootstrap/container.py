@@ -14,11 +14,13 @@ from app.backdata.use_cases import (
     ListBackdataChunksUseCase,
 )
 from app.catalog.adapters import FilesystemCatalogRepository, PdfVDocEngineAdapter
+from app.catalog.agents import FormScaffoldAgent
 from app.catalog.service import CatalogService
 from app.catalog.use_cases import (
     GetCatalogBundleUseCase,
     IngestPdfToCatalogUseCase,
     ListCatalogFormsUseCase,
+    ScaffoldPdfToDocumentUseCase,
 )
 from app.composer.adapters import (
     GroundedSlotComposerAdapter,
@@ -50,6 +52,7 @@ class Container(containers.DeclarativeContainer):
         catalog_root=providers.Object(_storage.catalog),
     )
     pdf_vdoc_extractor = providers.Singleton(PdfVDocEngineAdapter)
+    form_scaffold_agent = providers.Singleton(FormScaffoldAgent)
 
     list_catalog_forms = providers.Factory(
         ListCatalogFormsUseCase,
@@ -64,11 +67,16 @@ class Container(containers.DeclarativeContainer):
         repository=catalog_repository,
         extractor=pdf_vdoc_extractor,
     )
+    scaffold_pdf_to_document = providers.Factory(
+        ScaffoldPdfToDocumentUseCase,
+        agent=form_scaffold_agent,
+    )
     catalog_service = providers.Factory(
         CatalogService,
         list_forms=list_catalog_forms,
         get_bundle=get_catalog_bundle,
         ingest_pdf=ingest_pdf_to_catalog,
+        scaffold_pdf=scaffold_pdf_to_document,
     )
 
     # --- 2. documents 도메인 조립 (`data/knowledge/documents`) ---

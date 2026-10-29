@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./agent-settings-ui/*"]
+    }
+  },
+  "include": ["agent-settings-ui"]
+}
+

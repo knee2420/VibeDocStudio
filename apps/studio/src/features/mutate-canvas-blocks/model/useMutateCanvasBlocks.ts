@@ -231,6 +231,37 @@ export function useMutateCanvasBlocks() {
     );
   };
 
+  /** Resizes a framed block by delta width/height. */
+  const resizeBlockFrame = (pageId: string, blockId: string, dw: number, dh: number) => {
+    updateCurrentDoc(
+      (prev) =>
+        mapBlock(prev, pageId, blockId, (block) => {
+          if (!block.frame) return block;
+          const minW = 24;
+          const minH = 24;
+          const currentW = block.frame.w ?? 100;
+          const currentH = block.frame.h ?? 100;
+          return {
+            ...block,
+            frame: {
+              ...block.frame,
+              w: Math.max(minW, Math.round(currentW + dw)),
+              h: Math.max(minH, Math.round(currentH + dh)),
+            },
+          };
+        }),
+      history
+    );
+  };
+
+  /** Updates arbitrary layout block properties via an updater callback. */
+  const updateBlock = (pageId: string, blockId: string, updater: (prev: LayoutBlock) => LayoutBlock) => {
+    updateCurrentDoc(
+      (prev) => mapBlock(prev, pageId, blockId, updater),
+      history
+    );
+  };
+
   /** Applies a table command to a structured table, or to one section of a composite frame. */
   const runTableCommand = (pageId: string, blockId: string, sectionId: string | null, cmd: TableCommand) => {
     updateCurrentDoc((prev) => {
@@ -268,6 +299,8 @@ export function useMutateCanvasBlocks() {
     duplicateBlock,
     toggleBlockLock,
     moveBlockFrame,
+    resizeBlockFrame,
+    updateBlock,
     runTableCommand,
   };
 }
