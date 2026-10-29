@@ -16,23 +16,14 @@ from app.composer import router as composer_router_module
 from app.core.config import settings
 from app.core.llm.credentials import OsCredentialStore
 from app.core.llm.execution_policy import (
-    CLI_PROVIDER,
-    GOOGLE_PROVIDER,
     RuntimeExecutionPolicy,
     normalize_provider,
 )
 from app.documents import router as documents_router_module
 
 _credentials = OsCredentialStore()
-_runtime_policy = RuntimeExecutionPolicy(
-    primary_provider=CLI_PROVIDER,
-    fallback_provider=GOOGLE_PROVIDER,
-    google_api_model=settings.composer_model,
-    google_api_timeout_seconds=180,
-    agent_cli_model=settings.composer_model,
-    agent_cli_timeout_seconds=180,
-    agent_cli_bin="agy",
-)
+_container = Container()
+_runtime_policy: RuntimeExecutionPolicy = _container.runtime_policy()
 
 
 class RuntimePolicyUpdateRequest(BaseModel):
@@ -52,7 +43,7 @@ class GoogleApiKeyRequest(BaseModel):
 def create_app() -> FastAPI:
     settings.ensure_directories()
 
-    container = Container()
+    container = _container
     container.wire(
         modules=[
             catalog_router_module,

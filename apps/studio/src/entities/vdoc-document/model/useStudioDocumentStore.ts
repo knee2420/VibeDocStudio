@@ -108,3 +108,6 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set) => ({
     }),
 }));
 
+if (typeof window !== "undefined") {
+  (window as unknown as { __studioDocStore: typeof useStudioDocumentStore }).__studioDocStore = useStudioDocumentStore;
+}

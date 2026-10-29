@@ -5,7 +5,9 @@
   "description": "PandaDoc 3-Pane Shell + AI WYSIWYG (Tiptap) + WYSIWYM (CSS Grid/Slot) + Component-Attached AI Composer Studio",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "dev": "pnpm --filter @vibe/studio dev",
+    "dev": "pnpm --filter @vibe/api --filter @vibe/studio --parallel dev",
+    "dev:studio": "pnpm --filter @vibe/studio dev",
+    "dev:api": "pnpm --filter @vibe/api dev",
     "lint": "pnpm -r lint",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",

@@ -412,6 +412,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                             fontWeight: cell.fontWeight || (cell.isHeader ? headerStyle.fontWeight || "600" : undefined),
                             fontSize: cell.fontSize,
                             lineHeight: cell.lineHeight,
+                            fontFamily: cell.fontFamily,
                             letterSpacing: cell.letterSpacing,
                           }}
                           className={`relative ${vAlignClass} ${hAlignClass} ${

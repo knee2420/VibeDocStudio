@@ -1,0 +1,12 @@
+{
+  "runId": "run-1a1863d9fbf-8aa2223c",
+  "slotId": "bsh_agenda_body",
+  "modelName": "Gemini-3.8-flash",
+  "prompt": "3줄 개조식 불릿 변환",
+  "presetId": "bullet-3",
+  "sourceChunkIds": [
+    "bd-1a1863d9fa5-925014f2",
+    "bd-1a1863d9fa5-5f43009e"
+  ],
+  "createdAt": "2026-10-29T05:59:07Z"
+}

@@ -228,7 +228,7 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
                 </span>
                 <span className="text-[11px] text-slate-500">
                   {currentStep === 1 && "1/3단계: 기하 좌표 측정"}
-                  {currentStep === 2 && "2/3단계: 조항 위계 스캐폴딩"}
+                  {currentStep === 2 && "2/3단계: AI 에이전트 자율 스캐폴딩 (CLI)"}
                   {currentStep === 3 && "3/3단계: 캔버스 렌더링"}
                 </span>
               </div>

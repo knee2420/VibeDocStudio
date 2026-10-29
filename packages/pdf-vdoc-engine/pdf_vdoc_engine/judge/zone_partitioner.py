@@ -38,24 +38,33 @@ def partition_page_zones(geometry: MeasuredPageGeometry) -> ZonePartitionResult:
             )
         )
 
-    # 2. 표 구획 판정: 연속되거나 병합 셀이 포함된 행정 양식 틀은 `composite-form-frame`,
-    #    단일 일반 표는 `structured-table`로 분류한다.
-    if len(geometry.tables) > 1 or (
-        len(geometry.tables) == 1 and _has_merged_cells(geometry.tables[0])
-    ):
-        zones.append(
-            PartitionedZone(
-                zone_id=f"p{pnum}_zone_composite",
-                kind="composite-form-frame",
-                title="복합 양식 테이블 프레임",
-                tables=geometry.tables,
+    # 2. 표 구획 판정:
+    # 각 테이블 간의 세로 간격(vertical gap)이 유의미(8pt 이상)하면 별도 독립 블록으로 분리한다.
+    if len(geometry.tables) > 1:
+        table_groups: list[list[MeasuredGridTable]] = [[geometry.tables[0]]]
+        for prev_tbl, next_tbl in zip(geometry.tables[:-1], geometry.tables[1:]):
+            gap_pt = next_tbl.y0 - prev_tbl.y1
+            if gap_pt >= 8.0:
+                table_groups.append([next_tbl])
+            else:
+                table_groups[-1].append(next_tbl)
+
+        for g_idx, grp in enumerate(table_groups):
+            z_kind = "composite-form-frame" if (len(grp) > 1 or _has_merged_cells(grp[0])) else "structured-table"
+            zones.append(
+                PartitionedZone(
+                    zone_id=f"p{pnum}_zone_tbl_grp_{g_idx + 1}",
+                    kind=z_kind,
+                    title=f"양식 표 구획 {g_idx + 1}" if len(grp) > 1 else grp[0].table_id,
+                    tables=tuple(grp),
+                )
             )
-        )
     elif len(geometry.tables) == 1:
+        z_kind = "composite-form-frame" if _has_merged_cells(geometry.tables[0]) else "structured-table"
         zones.append(
             PartitionedZone(
                 zone_id=f"p{pnum}_zone_table_1",
-                kind="structured-table",
+                kind=z_kind,
                 title="정밀 격자 표",
                 tables=geometry.tables,
             )

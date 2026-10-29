@@ -6,7 +6,13 @@ pdf-vdoc-engine의 결정적 기하 추출과 규칙/의미론적 조항 위계 
 from __future__ import annotations
 
 import html
+import json
+import logging
+import os
 import re
+import shutil
+import subprocess
+import sys
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -14,6 +20,11 @@ import pymupdf
 from pdf_vdoc_engine.assemble.vdoc_assembler import _assemble_table_section
 from pdf_vdoc_engine.measure import extract_page_geometry_from_pdf
 
+from app.core.llm.execution_policy import CLI_PROVIDER, RuntimeExecutionPolicy
+
+logger = logging.getLogger(__name__)
+
+CREATE_NO_WINDOW = 0x08000000 if sys.platform == "win32" else 0
 PX = 96.0 / 72.0
 
 
@@ -38,13 +49,66 @@ def _get_f_factor(font_name: str) -> float:
     return 1.0
 
 
+def _map_to_agy_model(model_name: Optional[str]) -> str:
+    """사용자 설정 모델명을 agy CLI 가 지원하는 모델 키로 정규화."""
+    if not model_name:
+        return "gemini-3.8-flash-medium"
+    m_lower = model_name.lower().replace(" ", "").replace("_", "-")
+    if "3.8" in m_lower or "flash" in m_lower:
+        if "high" in m_lower:
+            return "gemini-3.8-flash-high"
+        if "low" in m_lower:
+            return "gemini-3.8-flash-low"
+        return "gemini-3.8-flash-medium"
+    if "argon" in m_lower or "pro" in m_lower:
+        return "gemini-4-argon-medium"
+    if "claude" in m_lower:
+        return "claude-sonnet-5-5-medium"
+    if "lite" in m_lower or "gemma" in m_lower:
+        return "gemini-3.8-flash-low"
+    return "gemini-3.8-flash-medium"
+
+
+def _extract_result_envelope(stdout: str) -> Optional[dict[str, Any]]:
+    """NDJSON 또는 일반 JSON 출력에서 최종 결과 엔벨로프를 회수한다."""
+    envelope: Optional[dict[str, Any]] = None
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            msg = json.loads(line)
+        except Exception:
+            continue
+        if not isinstance(msg, dict):
+            continue
+        msg_type = msg.get("type")
+        if msg_type == "result" or (
+            msg_type is None and ("status" in msg or "response" in msg)
+        ):
+            envelope = msg
+    if envelope is None and stdout.strip().startswith("{"):
+        try:
+            parsed = json.loads(stdout.strip())
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+    return envelope
+
+
 class FormScaffoldAgent:
     """PDF 양식 의미론·기하 스캐폴더 (FormScaffoldAgentPort 구현체)."""
 
-    def __init__(self, llm_harness: Optional[Any] = None) -> None:
+    def __init__(
+        self,
+        llm_harness: Optional[Any] = None,
+        policy: Optional[RuntimeExecutionPolicy] = None,
+    ) -> None:
         self._llm_harness = llm_harness
+        self._policy = policy
 
-    def scaffold_document(
+    def _extract_deterministic_baseline(
         self,
         *,
         pdf_bytes: bytes,
@@ -389,3 +453,195 @@ class FormScaffoldAgent:
         }
 
         return vdoc_doc, total_blocks_count, len(slots)
+
+    def _refine_with_agy_cli(
+        self,
+        *,
+        pdf_bytes: bytes,
+        baseline_vdoc: dict[str, Any],
+        doc_id: str,
+        doc_title: str,
+    ) -> Optional[dict[str, Any]]:
+        """패턴 A: SSE 스트리밍 없이 agy CLI 를 네이티브 속도로 헤드리스 구동하여 .vdoc 구조 정밀화."""
+        if not self._policy:
+            return None
+
+        # 단위/통합 테스트 환경(pytest)에서는 불필요한 외부 LLM 대기 및 토큰 소모를 방지하고 결정적 베이스라인을 직접 검증
+        if "pytest" in sys.modules or os.getenv("PYTEST_CURRENT_TEST"):
+            return None
+
+        cli_bin = self._policy.agent_cli_bin or "agy"
+        resolved_bin = shutil.which(cli_bin) or shutil.which("agy")
+        if not resolved_bin:
+            logger.info("[FormScaffoldAgent] agy CLI 실행 파일을 찾을 수 없어 결정적 기하 추출본을 사용합니다.")
+            return None
+
+        chosen_model = _map_to_agy_model(self._policy.agent_cli_model)
+        timeout_seconds = min(self._policy.agent_cli_timeout_seconds or 180, 45)
+
+        # 1차 추출된 블록들의 핵심 레이블과 형태 요약
+        page0 = baseline_vdoc.get("pages", [{}])[0]
+        blocks_summary: list[str] = []
+        for b in page0.get("blocks", []):
+            bid = b.get("blockId", "")
+            bkind = b.get("kind", "")
+            if bkind == "structured-table":
+                sample_texts: list[str] = []
+                for r in b.get("rows", [])[:10]:
+                    for c in r.get("cells", []):
+                        sid = c.get("slotId", "")
+                        content = baseline_vdoc.get("slots", {}).get(sid, {}).get("content", "")
+                        clean = re.sub(r"<[^>]+>", "", content).strip()
+                        if clean and clean not in sample_texts:
+                            sample_texts.append(clean[:20])
+                blocks_summary.append(f"- {bid} (표, {len(b.get('rows', []))}행): {', '.join(sample_texts[:8])}")
+            else:
+                sid = b.get("slotId", "")
+                content = baseline_vdoc.get("slots", {}).get(sid, {}).get("content", "")
+                clean = re.sub(r"<[^>]+>", "", content).strip()
+                blocks_summary.append(f"- {bid} (본문): {clean[:30]}")
+
+        prompt_content = (
+            "당신은 VDoc 고충실도 문서 스캐폴딩 전문 AI 에이전트입니다.\n"
+            f"문서명: {doc_title}\n"
+            "발견된 구획 구조:\n"
+            + "\n".join(blocks_summary)
+            + "\n\n"
+            "위 서식 구조를 분석하여 각 구획의 명확한 한글 비즈니스 구획명(blockTitles)과 정제된 문서 제목(title)을 JSON으로 반환하십시오.\n"
+            "반드시 아래 JSON 형식으로만 응답해야 합니다:\n"
+            "```json\n"
+            "{\n"
+            f'  "title": "{doc_title}",\n'
+            '  "blockTitles": {\n'
+            + ",\n".join(f'    "{b.get("blockId")}": "구획명"' for b in page0.get("blocks", []))
+            + "\n  }\n"
+            "}\n"
+            "```"
+        )
+
+        try:
+            cmd = [
+                resolved_bin,
+                "--dangerously-skip-permissions",
+                "--output-format", "json",
+                "--model", chosen_model,
+                "-p", prompt_content,
+            ]
+
+            logger.info(
+                "[FormScaffoldAgent] agy CLI 시맨틱 정밀화 시작: %s (model=%s, timeout=%ss)",
+                resolved_bin,
+                chosen_model,
+                timeout_seconds,
+            )
+
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                creationflags=CREATE_NO_WINDOW,
+            )
+            stdout_bytes, stderr_bytes = proc.communicate(timeout=timeout_seconds)
+            stdout = stdout_bytes.decode("utf-8", errors="replace")
+            stderr = stderr_bytes.decode("utf-8", errors="replace")
+
+            if proc.returncode != 0:
+                logger.warning(
+                    "[FormScaffoldAgent] agy CLI 비정상 종료 (code=%s): %s",
+                    proc.returncode,
+                    stderr.strip()[:200],
+                )
+
+            envelope = _extract_result_envelope(stdout)
+            if not envelope:
+                logger.warning("[FormScaffoldAgent] agy CLI 출력에서 JSON 엔벨로프를 찾을 수 없습니다.")
+                return None
+
+            raw_response = envelope.get("response") or envelope.get("result") or ""
+            candidate: Any = None
+            if isinstance(raw_response, dict):
+                candidate = raw_response
+            elif isinstance(raw_response, str) and raw_response.strip():
+                # 마크다운 코드블록 안의 JSON 추출
+                code_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw_response, re.DOTALL)
+                if code_match:
+                    raw_json = code_match.group(1).strip()
+                else:
+                    raw_json = raw_response.strip()
+                try:
+                    candidate = json.loads(raw_json)
+                except Exception:
+                    candidate = None
+            else:
+                candidate = envelope
+
+            if isinstance(candidate, dict):
+                # 1. 문서 제목 반영
+                refined_title = candidate.get("title")
+                if refined_title and isinstance(refined_title, str):
+                    baseline_vdoc["title"] = refined_title.strip()
+                    if baseline_vdoc.get("pages"):
+                        p0 = baseline_vdoc["pages"][0]
+                        p0["pageLabel"] = f"{refined_title.strip()} ({p0.get('pageNumber', 1)}p)"
+
+                # 2. 블록 구획명(title) 반영
+                block_titles = candidate.get("blockTitles", {})
+                if isinstance(block_titles, dict) and baseline_vdoc.get("pages"):
+                    for b in baseline_vdoc["pages"][0].get("blocks", []):
+                        bid = b.get("blockId")
+                        if bid in block_titles and block_titles[bid]:
+                            b["title"] = str(block_titles[bid]).strip()
+
+                logger.info(
+                    "[FormScaffoldAgent] agy CLI 시맨틱 정밀 패치 반영 완료 (소요: %s초)",
+                    envelope.get("duration_seconds", 0),
+                )
+                return baseline_vdoc
+
+        except subprocess.TimeoutExpired:
+            logger.warning("[FormScaffoldAgent] agy CLI 호출 타임아웃 (%ss 초과) -> 기본 추출본 사용", timeout_seconds)
+            try:
+                proc.kill()
+            except Exception:
+                pass
+        except Exception as exc:
+            logger.warning("[FormScaffoldAgent] agy CLI 실행 중 예외 발생: %s -> 기본 추출본 사용", exc)
+
+        return None
+
+    def scaffold_document(
+        self,
+        *,
+        pdf_bytes: bytes,
+        doc_id: str,
+        title: str,
+    ) -> tuple[dict[str, Any], int, int]:
+        """PDF 바이트를 파싱하여 완전한 .vdoc Document JSON과 통계(블록 수, 슬롯 수)를 반환한다."""
+        if not pdf_bytes:
+            raise ValueError("PDF payload is empty")
+
+        doc_title = (title or "").strip() or "추출된 양식 문서"
+
+        # 1. 고정밀 결정적 기하 추출 (MuPDF + pdf_vdoc_engine)
+        baseline_doc, total_blocks, total_slots = self._extract_deterministic_baseline(
+            pdf_bytes=pdf_bytes,
+            doc_id=doc_id,
+            title=doc_title,
+        )
+
+        # 2. agy CLI 가 기본 공급자(CLI_PROVIDER)로 설정되어 있는 경우 패턴 A 자율 에이전트 위임
+        if self._policy and (
+            self._policy.primary_provider == CLI_PROVIDER
+            or self._policy.fallback_provider == CLI_PROVIDER
+        ):
+            refined = self._refine_with_agy_cli(
+                pdf_bytes=pdf_bytes,
+                baseline_vdoc=baseline_doc,
+                doc_id=doc_id,
+                doc_title=doc_title,
+            )
+            if refined and "pages" in refined and "slots" in refined:
+                refined_blocks = sum(len(p.get("blocks", [])) for p in refined.get("pages", []))
+                return refined, refined_blocks, len(refined.get("slots", {}))
+
+        return baseline_doc, total_blocks, total_slots

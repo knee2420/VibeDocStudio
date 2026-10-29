@@ -13,7 +13,8 @@ export interface SlotConstraints {
   locked?: boolean;
   align?: "left" | "center" | "right";
   fontSize?: string;    // e.g. "10pt", "12.5px", "22px"
-  lineHeight?: string;  // e.g. "1.2", "1.5", "24px"
+  lineHeight?: string;
+  fontFamily?: string;  // e.g. "1.2", "1.5", "24px"
   fontWeight?: string;  // e.g. "normal", "600", "bold"
   letterSpacing?: string;
   color?: string;       // e.g. "#336699", "#383838"
@@ -130,6 +131,7 @@ export interface TableCellSlotDef {
   fontWeight?: string;
   fontSize?: string;
   lineHeight?: string;
+  fontFamily?: string;
 }
 
 export interface StructuredTableSectionDef {

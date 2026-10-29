@@ -192,8 +192,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
                 : "text-sm"
           } ${darkTheme ? "text-white" : inheritsTypography ? "" : "text-slate-900"}`}
         >
-          {slot.constraints?.tone === "brand-logo" ? (
-            <div className="py-1 select-none flex items-center" dangerouslySetInnerHTML={{ __html: slot.content }} />
+          {slot.constraints?.tone === "brand-logo" || Boolean(slot.content && slot.content.includes("<img")) ? (
+            <div className="py-1 select-none flex items-center justify-center w-full" dangerouslySetInnerHTML={{ __html: slot.content }} />
           ) : (
             <SlotRichTextEditor
               slotId={slotId}
@@ -217,7 +217,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   };
 
   const cellSlot = (
-    cell: { slotId: string; compact?: boolean; padding?: string; fontSize?: string; lineHeight?: string; color?: string; fontWeight?: string; hAlign?: string },
+    cell: { slotId: string; compact?: boolean; padding?: string; fontSize?: string; lineHeight?: string; color?: string; fontWeight?: string; hAlign?: string; fontFamily?: string },
     hAlignClass: string
   ) =>
     renderSlotBox(cell.slotId, {
@@ -229,6 +229,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         lineHeight: cell.lineHeight,
         color: cell.color,
         fontWeight: cell.fontWeight,
+        fontFamily: cell.fontFamily,
         textAlign: cell.hAlign as React.CSSProperties["textAlign"],
       },
     });

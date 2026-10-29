@@ -30,6 +30,11 @@ from app.composer.agents import SlotComposerAgent
 from app.composer.service import ComposerService
 from app.composer.use_cases import ComposeSlotDraftUseCase
 from app.core.config import settings
+from app.core.llm.execution_policy import (
+    CLI_PROVIDER,
+    GOOGLE_PROVIDER,
+    RuntimeExecutionPolicy,
+)
 from app.documents.adapters import LocalVDocDocumentRepository
 from app.documents.service import DocumentService
 from app.documents.use_cases import (
@@ -46,13 +51,28 @@ _storage = settings.storage
 class Container(containers.DeclarativeContainer):
     """VibeDocStudio API DI 컨테이너."""
 
+    # --- 0. 런타임 실행 정책 (단일 싱글톤 상태) ---
+    runtime_policy = providers.Singleton(
+        RuntimeExecutionPolicy,
+        primary_provider=CLI_PROVIDER,
+        fallback_provider=GOOGLE_PROVIDER,
+        google_api_model=settings.composer_model,
+        google_api_timeout_seconds=180,
+        agent_cli_model=settings.composer_model,
+        agent_cli_timeout_seconds=180,
+        agent_cli_bin="agy",
+    )
+
     # --- 1. catalog 도메인 조립 ---
     catalog_repository = providers.Singleton(
         FilesystemCatalogRepository,
         catalog_root=providers.Object(_storage.catalog),
     )
     pdf_vdoc_extractor = providers.Singleton(PdfVDocEngineAdapter)
-    form_scaffold_agent = providers.Singleton(FormScaffoldAgent)
+    form_scaffold_agent = providers.Singleton(
+        FormScaffoldAgent,
+        policy=runtime_policy,
+    )
 
     list_catalog_forms = providers.Factory(
         ListCatalogFormsUseCase,

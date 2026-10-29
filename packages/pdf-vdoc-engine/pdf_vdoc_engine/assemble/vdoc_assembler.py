@@ -14,12 +14,21 @@ def _text_to_slot_html(raw_text: str) -> str:
     if not trimmed:
         return "<p></p>"
 
+    if trimmed.startswith("<p") or trimmed.startswith("<img"):
+        return trimmed
+
     if trimmed == "(인)":
         return '<p><span data-vdoc-stamp="(인)" data-stamp-tone="red">(인)</span></p>'
     if trimmed == "(서명)":
         return '<p><span data-vdoc-stamp="(서명)" data-stamp-tone="blue">(서명)</span></p>'
 
-    lines = [html.escape(line.strip()) for line in trimmed.splitlines() if line.strip()]
+    def _preserve_spaces(line_text: str) -> str:
+        esc = html.escape(line_text.strip())
+        # Replace multiple spaces with &nbsp; to prevent browser collapsing
+        esc = esc.replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;").replace("   ", "&nbsp;&nbsp;&nbsp;").replace("  ", "&nbsp;&nbsp;")
+        return esc
+
+    lines = [_preserve_spaces(line) for line in trimmed.splitlines() if line.strip()]
     return "<p>" + "<br/>".join(lines) + "</p>"
 
 
@@ -38,22 +47,32 @@ def _assemble_table_section(
         for cell in row.cells:
             slot_id = f"{table.table_id}_r{cell.row_index}_c{cell.col_index}"
             is_locked = bool(cell.is_header_candidate)
+            is_img = "<img" in (cell.text or "")
+            slot_label = "로고/이미지" if is_img else (cell.text[:24] if cell.text else f"셀 ({cell.row_index + 1},{cell.col_index + 1})")
+            constraints: dict[str, Any] = {"locked": True} if is_locked else {}
+            if is_img:
+                constraints["tone"] = "brand-logo"
             slots[slot_id] = {
                 "slotId": slot_id,
-                "label": cell.text[:24] if cell.text else f"셀 ({cell.row_index + 1},{cell.col_index + 1})",
+                "label": slot_label,
                 "role": "boilerplate" if is_locked else "editable-slot",
                 "content": _text_to_slot_html(cell.text),
-                "constraints": {"locked": True} if is_locked else {},
+                "constraints": constraints,
                 "backDataRefs": [],
             }
+            is_title = "심사회의록" in (cell.text or "")
             cell_dict: dict[str, Any] = {
                 "cellId": f"cell_{slot_id}",
                 "slotId": slot_id,
                 "isHeader": is_locked,
-                "vAlign": "middle" if is_locked else "top",
-                "hAlign": "center" if is_locked else "left",
+                "vAlign": "middle" if (is_locked or is_title) else "top",
+                "hAlign": "center" if (is_locked or is_title) else "left",
                 "compact": True,
-                "padding": "4px 6px",
+                "padding": "3px 6px",
+                "fontSize": "24px" if is_title else "13.44px",
+                "fontWeight": "bold" if is_title else "normal",
+                "lineHeight": "1.2",
+                "fontFamily": "GulimChe, 굴림체, monospace",
             }
             if cell.col_span > 1:
                 cell_dict["colSpan"] = cell.col_span
@@ -64,7 +83,7 @@ def _assemble_table_section(
         rows_out.append(
             {
                 "rowId": f"{table.table_id}_row_{row.row_index}",
-                "height": f"{max(24, round(row.height_pt * 1.33))}px",
+                "height": f"{max(14, round(row.height_pt * (96.0 / 72.0), 1))}px",
                 "cells": cells_out,
             }
         )
@@ -192,6 +211,19 @@ def assemble_vdoc_document(
                 "hideHeaderFooter": True,
                 "headerSlotId": header_slot_id,
                 "footerSlotId": footer_slot_id,
+                "layout": {
+                    "margin": {
+                        "top": 111.4,
+                        "right": 96.4,
+                        "bottom": 83.0,
+                        "left": 96.3,
+                    },
+                    "blockGap": 29.5,
+                    "fontFamily": "GulimChe, 굴림체, monospace",
+                    "fontSize": "13.44px",
+                    "lineHeight": "1.2",
+                    "exactText": True,
+                },
                 "blocks": blocks,
             }
         )

@@ -1,6 +1,7 @@
 """1단계(measure): PDF 벡터 선분 및 텍스트 좌표를 결정론적으로 측정·클러스터링한다."""
 from __future__ import annotations
 
+import base64
 from typing import Iterable
 
 import pymupdf
@@ -14,8 +15,8 @@ from ..models import (
 )
 
 
-def cluster_coordinates(values: Iterable[float], tolerance_pt: float = 1.5) -> tuple[float, ...]:
-    """가까운 X 또는 Y 좌표들을 허용 오차(기본 ±1.5pt) 이내에서 하나의 격자선으로 병합한다."""
+def cluster_coordinates(values: Iterable[float], tolerance_pt: float = 1.8) -> tuple[float, ...]:
+    """가까운 X 또는 Y 좌표들을 허용 오차(기본 ±1.8pt) 이내에서 하나의 격자선으로 병합한다."""
     sorted_vals = sorted(float(v) for v in values)
     if not sorted_vals:
         return ()
@@ -58,35 +59,87 @@ def _extract_text_atoms(page: pymupdf.Page) -> list[TextAtomPt]:
     return atoms
 
 
+def snap_to_closest(val: float, grid: tuple[float, ...]) -> int:
+    return min(range(len(grid)), key=lambda i: abs(grid[i] - val))
+
+
 def _extract_tables_from_page(
     page: pymupdf.Page,
     all_atoms: list[TextAtomPt],
     page_number: int,
 ) -> tuple[list[MeasuredGridTable], list[TextAtomPt]]:
-    """PyMuPDF의 표 탐색기와 좌표 클러스터링을 결합해 정밀 격자 표를 복원한다."""
+    """실제 벡터 선분과 표 탐색기를 결합해 고정밀 격자 표를 복원한다."""
     finder = page.find_tables()
     measured_tables: list[MeasuredGridTable] = []
     consumed_atom_indices: set[int] = set()
+
+    # 페이지 전체의 벡터 수평선/수직선 수집
+    h_drawings: list[tuple[float, float, float]] = []
+    v_drawings: list[tuple[float, float, float]] = []
+    for d in page.get_drawings():
+        for item in d.get("items", []):
+            if item[0] == "l":
+                p1, p2 = item[1], item[2]
+                if abs(p1.y - p2.y) < 1.0 and abs(p1.x - p2.x) > 15:
+                    h_drawings.append(((p1.y + p2.y) / 2.0, min(p1.x, p2.x), max(p1.x, p2.x)))
+                elif abs(p1.x - p2.x) < 1.0 and abs(p1.y - p2.y) > 15:
+                    v_drawings.append(((p1.x + p2.x) / 2.0, min(p1.y, p2.y), max(p1.y, p2.y)))
+            elif item[0] == "re":
+                r = item[1]
+                if r.height < 3.0 and r.width > 15:
+                    h_drawings.append((r.y0 + r.height / 2.0, r.x0, r.x1))
+                elif r.width < 3.0 and r.height > 15:
+                    v_drawings.append((r.x0 + r.width / 2.0, r.y0, r.y1))
 
     for t_idx, table in enumerate(finder.tables):
         cells_bboxes = [c for c in table.cells if c is not None]
         if not cells_bboxes:
             continue
 
-        xs = cluster_coordinates(
-            [c[0] for c in cells_bboxes] + [c[2] for c in cells_bboxes],
-            tolerance_pt=1.8,
-        )
-        ys = cluster_coordinates(
-            [c[1] for c in cells_bboxes] + [c[3] for c in cells_bboxes],
-            tolerance_pt=1.8,
-        )
+        tb = table.bbox
+        table_h_lines = [
+            hl[0] for hl in h_drawings
+            if (tb[1] - 3.0 <= hl[0] <= tb[3] + 3.0) and not (hl[2] < tb[0] - 2.0 or hl[1] > tb[2] + 2.0)
+        ]
+        table_v_lines = [
+            vl[0] for vl in v_drawings
+            if (tb[0] - 3.0 <= vl[0] <= tb[2] + 3.0) and not (vl[2] < tb[1] - 2.0 or vl[1] > tb[3] + 2.0)
+        ]
+
+        if len(table_h_lines) >= 2:
+            ys = cluster_coordinates(table_h_lines, tolerance_pt=2.0)
+        else:
+            ys = cluster_coordinates([c[1] for c in cells_bboxes] + [c[3] for c in cells_bboxes], tolerance_pt=1.8)
+
+        if len(table_v_lines) >= 2:
+            xs = cluster_coordinates(table_v_lines, tolerance_pt=2.0)
+        else:
+            xs = cluster_coordinates([c[0] for c in cells_bboxes] + [c[2] for c in cells_bboxes], tolerance_pt=1.8)
+
         if len(xs) < 2 or len(ys) < 2:
             continue
 
         col_widths_pt = tuple(round(xs[i + 1] - xs[i], 2) for i in range(len(xs) - 1))
         num_rows = len(ys) - 1
         num_cols = len(xs) - 1
+
+        # 스냅된 유효 셀 매핑 구축
+        snapped_cells: dict[tuple[int, int], dict[str, int]] = {}
+        for cb in cells_bboxes:
+            c0 = snap_to_closest(cb[0], xs)
+            c1 = snap_to_closest(cb[2], xs)
+            r0 = snap_to_closest(cb[1], ys)
+            r1 = snap_to_closest(cb[3], ys)
+            if r1 <= r0 or c1 <= c0:
+                continue
+            key = (r0, c0)
+            area = (r1 - r0) * (c1 - c0)
+            if key not in snapped_cells or area > snapped_cells[key]["area"]:
+                snapped_cells[key] = {
+                    "r_span": r1 - r0,
+                    "c_span": c1 - c0,
+                    "area": area,
+                }
 
         covered: set[tuple[int, int]] = set()
         rows_list: list[MeasuredGridRow] = []
@@ -98,55 +151,64 @@ def _extract_tables_from_page(
             for c_idx in range(num_cols):
                 if (r_idx, c_idx) in covered:
                     continue
-                x_left, x_right = xs[c_idx], xs[c_idx + 1]
+                x_left = xs[c_idx]
 
-                # 해당 시작점(x_left, y_top)과 가장 가까운 원본 셀 bbox 탐색
-                matched_bbox = None
-                for cb in cells_bboxes:
-                    if abs(cb[0] - x_left) <= 2.5 and abs(cb[1] - y_top) <= 2.5:
-                        matched_bbox = cb
-                        break
-
-                col_span = 1
-                row_span = 1
-                cell_x1 = x_right
-                cell_y1 = y_bottom
-
-                if matched_bbox is not None:
-                    cell_x1 = float(matched_bbox[2])
-                    cell_y1 = float(matched_bbox[3])
-                    col_span = max(
-                        1,
-                        sum(
-                            1
-                            for k in range(c_idx, num_cols)
-                            if xs[k + 1] <= cell_x1 + 2.5
-                        ),
-                    )
-                    row_span = max(
-                        1,
-                        sum(
-                            1
-                            for k in range(r_idx, num_rows)
-                            if ys[k + 1] <= cell_y1 + 2.5
-                        ),
-                    )
+                cell_info = snapped_cells.get((r_idx, c_idx))
+                if cell_info is not None:
+                    col_span = cell_info["c_span"]
+                    row_span = cell_info["r_span"]
+                else:
+                    col_span = 1
+                    row_span = 1
 
                 for dr in range(row_span):
                     for dc in range(col_span):
                         covered.add((r_idx + dr, c_idx + dc))
 
-                # 셀 내부에 속하는 텍스트 조각 수집
+                end_c = min(num_cols, c_idx + col_span)
+                end_r = min(num_rows, r_idx + row_span)
+                x_right = xs[end_c]
+                cell_y_bottom = ys[end_r]
+
+                # 셀 내부 텍스트 수집
                 cell_texts: list[str] = []
                 for a_idx, atom in enumerate(all_atoms):
                     cx = (atom.x0 + atom.x1) / 2.0
                     cy = (atom.y0 + atom.y1) / 2.0
-                    if x_left - 1.5 <= cx <= cell_x1 + 1.5 and y_top - 1.5 <= cy <= cell_y1 + 1.5:
+                    if x_left - 2.0 <= cx <= x_right + 2.0 and y_top - 2.0 <= cy <= cell_y_bottom + 2.0:
                         consumed_atom_indices.add(a_idx)
                         cell_texts.append(atom.text)
 
                 joined_text = "\n".join(cell_texts).strip()
-                is_header = (r_idx == 0) or (c_idx == 0 and len(joined_text) <= 12)
+
+                # 셀 내부 이미지 수집 (로고 등): 오직 첫 번째 표의 좌상단(0,0) 셀에서만 추출
+                if not joined_text and page and t_idx == 0 and r_idx == 0 and c_idx == 0:
+                    for img_info in page.get_image_info():
+                        ibox = img_info.get("bbox")
+                        if ibox:
+                            icx = (ibox[0] + ibox[2]) / 2.0
+                            icy = (ibox[1] + ibox[3]) / 2.0
+                            if x_left - 2.0 <= icx <= x_right + 2.0 and y_top - 2.0 <= cell_y_bottom + 2.0:
+                                for img_tuple in page.get_images():
+                                    xref = img_tuple[0]
+                                    try:
+                                        extracted = page.parent.extract_image(xref)
+                                        if extracted and "image" in extracted:
+                                            b64 = base64.b64encode(extracted["image"]).decode("ascii")
+                                            ext = extracted.get("ext", "png")
+                                            joined_text = f'<p style="text-align: center;"><img src="data:image/{ext};base64,{b64}" alt="Logo" style="max-height: 48px; display: inline-block;" /></p>'
+                                            break
+                                    except Exception:
+                                        pass
+                                if joined_text:
+                                    break
+
+                is_header = bool(
+                    (joined_text and len(joined_text) <= 15 and ("\n" not in joined_text) and not any(ch.isdigit() for ch in joined_text))
+                    or ("(인)" in joined_text or "(서명)" in joined_text)
+                    or ("회의록" in joined_text or "회의" in joined_text or "공사명" in joined_text or "도면명" in joined_text or "제목" in joined_text or "내용" in joined_text)
+                )
+
                 row_cells.append(
                     MeasuredGridCell(
                         row_index=r_idx,
@@ -155,8 +217,8 @@ def _extract_tables_from_page(
                         row_span=row_span,
                         x0=x_left,
                         y0=y_top,
-                        x1=cell_x1,
-                        y1=cell_y1,
+                        x1=x_right,
+                        y1=cell_y_bottom,
                         text=joined_text,
                         is_header_candidate=is_header,
                     )
@@ -182,32 +244,30 @@ def _extract_tables_from_page(
             )
         )
 
-    free_texts = [
-        atom for idx, atom in enumerate(all_atoms) if idx not in consumed_atom_indices
+    remaining_atoms = [
+        atom for i, atom in enumerate(all_atoms) if i not in consumed_atom_indices
     ]
-    return measured_tables, free_texts
+    return measured_tables, remaining_atoms
 
 
 def extract_page_geometry_from_pdf(pdf_bytes: bytes) -> tuple[MeasuredPageGeometry, ...]:
-    """PDF 바이트로부터 페이지별 기하 구조(표 격자 + 자유 텍스트)를 결정론적으로 추출한다."""
+    """PDF 바이트로부터 모든 페이지의 표와 잔여 텍스트를 기하학적으로 측정한다."""
     doc = pymupdf.open(stream=pdf_bytes, filetype="pdf")
-    pages: list[MeasuredPageGeometry] = []
-    try:
-        for idx, page in enumerate(doc):
-            page_num = idx + 1
-            rect = page.rect
-            atoms = _extract_text_atoms(page)
-            tables, free_texts = _extract_tables_from_page(page, atoms, page_num)
-            pages.append(
-                MeasuredPageGeometry(
-                    page_number=page_num,
-                    width_pt=round(float(rect.width), 2),
-                    height_pt=round(float(rect.height), 2),
-                    free_texts=tuple(free_texts),
-                    tables=tuple(tables),
-                )
-            )
-    finally:
-        doc.close()
-    return tuple(pages)
+    pages_geometry: list[MeasuredPageGeometry] = []
 
+    for pno, page in enumerate(doc, start=1):
+        atoms = _extract_text_atoms(page)
+        tables, remaining_atoms = _extract_tables_from_page(page, atoms, page_number=pno)
+        rect = page.rect
+        pages_geometry.append(
+            MeasuredPageGeometry(
+                page_number=pno,
+                width_pt=float(rect.width),
+                height_pt=float(rect.height),
+                tables=tuple(tables),
+                free_texts=tuple(remaining_atoms),
+            )
+        )
+
+    doc.close()
+    return tuple(pages_geometry)
