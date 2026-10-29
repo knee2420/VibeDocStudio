@@ -11,12 +11,14 @@ export interface SlotInlineComposerHostProps {
   targetSlot: VDocSlot;
   boundChunks: BackdataChunk[];
   onApplySlotContent: (slotId: string, newHtml: string) => void;
+  initialPrompt?: string;
 }
 
 export const SlotInlineComposerHost: React.FC<SlotInlineComposerHostProps> = ({
   targetSlot,
   boundChunks,
   onApplySlotContent,
+  initialPrompt,
 }) => {
   const setRightSidebarOpen = useSlotSelectionStore(
     (s) => s.setRightSidebarOpen
@@ -34,6 +36,7 @@ export const SlotInlineComposerHost: React.FC<SlotInlineComposerHostProps> = ({
       onSynthesizeSlotContent={synthesizeSlotContent}
       onOpenBackdataDrawer={() => setRightSidebarOpen(true)}
       onClose={() => setComposerOpenSlotId(null)}
+      initialPrompt={initialPrompt}
     />
   );
 };

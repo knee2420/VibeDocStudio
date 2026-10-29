@@ -122,6 +122,11 @@ export interface TableCellSlotDef {
   backgroundColor?: string;
   color?: string;
   border?: string;
+  /** Per-edge borders set from the table-edit panel (CSS shorthand, "hidden" for 선 없음). */
+  borderTop?: string;
+  borderRight?: string;
+  borderBottom?: string;
+  borderLeft?: string;
   fontWeight?: string;
   fontSize?: string;
   lineHeight?: string;
@@ -141,7 +146,18 @@ export interface StructuredTableSectionDef {
   }[];
 }
 
-export type LayoutBlock =
+/**
+ * Fixed position on the page sheet in CSS px (96 dpi, origin at the sheet's top-left corner),
+ * like PandaDoc's absolutely positioned blocks. Framed blocks leave the flow; the rest flow as before.
+ */
+export interface BlockFrameRect {
+  x: number;
+  y: number;
+  w: number;
+  h?: number;
+}
+
+export type LayoutBlock = (
   | {
       blockId: string;
       kind: "image";
@@ -227,6 +243,8 @@ export type LayoutBlock =
       title: string;
       /** Explicit column widths, e.g. ["22%", "48%", "30%"] */
       columnWidths: string[];
+      /** Table width as a ratio of the content width (corner-handle drag). Omitted means 1. */
+      tableWidthRatio?: number;
       borderRules?: TableBorderRules;
       headerStyle?: TableHeaderStyle;
       cellPadding?: string;
@@ -253,7 +271,33 @@ export type LayoutBlock =
       slotId: string;
       assigneeName: string;
       fieldType: "text-area" | "signature" | "date" | "kpi-summary";
-    };
+    }
+  | {
+      blockId: string;
+      /** A single rich-text slot (PandaDoc text block). */
+      kind: "text";
+      title: string;
+      slotId: string;
+      align?: "left" | "center" | "right";
+    }
+) & { frame?: BlockFrameRect };
+
+/** Page-level typography and margins (A4 sheet = 794 × 1123 px). Omitted keeps the Studio defaults. */
+export interface VDocPageLayout {
+  /** Content margins in px; flowing blocks start inside them. */
+  margin?: { top: number; right: number; bottom: number; left: number };
+  /** Vertical gap between flowing blocks in px. */
+  blockGap?: number;
+  fontFamily?: string;
+  fontSize?: string;
+  color?: string;
+  lineHeight?: string;
+  /**
+   * Typeset like a PDF: no kerning or ligatures, no editor minimum heights, so text runs and
+   * paragraph boxes land on the coordinates of the source document.
+   */
+  exactText?: boolean;
+}
 
 /**
  * Matches PandaDoc Kolas Editor's 4-layer Page Anatomy dissected via REA:
@@ -274,6 +318,7 @@ export interface VDocPage {
   typstSvg?: string;
   typstTemplate?: string;
   pageRect?: { width: number; height: number; unit?: "pt" | "mm" | "%" };
+  layout?: VDocPageLayout;
 }
 
 export interface VDocCatalogManifest {

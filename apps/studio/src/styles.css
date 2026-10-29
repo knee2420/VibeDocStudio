@@ -1,4 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
+
+/* DejaVu Sans (Bitstream Vera licence): the face of the Atticus invoice PDF, served locally. */
+@font-face {
+  font-family: "DejaVu Sans";
+  src: url("/fonts/DejaVuSans.ttf") format("truetype");
+  font-weight: 400;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "DejaVu Sans";
+  src: url("/fonts/DejaVuSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: block;
+}
 @source "../../../packages";
 
 /* Tiptap Slot Rich-Text Typography inside VibeDocStudio Slots */
@@ -105,4 +122,32 @@
 .text-center .vdoc-tiptap-slot,
 .text-center .vdoc-tiptap-slot * {
   text-align: center !important;
+}
+
+/* Formatting marks from the yesform-parity toolbar */
+.vdoc-tiptap-slot a {
+  color: #0472e3;
+  text-decoration: underline;
+}
+
+.vdoc-tiptap-slot mark {
+  padding: 0 1px;
+  border-radius: 1px;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Exact-typesetting pages (page.layout.exactText): no editor minimum heights or paragraph defaults. */
+[data-exact-layout] .vdoc-tiptap-slot {
+  min-height: 0 !important;
+}
+
+[data-exact-layout] .vdoc-tiptap-slot p:empty {
+  min-height: 0;
 }

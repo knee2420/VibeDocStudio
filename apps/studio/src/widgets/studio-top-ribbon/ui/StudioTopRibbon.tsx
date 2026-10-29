@@ -6,12 +6,14 @@ import {
 } from "@/entities/vdoc-document";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
+import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { DocumentSwitcherBar } from "@/features/switch-catalog-form";
 
 export const StudioTopRibbon: React.FC = () => {
   const docs = useStudioDocumentStore((s) => s.docs);
   const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
   const updateCurrentDoc = useStudioDocumentStore((s) => s.updateCurrentDoc);
+  const { runTableCommand } = useMutateCanvasBlocks();
 
   const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
   if (!doc) return null;
@@ -47,7 +49,7 @@ export const StudioTopRibbon: React.FC = () => {
         <VDocFileActionButtons />
       </header>
 
-      <SlotFormattingSubToolbar />
+      <SlotFormattingSubToolbar onTableCommand={runTableCommand} />
     </>
   );
 };

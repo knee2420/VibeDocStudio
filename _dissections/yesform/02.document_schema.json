@@ -1,0 +1,1398 @@
+{
+ "_source": "live Tiptap v3 editor instance (document.querySelector('.ProseMirror').editor) on editor.yesform.com",
+ "framework": {
+  "app": "Next.js (turbopack chunks) + React",
+  "editor": "Tiptap v3 / ProseMirror",
+  "ui": "Radix UI menus + Tailwind + lucide icons",
+  "sourceMaps": "declared but 404 (not public)"
+ },
+ "extensions": [
+  {
+   "name": "paragraph",
+   "type": "node",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "link",
+   "type": "mark",
+   "options": {
+    "openOnClick": true,
+    "enableClickSelection": false,
+    "linkOnPaste": true,
+    "autolink": true,
+    "protocols": [
+     "http",
+     "https",
+     "mailto",
+     "tel"
+    ],
+    "defaultProtocol": "https",
+    "HTMLAttributes": {
+     "target": "_blank",
+     "rel": "noopener noreferrer",
+     "class": null
+    },
+    "isAllowedUri": "[fn]",
+    "validate": "[fn]",
+    "shouldAutoLink": "[fn]"
+   }
+  },
+  {
+   "name": "boldHeadingOverride",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "preserveListExitMarks",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "tableDeleteKeys",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "textStyle",
+   "type": "mark",
+   "options": {
+    "HTMLAttributes": {},
+    "mergeNestedSpanStyles": true
+   }
+  },
+  {
+   "name": "editable",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "clipboardTextSerializer",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "commands",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "focusEvents",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "keymap",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "tabindex",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "drop",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "paste",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "delete",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "textDirection",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "starterKit",
+   "type": "extension",
+   "options": {
+    "gapcursor": false,
+    "heading": false,
+    "paragraph": false,
+    "link": false,
+    "underline": false,
+    "strike": false,
+    "dropcursor": {
+     "color": "#3b82f6",
+     "width": 2
+    },
+    "undoRedo": {
+     "depth": 20
+    }
+   }
+  },
+  {
+   "name": "bold",
+   "type": "mark",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "blockquote",
+   "type": "node",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "bulletList",
+   "type": "node",
+   "options": {
+    "itemTypeName": "listItem",
+    "HTMLAttributes": {},
+    "keepMarks": false,
+    "keepAttributes": false
+   }
+  },
+  {
+   "name": "code",
+   "type": "mark",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "codeBlock",
+   "type": "node",
+   "options": {
+    "languageClassPrefix": "language-",
+    "exitOnTripleEnter": true,
+    "exitOnArrowDown": true,
+    "defaultLanguage": null,
+    "enableTabIndentation": false,
+    "tabSize": 4,
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "doc",
+   "type": "node",
+   "options": {}
+  },
+  {
+   "name": "dropCursor",
+   "type": "extension",
+   "options": {
+    "color": "#3b82f6",
+    "width": 2
+   }
+  },
+  {
+   "name": "hardBreak",
+   "type": "node",
+   "options": {
+    "keepMarks": true,
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "undoRedo",
+   "type": "extension",
+   "options": {
+    "depth": 20,
+    "newGroupDelay": 500
+   }
+  },
+  {
+   "name": "horizontalRule",
+   "type": "node",
+   "options": {
+    "HTMLAttributes": {},
+    "nextNodeType": "paragraph"
+   }
+  },
+  {
+   "name": "italic",
+   "type": "mark",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "listItem",
+   "type": "node",
+   "options": {
+    "HTMLAttributes": {},
+    "bulletListTypeName": "bulletList",
+    "orderedListTypeName": "orderedList"
+   }
+  },
+  {
+   "name": "listKeymap",
+   "type": "extension",
+   "options": {
+    "listTypes": [
+     {
+      "itemName": "listItem",
+      "wrapperNames": [
+       "bulletList",
+       "orderedList"
+      ]
+     },
+     {
+      "itemName": "taskItem",
+      "wrapperNames": [
+       "taskList"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "orderedList",
+   "type": "node",
+   "options": {
+    "itemTypeName": "listItem",
+    "HTMLAttributes": {},
+    "keepMarks": false,
+    "keepAttributes": false
+   }
+  },
+  {
+   "name": "text",
+   "type": "node",
+   "options": {}
+  },
+  {
+   "name": "trailingNode",
+   "type": "extension",
+   "options": {
+    "notAfter": []
+   }
+  },
+  {
+   "name": "strike",
+   "type": "mark",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "underline",
+   "type": "mark",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "heading",
+   "type": "node",
+   "options": {
+    "levels": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "textStyleKit",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "backgroundColor",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "color",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "fontFamily",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "fontSize",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "lineHeight",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "highlight",
+   "type": "mark",
+   "options": {
+    "multicolor": true,
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "textAlign",
+   "type": "extension",
+   "options": {
+    "types": [
+     "heading",
+     "paragraph",
+     "tableCell",
+     "tableHeader",
+     "listItem",
+     "tableRow",
+     "table"
+    ],
+    "alignments": [
+     "left",
+     "center",
+     "right",
+     "justify"
+    ],
+    "defaultAlignment": null
+   }
+  },
+  {
+   "name": "table",
+   "type": "node",
+   "options": {
+    "HTMLAttributes": {},
+    "resizable": false,
+    "renderWrapper": false,
+    "handleWidth": 5,
+    "cellMinWidth": 1,
+    "View": "[fn]",
+    "lastColumnResizable": true,
+    "allowTableNodeSelection": true
+   }
+  },
+  {
+   "name": "tableRow",
+   "type": "node",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "releaseExactRow",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "releaseLeadCenter",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "releaseTrimmedGap",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "cellOverflowDecoration",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "stampExtentDecoration",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "behindCellLayer",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "behindLiftLayer",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "borderPaint",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "tableHeader",
+   "type": "node",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "tableCell",
+   "type": "node",
+   "options": {
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "tableCellSelection",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "image",
+   "type": "node",
+   "options": {
+    "inline": true,
+    "allowBase64": true,
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "taskList",
+   "type": "node",
+   "options": {
+    "itemTypeName": "taskItem",
+    "HTMLAttributes": {}
+   }
+  },
+  {
+   "name": "taskItem",
+   "type": "node",
+   "options": {
+    "nested": true,
+    "HTMLAttributes": {},
+    "taskListTypeName": "taskList"
+   }
+  },
+  {
+   "name": "selectionPreserver",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "selectionTracker",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "selectionClamp",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "uniqueId",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "diffPreview",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "wordDiff",
+   "type": "mark",
+   "options": {}
+  },
+  {
+   "name": "inlineOldDecoration",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "tabHandler",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "undoRedoScroll",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "stickyMarks",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "fontSizeCursorMarker",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "fontWeight",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "letterSpacing",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "baselineRaise",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "wordSpacing",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "lineBreaksAttr",
+   "type": "extension",
+   "options": {
+    "types": [
+     "paragraph",
+     "heading"
+    ]
+   }
+  },
+  {
+   "name": "lineFitSpacing",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "leadingSpaceFix",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "shapeTextRunOffset",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "circledNumber",
+   "type": "mark",
+   "options": {}
+  },
+  {
+   "name": "whiteSpace",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "textCase",
+   "type": "extension",
+   "options": {
+    "types": [
+     "textStyle"
+    ]
+   }
+  },
+  {
+   "name": "listMarkerSize",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "listItemIndent",
+   "type": "extension",
+   "options": {
+    "types": [
+     "listItem"
+    ]
+   }
+  },
+  {
+   "name": "listStyleType",
+   "type": "extension",
+   "options": {
+    "types": [
+     "bulletList",
+     "orderedList"
+    ]
+   }
+  },
+  {
+   "name": "bookmarkAttr",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "wordBreakAttr",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "inlineShapeAttr",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "pageBreakAttrs",
+   "type": "extension",
+   "options": {
+    "types": [
+     "paragraph",
+     "heading",
+     "table",
+     "bulletList",
+     "orderedList"
+    ]
+   }
+  },
+  {
+   "name": "sectionGeometry",
+   "type": "extension",
+   "options": {
+    "types": [
+     "paragraph",
+     "heading",
+     "table",
+     "bulletList",
+     "orderedList"
+    ]
+   }
+  },
+  {
+   "name": "shapeTextAttrs",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "pageGridSpacing",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "coverPageSpacer",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "documentTitle",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "documentDefaultStyle",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "documentParaSpacing",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "documentLineHeight",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "documentLetterSpacing",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "docxShape",
+   "type": "node",
+   "options": {}
+  },
+  {
+   "name": "docxAnchorId",
+   "type": "extension",
+   "options": {
+    "types": [
+     "paragraph",
+     "heading",
+     "tableCell",
+     "tableHeader"
+    ],
+    "holderTypes": [
+     "paragraph",
+     "heading"
+    ]
+   }
+  },
+  {
+   "name": "inlineCheckbox",
+   "type": "node",
+   "options": {}
+  },
+  {
+   "name": "pageBackground",
+   "type": "extension",
+   "options": {}
+  },
+  {
+   "name": "documentPageWidth",
+   "type": "extension",
+   "options": {}
+  }
+ ],
+ "nodes": {
+  "paragraph": {
+   "group": "block",
+   "content": "inline*",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "textAlign": null,
+    "uuid": null,
+    "diffState": null,
+    "diffCurrent": false,
+    "lineBreaks": null,
+    "lineBreaksLen": null,
+    "bookmark": null,
+    "wordBreak": null,
+    "inlineShape": null,
+    "pageBreakBefore": null,
+    "pageBreakRendered": null,
+    "pageBreakCarrier": null,
+    "sectionIndex": null,
+    "sectionBreak": null,
+    "shapeTextPara": null,
+    "anchorId": null,
+    "anchorOnly": null,
+    "holderHeight": null,
+    "leadShift": null,
+    "blockStyle": null
+   }
+  },
+  "blockquote": {
+   "group": "block",
+   "content": "block+",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "diffState": null,
+    "diffCurrent": false
+   }
+  },
+  "bulletList": {
+   "group": "block list",
+   "content": "listItem+",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "uuid": null,
+    "diffState": null,
+    "diffCurrent": false,
+    "listStyleType": null,
+    "pageBreakBefore": null,
+    "pageBreakRendered": null,
+    "pageBreakCarrier": null,
+    "sectionIndex": null,
+    "sectionBreak": null
+   }
+  },
+  "codeBlock": {
+   "group": "block",
+   "content": "text*",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "diffState": null,
+    "diffCurrent": false,
+    "language": null
+   }
+  },
+  "doc": {
+   "content": "block+",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "title": "",
+    "defaultStyle": null,
+    "paraMarginBottomPt": null,
+    "paraLineHeightMultiple": null,
+    "lineHeightGuessed": null,
+    "lineConvention": null,
+    "letterSpacingEm": null,
+    "pageBackground": null,
+    "sectionBackgrounds": null,
+    "pageFooter": null,
+    "pageBodyWidthPx": null,
+    "pageWidthPx": null,
+    "marginLeftPx": null,
+    "marginRightPx": null,
+    "marginTopPx": null,
+    "marginBottomPx": null,
+    "pageHeightPx": null,
+    "pageFitsOnePage": null,
+    "pageSourceCount": null,
+    "sections": null
+   }
+  },
+  "hardBreak": {
+   "group": "inline",
+   "inline": true,
+   "atom": false,
+   "attrs": {}
+  },
+  "horizontalRule": {
+   "group": "block",
+   "inline": false,
+   "atom": false,
+   "attrs": {}
+  },
+  "listItem": {
+   "content": "paragraph block*",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "textAlign": null,
+    "marginLeftPx": null,
+    "marginRightPx": null,
+    "listMarkerLeftPx": null,
+    "listTextOffsetPx": null,
+    "bookmark": null,
+    "wordBreak": null
+   }
+  },
+  "orderedList": {
+   "group": "block list",
+   "content": "listItem+",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "uuid": null,
+    "diffState": null,
+    "diffCurrent": false,
+    "listStyleType": null,
+    "pageBreakBefore": null,
+    "pageBreakRendered": null,
+    "pageBreakCarrier": null,
+    "sectionIndex": null,
+    "sectionBreak": null,
+    "start": 1,
+    "type": null
+   }
+  },
+  "text": {
+   "group": "inline",
+   "inline": false,
+   "atom": false,
+   "attrs": {}
+  },
+  "heading": {
+   "group": "block",
+   "content": "inline*",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "textAlign": null,
+    "uuid": null,
+    "diffState": null,
+    "diffCurrent": false,
+    "lineBreaks": null,
+    "lineBreaksLen": null,
+    "bookmark": null,
+    "wordBreak": null,
+    "pageBreakBefore": null,
+    "pageBreakRendered": null,
+    "pageBreakCarrier": null,
+    "sectionIndex": null,
+    "sectionBreak": null,
+    "anchorId": null,
+    "anchorOnly": null,
+    "holderHeight": null,
+    "level": 1,
+    "leadShift": null,
+    "blockStyle": null
+   }
+  },
+  "table": {
+   "group": "block",
+   "content": "tableRow+",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "textAlign": null,
+    "uuid": null,
+    "diffState": null,
+    "diffCurrent": false,
+    "pageBreakBefore": null,
+    "pageBreakRendered": null,
+    "pageBreakCarrier": null,
+    "sectionIndex": null,
+    "sectionBreak": null,
+    "borderless": false,
+    "dataImport": false,
+    "importRatio": null,
+    "importWidthPx": null,
+    "tableWidthRatio": null,
+    "tableAlign": "left",
+    "tableIndent": null,
+    "tableMarginRight": null,
+    "tableMarginLeft": null,
+    "tableOutset": null,
+    "floatTop": null,
+    "flowHeight": null,
+    "floatSide": null,
+    "floatGapRight": null,
+    "floatGapBottom": null,
+    "zIndex": null,
+    "positionMode": null,
+    "posX": null,
+    "posY": null,
+    "posXRef": null,
+    "posYRef": null,
+    "posPage": null,
+    "tableGapTop": null,
+    "tableGapBottom": null,
+    "tableLeadPayback": null
+   }
+  },
+  "tableRow": {
+   "content": "(tableCell | tableHeader)*",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "textAlign": null,
+    "height": null,
+    "padPx": null,
+    "hRule": null,
+    "overflowTop": null,
+    "pinSrc": null,
+    "headerRow": false
+   }
+  },
+  "tableHeader": {
+   "content": "block+",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "textAlign": null,
+    "bookmark": null,
+    "anchorId": null,
+    "colspan": 1,
+    "rowspan": 1,
+    "colwidth": null,
+    "backgroundColor": null,
+    "borderTopColor": null,
+    "borderTopStyle": null,
+    "borderTopWidthPx": null,
+    "borderRightColor": null,
+    "borderRightRows": null,
+    "borderRightStyle": null,
+    "borderRightWidthPx": null,
+    "borderBottomColor": null,
+    "borderBottomStyle": null,
+    "borderBottomWidthPx": null,
+    "borderLeftColor": null,
+    "borderLeftRows": null,
+    "borderLeftStyle": null,
+    "borderLeftWidthPx": null,
+    "leadCenter": null,
+    "blockStyle": null
+   }
+  },
+  "tableCell": {
+   "content": "block+",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "textAlign": null,
+    "bookmark": null,
+    "anchorId": null,
+    "colspan": 1,
+    "rowspan": 1,
+    "colwidth": null,
+    "backgroundColor": null,
+    "borderTopColor": null,
+    "borderTopStyle": null,
+    "borderTopWidthPx": null,
+    "borderRightColor": null,
+    "borderRightRows": null,
+    "borderRightStyle": null,
+    "borderRightWidthPx": null,
+    "borderBottomColor": null,
+    "borderBottomStyle": null,
+    "borderBottomWidthPx": null,
+    "borderLeftColor": null,
+    "borderLeftRows": null,
+    "borderLeftStyle": null,
+    "borderLeftWidthPx": null,
+    "leadCenter": null,
+    "hideMark": false,
+    "blockStyle": null
+   }
+  },
+  "image": {
+   "group": "inline",
+   "inline": true,
+   "atom": false,
+   "attrs": {
+    "uuid": null,
+    "diffState": null,
+    "diffCurrent": false,
+    "id": null,
+    "src": null,
+    "alt": null,
+    "title": null,
+    "width": null,
+    "height": null,
+    "displayWidth": null,
+    "displayHeight": null,
+    "textAlign": null,
+    "isCropping": false,
+    "data-keep-ratio": true,
+    "opacity": 100,
+    "imgRecolor": null,
+    "imgBrightnessOffset": 0,
+    "imgContrastOffset": 0,
+    "imageType": "photo",
+    "positionMode": "inline",
+    "wrapsText": false,
+    "docxFloat": false,
+    "posX": null,
+    "posY": null,
+    "posXRef": null,
+    "posYRef": null,
+    "posPage": null,
+    "anchorLink": null,
+    "zIndex": null
+   }
+  },
+  "taskList": {
+   "group": "block list",
+   "content": "taskItem+",
+   "inline": false,
+   "atom": false,
+   "attrs": {}
+  },
+  "taskItem": {
+   "content": "paragraph block*",
+   "inline": false,
+   "atom": false,
+   "attrs": {
+    "checked": false
+   }
+  },
+  "docxShape": {
+   "group": "block",
+   "inline": false,
+   "atom": true,
+   "attrs": {
+    "positionMode": null,
+    "posX": null,
+    "posY": null,
+    "posXRef": null,
+    "posYRef": null,
+    "posPage": null,
+    "shapePart": null,
+    "zIndex": null,
+    "geom": null,
+    "anchorId": null,
+    "width": null,
+    "height": null,
+    "background": null,
+    "border": null,
+    "borderRadius": null,
+    "gradient": null,
+    "hatch": null,
+    "hatchColor": null,
+    "fillAlpha": null,
+    "shapeText": null,
+    "shapeLines": null,
+    "textStyle": null,
+    "textAnchor": null,
+    "textInset": null,
+    "textOverflow": null,
+    "textAutofit": null,
+    "textWrap": null,
+    "textLineShift": null,
+    "shapePath": null,
+    "shapeViewBox": null,
+    "anchorLink": null,
+    "followUuid": null
+   }
+  },
+  "inlineCheckbox": {
+   "group": "inline",
+   "inline": true,
+   "atom": true,
+   "attrs": {
+    "checked": false
+   }
+  }
+ },
+ "marks": {
+  "link": {
+   "attrs": {
+    "href": null,
+    "target": "_blank",
+    "rel": "noopener noreferrer",
+    "class": null,
+    "dataImport": null
+   }
+  },
+  "textStyle": {
+   "attrs": {
+    "backgroundColor": null,
+    "color": null,
+    "fontFamily": null,
+    "fontSize": null,
+    "lineHeight": null,
+    "fontWeight": null,
+    "letterSpacing": null,
+    "baselineRaise": null,
+    "lineLift": null,
+    "wordSpacing": null,
+    "whiteSpace": null,
+    "textTransform": null,
+    "fontVariant": null
+   }
+  },
+  "bold": {
+   "attrs": {}
+  },
+  "code": {
+   "attrs": {}
+  },
+  "italic": {
+   "attrs": {}
+  },
+  "strike": {
+   "attrs": {
+    "strikeStyle": null,
+    "strikeColor": null
+   }
+  },
+  "underline": {
+   "attrs": {
+    "underlineStyle": null,
+    "underlineColor": null
+   }
+  },
+  "highlight": {
+   "attrs": {
+    "color": null
+   }
+  },
+  "wordDiff": {
+   "attrs": {
+    "type": null,
+    "id": null,
+    "current": false
+   }
+  },
+  "circledNumber": {
+   "attrs": {
+    "value": null
+   }
+  }
+ },
+ "commands": [
+  "addColumnAfter",
+  "addColumnBefore",
+  "addRowAfter",
+  "addRowBefore",
+  "blur",
+  "cancelCrop",
+  "clearAllWordDiffMarks",
+  "clearContent",
+  "clearDiffCurrentNodes",
+  "clearInlineOldRange",
+  "clearNodes",
+  "clearWordDiffActiveIds",
+  "command",
+  "createParagraphNear",
+  "cut",
+  "deduplicateDiffNodes",
+  "deleteColumn",
+  "deleteCurrentNode",
+  "deleteNode",
+  "deleteRange",
+  "deleteRow",
+  "deleteSelection",
+  "deleteTable",
+  "enter",
+  "exitCode",
+  "extendMarkRange",
+  "first",
+  "fixTables",
+  "focus",
+  "forEach",
+  "goToNextCell",
+  "goToPreviousCell",
+  "insertContent",
+  "insertContentAt",
+  "insertTable",
+  "joinBackward",
+  "joinDown",
+  "joinForward",
+  "joinItemBackward",
+  "joinItemForward",
+  "joinTextblockBackward",
+  "joinTextblockForward",
+  "joinUp",
+  "keyboardShortcut",
+  "lift",
+  "liftEmptyBlock",
+  "liftListItem",
+  "markAllNodesAsDiffOld",
+  "markNewNodesAsDiffNew",
+  "markNodeAsDiffOld",
+  "mergeCells",
+  "mergeOrSplit",
+  "newlineInCode",
+  "redo",
+  "removeEmptyTextStyle",
+  "replaceImageSource",
+  "resetAttributes",
+  "scrollIntoView",
+  "selectAll",
+  "selectNodeBackward",
+  "selectNodeForward",
+  "selectParentNode",
+  "selectTextblockEnd",
+  "selectTextblockStart",
+  "sendObjectToBack",
+  "sendObjectToFront",
+  "setBackgroundColor",
+  "setBlockquote",
+  "setBold",
+  "setCellAttribute",
+  "setCellBorderColor",
+  "setCellBorderStyle",
+  "setCellSelection",
+  "setCellsAlign",
+  "setCode",
+  "setCodeBlock",
+  "setColor",
+  "setContent",
+  "setDiffCurrentNodes",
+  "setDocumentDefaultStyle",
+  "setDocumentLetterSpacing",
+  "setDocumentLineConvention",
+  "setDocumentLineHeightMultiple",
+  "setDocumentPageWidth",
+  "setDocumentParaSpacing",
+  "setDocumentTitle",
+  "setFontFamily",
+  "setFontSize",
+  "setFontWeight",
+  "setHardBreak",
+  "setHeading",
+  "setHighlight",
+  "setHorizontalRule",
+  "setImage",
+  "setImageAlign",
+  "setImageFloatPos",
+  "setImagePositionChoice",
+  "setInlineOldRange",
+  "setItalic",
+  "setLineHeight",
+  "setLineHeightGuessed",
+  "setLink",
+  "setMark",
+  "setMeta",
+  "setNode",
+  "setNodeSelection",
+  "setPageBackground",
+  "setPageFitsOnePage",
+  "setPageFooter",
+  "setPageGeometry",
+  "setPageSourceCount",
+  "setParagraph",
+  "setSectionBackgrounds",
+  "setStrike",
+  "setTableAlign",
+  "setTextAlign",
+  "setTextDirection",
+  "setTextSelection",
+  "setUnderline",
+  "setWordDiffActiveIds",
+  "sinkListItem",
+  "splitBlock",
+  "splitCell",
+  "splitListItem",
+  "stepObjectLayer",
+  "toggleBlockquote",
+  "toggleBold",
+  "toggleBulletList",
+  "toggleCode",
+  "toggleCodeBlock",
+  "toggleCrop",
+  "toggleHeaderCell",
+  "toggleHeaderColumn",
+  "toggleHeaderRow",
+  "toggleHeading",
+  "toggleHighlight",
+  "toggleItalic",
+  "toggleLink",
+  "toggleList",
+  "toggleMark",
+  "toggleNode",
+  "toggleOrderedList",
+  "toggleStrike",
+  "toggleTaskList",
+  "toggleTextAlign",
+  "toggleTextStyle",
+  "toggleUnderline",
+  "toggleWrap",
+  "undo",
+  "undoInputRule",
+  "unsetAllMarks",
+  "unsetBackgroundColor",
+  "unsetBlockquote",
+  "unsetBold",
+  "unsetCode",
+  "unsetColor",
+  "unsetFontFamily",
+  "unsetFontSize",
+  "unsetFontWeight",
+  "unsetHighlight",
+  "unsetItalic",
+  "unsetLineHeight",
+  "unsetLink",
+  "unsetMark",
+  "unsetStrike",
+  "unsetTextAlign",
+  "unsetTextDirection",
+  "unsetUnderline",
+  "updateAttributes",
+  "updateImageAfterCrop",
+  "wrapIn",
+  "wrapInList"
+ ]
+}

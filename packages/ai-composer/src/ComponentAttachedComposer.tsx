@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Sparkles,
   Paperclip,
@@ -28,6 +28,8 @@ export interface ComponentAttachedComposerProps {
   onSynthesizeSlotContent?: (params: SynthesizeSlotParams) => Promise<string>;
   onOpenBackdataDrawer?: (chunkId?: string) => void;
   onClose: () => void;
+  /** Prompt to run as soon as the composer opens (from the selection AI bar). */
+  initialPrompt?: string;
 }
 
 const QUICK_PRESETS = [
@@ -118,8 +120,9 @@ export const ComponentAttachedComposer: React.FC<
   onSynthesizeSlotContent,
   onOpenBackdataDrawer,
   onClose,
+  initialPrompt,
 }) => {
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(initialPrompt ?? "");
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState("");
@@ -141,6 +144,16 @@ export const ComponentAttachedComposer: React.FC<
       setIsGenerating(false);
     }
   };
+
+  const ranInitial = useRef<string | null>(null);
+  useEffect(() => {
+    if (initialPrompt && ranInitial.current !== initialPrompt) {
+      ranInitial.current = initialPrompt;
+      setPrompt(initialPrompt);
+      void runCompose(initialPrompt);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPrompt]);
 
   return (
     <div

@@ -1,0 +1,6367 @@
+{
+ "title": "사무용품 대량 구매 견적서",
+ "docAttrs": {
+  "title": "사무용품 대량 구매 견적서",
+  "defaultStyle": null,
+  "paraMarginBottomPt": null,
+  "paraLineHeightMultiple": null,
+  "lineHeightGuessed": null,
+  "lineConvention": null,
+  "letterSpacingEm": null,
+  "pageBackground": null,
+  "sectionBackgrounds": null,
+  "pageFooter": null,
+  "pageBodyWidthPx": null,
+  "pageWidthPx": null,
+  "marginLeftPx": null,
+  "marginRightPx": null,
+  "marginTopPx": null,
+  "marginBottomPx": null,
+  "pageHeightPx": null,
+  "pageFitsOnePage": null,
+  "pageSourceCount": null,
+  "sections": null
+ },
+ "blocks": [
+  {
+   "i": 0,
+   "type": "heading",
+   "attrs": {
+    "textAlign": "center",
+    "level": 1
+   },
+   "text": "사무용품 대량 구매 견적서",
+   "rect": [
+    0,
+    0,
+    601.69,
+    36.66
+   ],
+   "tag": "H1",
+   "cls": "",
+   "style": {
+    "font": "malgunGothic",
+    "size": 29.33,
+    "weight": "600",
+    "color": "rgb(26, 26, 26)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "36.6667px",
+    "ls": "-1.02667px",
+    "align": "center",
+    "margin": "0px 0px 10.6667px",
+    "padding": "0px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   }
+  },
+  {
+   "i": 1,
+   "type": "paragraph",
+   "attrs": {},
+   "text": "",
+   "rect": [
+    0,
+    47.31,
+    601.69,
+    19.98
+   ],
+   "tag": "P",
+   "cls": "",
+   "style": {
+    "font": "malgunGothic",
+    "size": 13.33,
+    "weight": "400",
+    "color": "rgb(0, 0, 0)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "20px",
+    "ls": "-0.266667px",
+    "align": "start",
+    "margin": "0px 0px 10.6667px",
+    "padding": "0px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   }
+  },
+  {
+   "i": 2,
+   "type": "paragraph",
+   "attrs": {
+    "textAlign": "right",
+    "blockStyle": "margin-bottom: 16px"
+   },
+   "text": "작성일: 2026년 10월 28일",
+   "rect": [
+    0,
+    77.95,
+    601.69,
+    19.98
+   ],
+   "tag": "P",
+   "cls": "",
+   "style": {
+    "font": "malgunGothic",
+    "size": 13.33,
+    "weight": "400",
+    "color": "rgb(0, 0, 0)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "20px",
+    "ls": "-0.266667px",
+    "align": "right",
+    "margin": "0px 0px 16px",
+    "padding": "0px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   }
+  },
+  {
+   "i": 3,
+   "type": "table",
+   "attrs": {
+    "tableAlign": "left"
+   },
+   "text": "공급자 (수신)상호명:담당자:연락처:공급받는 자 (발신)상호명:담당자:연락처:",
+   "rect": [
+    0,
+    113.94,
+    601.69,
+    118.91
+   ],
+   "tag": "DIV",
+   "cls": "table-wrapper",
+   "style": {
+    "font": "malgunGothic",
+    "size": 13.33,
+    "weight": "400",
+    "color": "rgb(0, 0, 0)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "20px",
+    "ls": "-0.266667px",
+    "align": "start",
+    "margin": "0px 0px 10px",
+    "padding": "0px 0px 1px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   },
+   "table": {
+    "rows": 1,
+    "cols": 2,
+    "colgroup": [
+     "300.5px",
+     "300.5px"
+    ],
+    "tableStyle": {
+     "font": "malgunGothic",
+     "size": 13.33,
+     "weight": "400",
+     "color": "rgb(0, 0, 0)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "lh": "20px",
+     "ls": "-0.266667px",
+     "align": "start",
+     "margin": "0px",
+     "padding": "0px",
+     "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+     "vAlign": "baseline"
+    },
+    "width": 602,
+    "cells": [
+     [
+      {
+       "tag": "TH",
+       "text": "공급자 (수신)\n\n상호명:\n\n담당자:\n\n연락처:",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 300.5,
+       "h": 116.91,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(250, 250, 250)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TH",
+       "text": "공급받는 자 (발신)\n\n상호명:\n\n담당자:\n\n연락처:",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 300.5,
+       "h": 116.91,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(250, 250, 250)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "i": 4,
+   "type": "heading",
+   "attrs": {
+    "level": 2
+   },
+   "text": "1. 견적 개요",
+   "rect": [
+    0,
+    259.5,
+    601.69,
+    19.06
+   ],
+   "tag": "H2",
+   "cls": "",
+   "style": {
+    "font": "malgunGothic",
+    "size": 14.67,
+    "weight": "600",
+    "color": "rgb(26, 26, 26)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "19.0667px",
+    "ls": "-0.44px",
+    "align": "start",
+    "margin": "26.6667px 0px 8px",
+    "padding": "0px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   }
+  },
+  {
+   "i": 5,
+   "type": "paragraph",
+   "attrs": {},
+   "text": "아래와 같이 사무용품 대량 구매에 대한 단가 및 총액을 견적합니다.",
+   "rect": [
+    0,
+    286.56,
+    601.69,
+    19.98
+   ],
+   "tag": "P",
+   "cls": "",
+   "style": {
+    "font": "malgunGothic",
+    "size": 13.33,
+    "weight": "400",
+    "color": "rgb(0, 0, 0)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "20px",
+    "ls": "-0.266667px",
+    "align": "start",
+    "margin": "0px 0px 10.6667px",
+    "padding": "0px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   }
+  },
+  {
+   "i": 6,
+   "type": "table",
+   "attrs": {
+    "tableAlign": "left"
+   },
+   "text": "합계 금액일금 원정 (⁭ 0) ※ 부가세 포함납품 기한2026년 월 일 까지결제 조건납품 후 30일 이내 현금 결제 / 카드 결제",
+   "rect": [
+    0,
+    317.2,
+    601.69,
+    112.95
+   ],
+   "tag": "DIV",
+   "cls": "table-wrapper",
+   "style": {
+    "font": "malgunGothic",
+    "size": 13.33,
+    "weight": "400",
+    "color": "rgb(0, 0, 0)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "20px",
+    "ls": "-0.266667px",
+    "align": "start",
+    "margin": "0px 0px 10px",
+    "padding": "0px 0px 1px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   },
+   "table": {
+    "rows": 3,
+    "cols": 2,
+    "colgroup": [
+     "155.431px",
+     "445.569px"
+    ],
+    "tableStyle": {
+     "font": "malgunGothic",
+     "size": 13.33,
+     "weight": "400",
+     "color": "rgb(0, 0, 0)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "lh": "20px",
+     "ls": "-0.266667px",
+     "align": "start",
+     "margin": "0px",
+     "padding": "0px",
+     "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+     "vAlign": "baseline"
+    },
+    "width": 601.98,
+    "cells": [
+     [
+      {
+       "tag": "TH",
+       "text": "합계 금액",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 155.42,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(245, 245, 246)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "일금 원정 (⁭ 0) ※ 부가세 포함",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 445.56,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TH",
+       "text": "납품 기한",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 155.42,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(245, 245, 246)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "2026년 월 일 까지",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 445.56,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TH",
+       "text": "결제 조건",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 155.42,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(245, 245, 246)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "납품 후 30일 이내 현금 결제 / 카드 결제",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 445.56,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "i": 7,
+   "type": "heading",
+   "attrs": {
+    "level": 2
+   },
+   "text": "2. 세부 품목 및 단가 내역",
+   "rect": [
+    0,
+    456.81,
+    601.69,
+    19.06
+   ],
+   "tag": "H2",
+   "cls": "",
+   "style": {
+    "font": "malgunGothic",
+    "size": 14.67,
+    "weight": "600",
+    "color": "rgb(26, 26, 26)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "19.0667px",
+    "ls": "-0.44px",
+    "align": "start",
+    "margin": "26.6667px 0px 8px",
+    "padding": "0px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   }
+  },
+  {
+   "i": 8,
+   "type": "table",
+   "attrs": {
+    "tableAlign": "left"
+   },
+   "text": "NO품목명 / 규격수량단위제시 단가(원)공급가액(원)1A4 복용지 (80g, 2500매)50박스28,0001,400,0002중성펜 (0.5mm,",
+   "rect": [
+    0,
+    483.88,
+    601.69,
+    334.86
+   ],
+   "tag": "DIV",
+   "cls": "table-wrapper",
+   "style": {
+    "font": "malgunGothic",
+    "size": 13.33,
+    "weight": "400",
+    "color": "rgb(0, 0, 0)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "20px",
+    "ls": "-0.266667px",
+    "align": "start",
+    "margin": "0px 0px 10px",
+    "padding": "0px 0px 1px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   },
+   "table": {
+    "rows": 9,
+    "cols": 6,
+    "colgroup": [
+     "42.9286px",
+     "193.179px",
+     "64.3929px",
+     "53.6607px",
+     "118.054px",
+     "128.786px"
+    ],
+    "tableStyle": {
+     "font": "malgunGothic",
+     "size": 13.33,
+     "weight": "400",
+     "color": "rgb(0, 0, 0)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "lh": "20px",
+     "ls": "-0.266667px",
+     "align": "start",
+     "margin": "0px",
+     "padding": "0px",
+     "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+     "vAlign": "baseline"
+    },
+    "width": 601.97,
+    "cells": [
+     [
+      {
+       "tag": "TH",
+       "text": "NO",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 42.92,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(245, 245, 246)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TH",
+       "text": "품목명 / 규격",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 193.17,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(245, 245, 246)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TH",
+       "text": "수량",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 64.39,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(245, 245, 246)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TH",
+       "text": "단위",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 53.66,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(245, 245, 246)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TH",
+       "text": "제시 단가(원)",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 118.05,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(245, 245, 246)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TH",
+       "text": "공급가액(원)",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 128.78,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgb(245, 245, 246)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "600",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TD",
+       "text": "1",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 42.92,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "A4 복용지 (80g, 2500매)",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 193.17,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "50",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 64.39,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "박스",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 53.66,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "28,000",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 118.05,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "1,400,000",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 128.78,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TD",
+       "text": "2",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 42.92,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "중성펜 (0.5mm, 흑색 12입)",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 193.17,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "100",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 64.39,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "곽",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 53.66,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "8,000",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 118.05,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "800,000",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 128.78,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TD",
+       "text": "3",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 42.92,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "L홀더 화일 (A4, 100매입)",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 193.17,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "20",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 64.39,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "묶음",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 53.66,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "12,000",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 118.05,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "240,000",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 128.78,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TD",
+       "text": "4",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 42.92,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 193.17,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 64.39,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 53.66,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 118.05,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 128.78,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TD",
+       "text": "5",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 42.92,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 193.17,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 64.39,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 53.66,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 118.05,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "",
+       "colspan": 1,
+       "rowspan": 1,
+       "w": 128.78,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "start",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TD",
+       "text": "소계 (공급가액)",
+       "colspan": 4,
+       "rowspan": 1,
+       "w": 354.14,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "2,440,000 원",
+       "colspan": 2,
+       "rowspan": 1,
+       "w": 246.83,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TD",
+       "text": "부가가치세 (10%)",
+       "colspan": 4,
+       "rowspan": 1,
+       "w": 354.14,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "244,000 원",
+       "colspan": 2,
+       "rowspan": 1,
+       "w": 246.83,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ],
+     [
+      {
+       "tag": "TD",
+       "text": "총합계 (VAT 포함)",
+       "colspan": 4,
+       "rowspan": 1,
+       "w": 354.14,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "center",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      },
+      {
+       "tag": "TD",
+       "text": "2,684,000 원",
+       "colspan": 2,
+       "rowspan": 1,
+       "w": 246.83,
+       "h": 36.98,
+       "style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "8px",
+        "border": "1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234) / 1px solid rgb(234, 234, 234)",
+        "vAlign": "middle"
+       },
+       "text_style": {
+        "font": "malgunGothic",
+        "size": 13.33,
+        "weight": "400",
+        "color": "rgb(0, 0, 0)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "lh": "20px",
+        "ls": "-0.266667px",
+        "align": "right",
+        "margin": "0px",
+        "padding": "0px",
+        "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+        "vAlign": "baseline"
+       }
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "i": 9,
+   "type": "heading",
+   "attrs": {
+    "level": 2
+   },
+   "text": "3. 특기 사항",
+   "rect": [
+    0,
+    845.39,
+    601.69,
+    19.06
+   ],
+   "tag": "H2",
+   "cls": "",
+   "style": {
+    "font": "malgunGothic",
+    "size": 14.67,
+    "weight": "600",
+    "color": "rgb(26, 26, 26)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "19.0667px",
+    "ls": "-0.44px",
+    "align": "start",
+    "margin": "26.6667px 0px 8px",
+    "padding": "0px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   }
+  },
+  {
+   "i": 10,
+   "type": "bulletList",
+   "attrs": {},
+   "text": "대량 구매에 따른 수량별 할인 단가가 적용된 금액입니다.지정된 장소까지의 운반비 및 배송비가 포함되어 있습니다.본 견적서의 유효기간은 제출일로부",
+   "rect": [
+    0,
+    872.45,
+    601.69,
+    66.61
+   ],
+   "tag": "UL",
+   "cls": "",
+   "style": {
+    "font": "malgunGothic",
+    "size": 13.33,
+    "weight": "400",
+    "color": "rgb(0, 0, 0)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "20px",
+    "ls": "-0.266667px",
+    "align": "start",
+    "margin": "0px 0px 10px",
+    "padding": "0px 16px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   }
+  },
+  {
+   "i": 11,
+   "type": "paragraph",
+   "attrs": {},
+   "text": "",
+   "rect": [
+    0,
+    949.06,
+    601.69,
+    19.98
+   ],
+   "tag": "P",
+   "cls": "",
+   "style": {
+    "font": "malgunGothic",
+    "size": 13.33,
+    "weight": "400",
+    "color": "rgb(0, 0, 0)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "lh": "20px",
+    "ls": "-0.266667px",
+    "align": "start",
+    "margin": "0px 0px 10.6667px",
+    "padding": "0px",
+    "border": "0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234) / 0px solid rgb(234, 234, 234)",
+    "vAlign": "baseline"
+   }
+  }
+ ],
+ "json": {
+  "type": "doc",
+  "attrs": {
+   "title": "사무용품 대량 구매 견적서",
+   "defaultStyle": null,
+   "paraMarginBottomPt": null,
+   "paraLineHeightMultiple": null,
+   "lineHeightGuessed": null,
+   "lineConvention": null,
+   "letterSpacingEm": null,
+   "pageBackground": null,
+   "sectionBackgrounds": null,
+   "pageFooter": null,
+   "pageBodyWidthPx": null,
+   "pageWidthPx": null,
+   "marginLeftPx": null,
+   "marginRightPx": null,
+   "marginTopPx": null,
+   "marginBottomPx": null,
+   "pageHeightPx": null,
+   "pageFitsOnePage": null,
+   "pageSourceCount": null,
+   "sections": null
+  },
+  "content": [
+   {
+    "type": "heading",
+    "attrs": {
+     "textAlign": "center",
+     "uuid": "p4N-3boe",
+     "diffState": null,
+     "diffCurrent": false,
+     "lineBreaks": null,
+     "lineBreaksLen": null,
+     "bookmark": null,
+     "wordBreak": null,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "anchorId": null,
+     "anchorOnly": null,
+     "holderHeight": null,
+     "level": 1,
+     "leadShift": null,
+     "blockStyle": null
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "사무용품 대량 구매 견적서"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "attrs": {
+     "textAlign": null,
+     "uuid": "FE--gx0h",
+     "diffState": null,
+     "diffCurrent": false,
+     "lineBreaks": null,
+     "lineBreaksLen": null,
+     "bookmark": null,
+     "wordBreak": null,
+     "inlineShape": null,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "shapeTextPara": null,
+     "anchorId": null,
+     "anchorOnly": null,
+     "holderHeight": null,
+     "leadShift": null,
+     "blockStyle": null
+    }
+   },
+   {
+    "type": "paragraph",
+    "attrs": {
+     "textAlign": "right",
+     "uuid": "8qLobcxH",
+     "diffState": null,
+     "diffCurrent": false,
+     "lineBreaks": null,
+     "lineBreaksLen": null,
+     "bookmark": null,
+     "wordBreak": null,
+     "inlineShape": null,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "shapeTextPara": null,
+     "anchorId": null,
+     "anchorOnly": null,
+     "holderHeight": null,
+     "leadShift": null,
+     "blockStyle": "margin-bottom: 16px"
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "작성일: 2026년 10월 28일"
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "attrs": {
+     "textAlign": null,
+     "uuid": "IABAwRW3",
+     "diffState": null,
+     "diffCurrent": false,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "borderless": false,
+     "dataImport": false,
+     "importRatio": null,
+     "importWidthPx": null,
+     "tableWidthRatio": null,
+     "tableAlign": "left",
+     "tableIndent": null,
+     "tableMarginRight": null,
+     "tableMarginLeft": null,
+     "tableOutset": null,
+     "floatTop": null,
+     "flowHeight": null,
+     "floatSide": null,
+     "floatGapRight": null,
+     "floatGapBottom": null,
+     "zIndex": null,
+     "positionMode": null,
+     "posX": null,
+     "posY": null,
+     "posXRef": null,
+     "posYRef": null,
+     "posPage": null,
+     "tableGapTop": null,
+     "tableGapBottom": null,
+     "tableLeadPayback": null
+    },
+    "content": [
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          290
+         ],
+         "backgroundColor": "rgb(250, 250, 250)",
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "vuRPLNvz",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "marks": [
+             {
+              "type": "bold"
+             }
+            ],
+            "text": "공급자 (수신)"
+           }
+          ]
+         },
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "MlKMTNjn",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "상호명:"
+           }
+          ]
+         },
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "ogJS0gLY",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "담당자:"
+           }
+          ]
+         },
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "Pk6mxHBJ",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "연락처:"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          290
+         ],
+         "backgroundColor": "rgb(250, 250, 250)",
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "IiZRs23H",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "marks": [
+             {
+              "type": "bold"
+             }
+            ],
+            "text": "공급받는 자 (발신)"
+           }
+          ]
+         },
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "BfJ4PUD7",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "상호명:"
+           }
+          ]
+         },
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "xHV814vw",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "담당자:"
+           }
+          ]
+         },
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "x60QHoXm",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "연락처:"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "heading",
+    "attrs": {
+     "textAlign": null,
+     "uuid": "auMQlnMj",
+     "diffState": null,
+     "diffCurrent": false,
+     "lineBreaks": null,
+     "lineBreaksLen": null,
+     "bookmark": null,
+     "wordBreak": null,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "anchorId": null,
+     "anchorOnly": null,
+     "holderHeight": null,
+     "level": 2,
+     "leadShift": null,
+     "blockStyle": null
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "1. 견적 개요"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "attrs": {
+     "textAlign": null,
+     "uuid": "h6Qe6LKg",
+     "diffState": null,
+     "diffCurrent": false,
+     "lineBreaks": null,
+     "lineBreaksLen": null,
+     "bookmark": null,
+     "wordBreak": null,
+     "inlineShape": null,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "shapeTextPara": null,
+     "anchorId": null,
+     "anchorOnly": null,
+     "holderHeight": null,
+     "leadShift": null,
+     "blockStyle": null
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "아래와 같이 사무용품 대량 구매에 대한 단가 및 총액을 견적합니다."
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "attrs": {
+     "textAlign": null,
+     "uuid": "FQxexBaJ",
+     "diffState": null,
+     "diffCurrent": false,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "borderless": false,
+     "dataImport": false,
+     "importRatio": null,
+     "importWidthPx": null,
+     "tableWidthRatio": null,
+     "tableAlign": "left",
+     "tableIndent": null,
+     "tableMarginRight": null,
+     "tableMarginLeft": null,
+     "tableOutset": null,
+     "floatTop": null,
+     "flowHeight": null,
+     "floatSide": null,
+     "floatGapRight": null,
+     "floatGapBottom": null,
+     "zIndex": null,
+     "positionMode": null,
+     "posX": null,
+     "posY": null,
+     "posXRef": null,
+     "posYRef": null,
+     "posPage": null,
+     "tableGapTop": null,
+     "tableGapBottom": null,
+     "tableLeadPayback": null
+    },
+    "content": [
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          150
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "D27j8Tp1",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "합계 금액"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          430
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "j6x8nKTo",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "marks": [
+             {
+              "type": "bold"
+             }
+            ],
+            "text": "일금 원정 (⁭ 0)"
+           },
+           {
+            "type": "text",
+            "text": " ※ 부가세 포함"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          150
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "98jaFMSu",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "납품 기한"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          430
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "I3FAIJ5m",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "2026년 월 일 까지"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          150
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "uDNBtxq7",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "결제 조건"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          430
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "SMd1u57J",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "납품 후 30일 이내 현금 결제 / 카드 결제"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "heading",
+    "attrs": {
+     "textAlign": null,
+     "uuid": "FVe9TBRt",
+     "diffState": null,
+     "diffCurrent": false,
+     "lineBreaks": null,
+     "lineBreaksLen": null,
+     "bookmark": null,
+     "wordBreak": null,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "anchorId": null,
+     "anchorOnly": null,
+     "holderHeight": null,
+     "level": 2,
+     "leadShift": null,
+     "blockStyle": null
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "2. 세부 품목 및 단가 내역"
+     }
+    ]
+   },
+   {
+    "type": "table",
+    "attrs": {
+     "textAlign": null,
+     "uuid": "0S5SS78r",
+     "diffState": null,
+     "diffCurrent": false,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "borderless": false,
+     "dataImport": false,
+     "importRatio": null,
+     "importWidthPx": null,
+     "tableWidthRatio": null,
+     "tableAlign": "left",
+     "tableIndent": null,
+     "tableMarginRight": null,
+     "tableMarginLeft": null,
+     "tableOutset": null,
+     "floatTop": null,
+     "flowHeight": null,
+     "floatSide": null,
+     "floatGapRight": null,
+     "floatGapBottom": null,
+     "zIndex": null,
+     "positionMode": null,
+     "posX": null,
+     "posY": null,
+     "posXRef": null,
+     "posYRef": null,
+     "posPage": null,
+     "tableGapTop": null,
+     "tableGapBottom": null,
+     "tableLeadPayback": null
+    },
+    "content": [
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          40
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "h-WvUE-S",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "NO"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          180
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "j21yihR5",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "품목명 / 규격"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          60
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "_74YJye-",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "수량"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          50
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "S7LV7AbS",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "단위"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          110
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "OuQI9OiB",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "제시 단가(원)"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableHeader",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          120
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "B-TMgVmR",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "공급가액(원)"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          40
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "aH7sbj5S",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "1"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          180
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "t9urd0CE",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "A4 복용지 (80g, 2500매)"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          60
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "9AfT_iC1",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "50"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          50
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "6jowt9ff",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "박스"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          110
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "rjagfyPr",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "28,000"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          120
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "94qmxEO_",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "1,400,000"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          40
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "hwr7XnMa",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "2"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          180
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "LnpmW6gt",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "중성펜 (0.5mm, 흑색 12입)"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          60
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "yjQyLIJX",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "100"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          50
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "_WXA2uRq",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "곽"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          110
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "kou5imrY",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "8,000"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          120
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "2xyv7a-c",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "800,000"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          40
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "ZCJaAKsF",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "3"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          180
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "YFzOyXwE",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "L홀더 화일 (A4, 100매입)"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          60
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "NWs_TVhv",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "20"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          50
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "zrCyE85K",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "묶음"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          110
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "Y0vch3mt",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "12,000"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          120
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "MBJzNuEY",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "240,000"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          40
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "wSU9qn03",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "4"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          180
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "tY-KwuuT",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          60
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "PNIkrem0",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          50
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "7QrCwyBy",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          110
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "_dbUtji2",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          120
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "ba4mHPHI",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          40
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "k08TaxOD",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "5"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          180
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "tl_m-wlC",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          60
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "KdHtsSdh",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          50
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "hCIafGRC",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          110
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "4N80bB2R",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": null,
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 1,
+         "rowspan": 1,
+         "colwidth": [
+          120
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "oTmdmt1L",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 4,
+         "rowspan": 1,
+         "colwidth": [
+          40,
+          180,
+          60,
+          50
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "8ufKxWoh",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "marks": [
+             {
+              "type": "bold"
+             }
+            ],
+            "text": "소계 (공급가액)"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 2,
+         "rowspan": 1,
+         "colwidth": [
+          110,
+          120
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "8T-bJq35",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "2,440,000 원"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 4,
+         "rowspan": 1,
+         "colwidth": [
+          40,
+          180,
+          60,
+          50
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "o7xSKcTO",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "marks": [
+             {
+              "type": "bold"
+             }
+            ],
+            "text": "부가가치세 (10%)"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 2,
+         "rowspan": 1,
+         "colwidth": [
+          110,
+          120
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "40r00Enr",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "text": "244,000 원"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "attrs": {
+       "textAlign": null,
+       "height": null,
+       "padPx": null,
+       "hRule": null,
+       "overflowTop": null,
+       "pinSrc": null,
+       "headerRow": false
+      },
+      "content": [
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "center",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 4,
+         "rowspan": 1,
+         "colwidth": [
+          40,
+          180,
+          60,
+          50
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "dtA8N8A3",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "marks": [
+             {
+              "type": "bold"
+             }
+            ],
+            "text": "총합계 (VAT 포함)"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "attrs": {
+         "textAlign": "right",
+         "bookmark": null,
+         "anchorId": null,
+         "colspan": 2,
+         "rowspan": 1,
+         "colwidth": [
+          110,
+          120
+         ],
+         "backgroundColor": null,
+         "borderTopColor": null,
+         "borderTopStyle": null,
+         "borderTopWidthPx": null,
+         "borderRightColor": null,
+         "borderRightRows": null,
+         "borderRightStyle": null,
+         "borderRightWidthPx": null,
+         "borderBottomColor": null,
+         "borderBottomStyle": null,
+         "borderBottomWidthPx": null,
+         "borderLeftColor": null,
+         "borderLeftRows": null,
+         "borderLeftStyle": null,
+         "borderLeftWidthPx": null,
+         "leadCenter": null,
+         "hideMark": false,
+         "blockStyle": "vertical-align: middle"
+        },
+        "content": [
+         {
+          "type": "paragraph",
+          "attrs": {
+           "textAlign": null,
+           "uuid": "DMY3gVIG",
+           "diffState": null,
+           "diffCurrent": false,
+           "lineBreaks": null,
+           "lineBreaksLen": null,
+           "bookmark": null,
+           "wordBreak": null,
+           "inlineShape": null,
+           "pageBreakBefore": null,
+           "pageBreakRendered": null,
+           "pageBreakCarrier": null,
+           "sectionIndex": null,
+           "sectionBreak": null,
+           "shapeTextPara": null,
+           "anchorId": null,
+           "anchorOnly": null,
+           "holderHeight": null,
+           "leadShift": null,
+           "blockStyle": null
+          },
+          "content": [
+           {
+            "type": "text",
+            "marks": [
+             {
+              "type": "bold"
+             }
+            ],
+            "text": "2,684,000 원"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "heading",
+    "attrs": {
+     "textAlign": null,
+     "uuid": "NAtNNiBL",
+     "diffState": null,
+     "diffCurrent": false,
+     "lineBreaks": null,
+     "lineBreaksLen": null,
+     "bookmark": null,
+     "wordBreak": null,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "anchorId": null,
+     "anchorOnly": null,
+     "holderHeight": null,
+     "level": 2,
+     "leadShift": null,
+     "blockStyle": null
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "3. 특기 사항"
+     }
+    ]
+   },
+   {
+    "type": "bulletList",
+    "attrs": {
+     "uuid": "xXAI8qMU",
+     "diffState": null,
+     "diffCurrent": false,
+     "listStyleType": null,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null
+    },
+    "content": [
+     {
+      "type": "listItem",
+      "attrs": {
+       "textAlign": null,
+       "marginLeftPx": null,
+       "marginRightPx": null,
+       "listMarkerLeftPx": null,
+       "listTextOffsetPx": null,
+       "bookmark": null,
+       "wordBreak": null
+      },
+      "content": [
+       {
+        "type": "paragraph",
+        "attrs": {
+         "textAlign": null,
+         "uuid": "Q4nZxqqY",
+         "diffState": null,
+         "diffCurrent": false,
+         "lineBreaks": null,
+         "lineBreaksLen": null,
+         "bookmark": null,
+         "wordBreak": null,
+         "inlineShape": null,
+         "pageBreakBefore": null,
+         "pageBreakRendered": null,
+         "pageBreakCarrier": null,
+         "sectionIndex": null,
+         "sectionBreak": null,
+         "shapeTextPara": null,
+         "anchorId": null,
+         "anchorOnly": null,
+         "holderHeight": null,
+         "leadShift": null,
+         "blockStyle": null
+        },
+        "content": [
+         {
+          "type": "text",
+          "text": "대량 구매에 따른 수량별 할인 단가가 적용된 금액입니다."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "listItem",
+      "attrs": {
+       "textAlign": null,
+       "marginLeftPx": null,
+       "marginRightPx": null,
+       "listMarkerLeftPx": null,
+       "listTextOffsetPx": null,
+       "bookmark": null,
+       "wordBreak": null
+      },
+      "content": [
+       {
+        "type": "paragraph",
+        "attrs": {
+         "textAlign": null,
+         "uuid": "f0h80d76",
+         "diffState": null,
+         "diffCurrent": false,
+         "lineBreaks": null,
+         "lineBreaksLen": null,
+         "bookmark": null,
+         "wordBreak": null,
+         "inlineShape": null,
+         "pageBreakBefore": null,
+         "pageBreakRendered": null,
+         "pageBreakCarrier": null,
+         "sectionIndex": null,
+         "sectionBreak": null,
+         "shapeTextPara": null,
+         "anchorId": null,
+         "anchorOnly": null,
+         "holderHeight": null,
+         "leadShift": null,
+         "blockStyle": null
+        },
+        "content": [
+         {
+          "type": "text",
+          "text": "지정된 장소까지의 운반비 및 배송비가 포함되어 있습니다."
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "listItem",
+      "attrs": {
+       "textAlign": null,
+       "marginLeftPx": null,
+       "marginRightPx": null,
+       "listMarkerLeftPx": null,
+       "listTextOffsetPx": null,
+       "bookmark": null,
+       "wordBreak": null
+      },
+      "content": [
+       {
+        "type": "paragraph",
+        "attrs": {
+         "textAlign": null,
+         "uuid": "Z8d856pj",
+         "diffState": null,
+         "diffCurrent": false,
+         "lineBreaks": null,
+         "lineBreaksLen": null,
+         "bookmark": null,
+         "wordBreak": null,
+         "inlineShape": null,
+         "pageBreakBefore": null,
+         "pageBreakRendered": null,
+         "pageBreakCarrier": null,
+         "sectionIndex": null,
+         "sectionBreak": null,
+         "shapeTextPara": null,
+         "anchorId": null,
+         "anchorOnly": null,
+         "holderHeight": null,
+         "leadShift": null,
+         "blockStyle": null
+        },
+        "content": [
+         {
+          "type": "text",
+          "text": "본 견적서의 유효기간은 제출일로부터 30일간입니다."
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "attrs": {
+     "textAlign": null,
+     "uuid": "DE9NIlpS",
+     "diffState": null,
+     "diffCurrent": false,
+     "lineBreaks": null,
+     "lineBreaksLen": null,
+     "bookmark": null,
+     "wordBreak": null,
+     "inlineShape": null,
+     "pageBreakBefore": null,
+     "pageBreakRendered": null,
+     "pageBreakCarrier": null,
+     "sectionIndex": null,
+     "sectionBreak": null,
+     "shapeTextPara": null,
+     "anchorId": null,
+     "anchorOnly": null,
+     "holderHeight": null,
+     "leadShift": null,
+     "blockStyle": null
+    }
+   }
+  ]
+ }
+}

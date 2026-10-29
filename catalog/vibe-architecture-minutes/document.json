@@ -686,67 +686,80 @@
       "footerSlotId": "att_slot_footer",
       "blocks": [
         {
-          "blockId": "att_blk_header_grid",
-          "kind": "columns-grid",
-          "title": "인보이스 헤더 (로고 & 회사 정보)",
-          "widths": [
-            "1.1fr",
-            "1fr"
-          ],
-          "cardStyle": "plain",
-          "columns": [
-            {
-              "image": {
-                "src": "/atticus_logo.png",
-                "alt": "Atticus",
-                "width": "155px",
-                "align": "left",
-                "objectFit": "contain"
-              }
-            },
-            {
-              "slotId": "att_slot_company_info"
-            }
-          ]
+          "blockId": "att_blk_logo",
+          "kind": "image",
+          "title": "로고",
+          "src": "/atticus_logo.png",
+          "alt": "Atticus",
+          "width": "344.1px",
+          "height": "79.2px",
+          "objectFit": "fill",
+          "align": "left",
+          "frame": {
+            "x": 80.4,
+            "y": 93.2,
+            "w": 344.1,
+            "h": 79.2
+          }
         },
         {
-          "blockId": "att_blk_mid_grid",
-          "kind": "columns-grid",
-          "title": "청구 정보 및 결제 요약",
-          "widths": [
-            "1fr",
-            "1fr"
-          ],
-          "cardStyle": "plain",
-          "columns": [
-            {
-              "slotId": "att_slot_billing_info"
-            },
-            {
-              "slotId": "att_slot_total_summary"
-            }
-          ]
+          "blockId": "att_blk_company",
+          "kind": "text",
+          "title": "공급자 정보",
+          "slotId": "att_slot_company_info",
+          "align": "right",
+          "frame": {
+            "x": 392.7,
+            "y": 39.5,
+            "w": 320
+          }
+        },
+        {
+          "blockId": "att_blk_billing",
+          "kind": "text",
+          "title": "청구 정보",
+          "slotId": "att_slot_billing_info",
+          "frame": {
+            "x": 80.4,
+            "y": 244.0,
+            "w": 300
+          }
+        },
+        {
+          "blockId": "att_blk_total",
+          "kind": "text",
+          "title": "결제 총액",
+          "slotId": "att_slot_total_summary",
+          "align": "right",
+          "frame": {
+            "x": 392.8,
+            "y": 244.0,
+            "w": 320
+          }
         },
         {
           "blockId": "att_blk_items_table",
           "kind": "structured-table",
           "title": "품목 명세서 (Invoice Line Items)",
+          "frame": {
+            "x": 80.4,
+            "y": 377.3,
+            "w": 632.2
+          },
           "columnWidths": [
-            "66%",
-            "17%",
-            "17%"
+            "70.12%",
+            "14.948%",
+            "14.932%"
           ],
           "borderRules": {
             "outer": "none",
-            "headerTop": "2px solid #336699",
-            "headerBottom": "none",
-            "rowBottom": "1px solid #e2e8f0",
-            "vertical": "none"
+            "rowBottom": "none",
+            "vertical": "none",
+            "headerBottom": "none"
           },
           "headerStyle": {
-            "textColor": "#336699",
-            "fontWeight": "600",
-            "padding": "10px 8px"
+            "bg": "transparent",
+            "fontWeight": "400"
           },
           "rows": [
             {
@@ -756,19 +769,28 @@
                   "cellId": "att_c_th_1",
                   "slotId": "att_slot_th_desc",
                   "isHeader": true,
-                  "hAlign": "left"
+                  "hAlign": "left",
+                  "padding": "10.7px 0 0 4px",
+                  "borderTop": "2.4px solid #336699",
+                  "backgroundColor": "transparent"
                 },
                 {
                   "cellId": "att_c_th_2",
                   "slotId": "att_slot_th_amount",
                   "isHeader": true,
-                  "hAlign": "right"
+                  "hAlign": "right",
+                  "padding": "10.7px 3.8px 0 0",
+                  "borderTop": "2.4px solid #336699",
+                  "backgroundColor": "transparent"
                 },
                 {
                   "cellId": "att_c_th_3",
                   "slotId": "att_slot_th_total",
                   "isHeader": true,
-                  "hAlign": "right"
+                  "hAlign": "right",
+                  "padding": "10.7px 2.9px 0 0",
+                  "borderTop": "2.4px solid #336699",
+                  "backgroundColor": "transparent"
                 }
               ]
             },
@@ -778,55 +800,124 @@
                 {
                   "cellId": "att_c_td_1",
                   "slotId": "att_slot_td_item1",
-                  "hAlign": "left"
+                  "hAlign": "left",
+                  "padding": "20.3px 0 16.356px 4px",
+                  "borderBottom": "0.8px solid #eeeeee"
                 },
                 {
                   "cellId": "att_c_td_2",
                   "slotId": "att_slot_td_amount1",
-                  "hAlign": "right"
+                  "hAlign": "right",
+                  "padding": "20.3px 3.9px 0 0",
+                  "borderBottom": "0.8px solid #eeeeee"
                 },
                 {
                   "cellId": "att_c_td_3",
                   "slotId": "att_slot_td_total1",
-                  "hAlign": "right"
+                  "hAlign": "right",
+                  "padding": "20.3px 3.9px 0 0",
+                  "borderBottom": "0.8px solid #eeeeee"
                 }
               ]
             }
+          ]
+        },
+        {
+          "blockId": "att_blk_summary",
+          "kind": "structured-table",
+          "title": "합계 (Subtotal / Total)",
+          "frame": {
+            "x": 523.7,
+            "y": 470.1,
+            "w": 192.9
+          },
+          "columnWidths": [
+            "50.078%",
+            "49.922%"
           ],
-          "footerSummary": {
-            "align": "right",
-            "width": "260px",
-            "items": [
-              {
-                "itemId": "subtotal",
-                "labelSlotId": "att_slot_td_label_sub",
-                "valueSlotId": "att_slot_td_val_sub"
-              },
-              {
-                "itemId": "total",
-                "labelSlotId": "att_slot_td_label_tot",
-                "valueSlotId": "att_slot_td_val_tot",
-                "isTotal": true,
-                "borderTop": "2px solid #336699"
-              }
-            ]
-          }
+          "borderRules": {
+            "outer": "none",
+            "rowBottom": "none",
+            "vertical": "none"
+          },
+          "rows": [
+            {
+              "rowId": "att_row_sub",
+              "cells": [
+                {
+                  "cellId": "att_c_sub_l",
+                  "slotId": "att_slot_td_label_sub",
+                  "hAlign": "right",
+                  "padding": "8.0px 0 9.362px 0",
+                  "borderBottom": "0.8px solid #eeeeee"
+                },
+                {
+                  "cellId": "att_c_sub_v",
+                  "slotId": "att_slot_td_val_sub",
+                  "hAlign": "right",
+                  "padding": "8.0px 8.1px 9.362px 0",
+                  "borderBottom": "0.8px solid #eeeeee"
+                }
+              ]
+            },
+            {
+              "rowId": "att_row_tot",
+              "cells": [
+                {
+                  "cellId": "att_c_tot_l",
+                  "slotId": "att_slot_td_label_tot",
+                  "hAlign": "right",
+                  "padding": "8.0px 0 9.362px 0",
+                  "borderBottom": "0.8px solid #eeeeee"
+                },
+                {
+                  "cellId": "att_c_tot_v",
+                  "slotId": "att_slot_td_val_tot",
+                  "hAlign": "right",
+                  "padding": "8.0px 8.1px 9.362px 0",
+                  "borderBottom": "0.8px solid #eeeeee"
+                }
+              ]
+            }
+          ]
         },
         {
           "blockId": "att_blk_footer",
-          "kind": "columns-grid",
-          "title": "인보이스 하단 정보",
-          "widths": [
-            "1fr"
-          ],
-          "cardStyle": "plain",
-          "columns": [
-            {
-              "slotId": "att_slot_footer_meta"
-            }
-          ]
+          "kind": "text",
+          "title": "하단 안내",
+          "slotId": "att_slot_footer_meta",
+          "align": "center",
+          "frame": {
+            "x": 0.0,
+            "y": 778.2,
+            "w": 793.3
+          }
+        },
+        {
+          "blockId": "att_blk_pageno",
+          "kind": "text",
+          "title": "쪽 번호",
+          "slotId": "att_slot_pageno",
+          "align": "center",
+          "frame": {
+            "x": 0.0,
+            "y": 1086.1,
+            "w": 793.3
+          }
         }
-      ]
+      ],
+      "layout": {
+        "exactText": true,
+        "fontFamily": "\"DejaVu Sans\", sans-serif",
+        "color": "#383838",
+        "fontSize": "9.6pt",
+        "margin": {
+          "top": 39.5,
+          "right": 81.3,
+          "bottom": 37.6,
+          "left": 80.4
+        }
+      }
     }
   ],
   "slots": {
@@ -1503,32 +1594,29 @@
     },
     "att_slot_company_info": {
       "slotId": "att_slot_company_info",
-      "label": "발행 회사 정보 & 인보이스 번호",
+      "label": "공급자 정보",
       "role": "boilerplate",
-      "content": "<p class=\"text-xs text-[#383838] mb-2 leading-none\">August 25th 2026</p><p class=\"text-[13px] font-semibold text-[#336699] leading-snug\">Company info</p><p class=\"text-[13px] font-bold text-[#383838] leading-tight mt-1\">Atticus LLC</p><p class=\"text-[13px] text-[#383838] leading-tight\">1309 Coffeen Ave. Ste. 2513</p><p class=\"text-[13px] text-[#383838] leading-tight\">Sheridan</p><p class=\"text-[13px] text-[#383838] leading-tight\">Wyoming, 82801</p><p class=\"text-[13px] text-[#383838] leading-tight\">United States</p><p class=\"text-[9px] text-[#383838] leading-tight mt-1.5\">Sales tax ID: VAT - EU372031974 UK - GB383499055</p><p class=\"text-[13px] font-bold text-[#383838] leading-tight mt-3\">Invoice 000081709</p>",
+      "content": "<p style=\"text-align: right; font-size: 7.8pt; line-height: 12.106px; margin: 0; margin-top: 0px; margin-right: 3.9px\"><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.0658px\">August</span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.1059px\"> </span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.1757px\">25th</span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.1059px\"> </span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.1626px\">2026</span></p><p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 12.294px\"><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.242px\">Company</span><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.0687px\"> </span><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.2438px\">info</span></p><p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 5.9px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0643px\"><strong>Atticus</strong></span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: 0.3438px\"><strong> </strong></span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.1042px\"><strong>LLC</strong></span></p><p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 1.1px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.1438px\">1309</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.1206px\">Coffeen</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0687px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.2688px\">Ave.</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.2719px\">Ste.</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.1078px\">2513</span></p><p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 1.1px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.3126px\">Sheridan</span></p><p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 1.1px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.1493px\">Wyoming,</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.115px\">82801</span></p><p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 1.1px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.3428px\">United</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.3136px\">States</span></p><p style=\"text-align: right; font-size: 6.6pt; line-height: 10.244px; margin: 0; margin-top: 3.9px\"><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4357px\">Sales</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: -0.1503px\">tax</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: -0.1121px\">ID:</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: -0.2051px\">VAT</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.0246px\">-</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.0009px\">EU372031974</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: -0.1059px\">UK</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.0246px\">-</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4029px\"> </span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.0685px\">GB383499055</span></p><p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 19.856px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.2519px\">Invoice</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0687px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.1278px\">000081709</span></p>",
+      "backDataRefs": [],
       "constraints": {
-        "locked": true,
-        "align": "right"
-      },
-      "backDataRefs": []
+        "locked": true
+      }
     },
     "att_slot_billing_info": {
       "slotId": "att_slot_billing_info",
-      "label": "청구 정보 (고객)",
+      "label": "청구 정보",
       "role": "editable-slot",
-      "content": "<p class=\"text-[13px] font-semibold text-[#336699] leading-snug mb-1\">Billing info</p><p class=\"text-[13px] text-[#383838] leading-tight\">qround</p><p class=\"text-[13px] text-[#383838] leading-tight\">SEO MINGYU</p><p class=\"text-[13px] text-[#383838] leading-tight\">seoul, 40-6</p><p class=\"text-[13px] text-[#383838] leading-tight\">South Korea</p>",
-      "backDataRefs": []
+      "content": "<p style=\"font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 0px\"><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.6922px\">Billing</span><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.2438px\">info</span></p><p style=\"font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 5.9px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: 0.026px\">qround</span></p><p style=\"font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 1.1px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: 0.0375px\">SEO</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.2219px\">MINGYU</span></p><p style=\"font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 1.1px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.2188px\">seoul,</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0266px\">40-6</span></p><p style=\"font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 1.1px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.08px\">South</span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.1125px\">Korea</span></p>",
+      "backDataRefs": [],
+      "constraints": {}
     },
     "att_slot_total_summary": {
       "slotId": "att_slot_total_summary",
-      "label": "총 결제액 및 결제 수단",
+      "label": "결제 총액",
       "role": "editable-slot",
-      "content": "<p class=\"text-[13px] font-semibold text-[#336699] leading-snug mb-0.5\">Total (USD)</p><p class=\"hero-amount text-[26px] text-[#383838] font-normal leading-tight my-0.5\">$147.00</p><p class=\"text-xs text-[#383838] leading-none mt-1\">Paid via credit card</p>",
-      "constraints": {
-        "tone": "invoice-hero",
-        "align": "right"
-      },
-      "backDataRefs": []
+      "content": "<p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 0px\"><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.4939px\">Total</span><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.0688px\"> </span><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.0688px\">(USD)</span></p><p style=\"text-align: right; font-size: 16.8pt; line-height: 26.075px; margin: 0; margin-top: 0.0px\"><span style=\"font-size: 16.8pt; color: #383838; letter-spacing: 0.1174px\">$147.00</span></p><p style=\"text-align: right; font-size: 7.8pt; line-height: 12.106px; margin: 0; margin-top: 4.225px\"><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.1339px\">Paid</span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.1059px\"> </span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.3392px\">via</span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.1059px\"> </span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.1936px\">credit</span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.1059px\"> </span><span style=\"font-size: 7.8pt; color: #383838; letter-spacing: -0.0917px\">card</span></p>",
+      "backDataRefs": [],
+      "constraints": {}
     },
     "att_th_desc": {
       "slotId": "att_th_desc",
@@ -1637,62 +1725,57 @@
     },
     "att_slot_th_desc": {
       "slotId": "att_slot_th_desc",
-      "label": "헤더: 품목 설명",
+      "label": "품목 헤더",
       "role": "boilerplate",
-      "content": "<span class=\"text-[13px] font-semibold text-[#336699]\">Description</span>",
+      "content": "<p style=\"font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 0px\"><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.2171px\">Description</span></p>",
+      "backDataRefs": [],
       "constraints": {
         "locked": true
-      },
-      "backDataRefs": []
+      }
     },
     "att_slot_th_amount": {
       "slotId": "att_slot_th_amount",
-      "label": "헤더: 단가",
+      "label": "금액 헤더",
       "role": "boilerplate",
-      "content": "<span class=\"text-[13px] font-semibold text-[#336699]\">Amount</span>",
+      "content": "<p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 0px\"><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.0802px\">Amount</span></p>",
+      "backDataRefs": [],
       "constraints": {
-        "locked": true,
-        "align": "right"
-      },
-      "backDataRefs": []
+        "locked": true
+      }
     },
     "att_slot_th_total": {
       "slotId": "att_slot_th_total",
-      "label": "헤더: 소계",
+      "label": "합계 헤더",
       "role": "boilerplate",
-      "content": "<span class=\"text-[13px] font-semibold text-[#336699]\">Total</span>",
+      "content": "<p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 0px\"><span style=\"font-size: 9.6pt; color: #336699; letter-spacing: -0.2626px\">Total</span></p>",
+      "backDataRefs": [],
       "constraints": {
-        "locked": true,
-        "align": "right"
-      },
-      "backDataRefs": []
+        "locked": true
+      }
     },
     "att_slot_td_item1": {
       "slotId": "att_slot_td_item1",
-      "label": "품목 1: 설명",
+      "label": "품목 1",
       "role": "editable-slot",
-      "content": "<p class=\"text-[13px] text-[#383838] leading-tight\">Atticus</p><p class=\"text-[10px] text-[#666666] leading-tight mt-0.5\">One-time payment ($147.00)</p>",
-      "backDataRefs": []
+      "content": "<p style=\"font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 0px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.2143px\">Atticus</span></p><p style=\"font-size: 6.6pt; line-height: 10.244px; margin: 0; margin-top: 2.2px\"><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.0781px\">One-time</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4029px\"> </span><span style=\"font-size: 6.6pt; color: #383838\">payment</span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #383838; letter-spacing: 0.0196px\">($147.00)</span></p>",
+      "backDataRefs": [],
+      "constraints": {}
     },
     "att_slot_td_amount1": {
       "slotId": "att_slot_td_amount1",
-      "label": "품목 1: 단가",
+      "label": "품목 1 금액",
       "role": "editable-slot",
-      "content": "<span class=\"text-[13px] text-[#383838]\">$147.00</span>",
-      "constraints": {
-        "align": "right"
-      },
-      "backDataRefs": []
+      "content": "<p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 0px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.1125px\">$147.00</span></p>",
+      "backDataRefs": [],
+      "constraints": {}
     },
     "att_slot_td_total1": {
       "slotId": "att_slot_td_total1",
-      "label": "품목 1: 금액",
+      "label": "품목 1 합계",
       "role": "editable-slot",
-      "content": "<span class=\"text-[13px] text-[#383838]\">$147.00</span>",
-      "constraints": {
-        "align": "right"
-      },
-      "backDataRefs": []
+      "content": "<p style=\"text-align: right; font-size: 9.6pt; line-height: 14.9px; margin: 0; margin-top: 0px\"><span style=\"font-size: 9.6pt; color: #383838; letter-spacing: -0.1125px\">$147.00</span></p>",
+      "backDataRefs": [],
+      "constraints": {}
     },
     "att_slot_td_empty_sub": {
       "slotId": "att_slot_td_empty_sub",
@@ -1708,22 +1791,19 @@
       "slotId": "att_slot_td_label_sub",
       "label": "소계 라벨",
       "role": "boilerplate",
-      "content": "<span class=\"text-xs text-[#383838]\">Subtotal:</span>",
+      "content": "<p style=\"text-align: right; font-size: 8.4pt; line-height: 13.037px; margin: 0; margin-top: 0px\"><span style=\"font-size: 8.4pt; color: #383838; letter-spacing: -0.1475px\">Subtotal:</span></p>",
+      "backDataRefs": [],
       "constraints": {
-        "locked": true,
-        "align": "right"
-      },
-      "backDataRefs": []
+        "locked": true
+      }
     },
     "att_slot_td_val_sub": {
       "slotId": "att_slot_td_val_sub",
-      "label": "소계 금액",
+      "label": "소계",
       "role": "editable-slot",
-      "content": "<span class=\"text-xs text-[#383838]\">$147.00</span>",
-      "constraints": {
-        "align": "right"
-      },
-      "backDataRefs": []
+      "content": "<p style=\"text-align: right; font-size: 8.4pt; line-height: 13.037px; margin: 0; margin-top: 0px\"><span style=\"font-size: 8.4pt; color: #383838; letter-spacing: 0.0016px\">$147.00</span></p>",
+      "backDataRefs": [],
+      "constraints": {}
     },
     "att_slot_td_empty_tot": {
       "slotId": "att_slot_td_empty_tot",
@@ -1739,33 +1819,39 @@
       "slotId": "att_slot_td_label_tot",
       "label": "총계 라벨",
       "role": "boilerplate",
-      "content": "<span class=\"text-xs text-[#383838]\">Total:</span>",
+      "content": "<p style=\"text-align: right; font-size: 8.4pt; line-height: 13.037px; margin: 0; margin-top: 0px\"><span style=\"font-size: 8.4pt; color: #383838; letter-spacing: -0.1434px\">Total:</span></p>",
+      "backDataRefs": [],
       "constraints": {
-        "locked": true,
-        "align": "right"
-      },
-      "backDataRefs": []
+        "locked": true
+      }
     },
     "att_slot_td_val_tot": {
       "slotId": "att_slot_td_val_tot",
-      "label": "총계 금액",
+      "label": "총계",
       "role": "editable-slot",
-      "content": "<span class=\"text-xs text-[#383838]\">$147.00</span>",
-      "constraints": {
-        "align": "right"
-      },
-      "backDataRefs": []
+      "content": "<p style=\"text-align: right; font-size: 8.4pt; line-height: 13.037px; margin: 0; margin-top: 0px\"><span style=\"font-size: 8.4pt; color: #383838; letter-spacing: 0.0016px\">$147.00</span></p>",
+      "backDataRefs": [],
+      "constraints": {}
     },
     "att_slot_footer_meta": {
       "slotId": "att_slot_footer_meta",
-      "label": "인보이스 하단 고객지원 & 법적 고지",
+      "label": "하단 안내",
       "role": "boilerplate",
-      "content": "<div class=\"text-center pt-28 pb-4 space-y-2.5\"><p class=\"text-xs text-[#8c8c8c]\">Contact support: <a href=\"mailto:support@atticus.io\" class=\"text-[#2774a8] underline\">support@atticus.io</a></p><p class=\"text-[10.5px] text-[#2774a8] underline\">Click here to manage your billing details and view purchase history</p><p class=\"text-[10px] text-[#999999] pt-2\">Your order was processed by ThriveCart. Copyright © 2026. All rights reserved.</p><p class=\"text-xs text-[#383838] pt-14\">Page 1 of 1</p></div>",
+      "content": "<p style=\"text-align: center; font-size: 8.4pt; line-height: 13.037px; margin: 0; margin-top: 0px\"><span style=\"font-size: 8.4pt; color: #8c8c8c; letter-spacing: -0.0536px\">Contact</span><span style=\"font-size: 8.4pt; color: #8c8c8c; letter-spacing: -0.3602px\"> </span><span style=\"font-size: 8.4pt; color: #8c8c8c; letter-spacing: 0.0249px\">support:</span><span style=\"font-size: 8.4pt; color: #8c8c8c\"> </span><a href=\"mailto:support@atticus.io\"><span style=\"font-size: 8.4pt; color: #2774a8; letter-spacing: -0.1068px\">support@atticus.io</span></a></p><p style=\"text-align: center; font-size: 6.6pt; line-height: 10.244px; margin: 0; margin-top: 9.162px; color: #2774a8\"><u><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: -0.0338px\">Click</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.1942px\">here</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4029px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: -0.0172px\">to</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.1442px\">manage</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4029px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.0532px\">your</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: -0.0184px\">billing</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4029px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.1547px\">details</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4029px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.0814px\">and</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: -0.066px\">view</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.2265px\">purchase</span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #2774a8; letter-spacing: 0.1916px\">history</span></u></p><p style=\"text-align: center; font-size: 6.6pt; line-height: 10.244px; margin: 0; margin-top: 26.656px\"><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.2114px\">Your</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.2361px\">order</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4086px\">was</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.3323px\">processed</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: -0.1969px\">by</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4029px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.1236px\">ThriveCart.</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.0224px\">Copyright</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999\">©</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.0815px\">2026.</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: -0.17px\">All</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.1898px\">rights</span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.4028px\"> </span><span style=\"font-size: 6.6pt; color: #999999; letter-spacing: 0.216px\">reserved.</span></p>",
+      "backDataRefs": [],
       "constraints": {
-        "locked": true,
-        "align": "center"
-      },
-      "backDataRefs": []
+        "locked": true
+      }
+    },
+    "att_slot_pageno": {
+      "slotId": "att_slot_pageno",
+      "label": "쪽 번호",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: center; font-size: 8.0pt; line-height: 12.417px; margin: 0; margin-top: 0px\"><span style=\"font-size: 8.0pt; color: #000000; letter-spacing: 0.4224px\">Page</span><span style=\"font-size: 8.0pt; color: #000000; letter-spacing: 0.6083px\"> </span><span style=\"font-size: 8.0pt; color: #000000; letter-spacing: 0.2114px\">1</span><span style=\"font-size: 8.0pt; color: #000000; letter-spacing: 0.6083px\"> </span><span style=\"font-size: 8.0pt; color: #000000; letter-spacing: 0.3578px\">of</span><span style=\"font-size: 8.0pt; color: #000000; letter-spacing: 0.6083px\"> </span><span style=\"font-size: 8.0pt; color: #000000\">1</span></p>",
+      "backDataRefs": [],
+      "constraints": {
+        "locked": true
+      }
     }
   },
   "backdata": {
