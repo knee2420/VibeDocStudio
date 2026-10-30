@@ -1,7 +1,7 @@
 """catalog 도메인 서비스 (식별자 정규화 및 유스케이스 위임)."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 from .models import CatalogFormBundleRecord, CatalogManifestRecord
 from .use_cases import (
@@ -49,7 +49,7 @@ class CatalogService:
         *,
         pdf_bytes: bytes,
         title: str,
-    ) -> tuple[dict[str, Any], int, int, int]:
+    ) -> tuple[dict[str, Any], int, int, int, Optional[dict[str, Any]]]:
         return self._scaffold_pdf.execute(
             pdf_bytes=pdf_bytes,
             title=title,

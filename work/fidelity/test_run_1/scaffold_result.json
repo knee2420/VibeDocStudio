@@ -1,0 +1,1252 @@
+{
+  "version": "1.0.0",
+  "docId": "vdoc_extracted",
+  "title": "예스폼_무료설계심사회의록샘플과예문다운로드",
+  "status": "Draft",
+  "totalValueText": "Auto-Extracted .vdoc",
+  "updatedAt": "2026-10-29T14:46:44Z",
+  "variables": {},
+  "pages": [
+    {
+      "pageId": "page_1",
+      "pageNumber": 1,
+      "pageLabel": "예스폼_무료설계심사회의록샘플과예문다운로드 (1p)",
+      "hideHeaderFooter": true,
+      "headerSlotId": "p1_slot_header",
+      "footerSlotId": "p1_slot_footer",
+      "layout": {
+        "margin": {
+          "top": 111.4,
+          "right": 96.4,
+          "bottom": 83.0,
+          "left": 96.3
+        },
+        "blockGap": 29.5,
+        "fontFamily": "GulimChe, 굴림체, monospace",
+        "fontSize": "13.44px",
+        "lineHeight": "1.2",
+        "exactText": true
+      },
+      "blocks": [
+        {
+          "blockId": "p1_blk_1",
+          "kind": "composite-form-frame",
+          "title": "p1_tbl_1",
+          "outerBorderWidth": "2px",
+          "sections": [
+            {
+              "sectionId": "sec_p1_tbl_1",
+              "title": "p1_tbl_1",
+              "columnWidths": [
+                "19.9%",
+                "47.32%",
+                "15.44%",
+                "17.33%"
+              ],
+              "rows": [
+                {
+                  "rowId": "p1_tbl_1_row_0",
+                  "height": "20.6px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_1_r0_c0",
+                      "slotId": "p1_tbl_1_r0_c0",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "rowSpan": 4
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_1_r0_c1",
+                      "slotId": "p1_tbl_1_r0_c1",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "24px",
+                      "fontWeight": "bold",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "rowSpan": 4
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_1_r0_c2",
+                      "slotId": "p1_tbl_1_r0_c2",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_1_r0_c3",
+                      "slotId": "p1_tbl_1_r0_c3",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_1_row_1",
+                  "height": "20.5px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_1_r1_c2",
+                      "slotId": "p1_tbl_1_r1_c2",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_1_r1_c3",
+                      "slotId": "p1_tbl_1_r1_c3",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_1_row_2",
+                  "height": "20.8px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_1_r2_c2",
+                      "slotId": "p1_tbl_1_r2_c2",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_1_r2_c3",
+                      "slotId": "p1_tbl_1_r2_c3",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_1_row_3",
+                  "height": "21.6px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_1_r3_c2",
+                      "slotId": "p1_tbl_1_r3_c2",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_1_r3_c3",
+                      "slotId": "p1_tbl_1_r3_c3",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "blockId": "p1_blk_2",
+          "kind": "composite-form-frame",
+          "title": "p1_tbl_2",
+          "outerBorderWidth": "2px",
+          "sections": [
+            {
+              "sectionId": "sec_p1_tbl_2",
+              "title": "p1_tbl_2",
+              "columnWidths": [
+                "18.57%",
+                "14.58%",
+                "17.14%",
+                "1.44%",
+                "1.33%",
+                "13.49%",
+                "6.17%",
+                "12.45%",
+                "14.82%"
+              ],
+              "rows": [
+                {
+                  "rowId": "p1_tbl_2_row_0",
+                  "height": "38.2px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r0_c0",
+                      "slotId": "p1_tbl_2_r0_c0",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r0_c1",
+                      "slotId": "p1_tbl_2_r0_c1",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r0_c2",
+                      "slotId": "p1_tbl_2_r0_c2",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r0_c4",
+                      "slotId": "p1_tbl_2_r0_c4",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r0_c6",
+                      "slotId": "p1_tbl_2_r0_c6",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r0_c8",
+                      "slotId": "p1_tbl_2_r0_c8",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_2_row_1",
+                  "height": "38.7px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r1_c0",
+                      "slotId": "p1_tbl_2_r1_c0",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r1_c1",
+                      "slotId": "p1_tbl_2_r1_c1",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 4
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r1_c5",
+                      "slotId": "p1_tbl_2_r1_c5",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r1_c7",
+                      "slotId": "p1_tbl_2_r1_c7",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_2_row_2",
+                  "height": "36.2px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r2_c0",
+                      "slotId": "p1_tbl_2_r2_c0",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r2_c1",
+                      "slotId": "p1_tbl_2_r2_c1",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 8
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_2_row_3",
+                  "height": "379.3px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r3_c0",
+                      "slotId": "p1_tbl_2_r3_c0",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r3_c1",
+                      "slotId": "p1_tbl_2_r3_c1",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 8
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_2_row_4",
+                  "height": "42.6px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r4_c0",
+                      "slotId": "p1_tbl_2_r4_c0",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r4_c1",
+                      "slotId": "p1_tbl_2_r4_c1",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r4_c3",
+                      "slotId": "p1_tbl_2_r4_c3",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 3
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r4_c6",
+                      "slotId": "p1_tbl_2_r4_c6",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 3
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_2_row_5",
+                  "height": "137.0px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r5_c0",
+                      "slotId": "p1_tbl_2_r5_c0",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r5_c1",
+                      "slotId": "p1_tbl_2_r5_c1",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 8
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_2_row_6",
+                  "height": "28.5px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r6_c0",
+                      "slotId": "p1_tbl_2_r6_c0",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r6_c1",
+                      "slotId": "p1_tbl_2_r6_c1",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 4
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r6_c5",
+                      "slotId": "p1_tbl_2_r6_c5",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r6_c7",
+                      "slotId": "p1_tbl_2_r6_c7",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_2_row_7",
+                  "height": "31.0px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r7_c0",
+                      "slotId": "p1_tbl_2_r7_c0",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r7_c1",
+                      "slotId": "p1_tbl_2_r7_c1",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 4
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r7_c5",
+                      "slotId": "p1_tbl_2_r7_c5",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r7_c7",
+                      "slotId": "p1_tbl_2_r7_c7",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_2_row_8",
+                  "height": "29.4px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r8_c0",
+                      "slotId": "p1_tbl_2_r8_c0",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r8_c1",
+                      "slotId": "p1_tbl_2_r8_c1",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 4
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r8_c5",
+                      "slotId": "p1_tbl_2_r8_c5",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r8_c7",
+                      "slotId": "p1_tbl_2_r8_c7",
+                      "isHeader": true,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    }
+                  ]
+                },
+                {
+                  "rowId": "p1_tbl_2_row_9",
+                  "height": "30.0px",
+                  "cells": [
+                    {
+                      "cellId": "cell_p1_tbl_2_r9_c0",
+                      "slotId": "p1_tbl_2_r9_c0",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace"
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r9_c1",
+                      "slotId": "p1_tbl_2_r9_c1",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 4
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r9_c5",
+                      "slotId": "p1_tbl_2_r9_c5",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    },
+                    {
+                      "cellId": "cell_p1_tbl_2_r9_c7",
+                      "slotId": "p1_tbl_2_r9_c7",
+                      "isHeader": false,
+                      "vAlign": "middle",
+                      "hAlign": "center",
+                      "compact": true,
+                      "padding": "1px 2px",
+                      "fontSize": "13.44px",
+                      "fontWeight": "normal",
+                      "lineHeight": "1.2",
+                      "fontFamily": "GulimChe, 굴림체, monospace",
+                      "colSpan": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "blockId": "p1_blk_3",
+          "kind": "section-block",
+          "title": "문서 본문 구획",
+          "headingSlotId": "p1_zone_section_heading",
+          "bodySlotId": "p1_zone_section_body"
+        }
+      ]
+    }
+  ],
+  "slots": {
+    "p1_slot_header": {
+      "slotId": "p1_slot_header",
+      "label": "1페이지 머리글",
+      "role": "boilerplate",
+      "content": "<p>예스폼_무료설계심사회의록샘플과예문다운로드</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_slot_footer": {
+      "slotId": "p1_slot_footer",
+      "label": "1페이지 바닥글",
+      "role": "boilerplate",
+      "content": "<p>Page 1</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r0_c0": {
+      "slotId": "p1_tbl_1_r0_c0",
+      "label": "로고/이미지",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: center;\"><img src=\"data:image/png;base64,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\" alt=\"Logo\" style=\"max-height: 48px; display: inline-block;\" /></p>",
+      "constraints": {
+        "tone": "brand-logo"
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r0_c1": {
+      "slotId": "p1_tbl_1_r0_c1",
+      "label": "설계 심사회의록",
+      "role": "boilerplate",
+      "content": "<p>설계 심사회의록</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r0_c2": {
+      "slotId": "p1_tbl_1_r0_c2",
+      "label": "문서분류",
+      "role": "boilerplate",
+      "content": "<p>문서분류</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r0_c3": {
+      "slotId": "p1_tbl_1_r0_c3",
+      "label": "경영/기획",
+      "role": "boilerplate",
+      "content": "<p>경영/기획</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r1_c2": {
+      "slotId": "p1_tbl_1_r1_c2",
+      "label": "페이지번호",
+      "role": "boilerplate",
+      "content": "<p>페이지번호</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r1_c3": {
+      "slotId": "p1_tbl_1_r1_c3",
+      "label": "1/1페이지",
+      "role": "editable-slot",
+      "content": "<p>1/1페이지</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r2_c2": {
+      "slotId": "p1_tbl_1_r2_c2",
+      "label": "작 성 자",
+      "role": "boilerplate",
+      "content": "<p>작 성 자</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r2_c3": {
+      "slotId": "p1_tbl_1_r2_c3",
+      "label": "셀 (3,4)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r3_c2": {
+      "slotId": "p1_tbl_1_r3_c2",
+      "label": "작성일자",
+      "role": "boilerplate",
+      "content": "<p>작성일자</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_1_r3_c3": {
+      "slotId": "p1_tbl_1_r3_c3",
+      "label": "20  .   .   .",
+      "role": "editable-slot",
+      "content": "<p>20&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r0_c0": {
+      "slotId": "p1_tbl_2_r0_c0",
+      "label": "회의일시",
+      "role": "boilerplate",
+      "content": "<p>회의일시</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r0_c1": {
+      "slotId": "p1_tbl_2_r0_c1",
+      "label": "셀 (1,2)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r0_c2": {
+      "slotId": "p1_tbl_2_r0_c2",
+      "label": "회의장소",
+      "role": "boilerplate",
+      "content": "<p>회의장소</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r0_c4": {
+      "slotId": "p1_tbl_2_r0_c4",
+      "label": "셀 (1,5)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r0_c6": {
+      "slotId": "p1_tbl_2_r0_c6",
+      "label": "수신부서",
+      "role": "boilerplate",
+      "content": "<p>수신부서</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r0_c8": {
+      "slotId": "p1_tbl_2_r0_c8",
+      "label": "셀 (1,9)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r1_c0": {
+      "slotId": "p1_tbl_2_r1_c0",
+      "label": "공 사 명",
+      "role": "boilerplate",
+      "content": "<p>공 사 명</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r1_c1": {
+      "slotId": "p1_tbl_2_r1_c1",
+      "label": "셀 (2,2)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r1_c5": {
+      "slotId": "p1_tbl_2_r1_c5",
+      "label": "도 면 명",
+      "role": "boilerplate",
+      "content": "<p>도 면 명</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r1_c7": {
+      "slotId": "p1_tbl_2_r1_c7",
+      "label": "셀 (2,8)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r2_c0": {
+      "slotId": "p1_tbl_2_r2_c0",
+      "label": "제  목",
+      "role": "boilerplate",
+      "content": "<p>제&nbsp;&nbsp;목</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r2_c1": {
+      "slotId": "p1_tbl_2_r2_c1",
+      "label": "셀 (3,2)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r3_c0": {
+      "slotId": "p1_tbl_2_r3_c0",
+      "label": "내   용",
+      "role": "boilerplate",
+      "content": "<p>내&nbsp;&nbsp;&nbsp;용</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r3_c1": {
+      "slotId": "p1_tbl_2_r3_c1",
+      "label": "셀 (4,2)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r4_c0": {
+      "slotId": "p1_tbl_2_r4_c0",
+      "label": "검 토 자",
+      "role": "boilerplate",
+      "content": "<p>검 토 자</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r4_c1": {
+      "slotId": "p1_tbl_2_r4_c1",
+      "label": "/",
+      "role": "boilerplate",
+      "content": "<p>/</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r4_c3": {
+      "slotId": "p1_tbl_2_r4_c3",
+      "label": "승 인 자",
+      "role": "boilerplate",
+      "content": "<p>승 인 자</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r4_c6": {
+      "slotId": "p1_tbl_2_r4_c6",
+      "label": "/",
+      "role": "boilerplate",
+      "content": "<p>/</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r5_c0": {
+      "slotId": "p1_tbl_2_r5_c0",
+      "label": "참 석 자",
+      "role": "boilerplate",
+      "content": "<p>참 석 자</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r5_c1": {
+      "slotId": "p1_tbl_2_r5_c1",
+      "label": "셀 (6,2)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r6_c0": {
+      "slotId": "p1_tbl_2_r6_c0",
+      "label": "셀 (7,1)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r6_c1": {
+      "slotId": "p1_tbl_2_r6_c1",
+      "label": "설계의뢰",
+      "role": "boilerplate",
+      "content": "<p>설계의뢰</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r6_c5": {
+      "slotId": "p1_tbl_2_r6_c5",
+      "label": "설계입력",
+      "role": "boilerplate",
+      "content": "<p>설계입력</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r6_c7": {
+      "slotId": "p1_tbl_2_r6_c7",
+      "label": "설계검토",
+      "role": "boilerplate",
+      "content": "<p>설계검토</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r7_c0": {
+      "slotId": "p1_tbl_2_r7_c0",
+      "label": "업무 FLOW\n및",
+      "role": "editable-slot",
+      "content": "<p>업무 FLOW<br/>및</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r7_c1": {
+      "slotId": "p1_tbl_2_r7_c1",
+      "label": "20  .   .   .",
+      "role": "editable-slot",
+      "content": "<p>20&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r7_c5": {
+      "slotId": "p1_tbl_2_r7_c5",
+      "label": "20  .   .   .",
+      "role": "editable-slot",
+      "content": "<p>20&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r7_c7": {
+      "slotId": "p1_tbl_2_r7_c7",
+      "label": "20  .   .   .",
+      "role": "editable-slot",
+      "content": "<p>20&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r8_c0": {
+      "slotId": "p1_tbl_2_r8_c0",
+      "label": "및\n업무처리기간",
+      "role": "editable-slot",
+      "content": "<p>및<br/>업무처리기간</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r8_c1": {
+      "slotId": "p1_tbl_2_r8_c1",
+      "label": "설계출력",
+      "role": "boilerplate",
+      "content": "<p>설계출력</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r8_c5": {
+      "slotId": "p1_tbl_2_r8_c5",
+      "label": "설계검증",
+      "role": "boilerplate",
+      "content": "<p>설계검증</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r8_c7": {
+      "slotId": "p1_tbl_2_r8_c7",
+      "label": "유효성확인",
+      "role": "boilerplate",
+      "content": "<p>유효성확인</p>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r9_c0": {
+      "slotId": "p1_tbl_2_r9_c0",
+      "label": "셀 (10,1)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r9_c1": {
+      "slotId": "p1_tbl_2_r9_c1",
+      "label": "20  .   .   .",
+      "role": "editable-slot",
+      "content": "<p>20&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r9_c5": {
+      "slotId": "p1_tbl_2_r9_c5",
+      "label": "20  .   .   .",
+      "role": "editable-slot",
+      "content": "<p>20&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_tbl_2_r9_c7": {
+      "slotId": "p1_tbl_2_r9_c7",
+      "label": "20  .   .   .",
+      "role": "editable-slot",
+      "content": "<p>20&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</p>",
+      "constraints": {},
+      "backDataRefs": []
+    },
+    "p1_zone_section_heading": {
+      "slotId": "p1_zone_section_heading",
+      "label": "구획 제목",
+      "role": "boilerplate",
+      "content": "<h2>문서 본문 구획</h2>",
+      "constraints": {
+        "locked": true
+      },
+      "backDataRefs": []
+    },
+    "p1_zone_section_body": {
+      "slotId": "p1_zone_section_body",
+      "label": "구획 본문",
+      "role": "editable-slot",
+      "content": "<p>주식회사 ○○○○&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A4(210x297mm)</p>",
+      "backDataRefs": []
+    }
+  },
+  "backdata": {}
+}

@@ -1,10 +1,13 @@
 """VibeDocStudio FastAPI 애플리케이션 엔트리 (`app.main`)."""
 from __future__ import annotations
 
+import logging
 import shutil
 from datetime import datetime, timezone
+from logging.handlers import RotatingFileHandler
 from typing import Any, Optional
 
+from agent_core.react import RunLogContextFilter
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -40,8 +43,33 @@ class GoogleApiKeyRequest(BaseModel):
 
 
 
+def _configure_logging() -> None:
+    """앱 로그를 `state/log/api.log` 와 콘솔에 남긴다.
+
+    줄마다 `run_id` · `step` 이 붙는다 (에이전트 실행 밖에서는 `-`). 실행 한 건의 상세
+    (프롬프트 · 응답 · 도구 결과 · 측정 산출물)는 `state/agent_runs/<run_id>/` 에 따로 있다.
+    """
+    root_logger = logging.getLogger()
+    if any(getattr(h, "_vibe_app_handler", False) for h in root_logger.handlers):
+        return  # --reload 로 create_app 이 다시 불려도 핸들러를 겹쳐 달지 않는다
+    log_dir = settings.storage.state / "log"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] [run=%(run_id)s step=%(step)s] [%(name)s] %(message)s")
+    context = RunLogContextFilter()
+    file_handler = RotatingFileHandler(log_dir / "api.log", maxBytes=10 * 1024 * 1024, backupCount=5, encoding="utf-8")
+    console_handler = logging.StreamHandler()
+    for handler in (file_handler, console_handler):
+        handler.setFormatter(formatter)
+        handler.addFilter(context)
+        handler._vibe_app_handler = True  # type: ignore[attr-defined]
+        root_logger.addHandler(handler)
+    root_logger.setLevel(logging.INFO)
+
+
 def create_app() -> FastAPI:
     settings.ensure_directories()
+
+    _configure_logging()
 
     container = _container
     container.wire(

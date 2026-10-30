@@ -1,0 +1,128 @@
+diff --git a/apps/api/app/main.py b/apps/api/app/main.py
+index a03e655..0471536 100644
+--- a/apps/api/app/main.py
++++ b/apps/api/app/main.py
+@@ -1,6 +1,8 @@
+ """VibeDocStudio FastAPI 애플리케이션 엔트리 (`app.main`)."""
+ from __future__ import annotations
+ 
++import logging
++from logging.handlers import RotatingFileHandler
+ import shutil
+ from datetime import datetime, timezone
+ from typing import Any, Optional
+@@ -43,6 +45,21 @@ class GoogleApiKeyRequest(BaseModel):
+ def create_app() -> FastAPI:
+     settings.ensure_directories()
+ 
++    # 파일 로깅 설정 (state/log/scaffold_execution.log)
++    log_dir = settings.storage.state / "log"
++    log_dir.mkdir(parents=True, exist_ok=True)
++    log_file = log_dir / "scaffold_execution.log"
++    file_handler = RotatingFileHandler(
++        log_file, maxBytes=10 * 1024 * 1024, backupCount=5, encoding="utf-8"
++    )
++    file_handler.setFormatter(
++        logging.Formatter("[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s")
++    )
++    root_logger = logging.getLogger()
++    if not any(isinstance(h, RotatingFileHandler) for h in root_logger.handlers):
++        root_logger.addHandler(file_handler)
++        root_logger.setLevel(logging.INFO)
++
+     container = _container
+     container.wire(
+         modules=[
+diff --git a/packages/pdf-vdoc-engine/pdf_vdoc_engine/assemble/vdoc_assembler.py b/packages/pdf-vdoc-engine/pdf_vdoc_engine/assemble/vdoc_assembler.py
+index 456af63..c3648d2 100644
+--- a/packages/pdf-vdoc-engine/pdf_vdoc_engine/assemble/vdoc_assembler.py
++++ b/packages/pdf-vdoc-engine/pdf_vdoc_engine/assemble/vdoc_assembler.py
+@@ -61,14 +61,16 @@ def _assemble_table_section(
+                 "backDataRefs": [],
+             }
+             is_title = "심사회의록" in (cell.text or "")
++            h_align = "center" if is_title else getattr(cell, "h_align", "center")
++            v_align = "middle" if is_title else getattr(cell, "v_align", "middle")
+             cell_dict: dict[str, Any] = {
+                 "cellId": f"cell_{slot_id}",
+                 "slotId": slot_id,
+                 "isHeader": is_locked,
+-                "vAlign": "middle" if (is_locked or is_title) else "top",
+-                "hAlign": "center" if (is_locked or is_title) else "left",
++                "vAlign": v_align,
++                "hAlign": h_align,
+                 "compact": True,
+-                "padding": "3px 6px",
++                "padding": "1px 2px",
+                 "fontSize": "24px" if is_title else "13.44px",
+                 "fontWeight": "bold" if is_title else "normal",
+                 "lineHeight": "1.2",
+diff --git a/packages/pdf-vdoc-engine/pdf_vdoc_engine/measure/vector_grid_extractor.py b/packages/pdf-vdoc-engine/pdf_vdoc_engine/measure/vector_grid_extractor.py
+index dd7401a..3ef2bbd 100644
+--- a/packages/pdf-vdoc-engine/pdf_vdoc_engine/measure/vector_grid_extractor.py
++++ b/packages/pdf-vdoc-engine/pdf_vdoc_engine/measure/vector_grid_extractor.py
+@@ -171,6 +171,7 @@ def _extract_tables_from_page(
+                 cell_y_bottom = ys[end_r]
+ 
+                 # 셀 내부 텍스트 수집
++                cell_atoms = []
+                 cell_texts: list[str] = []
+                 for a_idx, atom in enumerate(all_atoms):
+                     cx = (atom.x0 + atom.x1) / 2.0
+@@ -178,6 +179,7 @@ def _extract_tables_from_page(
+                     if x_left - 2.0 <= cx <= x_right + 2.0 and y_top - 2.0 <= cy <= cell_y_bottom + 2.0:
+                         consumed_atom_indices.add(a_idx)
+                         cell_texts.append(atom.text)
++                        cell_atoms.append(atom)
+ 
+                 joined_text = "\n".join(cell_texts).strip()
+ 
+@@ -203,10 +205,38 @@ def _extract_tables_from_page(
+                                 if joined_text:
+                                     break
+ 
++                # 셀 내 텍스트의 실제 좌우/상하 여백 분석을 통한 결정론적 정렬 판정
++                h_align = "center"
++                v_align = "middle"
++                if cell_atoms:
++                    min_atom_x = min(a.x0 for a in cell_atoms)
++                    max_atom_x = max(a.x1 for a in cell_atoms)
++                    min_atom_y = min(a.y0 for a in cell_atoms)
++                    max_atom_y = max(a.y1 for a in cell_atoms)
++
++                    left_pad = min_atom_x - x_left
++                    right_pad = x_right - max_atom_x
++                    top_pad = min_atom_y - y_top
++                    bottom_pad = cell_y_bottom - max_atom_y
++
++                    if abs(left_pad - right_pad) <= 12.0:
++                        h_align = "center"
++                    elif left_pad < right_pad and (right_pad - left_pad) > 15.0:
++                        h_align = "left"
++                    elif right_pad < left_pad and (left_pad - right_pad) > 15.0:
++                        h_align = "right"
++
++                    if abs(top_pad - bottom_pad) <= 10.0:
++                        v_align = "middle"
++                    elif top_pad < bottom_pad and (bottom_pad - top_pad) > 12.0:
++                        v_align = "top"
++                    else:
++                        v_align = "middle"
++
+                 is_header = bool(
+                     (joined_text and len(joined_text) <= 15 and ("\n" not in joined_text) and not any(ch.isdigit() for ch in joined_text))
+                     or ("(인)" in joined_text or "(서명)" in joined_text)
+-                    or ("회의록" in joined_text or "회의" in joined_text or "공사명" in joined_text or "도면명" in joined_text or "제목" in joined_text or "내용" in joined_text)
++                    or ("회의록" in joined_text or "회의" in joined_text or "공사명" in joined_text or "도면명" in joined_text or "제목" in joined_text or "내용" in joined_text or "분류" in joined_text or "일자" in joined_text or "번호" in joined_text or "작성자" in joined_text)
+                 )
+ 
+                 row_cells.append(
+@@ -221,6 +251,8 @@ def _extract_tables_from_page(
+                         y1=cell_y_bottom,
+                         text=joined_text,
+                         is_header_candidate=is_header,
++                        h_align=h_align,
++                        v_align=v_align,
+                     )
+                 )
+ 

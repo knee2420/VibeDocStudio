@@ -1,7 +1,7 @@
 """catalog 도메인 HTTP 요청·응답 스키마."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -36,4 +36,6 @@ class ScaffoldDocumentResponse(BaseModel):
     checkedBlocks: int
     checkedSlots: int
     document: dict[str, Any]
+    #: CLI 에이전트 루프 실행 정보 (runId · runDir · 반복별 판정). 루프가 돌지 않았으면 None.
+    agentRun: Optional[dict[str, Any]] = None
 

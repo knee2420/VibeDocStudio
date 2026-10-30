@@ -5,6 +5,8 @@
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 from dependency_injector import containers, providers
 
 from app.backdata.adapters import LocalBackdataRepository
@@ -47,6 +49,9 @@ from app.documents.use_cases import (
 
 _storage = settings.storage
 
+#: 저장소 루트 — 스킬(`.agents/skills`)과 판정 도구(`.agents/tools`)가 여기 산다.
+_REPO_ROOT = Path(__file__).resolve().parents[4]
+
 
 class Container(containers.DeclarativeContainer):
     """VibeDocStudio API DI 컨테이너."""
@@ -72,6 +77,9 @@ class Container(containers.DeclarativeContainer):
     form_scaffold_agent = providers.Singleton(
         FormScaffoldAgent,
         policy=runtime_policy,
+        agent_runs_dir=providers.Object(_storage.state / "agent_runs"),
+        fidelity_tools_dir=providers.Object(_REPO_ROOT / ".agents" / "tools" / "visual_fidelity"),
+        fidelity_skill_dir=providers.Object(_REPO_ROOT / ".agents" / "skills" / "external_pm_08_visual_fidelity_replicator"),
     )
 
     list_catalog_forms = providers.Factory(

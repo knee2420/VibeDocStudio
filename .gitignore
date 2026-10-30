@@ -31,3 +31,7 @@ _dissections/**/*.bundle.js
 .DS_Store
 Thumbs.db
 
+# Runtime State & Logs
+apps/api/state/
+
+

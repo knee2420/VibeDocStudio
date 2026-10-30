@@ -3,6 +3,7 @@ from typing import Annotated
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi.concurrency import run_in_threadpool
 
 from app.bootstrap.container import Container
 
@@ -111,7 +112,9 @@ async def scaffold_pdf_form(
         else:
             fallback_title = raw_name
         resolved_title = title.strip() or fallback_title
-        vdoc, total_pages, checked_blocks, checked_slots = service.scaffold_pdf_document(
+        # 에이전트 루프는 수 분 걸리는 동기 작업이므로 이벤트 루프를 막지 않게 스레드에서 돌린다.
+        vdoc, total_pages, checked_blocks, checked_slots, agent_run = await run_in_threadpool(
+            service.scaffold_pdf_document,
             pdf_bytes=pdf_bytes,
             title=resolved_title,
         )
@@ -125,5 +128,6 @@ async def scaffold_pdf_form(
         checkedBlocks=checked_blocks,
         checkedSlots=checked_slots,
         document=vdoc,
+        agentRun=agent_run,
     )
 

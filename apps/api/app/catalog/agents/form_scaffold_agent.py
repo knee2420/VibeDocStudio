@@ -13,13 +13,23 @@ import re
 import shutil
 import subprocess
 import sys
+import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Optional
 
 import pymupdf
+from agent_core.llm.adapters.agy_cli import AgyCliHarness
+from agent_core.react import LoopConfig, ReActLoop, RunTrace, load_skill
 from pdf_vdoc_engine.assemble.vdoc_assembler import _assemble_table_section
 from pdf_vdoc_engine.measure import extract_page_geometry_from_pdf
 
+from app.catalog.agents.fidelity_loop import (
+    TUNABLES,
+    FidelityConfig,
+    FidelityWorkspace,
+    apply_tune,
+)
 from app.core.llm.execution_policy import CLI_PROVIDER, RuntimeExecutionPolicy
 
 logger = logging.getLogger(__name__)
@@ -104,9 +114,127 @@ class FormScaffoldAgent:
         self,
         llm_harness: Optional[Any] = None,
         policy: Optional[RuntimeExecutionPolicy] = None,
+        agent_runs_dir: Optional[Path] = None,
+        fidelity_tools_dir: Optional[Path] = None,
+        fidelity_skill_dir: Optional[Path] = None,
+        loop_config: Optional[LoopConfig] = None,
     ) -> None:
         self._llm_harness = llm_harness
         self._policy = policy
+        self._agent_runs_dir = agent_runs_dir
+        self._fidelity_tools_dir = fidelity_tools_dir
+        self._fidelity_skill_dir = fidelity_skill_dir
+        self._loop_config = loop_config or LoopConfig(max_steps=12, max_seconds=720)
+
+    def _agentic_loop_enabled(self) -> bool:
+        if "pytest" in sys.modules or os.getenv("PYTEST_CURRENT_TEST"):
+            return False
+        if os.getenv("VIBE_SCAFFOLD_AGENT_LOOP", "1") == "0":
+            return False
+        return bool(
+            self._policy
+            and CLI_PROVIDER in (self._policy.primary_provider, self._policy.fallback_provider)
+            and self._agent_runs_dir
+            and self._fidelity_tools_dir
+            and self._fidelity_skill_dir
+        )
+
+    def _run_fidelity_loop(
+        self,
+        *,
+        pdf_bytes: bytes,
+        doc_id: str,
+        doc_title: str,
+    ) -> tuple[Optional[dict[str, Any]], dict[str, Any]]:
+        """스킬 + 도구 + 판정 피드백 루프. (보정값을 입힌 최선의 문서 | None, 실행 정보)를 돌려준다."""
+        assert self._policy and self._agent_runs_dir and self._fidelity_tools_dir and self._fidelity_skill_dir
+        run_id = f"scaffold-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}"
+        run_dir = self._agent_runs_dir / run_id
+        run_dir.mkdir(parents=True, exist_ok=True)
+        pdf_path = run_dir / "source.pdf"
+        pdf_path.write_bytes(pdf_bytes)
+
+        trace = RunTrace(run_dir, run_id)
+        info: dict[str, Any] = {"runId": run_id, "runDir": str(run_dir), "status": "started"}
+        model = _map_to_agy_model(self._policy.agent_cli_model)
+        harness = AgyCliHarness(
+            model=model,
+            timeout_seconds=self._loop_config.llm_timeout_seconds,
+            executable=self._policy.agent_cli_bin or "agy",
+        )
+        trace.event("run_start", doc_id=doc_id, title=doc_title, pdf=str(pdf_path), pdf_bytes=len(pdf_bytes),
+                    harness=harness.name, model=model, executable=harness.executable)
+        logger.info("[FormScaffoldAgent] 에이전틱 루프 시작 run_id=%s model=%s dir=%s", run_id, model, run_dir)
+
+        def build_vdoc() -> dict[str, Any]:
+            vdoc, _, _ = self._extract_deterministic_baseline(pdf_bytes=pdf_bytes, doc_id=doc_id, title=doc_title)
+            return vdoc
+
+        workspace = FidelityWorkspace(
+            run_id=run_id,
+            run_dir=run_dir,
+            pdf_path=pdf_path,
+            build_vdoc=build_vdoc,
+            trace=trace,
+            config=FidelityConfig(tools_dir=self._fidelity_tools_dir),
+        )
+        try:
+            # 0단계: 정답 뽑기 + 보정 전 기준선 판정 (호스트가 실행, LLM 은 결과만 받는다)
+            trace.set_step(0)
+            truth = workspace.extract_truth()
+            baseline = workspace.evaluate()
+            baseline_obs = workspace._iteration_observation(baseline)
+            trace.write_step_file(0, "observation.json", {"truth": truth, "baseline": baseline_obs})
+            trace.event("bootstrap", truth_spans=truth.get("spans_total"), baseline=baseline_obs)
+            if baseline.error:
+                raise RuntimeError(f"기준선 측정 실패: {baseline.error}")
+
+            skill = load_skill(self._fidelity_skill_dir, references=("references/lessons_learned.md",))
+            task = (
+                f"원본 PDF '{doc_title}' 1쪽을 VibeDocStudio .vdoc 로 옮긴 결과를 원본과 같게 만든다.\n"
+                f"생성기는 고정이고, 네가 바꿀 수 있는 것은 보정값(update_tune)뿐이다. 바꾼 뒤에는 반드시 evaluate 로 다시 잰다.\n"
+                f"목표: 03 판정의 글자 위치 점수(span_score = spans_within_tol/spans_total×100) {workspace.cfg.target_score} 이상, "
+                f"가능하면 VERDICT PASS. 허용 오차(--tol-pos {workspace.cfg.tol_pos}px)는 바꿀 수 없다.\n"
+                f"스킬 §5 Step 6 순서대로 원인 하나씩 고친다. 점수가 떨어지면 그 변경을 되돌린다.\n\n"
+                f"## 정답 요약 (01)\n{json.dumps({k: v for k, v in truth.items() if k != 'tool_stdout'}, ensure_ascii=False)[:2500]}\n\n"
+                f"## 보정 전 기준선 판정 (iter 0, 02→03)\n{json.dumps(baseline_obs, ensure_ascii=False)[:3500]}\n\n"
+                f"## 바꿀 수 있는 보정값\n"
+                + "\n".join(f"- {k}: {spec['doc']} (기본 {spec['default']}, "
+                            + (f"값 {spec['values']}" if spec['type'] == 'enum' else f"범위 {spec['range']}") + ")"
+                            for k, spec in TUNABLES.items())
+            )
+            loop = ReActLoop(harness=harness, skill=skill, tools=workspace.build_tools(), trace=trace, config=self._loop_config)
+            result = loop.run(task)
+
+            best = workspace.best()
+            info.update({
+                "status": result.status,
+                "steps": len(result.steps),
+                "llmCalls": result.llm_calls,
+                "totalTokens": result.total_tokens,
+                "model": model,
+                "iterations": workspace.history(),
+                "agentSummary": (result.final or {}).get("agent_summary"),
+            })
+            if best is None:
+                return None, info
+            info["best"] = {
+                "iter": best.index, "verdict": best.verdict, "spanScore": best.score,
+                "verdictLine": best.summary.get("verdict_line"), "verifyJson": str(best.out_dir / "verify.json"),
+                "tune": best.tune,
+            }
+            return apply_tune(build_vdoc(), best.tune), info
+        except Exception as exc:
+            logger.exception("[FormScaffoldAgent] 에이전틱 루프 실패 run_id=%s", run_id)
+            info.update({"status": "error", "error": f"{type(exc).__name__}: {exc}", "iterations": workspace.history()})
+            trace.event("run_error", error=info["error"])
+            best = workspace.best()
+            return (apply_tune(build_vdoc(), best.tune) if best else None), info
+        finally:
+            trace.write_json("summary.json", info)
+            trace.event("run_end", **{k: v for k, v in info.items() if k != "iterations"})
+            logger.info("[FormScaffoldAgent] 에이전틱 루프 종료 run_id=%s status=%s best=%s", run_id, info.get("status"), info.get("best"))
+            trace.close()
 
     def _extract_deterministic_baseline(
         self,
@@ -154,6 +282,13 @@ class FormScaffoldAgent:
                             "columnWidths": tbl_sec["columnWidths"],
                             "rows": tbl_sec["rows"],
                             "locked": False,
+                            # PDF 에서 잰 표 상자 (쪽 좌표 px). 보정값 table_placement=frame 일 때 frame 이 된다.
+                            "sourceBox": {
+                                "x": _r(table.x0 * PX),
+                                "y": _r(table.y0 * PX),
+                                "w": _r((table.x1 - table.x0) * PX),
+                                "h": _r((table.y1 - table.y0) * PX),
+                            },
                         }
                     )
                     table_y_ranges.append((table.y0 * PX, table.y1 * PX))
@@ -615,8 +750,8 @@ class FormScaffoldAgent:
         pdf_bytes: bytes,
         doc_id: str,
         title: str,
-    ) -> tuple[dict[str, Any], int, int]:
-        """PDF 바이트를 파싱하여 완전한 .vdoc Document JSON과 통계(블록 수, 슬롯 수)를 반환한다."""
+    ) -> tuple[dict[str, Any], int, int, Optional[dict[str, Any]]]:
+        """PDF 바이트를 파싱하여 (.vdoc 문서, 블록 수, 슬롯 수, 에이전트 실행 정보 | None)을 반환한다."""
         if not pdf_bytes:
             raise ValueError("PDF payload is empty")
 
@@ -629,7 +764,16 @@ class FormScaffoldAgent:
             title=doc_title,
         )
 
-        # 2. agy CLI 가 기본 공급자(CLI_PROVIDER)로 설정되어 있는 경우 패턴 A 자율 에이전트 위임
+        # 2. agy CLI ReAct 루프: 스킬 절차대로 02 측정 → 03 판정 → 보정값 수정을 반복
+        agent_run: Optional[dict[str, Any]] = None
+        if self._agentic_loop_enabled():
+            tuned, agent_run = self._run_fidelity_loop(pdf_bytes=pdf_bytes, doc_id=doc_id, doc_title=doc_title)
+            if tuned is not None:
+                baseline_doc = tuned
+        else:
+            logger.info("[FormScaffoldAgent] 에이전틱 루프 비활성 (CLI 공급자 아님 · 경로 미주입 · 테스트 · VIBE_SCAFFOLD_AGENT_LOOP=0)")
+
+        # 3. 블록 구획명 정리 (agy 단발 호출)
         if self._policy and (
             self._policy.primary_provider == CLI_PROVIDER
             or self._policy.fallback_provider == CLI_PROVIDER
@@ -642,6 +786,6 @@ class FormScaffoldAgent:
             )
             if refined and "pages" in refined and "slots" in refined:
                 refined_blocks = sum(len(p.get("blocks", [])) for p in refined.get("pages", []))
-                return refined, refined_blocks, len(refined.get("slots", {}))
+                return refined, refined_blocks, len(refined.get("slots", {})), agent_run
 
-        return baseline_doc, total_blocks, total_slots
+        return baseline_doc, total_blocks, total_slots, agent_run

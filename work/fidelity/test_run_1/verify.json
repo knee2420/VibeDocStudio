@@ -1,0 +1,129 @@
+{
+  "verdict": "FAIL",
+  "parity_score": 58.33,
+  "summary": {
+    "spans_total": 36,
+    "spans_within_tol": 21,
+    "tol_pos": 1.5,
+    "mean_abs_dx": 5.685,
+    "mean_abs_dy": 0.95
+  },
+  "findings": [
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'회의일시' 오차 1.57px (dx -1.57 · dy -0.20)",
+      "span": 8,
+      "dx": -1.57,
+      "dy": -0.2
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'공 사 명' 오차 1.57px (dx -1.57 · dy +0.17)",
+      "span": 11,
+      "dx": -1.57,
+      "dy": 0.17
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-ELEM-001",
+      "msg": "후보에 누락된 텍스트: '제  목'",
+      "span": 13
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-ELEM-001",
+      "msg": "후보에 누락된 텍스트: '내   용'",
+      "span": 14
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'검 토 자' 오차 1.57px (dx -1.57 · dy +0.20)",
+      "span": 15,
+      "dx": -1.57,
+      "dy": 0.2
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'참 석 자' 오차 1.57px (dx -1.57 · dy +0.04)",
+      "span": 19,
+      "dx": -1.57,
+      "dy": 0.04
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'업무 FLOW' 오차 3.50px (dx -1.73 · dy +3.50)",
+      "span": 20,
+      "dx": -1.73,
+      "dy": 3.5
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'및' 오차 3.66px (dx -1.26 · dy +3.66)",
+      "span": 21,
+      "dx": -1.26,
+      "dy": 3.66
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'업무처리기간' 오차 17.06px (dx -1.54 · dy +17.06)",
+      "span": 22,
+      "dx": -1.54,
+      "dy": 17.06
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'20  .   .   .' 오차 51.72px (dx -51.72 · dy -0.44)",
+      "span": 26,
+      "dx": -51.72,
+      "dy": -0.44
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'20  .   .   .' 오차 6.81px (dx -6.81 · dy -0.44)",
+      "span": 27,
+      "dx": -6.81,
+      "dy": -0.44
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'20  .   .   .' 오차 29.52px (dx -29.52 · dy -0.44)",
+      "span": 28,
+      "dx": -29.52,
+      "dy": -0.44
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'20  .   .   .' 오차 51.72px (dx -51.72 · dy +0.54)",
+      "span": 32,
+      "dx": -51.72,
+      "dy": 0.54
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'20  .   .   .' 오차 6.81px (dx -6.81 · dy +0.54)",
+      "span": 33,
+      "dx": -6.81,
+      "dy": 0.54
+    },
+    {
+      "level": "FAIL",
+      "rule": "F-POS-001",
+      "msg": "'20  .   .   .' 오차 29.52px (dx -29.52 · dy +0.54)",
+      "span": 34,
+      "dx": -29.52,
+      "dy": 0.54
+    }
+  ]
+}
