@@ -102,6 +102,7 @@ async def scaffold_pdf_form(
     service: CatalogServiceDep,
     file: UploadFile = File(...),
     title: str = Form(default=""),
+    fidelity_mode: str = Form(default="balanced"),
 ) -> ScaffoldDocumentResponse:
     try:
         pdf_bytes = await file.read()
@@ -117,6 +118,7 @@ async def scaffold_pdf_form(
             service.scaffold_pdf_document,
             pdf_bytes=pdf_bytes,
             title=resolved_title,
+            fidelity_mode=fidelity_mode,
         )
     except Exception as exc:
         raise _translate_error(exc) from exc
@@ -128,6 +130,6 @@ async def scaffold_pdf_form(
         checkedBlocks=checked_blocks,
         checkedSlots=checked_slots,
         document=vdoc,
+        fidelityMode=fidelity_mode,
         agentRun=agent_run,
     )
-

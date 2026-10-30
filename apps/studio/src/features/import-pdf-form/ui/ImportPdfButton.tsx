@@ -10,11 +10,13 @@ export const ImportPdfButton: React.FC = () => {
     openModal,
     closeModal,
     selectedFile,
-    setSelectedFile,
+    handleFileChange,
     docTitle,
     setDocTitle,
     importMode,
     setImportMode,
+    fidelityMode,
+    setFidelityMode,
     isLoading,
     currentStep,
     errorMessage,
@@ -36,11 +38,13 @@ export const ImportPdfButton: React.FC = () => {
         isOpen={isModalOpen}
         onClose={closeModal}
         selectedFile={selectedFile}
-        onFileSelect={setSelectedFile}
+        onFileSelect={handleFileChange}
         docTitle={docTitle}
         onTitleChange={setDocTitle}
         importMode={importMode}
         onModeChange={setImportMode}
+        fidelityMode={fidelityMode}
+        onFidelityModeChange={setFidelityMode}
         isLoading={isLoading}
         currentStep={currentStep}
         errorMessage={errorMessage}
@@ -49,4 +53,3 @@ export const ImportPdfButton: React.FC = () => {
     </>
   );
 };
-

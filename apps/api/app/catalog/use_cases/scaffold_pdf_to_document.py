@@ -19,6 +19,7 @@ class ScaffoldPdfToDocumentUseCase:
         *,
         pdf_bytes: bytes,
         title: str,
+        fidelity_mode: str = "balanced",
     ) -> tuple[dict[str, Any], int, int, int, Optional[dict[str, Any]]]:
         """PDF를 파싱하여 (vdoc, total_pages, checked_blocks, checked_slots, agent_run) 반환."""
         if not pdf_bytes:
@@ -31,7 +32,7 @@ class ScaffoldPdfToDocumentUseCase:
             pdf_bytes=pdf_bytes,
             doc_id=doc_id,
             title=clean_title,
+            fidelity_mode=fidelity_mode,
         )
         total_pages = len(vdoc.get("pages", []))
         return vdoc, total_pages, checked_blocks, checked_slots, agent_run
-

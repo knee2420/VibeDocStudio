@@ -76,7 +76,7 @@ PAGE_JS = r"""
 window.__vfPage = (() => {
   const sel = %(sel)s, text = %(text)s;
   const all = [...document.querySelectorAll(sel)];
-  const hits = text ? all.filter(e => e.innerText.includes(text)) : all;
+  const hits = text ? all.filter(e => e.innerText.replace(/ /g, ' ').includes(text)) : all;
   return hits.length ? hits[hits.length - 1] : null;
 })();
 """

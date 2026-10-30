@@ -39,6 +39,8 @@ class FormScaffoldAgentPort(Protocol):
         pdf_bytes: bytes,
         doc_id: str,
         title: str,
-    ) -> tuple[dict[str, Any], int, int]: ...
+        fidelity_mode: str = "balanced",
+    ) -> tuple[dict[str, Any], int, int, Optional[dict[str, Any]]]: ...
+
 
 

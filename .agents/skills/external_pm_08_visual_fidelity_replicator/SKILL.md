@@ -15,6 +15,7 @@ description: "원본 PDF(청구서 · 견적서 · 양식 등) 한 쪽을 웹 �
 * **정답 예시**: [`examples/atticus_result.md`](./examples/atticus_result.md) — Atticus 청구서, 33/33 글자 ±1px, 평균 오차 0.11px (2026-10-29)
 * **생성기 예시**: [`examples/atticus_vdoc_adapter.py`](./examples/atticus_vdoc_adapter.py) — VibeDocStudio `.vdoc` 쪽을 만드는 어댑터
 * **자주 틀리는 것**: [`references/lessons_learned.md`](./references/lessons_learned.md) — **작업 전에 반드시 읽습니다.**
+* **CLI 루프**: [`references/cli_loop_guide.md`](./references/cli_loop_guide.md) — agy CLI 에이전트가 도구(`evaluate` · `set_plan` · `update_tune` …)로 같은 절차를 도는 법. 생성기는 `apps/api/app/catalog/agents/fidelity_layout.py`, 진단 · 처방은 `fidelity_diagnosis.py`
 
 ---
 

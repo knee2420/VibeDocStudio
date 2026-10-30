@@ -49,10 +49,10 @@ class CatalogService:
         *,
         pdf_bytes: bytes,
         title: str,
+        fidelity_mode: str = "balanced",
     ) -> tuple[dict[str, Any], int, int, int, Optional[dict[str, Any]]]:
         return self._scaffold_pdf.execute(
             pdf_bytes=pdf_bytes,
             title=title,
+            fidelity_mode=fidelity_mode,
         )
-
-

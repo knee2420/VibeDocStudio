@@ -10,7 +10,7 @@
   spans   글자 덩어리마다 text · x · y · x1 · y1 · pt · font · color · bold · block/line 번호
           y/y1 은 글꼴 ascent/descent 상자 = 브라우저 Range 사각형과 같은 기준
           x1 은 끝 공백을 뺀 실제 글자 끝 (PDF 상자는 끝 공백까지 포함한다, L-09)
-          --font 를 주면 단어 · 공백 토큰마다 letter-spacing 해(tokens)도 함께 낸다
+          --font 를 주면 단어 · 공백 토큰마다 letter-spacing 해(tokens)와 짝지은 글꼴 이름(font_ref)도 함께 낸다
   rules   얇은 선 (채운 얇은 사각형 · 선분) — 위치 · 두께 · 색
   fills   배경 칠 (흰색 제외)
   images  그림 위치
@@ -82,6 +82,8 @@ def extract_spans(page, font_map, warnings):
                 }
                 fm = core.pick_font(font_map, span["font"]) if font_map else None
                 if fm:
+                    # 생성기가 fonts[font_ref].content_height(F)로 줄 높이를 잡도록 짝지은 글꼴 이름을 남긴다.
+                    item["font_ref"] = next(name for name, f in font_map.items() if f is fm)
                     try:
                         px_chars = [{"c": c["c"], "x": c["origin"][0] * PX, "x_end": c["bbox"][2] * PX} for c in chars]
                         item["tokens"] = core.solve_token_spacing(px_chars, fm, span["size"] * PX)

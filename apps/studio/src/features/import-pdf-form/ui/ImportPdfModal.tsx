@@ -8,9 +8,12 @@ import {
   X,
   Layers,
   Archive,
+  Zap,
+  Scale,
+  Crosshair,
 } from "lucide-react";
 
-import type { ImportMode } from "../model/useImportPdfForm";
+import type { FidelityMode, ImportMode } from "../model/useImportPdfForm";
 
 interface ImportPdfModalProps {
   isOpen: boolean;
@@ -21,6 +24,8 @@ interface ImportPdfModalProps {
   onTitleChange: (title: string) => void;
   importMode: ImportMode;
   onModeChange: (mode: ImportMode) => void;
+  fidelityMode: FidelityMode;
+  onFidelityModeChange: (mode: FidelityMode) => void;
   isLoading: boolean;
   currentStep: 1 | 2 | 3;
   errorMessage: string | null;
@@ -36,6 +41,8 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
   onTitleChange,
   importMode,
   onModeChange,
+  fidelityMode,
+  onFidelityModeChange,
   isLoading,
   currentStep,
   errorMessage,
@@ -103,14 +110,14 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {/* File Dropzone */}
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => !isLoading && fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-6 text-center transition cursor-pointer flex flex-col items-center justify-center ${
+            className={`border-2 border-dashed rounded-xl p-5 text-center transition cursor-pointer flex flex-col items-center justify-center ${
               isDragging
                 ? "border-emerald-500 bg-emerald-50/50"
                 : selectedFile
@@ -144,13 +151,13 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
               </div>
             ) : (
               <>
-                <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-2">
-                  <UploadCloud className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-1.5">
+                  <UploadCloud className="w-4 h-4" />
                 </div>
                 <div className="text-xs font-medium text-slate-700">
                   PDF 파일을 여기로 드래그하거나 클릭하여 선택
                 </div>
-                <div className="text-[11px] text-slate-400 mt-1">
+                <div className="text-[11px] text-slate-400 mt-0.5">
                   규정, 공문, 서식, 보고서 등 모든 PDF 양식 지원
                 </div>
               </>
@@ -159,7 +166,7 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
 
           {/* Document Title Input */}
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-slate-700 mb-1">
               문서 제목
             </label>
             <input
@@ -174,15 +181,15 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
 
           {/* Import Mode Radio */}
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-slate-700 mb-1">
               적용 대상
             </label>
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => onModeChange("canvas")}
                 disabled={isLoading}
-                className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition ${
+                className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
                   importMode === "canvas"
                     ? "border-emerald-500 bg-emerald-50/40 text-emerald-950 ring-1 ring-emerald-500"
                     : "border-slate-200 hover:border-slate-300 text-slate-700"
@@ -191,7 +198,7 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
                 <Layers className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                 <div>
                   <div className="text-xs font-semibold">내 캔버스에 즉시 열기</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[10px] text-slate-500 mt-0.5">
                     현재 편집 작업 공간으로 로드
                   </div>
                 </div>
@@ -201,7 +208,7 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
                 type="button"
                 onClick={() => onModeChange("catalog")}
                 disabled={isLoading}
-                className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition ${
+                className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
                   importMode === "catalog"
                     ? "border-emerald-500 bg-emerald-50/40 text-emerald-950 ring-1 ring-emerald-500"
                     : "border-slate-200 hover:border-slate-300 text-slate-700"
@@ -210,13 +217,91 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
                 <Archive className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                 <div>
                   <div className="text-xs font-semibold">서식 보관함에 등록</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[10px] text-slate-500 mt-0.5">
                     카탈로그 템플릿으로 영구 보관
                   </div>
                 </div>
               </button>
             </div>
           </div>
+
+          {/* Fidelity Mode Selector (캔버스 스캐폴딩 모드일 때만 활성화) */}
+          {importMode === "canvas" && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-slate-700">
+                  AI 에이전트 정밀도 모드
+                </label>
+                <span className="text-[10px] text-slate-400">
+                  루프 엄격도 및 허용 오차 제어
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {/* Fast Mode */}
+                <button
+                  type="button"
+                  onClick={() => onFidelityModeChange("fast")}
+                  disabled={isLoading}
+                  className={`p-2.5 rounded-xl border text-left transition ${
+                    fidelityMode === "fast"
+                      ? "border-emerald-500 bg-emerald-50/50 text-emerald-950 ring-1 ring-emerald-500 shadow-2xs"
+                      : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-semibold text-xs text-slate-900">
+                    <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    빠름 (Fast)
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">
+                    ±2.0px 오차 허용<br />
+                    1~2회 빠른 조기 종료
+                  </div>
+                </button>
+
+                {/* Balanced Mode */}
+                <button
+                  type="button"
+                  onClick={() => onFidelityModeChange("balanced")}
+                  disabled={isLoading}
+                  className={`p-2.5 rounded-xl border text-left transition ${
+                    fidelityMode === "balanced"
+                      ? "border-emerald-500 bg-emerald-50/50 text-emerald-950 ring-1 ring-emerald-500 shadow-2xs"
+                      : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-semibold text-xs text-slate-900">
+                    <Scale className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    균형 (권장)
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">
+                    ±1.5px 실용적 고충실도<br />
+                    통과 시 즉시 조기 종료
+                  </div>
+                </button>
+
+                {/* Strict Mode */}
+                <button
+                  type="button"
+                  onClick={() => onFidelityModeChange("strict")}
+                  disabled={isLoading}
+                  className={`p-2.5 rounded-xl border text-left transition ${
+                    fidelityMode === "strict"
+                      ? "border-emerald-500 bg-emerald-50/50 text-emerald-950 ring-1 ring-emerald-500 shadow-2xs"
+                      : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-semibold text-xs text-slate-900">
+                    <Crosshair className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                    초정밀 (Strict)
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">
+                    ±1.0px 서브픽셀 검증<br />
+                    처방 0건까지 지속 튜닝
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Progress Indicator */}
           {isLoading && (
@@ -228,7 +313,7 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
                 </span>
                 <span className="text-[11px] text-slate-500">
                   {currentStep === 1 && "1/3단계: 기하 좌표 측정"}
-                  {currentStep === 2 && "2/3단계: AI 에이전트 자율 스캐폴딩 (CLI)"}
+                  {currentStep === 2 && `2/3단계: AI 에이전트 자율 보정 (${fidelityMode} 모드)`}
                   {currentStep === 3 && "3/3단계: 캔버스 렌더링"}
                 </span>
               </div>
@@ -286,4 +371,3 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
     document.body
   );
 };
-

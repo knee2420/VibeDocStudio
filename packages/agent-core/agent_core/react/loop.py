@@ -37,6 +37,8 @@ class LoopConfig:
     observation_chars: int = 3500
     old_observation_chars: int = 400
     llm_timeout_seconds: int = 180
+    #: 스킬 본문 + 참고 문서를 프롬프트에 싣는 최대 글자 수
+    skill_chars: int = 14000
 
 
 @dataclass
@@ -117,7 +119,7 @@ class ReActLoop:
         return "\n\n".join(
             [
                 _PROTOCOL,
-                self._skill.as_prompt(),
+                self._skill.as_prompt(max_chars=self._cfg.skill_chars),
                 "# 도구\n" + self._tools.describe(),
                 "# 과제\n" + task,
                 "# 지금까지의 기록 (오래된 것부터)\n" + self._history_text(steps),

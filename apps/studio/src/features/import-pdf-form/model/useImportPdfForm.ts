@@ -5,6 +5,8 @@ import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { httpClient } from "@/shared/api";
 import type { VDocDocument } from "@vibe/vdoc-schema";
 
+export type FidelityMode = "fast" | "balanced" | "strict";
+
 export interface ScaffoldDocumentResponse {
   docId: string;
   title: string;
@@ -12,6 +14,8 @@ export interface ScaffoldDocumentResponse {
   checkedBlocks: number;
   checkedSlots: number;
   document: VDocDocument;
+  fidelityMode?: string;
+  agentRun?: Record<string, unknown>;
 }
 
 export interface IngestPdfResponse {
@@ -29,6 +33,7 @@ export function useImportPdfForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [docTitle, setDocTitle] = useState("");
   const [importMode, setImportMode] = useState<ImportMode>("canvas");
+  const [fidelityMode, setFidelityMode] = useState<FidelityMode>("balanced");
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -77,6 +82,7 @@ export function useImportPdfForm() {
       formData.append("title", titleToUse);
 
       if (importMode === "canvas") {
+        formData.append("fidelity_mode", fidelityMode);
         setCurrentStep(2);
         const res = await httpClient.post<ScaffoldDocumentResponse>(
           "/api/catalog/scaffold",
@@ -109,6 +115,7 @@ export function useImportPdfForm() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "PDF 양식 가져오기에 실패했습니다.";
       setErrorMessage(msg);
+      setCurrentStep(1);
     } finally {
       setIsLoading(false);
     }
@@ -116,19 +123,19 @@ export function useImportPdfForm() {
 
   return {
     isModalOpen,
-    openModal,
-    closeModal,
     selectedFile,
-    setSelectedFile: handleFileChange,
     docTitle,
-    setDocTitle,
     importMode,
-    setImportMode,
+    fidelityMode,
     isLoading,
     currentStep,
     errorMessage,
-    clearError: () => setErrorMessage(null),
+    openModal,
+    closeModal,
+    handleFileChange,
+    setDocTitle,
+    setImportMode,
+    setFidelityMode,
     executeImport,
   };
 }
-

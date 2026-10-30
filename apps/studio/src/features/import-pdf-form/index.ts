@@ -3,7 +3,7 @@ export { ImportPdfModal } from "./ui/ImportPdfModal";
 export { useImportPdfForm } from "./model/useImportPdfForm";
 export type {
   ImportMode,
+  FidelityMode,
   ScaffoldDocumentResponse,
   IngestPdfResponse,
 } from "./model/useImportPdfForm";
-
