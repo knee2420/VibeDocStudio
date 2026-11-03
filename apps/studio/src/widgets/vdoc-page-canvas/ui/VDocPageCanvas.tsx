@@ -86,6 +86,7 @@ export const VDocPageCanvas: React.FC = () => {
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const splitReferenceDocId = useWorkspaceSessionStore((s) => s.splitReferenceDocId);
   const setSplitReferenceDocId = useWorkspaceSessionStore((s) => s.setSplitReferenceDocId);
+  const hoveredOutlinerNodeId = useWorkspaceSessionStore((s) => s.hoveredOutlinerNodeId);
 
   const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
@@ -131,6 +132,17 @@ export const VDocPageCanvas: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
+      {hoveredOutlinerNodeId && (
+        <style>{`
+          [data-slot-id="${hoveredOutlinerNodeId}"] {
+            outline: 2px solid #059669 !important;
+            outline-offset: 3px !important;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3) !important;
+            transition: all 0.15s ease-in-out !important;
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+          }
+        `}</style>
+      )}
       <div className="flex-1 flex overflow-hidden">
         {currentPhase === "storylining" ? (
           <main className="flex-1 overflow-y-auto">

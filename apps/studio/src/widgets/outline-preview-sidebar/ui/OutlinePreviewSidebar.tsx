@@ -2,12 +2,17 @@ import React, { useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
+  ArrowUpLeft,
   BookOpen,
+  ChevronDown,
   ChevronLeft,
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   CircleDot,
   CornerDownRight,
-  FileText,
   FolderTree,
+  GitFork,
   MoreHorizontal,
   Plus,
   Search,
@@ -18,14 +23,13 @@ import {
 
 import { getZoomLevelMeta, type OutlinerNode } from "@vibe/vdoc-schema";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import { ProvenanceBadge, useProjectStore } from "@/entities/vdoc-project";
+import { useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { BlockInsertionPalette } from "@/features/mutate-canvas-blocks";
 import { useFractalZoomNavigation } from "@/features/zoom-hierarchy";
 import {
   CollapsedPanelRail,
   EmptyStateCard,
-  TruncatedLabel,
 } from "@/shared/ui";
 
 import { ReferenceDeckSection } from "./ReferenceDeckSection";
@@ -41,28 +45,36 @@ export const OutlinePreviewSidebar: React.FC = () => {
   const leftSidebarOpen = useWorkspaceSessionStore((s) => s.leftSidebarOpen);
   const setLeftSidebarOpen = useWorkspaceSessionStore((s) => s.setLeftSidebarOpen);
 
-  const activeActivityTab = useWorkspaceSessionStore(
-    (s) => s.activeActivityTab
-  );
-  const setActiveActivityTab = useWorkspaceSessionStore(
-    (s) => s.setActiveActivityTab
-  );
+  const sidebarWidth = useWorkspaceSessionStore((s) => s.sidebarWidth || 320);
+  const setSidebarWidth = useWorkspaceSessionStore((s) => s.setSidebarWidth);
+
+  const activeActivityTab = useWorkspaceSessionStore((s) => s.activeActivityTab);
+  const setActiveActivityTab = useWorkspaceSessionStore((s) => s.setActiveActivityTab);
+
+  const collapsedNodeIds = useWorkspaceSessionStore((s) => s.collapsedNodeIds);
+  const toggleNodeCollapse = useWorkspaceSessionStore((s) => s.toggleNodeCollapse);
+  const collapseAllNodes = useWorkspaceSessionStore((s) => s.collapseAllNodes);
+  const expandAllNodes = useWorkspaceSessionStore((s) => s.expandAllNodes);
+
+  const hoveredOutlinerNodeId = useWorkspaceSessionStore((s) => s.hoveredOutlinerNodeId);
+  const setHoveredOutlinerNodeId = useWorkspaceSessionStore((s) => s.setHoveredOutlinerNodeId);
 
   const insertStorylineNode = useProjectStore((s) => s.insertStorylineNode);
   const deleteStorylineNode = useProjectStore((s) => s.deleteStorylineNode);
   const moveStorylineNode = useProjectStore((s) => s.moveStorylineNode);
   const indentOutlinerNode = useProjectStore((s) => s.indentOutlinerNode);
 
-  const selectedOutlinerNodeId = useWorkspaceSessionStore(
-    (s) => s.selectedOutlinerNodeId
-  );
+  const selectedOutlinerNodeId = useWorkspaceSessionStore((s) => s.selectedOutlinerNodeId);
   const quickFilterQuery = useWorkspaceSessionStore((s) => s.quickFilterQuery);
-  const setQuickFilterQuery = useWorkspaceSessionStore(
-    (s) => s.setQuickFilterQuery
-  );
+  const setQuickFilterQuery = useWorkspaceSessionStore((s) => s.setQuickFilterQuery);
 
-  const { projection, handleBulletZoomIn, handleSelectOutlineNode } =
-    useFractalZoomNavigation();
+  const {
+    projection,
+    handleBulletZoomIn,
+    handleSelectOutlineNode,
+    handleBreadcrumbClick,
+    handleZoomOutOneLevel,
+  } = useFractalZoomNavigation();
 
   if (!doc) return null;
 
@@ -78,6 +90,26 @@ export const OutlinePreviewSidebar: React.FC = () => {
       />
     );
   }
+
+  // Draggable sidebar resizing
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - startX;
+      setSidebarWidth(startWidth + delta);
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
 
   const handleAddQuickNode = () => {
     insertStorylineNode(null, {
@@ -117,11 +149,26 @@ export const OutlinePreviewSidebar: React.FC = () => {
     }
   };
 
+  const allParentIds = projection.allNodes
+    .filter((n) => projection.hasChildrenMap[n.nodeId])
+    .map((n) => n.nodeId);
+  const isAnyCollapsed = collapsedNodeIds.length > 0;
+
   return (
     <aside
       data-testid="project-outliner-sidebar"
-      className="w-80 bg-white border-r border-slate-200 flex flex-col shrink-0 select-none overflow-hidden"
+      style={{ width: `${sidebarWidth}px` }}
+      className="relative bg-white border-r border-slate-200 flex flex-col shrink-0 select-none overflow-hidden transition-[width] duration-75"
     >
+      {/* 1) Resizable Drag Handle on Right Border */}
+      <div
+        data-testid="sidebar-resize-handle"
+        onMouseDown={handleResizeStart}
+        onDoubleClick={() => setSidebarWidth(320)}
+        title="드래그하여 너비 조절 · 더블클릭 시 기본 너비(320px) 복원"
+        className="absolute right-0 top-0 bottom-0 w-1.5 hover:w-2 cursor-col-resize hover:bg-emerald-500/60 active:bg-emerald-600 transition-all z-30"
+      />
+
       {activeActivityTab === "source-control" ? (
         <SourceControlSidebarPanel />
       ) : activeActivityTab === "template-hub" ? (
@@ -143,6 +190,33 @@ export const OutlinePreviewSidebar: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
+              {/* 3) Fold / Unfold All Toggle Button */}
+              <button
+                type="button"
+                data-testid="toggle-collapse-all-btn"
+                onClick={() => {
+                  if (isAnyCollapsed) {
+                    expandAllNodes();
+                  } else {
+                    collapseAllNodes(allParentIds);
+                  }
+                }}
+                title={isAnyCollapsed ? "모든 계층 펼치기" : "모든 계층 접기"}
+                className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-medium flex items-center gap-0.5 cursor-pointer"
+              >
+                {isAnyCollapsed ? (
+                  <>
+                    <ChevronsUpDown className="w-3 h-3 text-slate-500" />
+                    펼치기
+                  </>
+                ) : (
+                  <>
+                    <ChevronsDownUp className="w-3 h-3 text-slate-500" />
+                    접기
+                  </>
+                )}
+              </button>
+
               <button
                 type="button"
                 data-testid="add-outline-node-btn"
@@ -184,6 +258,28 @@ export const OutlinePreviewSidebar: React.FC = () => {
                       <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
                       서식·템플릿 허브 열기
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        expandAllNodes();
+                        setMoreMenuOpen(false);
+                      }}
+                      className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <ChevronsUpDown className="w-3.5 h-3.5 text-slate-500" />
+                      모든 노드 펼치기 (Expand All)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        collapseAllNodes(allParentIds);
+                        setMoreMenuOpen(false);
+                      }}
+                      className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <ChevronsDownUp className="w-3.5 h-3.5 text-slate-500" />
+                      모든 노드 접기 (Collapse All)
+                    </button>
                   </div>
                 )}
               </div>
@@ -200,188 +296,250 @@ export const OutlinePreviewSidebar: React.FC = () => {
           </div>
 
           {/* Quick Filter Input */}
-      <div className="px-3 py-2 border-b border-slate-100 bg-slate-50/60">
-        <div className="relative flex items-center">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
-          <input
-            type="text"
-            data-testid="outliner-quick-filter-input"
-            value={quickFilterQuery}
-            onChange={(e) => setQuickFilterQuery(e.target.value)}
-            placeholder="아웃라인 노드·서식 빠른 검색..."
-            className="w-full pl-8 pr-7 py-1 rounded-lg bg-white border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#248567]"
-          />
-          {quickFilterQuery && (
-            <button
-              type="button"
-              data-testid="clear-quick-filter-btn"
-              onClick={() => setQuickFilterQuery("")}
-              title="검색어 지우기"
-              className="absolute right-2 text-slate-400 hover:text-slate-700 cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
+          <div className="px-2.5 py-1.5 border-b border-slate-100 bg-slate-50/60 shrink-0">
+            <div className="relative flex items-center">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
+              <input
+                type="text"
+                data-testid="outliner-quick-filter-input"
+                value={quickFilterQuery}
+                onChange={(e) => setQuickFilterQuery(e.target.value)}
+                placeholder="아웃라인 노드·서식 빠른 검색..."
+                className="w-full pl-8 pr-7 py-1 rounded-md bg-white border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#248567]"
+              />
+              {quickFilterQuery && (
+                <button
+                  type="button"
+                  data-testid="clear-quick-filter-btn"
+                  onClick={() => setQuickFilterQuery("")}
+                  title="검색어 지우기"
+                  className="absolute right-2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
 
-      {/* 4-Level Fractal Outliner Tree */}
-      <div
-        role="tree"
-        aria-label="프로젝트 4단계 프랙탈 아웃라이너"
-        className="p-2.5 space-y-1 overflow-y-auto flex-1"
-      >
-        {projection.visibleNodes.length === 0 ? (
-          <EmptyStateCard
-            testId="outliner-empty-filter-state"
-            title="조건에 일치하는 아웃라인 노드가 없습니다"
-            description={`검색어 "${quickFilterQuery}"에 해당하는 노드를 찾지 못했습니다.`}
-            actionLabel="검색 필터 초기화"
-            onAction={() => setQuickFilterQuery("")}
-            secondaryActionLabel="+ 새 섹션 노드 추가"
-            onSecondaryAction={handleAddQuickNode}
-          />
-        ) : (
-          projection.visibleNodes.map((node) => {
-            const isSelected = selectedOutlinerNodeId === node.nodeId;
-            const isZoomRoot = projection.rootNodeId === node.nodeId;
-            const levelMeta = getZoomLevelMeta(node.zoomLevel);
-            const indentPx = Math.min(node.depth, 3) * 12;
-            const isCustomStoryNode = !node.nodeId.startsWith("auto-");
-
-            return (
-              <div
-                key={node.nodeId}
-                role="treeitem"
-                tabIndex={0}
-                aria-selected={isSelected}
-                data-testid={`outline-node-row-${node.nodeId}`}
-                style={{ marginLeft: `${indentPx}px` }}
-                onClick={() => handleSelectOutlineNode(node)}
-                onKeyDown={(e) => handleNodeKeyDown(e, node)}
-                className={`group rounded-lg border p-2 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#248567] ${
-                  isSelected || isZoomRoot
-                    ? "border-l-4 border-l-[#248567] border-emerald-200 bg-emerald-50/50"
-                    : "border-slate-200/80 hover:bg-slate-50 bg-white"
-                }`}
+          {/* 5) Prominent Top Zoom-Out Banner when Zoomed In */}
+          {projection.rootNodeId !== "project-root" && (
+            <div className="px-2.5 py-1.5 bg-emerald-50/90 border-b border-emerald-200/80 flex items-center justify-between text-xs text-emerald-950 shrink-0">
+              <button
+                type="button"
+                data-testid="outliner-zoom-out-btn"
+                onClick={handleZoomOutOneLevel}
+                className="flex items-center gap-1.5 font-bold hover:text-emerald-700 cursor-pointer truncate max-w-[80%]"
+                title="상위 계층으로 Zoom-Out (Alt+Up)"
               >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  {/* Workflowy-style Bullet Zoom-In Button */}
-                  <button
-                    type="button"
-                    data-testid={`zoom-bullet-${node.nodeId}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleBulletZoomIn(node);
-                    }}
-                    title={`${levelMeta.badge} 계층으로 Zoom-In (불릿 클릭)`}
-                    className="w-5 h-5 rounded-full hover:bg-emerald-100 text-slate-400 hover:text-[#248567] flex items-center justify-center shrink-0 cursor-pointer transition"
+                <ArrowUpLeft className="w-3.5 h-3.5 text-[#248567] shrink-0" />
+                <span className="truncate">
+                  {projection.parentZoomTitle ? `${projection.parentZoomTitle} (Zoom-Out)` : "상위 계층으로 Zoom-Out"}
+                </span>
+              </button>
+              <button
+                type="button"
+                data-testid="outliner-zoom-root-btn"
+                onClick={() => handleBreadcrumbClick("project-root")}
+                className="text-[10px] text-emerald-700 hover:text-emerald-900 font-semibold underline cursor-pointer shrink-0 ml-1"
+                title="최상위 L1 프로젝트 뷰로 복귀"
+              >
+                최상위 L1
+              </button>
+            </div>
+          )}
+
+          {/* 2 & 3 & 4) 4-Level Outliner Tree with Slim Single-Row Items & Folding */}
+          <div
+            role="tree"
+            aria-label="프로젝트 4단계 프랙탈 아웃라이너"
+            className="p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden flex-1"
+          >
+            {projection.visibleNodes.length === 0 ? (
+              <EmptyStateCard
+                testId="outliner-empty-filter-state"
+                title="조건에 일치하는 아웃라인 노드가 없습니다"
+                description={`검색어 "${quickFilterQuery}"에 해당하는 노드를 찾지 못했습니다.`}
+                actionLabel="검색 필터 초기화"
+                onAction={() => setQuickFilterQuery("")}
+                secondaryActionLabel="+ 새 섹션 노드 추가"
+                onSecondaryAction={handleAddQuickNode}
+              />
+            ) : (
+              projection.visibleNodes.map((node) => {
+                const isSelected = selectedOutlinerNodeId === node.nodeId;
+                const isZoomRoot = projection.rootNodeId === node.nodeId;
+                const levelMeta = getZoomLevelMeta(node.zoomLevel);
+                const isCustomStoryNode = !node.nodeId.startsWith("auto-");
+                const hasChildren = !!projection.hasChildrenMap[node.nodeId];
+                const isCollapsed = collapsedNodeIds.includes(node.nodeId);
+                const isHovered =
+                  hoveredOutlinerNodeId === node.targetSlotId ||
+                  hoveredOutlinerNodeId === node.targetPageId ||
+                  hoveredOutlinerNodeId === node.nodeId;
+
+                const indentPadding = Math.min(node.depth, 4) * 12 + 4;
+
+                return (
+                  <div
+                    key={node.nodeId}
+                    role="treeitem"
+                    tabIndex={0}
+                    aria-selected={isSelected}
+                    data-testid={`outline-node-row-${node.nodeId}`}
+                    style={{ paddingLeft: `${indentPadding}px` }}
+                    onClick={() => handleSelectOutlineNode(node)}
+                    onKeyDown={(e) => handleNodeKeyDown(e, node)}
+                    onMouseEnter={() =>
+                      setHoveredOutlinerNodeId(
+                        node.targetSlotId || node.targetPageId || node.nodeId
+                      )
+                    }
+                    onMouseLeave={() => setHoveredOutlinerNodeId(null)}
+                    className={`group relative flex items-center gap-1.5 py-1 pr-1.5 rounded-md transition cursor-pointer text-xs select-none ${
+                      isSelected || isZoomRoot
+                        ? "bg-emerald-50/90 text-emerald-950 font-semibold ring-1 ring-emerald-400 shadow-2xs"
+                        : isHovered
+                          ? "bg-slate-100 text-slate-900 ring-1 ring-slate-300"
+                          : "hover:bg-slate-50 text-slate-700"
+                    }`}
                   >
-                    <CircleDot className="w-3.5 h-3.5" />
-                  </button>
-
-                  <span
-                    className={`px-1 py-0.2 rounded text-[9px] font-bold border shrink-0 ${levelMeta.colorClass}`}
-                  >
-                    {node.zoomLevel === "project"
-                      ? "L1"
-                      : node.zoomLevel === "document"
-                        ? "L2"
-                        : node.zoomLevel === "page"
-                          ? "L3"
-                          : "L4"}
-                  </span>
-
-                  <TruncatedLabel
-                    text={node.title}
-                    testId={`outline-node-title-${node.nodeId}`}
-                    className="text-xs font-semibold text-slate-900 flex-1"
-                  />
-
-                  {node.aiStatus === "applied" && (
-                    <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
-                  )}
-
-                  {isCustomStoryNode && node.parentId !== null && (
-                    <div className="hidden group-hover:flex items-center gap-0.5 shrink-0">
+                    {/* 3) Fold / Unfold Chevron or Alignment Spacer */}
+                    {hasChildren ? (
                       <button
                         type="button"
+                        data-testid={`fold-toggle-${node.nodeId}`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          moveStorylineNode(node.nodeId, -1);
+                          toggleNodeCollapse(node.nodeId);
                         }}
-                        title="위로 이동"
-                        className="p-0.5 rounded hover:bg-slate-200 text-slate-500 cursor-pointer"
+                        title={isCollapsed ? "하위 노드 펼치기" : "하위 노드 접기"}
+                        className="w-4 h-4 rounded hover:bg-slate-200/80 text-slate-400 hover:text-slate-800 flex items-center justify-center shrink-0 cursor-pointer"
                       >
-                        <ArrowUp className="w-3 h-3" />
+                        {isCollapsed ? (
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        )}
                       </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          moveStorylineNode(node.nodeId, 1);
-                        }}
-                        title="아래로 이동"
-                        className="p-0.5 rounded hover:bg-slate-200 text-slate-500 cursor-pointer"
-                      >
-                        <ArrowDown className="w-3 h-3" />
-                      </button>
-                      <button
-                        type="button"
-                        data-testid={`delete-outline-node-${node.nodeId}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteStorylineNode(node.nodeId);
-                        }}
-                        title="노드 삭제 (Ctrl+Z로 복구 가능)"
-                        className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-600 cursor-pointer"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Subtitle / Provenance / Template Metadata */}
-                <div className="pl-6 mt-1 flex items-center justify-between gap-1.5 flex-wrap">
-                  <TruncatedLabel
-                    text={node.summary}
-                    className="text-[10px] text-slate-500 flex-1"
-                  />
-                  <div className="flex items-center gap-1 shrink-0">
-                    {node.recommendedTemplateId && (
-                      <span className="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 text-[9px] font-mono">
-                        <FileText className="w-2.5 h-2.5 inline mr-0.5" />
-                        {node.recommendedTemplateId}
-                      </span>
+                    ) : (
+                      <span className="w-4 h-4 shrink-0" />
                     )}
-                    <ProvenanceBadge
-                      sourceProjectId={node.provenanceSourceProjectId}
-                      sourceNodeId={node.provenanceSourceNodeId}
-                    />
+
+                    {/* 5) Fractal Zoom-In Bullet Button */}
+                    <button
+                      type="button"
+                      data-testid={`zoom-bullet-${node.nodeId}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBulletZoomIn(node);
+                      }}
+                      title={`${levelMeta.badge} Zoom-In (불릿 클릭)`}
+                      className="w-4 h-4 rounded-full hover:bg-emerald-100 text-slate-400 hover:text-[#248567] flex items-center justify-center shrink-0 cursor-pointer transition"
+                    >
+                      <CircleDot className="w-3 h-3" />
+                    </button>
+
+                    {/* Level Mini-Badge (L1 ~ L4) */}
+                    <span
+                      className={`px-1 py-0.2 rounded text-[9px] font-bold border shrink-0 ${levelMeta.colorClass}`}
+                    >
+                      {levelMeta.badge.split(" · ")[0]}
+                    </span>
+
+                    {/* 2 & 4) Single-Line Truncated Title with Tooltip */}
+                    <span
+                      data-testid={`outline-node-title-${node.nodeId}`}
+                      title={`${node.title}${node.summary ? `\n\n[요약]: ${node.summary}` : ""}${node.provenanceSourceProjectId ? `\n[출처]: ${node.provenanceSourceProjectId}` : ""}`}
+                      className="truncate flex-1 min-w-0 text-slate-800"
+                    >
+                      {node.title}
+                    </span>
+
+                    {/* Right-aligned Compact Indicators */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      {node.provenanceSourceProjectId && (
+                        <span
+                          title={`참조 출처: ${node.provenanceSourceProjectId}`}
+                          className="text-violet-600 hover:text-violet-800 shrink-0"
+                        >
+                          <GitFork className="w-3 h-3" />
+                        </span>
+                      )}
+
+                      {node.recommendedTemplateId && (
+                        <span className="px-1 py-0.2 rounded bg-slate-100 text-slate-500 font-mono text-[9px] shrink-0 truncate max-w-[60px]">
+                          {node.recommendedTemplateId}
+                        </span>
+                      )}
+
+                      {node.aiStatus === "applied" && (
+                        <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
+                      )}
+
+                      {/* Action buttons on group hover */}
+                      {isCustomStoryNode && node.parentId !== null && (
+                        <div className="hidden group-hover:flex items-center gap-0.5 ml-0.5">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveStorylineNode(node.nodeId, -1);
+                            }}
+                            title="위로 이동"
+                            className="p-0.5 rounded hover:bg-slate-200 text-slate-500 cursor-pointer"
+                          >
+                            <ArrowUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveStorylineNode(node.nodeId, 1);
+                            }}
+                            title="아래로 이동"
+                            className="p-0.5 rounded hover:bg-slate-200 text-slate-500 cursor-pointer"
+                          >
+                            <ArrowDown className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            data-testid={`delete-outline-node-${node.nodeId}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteStorylineNode(node.nodeId);
+                            }}
+                            title="노드 삭제 (Ctrl+Z로 복구 가능)"
+                            className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-600 cursor-pointer"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })
-        )}
+                );
+              })
+            )}
 
-        {/* Quick Hint Footer */}
-        <div className="pt-1 px-1 flex items-center gap-1 text-[10px] text-slate-400">
-          <CornerDownRight className="w-3 h-3 shrink-0" />
-          <span>Enter: 형제 추가 · Tab: 깊이 조정 · Delete: 삭제</span>
-        </div>
-      </div>
+            {/* Quick Hint Footer */}
+            <div className="pt-2 px-1 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-100 mt-1">
+              <span className="flex items-center gap-1">
+                <CornerDownRight className="w-3 h-3 shrink-0" />
+                Enter: 추가 · Tab: 깊이 · Del: 삭제
+              </span>
+              <span>Alt+Up: Zoom-Out</span>
+            </div>
+          </div>
 
-      {/* Bottom Accordion: Read-Only Reference Projects Deck (2~3 Reference Projects) */}
-      <ReferenceDeckSection />
+          {/* Bottom Accordion: Read-Only Reference Projects Deck (2~3 Reference Projects) */}
+          <ReferenceDeckSection />
 
-      {/* Block Insertion Palette in Editing Mode */}
-      {mode === "Editing" && (
-        <BlockInsertionPalette
-          targetPageId={activePageId || doc.pages[0]?.pageId || ""}
-        />
-      )}
+          {/* Block Insertion Palette in Editing Mode */}
+          {mode === "Editing" && (
+            <BlockInsertionPalette
+              targetPageId={activePageId || doc.pages[0]?.pageId || ""}
+            />
+          )}
         </>
       )}
     </aside>

@@ -1,4 +1,4 @@
-import { useDeferredValue, useMemo } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo } from "react";
 
 import {
   buildProjectFractalTree,
@@ -43,6 +43,7 @@ export function useFractalZoomNavigation(): {
 
   const zoomRootNodeId = useWorkspaceSessionStore((s) => s.zoomRootNodeId);
   const quickFilterQuery = useWorkspaceSessionStore((s) => s.quickFilterQuery);
+  const collapsedNodeIds = useWorkspaceSessionStore((s) => s.collapsedNodeIds);
   const zoomIntoNode = useWorkspaceSessionStore((s) => s.zoomIntoNode);
   const setSelectedOutlinerNodeId = useWorkspaceSessionStore(
     (s) => s.setSelectedOutlinerNodeId
@@ -54,9 +55,10 @@ export function useFractalZoomNavigation(): {
         activeProject ?? EMPTY_PROJECT,
         docs,
         zoomRootNodeId,
-        quickFilterQuery
+        quickFilterQuery,
+        collapsedNodeIds
       ),
-    [activeProject, docs, zoomRootNodeId, quickFilterQuery]
+    [activeProject, docs, zoomRootNodeId, quickFilterQuery, collapsedNodeIds]
   );
 
   const syncCanvasSelection = (node: OutlinerNode) => {
@@ -77,7 +79,13 @@ export function useFractalZoomNavigation(): {
         const el = document.querySelector(
           `[data-slot-id="${node.targetSlotId}"]`
         );
-        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("ring-4", "ring-emerald-400", "transition-all");
+          window.setTimeout(() => {
+            el.classList.remove("ring-4", "ring-emerald-400");
+          }, 1200);
+        }
       }, 60);
     }
   };
@@ -100,7 +108,11 @@ export function useFractalZoomNavigation(): {
     }
   };
 
-  const handleZoomOutOneLevel = () => {
+  const handleZoomOutOneLevel = useCallback(() => {
+    if (projection.parentZoomNodeId) {
+      zoomIntoNode(projection.parentZoomNodeId);
+      return;
+    }
     const crumbs = projection.breadcrumbs;
     if (crumbs.length <= 1) {
       zoomIntoNode(PROJECT_ROOT_CRUMB_ID);
@@ -108,7 +120,18 @@ export function useFractalZoomNavigation(): {
     }
     const parentCrumb = crumbs[crumbs.length - 2];
     zoomIntoNode(parentCrumb.nodeId);
-  };
+  }, [projection.parentZoomNodeId, projection.breadcrumbs, zoomIntoNode]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key === "ArrowUp") {
+        e.preventDefault();
+        handleZoomOutOneLevel();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleZoomOutOneLevel]);
 
   return {
     projection,

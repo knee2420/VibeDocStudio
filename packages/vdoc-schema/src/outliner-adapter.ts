@@ -17,9 +17,12 @@ const stripHtml = (raw: string): string =>
 export interface FractalOutlineProjection {
   activeZoomLevel: ZoomLevel;
   rootNodeId: string;
+  parentZoomNodeId: string | null;
+  parentZoomTitle: string | null;
   breadcrumbs: OutlineBreadcrumbItem[];
   visibleNodes: OutlinerNode[];
   allNodes: OutlinerNode[];
+  hasChildrenMap: Record<string, boolean>;
 }
 
 /**
@@ -32,7 +35,8 @@ export function buildProjectFractalTree(
   project: VProjectManifest,
   docs: VDocDocument[],
   rootNodeId?: string | null,
-  quickFilter?: string
+  quickFilter?: string,
+  collapsedNodeIds?: string[]
 ): FractalOutlineProjection {
   const allNodes: OutlinerNode[] = [...project.storylineNodes];
   const docsById = new Map(docs.map((d) => [d.docId, d]));
@@ -128,7 +132,24 @@ export function buildProjectFractalTree(
       ? rootNodeId
       : PROJECT_ROOT_CRUMB_ID;
 
+  const hasChildrenMap: Record<string, boolean> = {};
+  for (const n of allNodes) {
+    if (n.parentId) {
+      hasChildrenMap[n.parentId] = true;
+    }
+  }
+
+  let parentZoomNodeId: string | null = null;
+  let parentZoomTitle: string | null = null;
+
   if (resolvedRootId !== PROJECT_ROOT_CRUMB_ID) {
+    const targetNode = byId.get(resolvedRootId);
+    parentZoomNodeId = targetNode?.parentId || PROJECT_ROOT_CRUMB_ID;
+    parentZoomTitle =
+      parentZoomNodeId === PROJECT_ROOT_CRUMB_ID
+        ? "프로젝트 최상위 (L1)"
+        : byId.get(parentZoomNodeId)?.title || "상위 계층";
+
     const chain: OutlinerNode[] = [];
     let curr = byId.get(resolvedRootId);
     const visited = new Set<string>();
@@ -150,6 +171,13 @@ export function buildProjectFractalTree(
   }
 
   const filterText = (quickFilter || "").trim().toLowerCase();
+
+  // 검색어가 없을 때는 접힌(Collapsed) 노드의 하위 자손을 숨긴다
+  if (collapsedNodeIds && collapsedNodeIds.length > 0 && !filterText) {
+    const hiddenDescendantIds = collectDescendantIds(allNodes, collapsedNodeIds);
+    scopedNodes = scopedNodes.filter((n) => !hiddenDescendantIds.has(n.nodeId));
+  }
+
   const visibleNodes = filterText
     ? scopedNodes.filter(
         (n) =>
@@ -162,10 +190,36 @@ export function buildProjectFractalTree(
   return {
     activeZoomLevel,
     rootNodeId: resolvedRootId,
+    parentZoomNodeId,
+    parentZoomTitle,
     breadcrumbs,
     visibleNodes,
     allNodes,
+    hasChildrenMap,
   };
+}
+
+/** `rootIds` 에 속한 노드들의 모든 순수 자손(자식, 손자 등) ID를 모은다 (`rootIds` 자체는 제외). */
+export function collectDescendantIds(nodes: OutlinerNode[], rootIds: string[]): Set<string> {
+  const children = new Map<string, string[]>();
+  for (const n of nodes) {
+    if (!n.parentId) continue;
+    const list = children.get(n.parentId);
+    if (list) list.push(n.nodeId);
+    else children.set(n.parentId, [n.nodeId]);
+  }
+  const descendants = new Set<string>();
+  const queue = [...rootIds];
+  while (queue.length > 0) {
+    const current = queue.pop() as string;
+    for (const child of children.get(current) ?? []) {
+      if (!descendants.has(child)) {
+        descendants.add(child);
+        queue.push(child);
+      }
+    }
+  }
+  return descendants;
 }
 
 /** `rootId` 와 그 모든 자손의 ID (자식 색인 + BFS, 노드 수에 선형). */

@@ -52,6 +52,14 @@ export interface WorkspaceSessionState {
   setActiveActivityTab: (tab: ActivityBarTab) => void;
   toggleActivityTab: (tab: ActivityBarTab) => void;
   setLeftSidebarOpen: (open: boolean) => void;
+  sidebarWidth: number;
+  setSidebarWidth: (width: number) => void;
+  collapsedNodeIds: string[];
+  toggleNodeCollapse: (nodeId: string) => void;
+  collapseAllNodes: (nodeIds: string[]) => void;
+  expandAllNodes: () => void;
+  hoveredOutlinerNodeId: string | null;
+  setHoveredOutlinerNodeId: (id: string | null) => void;
 }
 
 /** 실행 중단 방법은 직렬화할 값이 아니므로 상태 밖에 둔다. */
@@ -71,6 +79,12 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set, get)
   stagingDrawerOpen: false,
   activeActivityTab: "explorer",
   leftSidebarOpen: true,
+  sidebarWidth:
+    typeof window !== "undefined"
+      ? Number(window.localStorage.getItem("vdoc-sidebar-width")) || 320
+      : 320,
+  collapsedNodeIds: [],
+  hoveredOutlinerNodeId: null,
 
   restoreLocation: ({ phase, zoom, splitRef }) =>
     set({
@@ -135,4 +149,28 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set, get)
       return { activeActivityTab: tab, leftSidebarOpen: true };
     }),
   setLeftSidebarOpen: (open) => set({ leftSidebarOpen: open }),
+
+  setSidebarWidth: (width) => {
+    const clamped = Math.max(250, Math.min(650, width));
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem("vdoc-sidebar-width", String(clamped));
+      } catch {
+        // ignore quota errors
+      }
+    }
+    set({ sidebarWidth: clamped });
+  },
+
+  toggleNodeCollapse: (nodeId) =>
+    set((s) => ({
+      collapsedNodeIds: s.collapsedNodeIds.includes(nodeId)
+        ? s.collapsedNodeIds.filter((id) => id !== nodeId)
+        : [...s.collapsedNodeIds, nodeId],
+    })),
+
+  collapseAllNodes: (nodeIds) => set({ collapsedNodeIds: nodeIds }),
+  expandAllNodes: () => set({ collapsedNodeIds: [] }),
+
+  setHoveredOutlinerNodeId: (id) => set({ hoveredOutlinerNodeId: id }),
 }));

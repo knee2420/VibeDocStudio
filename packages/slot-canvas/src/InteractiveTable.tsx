@@ -366,6 +366,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                         <td
                           key={cell.cellId}
                           data-cell-id={cell.cellId}
+                          data-slot-id={cell.slotId}
                           colSpan={cell.colSpan}
                           rowSpan={cell.rowSpan}
                           onPointerDown={(e) => {

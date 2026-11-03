@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
   BookOpen,
+  Check,
   ChevronDown,
   ChevronUp,
   Columns,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 
 import {
+  selectActiveProject,
   selectAllReferenceProjectIds,
   selectBoundReferenceProjects,
   selectCurrentReferenceProject,
@@ -20,6 +22,10 @@ import { EmptyStateCard, TruncatedLabel } from "@/shared/ui";
 
 export const ReferenceDeckSection: React.FC = () => {
   const [expanded, setExpanded] = useState(true);
+  const activeProject = useProjectStore(selectActiveProject);
+  const setSelectedOutlinerNodeId = useWorkspaceSessionStore(
+    (s) => s.setSelectedOutlinerNodeId
+  );
   const boundRefProjects = useProjectStore(useShallow(selectBoundReferenceProjects));
   const currentRefProject = useProjectStore(selectCurrentReferenceProject);
   const allReferenceIds = useProjectStore(useShallow(selectAllReferenceProjectIds));
@@ -162,38 +168,69 @@ export const ReferenceDeckSection: React.FC = () => {
 
                   {currentRefProject.storylineNodes
                     .filter((n) => n.parentId !== null)
-                    .map((refNode) => (
-                      <div
-                        key={refNode.nodeId}
-                        data-testid={`ref-node-card-${refNode.nodeId}`}
-                        className="p-2 rounded-md border border-slate-100 bg-slate-50/70 hover:bg-violet-50/40 transition space-y-1"
-                      >
-                        <div className="flex items-start justify-between gap-1.5">
-                          <TruncatedLabel
-                            text={refNode.title}
-                            className="text-[11px] font-semibold text-slate-800 flex-1"
-                          />
-                          <button
-                            type="button"
-                            data-testid={`clone-ref-node-btn-${refNode.nodeId}`}
-                            onClick={() =>
-                              cloneNodeFromReference(
-                                currentRefProject.projectId,
-                                refNode.nodeId
-                              )
-                            }
-                            title="내 작업 프로젝트 아웃라이너로 복제하고 출처(Provenance)를 기록합니다"
-                            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-semibold shrink-0 cursor-pointer shadow-2xs"
-                          >
-                            <CopyPlus className="w-2.5 h-2.5" />
-                            복제
-                          </button>
+                    .map((refNode) => {
+                      const clonedNode = activeProject?.storylineNodes.find(
+                        (n) => n.provenanceSourceNodeId === refNode.nodeId
+                      );
+                      const isAlreadyCloned = !!clonedNode;
+
+                      return (
+                        <div
+                          key={refNode.nodeId}
+                          data-testid={`ref-node-card-${refNode.nodeId}`}
+                          className="p-2 rounded-md border border-slate-100 bg-slate-50/70 hover:bg-violet-50/40 transition space-y-1"
+                        >
+                          <div className="flex items-start justify-between gap-1.5">
+                            <TruncatedLabel
+                              text={refNode.title}
+                              className="text-[11px] font-semibold text-slate-800 flex-1"
+                            />
+                            {isAlreadyCloned ? (
+                              <button
+                                type="button"
+                                data-testid={`clone-ref-node-btn-${refNode.nodeId}`}
+                                onClick={() => {
+                                  if (clonedNode) {
+                                    setSelectedOutlinerNodeId(clonedNode.nodeId);
+                                    const el = document.querySelector(
+                                      `[data-testid="outline-node-row-${clonedNode.nodeId}"]`
+                                    );
+                                    el?.scrollIntoView({
+                                      behavior: "smooth",
+                                      block: "center",
+                                    });
+                                  }
+                                }}
+                                title="이미 복제된 노드입니다. 클릭하여 아웃라이너 위치로 이동합니다."
+                                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-violet-100 hover:bg-violet-200 text-violet-800 text-[10px] font-semibold shrink-0 cursor-pointer"
+                              >
+                                <Check className="w-2.5 h-2.5" />
+                                복제됨
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                data-testid={`clone-ref-node-btn-${refNode.nodeId}`}
+                                onClick={() =>
+                                  cloneNodeFromReference(
+                                    currentRefProject.projectId,
+                                    refNode.nodeId
+                                  )
+                                }
+                                title="내 작업 프로젝트 아웃라이너로 복제하고 출처(Provenance)를 기록합니다"
+                                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-semibold shrink-0 cursor-pointer shadow-2xs"
+                              >
+                                <CopyPlus className="w-2.5 h-2.5" />
+                                복제
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-slate-500 line-clamp-2">
+                            {refNode.summary}
+                          </p>
                         </div>
-                        <p className="text-[10px] text-slate-500 line-clamp-2">
-                          {refNode.summary}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
               )}
             </>
