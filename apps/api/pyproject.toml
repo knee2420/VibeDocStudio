@@ -34,11 +34,12 @@ name = "Core must not import domains"
 type = "forbidden"
 source_modules = ["app.core"]
 forbidden_modules = [
-    "app.catalog",
-    "app.documents",
     "app.backdata",
+    "app.catalog",
     "app.composer",
+    "app.documents",
     "app.projects",
+    "app.runtime",
 ]
 
 [[tool.importlinter.contracts]]
@@ -46,11 +47,12 @@ name = "Pdf VDoc Engine is independent"
 type = "forbidden"
 source_modules = ["pdf_vdoc_engine"]
 forbidden_modules = [
-    "app.catalog",
-    "app.documents",
     "app.backdata",
+    "app.catalog",
     "app.composer",
+    "app.documents",
     "app.projects",
+    "app.runtime",
     "app.core",
     "app.bootstrap",
 ]
@@ -60,90 +62,109 @@ name = "Storage paths are known only to adapters and bootstrap"
 type = "forbidden"
 allow_indirect_imports = true
 source_modules = [
-    "app.*.service",
     "app.*.use_cases",
     "app.*.agents",
 ]
 forbidden_modules = ["app.core.config"]
 
 [[tool.importlinter.contracts]]
-name = "catalog must not depend on other domains"
+name = "Routers do not import the composition root"
 type = "forbidden"
-source_modules = [
-    "app.catalog.service",
-    "app.catalog.use_cases",
-    "app.catalog.adapters",
-    "app.catalog.agents",
-    "app.catalog.ports",
-]
-forbidden_modules = [
-    "app.documents",
-    "app.backdata",
-    "app.composer",
-    "app.projects",
-]
-
-[[tool.importlinter.contracts]]
-name = "documents must not depend on other domains"
-type = "forbidden"
-source_modules = [
-    "app.documents.service",
-    "app.documents.use_cases",
-    "app.documents.adapters",
-    "app.documents.ports",
-]
-forbidden_modules = [
-    "app.catalog",
-    "app.backdata",
-    "app.composer",
-    "app.projects",
-]
+source_modules = ["app.*.router"]
+forbidden_modules = ["app.bootstrap"]
 
 [[tool.importlinter.contracts]]
 name = "backdata must not depend on other domains"
 type = "forbidden"
 source_modules = [
-    "app.backdata.service",
     "app.backdata.use_cases",
     "app.backdata.adapters",
     "app.backdata.ports",
 ]
 forbidden_modules = [
     "app.catalog",
-    "app.documents",
     "app.composer",
+    "app.documents",
     "app.projects",
+    "app.runtime",
+]
+
+[[tool.importlinter.contracts]]
+name = "catalog must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.catalog.use_cases",
+    "app.catalog.adapters",
+    "app.catalog.agents",
+    "app.catalog.ports",
+]
+forbidden_modules = [
+    "app.backdata",
+    "app.composer",
+    "app.documents",
+    "app.projects",
+    "app.runtime",
 ]
 
 [[tool.importlinter.contracts]]
 name = "composer must not depend on other domains"
 type = "forbidden"
 source_modules = [
-    "app.composer.service",
     "app.composer.use_cases",
     "app.composer.adapters",
     "app.composer.agents",
     "app.composer.ports",
 ]
 forbidden_modules = [
+    "app.backdata",
     "app.catalog",
     "app.documents",
-    "app.backdata",
     "app.projects",
+    "app.runtime",
+]
+
+[[tool.importlinter.contracts]]
+name = "documents must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.documents.use_cases",
+    "app.documents.adapters",
+    "app.documents.ports",
+]
+forbidden_modules = [
+    "app.backdata",
+    "app.catalog",
+    "app.composer",
+    "app.projects",
+    "app.runtime",
 ]
 
 [[tool.importlinter.contracts]]
 name = "projects must not depend on other domains"
 type = "forbidden"
 source_modules = [
-    "app.projects.service",
     "app.projects.use_cases",
     "app.projects.adapters",
     "app.projects.ports",
 ]
 forbidden_modules = [
-    "app.catalog",
-    "app.documents",
     "app.backdata",
+    "app.catalog",
     "app.composer",
+    "app.documents",
+    "app.runtime",
+]
+
+[[tool.importlinter.contracts]]
+name = "runtime must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.runtime.use_cases",
+]
+forbidden_modules = [
+    "app.backdata",
+    "app.catalog",
+    "app.composer",
+    "app.documents",
+    "app.projects",
 ]

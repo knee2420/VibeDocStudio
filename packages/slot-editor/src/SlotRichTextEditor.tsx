@@ -119,7 +119,9 @@ export const SlotRichTextEditor: React.FC<SlotRichTextEditorProps> = ({
 
   useEffect(() => {
     if (!editor) return;
-    editor.setEditable(!readOnly);
+    // 편집 가능 여부만 바꾼다. 기본값(emitUpdate=true)은 내용이 그대로여도 onUpdate 를 쏴서,
+    // 마운트만 해도 모든 슬롯이 "편집됨"으로 표시되고 문서 자동 저장이 돌았다.
+    editor.setEditable(!readOnly, false);
   }, [editor, readOnly]);
 
   useEffect(() => {

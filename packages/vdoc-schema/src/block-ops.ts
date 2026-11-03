@@ -1,4 +1,4 @@
-import type { LayoutBlock, VDocSlot } from "./types";
+import type { LayoutBlock, VDocPage, VDocSlot } from "./types";
 
 /** Every slotId a layout block renders, in reading order. */
 export function getBlockSlotIds(block: LayoutBlock): string[] {
@@ -72,4 +72,26 @@ export function cloneBlockWithSlots(
     key === "slotIds" && Array.isArray(value) ? value.map((v: string) => slotMap.get(v) ?? v) : value
   ) as LayoutBlock;
   return { block: cloned, slots: nextSlots };
+}
+
+/**
+ * Every slot a page references (header/footer + all blocks), found by walking `*SlotId` / `slotIds`
+ * keys so new block kinds are covered without changes. Mirrors the API's `iter_slot_refs`.
+ */
+export function* iterPageSlotIds(page: VDocPage): Generator<string> {
+  const stack: unknown[] = [page];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (Array.isArray(node)) {
+      stack.push(...node);
+    } else if (node && typeof node === "object") {
+      for (const [key, value] of Object.entries(node)) {
+        const lowered = key.toLowerCase();
+        if (typeof value === "string" && lowered.endsWith("slotid")) yield value;
+        else if (lowered === "slotids" && Array.isArray(value)) {
+          for (const id of value) if (typeof id === "string") yield id;
+        } else if (value && typeof value === "object") stack.push(value);
+      }
+    }
+  }
 }

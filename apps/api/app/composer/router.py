@@ -1,12 +1,12 @@
-"""composer 도메인 HTTP 라우터 (`/api/ai`)."""
+"""composer 도메인 HTTP 라우터 (`/api/ai`).
+
+도메인 오류는 `app.bootstrap.error_handlers` 가 HTTP 응답으로 번역하므로 여기서는 잡지 않는다.
+"""
 from typing import Annotated
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
-from app.bootstrap.container import Container
-
-from .errors import SlotCompositionValidationError
 from .models import SlotBackdataInput, SlotCompositionRequestModel
 from .schemas import (
     CancelRunRequest,
@@ -18,48 +18,43 @@ from .schemas import (
     SlotComposeResponse,
     StagedPhaseComposeResponse,
 )
-from .service import ComposerService
+from .use_cases import (
+    CancelCompositionRunUseCase,
+    ComposeSlotDraftUseCase,
+    ComposeStorylinePhase1UseCase,
+    RecommendTemplatesPhase2UseCase,
+)
 
 router = APIRouter()
 
-ComposerServiceDep = Annotated[
-    ComposerService,
-    Depends(Provide[Container.composer_service]),
-]
+ComposeSlotDep = Annotated[ComposeSlotDraftUseCase, Depends(Provide["compose_slot_draft"])]
+Phase1Dep = Annotated[ComposeStorylinePhase1UseCase, Depends(Provide["compose_storyline_phase1"])]
+Phase2Dep = Annotated[RecommendTemplatesPhase2UseCase, Depends(Provide["recommend_templates_phase2"])]
+CancelDep = Annotated[CancelCompositionRunUseCase, Depends(Provide["cancel_composition_run"])]
 
 
-@router.post("/compose", response_model=SlotComposeResponse)
-@inject
-def compose_slot_content(
-    payload: SlotComposeRequest,
-    service: ComposerServiceDep,
-) -> SlotComposeResponse:
-    max_lines: int | None = None
-    if isinstance(payload.constraints, dict) and payload.constraints.get("maxLines") is not None:
-        max_lines = int(payload.constraints["maxLines"])
-
-    req_model = SlotCompositionRequestModel(
+def _to_request_model(payload: SlotComposeRequest) -> SlotCompositionRequestModel:
+    constraints = payload.constraints or {}
+    max_lines = constraints.get("maxLines")
+    return SlotCompositionRequestModel(
         slot_id=payload.slotId,
         slot_label=payload.slotLabel,
         current_content=payload.currentContent,
         prompt=payload.prompt,
         preset_id=payload.presetId or "",
-        max_lines=max_lines,
+        max_lines=int(max_lines) if max_lines is not None else None,
         backdata=tuple(
-            SlotBackdataInput(
-                chunk_id=item.chunkId,
-                source_title=item.sourceTitle,
-                excerpt=item.excerpt,
-            )
+            SlotBackdataInput(chunk_id=item.chunkId, source_title=item.sourceTitle, excerpt=item.excerpt)
             for item in payload.backdata
         ),
         reference_node_ids=tuple(payload.referenceNodeIds),
     )
-    try:
-        result = service.compose_slot(req_model)
-    except (SlotCompositionValidationError, ValueError) as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+
+@router.post("/compose", response_model=SlotComposeResponse)
+@inject
+def compose_slot_content(payload: SlotComposeRequest, use_case: ComposeSlotDep) -> SlotComposeResponse:
+    result = use_case.execute(_to_request_model(payload))
     return SlotComposeResponse(
         slotId=result.slot_id,
         html=result.html,
@@ -77,48 +72,45 @@ def compose_slot_content(
 @inject
 def compose_storyline_phase1(
     payload: Phase1StorylineComposeRequest,
-    service: ComposerServiceDep,
+    use_case: Phase1Dep,
 ) -> StagedPhaseComposeResponse:
-    try:
-        result = service.compose_storyline_phase1(
-            project_id=payload.projectId,
-            prompt=payload.prompt,
-            reference_nodes=payload.referenceNodes,
-            target_parent_id=payload.targetParentId,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return StagedPhaseComposeResponse.model_validate(result)
+    result = use_case.execute(
+        project_id=payload.projectId,
+        prompt=payload.prompt,
+        reference_nodes=tuple(node.to_input() for node in payload.referenceNodes),
+        target_parent_id=payload.targetParentId,
+        run_id=payload.runId,
+    )
+    return StagedPhaseComposeResponse.from_result(result)
 
 
 @router.post("/phase2/templates", response_model=StagedPhaseComposeResponse)
 @inject
 def recommend_templates_phase2(
     payload: Phase2TemplateRecommendRequest,
-    service: ComposerServiceDep,
+    use_case: Phase2Dep,
 ) -> StagedPhaseComposeResponse:
-    try:
-        result = service.recommend_templates_phase2(
-            project_id=payload.projectId,
-            doc_id=payload.docId,
-            nodes=payload.nodes,
-            tuning_prompt=payload.tuningPrompt,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return StagedPhaseComposeResponse.model_validate(result)
+    result = use_case.execute(
+        project_id=payload.projectId,
+        doc_id=payload.docId,
+        nodes=tuple(node.to_input() for node in payload.nodes),
+        tuning_prompt=payload.tuningPrompt,
+        run_id=payload.runId,
+    )
+    return StagedPhaseComposeResponse.from_result(result)
 
 
 @router.post("/runs/{run_id}/cancel", response_model=CancelRunResponse)
 @inject
 def cancel_composition_run(
     run_id: str,
-    service: ComposerServiceDep,
+    use_case: CancelDep,
     payload: CancelRunRequest | None = None,
 ) -> CancelRunResponse:
-    try:
-        reason = payload.reason if payload else "user_aborted"
-        entry = service.cancel_composition_run(run_id, reason=reason)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return CancelRunResponse.model_validate(entry)
+    entry = use_case.execute(run_id, reason=payload.reason if payload else "user_aborted")
+    return CancelRunResponse(
+        runId=entry.run_id,
+        status=entry.status,
+        reason=entry.reason,
+        cancelledAt=entry.cancelled_at,
+    )

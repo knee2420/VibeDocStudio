@@ -1,48 +1,29 @@
-import { useEffect } from "react";
-
 import type { SlotConstraints } from "@vibe/vdoc-schema";
 
-import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 
 export function useSlotContentActions() {
+  // Ctrl+K(작성기 열기) · Esc(닫기) 단축키는 command-bus 의 전역 처리기가 맡는다.
+  // 이 훅을 쓰는 컴포넌트마다 리스너를 달면 한 번 누를 때 여러 번 토글된다.
   const updateCurrentDoc = useStudioDocumentStore((s) => s.updateCurrentDoc);
-  const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
-  const setComposerOpenSlotId = useSlotSelectionStore(
-    (s) => s.setComposerOpenSlotId
-  );
-  const toggleComposerForSlot = useSlotSelectionStore(
-    (s) => s.toggleComposerForSlot
-  );
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        if (selectedSlotId) {
-          toggleComposerForSlot(selectedSlotId);
-        }
-      } else if (e.key === "Escape") {
-        setComposerOpenSlotId(null);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedSlotId, setComposerOpenSlotId, toggleComposerForSlot]);
 
   const updateSlotContent = (slotId: string, html: string) => {
-    updateCurrentDoc((prev) => ({
-      ...prev,
-      updatedAt: new Date().toISOString(),
-      slots: {
-        ...prev.slots,
-        [slotId]: {
-          ...prev.slots[slotId],
-          content: html,
-          isEdited: true,
+    updateCurrentDoc((prev) => {
+      // 같은 내용이면 바꾸지 않는다 (불필요한 재렌더 · 자동 저장 방지).
+      if (prev.slots[slotId]?.content === html) return prev;
+      return {
+        ...prev,
+        updatedAt: new Date().toISOString(),
+        slots: {
+          ...prev.slots,
+          [slotId]: {
+            ...prev.slots[slotId],
+            content: html,
+            isEdited: true,
+          },
         },
-      },
-    }));
+      };
+    });
   };
 
   const updateSlotConstraints = (

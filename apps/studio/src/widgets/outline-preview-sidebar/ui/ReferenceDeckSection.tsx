@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import {
   BookOpen,
   ChevronDown,
@@ -8,23 +9,20 @@ import {
   Lock,
 } from "lucide-react";
 
-import { useProjectStore } from "@/entities/vdoc-project";
+import {
+  selectAllReferenceProjectIds,
+  selectBoundReferenceProjects,
+  selectCurrentReferenceProject,
+  useProjectStore,
+} from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { EmptyStateCard, TruncatedLabel } from "@/shared/ui";
 
-const DEFAULT_REF_IDS = [
-  "vproj-ref-cloud-migration-rfp",
-  "vproj-ref-iso27001-audit",
-  "vproj-ref-series-b-ir-deck",
-];
-
 export const ReferenceDeckSection: React.FC = () => {
   const [expanded, setExpanded] = useState(true);
-  const projects = useProjectStore((s) => s.projects);
-  const activeProjectId = useProjectStore((s) => s.activeProjectId);
-  const selectedReferenceProjectId = useProjectStore(
-    (s) => s.selectedReferenceProjectId
-  );
+  const boundRefProjects = useProjectStore(useShallow(selectBoundReferenceProjects));
+  const currentRefProject = useProjectStore(selectCurrentReferenceProject);
+  const allReferenceIds = useProjectStore(useShallow(selectAllReferenceProjectIds));
   const setSelectedReferenceProjectId = useProjectStore(
     (s) => s.setSelectedReferenceProjectId
   );
@@ -40,22 +38,11 @@ export const ReferenceDeckSection: React.FC = () => {
     (s) => s.setSplitReferenceDocId
   );
 
-  const activeProject =
-    projects.find((p) => p.projectId === activeProjectId) || projects[0];
-  const boundRefProjects = projects.filter(
-    (p) =>
-      p.isReferenceOnly &&
-      activeProject.referenceProjectIds.includes(p.projectId)
-  );
-  const currentRefProject =
-    boundRefProjects.find((p) => p.projectId === selectedReferenceProjectId) ||
-    boundRefProjects[0];
-
   const handleToggleZeroRefs = () => {
     if (boundRefProjects.length > 0) {
       bindReferenceProjects([]);
     } else {
-      bindReferenceProjects(DEFAULT_REF_IDS);
+      bindReferenceProjects(allReferenceIds);
     }
   };
 
@@ -109,7 +96,7 @@ export const ReferenceDeckSection: React.FC = () => {
               title="연결된 참조 프로젝트가 없습니다 (0/3)"
               description="벤치마킹할 우수 제안서·감사 보고서·정산 명세서 레퍼런스를 최대 3개까지 읽기 전용으로 고정하세요."
               actionLabel="+ 표준 참조 프로젝트 3종 연결"
-              onAction={() => bindReferenceProjects(DEFAULT_REF_IDS)}
+              onAction={() => bindReferenceProjects(allReferenceIds)}
             />
           ) : (
             <>

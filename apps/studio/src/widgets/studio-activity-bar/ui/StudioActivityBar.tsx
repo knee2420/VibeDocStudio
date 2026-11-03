@@ -127,3 +127,4 @@ export const StudioActivityBar: React.FC = () => {
     </aside>
   );
 };
+

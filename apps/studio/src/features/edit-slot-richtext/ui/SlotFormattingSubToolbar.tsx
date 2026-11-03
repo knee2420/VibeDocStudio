@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   AlignCenter,
   AlignLeft,
@@ -40,7 +40,8 @@ import {
 import { TABLE_LINE_STYLES, type TableCommand } from "@vibe/vdoc-schema";
 
 import { useSlotSelectionStore } from "@/entities/slot";
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useHistoryStore } from "@/shared/lib";
 
 import { findTable, findTableForSlot, wholeTableRange } from "../model/findTableForSlot";
 import {
@@ -91,14 +92,13 @@ function currentFontSizePt(editor: Editor | null): number {
  * 표 편집 (borders, line colour, line style) and 칸 배경색, like editor.yesform.com.
  */
 export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> = ({ onTableCommand }) => {
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
+  const doc = useStudioDocumentStore(selectActiveDocument);
   const mode = useStudioDocumentStore((s) => s.mode);
   const toggleMode = useStudioDocumentStore((s) => s.toggleMode);
-  const undoDoc = useStudioDocumentStore((s) => s.undoDoc);
-  const redoDoc = useStudioDocumentStore((s) => s.redoDoc);
-  const canUndoDoc = useStudioDocumentStore((s) => s.past.length > 0);
-  const canRedoDoc = useStudioDocumentStore((s) => s.future.length > 0);
+  const undoHistory = useHistoryStore((s) => s.undo);
+  const redoHistory = useHistoryStore((s) => s.redo);
+  const canUndoDoc = useHistoryStore((s) => s.past.length > 0);
+  const canRedoDoc = useHistoryStore((s) => s.future.length > 0);
   const activeEditor = useActiveSlotEditorStore((s) => s.activeEditor);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
   const tableSelection = useSlotSelectionStore((s) => s.tableSelection);
@@ -112,7 +112,6 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
   const [sizeDraft, setSizeDraft] = useState<string | null>(null);
   const [linkDraft, setLinkDraft] = useState("");
 
-  const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
   const currentSlot = selectedSlotId ? doc?.slots[selectedSlotId] : undefined;
   const editor = activeEditor && !activeEditor.isDestroyed ? activeEditor : null;
   const editable = mode === "Editing" && Boolean(editor?.isEditable);
@@ -134,26 +133,10 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
     return style.css === "hidden" ? "hidden" : `${style.css} ${lineColor}`;
   };
 
-  // Document-level undo when no slot editor can undo (block moves, table edits, locks).
-  const undo = () => (editor?.can().undo() ? editor.chain().focus().undo().run() : undoDoc());
-  const redo = () => (editor?.can().redo() ? editor.chain().focus().redo().run() : redoDoc());
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest("input, textarea, [contenteditable=true]")) return;
-      if (!(e.ctrlKey || e.metaKey)) return;
-      const k = e.key.toLowerCase();
-      if (k === "z" && !e.shiftKey) {
-        e.preventDefault();
-        undoDoc();
-      } else if (k === "y" || (k === "z" && e.shiftKey)) {
-        e.preventDefault();
-        redoDoc();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [undoDoc, redoDoc]);
+  // 슬롯 편집기가 되돌릴 것이 없으면 공용 이력(블록 이동 · 표 편집 · 잠금 등)을 되돌린다.
+  // Ctrl+Z 단축키는 command-bus 의 전역 처리기 하나만 담당한다.
+  const undo = () => (editor?.can().undo() ? editor.chain().focus().undo().run() : void undoHistory());
+  const redo = () => (editor?.can().redo() ? editor.chain().focus().redo().run() : void redoHistory());
 
   const sizePt = currentFontSizePt(editor);
   const setSize = (pt: number) => {

@@ -1,65 +1,60 @@
-"""projects 도메인 HTTP 라우터 (`/api/projects`)."""
+"""projects 도메인 HTTP 라우터 (`/api/projects`).
+
+도메인 오류는 `app.bootstrap.error_handlers` 가 HTTP 응답으로 번역하므로 여기서는 잡지 않는다.
+"""
 from typing import Annotated, Optional
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, Query
 
-from app.bootstrap.container import Container
-
-from .errors import (
-    VProjectNotFoundError,
-    VProjectReadOnlyViolationError,
-    VProjectValidationError,
-)
-from .models import VProjectManifestRecord
+from .mappers import manifest_from_dict
+from .models import ZoomLevel
 from .schemas import (
     BindReferenceProjectsRequest,
     CloneReferenceNodeRequest,
     CloneReferenceNodeResponse,
+    OutlineBreadcrumbSchema,
+    OutlineCommandRequest,
+    OutlineCommandResponse,
     ProjectOutlineTreeResponse,
     ProvenanceLineageSchema,
     SaveVProjectRequest,
     StorylineNodeSchema,
     VProjectManifestResponse,
 )
-from .service import ProjectService
+from .use_cases import (
+    ApplyOutlineCommandUseCase,
+    BindReferenceProjectsUseCase,
+    CloneNodeWithProvenanceUseCase,
+    GetProjectOutlineTreeUseCase,
+    GetProjectUseCase,
+    ListProjectsUseCase,
+    SaveProjectUseCase,
+)
 
 router = APIRouter()
 
-ProjectServiceDep = Annotated[
-    ProjectService,
-    Depends(Provide[Container.project_service]),
-]
+PROJECT_ROOT_CRUMB_ID = "project-root"
 
-
-def _translate_error(exc: Exception) -> HTTPException:
-    if isinstance(exc, VProjectNotFoundError):
-        return HTTPException(status_code=404, detail=str(exc))
-    if isinstance(exc, VProjectReadOnlyViolationError):
-        return HTTPException(status_code=403, detail=str(exc))
-    if isinstance(exc, (VProjectValidationError, ValueError)):
-        return HTTPException(status_code=400, detail=str(exc))
-    return HTTPException(status_code=500, detail="Project operation failed")
-
-
-def _to_response(record: VProjectManifestRecord) -> VProjectManifestResponse:
-    return VProjectManifestResponse.model_validate(record.to_dict())
+ListDep = Annotated[ListProjectsUseCase, Depends(Provide["list_projects"])]
+GetDep = Annotated[GetProjectUseCase, Depends(Provide["get_project"])]
+SaveDep = Annotated[SaveProjectUseCase, Depends(Provide["save_project"])]
+OutlineDep = Annotated[GetProjectOutlineTreeUseCase, Depends(Provide["get_project_outline_tree"])]
+BindDep = Annotated[BindReferenceProjectsUseCase, Depends(Provide["bind_reference_projects"])]
+CloneDep = Annotated[CloneNodeWithProvenanceUseCase, Depends(Provide["clone_node_with_provenance"])]
+CommandDep = Annotated[ApplyOutlineCommandUseCase, Depends(Provide["apply_outline_command"])]
 
 
 @router.get("", response_model=list[VProjectManifestResponse])
 @inject
-def list_projects(service: ProjectServiceDep) -> list[VProjectManifestResponse]:
-    return [_to_response(item) for item in service.list_projects()]
+def list_projects(use_case: ListDep) -> list[VProjectManifestResponse]:
+    return [VProjectManifestResponse.from_record(item) for item in use_case.execute()]
 
 
 @router.get("/{project_id}", response_model=VProjectManifestResponse)
 @inject
-def get_project(project_id: str, service: ProjectServiceDep) -> VProjectManifestResponse:
-    try:
-        record = service.get_project(project_id)
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-    return _to_response(record)
+def get_project(project_id: str, use_case: GetDep) -> VProjectManifestResponse:
+    return VProjectManifestResponse.from_record(use_case.execute(project_id))
 
 
 @router.put("/{project_id}", response_model=VProjectManifestResponse)
@@ -67,33 +62,39 @@ def get_project(project_id: str, service: ProjectServiceDep) -> VProjectManifest
 def save_project(
     project_id: str,
     body: SaveVProjectRequest,
-    service: ProjectServiceDep,
+    use_case: SaveDep,
 ) -> VProjectManifestResponse:
-    try:
-        record = VProjectManifestRecord.from_dict(
-            {
-                "projectId": project_id,
-                **body.model_dump(),
-            }
-        )
-        saved = service.save_project(project_id, record)
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-    return _to_response(saved)
+    record = manifest_from_dict({"projectId": project_id, **body.model_dump()})
+    return VProjectManifestResponse.from_record(use_case.execute(project_id, record))
 
 
 @router.get("/{project_id}/outline", response_model=ProjectOutlineTreeResponse)
 @inject
 def get_project_outline(
     project_id: str,
-    service: ProjectServiceDep,
+    use_case: OutlineDep,
     root_node_id: Optional[str] = Query(default=None, alias="rootNodeId"),
 ) -> ProjectOutlineTreeResponse:
-    try:
-        tree = service.get_outline_tree(project_id, root_node_id=root_node_id)
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-    return ProjectOutlineTreeResponse.model_validate(tree)
+    projection = use_case.execute(project_id, root_node_id=root_node_id)
+    project, subtree = projection.project, projection.subtree
+    breadcrumbs = [
+        OutlineBreadcrumbSchema(nodeId=PROJECT_ROOT_CRUMB_ID, title=project.title, zoomLevel=ZoomLevel.PROJECT),
+        *(
+            OutlineBreadcrumbSchema(nodeId=n.node_id, title=n.title, zoomLevel=n.zoom_level)
+            for n in subtree.ancestors
+        ),
+    ]
+    return ProjectOutlineTreeResponse(
+        projectId=project.project_id,
+        title=project.title,
+        isReferenceOnly=project.is_reference_only,
+        activePhase=project.active_phase,
+        activeZoomLevel=subtree.active_zoom_level,
+        rootNodeId=subtree.root.node_id if subtree.root else PROJECT_ROOT_CRUMB_ID,
+        breadcrumbs=breadcrumbs,
+        nodes=[StorylineNodeSchema.from_record(n) for n in subtree.nodes],
+        totalNodeCount=len(project.storyline_nodes),
+    )
 
 
 @router.put("/{project_id}/references", response_model=VProjectManifestResponse)
@@ -101,13 +102,9 @@ def get_project_outline(
 def bind_reference_projects(
     project_id: str,
     body: BindReferenceProjectsRequest,
-    service: ProjectServiceDep,
+    use_case: BindDep,
 ) -> VProjectManifestResponse:
-    try:
-        saved = service.bind_reference_projects(project_id, body.referenceProjectIds)
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-    return _to_response(saved)
+    return VProjectManifestResponse.from_record(use_case.execute(project_id, body.referenceProjectIds))
 
 
 @router.post("/{project_id}/clone-node", response_model=CloneReferenceNodeResponse)
@@ -115,19 +112,30 @@ def bind_reference_projects(
 def clone_reference_node(
     project_id: str,
     body: CloneReferenceNodeRequest,
-    service: ProjectServiceDep,
+    use_case: CloneDep,
 ) -> CloneReferenceNodeResponse:
-    try:
-        saved_proj, cloned_node, prov = service.clone_node_with_provenance(
-            target_project_id=project_id,
-            source_project_id=body.sourceProjectId,
-            source_node_id=body.sourceNodeId,
-            target_parent_id=body.targetParentId,
-        )
-    except Exception as exc:
-        raise _translate_error(exc) from exc
+    clone = use_case.execute(
+        target_project_id=project_id,
+        source_project_id=body.sourceProjectId,
+        source_node_id=body.sourceNodeId,
+        target_parent_id=body.targetParentId,
+    )
     return CloneReferenceNodeResponse(
-        project=_to_response(saved_proj),
-        clonedNode=StorylineNodeSchema.model_validate(cloned_node.to_dict()),
-        provenance=ProvenanceLineageSchema.model_validate(prov.to_dict()),
+        project=VProjectManifestResponse.from_record(clone.project),
+        clonedNode=StorylineNodeSchema.from_record(clone.node),
+        provenance=ProvenanceLineageSchema.from_record(clone.provenance),
+    )
+
+
+@router.post("/{project_id}/commands", response_model=OutlineCommandResponse)
+@inject
+def apply_outline_command(
+    project_id: str,
+    use_case: CommandDep,
+    body: OutlineCommandRequest = Body(...),
+) -> OutlineCommandResponse:
+    result = use_case.execute(project_id, body.to_command())
+    return OutlineCommandResponse(
+        project=VProjectManifestResponse.from_record(result.project),
+        affectedNodeId=result.affected_node_id,
     )

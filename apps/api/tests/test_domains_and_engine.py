@@ -17,12 +17,12 @@ from main import app
 client = TestClient(app)
 
 
-def test_health_endpoint_reports_four_domains_and_flagship_models() -> None:
+def test_health_endpoint_reports_all_domains_and_flagship_models() -> None:
     res = client.get("/api/health")
     assert res.status_code == 200
     body = res.json()
     assert body["status"] == "ok"
-    assert set(body["domains"]) == {"catalog", "documents", "backdata", "composer"}
+    assert set(body["domains"]) == {"catalog", "documents", "backdata", "composer", "projects", "runtime"}
     assert body["models"]["composer"] == "Gemini-3.8-flash"
     assert body["models"]["tagger"] == "Gemma4 31b"
 

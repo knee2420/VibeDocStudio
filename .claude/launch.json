@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@vibe/studio", "dev"],
       "port": 5180
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@vibe/api", "dev"],
+      "port": 8090
     }
   ]
 }

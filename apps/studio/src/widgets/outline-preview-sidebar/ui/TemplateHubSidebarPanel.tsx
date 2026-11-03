@@ -32,7 +32,7 @@ export const TemplateHubSidebarPanel: React.FC = () => {
   const handleApplyTemplateAsNewDoc = (templateDocId: string) => {
     const target = docs.find((d) => d.docId === templateDocId);
     if (!target) return;
-    insertStorylineNode("node-proj-root", {
+    insertStorylineNode(null, {
       title: `[추가 서식] ${target.title}`,
       summary: `템플릿 허브에서 추가된 문서 양식`,
       zoomLevel: "document",

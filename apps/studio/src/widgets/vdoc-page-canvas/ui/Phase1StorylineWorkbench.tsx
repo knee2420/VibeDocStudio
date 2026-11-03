@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import {
   ArrowRight,
   CopyPlus,
@@ -9,7 +10,7 @@ import {
   Square,
 } from "lucide-react";
 
-import { ProvenanceBadge, useProjectStore } from "@/entities/vdoc-project";
+import { ProvenanceBadge, selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { TruncatedLabel } from "@/shared/ui";
@@ -19,8 +20,10 @@ export const Phase1StorylineWorkbench: React.FC = () => {
     "참조 프로젝트의 핵심 SLA 보장 및 무중단 전환 시나리오를 결합하여 목차를 구성해줘"
   );
 
-  const projects = useProjectStore((s) => s.projects);
-  const activeProjectId = useProjectStore((s) => s.activeProjectId);
+  const activeProject = useProjectStore(selectActiveProject);
+  const refProjects = useProjectStore(
+    useShallow((s) => s.projects.filter((p) => p.isReferenceOnly))
+  );
   const selectedReferenceProjectId = useProjectStore(
     (s) => s.selectedReferenceProjectId
   );
@@ -37,9 +40,7 @@ export const Phase1StorylineWorkbench: React.FC = () => {
   const { isAiStreaming, runPhase1StorylineAi, abortActiveAiRun } =
     useStageAiChanges();
 
-  const activeProject =
-    projects.find((p) => p.projectId === activeProjectId) || projects[0];
-  const refProjects = projects.filter((p) => p.isReferenceOnly);
+  if (!activeProject) return null;
   const currentRef =
     refProjects.find((p) => p.projectId === selectedReferenceProjectId) ||
     refProjects[0];
@@ -197,7 +198,7 @@ export const Phase1StorylineWorkbench: React.FC = () => {
             <button
               type="button"
               onClick={() =>
-                insertStorylineNode("node-proj-root", {
+                insertStorylineNode(null, {
                   title: "신규 기획 섹션 노드",
                   summary: "핵심 요구사항 및 검토 내용 요약",
                   zoomLevel: "page",

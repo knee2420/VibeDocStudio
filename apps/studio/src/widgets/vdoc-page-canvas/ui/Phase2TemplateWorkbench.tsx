@@ -7,7 +7,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { useProjectStore } from "@/entities/vdoc-project";
+import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { TruncatedLabel } from "@/shared/ui";
@@ -41,15 +41,13 @@ const TEMPLATE_OPTIONS = [
 ];
 
 export const Phase2TemplateWorkbench: React.FC = () => {
-  const projects = useProjectStore((s) => s.projects);
-  const activeProjectId = useProjectStore((s) => s.activeProjectId);
+  const activeProject = useProjectStore(selectActiveProject);
   const assignTemplateToNode = useProjectStore((s) => s.assignTemplateToNode);
 
   const setPhase = useWorkspaceSessionStore((s) => s.setPhase);
   const { runPhase2TemplateAi } = useStageAiChanges();
 
-  const activeProject =
-    projects.find((p) => p.projectId === activeProjectId) || projects[0];
+  if (!activeProject) return null;
 
   return (
     <div

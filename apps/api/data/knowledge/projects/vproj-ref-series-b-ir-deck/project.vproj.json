@@ -5,7 +5,7 @@
   "isReferenceOnly": true,
   "activePhase": "storylining",
   "docIds": [
-    "vdoc-atticus-invoice-000081709"
+    "atticus-invoice-000081709"
   ],
   "referenceProjectIds": [],
   "storylineNodes": [
@@ -32,7 +32,7 @@
       "zoomLevel": "page",
       "title": "엔터프라이즈 코호트 순매출유지율(NRR 138%) 및 LTV/CAC 분석",
       "summary": "좌석당 기본 구독료 + API 호출량 종량제 하이브리드 과금 테이블",
-      "targetDocId": "vdoc-atticus-invoice-000081709",
+      "targetDocId": "atticus-invoice-000081709",
       "targetPageId": null,
       "targetBlockId": null,
       "targetSlotId": null,

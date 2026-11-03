@@ -10,10 +10,9 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { useHistoryStore } from "@/shared/lib";
 import { EmptyStateCard } from "@/shared/ui";
 
 export const SourceControlSidebarPanel: React.FC = () => {
@@ -28,8 +27,8 @@ export const SourceControlSidebarPanel: React.FC = () => {
     rejectStagedChange,
   } = useStageAiChanges();
 
-  const docPastCount = useStudioDocumentStore((s) => s.past.length);
-  const projPastCount = useProjectStore((s) => s.past.length);
+  const projPastCount = useHistoryStore((s) => s.past.filter((e) => e.scope === "project").length);
+  const docPastCount = useHistoryStore((s) => s.past.filter((e) => e.scope === "document").length);
   const totalCommits = docPastCount + projPastCount;
 
   return (

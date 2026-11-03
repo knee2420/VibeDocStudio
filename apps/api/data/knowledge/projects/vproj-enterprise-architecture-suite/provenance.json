@@ -35,7 +35,17 @@
       "sourceNodeId": "ref1-sec-sla",
       "sourceNodeTitle": "가용성 99.99% SLA 보장 및 복구 목표(RTO/RPO) 명세",
       "clonedAt": "2026-11-03T11:58:35Z"
+    },
+    {
+      "recordId": "prov-1a1a15f0e92-b3e56df3",
+      "targetProjectId": "vproj-enterprise-architecture-suite",
+      "targetNodeId": "node-1a1a15f0e92-dcccd029",
+      "sourceProjectId": "vproj-ref-cloud-migration-rfp",
+      "sourceProjectTitle": "[참조 1] 금융권 클라우드 전환 표준 제안서(RFP) 레퍼런스",
+      "sourceNodeId": "ref1-sec-sla",
+      "sourceNodeTitle": "가용성 99.99% SLA 보장 및 복구 목표(RTO/RPO) 명세",
+      "clonedAt": "2026-11-03T12:25:23Z"
     }
   ],
-  "updatedAt": "2026-11-03T11:58:35Z"
+  "updatedAt": "2026-11-03T12:25:23Z"
 }

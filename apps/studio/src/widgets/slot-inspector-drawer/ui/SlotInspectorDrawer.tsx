@@ -20,7 +20,7 @@ import type {
 
 import { BackdataChunkCard } from "@/entities/backdata-chunk";
 import { SlotMetadataCard, useSlotSelectionStore } from "@/entities/slot";
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import {
   AddBackdataChunkForm,
   useBindSlotBackdata,
@@ -300,8 +300,7 @@ const SlotLiveEditorCard: React.FC<SlotLiveEditorCardProps> = ({
 };
 
 export const SlotInspectorDrawer: React.FC = () => {
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
+  const doc = useStudioDocumentStore(selectActiveDocument);
 
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
   const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
@@ -329,7 +328,6 @@ export const SlotInspectorDrawer: React.FC = () => {
   const { updateBlock, deleteBlock } = useMutateCanvasBlocks();
   const { stageSlotHtmlDiff } = useStageAiChanges();
 
-  const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
 
   const selectedBlockInfo = React.useMemo(() => {
     if (!doc || !selectedBlockId) return null;

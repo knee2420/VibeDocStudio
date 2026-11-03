@@ -2,16 +2,13 @@ import React from "react";
 
 import type { VDocDocument } from "@vibe/vdoc-schema";
 
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 
 export function useExportImportVdoc(options?: {
   onImportError?: (message: string) => void;
 }) {
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
-  const upsertDocument = useStudioDocumentStore((s) => s.upsertDocument);
-
-  const activeDoc = docs.find((d) => d.docId === activeDocId) || docs[0];
+  const activeDoc = useStudioDocumentStore(selectActiveDocument);
+  const addDocument = useStudioDocumentStore((s) => s.addDocument);
 
   const exportCurrentVDoc = () => {
     if (!activeDoc) return;
@@ -34,7 +31,7 @@ export function useExportImportVdoc(options?: {
       try {
         const parsed = JSON.parse(String(reader.result)) as VDocDocument;
         if (parsed.docId && parsed.pages && parsed.slots) {
-          upsertDocument(parsed);
+          void addDocument(parsed);
         } else {
           options?.onImportError?.("유효한 .vdoc (JSON) 문서 구조가 아닙니다.");
         }

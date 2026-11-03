@@ -5,7 +5,7 @@
   "isReferenceOnly": true,
   "activePhase": "storylining",
   "docIds": [
-    "vdoc-pandadoc-vc-proposal-01"
+    "vdoc_pandadoc_vc_proposal"
   ],
   "referenceProjectIds": [],
   "storylineNodes": [
@@ -32,7 +32,7 @@
       "zoomLevel": "page",
       "title": "가용성 99.99% SLA 보장 및 복구 목표(RTO/RPO) 명세",
       "summary": "1등급 핵심 원장 시스템 15분 이내 자동 페일오버 보증 조항",
-      "targetDocId": "vdoc-pandadoc-vc-proposal-01",
+      "targetDocId": "vdoc_pandadoc_vc_proposal",
       "targetPageId": null,
       "targetBlockId": null,
       "targetSlotId": null,
@@ -48,7 +48,7 @@
       "zoomLevel": "page",
       "title": "3단계 무중단 컷오버(Cut-over) 및 병행 운영 시나리오",
       "summary": "Canary 트래픽 5% -> 25% -> 100% 단계적 전환 및 즉시 롤백 게이트",
-      "targetDocId": "vdoc-pandadoc-vc-proposal-01",
+      "targetDocId": "vdoc_pandadoc_vc_proposal",
       "targetPageId": null,
       "targetBlockId": null,
       "targetSlotId": null,
@@ -64,7 +64,7 @@
       "zoomLevel": "page",
       "title": "3개년 총소유비용(TCO) 절감 시뮬레이션 및 FinOps 거버넌스",
       "summary": "예약 인스턴스(RI) 결합 시 온프레미스 대비 연 34.2% 인프라 비용 절감 근거",
-      "targetDocId": "vdoc-pandadoc-vc-proposal-01",
+      "targetDocId": "vdoc_pandadoc_vc_proposal",
       "targetPageId": null,
       "targetBlockId": null,
       "targetSlotId": null,

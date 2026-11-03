@@ -1,4 +1,5 @@
 import { getBlockSlotIds } from "./block-ops";
+import { PROJECT_ROOT_CRUMB_ID } from "./layout-constants";
 import type {
   OutlineBreadcrumbItem,
   OutlinerNode,
@@ -24,6 +25,8 @@ export interface FractalOutlineProjection {
 /**
  * Combines explicit `project.storylineNodes` with live `.vdoc` Documents -> Pages -> Slots
  * into a unified 4-Level Fractal Outliner Tree (`Project` -> `Document` -> `Page/Element` -> `Slot`).
+ *
+ * 모든 조회는 Map/Set 색인으로 한다 (노드 · 페이지 · 슬롯 수에 선형).
  */
 export function buildProjectFractalTree(
   project: VProjectManifest,
@@ -31,28 +34,33 @@ export function buildProjectFractalTree(
   rootNodeId?: string | null,
   quickFilter?: string
 ): FractalOutlineProjection {
-  const allNodes: OutlinerNode[] = [];
-  const existingIds = new Set<string>();
-
-  // 1. Add project storyline nodes first
-  for (const node of project.storylineNodes) {
-    allNodes.push(node);
-    existingIds.add(node.nodeId);
+  const allNodes: OutlinerNode[] = [...project.storylineNodes];
+  const docsById = new Map(docs.map((d) => [d.docId, d]));
+  const docNodeByDocId = new Map<string, OutlinerNode>();
+  const pageNodeByKey = new Map<string, OutlinerNode>();
+  const slotKeys = new Set<string>();
+  for (const node of allNodes) {
+    if (!node.targetDocId) continue;
+    if (node.zoomLevel === "document" && !docNodeByDocId.has(node.targetDocId)) {
+      docNodeByDocId.set(node.targetDocId, node);
+    } else if (node.zoomLevel === "page" && node.targetPageId) {
+      const key = `${node.targetDocId}\u0000${node.targetPageId}`;
+      if (!pageNodeByKey.has(key)) pageNodeByKey.set(key, node);
+    } else if (node.zoomLevel === "slot" && node.targetSlotId) {
+      slotKeys.add(`${node.targetDocId}\u0000${node.targetSlotId}`);
+    }
   }
 
-  // 2. Enrich with live Document -> Page -> Slot nodes from bound docs if not already represented
-  const rootId = project.storylineNodes[0]?.nodeId || "node-proj-root";
+  // Enrich with live Document -> Page -> Slot nodes from bound docs if not already represented
+  const rootId = project.storylineNodes.find((n) => n.parentId === null)?.nodeId ?? null;
   for (const docId of project.docIds) {
-    const doc = docs.find((d) => d.docId === docId);
+    const doc = docsById.get(docId);
     if (!doc) continue;
 
-    let docNode = allNodes.find(
-      (n) => n.zoomLevel === "document" && n.targetDocId === doc.docId
-    );
+    let docNode = docNodeByDocId.get(doc.docId);
     if (!docNode) {
-      const docNodeId = `auto-doc-${doc.docId}`;
       docNode = {
-        nodeId: docNodeId,
+        nodeId: `auto-doc-${doc.docId}`,
         parentId: rootId,
         depth: 1,
         zoomLevel: "document",
@@ -62,20 +70,15 @@ export function buildProjectFractalTree(
         aiStatus: "idle",
       };
       allNodes.push(docNode);
-      existingIds.add(docNodeId);
+      docNodeByDocId.set(doc.docId, docNode);
     }
 
     for (const page of doc.pages) {
-      let pageNode = allNodes.find(
-        (n) =>
-          n.zoomLevel === "page" &&
-          n.targetDocId === doc.docId &&
-          n.targetPageId === page.pageId
-      );
+      const pageKey = `${doc.docId}\u0000${page.pageId}`;
+      let pageNode = pageNodeByKey.get(pageKey);
       if (!pageNode) {
-        const pageNodeId = `auto-page-${doc.docId}-${page.pageId}`;
         pageNode = {
-          nodeId: pageNodeId,
+          nodeId: `auto-page-${doc.docId}-${page.pageId}`,
           parentId: docNode.nodeId,
           depth: 2,
           zoomLevel: "page",
@@ -87,57 +90,45 @@ export function buildProjectFractalTree(
           aiStatus: "idle",
         };
         allNodes.push(pageNode);
-        existingIds.add(pageNodeId);
+        pageNodeByKey.set(pageKey, pageNode);
       }
 
       // Add up to 6 key editable slots per page for Level 4 Slot Zoom
       const pageSlotIds = page.blocks.flatMap((blk) => getBlockSlotIds(blk));
       for (const slotId of pageSlotIds.slice(0, 6)) {
         const slot = doc.slots[slotId];
-        if (!slot) continue;
-        const alreadyExists = allNodes.some(
-          (n) =>
-            n.zoomLevel === "slot" &&
-            n.targetDocId === doc.docId &&
-            n.targetSlotId === slotId
-        );
-        if (!alreadyExists) {
-          const slotNodeId = `auto-slot-${doc.docId}-${slotId}`;
-          allNodes.push({
-            nodeId: slotNodeId,
-            parentId: pageNode.nodeId,
-            depth: 3,
-            zoomLevel: "slot",
-            title: slot.label || slotId,
-            summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
-            targetDocId: doc.docId,
-            targetPageId: page.pageId,
-            targetSlotId: slotId,
-            aiStatus: slot.isEdited ? "applied" : "idle",
-          });
-          existingIds.add(slotNodeId);
-        }
+        const slotKey = `${doc.docId}\u0000${slotId}`;
+        if (!slot || slotKeys.has(slotKey)) continue;
+        slotKeys.add(slotKey);
+        allNodes.push({
+          nodeId: `auto-slot-${doc.docId}-${slotId}`,
+          parentId: pageNode.nodeId,
+          depth: 3,
+          zoomLevel: "slot",
+          title: slot.label || slotId,
+          summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
+          targetDocId: doc.docId,
+          targetPageId: page.pageId,
+          targetSlotId: slotId,
+          aiStatus: slot.isEdited ? "applied" : "idle",
+        });
       }
     }
   }
 
   const byId = new Map<string, OutlinerNode>(allNodes.map((n) => [n.nodeId, n]));
   const breadcrumbs: OutlineBreadcrumbItem[] = [
-    {
-      nodeId: "project-root",
-      title: project.title,
-      zoomLevel: "project",
-    },
+    { nodeId: PROJECT_ROOT_CRUMB_ID, title: project.title, zoomLevel: "project" },
   ];
 
   let scopedNodes = allNodes;
   let activeZoomLevel: ZoomLevel = "project";
   const resolvedRootId =
-    rootNodeId && rootNodeId !== "project-root" && byId.has(rootNodeId)
+    rootNodeId && rootNodeId !== PROJECT_ROOT_CRUMB_ID && byId.has(rootNodeId)
       ? rootNodeId
-      : "project-root";
+      : PROJECT_ROOT_CRUMB_ID;
 
-  if (resolvedRootId !== "project-root") {
+  if (resolvedRootId !== PROJECT_ROOT_CRUMB_ID) {
     const chain: OutlinerNode[] = [];
     let curr = byId.get(resolvedRootId);
     const visited = new Set<string>();
@@ -149,25 +140,11 @@ export function buildProjectFractalTree(
     chain.reverse();
     for (const item of chain) {
       if (item.nodeId !== rootId) {
-        breadcrumbs.push({
-          nodeId: item.nodeId,
-          title: item.title,
-          zoomLevel: item.zoomLevel,
-        });
+        breadcrumbs.push({ nodeId: item.nodeId, title: item.title, zoomLevel: item.zoomLevel });
       }
     }
 
-    const allowed = new Set<string>([resolvedRootId]);
-    let changed = true;
-    while (changed) {
-      changed = false;
-      for (const n of allNodes) {
-        if (n.parentId && allowed.has(n.parentId) && !allowed.has(n.nodeId)) {
-          allowed.add(n.nodeId);
-          changed = true;
-        }
-      }
-    }
+    const allowed = collectSubtreeIds(allNodes, resolvedRootId);
     scopedNodes = allNodes.filter((n) => allowed.has(n.nodeId));
     activeZoomLevel = byId.get(resolvedRootId)?.zoomLevel || "project";
   }
@@ -189,6 +166,29 @@ export function buildProjectFractalTree(
     visibleNodes,
     allNodes,
   };
+}
+
+/** `rootId` 와 그 모든 자손의 ID (자식 색인 + BFS, 노드 수에 선형). */
+export function collectSubtreeIds(nodes: OutlinerNode[], rootId: string): Set<string> {
+  const children = new Map<string, string[]>();
+  for (const n of nodes) {
+    if (!n.parentId) continue;
+    const list = children.get(n.parentId);
+    if (list) list.push(n.nodeId);
+    else children.set(n.parentId, [n.nodeId]);
+  }
+  const found = new Set<string>([rootId]);
+  const queue = [rootId];
+  while (queue.length > 0) {
+    const current = queue.pop() as string;
+    for (const child of children.get(current) ?? []) {
+      if (!found.has(child)) {
+        found.add(child);
+        queue.push(child);
+      }
+    }
+  }
+  return found;
 }
 
 export function getZoomLevelMeta(level: ZoomLevel): {

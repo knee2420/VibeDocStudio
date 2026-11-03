@@ -1,33 +1,59 @@
 import React, { useEffect } from "react";
 
+import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useProjectStore } from "@/entities/vdoc-project";
+import { useHistoryStore } from "@/shared/lib";
 import { ActionUndoToast } from "@/shared/ui";
 
+const TOAST_MS = 6000;
+
+/** 공용 이력의 마지막 변경 안내 + 서버 오류 안내. */
 export const GlobalUndoToastHost: React.FC = () => {
-  const lastUndoMessage = useProjectStore((s) => s.lastUndoMessage);
-  const canUndo = useProjectStore((s) => s.past.length > 0);
-  const canRedo = useProjectStore((s) => s.future.length > 0);
-  const undoProject = useProjectStore((s) => s.undoProject);
-  const redoProject = useProjectStore((s) => s.redoProject);
-  const dismissUndoToast = useProjectStore((s) => s.dismissUndoToast);
+  const lastMessage = useHistoryStore((s) => s.lastMessage);
+  const canUndo = useHistoryStore((s) => s.past.length > 0);
+  const canRedo = useHistoryStore((s) => s.future.length > 0);
+  const undo = useHistoryStore((s) => s.undo);
+  const redo = useHistoryStore((s) => s.redo);
+  const dismissMessage = useHistoryStore((s) => s.dismissMessage);
+
+  const projectError = useProjectStore((s) => s.lastError);
+  const documentError = useStudioDocumentStore((s) => s.lastError);
+  const errorMessage = projectError ?? documentError;
 
   useEffect(() => {
-    if (!lastUndoMessage) return;
-    const timer = window.setTimeout(() => {
-      dismissUndoToast();
-    }, 6000);
+    if (!lastMessage) return;
+    const timer = window.setTimeout(dismissMessage, TOAST_MS);
     return () => window.clearTimeout(timer);
-  }, [lastUndoMessage, dismissUndoToast]);
+  }, [lastMessage, dismissMessage]);
+
+  useEffect(() => {
+    if (!errorMessage) return;
+    const timer = window.setTimeout(() => {
+      useProjectStore.setState({ lastError: null });
+      useStudioDocumentStore.setState({ lastError: null });
+    }, TOAST_MS);
+    return () => window.clearTimeout(timer);
+  }, [errorMessage]);
 
   return (
-    <ActionUndoToast
-      message={lastUndoMessage}
-      canUndo={canUndo}
-      canRedo={canRedo}
-      onUndo={undoProject}
-      onRedo={redoProject}
-      onDismiss={dismissUndoToast}
-    />
+    <>
+      <ActionUndoToast
+        message={lastMessage}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={() => void undo()}
+        onRedo={() => void redo()}
+        onDismiss={dismissMessage}
+      />
+      {errorMessage && (
+        <div
+          role="alert"
+          data-testid="global-error-toast"
+          className="fixed top-14 right-4 z-50 max-w-sm px-3.5 py-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium shadow-lg"
+        >
+          {errorMessage}
+        </div>
+      )}
+    </>
   );
 };
-

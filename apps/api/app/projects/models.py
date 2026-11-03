@@ -1,8 +1,92 @@
-"""projects 도메인의 프레임워크 독립 영속 모델 (`.vproj` 다중 문서 프로젝트 & 참조 프로젝트 덱)."""
+"""projects 도메인 모델 (`.vproj` 다중 문서 프로젝트 & 참조 프로젝트 덱).
+
+`VProjectManifestRecord` 는 아웃라인 트리의 애그리거트 루트다. 노드 삽입 · 이동 ·
+들여쓰기 · 삭제 · 참조 복제 같은 트리 불변식은 모두 이 클래스의 메서드가 지킨다.
+유스케이스는 저장소에서 꺼내 메서드를 부르고 다시 넣을 뿐이다.
+
+직렬화(camelCase JSON)는 `mappers.py` 가 맡는다.
+"""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any
+from collections.abc import Iterable
+from dataclasses import dataclass, field, replace
+from enum import StrEnum
+
+from .errors import (
+    VProjectNotFoundError,
+    VProjectReadOnlyViolationError,
+    VProjectValidationError,
+)
+
+
+class ZoomLevel(StrEnum):
+    PROJECT = "project"
+    DOCUMENT = "document"
+    PAGE = "page"
+    SLOT = "slot"
+
+    @classmethod
+    def for_depth(cls, depth: int) -> ZoomLevel:
+        """깊이에서 기본 줌 단계를 정한다 (1=문서, 2=페이지, 3+=슬롯)."""
+        if depth <= 0:
+            return cls.PROJECT
+        if depth == 1:
+            return cls.DOCUMENT
+        if depth == 2:
+            return cls.PAGE
+        return cls.SLOT
+
+    @classmethod
+    def parse(cls, raw: object, default: ZoomLevel) -> ZoomLevel:
+        try:
+            return cls(str(raw))
+        except ValueError:
+            return default
+
+
+class WorkbenchPhase(StrEnum):
+    STORYLINING = "storylining"
+    TEMPLATING = "templating"
+    DRAFTING = "drafting"
+
+    @classmethod
+    def parse(cls, raw: object, default: WorkbenchPhase) -> WorkbenchPhase:
+        try:
+            return cls(str(raw))
+        except ValueError:
+            return default
+
+
+class AiStatus(StrEnum):
+    IDLE = "idle"
+    WORKING = "working"
+    STAGED = "staged"
+    APPLIED = "applied"
+
+    @classmethod
+    def parse(cls, raw: object, default: AiStatus) -> AiStatus:
+        try:
+            return cls(str(raw))
+        except ValueError:
+            return default
+
+
+MAX_OUTLINE_DEPTH = 3
+
+#: 노드 갱신 요청이 바꿀 수 있는 필드. 트리 구조(`parent_id`, `depth`)와 출처는 전용 메서드로만 바꾼다.
+EDITABLE_NODE_FIELDS = frozenset(
+    {
+        "title",
+        "summary",
+        "zoom_level",
+        "target_doc_id",
+        "target_page_id",
+        "target_block_id",
+        "target_slot_id",
+        "recommended_template_id",
+        "ai_status",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -12,7 +96,7 @@ class StorylineNodeRecord:
     node_id: str
     parent_id: str | None
     depth: int
-    zoom_level: str  # "project" | "document" | "page" | "slot"
+    zoom_level: ZoomLevel
     title: str
     summary: str = ""
     target_doc_id: str | None = None
@@ -22,44 +106,11 @@ class StorylineNodeRecord:
     recommended_template_id: str | None = None
     provenance_source_project_id: str | None = None
     provenance_source_node_id: str | None = None
-    ai_status: str = "idle"  # "idle" | "working" | "staged" | "applied"
+    ai_status: AiStatus = AiStatus.IDLE
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "nodeId": self.node_id,
-            "parentId": self.parent_id,
-            "depth": self.depth,
-            "zoomLevel": self.zoom_level,
-            "title": self.title,
-            "summary": self.summary,
-            "targetDocId": self.target_doc_id,
-            "targetPageId": self.target_page_id,
-            "targetBlockId": self.target_block_id,
-            "targetSlotId": self.target_slot_id,
-            "recommendedTemplateId": self.recommended_template_id,
-            "provenanceSourceProjectId": self.provenance_source_project_id,
-            "provenanceSourceNodeId": self.provenance_source_node_id,
-            "aiStatus": self.ai_status,
-        }
-
-    @classmethod
-    def from_dict(cls, raw: dict[str, Any]) -> StorylineNodeRecord:
-        return cls(
-            node_id=str(raw.get("nodeId", "")),
-            parent_id=raw.get("parentId"),
-            depth=int(raw.get("depth", 0)),
-            zoom_level=str(raw.get("zoomLevel", "page")),
-            title=str(raw.get("title", "")),
-            summary=str(raw.get("summary", "")),
-            target_doc_id=raw.get("targetDocId"),
-            target_page_id=raw.get("targetPageId"),
-            target_block_id=raw.get("targetBlockId"),
-            target_slot_id=raw.get("targetSlotId"),
-            recommended_template_id=raw.get("recommendedTemplateId"),
-            provenance_source_project_id=raw.get("provenanceSourceProjectId"),
-            provenance_source_node_id=raw.get("provenanceSourceNodeId"),
-            ai_status=str(raw.get("aiStatus", "idle")),
-        )
+    @property
+    def is_root(self) -> bool:
+        return self.parent_id is None
 
 
 @dataclass(frozen=True)
@@ -75,30 +126,25 @@ class ProvenanceLineageRecord:
     source_node_title: str
     cloned_at: str
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "recordId": self.record_id,
-            "targetProjectId": self.target_project_id,
-            "targetNodeId": self.target_node_id,
-            "sourceProjectId": self.source_project_id,
-            "sourceProjectTitle": self.source_project_title,
-            "sourceNodeId": self.source_node_id,
-            "sourceNodeTitle": self.source_node_title,
-            "clonedAt": self.cloned_at,
-        }
 
-    @classmethod
-    def from_dict(cls, raw: dict[str, Any]) -> ProvenanceLineageRecord:
-        return cls(
-            record_id=str(raw.get("recordId", "")),
-            target_project_id=str(raw.get("targetProjectId", "")),
-            target_node_id=str(raw.get("targetNodeId", "")),
-            source_project_id=str(raw.get("sourceProjectId", "")),
-            source_project_title=str(raw.get("sourceProjectTitle", "")),
-            source_node_id=str(raw.get("sourceNodeId", "")),
-            source_node_title=str(raw.get("sourceNodeTitle", "")),
-            cloned_at=str(raw.get("clonedAt", "")),
-        )
+@dataclass(frozen=True)
+class OutlineSubtree:
+    """줌인 대상 노드 기준의 아웃라인 투영."""
+
+    root: StorylineNodeRecord | None
+    ancestors: tuple[StorylineNodeRecord, ...]
+    nodes: tuple[StorylineNodeRecord, ...]
+
+    @property
+    def active_zoom_level(self) -> ZoomLevel:
+        return self.root.zoom_level if self.root else ZoomLevel.PROJECT
+
+
+@dataclass(frozen=True)
+class NodeClone:
+    project: VProjectManifestRecord
+    node: StorylineNodeRecord
+    provenance: ProvenanceLineageRecord
 
 
 @dataclass(frozen=True)
@@ -109,47 +155,327 @@ class VProjectManifestRecord:
     title: str
     description: str
     is_reference_only: bool
-    active_phase: str  # "storylining" | "templating" | "drafting"
+    active_phase: WorkbenchPhase
     doc_ids: tuple[str, ...]
     reference_project_ids: tuple[str, ...]
     storyline_nodes: tuple[StorylineNodeRecord, ...] = field(default_factory=tuple)
     provenance_lineage: tuple[ProvenanceLineageRecord, ...] = field(default_factory=tuple)
     updated_at: str = ""
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "projectId": self.project_id,
-            "title": self.title,
-            "description": self.description,
-            "isReferenceOnly": self.is_reference_only,
-            "activePhase": self.active_phase,
-            "docIds": list(self.doc_ids),
-            "referenceProjectIds": list(self.reference_project_ids),
-            "storylineNodes": [n.to_dict() for n in self.storyline_nodes],
-            "provenanceLineage": [p.to_dict() for p in self.provenance_lineage],
-            "updatedAt": self.updated_at,
-        }
+    # --- 조회 ---------------------------------------------------------------
 
-    @classmethod
-    def from_dict(cls, raw: dict[str, Any]) -> VProjectManifestRecord:
-        return cls(
-            project_id=str(raw.get("projectId", "")),
-            title=str(raw.get("title", "")),
-            description=str(raw.get("description", "")),
-            is_reference_only=bool(raw.get("isReferenceOnly", False)),
-            active_phase=str(raw.get("activePhase", "storylining")),
-            doc_ids=tuple(str(x) for x in raw.get("docIds", [])),
-            reference_project_ids=tuple(str(x) for x in raw.get("referenceProjectIds", [])),
-            storyline_nodes=tuple(
-                StorylineNodeRecord.from_dict(n)
-                for n in raw.get("storylineNodes", [])
-                if isinstance(n, dict)
-            ),
-            provenance_lineage=tuple(
-                ProvenanceLineageRecord.from_dict(p)
-                for p in raw.get("provenanceLineage", [])
-                if isinstance(p, dict)
-            ),
-            updated_at=str(raw.get("updatedAt", "")),
+    def ensure_writable(self) -> None:
+        if self.is_reference_only:
+            raise VProjectReadOnlyViolationError(
+                f"Reference project '{self.project_id}' is read-only and cannot be mutated."
+            )
+
+    def find_node(self, node_id: str | None) -> StorylineNodeRecord | None:
+        if not node_id:
+            return None
+        return next((n for n in self.storyline_nodes if n.node_id == node_id), None)
+
+    def require_node(self, node_id: str) -> StorylineNodeRecord:
+        node = self.find_node(node_id)
+        if node is None:
+            raise VProjectNotFoundError(f"Node '{node_id}' not found in '{self.project_id}'")
+        return node
+
+    @property
+    def root_node(self) -> StorylineNodeRecord | None:
+        return next((n for n in self.storyline_nodes if n.is_root), None)
+
+    def _children_index(self) -> dict[str | None, list[StorylineNodeRecord]]:
+        index: dict[str | None, list[StorylineNodeRecord]] = {}
+        for node in self.storyline_nodes:
+            index.setdefault(node.parent_id, []).append(node)
+        return index
+
+    def subtree_ids(self, root_id: str) -> set[str]:
+        """`root_id` 와 그 모든 자손의 ID (자식 색인 + BFS, O(N))."""
+        children = self._children_index()
+        found = {root_id}
+        queue = [root_id]
+        while queue:
+            current = queue.pop()
+            for child in children.get(current, ()):
+                if child.node_id not in found:
+                    found.add(child.node_id)
+                    queue.append(child.node_id)
+        return found
+
+    def ancestor_chain(self, node_id: str) -> tuple[StorylineNodeRecord, ...]:
+        """루트 → `node_id` 순서의 경로 (자기 자신 포함). 순환이 있어도 멈춘다."""
+        by_id = {n.node_id: n for n in self.storyline_nodes}
+        chain: list[StorylineNodeRecord] = []
+        visited: set[str] = set()
+        current = by_id.get(node_id)
+        while current is not None and current.node_id not in visited:
+            visited.add(current.node_id)
+            chain.append(current)
+            current = by_id.get(current.parent_id) if current.parent_id else None
+        chain.reverse()
+        return tuple(chain)
+
+    def outline_subtree(self, root_node_id: str | None) -> OutlineSubtree:
+        root = self.find_node(root_node_id)
+        if root is None:
+            return OutlineSubtree(root=None, ancestors=(), nodes=self.storyline_nodes)
+        allowed = self.subtree_ids(root.node_id)
+        return OutlineSubtree(
+            root=root,
+            ancestors=self.ancestor_chain(root.node_id),
+            nodes=tuple(n for n in self.storyline_nodes if n.node_id in allowed),
         )
 
+    # --- 프로젝트 단위 변경 -----------------------------------------------------
+
+    def _touched(self, now: str, **changes: object) -> VProjectManifestRecord:
+        return replace(self, updated_at=now, **changes)
+
+    def with_phase(self, phase: WorkbenchPhase, *, now: str) -> VProjectManifestRecord:
+        self.ensure_writable()
+        return self._touched(now, active_phase=phase)
+
+    def with_references(
+        self,
+        reference_ids: Iterable[str],
+        *,
+        now: str,
+    ) -> VProjectManifestRecord:
+        self.ensure_writable()
+        normalized: list[str] = []
+        for ref_id in reference_ids:
+            if ref_id == self.project_id:
+                raise VProjectValidationError("A project cannot reference itself")
+            if ref_id not in normalized:
+                normalized.append(ref_id)
+        return self._touched(now, reference_project_ids=tuple(normalized))
+
+    def _with_nodes(
+        self,
+        nodes: Iterable[StorylineNodeRecord],
+        *,
+        now: str,
+        **changes: object,
+    ) -> VProjectManifestRecord:
+        return self._touched(now, storyline_nodes=_with_derived_depths(tuple(nodes)), **changes)
+
+    # --- 아웃라인 노드 명령 ---------------------------------------------------
+
+    def _resolve_parent(self, parent_id: str | None) -> StorylineNodeRecord | None:
+        if parent_id:
+            parent = self.find_node(parent_id)
+            if parent is None:
+                raise VProjectValidationError(f"Target parent node '{parent_id}' not found")
+            return parent
+        return self.root_node
+
+    def insert_node(
+        self,
+        *,
+        node_id: str,
+        parent_id: str | None,
+        title: str,
+        now: str,
+        fields: dict[str, object] | None = None,
+        provenance_source: tuple[str, str] | None = None,
+    ) -> tuple[VProjectManifestRecord, StorylineNodeRecord]:
+        self.ensure_writable()
+        if not title.strip():
+            raise VProjectValidationError("Node title must not be empty")
+        if self.find_node(node_id) is not None:
+            raise VProjectValidationError(f"Node '{node_id}' already exists")
+        parent = self._resolve_parent(parent_id)
+        depth = parent.depth + 1 if parent else 0
+        extra = _editable_fields(fields or {})
+        extra.pop("title", None)
+        extra["ai_status"] = AiStatus.parse(extra.get("ai_status"), AiStatus.IDLE)
+        node = StorylineNodeRecord(
+            node_id=node_id,
+            parent_id=parent.node_id if parent else None,
+            depth=depth,
+            zoom_level=ZoomLevel.parse(extra.pop("zoom_level", None), ZoomLevel.for_depth(depth)),
+            title=title.strip(),
+            target_doc_id=extra.pop("target_doc_id", None) or (self.doc_ids[0] if self.doc_ids else None),
+            recommended_template_id=extra.pop("recommended_template_id", None) or "section-block",
+            provenance_source_project_id=provenance_source[0] if provenance_source else None,
+            provenance_source_node_id=provenance_source[1] if provenance_source else None,
+            **extra,  # type: ignore[arg-type]
+        )
+        return self._with_nodes((*self.storyline_nodes, node), now=now), node
+
+    def update_node(
+        self,
+        node_id: str,
+        patch: dict[str, object],
+        *,
+        now: str,
+    ) -> VProjectManifestRecord:
+        self.ensure_writable()
+        target = self.require_node(node_id)
+        changes = _editable_fields(patch)
+        if "zoom_level" in changes:
+            changes["zoom_level"] = ZoomLevel.parse(changes["zoom_level"], target.zoom_level)
+        if "ai_status" in changes:
+            changes["ai_status"] = AiStatus.parse(changes["ai_status"], target.ai_status)
+        updated = replace(target, **changes)  # type: ignore[arg-type]
+        return self._with_nodes(
+            (updated if n.node_id == node_id else n for n in self.storyline_nodes),
+            now=now,
+        )
+
+    def assign_template(self, node_id: str, template_id: str, *, now: str) -> VProjectManifestRecord:
+        return self.update_node(
+            node_id,
+            {"recommended_template_id": template_id, "ai_status": AiStatus.APPLIED},
+            now=now,
+        )
+
+    def delete_node(self, node_id: str, *, now: str) -> VProjectManifestRecord:
+        """노드와 그 자손을 함께 지운다. 루트는 지울 수 없다."""
+        self.ensure_writable()
+        target = self.require_node(node_id)
+        if target.is_root:
+            raise VProjectValidationError("The outline root node cannot be deleted")
+        doomed = self.subtree_ids(node_id)
+        return self._with_nodes(
+            (n for n in self.storyline_nodes if n.node_id not in doomed),
+            now=now,
+        )
+
+    def move_node(self, node_id: str, direction: int, *, now: str) -> VProjectManifestRecord:
+        """같은 부모 아래 형제와 순서를 바꾼다 (`direction`: -1 위, +1 아래)."""
+        self.ensure_writable()
+        if direction not in (-1, 1):
+            raise VProjectValidationError("direction must be -1 or 1")
+        target = self.require_node(node_id)
+        siblings = [n for n in self.storyline_nodes if n.parent_id == target.parent_id]
+        position = next(i for i, n in enumerate(siblings) if n.node_id == node_id)
+        swap_position = position + direction
+        if target.is_root or not 0 <= swap_position < len(siblings):
+            return self
+        other = siblings[swap_position]
+        nodes = list(self.storyline_nodes)
+        i, j = nodes.index(target), nodes.index(other)
+        nodes[i], nodes[j] = nodes[j], nodes[i]
+        return self._with_nodes(nodes, now=now)
+
+    def indent_node(self, node_id: str, delta: int, *, now: str) -> VProjectManifestRecord:
+        """들여쓰기(+1)는 바로 위 형제의 자식으로, 내어쓰기(-1)는 부모의 형제로 옮긴다."""
+        self.ensure_writable()
+        if delta not in (-1, 1):
+            raise VProjectValidationError("delta must be -1 or 1")
+        target = self.require_node(node_id)
+        if target.is_root:
+            return self
+
+        if delta > 0:
+            siblings = [n for n in self.storyline_nodes if n.parent_id == target.parent_id]
+            position = next(i for i, n in enumerate(siblings) if n.node_id == node_id)
+            if position == 0:
+                return self
+            new_parent = siblings[position - 1]
+            if new_parent.depth + 1 > MAX_OUTLINE_DEPTH:
+                return self
+        else:
+            parent = self.find_node(target.parent_id)
+            if parent is None or parent.is_root:
+                return self
+            new_parent = self.find_node(parent.parent_id)
+            if new_parent is None:
+                return self
+
+        new_depth = new_parent.depth + 1
+        moved = replace(
+            target,
+            parent_id=new_parent.node_id,
+            zoom_level=ZoomLevel.for_depth(new_depth),
+        )
+        return self._with_nodes(
+            (moved if n.node_id == node_id else n for n in self.storyline_nodes),
+            now=now,
+        )
+
+    def clone_node_from(
+        self,
+        source: VProjectManifestRecord,
+        source_node_id: str,
+        *,
+        target_parent_id: str | None,
+        node_id: str,
+        record_id: str,
+        now: str,
+    ) -> NodeClone:
+        """참조 프로젝트의 노드를 복제하고 출처 원장에 남긴다."""
+        self.ensure_writable()
+        source_node = source.require_node(source_node_id)
+        parent = self._resolve_parent(target_parent_id)
+        depth = parent.depth + 1 if parent else 0
+        cloned = StorylineNodeRecord(
+            node_id=node_id,
+            parent_id=parent.node_id if parent else None,
+            depth=depth,
+            zoom_level=(
+                ZoomLevel.PAGE if source_node.zoom_level == ZoomLevel.PROJECT else source_node.zoom_level
+            ),
+            title=source_node.title,
+            summary=source_node.summary,
+            target_doc_id=source_node.target_doc_id or (self.doc_ids[0] if self.doc_ids else None),
+            target_page_id=source_node.target_page_id,
+            target_block_id=source_node.target_block_id,
+            target_slot_id=source_node.target_slot_id,
+            recommended_template_id=source_node.recommended_template_id,
+            provenance_source_project_id=source.project_id,
+            provenance_source_node_id=source_node.node_id,
+            ai_status=AiStatus.APPLIED,
+        )
+        provenance = ProvenanceLineageRecord(
+            record_id=record_id,
+            target_project_id=self.project_id,
+            target_node_id=node_id,
+            source_project_id=source.project_id,
+            source_project_title=source.title,
+            source_node_id=source_node.node_id,
+            source_node_title=source_node.title,
+            cloned_at=now,
+        )
+        project = self._with_nodes(
+            (*self.storyline_nodes, cloned),
+            now=now,
+            provenance_lineage=(*self.provenance_lineage, provenance),
+        )
+        return NodeClone(project=project, node=project.require_node(node_id), provenance=provenance)
+
+
+def _editable_fields(raw: dict[str, object]) -> dict[str, object]:
+    unknown = set(raw) - EDITABLE_NODE_FIELDS
+    if unknown:
+        raise VProjectValidationError(f"Unsupported node fields: {sorted(unknown)}")
+    return dict(raw)
+
+
+def _with_derived_depths(
+    nodes: tuple[StorylineNodeRecord, ...],
+) -> tuple[StorylineNodeRecord, ...]:
+    """`depth` 는 저장값이 아니라 부모 사슬에서 파생된다. 구조가 바뀔 때마다 다시 맞춘다."""
+    by_id = {n.node_id: n for n in nodes}
+    depths: dict[str, int] = {}
+
+    def depth_of(node: StorylineNodeRecord) -> int:
+        cached = depths.get(node.node_id)
+        if cached is not None:
+            return cached
+        depth = 0
+        seen = {node.node_id}
+        current = node
+        while current.parent_id and current.parent_id in by_id and current.parent_id not in seen:
+            seen.add(current.parent_id)
+            current = by_id[current.parent_id]
+            depth += 1
+        depths[node.node_id] = depth
+        return depth
+
+    return tuple(
+        n if n.depth == depth_of(n) else replace(n, depth=depth_of(n)) for n in nodes
+    )

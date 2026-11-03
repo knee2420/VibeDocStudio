@@ -38,7 +38,7 @@ export function useImportPdfForm() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const upsertDocument = useStudioDocumentStore((s) => s.upsertDocument);
+  const addDocument = useStudioDocumentStore((s) => s.addDocument);
 
   const openModal = () => {
     useSlotSelectionStore.getState().setSelectedBlockId(null);
@@ -91,7 +91,7 @@ export function useImportPdfForm() {
 
         setCurrentStep(3);
         if (res && res.document) {
-          upsertDocument(res.document);
+          await addDocument(res.document);
         }
       } else {
         formData.append("category", "PDF 임포트 양식");
@@ -103,7 +103,7 @@ export function useImportPdfForm() {
 
         setCurrentStep(3);
         if (res && res.document) {
-          upsertDocument(res.document);
+          await addDocument(res.document);
         }
       }
 

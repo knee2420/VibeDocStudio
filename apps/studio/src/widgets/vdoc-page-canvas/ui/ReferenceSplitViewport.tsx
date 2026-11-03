@@ -4,7 +4,7 @@ import { CopyPlus, Lock, X } from "lucide-react";
 import { VDocPageSheet } from "@vibe/slot-canvas";
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { useProjectStore } from "@/entities/vdoc-project";
+import { selectCurrentReferenceProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 
 const noop = () => {};
@@ -17,21 +17,15 @@ export const ReferenceSplitViewport: React.FC = () => {
     (s) => s.setSplitReferenceDocId
   );
 
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const selectedReferenceProjectId = useProjectStore(
-    (s) => s.selectedReferenceProjectId
+  const refDoc = useStudioDocumentStore((s) =>
+    splitReferenceDocId ? s.docs.find((d) => d.docId === splitReferenceDocId) : undefined
   );
-  const projects = useProjectStore((s) => s.projects);
+  const refProj = useProjectStore(selectCurrentReferenceProject);
   const cloneNodeFromReference = useProjectStore(
     (s) => s.cloneNodeFromReference
   );
 
   if (!splitReferenceDocId) return null;
-
-  const refDoc = docs.find((d) => d.docId === splitReferenceDocId) || docs[0];
-  const refProj =
-    projects.find((p) => p.projectId === selectedReferenceProjectId) ||
-    projects.find((p) => p.isReferenceOnly);
 
   if (!refDoc) return null;
 

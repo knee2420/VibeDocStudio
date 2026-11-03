@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 import { getZoomLevelMeta, type OutlinerNode } from "@vibe/vdoc-schema";
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { ProvenanceBadge, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { BlockInsertionPalette } from "@/features/mutate-canvas-blocks";
@@ -34,8 +34,7 @@ import { TemplateHubSidebarPanel } from "./TemplateHubSidebarPanel";
 
 export const OutlinePreviewSidebar: React.FC = () => {
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
+  const doc = useStudioDocumentStore(selectActiveDocument);
   const activePageId = useStudioDocumentStore((s) => s.activePageId);
   const mode = useStudioDocumentStore((s) => s.mode);
 
@@ -65,7 +64,6 @@ export const OutlinePreviewSidebar: React.FC = () => {
   const { projection, handleBulletZoomIn, handleSelectOutlineNode } =
     useFractalZoomNavigation();
 
-  const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
   if (!doc) return null;
 
   // Symmetric Collapse <-> Expand Rail
@@ -82,7 +80,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
   }
 
   const handleAddQuickNode = () => {
-    insertStorylineNode("node-proj-root", {
+    insertStorylineNode(null, {
       title: `신규 아웃라인 섹션 #${projection.allNodes.length + 1}`,
       summary: "Enter/버튼으로 생성된 구조화 아웃라인 노드",
       zoomLevel: "page",
@@ -91,7 +89,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
   };
 
   const handleInject100CharStressNode = () => {
-    insertStorylineNode("node-proj-root", {
+    insertStorylineNode(null, {
       title:
         "[100자_장문_오버플로우_검증]_2026년도_전사_클라우드_네이티브_문서_거버넌스_표준화_및_무중단_전환_아키텍처_심의_의결_보고서_최종본_V12_FINAL_REVISED",
       summary:
@@ -104,7 +102,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
   const handleNodeKeyDown = (e: React.KeyboardEvent, node: OutlinerNode) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      insertStorylineNode(node.parentId || "node-proj-root", {
+      insertStorylineNode(node.parentId, {
         title: `${node.title.slice(0, 18)} (후속 섹션)`,
         summary: "키보드 Enter로 추가된 형제 아웃라인 노드",
         zoomLevel: node.zoomLevel === "project" ? "page" : node.zoomLevel,

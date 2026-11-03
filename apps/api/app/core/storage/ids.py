@@ -5,6 +5,8 @@ import re
 import time
 import uuid
 
+from app.core.errors import ValidationError
+
 _SAFE_SEGMENT = re.compile(r"^[A-Za-z0-9_.\-]{1,128}$")
 
 DOCUMENT_PREFIX = "vdoc"
@@ -33,6 +35,6 @@ def safe_segment(value: str) -> str:
     """안전하지 않은 경로 조각이면 치환하지 않고 즉시 거부한다."""
     candidate = (value or "").strip()
     if not is_safe_segment(candidate):
-        raise ValueError(f"Unsafe path segment: {value!r}")
+        raise ValidationError(f"Unsafe path segment: {value!r}")
     return candidate
 

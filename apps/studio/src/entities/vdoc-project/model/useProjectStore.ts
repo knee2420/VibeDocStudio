@@ -1,359 +1,245 @@
 import { create } from "zustand";
 
-import {
-  INITIAL_VPROJECTS,
-  type OutlinerNode,
-  type ProvenanceRecord,
-  type VProjectManifest,
-  type WorkbenchPhase,
+import type {
+  OutlineCommand,
+  OutlineNodeFields,
+  VProjectManifest,
+  WorkbenchPhase,
 } from "@vibe/vdoc-schema";
+
+import { useHistoryStore } from "@/shared/lib";
+
+import { projectApi } from "../api/projectApi";
+
+/**
+ * 프로젝트 매니페스트의 클라이언트 캐시.
+ *
+ * 원장은 서버(`/api/projects`)다. 트리를 바꾸는 규칙(깊이 · 형제 이동 · 연쇄 삭제 · 읽기 전용 보호 ·
+ * 참조 복제 출처 기록)은 서버 애그리거트가 지키고, 이 저장소는 명령을 보낸 뒤 돌아온 매니페스트로
+ * 상태를 교체한다. 되돌리기는 변경 전 매니페스트를 서버에 다시 써서(`replace`) 구현한다.
+ *
+ * 예외: 제목처럼 타이핑마다 바뀌는 필드는 화면에 먼저 반영하고(낙관적 갱신) 잠시 뒤 한 번만 보낸다.
+ */
+export type ProjectLoadStatus = "idle" | "loading" | "ready" | "error";
 
 export interface ProjectStoreState {
   projects: VProjectManifest[];
   activeProjectId: string;
   selectedReferenceProjectId: string;
-  past: VProjectManifest[];
-  future: VProjectManifest[];
-  lastUndoMessage: string | null;
-  setProjects: (projects: VProjectManifest[]) => void;
+  status: ProjectLoadStatus;
+  /** 마지막 서버 오류 (사용자에게 보여줄 문장). */
+  lastError: string | null;
+
+  hydrate: () => Promise<void>;
   setActiveProjectId: (projectId: string) => void;
   setSelectedReferenceProjectId: (refProjectId: string) => void;
-  updateActiveProject: (
-    updater: (prev: VProjectManifest) => VProjectManifest,
-    opts?: { history?: boolean; label?: string }
-  ) => void;
-  setActiveProjectPhase: (phase: WorkbenchPhase) => void;
+  dismissError: () => void;
+
+  setActiveProjectPhase: (phase: WorkbenchPhase) => Promise<void>;
+  /** `parentId` 가 `null` 이면 아웃라인 루트 아래에 붙는다. */
   insertStorylineNode: (
     parentId: string | null,
-    partial: Partial<OutlinerNode> & { title: string }
-  ) => OutlinerNode | null;
-  updateStorylineNode: (
-    nodeId: string,
-    patch: Partial<OutlinerNode>,
-    opts?: { history?: boolean; label?: string }
-  ) => void;
-  deleteStorylineNode: (nodeId: string) => void;
-  moveStorylineNode: (nodeId: string, direction: -1 | 1) => void;
-  indentOutlinerNode: (nodeId: string, deltaDepth: -1 | 1) => void;
+    fields: OutlineNodeFields & { title: string },
+    provenance?: { sourceProjectId: string; sourceNodeId: string }
+  ) => Promise<void>;
+  updateStorylineNode: (nodeId: string, patch: OutlineNodeFields) => void;
+  deleteStorylineNode: (nodeId: string) => Promise<void>;
+  moveStorylineNode: (nodeId: string, direction: -1 | 1) => Promise<void>;
+  indentOutlinerNode: (nodeId: string, delta: -1 | 1) => Promise<void>;
+  assignTemplateToNode: (nodeId: string, templateId: string) => Promise<void>;
   cloneNodeFromReference: (
     sourceProjectId: string,
     sourceNodeId: string,
     targetParentId?: string | null
-  ) => { clonedNode: OutlinerNode; provenance: ProvenanceRecord } | null;
-  bindReferenceProjects: (referenceIds: string[]) => void;
-  assignTemplateToNode: (nodeId: string, templateId: string) => void;
-  undoProject: () => void;
-  redoProject: () => void;
-  dismissUndoToast: () => void;
+  ) => Promise<void>;
+  bindReferenceProjects: (referenceIds: string[]) => Promise<void>;
 }
 
-const HISTORY_LIMIT = 40;
-const defaultActive =
-  INITIAL_VPROJECTS.find((p) => !p.isReferenceOnly) || INITIAL_VPROJECTS[0];
-const defaultRef =
-  INITIAL_VPROJECTS.find((p) => p.isReferenceOnly) || INITIAL_VPROJECTS[1];
+const NODE_PATCH_DEBOUNCE_MS = 600;
 
-export const useProjectStore = create<ProjectStoreState>((set, get) => ({
-  projects: INITIAL_VPROJECTS,
-  activeProjectId: defaultActive?.projectId || "vproj-enterprise-architecture-suite",
-  selectedReferenceProjectId:
-    defaultRef?.projectId || "vproj-ref-cloud-migration-rfp",
-  past: [],
-  future: [],
-  lastUndoMessage: null,
+const pendingNodePatches = new Map<string, { patch: OutlineNodeFields; timer: number }>();
 
-  setProjects: (projects) => set({ projects }),
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : "서버와 통신하지 못했습니다.";
+}
 
-  setActiveProjectId: (projectId) =>
-    set({
-      activeProjectId: projectId,
-      past: [],
-      future: [],
-      lastUndoMessage: null,
-    }),
+export const useProjectStore = create<ProjectStoreState>((set, get) => {
+  const activeProject = (): VProjectManifest | undefined =>
+    get().projects.find((p) => p.projectId === get().activeProjectId);
 
-  setSelectedReferenceProjectId: (refProjectId) =>
-    set({ selectedReferenceProjectId: refProjectId }),
-
-  updateActiveProject: (updater, opts) =>
-    set((state) => {
-      const current = state.projects.find(
-        (p) => p.projectId === state.activeProjectId
-      );
-      if (!current || current.isReferenceOnly) return {};
-      const next = updater(current);
-      if (next === current) return {};
-      return {
-        projects: state.projects.map((p) =>
-          p.projectId === current.projectId ? next : p
-        ),
-        ...(opts?.history
-          ? {
-              past: [...state.past, current].slice(-HISTORY_LIMIT),
-              future: [],
-              lastUndoMessage: opts.label || "작업 내용이 변경되었습니다.",
-            }
-          : {}),
-      };
-    }),
-
-  setActiveProjectPhase: (phase) => {
-    get().updateActiveProject((prev) => ({
-      ...prev,
-      activePhase: phase,
-      updatedAt: new Date().toISOString(),
+  const replaceProject = (project: VProjectManifest) =>
+    set((s) => ({
+      projects: s.projects.map((p) => (p.projectId === project.projectId ? project : p)),
     }));
-  },
 
-  insertStorylineNode: (parentId, partial) => {
-    let created: OutlinerNode | null = null;
-    get().updateActiveProject(
-      (prev) => {
-        const parent = prev.storylineNodes.find((n) => n.nodeId === parentId);
-        const resolvedParentId =
-          parent?.nodeId || prev.storylineNodes[0]?.nodeId || null;
-        const depth = parent ? parent.depth + 1 : 1;
-        const nodeId =
-          partial.nodeId ||
-          `node-${Date.now().toString(36)}-${Math.random()
-            .toString(36)
-            .slice(2, 6)}`;
-        created = {
-          nodeId,
-          parentId: resolvedParentId,
-          depth,
-          zoomLevel: partial.zoomLevel || (depth === 1 ? "document" : depth === 2 ? "page" : "slot"),
-          title: partial.title,
-          summary: partial.summary || "",
-          targetDocId: partial.targetDocId ?? prev.docIds[0] ?? null,
-          targetPageId: partial.targetPageId ?? null,
-          targetBlockId: partial.targetBlockId ?? null,
-          targetSlotId: partial.targetSlotId ?? null,
-          recommendedTemplateId:
-            partial.recommendedTemplateId || "section-block",
-          provenanceSourceProjectId: partial.provenanceSourceProjectId ?? null,
-          provenanceSourceNodeId: partial.provenanceSourceNodeId ?? null,
-          aiStatus: partial.aiStatus || "idle",
-        };
-        return {
-          ...prev,
-          storylineNodes: [...prev.storylineNodes, created],
-          updatedAt: new Date().toISOString(),
-        };
-      },
-      { history: true, label: `노드 추가: "${partial.title.slice(0, 28)}"` }
-    );
-    return created;
-  },
+  /** 서버에 매니페스트를 되돌려 쓰는 Undo/Redo 항목을 이력에 남긴다. */
+  const recordHistory = (label: string, before: VProjectManifest, after: VProjectManifest) => {
+    const restore = async (target: VProjectManifest) => {
+      replaceProject(await projectApi.replace(target));
+    };
+    useHistoryStore.getState().push({
+      label,
+      scope: "project",
+      undo: () => restore(before),
+      redo: () => restore(after),
+    });
+  };
 
-  updateStorylineNode: (nodeId, patch, opts) => {
-    get().updateActiveProject(
-      (prev) => ({
-        ...prev,
-        storylineNodes: prev.storylineNodes.map((n) =>
-          n.nodeId === nodeId ? { ...n, ...patch } : n
-        ),
-        updatedAt: new Date().toISOString(),
-      }),
-      opts
-    );
-  },
+  /** 서버 변경 하나를 실행하고 결과로 상태를 교체한다. 실패하면 오류만 남기고 상태는 그대로 둔다. */
+  const mutate = async (
+    label: string,
+    run: (project: VProjectManifest) => Promise<VProjectManifest>
+  ) => {
+    const before = activeProject();
+    if (!before || before.isReferenceOnly) return;
+    await flushNodePatches();
+    try {
+      const after = await run(before);
+      replaceProject(after);
+      recordHistory(label, before, after);
+    } catch (err) {
+      set({ lastError: errorMessage(err) });
+    }
+  };
 
-  deleteStorylineNode: (nodeId) => {
-    get().updateActiveProject(
-      (prev) => {
-        const target = prev.storylineNodes.find((n) => n.nodeId === nodeId);
-        if (!target || target.parentId === null) return prev;
-        const toDelete = new Set<string>([nodeId]);
-        let changed = true;
-        while (changed) {
-          changed = false;
-          for (const n of prev.storylineNodes) {
-            if (n.parentId && toDelete.has(n.parentId) && !toDelete.has(n.nodeId)) {
-              toDelete.add(n.nodeId);
-              changed = true;
-            }
-          }
-        }
-        return {
-          ...prev,
-          storylineNodes: prev.storylineNodes.filter(
-            (n) => !toDelete.has(n.nodeId)
-          ),
-          updatedAt: new Date().toISOString(),
-        };
-      },
-      { history: true, label: "아웃라인 노드가 삭제되었습니다." }
-    );
-  },
+  const command = (label: string, cmd: OutlineCommand) =>
+    mutate(label, async (project) => (await projectApi.command(project.projectId, cmd)).project);
 
-  moveStorylineNode: (nodeId, direction) => {
-    get().updateActiveProject(
-      (prev) => {
-        const list = [...prev.storylineNodes];
-        const idx = list.findIndex((n) => n.nodeId === nodeId);
-        if (idx <= 0) return prev;
-        const swapIdx = idx + direction;
-        if (swapIdx <= 0 || swapIdx >= list.length) return prev;
-        const tmp = list[idx];
-        list[idx] = list[swapIdx];
-        list[swapIdx] = tmp;
-        return {
-          ...prev,
-          storylineNodes: list,
-          updatedAt: new Date().toISOString(),
-        };
-      },
-      { history: true, label: "아웃라인 노드 순서가 변경되었습니다." }
-    );
-  },
-
-  indentOutlinerNode: (nodeId, deltaDepth) => {
-    get().updateActiveProject(
-      (prev) => ({
-        ...prev,
-        storylineNodes: prev.storylineNodes.map((n) => {
-          if (n.nodeId !== nodeId || n.parentId === null) return n;
-          const nextDepth = Math.max(1, Math.min(3, n.depth + deltaDepth));
-          const nextZoom =
-            nextDepth === 1 ? "document" : nextDepth === 2 ? "page" : "slot";
-          return { ...n, depth: nextDepth, zoomLevel: nextZoom };
-        }),
-        updatedAt: new Date().toISOString(),
-      }),
-      { history: true, label: "노드 계층 깊이(Depth)가 조정되었습니다." }
-    );
-  },
-
-  cloneNodeFromReference: (sourceProjectId, sourceNodeId, targetParentId) => {
-    const state = get();
-    const sourceProj = state.projects.find(
-      (p) => p.projectId === sourceProjectId
-    );
-    const sourceNode = sourceProj?.storylineNodes.find(
-      (n) => n.nodeId === sourceNodeId
-    );
-    if (!sourceProj || !sourceNode) return null;
-
-    let result: { clonedNode: OutlinerNode; provenance: ProvenanceRecord } | null =
-      null;
-
-    get().updateActiveProject(
-      (prev) => {
-        const resolvedParentId =
-          targetParentId || prev.storylineNodes[0]?.nodeId || null;
-        const clonedNodeId = `node-clone-${Date.now().toString(36)}-${Math.random()
-          .toString(36)
-          .slice(2, 5)}`;
-        const now = new Date().toISOString();
-
-        const clonedNode: OutlinerNode = {
-          nodeId: clonedNodeId,
-          parentId: resolvedParentId,
-          depth: 1,
-          zoomLevel:
-            sourceNode.zoomLevel === "project" ? "page" : sourceNode.zoomLevel,
-          title: sourceNode.title,
-          summary: sourceNode.summary,
-          targetDocId: sourceNode.targetDocId || prev.docIds[0] || null,
-          recommendedTemplateId:
-            sourceNode.recommendedTemplateId || "structured-table",
-          provenanceSourceProjectId: sourceProj.projectId,
-          provenanceSourceNodeId: sourceNode.nodeId,
-          aiStatus: "applied",
-        };
-
-        const provenance: ProvenanceRecord = {
-          recordId: `prov-${Date.now().toString(36)}`,
-          targetProjectId: prev.projectId,
-          targetNodeId: clonedNodeId,
-          sourceProjectId: sourceProj.projectId,
-          sourceProjectTitle: sourceProj.title,
-          sourceNodeId: sourceNode.nodeId,
-          sourceNodeTitle: sourceNode.title,
-          clonedAt: now,
-        };
-
-        result = { clonedNode, provenance };
-        return {
-          ...prev,
-          storylineNodes: [...prev.storylineNodes, clonedNode],
-          provenanceLineage: [...prev.provenanceLineage, provenance],
-          updatedAt: now,
-        };
-      },
-      {
-        history: true,
-        label: `참조 복제 완료: "${sourceNode.title.slice(0, 24)}" (Provenance 기록됨)`,
+  const flushNodePatches = async () => {
+    const project = activeProject();
+    if (!project) return;
+    const entries = [...pendingNodePatches.entries()];
+    pendingNodePatches.clear();
+    for (const [nodeId, { patch, timer }] of entries) {
+      window.clearTimeout(timer);
+      try {
+        replaceProject(
+          (await projectApi.command(project.projectId, { kind: "update_node", nodeId, patch })).project
+        );
+      } catch (err) {
+        set({ lastError: errorMessage(err) });
       }
-    );
+    }
+  };
 
-    return result;
-  },
+  return {
+    projects: [],
+    activeProjectId: "",
+    selectedReferenceProjectId: "",
+    status: "idle",
+    lastError: null,
 
-  bindReferenceProjects: (referenceIds) => {
-    get().updateActiveProject(
-      (prev) => ({
-        ...prev,
-        referenceProjectIds: referenceIds,
-        updatedAt: new Date().toISOString(),
-      }),
-      {
-        history: true,
-        label: `참조 프로젝트 덱 구성 변경 (${referenceIds.length}개 연결)`,
+    hydrate: async () => {
+      set({ status: "loading", lastError: null });
+      try {
+        const projects = await projectApi.list();
+        const current = get();
+        const active =
+          projects.find((p) => p.projectId === current.activeProjectId) ??
+          projects.find((p) => !p.isReferenceOnly) ??
+          projects[0];
+        const reference =
+          projects.find((p) => p.projectId === current.selectedReferenceProjectId) ??
+          projects.find((p) => p.isReferenceOnly && active?.referenceProjectIds.includes(p.projectId)) ??
+          projects.find((p) => p.isReferenceOnly);
+        set({
+          projects,
+          activeProjectId: active?.projectId ?? "",
+          selectedReferenceProjectId: reference?.projectId ?? "",
+          status: "ready",
+        });
+      } catch (err) {
+        set({ status: "error", lastError: errorMessage(err) });
       }
-    );
-  },
+    },
 
-  assignTemplateToNode: (nodeId, templateId) => {
-    get().updateActiveProject(
-      (prev) => ({
-        ...prev,
-        storylineNodes: prev.storylineNodes.map((n) =>
-          n.nodeId === nodeId
-            ? { ...n, recommendedTemplateId: templateId, aiStatus: "applied" }
-            : n
-        ),
-        updatedAt: new Date().toISOString(),
+    setActiveProjectId: (projectId) => {
+      useHistoryStore.getState().clearScope("project");
+      set({ activeProjectId: projectId });
+    },
+
+    setSelectedReferenceProjectId: (refProjectId) => set({ selectedReferenceProjectId: refProjectId }),
+
+    dismissError: () => set({ lastError: null }),
+
+    setActiveProjectPhase: (phase) => command(`작업 단계 전환: ${phase}`, { kind: "set_phase", phase }),
+
+    insertStorylineNode: (parentId, fields, provenance) => {
+      const { title, ...rest } = fields;
+      return command(`노드 추가: "${title.slice(0, 28)}"`, {
+        kind: "insert_node",
+        title,
+        parentId,
+        fields: rest,
+        provenanceSourceProjectId: provenance?.sourceProjectId,
+        provenanceSourceNodeId: provenance?.sourceNodeId,
+      });
+    },
+
+    updateStorylineNode: (nodeId, patch) => {
+      const project = activeProject();
+      if (!project || project.isReferenceOnly) return;
+      // 낙관적 갱신: 화면은 바로 바꾸고 서버에는 잠시 뒤 합쳐서 보낸다.
+      replaceProject({
+        ...project,
+        storylineNodes: project.storylineNodes.map((n) => (n.nodeId === nodeId ? { ...n, ...patch } : n)),
+      });
+      const pending = pendingNodePatches.get(nodeId);
+      if (pending) window.clearTimeout(pending.timer);
+      const merged = { ...pending?.patch, ...patch };
+      const timer = window.setTimeout(() => void flushNodePatches(), NODE_PATCH_DEBOUNCE_MS);
+      pendingNodePatches.set(nodeId, { patch: merged, timer });
+    },
+
+    deleteStorylineNode: (nodeId) =>
+      command("아웃라인 노드가 삭제되었습니다.", { kind: "delete_node", nodeId }),
+
+    moveStorylineNode: (nodeId, direction) =>
+      command("아웃라인 노드 순서가 변경되었습니다.", { kind: "move_node", nodeId, direction }),
+
+    indentOutlinerNode: (nodeId, delta) =>
+      command("노드 계층 깊이(Depth)가 조정되었습니다.", { kind: "indent_node", nodeId, delta }),
+
+    assignTemplateToNode: (nodeId, templateId) =>
+      command(`서식 템플릿(${templateId}) 매핑 완료`, { kind: "assign_template", nodeId, templateId }),
+
+    cloneNodeFromReference: (sourceProjectId, sourceNodeId, targetParentId) =>
+      mutate("참조 복제 완료 (Provenance 기록됨)", async (project) => {
+        const res = await projectApi.cloneNode(project.projectId, {
+          sourceProjectId,
+          sourceNodeId,
+          targetParentId: targetParentId ?? null,
+        });
+        return res.project;
       }),
-      { history: true, label: `서식 템플릿(${templateId}) 매핑 완료` }
-    );
-  },
 
-  undoProject: () =>
-    set((state) => {
-      const prevProj = state.past[state.past.length - 1];
-      const current = state.projects.find(
-        (p) => p.projectId === state.activeProjectId
-      );
-      if (!prevProj || !current) return {};
-      return {
-        projects: state.projects.map((p) =>
-          p.projectId === prevProj.projectId ? prevProj : p
-        ),
-        past: state.past.slice(0, -1),
-        future: [current, ...state.future].slice(0, HISTORY_LIMIT),
-        lastUndoMessage: "이전 프로젝트/아웃라인 상태로 되돌렸습니다.",
-      };
-    }),
+    bindReferenceProjects: (referenceIds) =>
+      mutate(`참조 프로젝트 덱 구성 변경 (${referenceIds.length}개 연결)`, (project) =>
+        projectApi.bindReferences(project.projectId, referenceIds)
+      ),
+  };
+});
 
-  redoProject: () =>
-    set((state) => {
-      const nextProj = state.future[0];
-      const current = state.projects.find(
-        (p) => p.projectId === state.activeProjectId
-      );
-      if (!nextProj || !current) return {};
-      return {
-        projects: state.projects.map((p) =>
-          p.projectId === nextProj.projectId ? nextProj : p
-        ),
-        past: [...state.past, current].slice(-HISTORY_LIMIT),
-        future: state.future.slice(1),
-        lastUndoMessage: "작업을 다시 실행했습니다.",
-      };
-    }),
+/** 활성 프로젝트 (없으면 `undefined`). 셀렉터로 쓰면 다른 프로젝트 변경에는 다시 그리지 않는다. */
+export const selectActiveProject = (s: ProjectStoreState): VProjectManifest | undefined =>
+  s.projects.find((p) => p.projectId === s.activeProjectId);
 
-  dismissUndoToast: () => set({ lastUndoMessage: null }),
-}));
+/** 활성 프로젝트에 연결된 참조 프로젝트들. */
+export const selectBoundReferenceProjects = (s: ProjectStoreState): VProjectManifest[] => {
+  const active = selectActiveProject(s);
+  return active ? s.projects.filter((p) => p.isReferenceOnly && active.referenceProjectIds.includes(p.projectId)) : [];
+};
 
+/** 지금 고른 참조 프로젝트 (연결된 것 중에서, 없으면 첫 번째). */
+export const selectCurrentReferenceProject = (s: ProjectStoreState): VProjectManifest | undefined => {
+  const bound = selectBoundReferenceProjects(s);
+  return bound.find((p) => p.projectId === s.selectedReferenceProjectId) ?? bound[0];
+};
+
+/** 참조 스플릿 뷰에 띄울 문서 = 지금 고른 참조 프로젝트의 첫 문서. */
+export const selectReferenceDocId = (s: ProjectStoreState): string | null =>
+  selectCurrentReferenceProject(s)?.docIds[0] ?? null;
+
+/** 연결 가능한 모든 참조 프로젝트 ID (참조 덱 기본 구성). */
+export const selectAllReferenceProjectIds = (s: ProjectStoreState): string[] =>
+  s.projects.filter((p) => p.isReferenceOnly).map((p) => p.projectId);

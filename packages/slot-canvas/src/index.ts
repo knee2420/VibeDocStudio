@@ -1,4 +1,5 @@
 export * from "./VDocPageSheet";
+export * from "./MemoVDocPageSheet";
 export * from "./WindowedPageChunker";
 export * from "./InteractiveTable";
 export * from "./BlockFrame";

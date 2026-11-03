@@ -19,11 +19,12 @@
 가변인 것과 불변인 것을 한 객체에 섞으면 그 객체 전체가 가변이 된다. 그래서
 **바뀌는 값만** 여기로 떼어 낸다. 컨테이너가 부팅 시 `settings` 의 기본값으로
 하나 만들고, 이후 그 하나를 모두가 공유한다. 값을 바꾸는 곳은
-`UpdateRuntimePolicyUseCase` 하나뿐이다.
+`app.runtime.use_cases.UpdateRuntimePolicyUseCase` → `RuntimeExecutionPolicy.apply()` 하나뿐이다.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from threading import Lock
 
 #: 같은 뜻으로 쓰이는 표기들. 저장된 값과 입력값의 표기가 갈려서
 #: `"google-api" != "google_api"` 로 판정이 뒤집히는 일이 실제로 있었다.
@@ -46,9 +47,41 @@ def normalize_provider(value: str | None) -> str | None:
     return None
 
 
+@dataclass(frozen=True)
+class RuntimePolicyUpdate:
+    """정책 변경 요청. `None` 인 항목은 그대로 둔다.
+
+    모델 · 타임아웃은 "주 / 보조" 역할로 받는다. 어느 공급자 필드에 들어갈지는
+    변경 후의 주 공급자를 기준으로 정책이 스스로 정한다.
+    """
+
+    primary_provider: str | None = None
+    fallback_provider: str | None = None
+    primary_model: str | None = None
+    fallback_model: str | None = None
+    primary_timeout_seconds: int | None = None
+    fallback_timeout_seconds: int | None = None
+
+
+@dataclass(frozen=True)
+class RuntimePolicyView:
+    """정책의 한 시점 사본 (응답 · 관측용)."""
+
+    primary_provider: str
+    fallback_provider: str
+    primary_model: str
+    fallback_model: str
+    primary_timeout_seconds: int
+    fallback_timeout_seconds: int
+    agent_cli_bin: str
+
+
 @dataclass
 class RuntimeExecutionPolicy:
-    """이 프로세스가 지금 어떤 엔진으로 실행하는가."""
+    """이 프로세스가 지금 어떤 엔진으로 실행하는가.
+
+    값을 바꾸는 길은 `apply()` 하나뿐이며, 잠금 안에서 한꺼번에 바꾼다.
+    """
 
     primary_provider: str
     fallback_provider: str
@@ -57,6 +90,56 @@ class RuntimeExecutionPolicy:
     agent_cli_model: str
     agent_cli_timeout_seconds: int
     agent_cli_bin: str
+    _lock: Lock = field(default_factory=Lock, init=False, repr=False, compare=False)
+
+    def apply(self, update: RuntimePolicyUpdate) -> RuntimePolicyView:
+        with self._lock:
+            primary = normalize_provider(update.primary_provider)
+            if primary:
+                self.primary_provider = primary
+            fallback = normalize_provider(update.fallback_provider)
+            if fallback:
+                self.fallback_provider = fallback
+
+            google_primary = self.is_google_primary
+            if update.primary_model:
+                self._set_model(google=google_primary, value=update.primary_model)
+            if update.fallback_model:
+                self._set_model(google=not google_primary, value=update.fallback_model)
+            if update.primary_timeout_seconds:
+                self._set_timeout(google=google_primary, value=update.primary_timeout_seconds)
+            if update.fallback_timeout_seconds:
+                self._set_timeout(google=not google_primary, value=update.fallback_timeout_seconds)
+            return self._view()
+
+    def snapshot(self) -> RuntimePolicyView:
+        with self._lock:
+            return self._view()
+
+    def _view(self) -> RuntimePolicyView:
+        return RuntimePolicyView(
+            primary_provider=self.primary_provider,
+            fallback_provider=self.fallback_provider,
+            primary_model=self.primary_model,
+            fallback_model=self.fallback_model,
+            primary_timeout_seconds=self.primary_timeout_seconds,
+            fallback_timeout_seconds=self.fallback_timeout_seconds,
+            agent_cli_bin=self.agent_cli_bin,
+        )
+
+    def _set_model(self, *, google: bool, value: str) -> None:
+        if google:
+            self.google_api_model = value
+        else:
+            self.agent_cli_model = value
+
+    def _set_timeout(self, *, google: bool, value: int) -> None:
+        if value <= 0:
+            raise ValueError("timeout seconds must be positive")
+        if google:
+            self.google_api_timeout_seconds = value
+        else:
+            self.agent_cli_timeout_seconds = value
 
     @property
     def is_google_primary(self) -> bool:

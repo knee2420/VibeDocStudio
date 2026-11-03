@@ -1,12 +1,13 @@
-"""documents 도메인 HTTP 라우터."""
+"""documents 도메인 HTTP 라우터.
+
+도메인 오류는 `app.bootstrap.error_handlers` 가 HTTP 응답으로 번역하므로 여기서는 잡지 않는다.
+"""
 from typing import Annotated
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.bootstrap.container import Container
-
-from .errors import VDocDocumentNotFoundError, VDocSlotNotFoundError
+from .models import VDocAggregateRecord, VDocSummaryRecord
 from .schemas import (
     PatchDocumentStructureRequest,
     PatchSlotContentRequest,
@@ -15,81 +16,82 @@ from .schemas import (
     VDocPageChunkResponse,
     VDocSummaryResponse,
 )
-from .service import DocumentService
+from .use_cases import (
+    DeleteDocumentUseCase,
+    GetDocumentPageChunkUseCase,
+    GetDocumentUseCase,
+    ListDocumentsUseCase,
+    PatchDocumentStructureUseCase,
+    SaveDocumentUseCase,
+    UpdateSlotContentUseCase,
+)
 
 router = APIRouter()
 
-DocumentServiceDep = Annotated[
-    DocumentService,
-    Depends(Provide[Container.document_service]),
-]
+ListDep = Annotated[ListDocumentsUseCase, Depends(Provide["list_documents"])]
+GetDep = Annotated[GetDocumentUseCase, Depends(Provide["get_document"])]
+ChunkDep = Annotated[GetDocumentPageChunkUseCase, Depends(Provide["get_document_page_chunk"])]
+SaveDep = Annotated[SaveDocumentUseCase, Depends(Provide["save_document"])]
+UpdateSlotDep = Annotated[UpdateSlotContentUseCase, Depends(Provide["update_slot_content"])]
+PatchStructureDep = Annotated[PatchDocumentStructureUseCase, Depends(Provide["patch_document_structure"])]
+DeleteDep = Annotated[DeleteDocumentUseCase, Depends(Provide["delete_document"])]
 
 
-def _translate_error(exc: Exception) -> HTTPException:
-    if isinstance(exc, (VDocDocumentNotFoundError, VDocSlotNotFoundError)):
-        return HTTPException(status_code=404, detail=str(exc))
-    if isinstance(exc, ValueError):
-        return HTTPException(status_code=400, detail=str(exc))
-    return HTTPException(status_code=500, detail="Document operation failed")
+def _summary_response(item: VDocSummaryRecord) -> VDocSummaryResponse:
+    return VDocSummaryResponse(
+        docId=item.doc_id,
+        title=item.title,
+        status=item.status,
+        updatedAt=item.updated_at,
+        pageCount=item.page_count,
+        slotCount=item.slot_count,
+    )
+
+
+def _document_response(record: VDocAggregateRecord) -> VDocDocumentResponse:
+    return VDocDocumentResponse(docId=record.doc_id, document=record.payload)
 
 
 @router.get("", response_model=list[VDocSummaryResponse])
 @inject
-def list_documents(service: DocumentServiceDep) -> list[VDocSummaryResponse]:
-    return [
-        VDocSummaryResponse(
-            docId=item.doc_id,
-            title=item.title,
-            status=item.status,
-            updatedAt=item.updated_at,
-            pageCount=item.page_count,
-            slotCount=item.slot_count,
-        )
-        for item in service.list_documents()
-    ]
+def list_documents(use_case: ListDep) -> list[VDocSummaryResponse]:
+    return [_summary_response(item) for item in use_case.execute()]
 
 
 @router.get("/{doc_id}", response_model=VDocDocumentResponse)
 @inject
-def get_document(doc_id: str, service: DocumentServiceDep) -> VDocDocumentResponse:
-    try:
-        record = service.get_document(doc_id)
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-    return VDocDocumentResponse(docId=record.doc_id, document=record.payload)
+def get_document(doc_id: str, use_case: GetDep) -> VDocDocumentResponse:
+    return _document_response(use_case.execute(doc_id))
 
 
 @router.get("/{doc_id}/chunks", response_model=VDocPageChunkResponse)
 @inject
 def get_document_page_chunk(
     doc_id: str,
-    service: DocumentServiceDep,
+    use_case: ChunkDep,
     start_page: int = Query(default=1, ge=1, alias="startPage"),
     end_page: int = Query(default=15, ge=1, alias="endPage"),
 ) -> VDocPageChunkResponse:
-    try:
-        chunk = service.get_document_page_chunk(
-            doc_id=doc_id,
-            start_page=start_page,
-            end_page=end_page,
-        )
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-    return VDocPageChunkResponse.model_validate(chunk)
+    window = use_case.execute(doc_id=doc_id, start_page=start_page, end_page=end_page)
+    return VDocPageChunkResponse(
+        docId=window.doc_id,
+        title=window.title,
+        totalPages=window.total_pages,
+        startPage=window.start_page,
+        endPage=window.end_page,
+        windowSize=window.window_size,
+        topSpacerPx=window.top_spacer_px,
+        bottomSpacerPx=window.bottom_spacer_px,
+        pages=window.pages,
+        slots=window.slots,
+        backdata=window.backdata,
+    )
 
 
 @router.put("/{doc_id}", response_model=VDocDocumentResponse)
 @inject
-def save_document(
-    doc_id: str,
-    body: SaveVDocRequest,
-    service: DocumentServiceDep,
-) -> VDocDocumentResponse:
-    try:
-        record = service.save_document(doc_id, body.document)
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-    return VDocDocumentResponse(docId=record.doc_id, document=record.payload)
+def save_document(doc_id: str, body: SaveVDocRequest, use_case: SaveDep) -> VDocDocumentResponse:
+    return _document_response(use_case.execute(doc_id, body.document))
 
 
 @router.patch("/{doc_id}/slots/{slot_id}", response_model=VDocDocumentResponse)
@@ -98,13 +100,9 @@ def patch_slot_content(
     doc_id: str,
     slot_id: str,
     body: PatchSlotContentRequest,
-    service: DocumentServiceDep,
+    use_case: UpdateSlotDep,
 ) -> VDocDocumentResponse:
-    try:
-        record = service.update_slot_content(doc_id, slot_id, body.content)
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-    return VDocDocumentResponse(docId=record.doc_id, document=record.payload)
+    return _document_response(use_case.execute(doc_id, slot_id, body.content))
 
 
 @router.patch("/{doc_id}/structure", response_model=VDocDocumentResponse)
@@ -112,23 +110,14 @@ def patch_slot_content(
 def patch_document_structure(
     doc_id: str,
     body: PatchDocumentStructureRequest,
-    service: DocumentServiceDep,
+    use_case: PatchStructureDep,
 ) -> VDocDocumentResponse:
-    try:
-        record = service.patch_document_structure(
-            doc_id=doc_id,
-            operation=body.operation,
-            payload=body.payload,
-        )
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-    return VDocDocumentResponse(docId=record.doc_id, document=record.payload)
+    return _document_response(
+        use_case.execute(doc_id=doc_id, operation=body.operation, payload=body.payload)
+    )
 
 
 @router.delete("/{doc_id}", status_code=status.HTTP_204_NO_CONTENT)
 @inject
-def delete_document(doc_id: str, service: DocumentServiceDep) -> None:
-    try:
-        service.delete_document(doc_id)
-    except Exception as exc:
-        raise _translate_error(exc) from exc
+def delete_document(doc_id: str, use_case: DeleteDep) -> None:
+    use_case.execute(doc_id)

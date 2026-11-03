@@ -1,15 +1,30 @@
-import { useMemo } from "react";
+import { useDeferredValue, useMemo } from "react";
 
 import {
   buildProjectFractalTree,
+  PROJECT_ROOT_CRUMB_ID,
   type FractalOutlineProjection,
   type OutlinerNode,
+  type VProjectManifest,
 } from "@vibe/vdoc-schema";
 
 import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { useProjectStore } from "@/entities/vdoc-project";
+import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+
+const EMPTY_PROJECT: VProjectManifest = {
+  projectId: "",
+  title: "",
+  description: "",
+  isReferenceOnly: true,
+  activePhase: "storylining",
+  docIds: [],
+  referenceProjectIds: [],
+  storylineNodes: [],
+  provenanceLineage: [],
+  updatedAt: "",
+};
 
 export function useFractalZoomNavigation(): {
   projection: FractalOutlineProjection;
@@ -18,9 +33,10 @@ export function useFractalZoomNavigation(): {
   handleBreadcrumbClick: (nodeId: string) => void;
   handleZoomOutOneLevel: () => void;
 } {
-  const projects = useProjectStore((s) => s.projects);
-  const activeProjectId = useProjectStore((s) => s.activeProjectId);
-  const docs = useStudioDocumentStore((s) => s.docs);
+  const activeProject = useProjectStore(selectActiveProject);
+  // 아웃라인 트리는 문서 내용(슬롯 요약)까지 반영하지만 타이핑보다 늦어도 된다.
+  // 지연 값으로 계산해 입력 응답성을 먼저 지킨다.
+  const docs = useDeferredValue(useStudioDocumentStore((s) => s.docs));
   const setActiveDocId = useStudioDocumentStore((s) => s.setActiveDocId);
   const setActivePageId = useStudioDocumentStore((s) => s.setActivePageId);
   const setSelectedSlotId = useSlotSelectionStore((s) => s.setSelectedSlotId);
@@ -32,13 +48,10 @@ export function useFractalZoomNavigation(): {
     (s) => s.setSelectedOutlinerNodeId
   );
 
-  const activeProject =
-    projects.find((p) => p.projectId === activeProjectId) || projects[0];
-
   const projection = useMemo(
     () =>
       buildProjectFractalTree(
-        activeProject,
+        activeProject ?? EMPTY_PROJECT,
         docs,
         zoomRootNodeId,
         quickFilterQuery
@@ -90,7 +103,7 @@ export function useFractalZoomNavigation(): {
   const handleZoomOutOneLevel = () => {
     const crumbs = projection.breadcrumbs;
     if (crumbs.length <= 1) {
-      zoomIntoNode("project-root");
+      zoomIntoNode(PROJECT_ROOT_CRUMB_ID);
       return;
     }
     const parentCrumb = crumbs[crumbs.length - 2];

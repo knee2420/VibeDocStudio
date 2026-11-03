@@ -5,7 +5,7 @@
   "isReferenceOnly": true,
   "activePhase": "storylining",
   "docIds": [
-    "vdoc-arch-minutes-01"
+    "vdoc_meeting_minutes_1028"
   ],
   "referenceProjectIds": [],
   "storylineNodes": [
@@ -32,7 +32,7 @@
       "zoomLevel": "page",
       "title": "A.9 접근통제 및 최소권한(Zero-Trust) 검증 매트릭스",
       "summary": "특권 계정 MFA 강제화 및 분기별 권한 재검토 감사 로그",
-      "targetDocId": "vdoc-arch-minutes-01",
+      "targetDocId": "vdoc_meeting_minutes_1028",
       "targetPageId": null,
       "targetBlockId": null,
       "targetSlotId": null,
@@ -48,7 +48,7 @@
       "zoomLevel": "page",
       "title": "A.16 정보보호 이벤트 탐지 및 골든타임 대응 프로토콜",
       "summary": "이상 징후 탐지 후 30분 내 격리 및 24시간 내 원인 분석 보고서 제출 체계",
-      "targetDocId": "vdoc-arch-minutes-01",
+      "targetDocId": "vdoc_meeting_minutes_1028",
       "targetPageId": null,
       "targetBlockId": null,
       "targetSlotId": null,

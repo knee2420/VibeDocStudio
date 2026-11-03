@@ -11,9 +11,14 @@ import {
 import { useSlotSelectionStore } from "@/entities/slot";
 import {
   DocumentStatusBadges,
+  selectActiveDocument,
   useStudioDocumentStore,
 } from "@/entities/vdoc-document";
-import { useProjectStore } from "@/entities/vdoc-project";
+import {
+  selectActiveProject,
+  selectReferenceDocId,
+  useProjectStore,
+} from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
@@ -22,6 +27,7 @@ import { ImportPdfButton } from "@/features/import-pdf-form";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { OutlineBreadcrumbBar } from "@/features/zoom-hierarchy";
+import { useHistoryStore } from "@/shared/lib";
 
 import { ExecutionPhaseStepper } from "./ExecutionPhaseStepper";
 import { ShortcutHelpPopover } from "./ShortcutHelpPopover";
@@ -29,23 +35,15 @@ import { ShortcutHelpPopover } from "./ShortcutHelpPopover";
 export const StudioTopRibbon: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
+  const doc = useStudioDocumentStore(selectActiveDocument);
   const updateCurrentDoc = useStudioDocumentStore((s) => s.updateCurrentDoc);
-  const docPastCount = useStudioDocumentStore((s) => s.past.length);
-  const docFutureCount = useStudioDocumentStore((s) => s.future.length);
-  const undoDoc = useStudioDocumentStore((s) => s.undoDoc);
-  const redoDoc = useStudioDocumentStore((s) => s.redoDoc);
+  const totalUndoCount = useHistoryStore((s) => s.past.length);
+  const totalRedoCount = useHistoryStore((s) => s.future.length);
+  const undoHistory = useHistoryStore((s) => s.undo);
+  const redoHistory = useHistoryStore((s) => s.redo);
 
-  const projects = useProjectStore((s) => s.projects);
-  const activeProjectId = useProjectStore((s) => s.activeProjectId);
-  const projPastCount = useProjectStore((s) => s.past.length);
-  const projFutureCount = useProjectStore((s) => s.future.length);
-  const undoProject = useProjectStore((s) => s.undoProject);
-  const redoProject = useProjectStore((s) => s.redoProject);
-
-  const activeProject =
-    projects.find((p) => p.projectId === activeProjectId) || projects[0];
+  const activeProject = useProjectStore(selectActiveProject);
+  const referenceDocId = useProjectStore(selectReferenceDocId);
 
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const stagingCount = useWorkspaceSessionStore((s) => s.stagingQueue.length);
@@ -71,21 +69,10 @@ export const StudioTopRibbon: React.FC = () => {
   const { isAiStreaming, abortActiveAiRun } = useStageAiChanges();
   const { runTableCommand } = useMutateCanvasBlocks();
 
-  const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
-  if (!doc) return null;
+  if (!doc || !activeProject) return null;
 
-  const totalUndoCount = projPastCount + docPastCount;
-  const totalRedoCount = projFutureCount + docFutureCount;
-
-  const handleGlobalUndo = () => {
-    if (projPastCount > 0) undoProject();
-    else if (docPastCount > 0) undoDoc();
-  };
-
-  const handleGlobalRedo = () => {
-    if (projFutureCount > 0) redoProject();
-    else if (docFutureCount > 0) redoDoc();
-  };
+  const handleGlobalUndo = () => void undoHistory();
+  const handleGlobalRedo = () => void redoHistory();
 
   const toggleMenu = (menuName: string) => {
     setActiveMenu((prev) => (prev === menuName ? null : menuName));
@@ -335,7 +322,7 @@ export const StudioTopRibbon: React.FC = () => {
             data-testid="canvas-toggle-split-ref-btn"
             onClick={() =>
               setSplitReferenceDocId(
-                splitReferenceDocId ? null : "vdoc-pandadoc-vc-proposal-01"
+                splitReferenceDocId ? null : referenceDocId
               )
             }
             className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold border cursor-pointer transition ${

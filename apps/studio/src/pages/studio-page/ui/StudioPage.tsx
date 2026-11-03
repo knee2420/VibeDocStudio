@@ -4,14 +4,17 @@ import {
   GlobalUndoToastHost,
   useGlobalStudioShortcuts,
 } from "@/features/command-bus";
-import { useWorkspaceUrlSync } from "@/features/workspace-persistence";
+import {
+  useWorkspaceBootstrap,
+  useWorkspaceUrlSync,
+} from "@/features/workspace-persistence";
 import { OutlinePreviewSidebar } from "@/widgets/outline-preview-sidebar";
 import { SlotInspectorDrawer } from "@/widgets/slot-inspector-drawer";
 import { StudioActivityBar } from "@/widgets/studio-activity-bar";
 import { StudioTopRibbon } from "@/widgets/studio-top-ribbon";
 import { VDocPageCanvas } from "@/widgets/vdoc-page-canvas";
 
-export const StudioPage: React.FC = () => {
+const StudioWorkspace: React.FC = () => {
   useWorkspaceUrlSync();
   useGlobalStudioShortcuts();
 
@@ -27,6 +30,37 @@ export const StudioPage: React.FC = () => {
       </div>
 
       <GlobalUndoToastHost />
+    </div>
+  );
+};
+
+/** 서버(원장)에서 작업 공간을 불러온 뒤에만 스튜디오를 그린다. */
+export const StudioPage: React.FC = () => {
+  const { status, error, retry } = useWorkspaceBootstrap();
+
+  if (status === "ready") return <StudioWorkspace />;
+
+  return (
+    <div
+      data-testid="workspace-boot-screen"
+      className="h-screen w-screen flex items-center justify-center bg-[#f4f5f7] text-slate-700"
+    >
+      {status === "loading" ? (
+        <p className="text-sm font-medium">작업 공간을 불러오는 중…</p>
+      ) : (
+        <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
+          <p className="text-sm font-semibold text-rose-700">작업 공간을 불러오지 못했습니다.</p>
+          <p className="text-xs text-slate-500 break-all">{error}</p>
+          <p className="text-xs text-slate-500">API 서버(`pnpm dev:api`, 포트 8090)가 켜져 있는지 확인하세요.</p>
+          <button
+            type="button"
+            onClick={retry}
+            className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold cursor-pointer"
+          >
+            다시 시도
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,35 +1,21 @@
 import { create } from "zustand";
 
-import type { StagedAiChange, WorkbenchPhase } from "@vibe/vdoc-schema";
+import {
+  PROJECT_ROOT_CRUMB_ID,
+  type StagedAiChange,
+  type WorkbenchPhase,
+} from "@vibe/vdoc-schema";
 
-function readInitialUrlState(): {
-  phase: WorkbenchPhase;
-  zoomRootNodeId: string;
-  splitReferenceDocId: string | null;
-} {
-  if (typeof window === "undefined") {
-    return {
-      phase: "drafting",
-      zoomRootNodeId: "project-root",
-      splitReferenceDocId: null,
-    };
-  }
-  const params = new URLSearchParams(window.location.search);
-  const rawPhase = params.get("phase");
-  const phase: WorkbenchPhase =
-    rawPhase === "storylining" ||
-    rawPhase === "templating" ||
-    rawPhase === "drafting"
-      ? rawPhase
-      : "drafting";
-  const zoomRootNodeId = params.get("zoom") || "project-root";
-  const splitReferenceDocId = params.get("splitRef") || null;
-  return { phase, zoomRootNodeId, splitReferenceDocId };
-}
-
-const initialUrl = readInitialUrlState();
+const PHASES: readonly WorkbenchPhase[] = ["storylining", "templating", "drafting"];
 
 export type ActivityBarTab = "explorer" | "source-control" | "template-hub" | "settings";
+
+/** URL · 저장소에서 복원하는 작업 공간 위치. */
+export interface WorkspaceLocation {
+  phase?: string | null;
+  zoom?: string | null;
+  splitRef?: string | null;
+}
 
 export interface WorkspaceSessionState {
   currentPhase: WorkbenchPhase;
@@ -45,6 +31,7 @@ export interface WorkspaceSessionState {
   stagingDrawerOpen: boolean;
   activeActivityTab: ActivityBarTab;
   leftSidebarOpen: boolean;
+  restoreLocation: (location: WorkspaceLocation) => void;
   setPhase: (phase: WorkbenchPhase) => void;
   zoomIntoNode: (nodeId: string) => void;
   setSelectedOutlinerNodeId: (nodeId: string | null) => void;
@@ -53,8 +40,13 @@ export interface WorkspaceSessionState {
   enqueueStagedChanges: (changes: StagedAiChange[]) => void;
   removeStagedChange: (diffId: string) => void;
   clearStagingQueue: () => void;
-  startAiStreaming: (runId: string) => void;
-  stopAiStreaming: (aborted?: boolean) => void;
+  /**
+   * AI 실행 시작. `abort` 는 그 실행을 실제로 멈추는 방법(요청 중단 + 서버 취소)이며,
+   * 어디서 중단하든(Esc · 리본 버튼 · 작업대 버튼) `abortAiRun()` 하나로 같은 경로를 탄다.
+   */
+  startAiRun: (runId: string, abort: () => void) => void;
+  finishAiRun: (runId: string) => void;
+  abortAiRun: () => void;
   setShortcutPopoverOpen: (open: boolean) => void;
   setStagingDrawerOpen: (open: boolean) => void;
   setActiveActivityTab: (tab: ActivityBarTab) => void;
@@ -62,12 +54,15 @@ export interface WorkspaceSessionState {
   setLeftSidebarOpen: (open: boolean) => void;
 }
 
-export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => ({
-  currentPhase: initialUrl.phase,
-  zoomRootNodeId: initialUrl.zoomRootNodeId,
-  selectedOutlinerNodeId: "node-doc-minutes",
+/** 실행 중단 방법은 직렬화할 값이 아니므로 상태 밖에 둔다. */
+let activeRunAbort: (() => void) | null = null;
+
+export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set, get) => ({
+  currentPhase: "drafting",
+  zoomRootNodeId: PROJECT_ROOT_CRUMB_ID,
+  selectedOutlinerNodeId: null,
   quickFilterQuery: "",
-  splitReferenceDocId: initialUrl.splitReferenceDocId,
+  splitReferenceDocId: null,
   stagingQueue: [],
   isAiStreaming: false,
   activeRunId: null,
@@ -77,12 +72,19 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
   activeActivityTab: "explorer",
   leftSidebarOpen: true,
 
+  restoreLocation: ({ phase, zoom, splitRef }) =>
+    set({
+      currentPhase: PHASES.includes(phase as WorkbenchPhase) ? (phase as WorkbenchPhase) : "drafting",
+      zoomRootNodeId: zoom || PROJECT_ROOT_CRUMB_ID,
+      splitReferenceDocId: splitRef || null,
+    }),
+
   setPhase: (phase) => set({ currentPhase: phase }),
 
   zoomIntoNode: (nodeId) =>
     set({
       zoomRootNodeId: nodeId,
-      selectedOutlinerNodeId: nodeId === "project-root" ? null : nodeId,
+      selectedOutlinerNodeId: nodeId === PROJECT_ROOT_CRUMB_ID ? null : nodeId,
     }),
 
   setSelectedOutlinerNodeId: (nodeId) => set({ selectedOutlinerNodeId: nodeId }),
@@ -102,15 +104,25 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
 
   clearStagingQueue: () => set({ stagingQueue: [] }),
 
-  startAiStreaming: (runId) =>
-    set({ isAiStreaming: true, activeRunId: runId }),
+  startAiRun: (runId, abort) => {
+    activeRunAbort = abort;
+    set({ isAiStreaming: true, activeRunId: runId, lastAbortedRunId: null });
+  },
 
-  stopAiStreaming: (aborted = false) =>
-    set((s) => ({
-      isAiStreaming: false,
-      lastAbortedRunId: aborted ? s.activeRunId : s.lastAbortedRunId,
-      activeRunId: null,
-    })),
+  finishAiRun: (runId) => {
+    if (get().activeRunId !== runId) return;
+    activeRunAbort = null;
+    set({ isAiStreaming: false, activeRunId: null });
+  },
+
+  abortAiRun: () => {
+    const runId = get().activeRunId;
+    if (!runId) return;
+    const abort = activeRunAbort;
+    activeRunAbort = null;
+    set({ isAiStreaming: false, activeRunId: null, lastAbortedRunId: runId });
+    abort?.();
+  },
 
   setShortcutPopoverOpen: (open) => set({ shortcutPopoverOpen: open }),
   setStagingDrawerOpen: (open) => set({ stagingDrawerOpen: open }),
@@ -124,4 +136,3 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
     }),
   setLeftSidebarOpen: (open) => set({ leftSidebarOpen: open }),
 }));
-

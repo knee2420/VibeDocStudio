@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Any
 
 
@@ -43,13 +44,49 @@ class SlotCompositionResultModel:
     provenance: SlotCompositionProvenance
 
 
+class StagedPhase(StrEnum):
+    STORYLINING = "storylining"
+    TEMPLATING = "templating"
+    DRAFTING = "drafting"
+
+
+class StagedTargetKind(StrEnum):
+    OUTLINE_NODE = "outline-node"
+    TEMPLATE_BLOCK = "template-block"
+    SLOT_HTML = "slot-html"
+
+
+@dataclass(frozen=True)
+class ReferenceNodeInput:
+    """Phase 1 근거로 쓰는 참조 프로젝트 노드."""
+
+    node_id: str
+    title: str
+    summary: str = ""
+    source_project_id: str | None = None
+    recommended_template_id: str | None = None
+
+
+@dataclass(frozen=True)
+class StorylineNodeInput:
+    """Phase 2 서식 추천 대상 노드."""
+
+    node_id: str
+    title: str
+    summary: str = ""
+    recommended_template_id: str | None = None
+
+
 @dataclass(frozen=True)
 class StagedAiDiffItem:
-    """AI가 인메모리 작업대를 직접 조작할 때 생성되는 Staged 변경안 (Accept/Reject 대상)."""
+    """AI가 작업대에 제안하는 Staged 변경안 (Accept/Reject 대상).
+
+    `payload` 의 모양은 `target_kind` 마다 정해져 있다 (프론트 `StagedAiChange` 합 타입과 같은 계약).
+    """
 
     diff_id: str
-    phase: str  # "storylining" | "templating" | "drafting"
-    target_kind: str  # "outline-node" | "template-block" | "slot-html"
+    phase: StagedPhase
+    target_kind: StagedTargetKind
     target_id: str
     title: str
     before_summary: str
@@ -57,15 +94,11 @@ class StagedAiDiffItem:
     payload: dict[str, Any]
     source_reference_ids: tuple[str, ...] = field(default_factory=tuple)
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "diffId": self.diff_id,
-            "phase": self.phase,
-            "targetKind": self.target_kind,
-            "targetId": self.target_id,
-            "title": self.title,
-            "beforeSummary": self.before_summary,
-            "afterSummary": self.after_summary,
-            "payload": self.payload,
-            "sourceReferenceIds": list(self.source_reference_ids),
-        }
+
+@dataclass(frozen=True)
+class StagedPhaseResult:
+    run_id: str
+    phase: StagedPhase
+    engine_name: str
+    created_at: str
+    staged_diffs: tuple[StagedAiDiffItem, ...]

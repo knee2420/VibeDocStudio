@@ -1,16 +1,23 @@
 import React from "react";
 import { Columns, Layers } from "lucide-react";
 
-import { VDocPageSheet, WindowedPageChunker } from "@vibe/slot-canvas";
+import { MemoVDocPageSheet, WindowedPageChunker } from "@vibe/slot-canvas";
 import type { SlotAiAction } from "@vibe/slot-editor";
-import type { VDocPage, VDocSlot } from "@vibe/vdoc-schema";
+import {
+  createSectionPage,
+  type BackdataChunk,
+  type VDocDocument,
+  type VDocSlot,
+} from "@vibe/vdoc-schema";
 
 import { useSlotSelectionStore } from "@/entities/slot";
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectReferenceDocId, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { SlotInlineComposerHost } from "@/features/compose-slot-ai";
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
+import { useStableCallback } from "@/shared/lib";
 
 import { AiStagingDrawer } from "./AiStagingDrawer";
 import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
@@ -25,141 +32,102 @@ const AI_ACTION_PROMPTS: Record<SlotAiAction, string> = {
   tone: "선택한 부분을 더 자연스럽고 전문적인 어투로 수정해줘",
 };
 
+const STRESS_PAGE_COUNT = 25;
+const WINDOW_CHUNK_PAGES = 15;
+
+/** 개발용: 25쪽 문서로 늘려 슬라이딩 윈도우를 검증하거나, 1쪽으로 되돌린다. */
+function toggleStressPages(prev: VDocDocument): VDocDocument {
+  if (prev.pages.length > WINDOW_CHUNK_PAGES) {
+    return { ...prev, pages: prev.pages.slice(0, 1) };
+  }
+  const pages = [...prev.pages];
+  const slots = { ...prev.slots };
+  for (let pageNumber = pages.length + 1; pageNumber <= STRESS_PAGE_COUNT; pageNumber++) {
+    const section = createSectionPage({
+      pageId: `sim-page-${pageNumber}`,
+      pageNumber,
+      pageLabel: `시뮬레이션 섹션 #${pageNumber}`,
+      headerHtml: `<p>${prev.title} · 대용량 슬라이딩 윈도우 검증</p>`,
+      footerHtml: `<p>Page ${pageNumber} / ${STRESS_PAGE_COUNT}</p>`,
+      headingHtml: `<h3>Section ${pageNumber} · 대용량 조판 윈도우 청크 페이지 (${pageNumber}p)</h3>`,
+      bodyHtml: `<p>대용량 문서에서도 ${WINDOW_CHUNK_PAGES}페이지 슬라이딩 윈도우만 DOM에 마운트됩니다.</p>`,
+    });
+    pages.push(section.page);
+    Object.assign(slots, section.slots);
+  }
+  return { ...prev, pages, slots };
+}
+
+/** 인라인 작성기는 작성 프롬프트를 스스로 구독해, 페이지 전체를 다시 그리지 않고도 갱신된다. */
+const ConnectedInlineComposer: React.FC<{
+  slot: VDocSlot;
+  boundChunks: BackdataChunk[];
+  onApplySlotContent: (slotId: string, html: string) => void;
+}> = ({ slot, boundChunks, onApplySlotContent }) => {
+  const composerPrompt = useSlotSelectionStore((s) => s.composerPrompt);
+  return (
+    <SlotInlineComposerHost
+      targetSlot={slot}
+      boundChunks={boundChunks}
+      initialPrompt={composerPrompt ?? undefined}
+      onApplySlotContent={onApplySlotContent}
+    />
+  );
+};
+
 export const VDocPageCanvas: React.FC = () => {
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
+  const doc = useStudioDocumentStore(selectActiveDocument);
   const activePageId = useStudioDocumentStore((s) => s.activePageId);
   const setActivePageId = useStudioDocumentStore((s) => s.setActivePageId);
   const updateCurrentDoc = useStudioDocumentStore((s) => s.updateCurrentDoc);
   const mode = useStudioDocumentStore((s) => s.mode);
+  const referenceDocId = useProjectStore(selectReferenceDocId);
 
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
-  const splitReferenceDocId = useWorkspaceSessionStore(
-    (s) => s.splitReferenceDocId
-  );
-  const setSplitReferenceDocId = useWorkspaceSessionStore(
-    (s) => s.setSplitReferenceDocId
-  );
+  const splitReferenceDocId = useWorkspaceSessionStore((s) => s.splitReferenceDocId);
+  const setSplitReferenceDocId = useWorkspaceSessionStore((s) => s.setSplitReferenceDocId);
 
   const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
-  const setSelectedBlockId = useSlotSelectionStore((s) => s.setSelectedBlockId);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
   const composerOpenSlotId = useSlotSelectionStore((s) => s.composerOpenSlotId);
-  const composerPrompt = useSlotSelectionStore((s) => s.composerPrompt);
-  const setSelectedSlotId = useSlotSelectionStore((s) => s.setSelectedSlotId);
-  const setComposerOpenSlotId = useSlotSelectionStore(
-    (s) => s.setComposerOpenSlotId
-  );
-  const toggleComposerForSlot = useSlotSelectionStore(
-    (s) => s.toggleComposerForSlot
-  );
-  const openComposerWithPrompt = useSlotSelectionStore(
-    (s) => s.openComposerWithPrompt
-  );
-  const setRightSidebarOpen = useSlotSelectionStore(
-    (s) => s.setRightSidebarOpen
-  );
-  const setTableSelection = useSlotSelectionStore((s) => s.setTableSelection);
+  const setComposerOpenSlotId = useSlotSelectionStore((s) => s.setComposerOpenSlotId);
 
   const { updateSlotContent } = useSlotContentActions();
-  const {
-    moveBlock,
-    moveBlockTo,
-    deleteBlock,
-    addBlockToPage,
-    duplicateBlock,
-    toggleBlockLock,
-    moveBlockFrame,
-    resizeBlockFrame,
-    updateBlock,
-    runTableCommand,
-  } = useMutateCanvasBlocks();
+  const blocks = useMutateCanvasBlocks();
 
-  const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
+  // 페이지 시트에 넘기는 콜백은 모두 고정 참조여야 MemoVDocPageSheet 의 메모가 유지된다.
+  const onUpdateSlotContent = useStableCallback(updateSlotContent);
+  const onMoveBlock = useStableCallback(blocks.moveBlock);
+  const onMoveBlockTo = useStableCallback(blocks.moveBlockTo);
+  const onDeleteBlock = useStableCallback(blocks.deleteBlock);
+  const onInsertBlock = useStableCallback(blocks.addBlockToPage);
+  const onDuplicateBlock = useStableCallback(blocks.duplicateBlock);
+  const onToggleBlockLock = useStableCallback(blocks.toggleBlockLock);
+  const onMoveBlockFrame = useStableCallback(blocks.moveBlockFrame);
+  const onResizeBlockFrame = useStableCallback(blocks.resizeBlockFrame);
+  const onUpdateBlock = useStableCallback(blocks.updateBlock);
+  const onTableCommand = useStableCallback(blocks.runTableCommand);
+  const onSelectBlock = useStableCallback((blockId: string) => {
+    const selection = useSlotSelectionStore.getState();
+    selection.setSelectedBlockId(blockId);
+    selection.setRightSidebarOpen(true);
+  });
+  const onOpenBackdataDrawer = useStableCallback((slotId: string) => {
+    const selection = useSlotSelectionStore.getState();
+    selection.setSelectedSlotId(slotId);
+    selection.setRightSidebarOpen(true);
+  });
+  const onSlotAiAction = useStableCallback((slotId: string, action: SlotAiAction, text: string) =>
+    useSlotSelectionStore
+      .getState()
+      .openComposerWithPrompt(slotId, `${AI_ACTION_PROMPTS[action]}: "${text.slice(0, 200)}"`)
+  );
+  const renderInlineComposer = useStableCallback((slot: VDocSlot, boundChunks: BackdataChunk[]) => (
+    <ConnectedInlineComposer slot={slot} boundChunks={boundChunks} onApplySlotContent={onUpdateSlotContent} />
+  ));
+  const selectionActions = useSlotSelectionStore.getState();
+
   if (!doc) return null;
-
-  // 1-click Stress Test helper to generate/restore a 25-page document to verify 15p WindowedPageChunker
-  const handleToggle25PageStressDoc = () => {
-    if (doc.pages.length > 15) {
-      updateCurrentDoc(
-        (prev) => ({
-          ...prev,
-          pages: prev.pages.slice(0, 1),
-        }),
-        { history: true }
-      );
-      return;
-    }
-
-    updateCurrentDoc(
-      (prev) => {
-        const nextPages: VDocPage[] = [...prev.pages];
-        const nextSlots: Record<string, VDocSlot> = { ...prev.slots };
-        const targetTotal = 25;
-
-        for (let pNum = nextPages.length + 1; pNum <= targetTotal; pNum++) {
-          const pid = `sim-page-${pNum}`;
-          const hSlot = `${pid}_heading`;
-          const bSlot = `${pid}_body`;
-          const hdrSlot = `${pid}_header`;
-          const ftrSlot = `${pid}_footer`;
-
-          nextSlots[hdrSlot] = {
-            slotId: hdrSlot,
-            label: "머리말",
-            role: "boilerplate",
-            content: `<p>${prev.title} · 대용량 슬라이딩 윈도우 검증</p>`,
-            backDataRefs: [],
-          };
-          nextSlots[ftrSlot] = {
-            slotId: ftrSlot,
-            label: "바닥글",
-            role: "boilerplate",
-            content: `<p>Page ${pNum} / ${targetTotal}</p>`,
-            backDataRefs: [],
-          };
-          nextSlots[hSlot] = {
-            slotId: hSlot,
-            label: `섹션 ${pNum} 제목`,
-            role: "editable-slot",
-            content: `<h3>Section ${pNum} · 대용량 조판 윈도우 청크 페이지 (${pNum}p)</h3>`,
-            backDataRefs: [],
-          };
-          nextSlots[bSlot] = {
-            slotId: bSlot,
-            label: `섹션 ${pNum} 본문`,
-            role: "editable-slot",
-            content: `<p>100페이지급 대용량 문서에서도 15페이지 슬라이딩 윈도우 청크(WindowedPageChunker)만 DOM에 마운트되어 지연 없이 쾌적하게 동작합니다.</p>`,
-            backDataRefs: [],
-          };
-
-          nextPages.push({
-            pageId: pid,
-            pageNumber: pNum,
-            pageLabel: `시뮬레이션 섹션 #${pNum}`,
-            headerSlotId: hdrSlot,
-            footerSlotId: ftrSlot,
-            blocks: [
-              {
-                blockId: `blk_${pid}_1`,
-                kind: "section-block",
-                title: `시뮬레이션 섹션 #${pNum}`,
-                headingSlotId: hSlot,
-                bodySlotId: bSlot,
-              },
-            ],
-          });
-        }
-
-        return {
-          ...prev,
-          pages: nextPages,
-          slots: nextSlots,
-        };
-      },
-      { history: true }
-    );
-  };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -180,30 +148,27 @@ export const VDocPageCanvas: React.FC = () => {
             {/* Phase 3 Top Canvas Utility Bar */}
             <div className="max-w-[794px] mx-auto mb-2.5 flex items-center justify-between gap-2 text-xs">
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  data-testid="simulate-25pages-btn"
-                  onClick={handleToggle25PageStressDoc}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[11px] font-semibold shadow-2xs cursor-pointer transition font-mono tabular-nums"
-                >
-                  <Layers className="w-3.5 h-3.5 text-emerald-600" />
-                  {doc.pages.length > 15
-                    ? `원본 페이지(1p)로 복원 (현재 ${doc.pages.length}p)`
-                    : "⚡ 25p 대용량 슬라이딩 윈도우 시뮬레이션"}
-                </button>
+                {import.meta.env.DEV && (
+                  <button
+                    type="button"
+                    data-testid="simulate-25pages-btn"
+                    onClick={() => updateCurrentDoc(toggleStressPages, { history: true, label: "페이지 시뮬레이션 전환" })}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[11px] font-semibold shadow-2xs cursor-pointer transition font-mono tabular-nums"
+                  >
+                    <Layers className="w-3.5 h-3.5 text-emerald-600" />
+                    {doc.pages.length > WINDOW_CHUNK_PAGES
+                      ? `원본 페이지(1p)로 복원 (현재 ${doc.pages.length}p)`
+                      : `⚡ ${STRESS_PAGE_COUNT}p 대용량 슬라이딩 윈도우 시뮬레이션`}
+                  </button>
+                )}
               </div>
 
               <button
                 type="button"
                 data-testid="canvas-toggle-split-ref-btn"
-                onClick={() =>
-                  setSplitReferenceDocId(
-                    splitReferenceDocId
-                      ? null
-                      : "vdoc-pandadoc-vc-proposal-01"
-                  )
-                }
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition ${
+                disabled={!splitReferenceDocId && !referenceDocId}
+                onClick={() => setSplitReferenceDocId(splitReferenceDocId ? null : referenceDocId)}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition disabled:opacity-40 ${
                   splitReferenceDocId
                     ? "bg-violet-600 text-white border-violet-600"
                     : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
@@ -219,9 +184,9 @@ export const VDocPageCanvas: React.FC = () => {
             <WindowedPageChunker
               pages={doc.pages}
               activePageId={activePageId}
-              chunkSize={15}
+              chunkSize={WINDOW_CHUNK_PAGES}
               renderPage={(page) => (
-                <VDocPageSheet
+                <MemoVDocPageSheet
                   key={page.pageId}
                   docTitle={doc.title}
                   totalPages={doc.pages.length}
@@ -233,42 +198,24 @@ export const VDocPageCanvas: React.FC = () => {
                   selectedSlotId={selectedSlotId}
                   composerOpenSlotId={composerOpenSlotId}
                   onSelectPage={setActivePageId}
-                  onSelectBlock={(blkId) => {
-                    setSelectedBlockId(blkId);
-                    setRightSidebarOpen(true);
-                  }}
-                  onSelectSlot={setSelectedSlotId}
-                  onToggleComposerForSlot={toggleComposerForSlot}
-                  onOpenBackdataDrawer={(slotId) => {
-                    setSelectedSlotId(slotId);
-                    setRightSidebarOpen(true);
-                  }}
-                  onUpdateSlotContent={updateSlotContent}
-                  onMoveBlock={moveBlock}
-                  onDeleteBlock={deleteBlock}
-                  onMoveBlockTo={moveBlockTo}
-                  onInsertBlock={addBlockToPage}
-                  onDuplicateBlock={duplicateBlock}
-                  onToggleBlockLock={toggleBlockLock}
-                  onMoveBlockFrame={moveBlockFrame}
-                  onResizeBlockFrame={resizeBlockFrame}
-                  onUpdateBlock={updateBlock}
-                  onTableCommand={runTableCommand}
-                  onTableSelectionChange={setTableSelection}
-                  onSlotAiAction={(slotId, action, text) =>
-                    openComposerWithPrompt(
-                      slotId,
-                      `${AI_ACTION_PROMPTS[action]}: "${text.slice(0, 200)}"`
-                    )
-                  }
-                  renderInlineComposer={(slot, boundChunks) => (
-                    <SlotInlineComposerHost
-                      targetSlot={slot}
-                      boundChunks={boundChunks}
-                      initialPrompt={composerPrompt ?? undefined}
-                      onApplySlotContent={updateSlotContent}
-                    />
-                  )}
+                  onSelectBlock={onSelectBlock}
+                  onSelectSlot={selectionActions.setSelectedSlotId}
+                  onToggleComposerForSlot={selectionActions.toggleComposerForSlot}
+                  onOpenBackdataDrawer={onOpenBackdataDrawer}
+                  onUpdateSlotContent={onUpdateSlotContent}
+                  onMoveBlock={onMoveBlock}
+                  onDeleteBlock={onDeleteBlock}
+                  onMoveBlockTo={onMoveBlockTo}
+                  onInsertBlock={onInsertBlock}
+                  onDuplicateBlock={onDuplicateBlock}
+                  onToggleBlockLock={onToggleBlockLock}
+                  onMoveBlockFrame={onMoveBlockFrame}
+                  onResizeBlockFrame={onResizeBlockFrame}
+                  onUpdateBlock={onUpdateBlock}
+                  onTableCommand={onTableCommand}
+                  onTableSelectionChange={selectionActions.setTableSelection}
+                  onSlotAiAction={onSlotAiAction}
+                  renderInlineComposer={renderInlineComposer}
                 />
               )}
             />
