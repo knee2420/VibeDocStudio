@@ -13,6 +13,7 @@ import {
   FileText,
   FolderTree,
   Layers,
+  LayoutGrid,
   MoreHorizontal,
   Plus,
   Search,
@@ -290,7 +291,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
           </div>
 
           {/* Zoom-Out Navigation Banner when Zoomed In */}
-          {projection.rootNodeId !== "project-root" && (
+          {projection.rootNodeId !== "project-root" && projection.activeZoomLevel !== "project" && (
             <div className="px-2 py-1 bg-slate-100/80 border-b border-slate-200/60 flex items-center justify-between text-xs text-slate-700 shrink-0">
               <button
                 type="button"
@@ -397,20 +398,35 @@ export const OutlinePreviewSidebar: React.FC = () => {
                       <FolderTree className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     ) : node.zoomLevel === "document" ? (
                       <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    ) : node.zoomLevel === "page" && node.targetBlockId ? (
+                      <LayoutGrid className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     ) : node.zoomLevel === "page" ? (
                       <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    ) : node.isStatic ? (
+                      <span className="w-1.5 h-1.5 rounded-full border border-slate-300 shrink-0 mx-1" />
                     ) : (
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0 mx-1" />
                     )}
 
-                    {/* Node Title */}
+                    {/* Node Title — 고정 텍스트는 회색, 위치로 지은 이름은 ⚠ */}
                     <span
                       data-testid={`outline-node-title-${node.nodeId}`}
-                      title={`${node.title}${node.summary ? `\n\n${node.summary}` : ""}`}
-                      className="truncate flex-1 min-w-0"
+                      title={`${node.title}${node.summary ? `\n\n${node.summary}` : ""}${
+                        node.nameNeedsReview ? "\n\n⚠ 이름 확인 필요 (라벨을 찾지 못해 위치로 지은 이름)" : ""
+                      }`}
+                      className={`truncate flex-1 min-w-0 ${node.isStatic ? "text-slate-400" : ""}`}
                     >
                       {node.title}
                     </span>
+                    {node.nameNeedsReview && (
+                      <span
+                        data-testid={`outline-node-review-${node.nodeId}`}
+                        title="이름 확인 필요"
+                        className="text-[11px] text-amber-500 shrink-0"
+                      >
+                        ⚠
+                      </span>
+                    )}
 
                     {/* Subtle Meta Tag (Workflowy-style #hashtag) */}
                     {node.provenanceSourceProjectId && (

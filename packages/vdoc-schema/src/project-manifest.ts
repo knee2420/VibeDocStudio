@@ -25,6 +25,10 @@ export interface OutlinerNode {
   provenanceSourceNodeId?: string | null;
   aiStatus?: OutlinerAiStatus;
   collapsed?: boolean;
+  /** 고정 텍스트(서식 제목 · 안내문 · 이미지). 채울 칸이 아니라 회색으로 표시한다. */
+  isStatic?: boolean;
+  /** 라벨 규칙으로 이름을 찾지 못해 위치로 지은 노드. 트리에 ⚠ 로 표시한다. */
+  nameNeedsReview?: boolean;
 }
 
 export interface ProvenanceRecord {

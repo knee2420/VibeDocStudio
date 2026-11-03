@@ -105,6 +105,8 @@ export const VDocPageCanvas: React.FC = () => {
   const zoomedNode = projection.allNodes.find((n) => n.nodeId === projection.rootNodeId);
   const targetPageId = zoomedNode?.targetPageId;
   const isPageZoomed = Boolean(
+    projection.activeZoomLevel !== "project" &&
+    projection.activeZoomLevel !== "document" &&
     targetPageId &&
     doc?.pages.some((p) => p.pageId === targetPageId) &&
     (doc?.pages.length ?? 0) > 1

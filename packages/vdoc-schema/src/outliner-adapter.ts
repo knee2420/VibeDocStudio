@@ -1,34 +1,29 @@
 import { getBlockSlotIds } from "./block-ops";
 import { PROJECT_ROOT_CRUMB_ID } from "./layout-constants";
+import {
+  dedupeNames,
+  nameStandaloneSlot,
+  nameTableValueCell,
+  placeTableCells,
+  plainText,
+  tidyBlockTitle,
+  tidyName,
+  type OutlineName,
+  type PlacedCell,
+} from "./outline-naming";
 import type {
   OutlineBreadcrumbItem,
   OutlinerNode,
   VProjectManifest,
   ZoomLevel,
 } from "./project-manifest";
-import type { VDocDocument } from "./types";
-
-const stripHtml = (raw: string): string =>
-  (raw || "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-function extractSlotTitle(slot: any, fallbackId: string): string {
-  if (!slot) return fallbackId;
-  const raw = slot.content || "";
-  const strongMatch = raw.match(/<(?:strong|b|h[1-6])>([^<]+)<\/(?:strong|b|h[1-6])>/i);
-  if (strongMatch && strongMatch[1]) {
-    const text = strongMatch[1].trim();
-    if (text.length > 1 && !text.endsWith(":") && text !== "몰름") {
-      return text;
-    }
-  }
-  if (slot.label && slot.label.trim()) {
-    return slot.label.trim();
-  }
-  return fallbackId;
-}
+import type {
+  LayoutBlock,
+  StructuredTableSectionDef,
+  TableSummaryItem,
+  VDocDocument,
+  VDocPage,
+} from "./types";
 
 export interface FractalOutlineProjection {
   activeZoomLevel: ZoomLevel;
@@ -41,11 +36,36 @@ export interface FractalOutlineProjection {
   hasChildrenMap: Record<string, boolean>;
 }
 
+/** 아직 문서에 대상이 없는 스토리라인(기획) 노드는 실제 노드 뒤에 원래 순서대로 둔다. */
+const PLANNED_SEQ = Number.MAX_SAFE_INTEGER / 2;
+
+/** 같은 구조의 입력 행이 3줄 이상 반복되면 반복 영역(출석부 · 품목)으로 보고 행 노드로 묶는다. */
+function isRepeatingGrid(grid: PlacedCell[][]): boolean {
+  const bodyRows = grid.filter((row) => row.some((c) => c.role === "value"));
+  if (bodyRows.length < 3) return false;
+  const shape = (row: PlacedCell[]) => row.map((c) => c.role).join(",");
+  return bodyRows.every((row) => shape(row) === shape(bodyRows[0]));
+}
+
+/** 이름이 없는 import 표는 처음 나오는 라벨 두 개로 부른다 (`회의일시 · 회의장소 외`). */
+function titleFromLabels(grid: PlacedCell[][]): string {
+  const labels = grid
+    .flat()
+    .filter((c) => c.role === "label")
+    .map((c) => tidyName(plainText(c.slot.content)))
+    .filter(Boolean);
+  if (labels.length === 0) return "";
+  return labels.length > 2 ? `${labels.slice(0, 2).join(" · ")} 외` : labels.join(" · ");
+}
+
 /**
- * Combines explicit `project.storylineNodes` with live `.vdoc` Documents -> Pages -> Slots
- * into a unified 4-Level Fractal Outliner Tree (`Project` -> `Document` -> `Page/Element` -> `Slot`).
+ * Combines explicit `project.storylineNodes` with live `.vdoc` Documents -> Pages -> Blocks -> Slots
+ * into a unified Fractal Outliner Tree (`Project` -> `Document` -> `Page` -> `Block/구역/행` -> `Slot`).
  *
- * 엄격한 DFS 전위 순회(Pre-order Traversal)로 계층 순서를 보장하여 부모-자식 역전이나 누락을 원천 차단합니다.
+ * - 모든 블록 종류가 컨테이너 노드를 가진다 (복합 서식 프레임 → 구역 → 반복 행, 다단 그리드, 구획, 표지, 표).
+ * - 라벨 칸은 노드가 되지 않고 옆 입력 칸의 이름이 된다 (`outline-naming.ts`).
+ * - 형제 순서는 문서 순서(seq)로 정렬한 뒤 DFS 전위 순회로 펼친다. 슬롯을 가리키는
+ *   스토리라인 노드는 그 슬롯이 실제로 놓인 블록 아래로 옮겨 붙인다.
  */
 export function buildProjectFractalTree(
   project: VProjectManifest,
@@ -54,33 +74,44 @@ export function buildProjectFractalTree(
   quickFilter?: string,
   collapsedNodeIds?: string[]
 ): FractalOutlineProjection {
-  const candidateNodes: OutlinerNode[] = [...project.storylineNodes];
+  const storyNodes = project.storylineNodes;
+  const seqById = new Map<string, number>();
+  storyNodes.forEach((n, i) => seqById.set(n.nodeId, PLANNED_SEQ + i));
+
   const docsById = new Map(docs.map((d) => [d.docId, d]));
   const docNodeByDocId = new Map<string, OutlinerNode>();
   const pageNodeByKey = new Map<string, OutlinerNode>();
-  const slotKeys = new Set<string>();
-
-  for (const node of candidateNodes) {
-    if (!node.targetDocId) continue;
+  const storySlotByKey = new Map<string, OutlinerNode>();
+  storyNodes.forEach((node, i) => {
+    if (!node.targetDocId) return;
     if (node.zoomLevel === "document" && !docNodeByDocId.has(node.targetDocId)) {
       docNodeByDocId.set(node.targetDocId, node);
+      seqById.set(node.nodeId, i);
     } else if (node.zoomLevel === "page" && node.targetPageId) {
       const key = `${node.targetDocId}\u0000${node.targetPageId}`;
       if (!pageNodeByKey.has(key)) pageNodeByKey.set(key, node);
     } else if (node.zoomLevel === "slot" && node.targetSlotId) {
-      slotKeys.add(`${node.targetDocId}\u0000${node.targetSlotId}`);
+      const key = `${node.targetDocId}\u0000${node.targetSlotId}`;
+      if (!storySlotByKey.has(key)) storySlotByKey.set(key, node);
     }
-  }
+  });
 
-  // Enrich with live Document -> Page -> Slot nodes from bound docs
-  const rootId = project.storylineNodes.find((n) => n.parentId === null)?.nodeId ?? null;
+  const candidateNodes: OutlinerNode[] = [];
+  let seq = storyNodes.length;
+  const emit = (node: OutlinerNode): OutlinerNode => {
+    candidateNodes.push(node);
+    seqById.set(node.nodeId, seq++);
+    return node;
+  };
+
+  const rootId = storyNodes.find((n) => n.parentId === null)?.nodeId ?? null;
   for (const docId of project.docIds) {
     const doc = docsById.get(docId);
     if (!doc) continue;
 
     let docNode = docNodeByDocId.get(doc.docId);
     if (!docNode) {
-      docNode = {
+      docNode = emit({
         nodeId: `auto-doc-${doc.docId}`,
         parentId: rootId,
         depth: 1,
@@ -89,19 +120,338 @@ export function buildProjectFractalTree(
         summary: `${doc.pages.length}p · 슬롯 ${Object.keys(doc.slots).length}개`,
         targetDocId: doc.docId,
         aiStatus: "idle",
-      };
-      candidateNodes.push(docNode);
+      });
       docNodeByDocId.set(doc.docId, docNode);
     }
+    const docParent = docNode;
+    const emittedSlotKeys = new Set<string>();
+
+    const emitSlot = (
+      parent: OutlinerNode,
+      page: VDocPage,
+      blockId: string,
+      slotId: string,
+      name: OutlineName,
+      isStatic = false
+    ): OutlinerNode | undefined => {
+      const slot = doc.slots[slotId];
+      const key = `${doc.docId}\u0000${slotId}`;
+      if (!slot || emittedSlotKeys.has(key)) return undefined;
+      emittedSlotKeys.add(key);
+      const story = storySlotByKey.get(key);
+      if (story) {
+        return emit({
+          ...story,
+          parentId: parent.nodeId,
+          targetPageId: story.targetPageId ?? page.pageId,
+          targetBlockId: blockId,
+        });
+      }
+      return emit({
+        nodeId: `auto-slot-${doc.docId}-${slotId}`,
+        parentId: parent.nodeId,
+        depth: parent.depth + 1,
+        zoomLevel: "slot",
+        title: name.title,
+        summary: plainText(slot.content).slice(0, 90) || "(빈 슬롯)",
+        targetDocId: doc.docId,
+        targetPageId: page.pageId,
+        targetSlotId: slotId,
+        targetBlockId: blockId,
+        aiStatus: slot.isEdited ? "applied" : "idle",
+        ...(isStatic ? { isStatic: true } : {}),
+        ...(name.needsReview ? { nameNeedsReview: true } : {}),
+      });
+    };
+
+    const emitContainer = (
+      parent: OutlinerNode,
+      nodeId: string,
+      page: VDocPage,
+      blk: LayoutBlock,
+      title: string,
+      summary: string,
+      needsReview = false
+    ): OutlinerNode =>
+      emit({
+        nodeId,
+        parentId: parent.nodeId,
+        depth: parent.depth + 1,
+        zoomLevel: "page",
+        title,
+        summary,
+        targetDocId: doc.docId,
+        targetPageId: page.pageId,
+        targetBlockId: blk.blockId,
+        recommendedTemplateId: blk.kind,
+        aiStatus: "idle",
+        ...(needsReview ? { nameNeedsReview: true } : {}),
+      });
+
+    /** 합계 · 요약 항목: 값 칸 하나를 항목 라벨(직접 값 또는 라벨 슬롯의 글자) 이름으로 붙인다. */
+    const summaryItemEntries = (items: TableSummaryItem[]) =>
+      items.flatMap((item) => {
+        const slotId = item.valueSlotId ?? item.slotId;
+        if (!slotId) return [];
+        const label =
+          tidyName(item.label) ||
+          tidyName(plainText(item.labelSlotId ? doc.slots[item.labelSlotId]?.content : ""));
+        return [{ slotId, name: { title: label || item.itemId, needsReview: !label } }];
+      });
+
+    /** 이름이 겹치지 않게 정리한 뒤 같은 부모 아래 슬롯들을 붙인다. */
+    const emitSlotGroup = (
+      parent: OutlinerNode,
+      page: VDocPage,
+      blockId: string,
+      entries: { slotId: string; name: OutlineName; isStatic?: boolean }[]
+    ) => {
+      const named = dedupeNames(entries.map((e) => ({ ...e, title: e.name.title })));
+      for (const e of named) {
+        emitSlot(parent, page, blockId, e.slotId, { ...e.name, title: e.title }, e.isStatic);
+      }
+    };
+
+    /** 표 · 구역 공통: 반복 영역이면 행 노드로, 아니면 입력 칸을 바로 붙인다. */
+    const emitCellGrid = (
+      parent: OutlinerNode,
+      page: VDocPage,
+      blk: LayoutBlock,
+      grid: PlacedCell[][],
+      scopeTitle: string,
+      rowNodePrefix: string
+    ) => {
+      if (isRepeatingGrid(grid)) {
+        let rowNo = 0;
+        grid.forEach((row, r) => {
+          const values = row.filter((c) => c.role === "value");
+          if (values.length === 0) return;
+          rowNo++;
+          const rowNode = emitContainer(
+            parent,
+            `${rowNodePrefix}-r${r}`,
+            page,
+            blk,
+            `${rowNo}행`,
+            values.map((c) => plainText(c.slot.content)).filter(Boolean).join(" · ").slice(0, 90)
+          );
+          emitSlotGroup(
+            rowNode,
+            page,
+            blk.blockId,
+            values.map((c) => ({
+              slotId: c.cell.slotId,
+              name: nameTableValueCell(grid, c, scopeTitle, { preferColumnHeader: true }),
+            }))
+          );
+        });
+        return;
+      }
+      emitSlotGroup(
+        parent,
+        page,
+        blk.blockId,
+        grid
+          .flat()
+          .filter((c) => c.role === "value")
+          .map((c) => ({ slotId: c.cell.slotId, name: nameTableValueCell(grid, c, scopeTitle) }))
+      );
+    };
+
+    const emitTable = (pageNode: OutlinerNode, page: VDocPage, blk: LayoutBlock & { kind: "structured-table" | "table" }) => {
+      const grid = placeTableCells(blk.rows, doc.slots);
+      const title = tidyBlockTitle(blk.title) || titleFromLabels(grid) || "표";
+      const tableNode = emitContainer(
+        pageNode,
+        `auto-blk-${doc.docId}-${blk.blockId}`,
+        page,
+        blk,
+        `[표] ${title}`,
+        `표 (${blk.rows.length}행)`,
+        !tidyBlockTitle(blk.title)
+      );
+
+      for (const row of grid) {
+        const values = row.filter((c) => c.role === "value");
+        if (values.length === 0) continue;
+        const [first] = row;
+        if (first.role === "value" && values.length > 1) {
+          // 첫 칸이 행의 이름(키)인 매트릭스 표: 첫 칸 노드 아래에 나머지 칸을 열 머리 이름으로 붙인다.
+          const rowKey = tidyName(plainText(first.slot.content)).slice(0, 40);
+          const rowNode = emitSlot(
+            tableNode,
+            page,
+            blk.blockId,
+            first.cell.slotId,
+            rowKey ? { title: rowKey, needsReview: false } : nameTableValueCell(grid, first, title)
+          );
+          emitSlotGroup(
+            rowNode ?? tableNode,
+            page,
+            blk.blockId,
+            values.slice(1).map((c) => ({
+              slotId: c.cell.slotId,
+              name: nameTableValueCell(grid, c, title, { preferColumnHeader: true }),
+            }))
+          );
+        } else {
+          emitSlotGroup(
+            tableNode,
+            page,
+            blk.blockId,
+            values.map((c) => ({ slotId: c.cell.slotId, name: nameTableValueCell(grid, c, title) }))
+          );
+        }
+      }
+
+      emitSlotGroup(tableNode, page, blk.blockId, summaryItemEntries(blk.footerSummary?.items ?? []));
+    };
+
+    const emitFrame = (
+      pageNode: OutlinerNode,
+      page: VDocPage,
+      blk: LayoutBlock & { kind: "composite-form-frame" }
+    ) => {
+      const grids = blk.sections.map((sec) => placeTableCells(sec.rows, doc.slots));
+      const blockTitle = tidyBlockTitle(blk.title);
+      const frameTitle = blockTitle || titleFromLabels(grids.flat()) || "서식 프레임";
+      const frameNode = emitContainer(
+        pageNode,
+        `auto-blk-${doc.docId}-${blk.blockId}`,
+        page,
+        blk,
+        frameTitle,
+        `서식 프레임 · ${blk.sections.length}구역`,
+        !blockTitle
+      );
+      blk.sections.forEach((sec: StructuredTableSectionDef, i) => {
+        const grid = grids[i];
+        // 구역이 하나뿐이면 구역 단계를 건너뛰고 프레임 바로 아래에 붙인다.
+        let sectionNode = frameNode;
+        if (blk.sections.length > 1) {
+          const secTitle = tidyBlockTitle(sec.title) || titleFromLabels(grid) || `${i + 1}구역`;
+          const hasValues = grid.some((row) => row.some((c) => c.role === "value"));
+          sectionNode = emitContainer(
+            frameNode,
+            `auto-sec-${doc.docId}-${blk.blockId}-${sec.sectionId}`,
+            page,
+            blk,
+            secTitle,
+            hasValues ? `구역 · ${sec.rows.length}행` : "고정 텍스트 구역",
+            !tidyBlockTitle(sec.title)
+          );
+          if (!hasValues) {
+            sectionNode.isStatic = true;
+            return;
+          }
+        }
+        emitCellGrid(
+          sectionNode,
+          page,
+          blk,
+          grid,
+          sec.title || frameTitle,
+          `auto-row-${doc.docId}-${blk.blockId}-${sec.sectionId}`
+        );
+      });
+    };
+
+    const emitBlock = (pageNode: OutlinerNode, page: VDocPage, blk: LayoutBlock) => {
+      const blockTitle = tidyBlockTitle(blk.title);
+      const blockNodeId = `auto-blk-${doc.docId}-${blk.blockId}`;
+      switch (blk.kind) {
+        case "heading":
+        case "form-title":
+        case "text":
+        case "fillable-group": {
+          const slot = doc.slots[blk.slotId];
+          if (!slot) return;
+          emitSlot(pageNode, page, blk.blockId, blk.slotId, nameStandaloneSlot(slot, blockTitle), slot.role === "boilerplate");
+          return;
+        }
+        case "image":
+          emit({
+            nodeId: blockNodeId,
+            parentId: pageNode.nodeId,
+            depth: pageNode.depth + 1,
+            zoomLevel: "slot",
+            title: blockTitle || "이미지",
+            summary: "이미지",
+            targetDocId: doc.docId,
+            targetPageId: page.pageId,
+            targetBlockId: blk.blockId,
+            aiStatus: "idle",
+            isStatic: true,
+          });
+          return;
+        case "section-block": {
+          const heading = doc.slots[blk.headingSlotId];
+          const title = tidyName(plainText(heading?.content)).slice(0, 60) || blockTitle || "구획";
+          if (!heading || heading.role === "boilerplate") {
+            // 제목이 고정 텍스트면 구획 = 본문 한 칸이다.
+            emitSlot(pageNode, page, blk.blockId, blk.bodySlotId, { title, needsReview: false });
+            return;
+          }
+          const sectionNode = emitContainer(pageNode, blockNodeId, page, blk, title, "구획 · 제목 + 본문");
+          emitSlotGroup(sectionNode, page, blk.blockId, [
+            { slotId: blk.headingSlotId, name: { title: "제목", needsReview: false } },
+            { slotId: blk.bodySlotId, name: { title: "본문", needsReview: false } },
+          ]);
+          return;
+        }
+        case "columns-grid":
+        case "cover-banner": {
+          const slotIds = getBlockSlotIds(blk).filter((id) => doc.slots[id]);
+          if (slotIds.length === 1) {
+            const slot = doc.slots[slotIds[0]];
+            emitSlot(pageNode, page, blk.blockId, slotIds[0], nameStandaloneSlot(slot, blockTitle), slot.role === "boilerplate");
+            return;
+          }
+          const groupNode = emitContainer(
+            pageNode,
+            blockNodeId,
+            page,
+            blk,
+            blockTitle || (blk.kind === "cover-banner" ? "표지" : "다단 그리드"),
+            blk.kind === "cover-banner" ? "표지 배너" : `다단 그리드 · ${slotIds.length}칸`
+          );
+          emitSlotGroup(
+            groupNode,
+            page,
+            blk.blockId,
+            slotIds.map((slotId) => ({
+              slotId,
+              name: nameStandaloneSlot(doc.slots[slotId], ""),
+              isStatic: doc.slots[slotId].role === "boilerplate",
+            }))
+          );
+          return;
+        }
+        case "summary-list": {
+          const listNode = emitContainer(pageNode, blockNodeId, page, blk, blockTitle || "요약 목록", `요약 목록 · ${blk.items.length}항목`);
+          emitSlotGroup(listNode, page, blk.blockId, summaryItemEntries(blk.items));
+          return;
+        }
+        case "structured-table":
+        case "table":
+          emitTable(pageNode, page, blk);
+          return;
+        case "composite-form-frame":
+          emitFrame(pageNode, page, blk);
+          return;
+      }
+    };
 
     for (const page of doc.pages) {
       const pageKey = `${doc.docId}\u0000${page.pageId}`;
       let pageNode = pageNodeByKey.get(pageKey);
-      if (!pageNode) {
-        pageNode = {
+      if (pageNode) {
+        seqById.set(pageNode.nodeId, seq++);
+      } else {
+        pageNode = emit({
           nodeId: `auto-page-${doc.docId}-${page.pageId}`,
-          parentId: docNode.nodeId,
-          depth: docNode.depth + 1,
+          parentId: docParent.nodeId,
+          depth: docParent.depth + 1,
           zoomLevel: "page",
           title: `Page ${page.pageNumber} · ${page.pageLabel}`,
           summary: `블록 ${page.blocks.length}개`,
@@ -109,150 +459,20 @@ export function buildProjectFractalTree(
           targetPageId: page.pageId,
           recommendedTemplateId: page.blocks[0]?.kind || "section-block",
           aiStatus: "idle",
-        };
-        candidateNodes.push(pageNode);
+        });
         pageNodeByKey.set(pageKey, pageNode);
       }
-
-      // Extract blocks and slots with hierarchical table grouping and row sub-indentation
-      for (const blk of page.blocks) {
-        if (blk.kind === "structured-table" || blk.kind === "table") {
-          const tableBlockNodeId = `auto-blk-${doc.docId}-${blk.blockId}`;
-          const tableBlockNode: OutlinerNode = {
-            nodeId: tableBlockNodeId,
-            parentId: pageNode.nodeId,
-            depth: pageNode.depth + 1,
-            zoomLevel: "page",
-            title: blk.title ? `[표] ${blk.title}` : "구조화 표",
-            summary: `표 (${blk.rows.length}행)`,
-            targetDocId: doc.docId,
-            targetPageId: page.pageId,
-            targetBlockId: blk.blockId,
-            recommendedTemplateId: "structured-table",
-            aiStatus: "idle",
-          };
-          candidateNodes.push(tableBlockNode);
-
-          for (let rIdx = 0; rIdx < blk.rows.length; rIdx++) {
-            const row = blk.rows[rIdx];
-            const isHeaderRow = row.cells.some((c) => c.isHeader);
-
-            if (isHeaderRow) {
-              for (const cell of row.cells) {
-                const slot = doc.slots[cell.slotId];
-                const slotKey = `${doc.docId}\u0000${cell.slotId}`;
-                if (!slot || slotKeys.has(slotKey)) continue;
-                slotKeys.add(slotKey);
-                candidateNodes.push({
-                  nodeId: `auto-slot-${doc.docId}-${cell.slotId}`,
-                  parentId: tableBlockNode.nodeId,
-                  depth: tableBlockNode.depth + 1,
-                  zoomLevel: "slot",
-                  title: extractSlotTitle(slot, cell.slotId),
-                  summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
-                  targetDocId: doc.docId,
-                  targetPageId: page.pageId,
-                  targetSlotId: cell.slotId,
-                  targetBlockId: blk.blockId,
-                  aiStatus: slot.isEdited ? "applied" : "idle",
-                });
-              }
-            } else {
-              const [firstCell, ...restCells] = row.cells;
-              let rowParentId = tableBlockNode.nodeId;
-              let rowParentDepth = tableBlockNode.depth + 1;
-
-              if (firstCell) {
-                const firstSlot = doc.slots[firstCell.slotId];
-                const firstSlotKey = `${doc.docId}\u0000${firstCell.slotId}`;
-                if (firstSlot && !slotKeys.has(firstSlotKey)) {
-                  slotKeys.add(firstSlotKey);
-                  const firstCellNode: OutlinerNode = {
-                    nodeId: `auto-slot-${doc.docId}-${firstCell.slotId}`,
-                    parentId: tableBlockNode.nodeId,
-                    depth: tableBlockNode.depth + 1,
-                    zoomLevel: "slot",
-                    title: extractSlotTitle(firstSlot, firstCell.slotId),
-                    summary: stripHtml(firstSlot.content).slice(0, 90) || "(빈 슬롯)",
-                    targetDocId: doc.docId,
-                    targetPageId: page.pageId,
-                    targetSlotId: firstCell.slotId,
-                    targetBlockId: blk.blockId,
-                    aiStatus: firstSlot.isEdited ? "applied" : "idle",
-                  };
-                  candidateNodes.push(firstCellNode);
-                  rowParentId = firstCellNode.nodeId;
-                  rowParentDepth = firstCellNode.depth + 1;
-                }
-              }
-
-              for (const cell of restCells) {
-                const slot = doc.slots[cell.slotId];
-                const slotKey = `${doc.docId}\u0000${cell.slotId}`;
-                if (!slot || slotKeys.has(slotKey)) continue;
-                slotKeys.add(slotKey);
-                candidateNodes.push({
-                  nodeId: `auto-slot-${doc.docId}-${cell.slotId}`,
-                  parentId: rowParentId,
-                  depth: rowParentDepth,
-                  zoomLevel: "slot",
-                  title: extractSlotTitle(slot, cell.slotId),
-                  summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
-                  targetDocId: doc.docId,
-                  targetPageId: page.pageId,
-                  targetSlotId: cell.slotId,
-                  targetBlockId: blk.blockId,
-                  aiStatus: slot.isEdited ? "applied" : "idle",
-                });
-              }
-            }
-          }
-        } else if (blk.kind === "fillable-group") {
-          const slot = doc.slots[blk.slotId];
-          const slotKey = `${doc.docId}\u0000${blk.slotId}`;
-          if (slot && !slotKeys.has(slotKey)) {
-            slotKeys.add(slotKey);
-            candidateNodes.push({
-              nodeId: `auto-slot-${doc.docId}-${blk.slotId}`,
-              parentId: pageNode.nodeId,
-              depth: pageNode.depth + 1,
-              zoomLevel: "slot",
-              title: blk.title || extractSlotTitle(slot, blk.slotId),
-              summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
-              targetDocId: doc.docId,
-              targetPageId: page.pageId,
-              targetSlotId: blk.slotId,
-              targetBlockId: blk.blockId,
-              aiStatus: slot.isEdited ? "applied" : "idle",
-            });
-          }
-        } else {
-          const blockSlotIds = getBlockSlotIds(blk);
-          for (const slotId of blockSlotIds) {
-            const slot = doc.slots[slotId];
-            const slotKey = `${doc.docId}\u0000${slotId}`;
-            if (!slot || slotKeys.has(slotKey)) continue;
-            slotKeys.add(slotKey);
-            candidateNodes.push({
-              nodeId: `auto-slot-${doc.docId}-${slotId}`,
-              parentId: pageNode.nodeId,
-              depth: pageNode.depth + 1,
-              zoomLevel: "slot",
-              title: extractSlotTitle(slot, slotId),
-              summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
-              targetDocId: doc.docId,
-              targetPageId: page.pageId,
-              targetSlotId: slotId,
-              targetBlockId: blk.blockId,
-              aiStatus: slot.isEdited ? "applied" : "idle",
-            });
-          }
-        }
-      }
+      for (const blk of page.blocks) emitBlock(pageNode, page, blk);
     }
   }
 
-  // Hierarchical DFS Pre-order traversal to guarantee strict parent-child ordering
+  // 슬롯 위치로 옮겨 붙인 스토리라인 노드는 원본을 빼고, 나머지 기획 노드를 더한다.
+  const emittedIds = new Set(candidateNodes.map((n) => n.nodeId));
+  for (const node of storyNodes) {
+    if (!emittedIds.has(node.nodeId)) candidateNodes.push(node);
+  }
+
+  // 형제를 문서 순서로 정렬한 뒤 DFS 전위 순회로 펼치고 깊이를 다시 매긴다.
   const childrenMap = new Map<string | null, OutlinerNode[]>();
   for (const node of candidateNodes) {
     const pId = node.parentId ?? null;
@@ -260,28 +480,30 @@ export function buildProjectFractalTree(
     list.push(node);
     childrenMap.set(pId, list);
   }
+  const seqOf = (n: OutlinerNode) => seqById.get(n.nodeId) ?? PLANNED_SEQ;
+  for (const list of childrenMap.values()) list.sort((a, b) => seqOf(a) - seqOf(b));
 
   const allNodes: OutlinerNode[] = [];
   const visited = new Set<string>();
 
-  function traverseDfs(parentId: string | null) {
+  function traverseDfs(parentId: string | null, depth: number) {
     const children = childrenMap.get(parentId) || [];
     for (const child of children) {
       if (visited.has(child.nodeId)) continue;
       visited.add(child.nodeId);
-      allNodes.push(child);
-      traverseDfs(child.nodeId);
+      allNodes.push(child.depth === depth ? child : { ...child, depth });
+      traverseDfs(child.nodeId, depth + 1);
     }
   }
 
-  traverseDfs(null);
+  traverseDfs(null, 0);
 
-  // Safety fallback for any unvisited nodes
+  // Safety fallback for any unvisited nodes (부모를 잃은 노드)
   for (const node of candidateNodes) {
     if (!visited.has(node.nodeId)) {
       visited.add(node.nodeId);
       allNodes.push(node);
-      traverseDfs(node.nodeId);
+      traverseDfs(node.nodeId, node.depth + 1);
     }
   }
 
@@ -290,10 +512,14 @@ export function buildProjectFractalTree(
     { nodeId: PROJECT_ROOT_CRUMB_ID, title: project.title, zoomLevel: "project" },
   ];
 
+  const projectStoryRootId = project.storylineNodes.find((n) => n.parentId === null)?.nodeId ?? null;
+  const isProjectRoot = (id: string | null | undefined): boolean =>
+    !id || id === PROJECT_ROOT_CRUMB_ID || (projectStoryRootId !== null && id === projectStoryRootId);
+
   let scopedNodes = allNodes;
   let activeZoomLevel: ZoomLevel = "project";
   const resolvedRootId =
-    rootNodeId && rootNodeId !== PROJECT_ROOT_CRUMB_ID && byId.has(rootNodeId)
+    rootNodeId && !isProjectRoot(rootNodeId) && byId.has(rootNodeId)
       ? rootNodeId
       : PROJECT_ROOT_CRUMB_ID;
 
@@ -309,7 +535,11 @@ export function buildProjectFractalTree(
 
   if (resolvedRootId !== PROJECT_ROOT_CRUMB_ID) {
     const targetNode = byId.get(resolvedRootId);
-    parentZoomNodeId = targetNode?.parentId || PROJECT_ROOT_CRUMB_ID;
+    const rawParentId = targetNode?.parentId;
+    parentZoomNodeId =
+      !rawParentId || isProjectRoot(rawParentId)
+        ? PROJECT_ROOT_CRUMB_ID
+        : rawParentId;
     parentZoomTitle =
       parentZoomNodeId === PROJECT_ROOT_CRUMB_ID
         ? "프로젝트 최상위 (L1)"

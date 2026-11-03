@@ -73,6 +73,14 @@ export function useFractalZoomNavigation(): {
           ?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 40);
     }
+    if (!node.targetSlotId && node.targetBlockId) {
+      // 블록 · 구역 · 행 컨테이너 노드는 해당 블록으로 스크롤한다.
+      window.setTimeout(() => {
+        document
+          .querySelector(`[data-block-id="${node.targetBlockId}"]`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 60);
+    }
     if (node.targetSlotId) {
       setSelectedSlotId(node.targetSlotId);
       window.setTimeout(() => {
@@ -105,22 +113,60 @@ export function useFractalZoomNavigation(): {
     const found = projection.allNodes.find((n) => n.nodeId === nodeId);
     if (found) {
       syncCanvasSelection(found);
+    } else if (nodeId === PROJECT_ROOT_CRUMB_ID) {
+      const firstDocId = activeProject?.docIds[0];
+      if (firstDocId) {
+        setActiveDocId(firstDocId);
+      }
     }
   };
 
   const handleZoomOutOneLevel = useCallback(() => {
+    let targetNodeId = PROJECT_ROOT_CRUMB_ID;
     if (projection.parentZoomNodeId) {
-      zoomIntoNode(projection.parentZoomNodeId);
-      return;
+      targetNodeId = projection.parentZoomNodeId;
+    } else {
+      const crumbs = projection.breadcrumbs;
+      if (crumbs.length > 1) {
+        targetNodeId = crumbs[crumbs.length - 2].nodeId;
+      }
     }
-    const crumbs = projection.breadcrumbs;
-    if (crumbs.length <= 1) {
-      zoomIntoNode(PROJECT_ROOT_CRUMB_ID);
-      return;
+    zoomIntoNode(targetNodeId);
+
+    const targetNode = projection.allNodes.find((n) => n.nodeId === targetNodeId);
+    if (targetNode?.targetDocId) {
+      setActiveDocId(targetNode.targetDocId);
+      if (targetNode.targetPageId) {
+        setActivePageId(targetNode.targetPageId);
+      }
+    } else if (
+      targetNodeId === PROJECT_ROOT_CRUMB_ID ||
+      targetNodeId === activeProject?.storylineNodes[0]?.nodeId
+    ) {
+      const firstDocId = activeProject?.docIds[0];
+      if (firstDocId) {
+        setActiveDocId(firstDocId);
+      }
     }
-    const parentCrumb = crumbs[crumbs.length - 2];
-    zoomIntoNode(parentCrumb.nodeId);
-  }, [projection.parentZoomNodeId, projection.breadcrumbs, zoomIntoNode]);
+  }, [
+    projection.parentZoomNodeId,
+    projection.breadcrumbs,
+    projection.allNodes,
+    zoomIntoNode,
+    setActiveDocId,
+    setActivePageId,
+    activeProject,
+  ]);
+
+  // 아웃라이너의 현재 줌 루트에 해당하는 문서가 현재 활성 문서와 다르면 자동 동기화
+  useEffect(() => {
+    const zoomedNode = projection.allNodes.find((n) => n.nodeId === projection.rootNodeId);
+    if (zoomedNode?.targetDocId) {
+      if (zoomedNode.targetDocId !== useStudioDocumentStore.getState().activeDocId) {
+        setActiveDocId(zoomedNode.targetDocId);
+      }
+    }
+  }, [projection.rootNodeId, projection.allNodes, setActiveDocId]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
