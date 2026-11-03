@@ -39,6 +39,7 @@ class ComposeSlotDraftUseCase:
             preset_id=request.preset_id,
             source_chunk_ids=tuple(c.chunk_id for c in request.backdata),
             created_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            reference_node_ids=request.reference_node_ids,
         )
         result = SlotCompositionResultModel(
             slot_id=normalized_slot_id,

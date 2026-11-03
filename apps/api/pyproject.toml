@@ -1,7 +1,7 @@
 [project]
 name = "vibe-doc-studio-api"
 version = "0.2.0"
-description = "VibeDocStudio Hexagonal Domain-Sliced API (catalog · documents · backdata · composer)"
+description = "VibeDocStudio Hexagonal Domain-Sliced API (catalog · documents · backdata · composer · projects)"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",
@@ -38,6 +38,7 @@ forbidden_modules = [
     "app.documents",
     "app.backdata",
     "app.composer",
+    "app.projects",
 ]
 
 [[tool.importlinter.contracts]]
@@ -49,6 +50,7 @@ forbidden_modules = [
     "app.documents",
     "app.backdata",
     "app.composer",
+    "app.projects",
     "app.core",
     "app.bootstrap",
 ]
@@ -78,6 +80,7 @@ forbidden_modules = [
     "app.documents",
     "app.backdata",
     "app.composer",
+    "app.projects",
 ]
 
 [[tool.importlinter.contracts]]
@@ -93,6 +96,7 @@ forbidden_modules = [
     "app.catalog",
     "app.backdata",
     "app.composer",
+    "app.projects",
 ]
 
 [[tool.importlinter.contracts]]
@@ -108,6 +112,7 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.composer",
+    "app.projects",
 ]
 
 [[tool.importlinter.contracts]]
@@ -124,4 +129,21 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.backdata",
+    "app.projects",
+]
+
+[[tool.importlinter.contracts]]
+name = "projects must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.projects.service",
+    "app.projects.use_cases",
+    "app.projects.adapters",
+    "app.projects.ports",
+]
+forbidden_modules = [
+    "app.catalog",
+    "app.documents",
+    "app.backdata",
+    "app.composer",
 ]

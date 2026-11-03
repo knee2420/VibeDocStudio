@@ -27,7 +27,6 @@ from pdf_vdoc_engine.measure import extract_page_geometry_from_pdf
 
 from app.catalog.agents.fidelity_layout import TUNABLES, text_lines
 from app.catalog.agents.fidelity_loop import (
-    FidelityConfig,
     FidelityWorkspace,
     create_fidelity_config,
 )

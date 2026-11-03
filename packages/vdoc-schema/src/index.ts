@@ -4,3 +4,6 @@ export * from "./types";
 export * from "./catalog";
 export * from "./table-ops";
 export * from "./block-ops";
+export * from "./project-manifest";
+export * from "./outliner-adapter";
+export * from "./command-contracts";

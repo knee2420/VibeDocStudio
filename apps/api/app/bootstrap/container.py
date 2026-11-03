@@ -28,23 +28,48 @@ from app.composer.adapters import (
     GroundedSlotComposerAdapter,
     LocalCompositionArchiveAdapter,
 )
-from app.composer.agents import SlotComposerAgent
+from app.composer.agents import (
+    SlotComposerAgent,
+    StorylineScaffoldAgent,
+    TemplateTuningAgent,
+)
 from app.composer.service import ComposerService
-from app.composer.use_cases import ComposeSlotDraftUseCase
+from app.composer.use_cases import (
+    CancelCompositionRunUseCase,
+    ComposeSlotDraftUseCase,
+    ComposeStorylinePhase1UseCase,
+    RecommendTemplatesPhase2UseCase,
+)
 from app.core.config import settings
 from app.core.llm.execution_policy import (
     CLI_PROVIDER,
     GOOGLE_PROVIDER,
     RuntimeExecutionPolicy,
 )
-from app.documents.adapters import LocalVDocDocumentRepository
+from app.core.observation import CancellationRegistry
+from app.documents.adapters import (
+    FileOutlineCacheAdapter,
+    LocalVDocDocumentRepository,
+)
 from app.documents.service import DocumentService
 from app.documents.use_cases import (
     DeleteDocumentUseCase,
+    GetDocumentPageChunkUseCase,
     GetDocumentUseCase,
     ListDocumentsUseCase,
+    PatchDocumentStructureUseCase,
     SaveDocumentUseCase,
     UpdateSlotContentUseCase,
+)
+from app.projects.adapters import LocalVProjectRepository
+from app.projects.service import ProjectService
+from app.projects.use_cases import (
+    BindReferenceProjectsUseCase,
+    CloneNodeWithProvenanceUseCase,
+    GetProjectOutlineTreeUseCase,
+    GetProjectUseCase,
+    ListProjectsUseCase,
+    SaveProjectUseCase,
 )
 
 _storage = settings.storage
@@ -56,7 +81,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[4]
 class Container(containers.DeclarativeContainer):
     """VibeDocStudio API DI 컨테이너."""
 
-    # --- 0. 런타임 실행 정책 (단일 싱글톤 상태) ---
+    # --- 0. 런타임 실행 정책 & 취소 토큰 레지스트리 (단일 싱글톤 상태) ---
     runtime_policy = providers.Singleton(
         RuntimeExecutionPolicy,
         primary_provider=CLI_PROVIDER,
@@ -67,6 +92,7 @@ class Container(containers.DeclarativeContainer):
         agent_cli_timeout_seconds=180,
         agent_cli_bin="agy",
     )
+    cancellation_registry = providers.Singleton(CancellationRegistry)
 
     # --- 1. catalog 도메인 조립 ---
     catalog_repository = providers.Singleton(
@@ -107,10 +133,14 @@ class Container(containers.DeclarativeContainer):
         scaffold_pdf=scaffold_pdf_to_document,
     )
 
-    # --- 2. documents 도메인 조립 (`data/knowledge/documents`) ---
+    # --- 2. documents 도메인 조립 (`data/knowledge/documents` + `cache/outlines`) ---
     document_repository = providers.Singleton(
         LocalVDocDocumentRepository,
         root_dir=providers.Object(_storage.knowledge_of("documents")),
+    )
+    outline_cache = providers.Singleton(
+        FileOutlineCacheAdapter,
+        cache_root=providers.Object(_storage.cache_of("outlines")),
     )
     list_documents = providers.Factory(
         ListDocumentsUseCase,
@@ -120,6 +150,10 @@ class Container(containers.DeclarativeContainer):
         GetDocumentUseCase,
         repository=document_repository,
     )
+    get_document_page_chunk = providers.Factory(
+        GetDocumentPageChunkUseCase,
+        repository=document_repository,
+    )
     save_document = providers.Factory(
         SaveDocumentUseCase,
         repository=document_repository,
@@ -127,6 +161,11 @@ class Container(containers.DeclarativeContainer):
     update_slot_content = providers.Factory(
         UpdateSlotContentUseCase,
         repository=document_repository,
+    )
+    patch_document_structure = providers.Factory(
+        PatchDocumentStructureUseCase,
+        repository=document_repository,
+        outline_cache=outline_cache,
     )
     delete_document = providers.Factory(
         DeleteDocumentUseCase,
@@ -139,6 +178,8 @@ class Container(containers.DeclarativeContainer):
         save_doc=save_document,
         update_slot=update_slot_content,
         delete_doc=delete_document,
+        get_page_chunk=get_document_page_chunk,
+        patch_structure=patch_document_structure,
     )
 
     # --- 3. backdata 도메인 조립 (`data/knowledge/backdata`) ---
@@ -173,13 +214,74 @@ class Container(containers.DeclarativeContainer):
         SlotComposerAgent,
         harness=slot_composer_harness,
     )
+    storyline_scaffold_agent = providers.Singleton(
+        StorylineScaffoldAgent,
+        model_name=providers.Object(settings.composer_model),
+    )
+    template_tuning_agent = providers.Singleton(
+        TemplateTuningAgent,
+        model_name=providers.Object(settings.composer_model),
+    )
     compose_slot_draft = providers.Factory(
         ComposeSlotDraftUseCase,
         agent=slot_composer_agent,
         archive=composition_archive,
     )
+    compose_storyline_phase1 = providers.Factory(
+        ComposeStorylinePhase1UseCase,
+        agent=storyline_scaffold_agent,
+    )
+    recommend_templates_phase2 = providers.Factory(
+        RecommendTemplatesPhase2UseCase,
+        agent=template_tuning_agent,
+    )
+    cancel_composition_run = providers.Factory(
+        CancelCompositionRunUseCase,
+        registry=cancellation_registry,
+    )
     composer_service = providers.Factory(
         ComposerService,
         compose_draft=compose_slot_draft,
+        compose_storyline=compose_storyline_phase1,
+        recommend_templates=recommend_templates_phase2,
+        cancel_run=cancel_composition_run,
     )
 
+    # --- 5. projects 도메인 조립 (`data/knowledge/projects`) ---
+    project_repository = providers.Singleton(
+        LocalVProjectRepository,
+        root_dir=providers.Object(_storage.knowledge_of("projects")),
+    )
+    list_projects = providers.Factory(
+        ListProjectsUseCase,
+        repository=project_repository,
+    )
+    get_project = providers.Factory(
+        GetProjectUseCase,
+        repository=project_repository,
+    )
+    save_project = providers.Factory(
+        SaveProjectUseCase,
+        repository=project_repository,
+    )
+    get_project_outline_tree = providers.Factory(
+        GetProjectOutlineTreeUseCase,
+        repository=project_repository,
+    )
+    bind_reference_projects = providers.Factory(
+        BindReferenceProjectsUseCase,
+        repository=project_repository,
+    )
+    clone_node_with_provenance = providers.Factory(
+        CloneNodeWithProvenanceUseCase,
+        repository=project_repository,
+    )
+    project_service = providers.Factory(
+        ProjectService,
+        list_projects=list_projects,
+        get_project=get_project,
+        save_project=save_project,
+        get_outline_tree=get_project_outline_tree,
+        bind_references=bind_reference_projects,
+        clone_node=clone_node_with_provenance,
+    )

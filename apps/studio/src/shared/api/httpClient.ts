@@ -74,5 +74,26 @@ export const httpClient = {
     }
     return (await response.json()) as T;
   },
+
+  async patch<T>(
+    path: string,
+    body: unknown,
+    options?: HttpRequestOptions
+  ): Promise<T> {
+    const response = await fetch(buildUrl(path), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...options?.headers,
+      },
+      body: JSON.stringify(body),
+      signal: options?.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP PATCH ${path} failed (${response.status})`);
+    }
+    return (await response.json()) as T;
+  },
 };
 

@@ -1,61 +1,360 @@
-import React from "react";
+import React, { useState } from "react";
+import {
+  BookOpen,
+  Columns,
+  RotateCcw,
+  RotateCw,
+  Sparkles,
+  Square,
+} from "lucide-react";
 
+import { useSlotSelectionStore } from "@/entities/slot";
 import {
   DocumentStatusBadges,
   useStudioDocumentStore,
 } from "@/entities/vdoc-document";
+import { useProjectStore } from "@/entities/vdoc-project";
+import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
 import { ImportPdfButton } from "@/features/import-pdf-form";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
-import { DocumentSwitcherBar } from "@/features/switch-catalog-form";
+import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { OutlineBreadcrumbBar } from "@/features/zoom-hierarchy";
+
+import { ExecutionPhaseStepper } from "./ExecutionPhaseStepper";
+import { ShortcutHelpPopover } from "./ShortcutHelpPopover";
 
 export const StudioTopRibbon: React.FC = () => {
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+
   const docs = useStudioDocumentStore((s) => s.docs);
   const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
   const updateCurrentDoc = useStudioDocumentStore((s) => s.updateCurrentDoc);
+  const docPastCount = useStudioDocumentStore((s) => s.past.length);
+  const docFutureCount = useStudioDocumentStore((s) => s.future.length);
+  const undoDoc = useStudioDocumentStore((s) => s.undoDoc);
+  const redoDoc = useStudioDocumentStore((s) => s.redoDoc);
+
+  const projects = useProjectStore((s) => s.projects);
+  const activeProjectId = useProjectStore((s) => s.activeProjectId);
+  const projPastCount = useProjectStore((s) => s.past.length);
+  const projFutureCount = useProjectStore((s) => s.future.length);
+  const undoProject = useProjectStore((s) => s.undoProject);
+  const redoProject = useProjectStore((s) => s.redoProject);
+
+  const activeProject =
+    projects.find((p) => p.projectId === activeProjectId) || projects[0];
+
+  const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
+  const stagingCount = useWorkspaceSessionStore((s) => s.stagingQueue.length);
+  const setActiveActivityTab = useWorkspaceSessionStore(
+    (s) => s.setActiveActivityTab
+  );
+  const splitReferenceDocId = useWorkspaceSessionStore(
+    (s) => s.splitReferenceDocId
+  );
+  const setSplitReferenceDocId = useWorkspaceSessionStore(
+    (s) => s.setSplitReferenceDocId
+  );
+
+  const setLeftSidebarOpen = useWorkspaceSessionStore(
+    (s) => s.setLeftSidebarOpen
+  );
+  const leftSidebarOpen = useWorkspaceSessionStore((s) => s.leftSidebarOpen);
+  const setRightSidebarOpen = useSlotSelectionStore(
+    (s) => s.setRightSidebarOpen
+  );
+  const rightSidebarOpen = useSlotSelectionStore((s) => s.rightSidebarOpen);
+
+  const { isAiStreaming, abortActiveAiRun } = useStageAiChanges();
   const { runTableCommand } = useMutateCanvasBlocks();
 
   const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
   if (!doc) return null;
 
+  const totalUndoCount = projPastCount + docPastCount;
+  const totalRedoCount = projFutureCount + docFutureCount;
+
+  const handleGlobalUndo = () => {
+    if (projPastCount > 0) undoProject();
+    else if (docPastCount > 0) undoDoc();
+  };
+
+  const handleGlobalRedo = () => {
+    if (projFutureCount > 0) redoProject();
+    else if (docFutureCount > 0) redoDoc();
+  };
+
+  const toggleMenu = (menuName: string) => {
+    setActiveMenu((prev) => (prev === menuName ? null : menuName));
+  };
+
   return (
     <>
-      <header className="h-13 bg-white border-b border-slate-200 px-4 flex items-center justify-between shrink-0 z-20">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#248567] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+      {/* 1st Tier: Global System Titlebar (IDE Menu & Window Title — Height 36px) */}
+      <header
+        data-testid="studio-top-ribbon"
+        className="h-9 bg-slate-900 text-slate-200 px-3 flex items-center justify-between gap-3 shrink-0 z-30 select-none border-b border-slate-800"
+      >
+        {/* Left: Brand Icon + Global Menus */}
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-5 h-5 rounded bg-[#248567] text-white font-bold flex items-center justify-center text-xs shadow-xs shrink-0">
             V
           </div>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={doc.title}
-                onChange={(e) =>
-                  updateCurrentDoc((prev) => ({
-                    ...prev,
-                    title: e.target.value,
-                  }))
-                }
-                className="w-80 sm:w-96 font-semibold text-sm text-slate-900 bg-transparent hover:bg-slate-100 focus:bg-white focus:ring-1 focus:ring-[#248567] rounded px-1.5 py-0.5 outline-none"
-              />
-              <DocumentStatusBadges doc={doc} />
+          <div className="flex items-center text-xs text-slate-300">
+            {/* File Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => toggleMenu("file")}
+                className={`px-2 py-1 rounded hover:bg-slate-800 cursor-pointer transition ${
+                  activeMenu === "file" ? "bg-slate-800 text-white" : ""
+                }`}
+              >
+                파일
+              </button>
+              {activeMenu === "file" && (
+                <div className="absolute left-0 top-7 z-50 w-52 rounded-lg bg-slate-900 border border-slate-700 shadow-2xl p-1 text-xs text-slate-200 space-y-0.5">
+                  <div className="p-1">
+                    <ImportPdfButton />
+                  </div>
+                  <div className="p-1 border-t border-slate-800">
+                    <VDocFileActionButtons />
+                  </div>
+                </div>
+              )}
             </div>
 
-            <DocumentSwitcherBar />
+            {/* Edit Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => toggleMenu("edit")}
+                className={`px-2 py-1 rounded hover:bg-slate-800 cursor-pointer transition ${
+                  activeMenu === "edit" ? "bg-slate-800 text-white" : ""
+                }`}
+              >
+                편집
+              </button>
+              {activeMenu === "edit" && (
+                <div className="absolute left-0 top-7 z-50 w-48 rounded-lg bg-slate-900 border border-slate-700 shadow-2xl p-1 text-xs text-slate-200 space-y-0.5">
+                  <button
+                    type="button"
+                    disabled={totalUndoCount === 0}
+                    onClick={() => {
+                      handleGlobalUndo();
+                      setActiveMenu(null);
+                    }}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 disabled:opacity-40 flex items-center justify-between cursor-pointer"
+                  >
+                    <span>실행 취소 (Undo)</span>
+                    <span className="font-mono text-[10px] text-slate-400">Ctrl+Z</span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={totalRedoCount === 0}
+                    onClick={() => {
+                      handleGlobalRedo();
+                      setActiveMenu(null);
+                    }}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 disabled:opacity-40 flex items-center justify-between cursor-pointer"
+                  >
+                    <span>다시 실행 (Redo)</span>
+                    <span className="font-mono text-[10px] text-slate-400">Ctrl+Y</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Template Hub Menu */}
+            <button
+              type="button"
+              data-testid="top-menu-template-hub-btn"
+              onClick={() => {
+                setActiveActivityTab("template-hub");
+                setActiveMenu(null);
+              }}
+              className="px-2 py-1 rounded hover:bg-slate-800 cursor-pointer transition flex items-center gap-1 text-emerald-400 hover:text-emerald-300"
+            >
+              <BookOpen className="w-3 h-3" />
+              서식허브
+            </button>
+
+            {/* View Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => toggleMenu("view")}
+                className={`px-2 py-1 rounded hover:bg-slate-800 cursor-pointer transition ${
+                  activeMenu === "view" ? "bg-slate-800 text-white" : ""
+                }`}
+              >
+                보기
+              </button>
+              {activeMenu === "view" && (
+                <div className="absolute left-0 top-7 z-50 w-48 rounded-lg bg-slate-900 border border-slate-700 shadow-2xl p-1 text-xs text-slate-200 space-y-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLeftSidebarOpen(!leftSidebarOpen);
+                      setActiveMenu(null);
+                    }}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 flex items-center justify-between cursor-pointer"
+                  >
+                    <span>좌측 아웃라이너 토글</span>
+                    <span className="font-mono text-[10px] text-slate-400">
+                      {leftSidebarOpen ? "닫기" : "열기"}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRightSidebarOpen(!rightSidebarOpen);
+                      setActiveMenu(null);
+                    }}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 flex items-center justify-between cursor-pointer"
+                  >
+                    <span>우측 인스펙터 토글</span>
+                    <span className="font-mono text-[10px] text-slate-400">
+                      {rightSidebarOpen ? "닫기" : "열기"}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Center: Window Title Context (L1 Project / L2 Active Document Title) */}
+        <div className="flex-1 flex items-center justify-center max-w-xl min-w-0 px-2 text-xs">
+          <div className="flex items-center gap-2 truncate text-slate-300">
+            <span className="text-[10px] font-bold text-slate-400 shrink-0 font-mono">
+              [L1] {activeProject.title}
+            </span>
+            <span className="text-slate-500">/</span>
+            <input
+              type="text"
+              aria-label="활성 문서 제목"
+              value={doc.title}
+              onChange={(e) =>
+                updateCurrentDoc((prev) => ({
+                  ...prev,
+                  title: e.target.value,
+                }))
+              }
+              className="font-semibold text-slate-100 bg-transparent hover:bg-slate-800 focus:bg-slate-800 focus:ring-1 focus:ring-[#248567] rounded px-1.5 py-0.5 outline-none truncate max-w-xs cursor-text"
+              title="클릭하여 문서 제목 인라인 수정"
+            />
+            <DocumentStatusBadges doc={doc} />
+          </div>
+        </div>
+
+        {/* Right: AI Abort / Staged Diff / Settings / Shortcuts */}
+        <div className="flex items-center gap-2 shrink-0 text-xs">
+          {/* AI Streaming Abort Button */}
+          {isAiStreaming && (
+            <button
+              type="button"
+              data-testid="ai-abort-btn"
+              onClick={abortActiveAiRun}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold shadow-xs animate-pulse cursor-pointer"
+              title="실행 중인 AI 생성 작업을 즉시 중단합니다 (Esc)"
+            >
+              <Square className="w-2.5 h-2.5 fill-current" />
+              ⏹ 중단 (Esc)
+            </button>
+          )}
+
+          {/* Staged AI Diffs Pill -> Links directly to Source Control Activity */}
+          <button
+            type="button"
+            data-testid="staged-diffs-pill"
+            onClick={() => {
+              setActiveActivityTab("source-control");
+              setLeftSidebarOpen(true);
+            }}
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[11px] font-semibold cursor-pointer transition font-mono tabular-nums ${
+              stagingCount > 0
+                ? "bg-amber-500 text-slate-950 border-amber-400 font-bold hover:bg-amber-400"
+                : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+            }`}
+            title="Git 소스 제어 & Staged 변경안 열기"
+          >
+            <Sparkles className="w-3 h-3 text-amber-300" />
+            <span>Staged ({stagingCount})</span>
+          </button>
+
           <StudioAgentSettingsButton />
-          <ImportPdfButton />
-          <VDocFileActionButtons />
+          <ShortcutHelpPopover />
         </div>
       </header>
 
-      <SlotFormattingSubToolbar onTableCommand={runTableCommand} />
+      {/* 2nd Tier: Workspace Session & Viewport Action Bar (Height 40px) */}
+      <div className="h-10 bg-white border-b border-slate-200 px-4 flex items-center justify-between gap-4 shrink-0 z-20 select-none">
+        {/* Left: 4-Level Fractal Breadcrumb Bar */}
+        <div className="flex items-center min-w-0">
+          <OutlineBreadcrumbBar />
+        </div>
+
+        {/* Center: Reversible 3-Phase Stepper */}
+        <div className="flex items-center gap-2 shrink-0">
+          <ExecutionPhaseStepper />
+        </div>
+
+        {/* Right: Unified Undo/Redo & Split View Toggle */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 p-0.5 font-mono tabular-nums">
+            <button
+              type="button"
+              data-testid="ribbon-undo-btn"
+              disabled={totalUndoCount === 0}
+              onClick={handleGlobalUndo}
+              title={`통합 실행 취소 (Ctrl+Z) · 이력 ${totalUndoCount}건`}
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium text-slate-700 hover:bg-white disabled:opacity-40 cursor-pointer transition"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>{totalUndoCount}</span>
+            </button>
+            <button
+              type="button"
+              data-testid="ribbon-redo-btn"
+              disabled={totalRedoCount === 0}
+              onClick={handleGlobalRedo}
+              title={`통합 다시 실행 (Ctrl+Y) · 이력 ${totalRedoCount}건`}
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium text-slate-700 hover:bg-white disabled:opacity-40 cursor-pointer transition"
+            >
+              <RotateCw className="w-3 h-3" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            data-testid="canvas-toggle-split-ref-btn"
+            onClick={() =>
+              setSplitReferenceDocId(
+                splitReferenceDocId ? null : "vdoc-pandadoc-vc-proposal-01"
+              )
+            }
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold border cursor-pointer transition ${
+              splitReferenceDocId
+                ? "bg-violet-100 text-violet-900 border-violet-300"
+                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+            }`}
+            title="참조 문서 나란히 비교 (Split View)"
+          >
+            <Columns className="w-3 h-3" />
+            <span>스플릿 뷰</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3rd Tier (Phase 3 Drafting Only): Rich-Text Formatting Toolbar */}
+      {currentPhase === "drafting" && (
+        <SlotFormattingSubToolbar onTableCommand={runTableCommand} />
+      )}
     </>
   );
 };

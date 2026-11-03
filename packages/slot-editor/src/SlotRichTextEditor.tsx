@@ -133,8 +133,17 @@ export const SlotRichTextEditor: React.FC<SlotRichTextEditorProps> = ({
   useEffect(() => {
     if (!bubble) return;
     const hide = () => setBubble(null);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setBubble(null);
+      }
+    };
     window.addEventListener("scroll", hide, true);
-    return () => window.removeEventListener("scroll", hide, true);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("scroll", hide, true);
+      window.removeEventListener("keydown", onKeyDown);
+    };
   }, [bubble]);
 
   return (

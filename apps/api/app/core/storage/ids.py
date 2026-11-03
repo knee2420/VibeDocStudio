@@ -8,9 +8,12 @@ import uuid
 _SAFE_SEGMENT = re.compile(r"^[A-Za-z0-9_.\-]{1,128}$")
 
 DOCUMENT_PREFIX = "vdoc"
+PROJECT_PREFIX = "vproj"
 CATALOG_PREFIX = "cat"
 BACKDATA_PREFIX = "bd"
 RUN_PREFIX = "run"
+PROVENANCE_PREFIX = "prov"
+STAGING_PREFIX = "stg"
 
 
 def new_id(prefix: str) -> str:

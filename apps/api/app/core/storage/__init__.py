@@ -4,7 +4,10 @@ from .ids import (
     BACKDATA_PREFIX,
     CATALOG_PREFIX,
     DOCUMENT_PREFIX,
+    PROJECT_PREFIX,
+    PROVENANCE_PREFIX,
     RUN_PREFIX,
+    STAGING_PREFIX,
     is_safe_segment,
     new_id,
     safe_segment,
@@ -20,8 +23,11 @@ __all__ = [
     "safe_segment",
     "is_safe_segment",
     "DOCUMENT_PREFIX",
+    "PROJECT_PREFIX",
     "CATALOG_PREFIX",
     "BACKDATA_PREFIX",
     "RUN_PREFIX",
+    "PROVENANCE_PREFIX",
+    "STAGING_PREFIX",
 ]
 

@@ -23,6 +23,25 @@ class PatchSlotContentRequest(BaseModel):
     content: str = Field(..., description="슬롯 내부 Tiptap HTML 본문")
 
 
+class PatchDocumentStructureRequest(BaseModel):
+    operation: str = Field(..., description="commit_staged_slots | reorder_pages | insert_storyline_page")
+    payload: dict[str, Any] = Field(default_factory=dict)
+
+
 class VDocDocumentResponse(BaseModel):
     docId: str
     document: dict[str, Any]
+
+
+class VDocPageChunkResponse(BaseModel):
+    docId: str
+    title: str
+    totalPages: int
+    startPage: int
+    endPage: int
+    windowSize: int
+    topSpacerPx: int
+    bottomSpacerPx: int
+    pages: list[dict[str, Any]]
+    slots: dict[str, Any]
+    backdata: dict[str, Any]

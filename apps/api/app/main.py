@@ -23,6 +23,7 @@ from app.core.llm.execution_policy import (
     normalize_provider,
 )
 from app.documents import router as documents_router_module
+from app.projects import router as projects_router_module
 
 _credentials = OsCredentialStore()
 _container = Container()
@@ -78,6 +79,7 @@ def create_app() -> FastAPI:
             documents_router_module,
             backdata_router_module,
             composer_router_module,
+            projects_router_module,
         ]
     )
 
@@ -115,6 +117,11 @@ def create_app() -> FastAPI:
         composer_router_module.router,
         prefix="/api/ai",
         tags=["composer"],
+    )
+    application.include_router(
+        projects_router_module.router,
+        prefix="/api/projects",
+        tags=["projects"],
     )
 
     @application.get("/api/health", tags=["health"])

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  ChevronLeft,
   ChevronRight,
   Paperclip,
   Edit3,
@@ -12,7 +11,12 @@ import {
   AlignRight,
 } from "lucide-react";
 
-import type { BackdataChunk, SlotConstraints, VDocSlot } from "@vibe/vdoc-schema";
+import type {
+  BackdataChunk,
+  ImageBlockDef,
+  SlotConstraints,
+  VDocSlot,
+} from "@vibe/vdoc-schema";
 
 import { BackdataChunkCard } from "@/entities/backdata-chunk";
 import { SlotMetadataCard, useSlotSelectionStore } from "@/entities/slot";
@@ -23,7 +27,9 @@ import {
 } from "@/features/bind-slot-backdata";
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
-import type { ImageBlockDef } from "@vibe/vdoc-schema";
+import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { CollapsedPanelRail } from "@/shared/ui";
+
 import { ImageInspectorCard } from "./ImageInspectorCard";
 
 interface SlotTypographyCardProps {
@@ -321,6 +327,7 @@ export const SlotInspectorDrawer: React.FC = () => {
   } = useSlotContentActions();
   const { toggleBackdataRef } = useBindSlotBackdata();
   const { updateBlock, deleteBlock } = useMutateCanvasBlocks();
+  const { stageSlotHtmlDiff } = useStageAiChanges();
 
   const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
 
@@ -346,19 +353,21 @@ export const SlotInspectorDrawer: React.FC = () => {
 
   if (!rightSidebarOpen) {
     return (
-      <button
-        type="button"
-        onClick={() => setRightSidebarOpen(true)}
-        className="absolute right-3 top-3 z-20 w-8 h-8 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-slate-900 cursor-pointer"
-        title="우측 Slot Inspector & 백데이터 서랍 열기"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
+      <CollapsedPanelRail
+        side="right"
+        label="Slot Inspector & 백데이터"
+        badgeCount={Object.keys(doc.backdata).length}
+        onExpand={() => setRightSidebarOpen(true)}
+        testId="right-sidebar-collapsed-rail"
+      />
     );
   }
 
   return (
-    <aside className="w-[360px] bg-white border-l border-slate-200 flex flex-col shrink-0 select-none">
+    <aside
+      data-testid="slot-inspector-drawer"
+      className="w-[360px] bg-white border-l border-slate-200 flex flex-col shrink-0 select-none"
+    >
       <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
         <div>
           <h3 className="text-xs font-bold text-slate-900">
@@ -370,6 +379,7 @@ export const SlotInspectorDrawer: React.FC = () => {
         </div>
         <button
           type="button"
+          data-testid="collapse-right-sidebar-btn"
           onClick={() => setRightSidebarOpen(false)}
           className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer"
           title="우측 패널 접기"
@@ -378,7 +388,7 @@ export const SlotInspectorDrawer: React.FC = () => {
         </button>
       </div>
 
-      {(selectedSlot || selectedBlockInfo) ? (
+      {selectedSlot || selectedBlockInfo ? (
         <div className="flex-1 overflow-y-auto p-4 space-y-5">
           {selectedBlockInfo && selectedBlockInfo.block.kind === "image" && (
             <ImageInspectorCard
@@ -392,99 +402,130 @@ export const SlotInspectorDrawer: React.FC = () => {
 
           {selectedSlot && (
             <>
-              <SlotMetadataCard
-            slot={selectedSlot}
-            onToggleLock={toggleSlotLock}
-            onToggleComposer={toggleComposerForSlot}
-          />
-
-          <SlotTypographyCard
-            key={`typo-${selectedSlot.slotId}`}
-            slot={selectedSlot}
-            onUpdateConstraints={updateSlotConstraints}
-          />
-
-          <SlotLiveEditorCard
-            key={selectedSlot.slotId}
-            slot={selectedSlot}
-            onUpdateContent={updateSlotContent}
-            onResetEdit={resetSlotEdit}
-            onOpenComposer={toggleComposerForSlot}
-          />
-
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                <Paperclip className="w-3.5 h-3.5 text-indigo-600" />이 슬롯에
-                연결된 백데이터 ({selectedSlotChunks.length}건)
-              </h4>
-              <button
-                type="button"
-                onClick={() => setShowAddBackdataForm(!showAddBackdataForm)}
-                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
-              >
-                + 새 백데이터 추가
-              </button>
-            </div>
-
-            {showAddBackdataForm && <AddBackdataChunkForm />}
-
-            {selectedSlotChunks.length > 0 ? (
-              <div className="space-y-2">
-                {selectedSlotChunks.map((chunk) => (
-                  <BackdataChunkCard key={chunk.chunkId} chunk={chunk} />
-                ))}
-              </div>
-            ) : (
-              <div className="p-4 rounded-xl border border-dashed border-slate-300 text-center text-xs text-slate-400">
-                연결된 백데이터가 없습니다. 아래 전체 백데이터 보관함에서 클릭해
-                바인딩하세요.
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2 pt-3 border-t border-slate-200">
-            <h4 className="text-xs font-bold text-slate-700">
-              📚 문서 전체 백데이터 풀 (클릭하여 현재 슬롯에 연결/해제)
-            </h4>
-            <div className="space-y-1.5">
-              {Object.values(doc.backdata).map((chunk) => {
-                const isBound = selectedSlot.backDataRefs.includes(
-                  chunk.chunkId
-                );
-                return (
+              <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-amber-950 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    인메모리 AI 슬롯 초안 스테이징
+                  </span>
                   <button
-                    key={chunk.chunkId}
                     type="button"
+                    data-testid="stage-slot-ai-draft-btn"
                     onClick={() =>
-                      toggleBackdataRef(selectedSlot.slotId, chunk.chunkId)
+                      stageSlotHtmlDiff({
+                        slotId: selectedSlot.slotId,
+                        slotLabel: selectedSlot.label,
+                        beforeHtml: selectedSlot.content,
+                        afterHtml: `<p><strong>[✨ AI 근거 기반 정밀 초안]</strong> ${
+                          selectedSlotChunks[0]?.excerpt ||
+                          "참조 레퍼런스 및 연결된 백데이터를 종합하여 작성된 표준 조항입니다."
+                        }</p>`,
+                        sourceRefIds: selectedSlot.backDataRefs,
+                      })
                     }
-                    className={`w-full text-left p-2.5 rounded-lg border text-xs transition cursor-pointer ${
-                      isBound
-                        ? "border-indigo-400 bg-indigo-50/60 text-indigo-950"
-                        : "border-slate-200 hover:bg-slate-50 text-slate-600"
-                    }`}
+                    className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer shadow-2xs"
                   >
-                    <div className="flex items-center justify-between gap-2 font-semibold">
-                      <span className="truncate">{chunk.sourceTitle}</span>
-                      <span
-                        className={`shrink-0 whitespace-nowrap text-[10px] px-1.5 py-0.5 rounded ${
+                    + Staged Diff 생성
+                  </button>
+                </div>
+                <p className="text-[10px] text-amber-800">
+                  본문을 즉시 덮어쓰지 않고 하단 Staged 대기열에 올려 [수락/폐기]를 거칩니다.
+                </p>
+              </div>
+
+              <SlotMetadataCard
+                slot={selectedSlot}
+                onToggleLock={toggleSlotLock}
+                onToggleComposer={toggleComposerForSlot}
+              />
+
+              <SlotTypographyCard
+                key={`typo-${selectedSlot.slotId}`}
+                slot={selectedSlot}
+                onUpdateConstraints={updateSlotConstraints}
+              />
+
+              <SlotLiveEditorCard
+                key={selectedSlot.slotId}
+                slot={selectedSlot}
+                onUpdateContent={updateSlotContent}
+                onResetEdit={resetSlotEdit}
+                onOpenComposer={toggleComposerForSlot}
+              />
+
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <Paperclip className="w-3.5 h-3.5 text-indigo-600" />이 슬롯에
+                    연결된 백데이터 ({selectedSlotChunks.length}건)
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddBackdataForm(!showAddBackdataForm)}
+                    className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                  >
+                    + 새 백데이터 추가
+                  </button>
+                </div>
+
+                {showAddBackdataForm && <AddBackdataChunkForm />}
+
+                {selectedSlotChunks.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedSlotChunks.map((chunk) => (
+                      <BackdataChunkCard key={chunk.chunkId} chunk={chunk} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl border border-dashed border-slate-300 text-center text-xs text-slate-400">
+                    연결된 백데이터가 없습니다. 아래 전체 백데이터 보관함에서 클릭해
+                    바인딩하세요.
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2 pt-3 border-t border-slate-200">
+                <h4 className="text-xs font-bold text-slate-700">
+                  📚 문서 전체 백데이터 풀 (클릭하여 현재 슬롯에 연결/해제)
+                </h4>
+                <div className="space-y-1.5">
+                  {Object.values(doc.backdata).map((chunk) => {
+                    const isBound = selectedSlot.backDataRefs.includes(
+                      chunk.chunkId
+                    );
+                    return (
+                      <button
+                        key={chunk.chunkId}
+                        type="button"
+                        onClick={() =>
+                          toggleBackdataRef(selectedSlot.slotId, chunk.chunkId)
+                        }
+                        className={`w-full text-left p-2.5 rounded-lg border text-xs transition cursor-pointer ${
                           isBound
-                            ? "bg-indigo-600 text-white"
-                            : "bg-slate-100 text-slate-500"
+                            ? "border-indigo-400 bg-indigo-50/60 text-indigo-950"
+                            : "border-slate-200 hover:bg-slate-50 text-slate-600"
                         }`}
                       >
-                        {isBound ? "✓ 연결됨" : "+ 연결"}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 line-clamp-2 mt-1">
-                      {chunk.excerpt}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                        <div className="flex items-center justify-between gap-2 font-semibold">
+                          <span className="truncate">{chunk.sourceTitle}</span>
+                          <span
+                            className={`shrink-0 whitespace-nowrap text-[10px] px-1.5 py-0.5 rounded ${
+                              isBound
+                                ? "bg-indigo-600 text-white"
+                                : "bg-slate-100 text-slate-500"
+                            }`}
+                          >
+                            {isBound ? "✓ 연결됨" : "+ 연결"}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 line-clamp-2 mt-1">
+                          {chunk.excerpt}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -497,4 +538,3 @@ export const SlotInspectorDrawer: React.FC = () => {
     </aside>
   );
 };
-
