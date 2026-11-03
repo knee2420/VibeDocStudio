@@ -114,26 +114,140 @@ export function buildProjectFractalTree(
         pageNodeByKey.set(pageKey, pageNode);
       }
 
-      // Extract all blocks and slots (no arbitrary slice limits)
-      const pageSlotIds = page.blocks.flatMap((blk) => getBlockSlotIds(blk));
+      // Extract blocks and slots with hierarchical table grouping and row sub-indentation
+      for (const blk of page.blocks) {
+        if (blk.kind === "structured-table" || blk.kind === "table") {
+          const tableBlockNodeId = `auto-blk-${doc.docId}-${blk.blockId}`;
+          const tableBlockNode: OutlinerNode = {
+            nodeId: tableBlockNodeId,
+            parentId: pageNode.nodeId,
+            depth: pageNode.depth + 1,
+            zoomLevel: "page",
+            title: blk.title ? `[표] ${blk.title}` : "구조화 표",
+            summary: `표 (${blk.rows.length}행)`,
+            targetDocId: doc.docId,
+            targetPageId: page.pageId,
+            targetBlockId: blk.blockId,
+            recommendedTemplateId: "structured-table",
+            aiStatus: "idle",
+          };
+          candidateNodes.push(tableBlockNode);
 
-      for (const slotId of pageSlotIds) {
-        const slot = doc.slots[slotId];
-        const slotKey = `${doc.docId}\u0000${slotId}`;
-        if (!slot || slotKeys.has(slotKey)) continue;
-        slotKeys.add(slotKey);
-        candidateNodes.push({
-          nodeId: `auto-slot-${doc.docId}-${slotId}`,
-          parentId: pageNode.nodeId,
-          depth: pageNode.depth + 1,
-          zoomLevel: "slot",
-          title: extractSlotTitle(slot, slotId),
-          summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
-          targetDocId: doc.docId,
-          targetPageId: page.pageId,
-          targetSlotId: slotId,
-          aiStatus: slot.isEdited ? "applied" : "idle",
-        });
+          for (let rIdx = 0; rIdx < blk.rows.length; rIdx++) {
+            const row = blk.rows[rIdx];
+            const isHeaderRow = row.cells.some((c) => c.isHeader);
+
+            if (isHeaderRow) {
+              for (const cell of row.cells) {
+                const slot = doc.slots[cell.slotId];
+                const slotKey = `${doc.docId}\u0000${cell.slotId}`;
+                if (!slot || slotKeys.has(slotKey)) continue;
+                slotKeys.add(slotKey);
+                candidateNodes.push({
+                  nodeId: `auto-slot-${doc.docId}-${cell.slotId}`,
+                  parentId: tableBlockNode.nodeId,
+                  depth: tableBlockNode.depth + 1,
+                  zoomLevel: "slot",
+                  title: extractSlotTitle(slot, cell.slotId),
+                  summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
+                  targetDocId: doc.docId,
+                  targetPageId: page.pageId,
+                  targetSlotId: cell.slotId,
+                  targetBlockId: blk.blockId,
+                  aiStatus: slot.isEdited ? "applied" : "idle",
+                });
+              }
+            } else {
+              const [firstCell, ...restCells] = row.cells;
+              let rowParentId = tableBlockNode.nodeId;
+              let rowParentDepth = tableBlockNode.depth + 1;
+
+              if (firstCell) {
+                const firstSlot = doc.slots[firstCell.slotId];
+                const firstSlotKey = `${doc.docId}\u0000${firstCell.slotId}`;
+                if (firstSlot && !slotKeys.has(firstSlotKey)) {
+                  slotKeys.add(firstSlotKey);
+                  const firstCellNode: OutlinerNode = {
+                    nodeId: `auto-slot-${doc.docId}-${firstCell.slotId}`,
+                    parentId: tableBlockNode.nodeId,
+                    depth: tableBlockNode.depth + 1,
+                    zoomLevel: "slot",
+                    title: extractSlotTitle(firstSlot, firstCell.slotId),
+                    summary: stripHtml(firstSlot.content).slice(0, 90) || "(빈 슬롯)",
+                    targetDocId: doc.docId,
+                    targetPageId: page.pageId,
+                    targetSlotId: firstCell.slotId,
+                    targetBlockId: blk.blockId,
+                    aiStatus: firstSlot.isEdited ? "applied" : "idle",
+                  };
+                  candidateNodes.push(firstCellNode);
+                  rowParentId = firstCellNode.nodeId;
+                  rowParentDepth = firstCellNode.depth + 1;
+                }
+              }
+
+              for (const cell of restCells) {
+                const slot = doc.slots[cell.slotId];
+                const slotKey = `${doc.docId}\u0000${cell.slotId}`;
+                if (!slot || slotKeys.has(slotKey)) continue;
+                slotKeys.add(slotKey);
+                candidateNodes.push({
+                  nodeId: `auto-slot-${doc.docId}-${cell.slotId}`,
+                  parentId: rowParentId,
+                  depth: rowParentDepth,
+                  zoomLevel: "slot",
+                  title: extractSlotTitle(slot, cell.slotId),
+                  summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
+                  targetDocId: doc.docId,
+                  targetPageId: page.pageId,
+                  targetSlotId: cell.slotId,
+                  targetBlockId: blk.blockId,
+                  aiStatus: slot.isEdited ? "applied" : "idle",
+                });
+              }
+            }
+          }
+        } else if (blk.kind === "fillable-group") {
+          const slot = doc.slots[blk.slotId];
+          const slotKey = `${doc.docId}\u0000${blk.slotId}`;
+          if (slot && !slotKeys.has(slotKey)) {
+            slotKeys.add(slotKey);
+            candidateNodes.push({
+              nodeId: `auto-slot-${doc.docId}-${blk.slotId}`,
+              parentId: pageNode.nodeId,
+              depth: pageNode.depth + 1,
+              zoomLevel: "slot",
+              title: blk.title || extractSlotTitle(slot, blk.slotId),
+              summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
+              targetDocId: doc.docId,
+              targetPageId: page.pageId,
+              targetSlotId: blk.slotId,
+              targetBlockId: blk.blockId,
+              aiStatus: slot.isEdited ? "applied" : "idle",
+            });
+          }
+        } else {
+          const blockSlotIds = getBlockSlotIds(blk);
+          for (const slotId of blockSlotIds) {
+            const slot = doc.slots[slotId];
+            const slotKey = `${doc.docId}\u0000${slotId}`;
+            if (!slot || slotKeys.has(slotKey)) continue;
+            slotKeys.add(slotKey);
+            candidateNodes.push({
+              nodeId: `auto-slot-${doc.docId}-${slotId}`,
+              parentId: pageNode.nodeId,
+              depth: pageNode.depth + 1,
+              zoomLevel: "slot",
+              title: extractSlotTitle(slot, slotId),
+              summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
+              targetDocId: doc.docId,
+              targetPageId: page.pageId,
+              targetSlotId: slotId,
+              targetBlockId: blk.blockId,
+              aiStatus: slot.isEdited ? "applied" : "idle",
+            });
+          }
+        }
       }
     }
   }
