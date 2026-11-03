@@ -21,10 +21,8 @@ import {
 } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
-import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
 import { ImportPdfButton } from "@/features/import-pdf-form";
-import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { OutlineBreadcrumbBar } from "@/features/zoom-hierarchy";
 import { useHistoryStore } from "@/shared/lib";
@@ -45,7 +43,6 @@ export const StudioTopRibbon: React.FC = () => {
   const activeProject = useProjectStore(selectActiveProject);
   const referenceDocId = useProjectStore(selectReferenceDocId);
 
-  const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const stagingCount = useWorkspaceSessionStore((s) => s.stagingQueue.length);
   const setActiveActivityTab = useWorkspaceSessionStore(
     (s) => s.setActiveActivityTab
@@ -67,7 +64,6 @@ export const StudioTopRibbon: React.FC = () => {
   const rightSidebarOpen = useSlotSelectionStore((s) => s.rightSidebarOpen);
 
   const { isAiStreaming, abortActiveAiRun } = useStageAiChanges();
-  const { runTableCommand } = useMutateCanvasBlocks();
 
   if (!doc || !activeProject) return null;
 
@@ -337,11 +333,6 @@ export const StudioTopRibbon: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* 3rd Tier (Phase 3 Drafting Only): Rich-Text Formatting Toolbar */}
-      {currentPhase === "drafting" && (
-        <SlotFormattingSubToolbar onTableCommand={runTableCommand} />
-      )}
     </>
   );
 };
