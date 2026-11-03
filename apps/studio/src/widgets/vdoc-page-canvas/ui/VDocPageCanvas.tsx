@@ -1,5 +1,5 @@
 import React from "react";
-import { Columns, Layers } from "lucide-react";
+import { ArrowUpLeft, Columns, Layers } from "lucide-react";
 
 import { MemoVDocPageSheet, WindowedPageChunker } from "@vibe/slot-canvas";
 import type { SlotAiAction } from "@vibe/slot-editor";
@@ -20,6 +20,7 @@ import {
   useSlotContentActions,
 } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
+import { useFractalZoomNavigation } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
 
 import { AiStagingDrawer } from "./AiStagingDrawer";
@@ -99,6 +100,31 @@ export const VDocPageCanvas: React.FC = () => {
   const { updateSlotContent } = useSlotContentActions();
   const blocks = useMutateCanvasBlocks();
 
+  const { projection, handleZoomOutOneLevel } = useFractalZoomNavigation();
+
+  const zoomedNode = projection.allNodes.find((n) => n.nodeId === projection.rootNodeId);
+  const targetPageId = zoomedNode?.targetPageId;
+  const isPageZoomed = Boolean(
+    targetPageId &&
+    doc?.pages.some((p) => p.pageId === targetPageId) &&
+    (doc?.pages.length ?? 0) > 1
+  );
+  const pagesToRender = doc
+    ? isPageZoomed
+      ? doc.pages.filter((p) => p.pageId === targetPageId)
+      : doc.pages
+    : [];
+
+  const selectionActions = useSlotSelectionStore.getState();
+
+  const onSelectSlot = useStableCallback((slotId: string) => {
+    selectionActions.setSelectedSlotId(slotId);
+    const matched = projection.allNodes.find((n) => n.targetSlotId === slotId);
+    if (matched) {
+      useWorkspaceSessionStore.getState().setSelectedOutlinerNodeId(matched.nodeId);
+    }
+  });
+
   // 페이지 시트에 넘기는 콜백은 모두 고정 참조여야 MemoVDocPageSheet 의 메모가 유지된다.
   const onUpdateSlotContent = useStableCallback(updateSlotContent);
   const onMoveBlock = useStableCallback(blocks.moveBlock);
@@ -129,7 +155,6 @@ export const VDocPageCanvas: React.FC = () => {
   const renderInlineComposer = useStableCallback((slot: VDocSlot, boundChunks: BackdataChunk[]) => (
     <ConnectedInlineComposer slot={slot} boundChunks={boundChunks} onApplySlotContent={onUpdateSlotContent} />
   ));
-  const selectionActions = useSlotSelectionStore.getState();
 
   if (!doc) return null;
 
@@ -202,8 +227,36 @@ export const VDocPageCanvas: React.FC = () => {
               </button>
             </div>
 
+            {/* Page Zoom-In Focus Banner */}
+            {isPageZoomed && (
+              <div
+                data-testid="page-zoom-focus-banner"
+                className="max-w-[794px] mx-auto mb-3 px-3.5 py-2 bg-emerald-50/90 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-950 shadow-2xs select-none"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-bold">
+                    {zoomedNode?.title || "단일 페이지"} 집중 편집 모드
+                  </span>
+                  <span className="text-emerald-700 text-[11px]">
+                    (전체 {doc.pages.length}p 중 1페이지만 격리 표시)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  data-testid="canvas-page-zoom-out-btn"
+                  onClick={handleZoomOutOneLevel}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-emerald-100/70 text-emerald-800 border border-emerald-300 rounded-lg font-semibold text-xs cursor-pointer transition shadow-2xs"
+                  title="전체 페이지 조망으로 복귀 (Alt+↑)"
+                >
+                  <ArrowUpLeft className="w-3.5 h-3.5 text-emerald-700" />
+                  전체 페이지 보기 (Zoom Out)
+                </button>
+              </div>
+            )}
+
             <WindowedPageChunker
-              pages={doc.pages}
+              pages={pagesToRender}
               activePageId={activePageId}
               chunkSize={WINDOW_CHUNK_PAGES}
               renderPage={(page) => (
@@ -220,7 +273,7 @@ export const VDocPageCanvas: React.FC = () => {
                   composerOpenSlotId={composerOpenSlotId}
                   onSelectPage={setActivePageId}
                   onSelectBlock={onSelectBlock}
-                  onSelectSlot={selectionActions.setSelectedSlotId}
+                  onSelectSlot={onSelectSlot}
                   onToggleComposerForSlot={selectionActions.toggleComposerForSlot}
                   onOpenBackdataDrawer={onOpenBackdataDrawer}
                   onUpdateSlotContent={onUpdateSlotContent}

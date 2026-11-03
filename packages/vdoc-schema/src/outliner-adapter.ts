@@ -14,6 +14,22 @@ const stripHtml = (raw: string): string =>
     .replace(/\s+/g, " ")
     .trim();
 
+function extractSlotTitle(slot: any, fallbackId: string): string {
+  if (!slot) return fallbackId;
+  const raw = slot.content || "";
+  const strongMatch = raw.match(/<(?:strong|b|h[1-6])>([^<]+)<\/(?:strong|b|h[1-6])>/i);
+  if (strongMatch && strongMatch[1]) {
+    const text = strongMatch[1].trim();
+    if (text.length > 1 && !text.endsWith(":") && text !== "몰름") {
+      return text;
+    }
+  }
+  if (slot.label && slot.label.trim()) {
+    return slot.label.trim();
+  }
+  return fallbackId;
+}
+
 export interface FractalOutlineProjection {
   activeZoomLevel: ZoomLevel;
   rootNodeId: string;
@@ -29,7 +45,7 @@ export interface FractalOutlineProjection {
  * Combines explicit `project.storylineNodes` with live `.vdoc` Documents -> Pages -> Slots
  * into a unified 4-Level Fractal Outliner Tree (`Project` -> `Document` -> `Page/Element` -> `Slot`).
  *
- * 모든 조회는 Map/Set 색인으로 한다 (노드 · 페이지 · 슬롯 수에 선형).
+ * 엄격한 DFS 전위 순회(Pre-order Traversal)로 계층 순서를 보장하여 부모-자식 역전이나 누락을 원천 차단합니다.
  */
 export function buildProjectFractalTree(
   project: VProjectManifest,
@@ -38,12 +54,13 @@ export function buildProjectFractalTree(
   quickFilter?: string,
   collapsedNodeIds?: string[]
 ): FractalOutlineProjection {
-  const allNodes: OutlinerNode[] = [...project.storylineNodes];
+  const candidateNodes: OutlinerNode[] = [...project.storylineNodes];
   const docsById = new Map(docs.map((d) => [d.docId, d]));
   const docNodeByDocId = new Map<string, OutlinerNode>();
   const pageNodeByKey = new Map<string, OutlinerNode>();
   const slotKeys = new Set<string>();
-  for (const node of allNodes) {
+
+  for (const node of candidateNodes) {
     if (!node.targetDocId) continue;
     if (node.zoomLevel === "document" && !docNodeByDocId.has(node.targetDocId)) {
       docNodeByDocId.set(node.targetDocId, node);
@@ -55,7 +72,7 @@ export function buildProjectFractalTree(
     }
   }
 
-  // Enrich with live Document -> Page -> Slot nodes from bound docs if not already represented
+  // Enrich with live Document -> Page -> Slot nodes from bound docs
   const rootId = project.storylineNodes.find((n) => n.parentId === null)?.nodeId ?? null;
   for (const docId of project.docIds) {
     const doc = docsById.get(docId);
@@ -73,7 +90,7 @@ export function buildProjectFractalTree(
         targetDocId: doc.docId,
         aiStatus: "idle",
       };
-      allNodes.push(docNode);
+      candidateNodes.push(docNode);
       docNodeByDocId.set(doc.docId, docNode);
     }
 
@@ -84,7 +101,7 @@ export function buildProjectFractalTree(
         pageNode = {
           nodeId: `auto-page-${doc.docId}-${page.pageId}`,
           parentId: docNode.nodeId,
-          depth: 2,
+          depth: docNode.depth + 1,
           zoomLevel: "page",
           title: `Page ${page.pageNumber} · ${page.pageLabel}`,
           summary: `블록 ${page.blocks.length}개`,
@@ -93,23 +110,24 @@ export function buildProjectFractalTree(
           recommendedTemplateId: page.blocks[0]?.kind || "section-block",
           aiStatus: "idle",
         };
-        allNodes.push(pageNode);
+        candidateNodes.push(pageNode);
         pageNodeByKey.set(pageKey, pageNode);
       }
 
-      // Add up to 6 key editable slots per page for Level 4 Slot Zoom
+      // Extract all blocks and slots (no arbitrary slice limits)
       const pageSlotIds = page.blocks.flatMap((blk) => getBlockSlotIds(blk));
-      for (const slotId of pageSlotIds.slice(0, 6)) {
+
+      for (const slotId of pageSlotIds) {
         const slot = doc.slots[slotId];
         const slotKey = `${doc.docId}\u0000${slotId}`;
         if (!slot || slotKeys.has(slotKey)) continue;
         slotKeys.add(slotKey);
-        allNodes.push({
+        candidateNodes.push({
           nodeId: `auto-slot-${doc.docId}-${slotId}`,
           parentId: pageNode.nodeId,
-          depth: 3,
+          depth: pageNode.depth + 1,
           zoomLevel: "slot",
-          title: slot.label || slotId,
+          title: extractSlotTitle(slot, slotId),
           summary: stripHtml(slot.content).slice(0, 90) || "(빈 슬롯)",
           targetDocId: doc.docId,
           targetPageId: page.pageId,
@@ -117,6 +135,39 @@ export function buildProjectFractalTree(
           aiStatus: slot.isEdited ? "applied" : "idle",
         });
       }
+    }
+  }
+
+  // Hierarchical DFS Pre-order traversal to guarantee strict parent-child ordering
+  const childrenMap = new Map<string | null, OutlinerNode[]>();
+  for (const node of candidateNodes) {
+    const pId = node.parentId ?? null;
+    const list = childrenMap.get(pId) || [];
+    list.push(node);
+    childrenMap.set(pId, list);
+  }
+
+  const allNodes: OutlinerNode[] = [];
+  const visited = new Set<string>();
+
+  function traverseDfs(parentId: string | null) {
+    const children = childrenMap.get(parentId) || [];
+    for (const child of children) {
+      if (visited.has(child.nodeId)) continue;
+      visited.add(child.nodeId);
+      allNodes.push(child);
+      traverseDfs(child.nodeId);
+    }
+  }
+
+  traverseDfs(null);
+
+  // Safety fallback for any unvisited nodes
+  for (const node of candidateNodes) {
+    if (!visited.has(node.nodeId)) {
+      visited.add(node.nodeId);
+      allNodes.push(node);
+      traverseDfs(node.nodeId);
     }
   }
 
