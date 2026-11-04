@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import {
+  getBlockSlotIds,
   isBlockLocked,
   type BackdataChunk,
   type LayoutBlock,
@@ -496,6 +497,16 @@ case "composite-form-frame":
   };
   const flowIndexes = page.blocks.map((b, i) => (b.frame ? -1 : i)).filter((i) => i >= 0);
 
+  // 포커스된 활성 블록 계산 (직접 선택된 블록 우선, 슬롯 편집 중인 경우 해당 슬롯 소유 블록)
+  const activeBlockId = React.useMemo(() => {
+    if (selectedBlockId) return selectedBlockId;
+    if (selectedSlotId) {
+      const owner = page.blocks.find((b) => getBlockSlotIds(b).includes(selectedSlotId));
+      if (owner) return owner.blockId;
+    }
+    return null;
+  }, [selectedBlockId, selectedSlotId, page.blocks]);
+
   const renderFramedOrFlowBlock = (block: LayoutBlock, bIdx: number) => {
     const isTable = block.kind === "structured-table" || block.kind === "table" || block.kind === "composite-form-frame";
     const frame = block.frame;
@@ -535,7 +546,7 @@ case "composite-form-frame":
     <section id={`vdoc-page-${page.pageId}`} onClick={() => onSelectPage(page.pageId)} className="w-[794px] min-w-[794px] mx-auto">
       {/* A4 sheet: 794 × 1123 px at 96 dpi. The ring does not take layout space, so frames map 1:1. */}
       <div
-        className="relative bg-white rounded-xs shadow-lg ring-1 ring-slate-200/90 w-[794px] min-w-[794px] max-w-[794px] min-h-[1123px] mx-auto flex flex-col justify-between"
+        className="relative bg-white rounded-xs shadow-[0_4px_28px_rgba(15,23,42,0.08),0_1px_4px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/5 w-[794px] min-w-[794px] max-w-[794px] min-h-[1123px] mx-auto flex flex-col justify-between"
         style={sheetStyle}
         data-exact-layout={layout?.exactText ? "" : undefined}
       >
@@ -569,8 +580,14 @@ case "composite-form-frame":
           )}
           {flowIndexes.map((bIdx) => {
             const block = page.blocks[bIdx];
+            const isCurrentBlockActive = editable && activeBlockId === block.blockId;
             return (
-              <div key={block.blockId} className={draggingBlockId === block.blockId ? "opacity-40" : undefined}>
+              <div
+                key={block.blockId}
+                className={`transition-all duration-200 ease-out ${
+                  isCurrentBlockActive ? "my-4 relative z-20" : "my-0"
+                } ${draggingBlockId === block.blockId ? "opacity-40" : "opacity-100"}`}
+              >
                 {renderFramedOrFlowBlock(block, bIdx)}
               </div>
             );
@@ -578,18 +595,22 @@ case "composite-form-frame":
         </div>
 
         {/* Fixed-position blocks, placed by their frame in sheet coordinates. */}
-        {page.blocks.map((block, bIdx) =>
-          block.frame ? (
+        {page.blocks.map((block, bIdx) => {
+          if (!block.frame) return null;
+          const isCurrentBlockActive = editable && activeBlockId === block.blockId;
+          return (
             <div
               key={block.blockId}
               data-block-id={block.blockId}
-              className="absolute"
+              className={`absolute transition-opacity duration-200 ease-out ${
+                isCurrentBlockActive ? "z-20" : "z-10"
+              }`}
               style={{ left: block.frame.x, top: block.frame.y, width: block.frame.w, height: block.frame.h }}
             >
               {renderFramedOrFlowBlock(block, bIdx)}
             </div>
-          ) : null
-        )}
+          );
+        })}
 
         {!page.hideHeaderFooter && (
           <div className="px-10 py-3 border-t border-transparent hover:border-dashed hover:border-slate-200">

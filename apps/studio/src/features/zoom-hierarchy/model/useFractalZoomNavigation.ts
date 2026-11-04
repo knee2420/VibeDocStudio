@@ -70,10 +70,14 @@ function focusNodeOnCanvas(node: OutlinerNode): void {
     // 블록 · 구역 · 행 컨테이너 노드는 해당 블록을 선택하고 테두리 링을 강조한다.
     selection.setSelectedBlockId(node.targetBlockId);
     revealCanvasElement({ blockId: node.targetBlockId });
+  } else {
+    // 페이지나 문서 전체 조망으로 돌아올 때는 블록 선택 및 디밍을 즉시 해제
+    selection.clearSelection();
   }
 }
 
 function openProjectFirstDocument(): void {
+  useSlotSelectionStore.getState().clearSelection();
   const firstDocId = selectActiveProject(useProjectStore.getState())?.docIds[0];
   if (firstDocId) useStudioDocumentStore.getState().setActiveDocId(firstDocId);
 }
@@ -95,8 +99,14 @@ export function useFractalZoomNavigation() {
   const handleBreadcrumbClick = (nodeId: string) => {
     useWorkspaceSessionStore.getState().zoomIntoNode(nodeId);
     const found = projection.allNodes.find((n) => n.nodeId === nodeId);
-    if (found) focusNodeOnCanvas(found);
-    else if (nodeId === PROJECT_ROOT_CRUMB_ID) openProjectFirstDocument();
+    if (found) {
+      focusNodeOnCanvas(found);
+      if (!found.targetBlockId && !found.targetSlotId) {
+        useSlotSelectionStore.getState().clearSelection();
+      }
+    } else if (nodeId === PROJECT_ROOT_CRUMB_ID) {
+      openProjectFirstDocument();
+    }
   };
 
   const handleZoomOutOneLevel = () => {
@@ -113,6 +123,13 @@ export function useFractalZoomNavigation() {
       if (targetNode.targetPageId) documents.setActivePageId(targetNode.targetPageId);
     } else if (targetNodeId === PROJECT_ROOT_CRUMB_ID || targetNodeId === firstStoryNodeId) {
       openProjectFirstDocument();
+    }
+
+    // 줌아웃 시 상위가 블록/슬롯이 아니면(페이지·문서·홈) 포커스 디밍을 완전히 해제
+    if (!targetNode?.targetBlockId && !targetNode?.targetSlotId) {
+      useSlotSelectionStore.getState().clearSelection();
+    } else {
+      focusNodeOnCanvas(targetNode);
     }
   };
 

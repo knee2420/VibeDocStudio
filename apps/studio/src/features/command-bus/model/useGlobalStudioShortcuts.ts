@@ -41,6 +41,9 @@ export function useGlobalStudioShortcuts(): void {
         } else if (slots.composerOpenSlotId) {
           e.preventDefault();
           slots.setComposerOpenSlotId(null);
+        } else if (slots.selectedBlockId || slots.selectedSlotId) {
+          e.preventDefault();
+          slots.clearSelection();
         } else {
           history.dismissMessage();
         }

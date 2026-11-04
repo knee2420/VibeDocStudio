@@ -10,9 +10,11 @@ export type ActivityBarTab = "explorer" | "source-control" | "template-hub";
 
 export const SIDEBAR_WIDTH = { default: 320, min: 250, max: 650 } as const;
 export const REFERENCE_DECK_HEIGHT = { default: 140, min: 50 } as const;
+export const REFERENCE_SPLIT_WIDTH = { default: 520, min: 360, max: 1000 } as const;
 
 const SIDEBAR_WIDTH_KEY = "vdoc-sidebar-width";
 const DECK_HEIGHT_KEY = "vdoc-ref-deck-height";
+const REFERENCE_SPLIT_WIDTH_KEY = "vdoc-ref-split-width";
 
 function maxDeckHeight(): number {
   return typeof window === "undefined" ? 500 : Math.max(300, Math.floor(window.innerHeight * 0.75));
@@ -26,6 +28,7 @@ export interface WorkspaceLayoutState {
   rightSidebarOpen: boolean;
   sidebarWidth: number;
   referenceDeckHeight: number;
+  referenceSplitWidth: number;
   /** 아웃라이너 왼쪽의 페이지 미리보기 패널. */
   pagePreviewOpen: boolean;
   shortcutHelpOpen: boolean;
@@ -41,6 +44,8 @@ export interface WorkspaceLayoutState {
   resetSidebarWidth: () => void;
   setReferenceDeckHeight: (height: number) => void;
   resetReferenceDeckHeight: () => void;
+  setReferenceSplitWidth: (width: number) => void;
+  resetReferenceSplitWidth: () => void;
   setPagePreviewOpen: (open: boolean) => void;
   togglePagePreview: () => void;
   setShortcutHelpOpen: (open: boolean) => void;
@@ -58,6 +63,11 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
     readStoredNumber(DECK_HEIGHT_KEY, REFERENCE_DECK_HEIGHT.default),
     REFERENCE_DECK_HEIGHT.min,
     maxDeckHeight()
+  ),
+  referenceSplitWidth: clamp(
+    readStoredNumber(REFERENCE_SPLIT_WIDTH_KEY, REFERENCE_SPLIT_WIDTH.default),
+    REFERENCE_SPLIT_WIDTH.min,
+    REFERENCE_SPLIT_WIDTH.max
   ),
   pagePreviewOpen: false,
   shortcutHelpOpen: false,
@@ -84,6 +94,13 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
     set({ referenceDeckHeight: next });
   },
   resetReferenceDeckHeight: () => get().setReferenceDeckHeight(REFERENCE_DECK_HEIGHT.default),
+
+  setReferenceSplitWidth: (width) => {
+    const next = clamp(width, REFERENCE_SPLIT_WIDTH.min, REFERENCE_SPLIT_WIDTH.max);
+    writeStoredValue(REFERENCE_SPLIT_WIDTH_KEY, next);
+    set({ referenceSplitWidth: next });
+  },
+  resetReferenceSplitWidth: () => get().setReferenceSplitWidth(REFERENCE_SPLIT_WIDTH.default),
 
   setPagePreviewOpen: (open) => set({ pagePreviewOpen: open }),
   togglePagePreview: () => set((s) => ({ pagePreviewOpen: !s.pagePreviewOpen })),

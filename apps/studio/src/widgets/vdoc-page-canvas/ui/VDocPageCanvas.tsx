@@ -63,7 +63,7 @@ const CanvasUtilityBar: React.FC = () => {
         disabled={!isOpen && !referenceDocId}
         onClick={() => (isOpen ? closeAllReferenceDocs() : referenceDocId && openReferenceDoc(referenceDocId))}
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition disabled:opacity-40 ${
-          isOpen ? "bg-violet-600 text-white border-violet-600" : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+          isOpen ? "bg-slate-800 text-white border-slate-800 shadow-2xs" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50 shadow-2xs"
         }`}
       >
         <Columns className="w-3.5 h-3.5" />
@@ -85,7 +85,7 @@ const DraftingCanvas: React.FC = () => {
   const composerOpenSlotId = useSlotSelectionStore((s) => s.composerOpenSlotId);
   const setSelectedSlotId = useSlotSelectionStore((s) => s.setSelectedSlotId);
   const setSelectedBlockId = useSlotSelectionStore((s) => s.setSelectedBlockId);
-  const setComposerOpenSlotId = useSlotSelectionStore((s) => s.setComposerOpenSlotId);
+  const clearSelection = useSlotSelectionStore((s) => s.clearSelection);
   const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
   const openComposerWithPrompt = useSlotSelectionStore((s) => s.openComposerWithPrompt);
   const setTableSelection = useSlotSelectionStore((s) => s.setTableSelection);
@@ -144,8 +144,8 @@ const DraftingCanvas: React.FC = () => {
 
   return (
     <main
-      onClick={() => setComposerOpenSlotId(null)}
-      className="flex-1 overflow-y-auto overflow-x-auto px-2.5 py-3 select-text min-w-0"
+      onClick={() => clearSelection()}
+      className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6]"
     >
       <div className={`w-fit min-w-[794px] ${openReferenceCount > 0 ? "ml-2.5 mr-auto" : "mx-auto"} flex flex-col items-center`}>
         <CanvasUtilityBar />

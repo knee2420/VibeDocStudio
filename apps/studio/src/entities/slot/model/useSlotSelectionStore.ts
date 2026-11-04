@@ -37,8 +37,8 @@ export const useSlotSelectionStore = create<SlotSelectionState>((set) => ({
   composerOpenSlotId: null,
   composerPrompt: null,
   tableSelection: null,
-  setSelectedBlockId: (blockId) => set({ selectedBlockId: blockId }),
-  setSelectedSlotId: (slotId) => set({ selectedSlotId: slotId }),
+  setSelectedBlockId: (blockId) => set({ selectedBlockId: blockId, selectedSlotId: null }),
+  setSelectedSlotId: (slotId) => set({ selectedSlotId: slotId, selectedBlockId: null }),
   clearSelection: () => set({ selectedBlockId: null, selectedSlotId: null, composerOpenSlotId: null, composerPrompt: null }),
   setComposerOpenSlotId: (slotId) => set({ composerOpenSlotId: slotId, composerPrompt: null }),
   toggleComposerForSlot: (slotId) =>
