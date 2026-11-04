@@ -40,6 +40,7 @@ export function useFractalZoomNavigation(): {
   const setActiveDocId = useStudioDocumentStore((s) => s.setActiveDocId);
   const setActivePageId = useStudioDocumentStore((s) => s.setActivePageId);
   const setSelectedSlotId = useSlotSelectionStore((s) => s.setSelectedSlotId);
+  const setSelectedBlockId = useSlotSelectionStore((s) => s.setSelectedBlockId);
 
   const zoomRootNodeId = useWorkspaceSessionStore((s) => s.zoomRootNodeId);
   const quickFilterQuery = useWorkspaceSessionStore((s) => s.quickFilterQuery);
@@ -74,11 +75,19 @@ export function useFractalZoomNavigation(): {
       }, 40);
     }
     if (!node.targetSlotId && node.targetBlockId) {
-      // 블록 · 구역 · 행 컨테이너 노드는 해당 블록으로 스크롤한다.
+      // 블록 · 구역 · 행 컨테이너 노드는 해당 블록을 선택하고 테두리 링을 강조한다.
+      setSelectedBlockId(node.targetBlockId);
       window.setTimeout(() => {
-        document
-          .querySelector(`[data-block-id="${node.targetBlockId}"]`)
-          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        const el = document.querySelector(
+          `[data-block-id="${node.targetBlockId}"]`
+        );
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("ring-4", "ring-emerald-400", "transition-all");
+          window.setTimeout(() => {
+            el.classList.remove("ring-4", "ring-emerald-400");
+          }, 1200);
+        }
       }, 60);
     }
     if (node.targetSlotId) {

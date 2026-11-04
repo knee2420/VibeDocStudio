@@ -339,6 +339,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
                 const isCollapsed = collapsedNodeIds.includes(node.nodeId);
                 const isHovered =
                   hoveredOutlinerNodeId === node.targetSlotId ||
+                  hoveredOutlinerNodeId === node.targetBlockId ||
                   hoveredOutlinerNodeId === node.targetPageId ||
                   hoveredOutlinerNodeId === node.nodeId;
 
@@ -356,7 +357,10 @@ export const OutlinePreviewSidebar: React.FC = () => {
                     onKeyDown={(e) => handleNodeKeyDown(e, node)}
                     onMouseEnter={() =>
                       setHoveredOutlinerNodeId(
-                        node.targetSlotId || node.targetPageId || node.nodeId
+                        node.targetSlotId ||
+                          node.targetBlockId ||
+                          node.targetPageId ||
+                          node.nodeId
                       )
                     }
                     onMouseLeave={() => setHoveredOutlinerNodeId(null)}

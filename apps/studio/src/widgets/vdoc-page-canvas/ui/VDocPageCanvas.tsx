@@ -161,7 +161,8 @@ export const VDocPageCanvas: React.FC = () => {
     <div className="flex-1 flex flex-col overflow-hidden relative">
       {hoveredOutlinerNodeId && (
         <style>{`
-          [data-slot-id="${hoveredOutlinerNodeId}"] {
+          [data-slot-id="${hoveredOutlinerNodeId}"],
+          [data-block-id="${hoveredOutlinerNodeId}"] {
             outline: 2px solid #059669 !important;
             outline-offset: 3px !important;
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3) !important;

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  BookOpen,
   Columns,
   RotateCcw,
   RotateCw,
@@ -100,13 +99,10 @@ export const StudioTopRibbon: React.FC = () => {
                 파일
               </button>
               {activeMenu === "file" && (
-                <div className="absolute left-0 top-7 z-50 w-52 rounded-lg bg-slate-900 border border-slate-700 shadow-2xl p-1 text-xs text-slate-200 space-y-0.5">
-                  <div className="p-1">
-                    <ImportPdfButton />
-                  </div>
-                  <div className="p-1 border-t border-slate-800">
-                    <VDocFileActionButtons />
-                  </div>
+                <div className="absolute left-0 top-7 z-50 w-60 rounded-lg bg-slate-900 border border-slate-700 shadow-2xl p-1 text-xs text-slate-200 space-y-0.5">
+                  <ImportPdfButton onActionDone={() => setActiveMenu(null)} />
+                  <div className="my-1 border-t border-slate-800" />
+                  <VDocFileActionButtons onActionDone={() => setActiveMenu(null)} />
                 </div>
               )}
             </div>
@@ -151,20 +147,6 @@ export const StudioTopRibbon: React.FC = () => {
                 </div>
               )}
             </div>
-
-            {/* Template Hub Menu */}
-            <button
-              type="button"
-              data-testid="top-menu-template-hub-btn"
-              onClick={() => {
-                setActiveActivityTab("template-hub");
-                setActiveMenu(null);
-              }}
-              className="px-2 py-1 rounded hover:bg-slate-800 cursor-pointer transition flex items-center gap-1 text-emerald-400 hover:text-emerald-300"
-            >
-              <BookOpen className="w-3 h-3" />
-              서식허브
-            </button>
 
             {/* View Menu */}
             <div className="relative">

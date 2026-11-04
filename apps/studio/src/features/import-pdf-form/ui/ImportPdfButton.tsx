@@ -4,7 +4,11 @@ import { FileUp } from "lucide-react";
 import { useImportPdfForm } from "../model/useImportPdfForm";
 import { ImportPdfModal } from "./ImportPdfModal";
 
-export const ImportPdfButton: React.FC = () => {
+export interface ImportPdfButtonProps {
+  onActionDone?: () => void;
+}
+
+export const ImportPdfButton: React.FC<ImportPdfButtonProps> = ({ onActionDone }) => {
   const {
     isModalOpen,
     openModal,
@@ -23,15 +27,24 @@ export const ImportPdfButton: React.FC = () => {
     executeImport,
   } = useImportPdfForm();
 
+  const handleOpen = () => {
+    openModal();
+    onActionDone?.();
+  };
+
   return (
     <>
       <button
         type="button"
-        onClick={openModal}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100/80 text-xs font-medium text-emerald-900 cursor-pointer transition shadow-2xs"
+        data-testid="file-menu-import-pdf-btn"
+        onClick={handleOpen}
+        className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 flex items-center justify-between text-slate-200 cursor-pointer transition text-xs"
       >
-        <FileUp className="w-3.5 h-3.5 text-emerald-700" />
-        PDF 양식 불러오기
+        <div className="flex items-center gap-2">
+          <FileUp className="w-3.5 h-3.5 text-emerald-400" />
+          <span>PDF 양식 불러오기</span>
+        </div>
+        <span className="font-mono text-[10px] text-slate-400">.pdf</span>
       </button>
 
       <ImportPdfModal
