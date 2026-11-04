@@ -153,13 +153,13 @@ const ReferenceCard: React.FC<{
       } bg-white rounded border border-slate-300 shadow-sm ring-1 ring-slate-900/5 flex flex-col overflow-hidden transition-all`}
     >
       {/* 헤더 바: 참조 순번, 제목, PDF 인터랙션 모드 토글 */}
-      <header className="px-3 py-2 bg-slate-900 text-white flex items-center justify-between gap-2 shrink-0 rounded-t select-none">
+      <header className="px-3 py-2 bg-slate-300 text-slate-800 border-b border-slate-300 flex items-center justify-between gap-2 shrink-0 rounded-t select-none">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-slate-800 text-slate-200 border border-slate-700 text-[10px] font-bold shrink-0">
-            <Lock className="w-2.5 h-2.5 text-slate-400" />
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-white/90 text-slate-700 border border-slate-300/90 text-[10px] font-bold shrink-0 shadow-2xs">
+            <Lock className="w-2.5 h-2.5 text-slate-500" />
             참조 {refNumber}
           </span>
-          <h4 className="text-xs font-semibold truncate text-slate-100" title={cleanTitle}>
+          <h4 className="text-xs font-bold truncate text-slate-800" title={cleanTitle}>
             {cleanTitle}
           </h4>
         </div>
@@ -167,14 +167,14 @@ const ReferenceCard: React.FC<{
         <div className="flex items-center gap-1.5 shrink-0">
           {/* PDF 원본 뷰 모드일 때: [텍스트] vs [영역 선택] 인터랙션 토글 */}
           {hasPdf && (
-            <div className="inline-flex items-center p-0.5 rounded-sm bg-slate-800 border border-slate-700 text-[10px]">
+            <div className="inline-flex items-center p-0.5 rounded-sm bg-slate-200 border border-slate-300 text-[10px]">
               <button
                 type="button"
                 onClick={() => setPdfInteractionMode("text")}
                 className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-xs transition cursor-pointer ${
                   pdfInteractionMode === "text"
                     ? "bg-violet-600 text-white font-bold shadow-2xs"
-                    : "text-slate-400 hover:text-slate-200"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
                 title="일반 텍스트처럼 글자나 문장을 마우스로 드래그하여 선택하고 복사하는 모드"
               >
@@ -187,7 +187,7 @@ const ReferenceCard: React.FC<{
                 className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-xs transition cursor-pointer ${
                   pdfInteractionMode === "box"
                     ? "bg-violet-600 text-white font-bold shadow-2xs"
-                    : "text-slate-400 hover:text-slate-200"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
                 title="마우스 드래그로 사각 영역을 선택하고 모서리 핸들로 범위를 조절하는 모드"
               >
@@ -197,12 +197,12 @@ const ReferenceCard: React.FC<{
             </div>
           )}
 
-          <div className="w-px h-3 bg-slate-700 mx-0.5" />
+          <div className="w-px h-3 bg-slate-400 mx-0.5" />
 
           <button
             type="button"
             onClick={() => onClose(docId)}
-            className="p-1 rounded-sm hover:bg-rose-900/60 hover:text-rose-200 text-slate-400 cursor-pointer transition-colors"
+            className="p-1 rounded-sm hover:bg-rose-100 hover:text-rose-700 text-slate-500 cursor-pointer transition-colors"
             title="참조 작업창 닫기"
           >
             <X className="w-3.5 h-3.5" />
@@ -289,10 +289,10 @@ const ReferenceCard: React.FC<{
           <button
             type="button"
             onClick={() => void handleCopyAllText()}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white border border-slate-700 rounded-sm text-xs font-semibold cursor-pointer shadow-2xs transition active:scale-[0.98]"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-300 hover:bg-slate-400/80 text-slate-800 border border-slate-400/70 rounded-sm text-xs font-semibold cursor-pointer shadow-2xs transition active:scale-[0.98]"
             title="원문의 전체 텍스트를 클립보드로 복사"
           >
-            <Copy className="w-3.5 h-3.5 text-slate-300" />
+            <Copy className="w-3.5 h-3.5 text-slate-600" />
             원문 텍스트 복사
           </button>
           {customSegments.length > 0 && (

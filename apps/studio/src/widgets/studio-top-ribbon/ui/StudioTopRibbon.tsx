@@ -241,7 +241,7 @@ export const StudioTopRibbon: React.FC = () => {
             <span>Staged ({stagingCount})</span>
           </button>
 
-          <StudioAgentSettingsButton />
+          <StudioAgentSettingsButton className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-100 cursor-pointer transition" />
           <ShortcutHelpPopover />
         </div>
       </header>

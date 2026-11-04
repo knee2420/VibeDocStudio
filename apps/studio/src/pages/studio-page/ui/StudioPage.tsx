@@ -1,7 +1,9 @@
 import React from "react";
 
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { registerWorkspaceAi } from "@/features/ai-workspace";
 import { GlobalUndoToastHost, useGlobalStudioShortcuts } from "@/features/command-bus";
+import { registerSlotAiActions } from "@/features/compose-slot-ai";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { HoverPagePeekCard } from "@/features/peek-page";
@@ -18,6 +20,11 @@ const StudioWorkspace: React.FC = () => {
   useWorkspaceUrlSync();
   useGlobalStudioShortcuts();
   useZoomHierarchySync();
+  // AI 런타임 확장 지점: 기능마다 도구 · 컨텍스트 · 액션을 등록한다 (Composer · 인라인 공용).
+  React.useEffect(() => {
+    const offs = [registerWorkspaceAi(), registerSlotAiActions()];
+    return () => offs.forEach((off) => off());
+  }, []);
 
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const blocks = useMutateCanvasBlocks();

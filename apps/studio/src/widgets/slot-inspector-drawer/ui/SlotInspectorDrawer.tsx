@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { Boxes, ChevronRight, Sliders, Sparkles, Wrench } from "lucide-react";
+import React from "react";
+import { Boxes, ChevronRight, Settings, Sliders, Sparkles, Wrench } from "lucide-react";
 
 import { findBlock, type ImageBlockDef } from "@vibe/vdoc-schema";
 
 import { SlotMetadataCard, useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { AiComposerView } from "@/features/ai-composer";
+import { StudioAgentSettingsButton } from "@/features/agent-settings";
 import { SlotBackdataSection } from "@/features/bind-slot-backdata";
 import { SlotPlainTextEditorCard, SlotTypographyCard, useSlotContentActions } from "@/features/edit-slot-richtext";
 import { BlockInsertionPalette, useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
@@ -13,8 +15,6 @@ import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { CollapsedPanelRail } from "@/shared/ui";
 
 import { ImageInspectorCard } from "./ImageInspectorCard";
-
-type RightSidebarViewMode = "blockbox" | "inspector";
 
 const BLOCK_GUIDE = [
   ["텍스트 섹션", "제목과 본문 슬롯이 결합된 기본 문서 블록"],
@@ -28,7 +28,7 @@ const tabClass = (active: boolean, activeTone: string) =>
     active ? `bg-white ${activeTone} shadow-2xs font-bold` : "text-slate-500 hover:text-slate-700"
   }`;
 
-/** 우측 작업 도구: 블록 박스(끼워 넣기)와 선택한 슬롯 · 블록의 속성 인스펙터. */
+/** 우측 작업 패널: AI Composer(기본) · 블록 박스(끼워 넣기) · 선택한 슬롯 · 블록의 속성 인스펙터. */
 export const SlotInspectorDrawer: React.FC = () => {
   const doc = useStudioDocumentStore(selectActiveDocument);
   const activePageId = useStudioDocumentStore((s) => s.activePageId);
@@ -37,14 +37,12 @@ export const SlotInspectorDrawer: React.FC = () => {
   const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
   const rightSidebarOpen = useWorkspaceLayoutStore((s) => s.rightSidebarOpen);
   const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
+  const viewMode = useWorkspaceLayoutStore((s) => s.rightPanelTab);
+  const setViewMode = useWorkspaceLayoutStore((s) => s.openRightPanel);
 
   const { toggleSlotLock } = useSlotContentActions();
   const { updateBlock, deleteBlock } = useMutateCanvasBlocks();
   const { stageSlotAiDraft, isAiStreaming } = useStageAiChanges();
-
-  // 사용자가 탭을 직접 고르기 전에는 선택이 있으면 인스펙터, 없으면 블록 박스를 보여준다.
-  const [userTab, setUserTab] = useState<RightSidebarViewMode | null>(null);
-  const viewMode: RightSidebarViewMode = userTab ?? (selectedSlotId || selectedBlockId ? "inspector" : "blockbox");
 
   if (!doc) return null;
 
@@ -55,7 +53,7 @@ export const SlotInspectorDrawer: React.FC = () => {
     return (
       <CollapsedPanelRail
         side="right"
-        label="작업 도구 (BlockBox & Inspector)"
+        label="AI Composer · 작업 도구"
         badgeCount={Object.keys(doc.backdata).length}
         onExpand={() => setRightSidebarOpen(true)}
         testId="right-sidebar-collapsed-rail"
@@ -66,27 +64,36 @@ export const SlotInspectorDrawer: React.FC = () => {
   return (
     <aside
       data-testid="slot-inspector-drawer"
-      className="w-[360px] bg-white border-l border-slate-200 flex flex-col shrink-0 select-none relative z-10"
+      className={`${viewMode === "composer" ? "w-[420px]" : "w-[360px]"} bg-white border-l border-slate-200 flex flex-col shrink-0 select-none relative z-10 min-h-0`}
     >
-      <div className="px-3.5 py-2.5 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
+      <div className="px-2.5 py-2 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
         <div className="flex items-center p-0.5 bg-slate-100 rounded-lg text-xs font-semibold">
           <button
             type="button"
+            data-testid="tab-view-composer"
+            onClick={() => setViewMode("composer")}
+            className={tabClass(viewMode === "composer", "text-violet-900")}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+            <span>AI Composer</span>
+          </button>
+          <button
+            type="button"
             data-testid="tab-view-blockbox"
-            onClick={() => setUserTab("blockbox")}
+            onClick={() => setViewMode("blockbox")}
             className={tabClass(viewMode === "blockbox", "text-emerald-900")}
           >
             <Boxes className="w-3.5 h-3.5 text-emerald-600" />
-            <span>블록 박스 (BlockBox)</span>
+            <span>블록</span>
           </button>
           <button
             type="button"
             data-testid="tab-view-inspector"
-            onClick={() => setUserTab("inspector")}
+            onClick={() => setViewMode("inspector")}
             className={tabClass(viewMode === "inspector", "text-blue-900")}
           >
             <Sliders className="w-3.5 h-3.5 text-blue-600" />
-            <span>속성 인스펙터</span>
+            <span>인스펙터</span>
             {selectedSlot && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 ml-0.5" />}
           </button>
         </div>
@@ -101,6 +108,18 @@ export const SlotInspectorDrawer: React.FC = () => {
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+
+      {viewMode === "composer" && (
+        <div className="flex-1 min-h-0">
+          <AiComposerView
+            headerActions={
+              <StudioAgentSettingsButton className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer inline-flex">
+                <Settings className="w-4 h-4" />
+              </StudioAgentSettingsButton>
+            }
+          />
+        </div>
+      )}
 
       {viewMode === "blockbox" && (
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -189,7 +208,7 @@ export const SlotInspectorDrawer: React.FC = () => {
             </p>
             <button
               type="button"
-              onClick={() => setUserTab("blockbox")}
+              onClick={() => setViewMode("blockbox")}
               className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-2xs"
             >
               <Boxes className="w-3.5 h-3.5" />

@@ -4,4 +4,4 @@ export {
   SIDEBAR_WIDTH,
   useWorkspaceLayoutStore,
 } from "./model/useWorkspaceLayoutStore";
-export type { ActivityBarTab, WorkspaceLayoutState } from "./model/useWorkspaceLayoutStore";
+export type { ActivityBarTab, RightPanelTab, WorkspaceLayoutState } from "./model/useWorkspaceLayoutStore";

@@ -6,6 +6,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from typing import Any
@@ -14,6 +16,7 @@ from agent_core.react import RunLogContextFilter
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.assistant import router as assistant_router_module
 from app.backdata import router as backdata_router_module
 from app.bootstrap.container import Container
 from app.bootstrap.error_handlers import register_error_handlers
@@ -37,6 +40,7 @@ _DOMAIN_ROUTERS = (
     (composer_router_module, "/api/ai", "composer"),
     (projects_router_module, "/api/projects", "projects"),
     (runtime_router_module, "/api", "runtime"),
+    (assistant_router_module, "/api/assistant", "assistant"),
 )
 
 
@@ -81,7 +85,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     container = Container(settings=settings)
     container.wire(modules=[module for module, _, _ in _DOMAIN_ROUTERS])
 
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        if settings.external_llm_enabled:
+            container.assistant_service().warmup()  # 첫 질문 전에 agy 를 예열 (백그라운드)
+        yield
+        # agy 상주 프로세스(Composer 세션 · 예열 풀)는 API 와 함께 내려간다.
+        container.assistant_service().shutdown()
+
     application = FastAPI(
+        lifespan=lifespan,
         title="VibeDocStudio API",
         version="0.3.0",
         description="Hexagonal Domain-Sliced API (" + " · ".join(tag for _, _, tag in _DOMAIN_ROUTERS) + ")",

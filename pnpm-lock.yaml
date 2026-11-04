@@ -56,6 +56,15 @@ importers:
       '@vibe/ai-composer':
         specifier: workspace:*
         version: link:../../packages/ai-composer
+      '@vibe/ai-inline':
+        specifier: workspace:*
+        version: link:../../packages/ai-inline
+      '@vibe/ai-kernel':
+        specifier: workspace:*
+        version: link:../../packages/ai-kernel
+      '@vibe/ai-react':
+        specifier: workspace:*
+        version: link:../../packages/ai-react
       '@vibe/document-viewer':
         specifier: workspace:*
         version: link:../../../VibePatchNote/packages/document-viewer
@@ -117,9 +126,47 @@ importers:
 
   packages/ai-composer:
     dependencies:
-      '@vibe/vdoc-schema':
+      '@vibe/ai-kernel':
         specifier: workspace:*
-        version: link:../vdoc-schema
+        version: link:../ai-kernel
+      '@vibe/ai-react':
+        specifier: workspace:*
+        version: link:../ai-react
+      lucide-react:
+        specifier: ^0.475.0
+        version: 0.475.0(react@19.3.1)
+      react:
+        specifier: ^19.0.0
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.3.1(react@19.3.1)
+
+  packages/ai-inline:
+    dependencies:
+      '@vibe/ai-kernel':
+        specifier: workspace:*
+        version: link:../ai-kernel
+      '@vibe/ai-react':
+        specifier: workspace:*
+        version: link:../ai-react
+      lucide-react:
+        specifier: ^0.475.0
+        version: 0.475.0(react@19.3.1)
+      react:
+        specifier: ^19.0.0
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.3.1(react@19.3.1)
+
+  packages/ai-kernel: {}
+
+  packages/ai-react:
+    dependencies:
+      '@vibe/ai-kernel':
+        specifier: workspace:*
+        version: link:../ai-kernel
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.3.1)

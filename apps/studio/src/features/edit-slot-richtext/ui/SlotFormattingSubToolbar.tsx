@@ -103,7 +103,7 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
   const activeEditor = useActiveSlotEditorStore((s) => s.activeEditor);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
   const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
-  const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
+  const openRightPanel = useWorkspaceLayoutStore((s) => s.openRightPanel);
 
   useEditorTick(activeEditor);
 
@@ -451,7 +451,7 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
           {currentSlot.backDataRefs.length > 0 && (
             <button
               type="button"
-              onClick={() => setRightSidebarOpen(true)}
+              onClick={() => openRightPanel("inspector")}
               title="연결된 백데이터 원문 보기"
               className="inline-flex items-center gap-0.5 rounded bg-slate-100 px-1.5 py-0.5 font-semibold hover:bg-slate-200 cursor-pointer"
             >

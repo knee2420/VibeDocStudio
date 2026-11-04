@@ -13,6 +13,8 @@ from pathlib import Path
 
 from dependency_injector import containers, providers
 
+from app.assistant.adapters import AssistantEngineProvider
+from app.assistant.use_cases import AssistantService
 from app.backdata.adapters import LocalBackdataRepository
 from app.backdata.use_cases import (
     ImportRawBackdataUseCase,
@@ -83,14 +85,22 @@ _REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 def _model_options(settings: Settings) -> tuple[ModelOption, ...]:
+    """AI 설정 모달의 모델 목록. agy 는 실제 `agy models` 식별자여야 CLI 가 받아들인다."""
     return (
-        ModelOption(settings.tagger_model, "agy_cli", "초경량 로컬/고속 서식 태깅"),
-        ModelOption(settings.composer_model, "agy_cli", "균형 잡힌 주력 서식 스캐폴더", recommended=True),
-        ModelOption(settings.pro_model, "agy_cli", "고난도 복합 조항 심층 분석"),
-        ModelOption(settings.lite_model, "agy_cli", "초저비용 고속 분류"),
-        ModelOption(settings.composer_model, "google_api", "Google Direct REST API 주력", recommended=True),
-        ModelOption(settings.lite_model, "google_api", "Google Direct REST API Fallback"),
+        ModelOption("gemini-3.8-flash-low", "agy_cli", "고속 응답 — Composer · 인라인 기본값", recommended=True),
+        ModelOption("gemini-3.8-flash-medium", "agy_cli", "균형 잡힌 주력 작성"),
+        ModelOption("gemini-3.8-flash-high", "agy_cli", "깊은 추론이 필요한 작성"),
+        ModelOption("gemini-4-argon-medium", "agy_cli", "고난도 복합 조항 심층 분석"),
+        ModelOption("claude-sonnet-5-5-medium", "agy_cli", "장문 서술 · 판단 품질"),
+        ModelOption("gemini-3.5-flash-lite", "google_api", "Google Direct REST API 고속", recommended=True),
+        ModelOption("gemini-3.5-flash", "google_api", "Google Direct REST API 주력"),
     )
+
+
+def _cli_model(settings: Settings) -> str:
+    """설정의 Composer 모델이 agy 식별자(`…-low|medium|high`)가 아니면 실행 가능한 기본값을 쓴다."""
+    name = settings.composer_model
+    return name if name.endswith(("-low", "-medium", "-high")) else settings.assistant_inline_model
 
 
 class Container(containers.DeclarativeContainer):
@@ -104,9 +114,9 @@ class Container(containers.DeclarativeContainer):
         lambda s: RuntimeExecutionPolicy(
             primary_provider=CLI_PROVIDER,
             fallback_provider=GOOGLE_PROVIDER,
-            google_api_model=s.composer_model,
+            google_api_model="gemini-3.5-flash-lite",
             google_api_timeout_seconds=180,
-            agent_cli_model=s.composer_model,
+            agent_cli_model=_cli_model(s),
             agent_cli_timeout_seconds=180,
             agent_cli_bin="agy",
         ),
@@ -218,3 +228,18 @@ class Container(containers.DeclarativeContainer):
         repository=project_repository,
     )
     apply_outline_command = providers.Factory(ApplyOutlineCommandUseCase, repository=project_repository)
+
+    # --- 7. assistant 도메인 (AI Composer · 인라인 AI 공용 실행 계층) ---
+    assistant_engines = providers.Singleton(
+        AssistantEngineProvider,
+        agy_executable=providers.Callable(lambda p: p.agent_cli_bin, runtime_policy),
+        sandbox_dir=providers.Callable(lambda st: st.state / "assistant" / "sandbox", storage),
+        external_llm_enabled=providers.Callable(lambda s: s.external_llm_enabled, settings),
+        google_api_key=providers.Callable(lambda c: c.get_google_api_key, credentials),
+    )
+    assistant_service = providers.Singleton(
+        AssistantService,
+        engines=assistant_engines,
+        policy=runtime_policy,
+        inline_model=providers.Callable(lambda s: s.assistant_inline_model, settings),
+    )

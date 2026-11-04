@@ -8,6 +8,9 @@ import { readStoredNumber, writeStoredValue } from "@/shared/lib";
  */
 export type ActivityBarTab = "explorer" | "source-control" | "template-hub";
 
+/** 오른쪽 작업 패널의 탭. AI Composer 가 기본이다. */
+export type RightPanelTab = "composer" | "blockbox" | "inspector";
+
 export const SIDEBAR_WIDTH = { default: 320, min: 250, max: 650 } as const;
 export const REFERENCE_DECK_HEIGHT = { default: 140, min: 50 } as const;
 export const REFERENCE_SPLIT_WIDTH = { default: 520, min: 360, max: 1000 } as const;
@@ -26,6 +29,7 @@ export interface WorkspaceLayoutState {
   activeActivityTab: ActivityBarTab;
   leftSidebarOpen: boolean;
   rightSidebarOpen: boolean;
+  rightPanelTab: RightPanelTab;
   sidebarWidth: number;
   referenceDeckHeight: number;
   referenceSplitWidth: number;
@@ -40,6 +44,8 @@ export interface WorkspaceLayoutState {
   toggleActivityTab: (tab: ActivityBarTab) => void;
   setLeftSidebarOpen: (open: boolean) => void;
   setRightSidebarOpen: (open: boolean) => void;
+  /** 오른쪽 패널을 펼치고 해당 탭으로 간다. */
+  openRightPanel: (tab: RightPanelTab) => void;
   setSidebarWidth: (width: number) => void;
   resetSidebarWidth: () => void;
   setReferenceDeckHeight: (height: number) => void;
@@ -58,6 +64,7 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   activeActivityTab: "explorer",
   leftSidebarOpen: true,
   rightSidebarOpen: true,
+  rightPanelTab: "composer",
   sidebarWidth: clamp(readStoredNumber(SIDEBAR_WIDTH_KEY, SIDEBAR_WIDTH.default), SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max),
   referenceDeckHeight: clamp(
     readStoredNumber(DECK_HEIGHT_KEY, REFERENCE_DECK_HEIGHT.default),
@@ -80,6 +87,7 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   },
   setLeftSidebarOpen: (open) => set({ leftSidebarOpen: open }),
   setRightSidebarOpen: (open) => set({ rightSidebarOpen: open }),
+  openRightPanel: (tab) => set({ rightSidebarOpen: true, rightPanelTab: tab }),
 
   setSidebarWidth: (width) => {
     const next = clamp(width, SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max);
@@ -106,5 +114,5 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   togglePagePreview: () => set((s) => ({ pagePreviewOpen: !s.pagePreviewOpen })),
   setShortcutHelpOpen: (open) => set({ shortcutHelpOpen: open }),
   setBackdataFormOpen: (open) => set({ backdataFormOpen: open }),
-  openBackdataForm: () => set({ rightSidebarOpen: true, backdataFormOpen: true }),
+  openBackdataForm: () => set({ rightSidebarOpen: true, rightPanelTab: "inspector", backdataFormOpen: true }),
 }));

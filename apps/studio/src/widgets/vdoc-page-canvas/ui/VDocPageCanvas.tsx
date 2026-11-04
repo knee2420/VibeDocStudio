@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowUpLeft, Columns } from "lucide-react";
 
 import { MemoVDocPageSheet, WindowedPageChunker } from "@vibe/slot-canvas";
-import type { SlotAiAction } from "@vibe/slot-editor";
+import { useActiveSlotEditorStore, type SlotAiAction } from "@vibe/slot-editor";
 import type { BackdataChunk, VDocSlot } from "@vibe/vdoc-schema";
 
 import { useSlotSelectionStore } from "@/entities/slot";
@@ -90,6 +90,7 @@ const DraftingCanvas: React.FC = () => {
   const openComposerWithPrompt = useSlotSelectionStore((s) => s.openComposerWithPrompt);
   const setTableSelection = useSlotSelectionStore((s) => s.setTableSelection);
   const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
+  const openRightPanel = useWorkspaceLayoutStore((s) => s.openRightPanel);
   const setSelectedOutlinerNodeId = useWorkspaceSessionStore((s) => s.setSelectedOutlinerNodeId);
 
   const { updateSlotContent } = useSlotContentActions();
@@ -109,11 +110,15 @@ const DraftingCanvas: React.FC = () => {
   });
   const onOpenBackdataDrawer = useStableCallback((slotId: string) => {
     setSelectedSlotId(slotId);
-    setRightSidebarOpen(true);
+    openRightPanel("inspector");
   });
-  const onSlotAiAction = useStableCallback((slotId: string, action: SlotAiAction, text: string) =>
-    openComposerWithPrompt(slotId, buildSlotAiActionPrompt(action, text))
-  );
+  const onSlotAiAction = useStableCallback((slotId: string, action: SlotAiAction, text: string) => {
+    // 선택 영역 AI 바: 그 범위만 고치도록 편집기 문서 위치를 함께 넘긴다.
+    const { activeSlotId, activeEditor } = useActiveSlotEditorStore.getState();
+    const sel = activeSlotId === slotId ? activeEditor?.state.selection : undefined;
+    const range = sel && !sel.empty ? { from: sel.from, to: sel.to, text } : null;
+    openComposerWithPrompt(slotId, buildSlotAiActionPrompt(action, text), range);
+  });
   const onUpdateSlotContent = useStableCallback(updateSlotContent);
   const onMoveBlock = useStableCallback(blocks.moveBlock);
   const onMoveBlockTo = useStableCallback(blocks.moveBlockTo);

@@ -13,6 +13,9 @@
   "dependencies": {
     "@vibe/agent-core": "workspace:*",
     "@vibe/ai-composer": "workspace:*",
+    "@vibe/ai-inline": "workspace:*",
+    "@vibe/ai-kernel": "workspace:*",
+    "@vibe/ai-react": "workspace:*",
     "@vibe/document-viewer": "workspace:*",
     "@vibe/slot-canvas": "workspace:*",
     "@vibe/slot-editor": "workspace:*",

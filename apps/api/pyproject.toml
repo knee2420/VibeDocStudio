@@ -34,6 +34,7 @@ name = "Core must not import domains"
 type = "forbidden"
 source_modules = ["app.core"]
 forbidden_modules = [
+    "app.assistant",
     "app.backdata",
     "app.catalog",
     "app.composer",
@@ -47,6 +48,7 @@ name = "Pdf VDoc Engine is independent"
 type = "forbidden"
 source_modules = ["pdf_vdoc_engine"]
 forbidden_modules = [
+    "app.assistant",
     "app.backdata",
     "app.catalog",
     "app.composer",
@@ -82,6 +84,7 @@ source_modules = [
     "app.backdata.ports",
 ]
 forbidden_modules = [
+    "app.assistant",
     "app.catalog",
     "app.composer",
     "app.documents",
@@ -99,6 +102,7 @@ source_modules = [
     "app.catalog.ports",
 ]
 forbidden_modules = [
+    "app.assistant",
     "app.backdata",
     "app.composer",
     "app.documents",
@@ -116,6 +120,7 @@ source_modules = [
     "app.composer.ports",
 ]
 forbidden_modules = [
+    "app.assistant",
     "app.backdata",
     "app.catalog",
     "app.documents",
@@ -132,6 +137,7 @@ source_modules = [
     "app.documents.ports",
 ]
 forbidden_modules = [
+    "app.assistant",
     "app.backdata",
     "app.catalog",
     "app.composer",
@@ -148,6 +154,7 @@ source_modules = [
     "app.projects.ports",
 ]
 forbidden_modules = [
+    "app.assistant",
     "app.backdata",
     "app.catalog",
     "app.composer",
@@ -162,9 +169,27 @@ source_modules = [
     "app.runtime.use_cases",
 ]
 forbidden_modules = [
+    "app.assistant",
     "app.backdata",
     "app.catalog",
     "app.composer",
     "app.documents",
     "app.projects",
+]
+
+[[tool.importlinter.contracts]]
+name = "assistant must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.assistant.use_cases",
+    "app.assistant.adapters",
+    "app.assistant.ports",
+]
+forbidden_modules = [
+    "app.backdata",
+    "app.catalog",
+    "app.composer",
+    "app.documents",
+    "app.projects",
+    "app.runtime",
 ]
