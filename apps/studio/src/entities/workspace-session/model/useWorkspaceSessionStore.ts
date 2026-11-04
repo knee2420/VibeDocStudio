@@ -1,19 +1,27 @@
 import { create } from "zustand";
 
-import {
-  PROJECT_ROOT_CRUMB_ID,
-  type StagedAiChange,
-  type WorkbenchPhase,
-} from "@vibe/vdoc-schema";
+import { PROJECT_ROOT_CRUMB_ID, type WorkbenchPhase } from "@vibe/vdoc-schema";
 
-const PHASES: readonly WorkbenchPhase[] = ["storylining", "templating", "drafting"];
+/**
+ * 작업 공간 안에서 "지금 어디를 보고 있는가" (URL 로 공유되는 위치 상태).
+ *
+ * - 단계 · 줌 루트 · 아웃라인 선택/필터/접힘/호버
+ * - 캔버스 옆에 띄운 참조 문서 작업창 (`openReferenceDocIds`, URL `splitRef`)
+ * - 페이지 미리보기 패널이 보여주는 문서 (`previewDocId`, 없으면 활성 문서)
+ *
+ * 화면 배치(패널 크기 · 열림)는 `workspace-layout`, AI 실행과 변경안은 `ai-staging` 이 맡는다.
+ */
+export const WORKBENCH_PHASES: readonly WorkbenchPhase[] = ["storylining", "templating", "drafting"];
 
-export type ActivityBarTab = "explorer" | "source-control" | "template-hub" | "settings";
+export function isWorkbenchPhase(value: unknown): value is WorkbenchPhase {
+  return WORKBENCH_PHASES.includes(value as WorkbenchPhase);
+}
 
 /** URL · 저장소에서 복원하는 작업 공간 위치. */
 export interface WorkspaceLocation {
   phase?: string | null;
   zoom?: string | null;
+  /** 쉼표로 이은 참조 문서 ID 목록. */
   splitRef?: string | null;
 }
 
@@ -22,109 +30,49 @@ export interface WorkspaceSessionState {
   zoomRootNodeId: string;
   selectedOutlinerNodeId: string | null;
   quickFilterQuery: string;
-  splitReferenceDocId: string | null;
-  stagingQueue: StagedAiChange[];
-  isAiStreaming: boolean;
-  activeRunId: string | null;
-  lastAbortedRunId: string | null;
-  shortcutPopoverOpen: boolean;
-  stagingDrawerOpen: boolean;
-  activeActivityTab: ActivityBarTab;
-  leftSidebarOpen: boolean;
+  collapsedNodeIds: string[];
+  /** 아웃라인에서 가리키고 있는 캔버스 대상(슬롯 · 블록 · 페이지 · 노드 ID). */
+  hoveredOutlineTargetId: string | null;
+  /** 캔버스 왼쪽에 나란히 띄운 참조 문서 작업창 (띄운 순서). */
+  openReferenceDocIds: string[];
+  previewDocId: string | null;
+
   restoreLocation: (location: WorkspaceLocation) => void;
   setPhase: (phase: WorkbenchPhase) => void;
   zoomIntoNode: (nodeId: string) => void;
   setSelectedOutlinerNodeId: (nodeId: string | null) => void;
   setQuickFilterQuery: (query: string) => void;
-  setSplitReferenceDocId: (docId: string | null) => void;
-  enqueueStagedChanges: (changes: StagedAiChange[]) => void;
-  removeStagedChange: (diffId: string) => void;
-  clearStagingQueue: () => void;
-  /**
-   * AI 실행 시작. `abort` 는 그 실행을 실제로 멈추는 방법(요청 중단 + 서버 취소)이며,
-   * 어디서 중단하든(Esc · 리본 버튼 · 작업대 버튼) `abortAiRun()` 하나로 같은 경로를 탄다.
-   */
-  startAiRun: (runId: string, abort: () => void) => void;
-  finishAiRun: (runId: string) => void;
-  abortAiRun: () => void;
-  setShortcutPopoverOpen: (open: boolean) => void;
-  setStagingDrawerOpen: (open: boolean) => void;
-  setActiveActivityTab: (tab: ActivityBarTab) => void;
-  toggleActivityTab: (tab: ActivityBarTab) => void;
-  setLeftSidebarOpen: (open: boolean) => void;
-  sidebarWidth: number;
-  setSidebarWidth: (width: number) => void;
-  referenceDeckHeight: number;
-  setReferenceDeckHeight: (height: number) => void;
-  collapsedNodeIds: string[];
   toggleNodeCollapse: (nodeId: string) => void;
   collapseAllNodes: (nodeIds: string[]) => void;
   expandAllNodes: () => void;
-  hoveredOutlinerNodeId: string | null;
-  setHoveredOutlinerNodeId: (id: string | null) => void;
-  isPageViewMode: boolean;
-  previewDocId: string | null;
-  peekPageId: string | null;
-  peekDocId: string | null;
-  peekPosition: { x: number; y: number } | null;
-  setPageViewMode: (on: boolean) => void;
-  togglePageViewMode: () => void;
+  setHoveredOutlineTargetId: (id: string | null) => void;
+  toggleReferenceDoc: (docId: string) => void;
+  openReferenceDoc: (docId: string) => void;
+  closeReferenceDoc: (docId: string) => void;
+  closeAllReferenceDocs: () => void;
+  setOpenReferenceDocIds: (docIds: string[]) => void;
   setPreviewDocId: (docId: string | null) => void;
-  setPeekPage: (
-    pageId: string | null,
-    pos?: { x: number; y: number } | null,
-    docId?: string | null
-  ) => void;
 }
 
-/** 실행 중단 방법은 직렬화할 값이 아니므로 상태 밖에 둔다. */
-let activeRunAbort: (() => void) | null = null;
+export function parseReferenceDocIds(raw: string | null | undefined): string[] {
+  return [...new Set((raw ?? "").split(",").map((s) => s.trim()).filter(Boolean))];
+}
 
-export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set, get) => ({
+export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => ({
   currentPhase: "drafting",
   zoomRootNodeId: PROJECT_ROOT_CRUMB_ID,
   selectedOutlinerNodeId: null,
   quickFilterQuery: "",
-  splitReferenceDocId: null,
-  stagingQueue: [],
-  isAiStreaming: false,
-  activeRunId: null,
-  lastAbortedRunId: null,
-  shortcutPopoverOpen: false,
-  stagingDrawerOpen: false,
-  activeActivityTab: "explorer",
-  leftSidebarOpen: true,
-  sidebarWidth:
-    typeof window !== "undefined"
-      ? Number(window.localStorage.getItem("vdoc-sidebar-width")) || 320
-      : 320,
-  referenceDeckHeight:
-    typeof window !== "undefined"
-      ? Number(window.localStorage.getItem("vdoc-ref-deck-height")) || 140
-      : 140,
   collapsedNodeIds: [],
-  hoveredOutlinerNodeId: null,
-  isPageViewMode: false,
+  hoveredOutlineTargetId: null,
+  openReferenceDocIds: [],
   previewDocId: null,
-  peekPageId: null,
-  peekDocId: null,
-  peekPosition: null,
-
-  setPageViewMode: (on) => set({ isPageViewMode: on }),
-  togglePageViewMode: () => set((s) => ({ isPageViewMode: !s.isPageViewMode })),
-  setPreviewDocId: (docId) => set({ previewDocId: docId }),
-  setPeekPage: (pageId, pos, docId) =>
-    set({
-      peekPageId: pageId,
-      peekPosition: pos ?? null,
-      peekDocId: pageId ? (docId ?? null) : null,
-    }),
 
   restoreLocation: ({ phase, zoom, splitRef }) =>
     set({
-      currentPhase: PHASES.includes(phase as WorkbenchPhase) ? (phase as WorkbenchPhase) : "drafting",
+      currentPhase: isWorkbenchPhase(phase) ? phase : "drafting",
       zoomRootNodeId: zoom || PROJECT_ROOT_CRUMB_ID,
-      splitReferenceDocId: splitRef || null,
+      openReferenceDocIds: parseReferenceDocIds(splitRef),
     }),
 
   setPhase: (phase) => set({ currentPhase: phase }),
@@ -137,80 +85,6 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set, get)
 
   setSelectedOutlinerNodeId: (nodeId) => set({ selectedOutlinerNodeId: nodeId }),
   setQuickFilterQuery: (query) => set({ quickFilterQuery: query }),
-  setSplitReferenceDocId: (docId) => set({ splitReferenceDocId: docId }),
-
-  enqueueStagedChanges: (changes) =>
-    set((s) => ({
-      stagingQueue: [...s.stagingQueue, ...changes],
-      stagingDrawerOpen: true,
-    })),
-
-  removeStagedChange: (diffId) =>
-    set((s) => ({
-      stagingQueue: s.stagingQueue.filter((c) => c.diffId !== diffId),
-    })),
-
-  clearStagingQueue: () => set({ stagingQueue: [] }),
-
-  startAiRun: (runId, abort) => {
-    activeRunAbort = abort;
-    set({ isAiStreaming: true, activeRunId: runId, lastAbortedRunId: null });
-  },
-
-  finishAiRun: (runId) => {
-    if (get().activeRunId !== runId) return;
-    activeRunAbort = null;
-    set({ isAiStreaming: false, activeRunId: null });
-  },
-
-  abortAiRun: () => {
-    const runId = get().activeRunId;
-    if (!runId) return;
-    const abort = activeRunAbort;
-    activeRunAbort = null;
-    set({ isAiStreaming: false, activeRunId: null, lastAbortedRunId: runId });
-    abort?.();
-  },
-
-  setShortcutPopoverOpen: (open) => set({ shortcutPopoverOpen: open }),
-  setStagingDrawerOpen: (open) => set({ stagingDrawerOpen: open }),
-  setActiveActivityTab: (tab) => set({ activeActivityTab: tab, leftSidebarOpen: true }),
-  toggleActivityTab: (tab) =>
-    set((s) => {
-      if (s.activeActivityTab === tab && s.leftSidebarOpen) {
-        return { leftSidebarOpen: false };
-      }
-      return { activeActivityTab: tab, leftSidebarOpen: true };
-    }),
-  setLeftSidebarOpen: (open) => set({ leftSidebarOpen: open }),
-
-  setSidebarWidth: (width) => {
-    const clamped = Math.max(250, Math.min(650, width));
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem("vdoc-sidebar-width", String(clamped));
-      } catch {
-        // ignore quota errors
-      }
-    }
-    set({ sidebarWidth: clamped });
-  },
-
-  setReferenceDeckHeight: (height) => {
-    const maxHeight =
-      typeof window !== "undefined"
-        ? Math.max(300, Math.floor(window.innerHeight * 0.75))
-        : 500;
-    const clamped = Math.max(50, Math.min(maxHeight, height));
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem("vdoc-ref-deck-height", String(clamped));
-      } catch {
-        // ignore quota errors
-      }
-    }
-    set({ referenceDeckHeight: clamped });
-  },
 
   toggleNodeCollapse: (nodeId) =>
     set((s) => ({
@@ -218,9 +92,23 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set, get)
         ? s.collapsedNodeIds.filter((id) => id !== nodeId)
         : [...s.collapsedNodeIds, nodeId],
     })),
-
   collapseAllNodes: (nodeIds) => set({ collapsedNodeIds: nodeIds }),
   expandAllNodes: () => set({ collapsedNodeIds: [] }),
 
-  setHoveredOutlinerNodeId: (id) => set({ hoveredOutlinerNodeId: id }),
+  setHoveredOutlineTargetId: (id) => set({ hoveredOutlineTargetId: id }),
+
+  toggleReferenceDoc: (docId) =>
+    set((s) => ({
+      openReferenceDocIds: s.openReferenceDocIds.includes(docId)
+        ? s.openReferenceDocIds.filter((id) => id !== docId)
+        : [...s.openReferenceDocIds, docId],
+    })),
+  openReferenceDoc: (docId) =>
+    set((s) => (s.openReferenceDocIds.includes(docId) ? s : { openReferenceDocIds: [...s.openReferenceDocIds, docId] })),
+  closeReferenceDoc: (docId) =>
+    set((s) => ({ openReferenceDocIds: s.openReferenceDocIds.filter((id) => id !== docId) })),
+  closeAllReferenceDocs: () => set({ openReferenceDocIds: [] }),
+  setOpenReferenceDocIds: (docIds) => set({ openReferenceDocIds: parseReferenceDocIds(docIds.join(",")) }),
+
+  setPreviewDocId: (docId) => set({ previewDocId: docId }),
 }));

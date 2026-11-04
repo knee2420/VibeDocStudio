@@ -18,11 +18,9 @@ export interface ComposeSlotApiResponse {
   boundaryGuarantee: string;
 }
 
-export const composerApi = {
-  async composeSlot(
-    payload: ComposeSlotApiRequest
-  ): Promise<ComposeSlotApiResponse> {
-    return httpClient.post<ComposeSlotApiResponse>("/api/ai/compose", payload);
-  },
+export const slotComposerApi = {
+  /** 슬롯 하나의 AI 초안. `signal` 로 요청을 중단할 수 있다. */
+  composeSlot: (payload: ComposeSlotApiRequest, signal?: AbortSignal) =>
+    httpClient.post<ComposeSlotApiResponse>("/api/ai/compose", payload, { signal }),
 };
 

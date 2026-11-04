@@ -125,12 +125,14 @@ export const ComponentAttachedComposer: React.FC<
   const [prompt, setPrompt] = useState(initialPrompt ?? "");
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [composeError, setComposeError] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState("");
 
   const runCompose = async (promptText: string, presetId?: string) => {
     if (!promptText.trim()) return;
     setIsGenerating(true);
     setLastPrompt(promptText);
+    setComposeError(null);
     try {
       const synthesize = onSynthesizeSlotContent ?? synthesizeGroundedSlotFallback;
       const html = await synthesize({
@@ -140,6 +142,9 @@ export const ComponentAttachedComposer: React.FC<
         presetId,
       });
       setPreviewHtml(html);
+    } catch (err) {
+      setPreviewHtml(null);
+      setComposeError(err instanceof Error && err.message ? err.message : "AI 초안을 만들지 못했습니다.");
     } finally {
       setIsGenerating(false);
     }
@@ -209,6 +214,16 @@ export const ComponentAttachedComposer: React.FC<
       </div>
 
       {/* 2. Streaming / Generated Preview Card (`ToolUI` Accept / Reject bar) */}
+      {composeError && (
+        <div
+          role="alert"
+          data-testid="composer-error"
+          className="px-3 py-2 text-xs text-rose-200 bg-rose-950/60 border-b border-rose-900/60"
+        >
+          {composeError}
+        </div>
+      )}
+
       {previewHtml && (
         <div className="p-3 bg-slate-900/95 border-b border-slate-800">
           <div className="text-[11px] font-medium text-emerald-400 mb-1.5 flex items-center justify-between">

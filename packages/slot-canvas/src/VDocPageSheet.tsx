@@ -410,12 +410,25 @@ case "composite-form-frame":
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] font-bold text-amber-900">📌 {block.title}</span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-semibold border border-amber-300">
-                👤 담당: {block.assigneeName}
+                👤 담당: {block.assigneeName || "미지정"}
               </span>
             </div>
             {renderSlotBox(block.slotId)}
           </div>
         );
+
+      case "callout-box" as unknown as LayoutBlock["kind"]:
+        return (
+          <div className="rounded-md border border-slate-200 bg-slate-50/80 p-3.5 my-2">
+            {renderSlotBox((block as { slotId: string }).slotId)}
+          </div>
+        );
+
+      default:
+        if ((block as { slotId?: string }).slotId) {
+          return renderSlotBox((block as { slotId: string }).slotId);
+        }
+        return null;
     }
   };
 
@@ -519,10 +532,10 @@ case "composite-form-frame":
   };
 
   return (
-    <section id={`vdoc-page-${page.pageId}`} onClick={() => onSelectPage(page.pageId)} className="max-w-[820px] mx-auto">
+    <section id={`vdoc-page-${page.pageId}`} onClick={() => onSelectPage(page.pageId)} className="w-[794px] min-w-[794px] mx-auto">
       {/* A4 sheet: 794 × 1123 px at 96 dpi. The ring does not take layout space, so frames map 1:1. */}
       <div
-        className="relative bg-white rounded-xs shadow-lg ring-1 ring-slate-200/90 w-full max-w-[794px] min-h-[1123px] mx-auto flex flex-col justify-between"
+        className="relative bg-white rounded-xs shadow-lg ring-1 ring-slate-200/90 w-[794px] min-w-[794px] max-w-[794px] min-h-[1123px] mx-auto flex flex-col justify-between"
         style={sheetStyle}
         data-exact-layout={layout?.exactText ? "" : undefined}
       >

@@ -42,6 +42,8 @@ export interface VDocSlot {
   rect?: VDocSlotRect;
   /** Whether the slot content has been edited / customized */
   isEdited?: boolean;
+  /** Content before the first edit; `restoreSlotOriginal()` puts it back. */
+  originalContent?: string;
 }
 
 export interface BackdataChunk {
@@ -202,6 +204,19 @@ export interface VDocCatalogManifest {
   description: string;
 }
 
+/**
+ * Static preview assets captured from the document's source (served from the studio `public/`).
+ * Documents without captures omit it; the studio then shows a page placeholder instead.
+ */
+export interface VDocPreviewAssets {
+  /** Page captures in page order. A page past the end reuses the last capture. */
+  pageThumbnails?: string[];
+  /** Original PDF the document was imported from. */
+  sourcePdfUrl?: string;
+  /** Original web page the document was transcribed from. */
+  sourceWebUrl?: string;
+}
+
 export interface VDocDocument {
   version: "1.0.0";
   docId: string;
@@ -213,4 +228,5 @@ export interface VDocDocument {
   pages: VDocPage[];
   slots: Record<string, VDocSlot>;
   backdata: Record<string, BackdataChunk>;
+  preview?: VDocPreviewAssets;
 }

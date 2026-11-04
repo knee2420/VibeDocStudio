@@ -1,3 +1,2 @@
-export * from "./model/useGlobalStudioShortcuts";
-export * from "./ui/GlobalUndoToastHost";
-
+export { useGlobalStudioShortcuts } from "./model/useGlobalStudioShortcuts";
+export { GlobalUndoToastHost } from "./ui/GlobalUndoToastHost";

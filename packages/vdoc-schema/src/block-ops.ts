@@ -2,16 +2,18 @@ import type { LayoutBlock, VDocPage, VDocSlot } from "./types";
 
 /** Every slotId a layout block renders, in reading order. */
 export function getBlockSlotIds(block: LayoutBlock): string[] {
+  if (!block) return [];
   switch (block.kind) {
     case "heading":
     case "form-title":
     case "fillable-group":
     case "text":
-      return [block.slotId];
+    case "callout-box" as unknown as LayoutBlock["kind"]:
+      return (block as { slotId?: string }).slotId ? [(block as { slotId: string }).slotId] : [];
     case "section-block":
-      return [block.headingSlotId, block.bodySlotId];
+      return [block.headingSlotId, block.bodySlotId].filter(Boolean);
     case "cover-banner":
-      return [block.headlineSlotId, block.preparedBySlotId, block.preparedForSlotId];
+      return [block.headlineSlotId, block.preparedBySlotId, block.preparedForSlotId].filter(Boolean);
     case "columns-grid":
       return block.columns
         ? block.columns.flatMap((c) => (c.slotId ? [c.slotId] : []))
@@ -32,12 +34,18 @@ export function getBlockSlotIds(block: LayoutBlock): string[] {
       );
     case "image":
       return [];
+    default: {
+      const b = block as Record<string, unknown>;
+      if (typeof b.slotId === "string") return [b.slotId];
+      if (Array.isArray(b.slotIds)) return b.slotIds.filter((s): s is string => typeof s === "string");
+      return [];
+    }
   }
 }
 
 /** A block is locked when it has slots and every one of them is locked. */
 export function isBlockLocked(block: LayoutBlock, slots: Record<string, VDocSlot>): boolean {
-  const ids = getBlockSlotIds(block);
+  const ids = getBlockSlotIds(block) ?? [];
   return ids.length > 0 && ids.every((id) => Boolean(slots[id]?.constraints?.locked));
 }
 

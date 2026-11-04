@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 import type { VDocDocument } from "@vibe/vdoc-schema";
 
-import { useHistoryStore } from "@/shared/lib";
+import { errorMessage, useHistoryStore } from "@/shared/lib";
 
 import { documentApi } from "../api/documentApi";
 
@@ -41,14 +41,12 @@ export interface StudioDocumentState {
   upsertDocument: (doc: VDocDocument) => void;
   /** 서버에 저장되는 새 작업 문서 (PDF 가져오기 · .vdoc 파일 열기). */
   addDocument: (doc: VDocDocument) => Promise<void>;
+  dismissError: () => void;
 }
 
 const AUTOSAVE_DELAY_MS = 800;
 const autosaveTimers = new Map<string, number>();
 
-function errorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : "문서를 저장하지 못했습니다.";
-}
 
 export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => {
   const replaceDoc = (doc: VDocDocument) =>
@@ -68,7 +66,7 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
       if (!autosaveTimers.has(docId)) setSaveState(docId, "saved");
     } catch (err) {
       setSaveState(docId, "error");
-      set({ lastError: errorMessage(err) });
+      set({ lastError: errorMessage(err, "문서를 저장하지 못했습니다.") });
     }
   };
 
@@ -158,8 +156,16 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
       set((s) => ({ persistedDocIds: new Set([...s.persistedDocIds, doc.docId]) }));
       await saveNow(doc.docId);
     },
+
+    dismissError: () => set({ lastError: null }),
   };
 });
+
+/** ID 로 문서 하나를 고르는 셀렉터 (`useStudioDocumentStore(selectDocument(id))`). */
+export const selectDocument =
+  (docId: string | null | undefined) =>
+  (s: StudioDocumentState): VDocDocument | undefined =>
+    docId ? s.docs.find((d) => d.docId === docId) : undefined;
 
 /** 활성 문서 (없으면 `undefined`). */
 export const selectActiveDocument = (s: StudioDocumentState): VDocDocument | undefined =>

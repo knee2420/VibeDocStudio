@@ -1,7 +1,7 @@
 import React from "react";
 import { HelpCircle, Keyboard, X } from "lucide-react";
 
-import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 
 const SHORTCUT_ITEMS = [
   { keys: "● 불릿 클릭", desc: "해당 노드 계층(Project/Doc/Page/Slot)으로 4단계 Zoom-In" },
@@ -13,8 +13,8 @@ const SHORTCUT_ITEMS = [
 ];
 
 export const ShortcutHelpPopover: React.FC = () => {
-  const open = useWorkspaceSessionStore((s) => s.shortcutPopoverOpen);
-  const setOpen = useWorkspaceSessionStore((s) => s.setShortcutPopoverOpen);
+  const open = useWorkspaceLayoutStore((s) => s.shortcutHelpOpen);
+  const setOpen = useWorkspaceLayoutStore((s) => s.setShortcutHelpOpen);
 
   return (
     <div className="relative">

@@ -1,110 +1,69 @@
 import { useState } from "react";
 
-import type { BackdataChunk } from "@vibe/vdoc-schema";
+import { addBackdataChunks, toggleSlotBackdataRef } from "@vibe/vdoc-schema";
 
-import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { errorMessage } from "@/shared/lib";
 
 import { backdataApi } from "../api/backdataApi";
 
-export function useBindSlotBackdata() {
+/** 슬롯 ↔ 백데이터 연결 토글. */
+export function useToggleSlotBackdata() {
   const updateCurrentDoc = useStudioDocumentStore((s) => s.updateCurrentDoc);
-  const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
-  const setShowAddBackdataForm = useSlotSelectionStore(
-    (s) => s.setShowAddBackdataForm
-  );
+  return (slotId: string, chunkId: string) =>
+    updateCurrentDoc((doc) => toggleSlotBackdataRef(doc, slotId, chunkId));
+}
 
-  const [newBackdataTitle, setNewBackdataTitle] = useState("");
-  const [newBackdataExcerpt, setNewBackdataExcerpt] = useState("");
+/**
+ * 원천 자료 조각을 서버에 등록(청크 분할)하고, 돌아온 청크를 문서 보관함에 넣어 슬롯에 연결한다.
+ * 서버가 실패하면 문서를 건드리지 않고 오류를 보여준다.
+ */
+export function useRegisterBackdataForm(targetSlotId: string | null) {
+  const updateCurrentDoc = useStudioDocumentStore((s) => s.updateCurrentDoc);
+  const setBackdataFormOpen = useWorkspaceLayoutStore((s) => s.setBackdataFormOpen);
 
-  const toggleBackdataRef = (slotId: string, chunkId: string) => {
-    updateCurrentDoc((prev) => {
-      const slot = prev.slots[slotId];
-      if (!slot) return prev;
-      const exists = slot.backDataRefs.includes(chunkId);
-      const nextRefs = exists
-        ? slot.backDataRefs.filter((id) => id !== chunkId)
-        : [...slot.backDataRefs, chunkId];
-      return {
-        ...prev,
-        slots: {
-          ...prev.slots,
-          [slotId]: {
-            ...slot,
-            backDataRefs: nextRefs,
-          },
-        },
-      };
-    });
-  };
+  const [title, setTitle] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const registerAndBindBackdata = async () => {
-    const cleanTitle = newBackdataTitle.trim();
-    const cleanExcerpt = newBackdataExcerpt.trim();
-    if (!cleanTitle || !cleanExcerpt) return;
+  const canSubmit = Boolean(title.trim() && excerpt.trim()) && !isSubmitting;
 
-    let createdChunks: BackdataChunk[] = [];
+  const submit = async () => {
+    if (!canSubmit) return;
+    setIsSubmitting(true);
+    setError(null);
     try {
-      const apiRes = await backdataApi.importRawBackdata({
-        source_title: cleanTitle,
+      const { chunks } = await backdataApi.importRawBackdata({
+        source_title: title.trim(),
         source_type: "markdown",
-        raw_text: cleanExcerpt,
+        raw_text: excerpt.trim(),
         tags: ["수동임포트", "백데이터"],
       });
-      createdChunks = apiRes.chunks;
-    } catch {
-      const chunkId = `bd_custom_${Date.now().toString(36)}`;
-      createdChunks = [
-        {
-          chunkId,
-          sourceTitle: cleanTitle,
-          sourceType: "markdown",
-          excerpt: cleanExcerpt,
-          updatedAt: new Date().toISOString().slice(0, 10),
-          tags: ["수동임포트", "백데이터"],
-        },
-      ];
+      updateCurrentDoc((doc) => addBackdataChunks(doc, chunks, targetSlotId), {
+        history: true,
+        label: `백데이터 ${chunks.length}건 등록`,
+      });
+      setTitle("");
+      setExcerpt("");
+      setBackdataFormOpen(false);
+    } catch (err) {
+      setError(errorMessage(err, "백데이터를 등록하지 못했습니다."));
+    } finally {
+      setIsSubmitting(false);
     }
-
-    updateCurrentDoc((prev) => {
-      const nextBackdata = { ...prev.backdata };
-      const nextSlots = { ...prev.slots };
-      const newIds: string[] = [];
-
-      for (const ch of createdChunks) {
-        nextBackdata[ch.chunkId] = ch;
-        newIds.push(ch.chunkId);
-      }
-
-      if (selectedSlotId && nextSlots[selectedSlotId]) {
-        nextSlots[selectedSlotId] = {
-          ...nextSlots[selectedSlotId],
-          backDataRefs: [
-            ...nextSlots[selectedSlotId].backDataRefs,
-            ...newIds,
-          ],
-        };
-      }
-
-      return {
-        ...prev,
-        backdata: nextBackdata,
-        slots: nextSlots,
-      };
-    });
-
-    setNewBackdataTitle("");
-    setNewBackdataExcerpt("");
-    setShowAddBackdataForm(false);
   };
 
   return {
-    newBackdataTitle,
-    setNewBackdataTitle,
-    newBackdataExcerpt,
-    setNewBackdataExcerpt,
-    toggleBackdataRef,
-    registerAndBindBackdata,
+    title,
+    setTitle,
+    excerpt,
+    setExcerpt,
+    isSubmitting,
+    error,
+    canSubmit,
+    submit,
+    cancel: () => setBackdataFormOpen(false),
   };
 }
-

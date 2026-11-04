@@ -10,40 +10,33 @@ import {
   Square,
 } from "lucide-react";
 
-import { ProvenanceBadge, selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
-import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import {
+  ProvenanceBadge,
+  selectActiveProject,
+  selectBoundReferenceProjects,
+  selectCurrentReferenceProject,
+  useProjectStore,
+} from "@/entities/vdoc-project";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { useSwitchWorkbenchPhase } from "@/features/switch-workbench-phase";
 import { TruncatedLabel } from "@/shared/ui";
 
 export const Phase1StorylineWorkbench: React.FC = () => {
-  const [aiPrompt, setAiPrompt] = useState(
-    "참조 프로젝트의 핵심 SLA 보장 및 무중단 전환 시나리오를 결합하여 목차를 구성해줘"
-  );
+  const [aiPrompt, setAiPrompt] = useState("");
 
   const activeProject = useProjectStore(selectActiveProject);
-  const refProjects = useProjectStore(
-    useShallow((s) => s.projects.filter((p) => p.isReferenceOnly))
-  );
-  const selectedReferenceProjectId = useProjectStore(
-    (s) => s.selectedReferenceProjectId
-  );
-  const setSelectedReferenceProjectId = useProjectStore(
-    (s) => s.setSelectedReferenceProjectId
-  );
-  const cloneNodeFromReference = useProjectStore(
-    (s) => s.cloneNodeFromReference
-  );
+  // AI 가 참조로 쓰는 것과 같은 목록: 이 프로젝트에 연결된 참조 프로젝트.
+  const refProjects = useProjectStore(useShallow(selectBoundReferenceProjects));
+  const currentRef = useProjectStore(selectCurrentReferenceProject);
+  const setSelectedReferenceProjectId = useProjectStore((s) => s.setSelectedReferenceProjectId);
+  const cloneNodeFromReference = useProjectStore((s) => s.cloneNodeFromReference);
   const insertStorylineNode = useProjectStore((s) => s.insertStorylineNode);
   const updateStorylineNode = useProjectStore((s) => s.updateStorylineNode);
 
-  const setPhase = useWorkspaceSessionStore((s) => s.setPhase);
-  const { isAiStreaming, runPhase1StorylineAi, abortActiveAiRun } =
-    useStageAiChanges();
+  const { switchPhase } = useSwitchWorkbenchPhase();
+  const { isAiStreaming, runPhase1StorylineAi, abortActiveAiRun } = useStageAiChanges();
 
   if (!activeProject) return null;
-  const currentRef =
-    refProjects.find((p) => p.projectId === selectedReferenceProjectId) ||
-    refProjects[0];
 
   return (
     <div
@@ -66,7 +59,7 @@ export const Phase1StorylineWorkbench: React.FC = () => {
           <button
             type="button"
             data-testid="goto-phase2-btn"
-            onClick={() => setPhase("templating")}
+            onClick={() => switchPhase("templating")}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#248567] hover:bg-[#1d6b52] text-white text-xs font-bold shadow-sm cursor-pointer transition"
           >
             Phase 2: 템플릿·서식 조율로 이동
@@ -99,8 +92,9 @@ export const Phase1StorylineWorkbench: React.FC = () => {
             <button
               type="button"
               data-testid="phase1-ai-generate-btn"
-              onClick={() => runPhase1StorylineAi(aiPrompt)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer shadow-2xs"
+              disabled={!aiPrompt.trim()}
+              onClick={() => void runPhase1StorylineAi(aiPrompt.trim())}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               ✨ AI 스토리라인 자동 스캐폴딩 (Staged)

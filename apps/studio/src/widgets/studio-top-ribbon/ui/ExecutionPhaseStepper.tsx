@@ -3,8 +3,7 @@ import { FileEdit, GitBranch, LayoutTemplate, Repeat } from "lucide-react";
 
 import type { WorkbenchPhase } from "@vibe/vdoc-schema";
 
-import { useProjectStore } from "@/entities/vdoc-project";
-import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { useSwitchWorkbenchPhase } from "@/features/switch-workbench-phase";
 
 const PHASES: {
   id: WorkbenchPhase;
@@ -37,14 +36,7 @@ const PHASES: {
 ];
 
 export const ExecutionPhaseStepper: React.FC = () => {
-  const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
-  const setPhase = useWorkspaceSessionStore((s) => s.setPhase);
-  const setActiveProjectPhase = useProjectStore((s) => s.setActiveProjectPhase);
-
-  const handleSelectPhase = (phase: WorkbenchPhase) => {
-    setPhase(phase);
-    setActiveProjectPhase(phase);
-  };
+  const { currentPhase, switchPhase } = useSwitchWorkbenchPhase();
 
   return (
     <div
@@ -60,7 +52,7 @@ export const ExecutionPhaseStepper: React.FC = () => {
             type="button"
             data-testid={`phase-step-${p.id}`}
             title={`${p.step}: ${p.label} — ${p.desc} (데이터 손실 없이 자유 전환)`}
-            onClick={() => handleSelectPhase(p.id)}
+            onClick={() => switchPhase(p.id)}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition cursor-pointer ${
               active
                 ? "bg-[#248567] text-white font-bold shadow-2xs"

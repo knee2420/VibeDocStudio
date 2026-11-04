@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
-import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { useSwitchWorkbenchPhase } from "@/features/switch-workbench-phase";
 import { TruncatedLabel } from "@/shared/ui";
 
 const TEMPLATE_OPTIONS = [
@@ -44,7 +44,7 @@ export const Phase2TemplateWorkbench: React.FC = () => {
   const activeProject = useProjectStore(selectActiveProject);
   const assignTemplateToNode = useProjectStore((s) => s.assignTemplateToNode);
 
-  const setPhase = useWorkspaceSessionStore((s) => s.setPhase);
+  const { switchPhase } = useSwitchWorkbenchPhase();
   const { runPhase2TemplateAi } = useStageAiChanges();
 
   if (!activeProject) return null;
@@ -70,7 +70,7 @@ export const Phase2TemplateWorkbench: React.FC = () => {
           <button
             type="button"
             data-testid="back-to-phase1-btn"
-            onClick={() => setPhase("storylining")}
+            onClick={() => switchPhase("storylining")}
             className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer transition"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -90,7 +90,7 @@ export const Phase2TemplateWorkbench: React.FC = () => {
           <button
             type="button"
             data-testid="goto-phase3-btn"
-            onClick={() => setPhase("drafting")}
+            onClick={() => switchPhase("drafting")}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#248567] hover:bg-[#1d6b52] text-white text-xs font-bold shadow-sm cursor-pointer transition"
           >
             Phase 3: 슬롯 본문 집필로 이동

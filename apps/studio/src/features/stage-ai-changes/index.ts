@@ -1,3 +1,1 @@
-export * from "./api/phaseComposerApi";
-export * from "./model/useStageAiChanges";
-
+export { useStageAiChanges } from "./model/useStageAiChanges";

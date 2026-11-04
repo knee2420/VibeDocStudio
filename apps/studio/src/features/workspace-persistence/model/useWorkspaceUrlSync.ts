@@ -1,88 +1,59 @@
 import { useEffect } from "react";
 
-import type { WorkbenchPhase } from "@vibe/vdoc-schema";
-
+import { useAiStagingStore } from "@/entities/ai-staging";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { isWorkbenchPhase, parseReferenceDocIds, useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { writeStoredJson } from "@/shared/lib";
 
 const STORAGE_KEY = "vdoc-studio-session-v1";
 
 /**
- * Synchronizes Workbench Phase (`storylining | templating | drafting`), 4-Level Zoom Root (`zoom`),
- * Active Document (`doc`), and Reference Split Viewport (`splitRef`) with URL query parameters
- * and `localStorage`, and guards against accidental tab close when uncommitted AI diffs exist.
+ * 작업 공간 위치(단계 `phase` · 줌 루트 `zoom` · 활성 문서 `doc` · 참조 작업창 `splitRef`)를
+ * URL 쿼리와 브라우저 저장소에 맞추고, 뒤로/앞으로 가기를 반영한다.
+ * 승인 대기 중인 AI 변경안이 있으면 탭 닫기를 한 번 막는다.
  */
 export function useWorkspaceUrlSync(): void {
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const zoomRootNodeId = useWorkspaceSessionStore((s) => s.zoomRootNodeId);
-  const splitReferenceDocId = useWorkspaceSessionStore(
-    (s) => s.splitReferenceDocId
-  );
-  const stagingCount = useWorkspaceSessionStore((s) => s.stagingQueue.length);
-  const setPhase = useWorkspaceSessionStore((s) => s.setPhase);
-  const zoomIntoNode = useWorkspaceSessionStore((s) => s.zoomIntoNode);
-  const setSplitReferenceDocId = useWorkspaceSessionStore(
-    (s) => s.setSplitReferenceDocId
-  );
-
+  const openReferenceDocIds = useWorkspaceSessionStore((s) => s.openReferenceDocIds);
   const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
-  const setActiveDocId = useStudioDocumentStore((s) => s.setActiveDocId);
+  const stagingCount = useAiStagingStore((s) => s.queue.length);
 
-  // Write state to URL query parameters + localStorage
   useEffect(() => {
-    if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     params.set("phase", currentPhase);
     params.set("zoom", zoomRootNodeId);
-    if (activeDocId) {
-      params.set("doc", activeDocId);
-    }
-    if (splitReferenceDocId) {
-      params.set("splitRef", splitReferenceDocId);
-    } else {
-      params.delete("splitRef");
-    }
+    if (activeDocId) params.set("doc", activeDocId);
+    if (openReferenceDocIds.length > 0) params.set("splitRef", openReferenceDocIds.join(","));
+    else params.delete("splitRef");
+    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
 
-    const nextUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState(null, "", nextUrl);
+    writeStoredJson(STORAGE_KEY, {
+      phase: currentPhase,
+      zoom: zoomRootNodeId,
+      doc: activeDocId,
+      splitRef: openReferenceDocIds,
+    });
+  }, [currentPhase, zoomRootNodeId, activeDocId, openReferenceDocIds]);
 
-    try {
-      window.localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          phase: currentPhase,
-          zoom: zoomRootNodeId,
-          doc: activeDocId,
-          splitRef: splitReferenceDocId,
-        })
-      );
-    } catch {
-      // Ignore storage quota errors
-    }
-  }, [currentPhase, zoomRootNodeId, activeDocId, splitReferenceDocId]);
-
-  // Listen to browser Back/Forward navigation
   useEffect(() => {
-    if (typeof window === "undefined") return;
     const onPopState = () => {
       const params = new URLSearchParams(window.location.search);
-      const p = params.get("phase") as WorkbenchPhase | null;
-      if (p === "storylining" || p === "templating" || p === "drafting") {
-        setPhase(p);
-      }
-      const z = params.get("zoom");
-      if (z) zoomIntoNode(z);
-      const d = params.get("doc");
-      if (d) setActiveDocId(d);
-      setSplitReferenceDocId(params.get("splitRef"));
+      const session = useWorkspaceSessionStore.getState();
+      const phase = params.get("phase");
+      if (isWorkbenchPhase(phase)) session.setPhase(phase);
+      const zoom = params.get("zoom");
+      if (zoom) session.zoomIntoNode(zoom);
+      const doc = params.get("doc");
+      if (doc) useStudioDocumentStore.getState().setActiveDocId(doc);
+      session.setOpenReferenceDocIds(parseReferenceDocIds(params.get("splitRef")));
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [setPhase, zoomIntoNode, setActiveDocId, setSplitReferenceDocId]);
+  }, []);
 
-  // Unsaved staged AI diff guard on tab close
   useEffect(() => {
-    if (typeof window === "undefined" || stagingCount === 0) return;
+    if (stagingCount === 0) return;
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = "";
@@ -91,4 +62,3 @@ export function useWorkspaceUrlSync(): void {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [stagingCount]);
 }
-

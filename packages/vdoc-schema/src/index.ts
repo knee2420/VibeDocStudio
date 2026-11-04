@@ -9,3 +9,6 @@ export * from "./project-manifest";
 export * from "./outline-naming";
 export * from "./outliner-adapter";
 export * from "./command-contracts";
+export * from "./slot-ops";
+export * from "./document-ops";
+export * from "./block-templates";

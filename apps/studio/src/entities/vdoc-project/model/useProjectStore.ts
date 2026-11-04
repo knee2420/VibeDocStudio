@@ -7,7 +7,7 @@ import type {
   WorkbenchPhase,
 } from "@vibe/vdoc-schema";
 
-import { useHistoryStore } from "@/shared/lib";
+import { errorMessage, useHistoryStore } from "@/shared/lib";
 
 import { projectApi } from "../api/projectApi";
 
@@ -35,6 +35,7 @@ export interface ProjectStoreState {
   setSelectedReferenceProjectId: (refProjectId: string) => void;
   dismissError: () => void;
 
+  /** 프로젝트에 마지막 작업 단계를 기록한다 (화면 이동이라 되돌리기 이력에는 남기지 않는다). */
   setActiveProjectPhase: (phase: WorkbenchPhase) => Promise<void>;
   /** `parentId` 가 `null` 이면 아웃라인 루트 아래에 붙는다. */
   insertStorylineNode: (
@@ -59,9 +60,7 @@ const NODE_PATCH_DEBOUNCE_MS = 600;
 
 const pendingNodePatches = new Map<string, { patch: OutlineNodeFields; timer: number }>();
 
-function errorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : "서버와 통신하지 못했습니다.";
-}
+const SERVER_ERROR = "서버와 통신하지 못했습니다.";
 
 export const useProjectStore = create<ProjectStoreState>((set, get) => {
   const activeProject = (): VProjectManifest | undefined =>
@@ -98,7 +97,7 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
       replaceProject(after);
       recordHistory(label, before, after);
     } catch (err) {
-      set({ lastError: errorMessage(err) });
+      set({ lastError: errorMessage(err, SERVER_ERROR) });
     }
   };
 
@@ -117,7 +116,7 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
           (await projectApi.command(project.projectId, { kind: "update_node", nodeId, patch })).project
         );
       } catch (err) {
-        set({ lastError: errorMessage(err) });
+        set({ lastError: errorMessage(err, SERVER_ERROR) });
       }
     }
   };
@@ -149,7 +148,7 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
           status: "ready",
         });
       } catch (err) {
-        set({ status: "error", lastError: errorMessage(err) });
+        set({ status: "error", lastError: errorMessage(err, SERVER_ERROR) });
       }
     },
 
@@ -162,7 +161,15 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
 
     dismissError: () => set({ lastError: null }),
 
-    setActiveProjectPhase: (phase) => command(`작업 단계 전환: ${phase}`, { kind: "set_phase", phase }),
+    setActiveProjectPhase: async (phase) => {
+      const project = activeProject();
+      if (!project || project.isReferenceOnly || project.activePhase === phase) return;
+      try {
+        replaceProject((await projectApi.command(project.projectId, { kind: "set_phase", phase })).project);
+      } catch (err) {
+        set({ lastError: errorMessage(err, SERVER_ERROR) });
+      }
+    },
 
     insertStorylineNode: (parentId, fields, provenance) => {
       const { title, ...rest } = fields;
@@ -230,6 +237,23 @@ export const selectBoundReferenceProjects = (s: ProjectStoreState): VProjectMani
   return active ? s.projects.filter((p) => p.isReferenceOnly && active.referenceProjectIds.includes(p.projectId)) : [];
 };
 
+/** 특정 docId 가 참조 레이어 덱에서 몇 번째인지 (0-based 인덱스, 없으면 -1). 원시 숫자(number)를 반환하여 getSnapshot 무한 루프를 방지합니다. */
+export const selectReferenceProjectIndex =
+  (docId: string | null | undefined) =>
+  (s: ProjectStoreState): number => {
+    if (!docId) return -1;
+    const active = selectActiveProject(s);
+    if (!active) return -1;
+    let idx = 0;
+    for (const p of s.projects) {
+      if (p.isReferenceOnly && active.referenceProjectIds.includes(p.projectId)) {
+        if (p.docIds.includes(docId)) return idx;
+        idx++;
+      }
+    }
+    return -1;
+  };
+
 /** 지금 고른 참조 프로젝트 (연결된 것 중에서, 없으면 첫 번째). */
 export const selectCurrentReferenceProject = (s: ProjectStoreState): VProjectManifest | undefined => {
   const bound = selectBoundReferenceProjects(s);
@@ -239,6 +263,18 @@ export const selectCurrentReferenceProject = (s: ProjectStoreState): VProjectMan
 /** 참조 스플릿 뷰에 띄울 문서 = 지금 고른 참조 프로젝트의 첫 문서. */
 export const selectReferenceDocId = (s: ProjectStoreState): string | null =>
   selectCurrentReferenceProject(s)?.docIds[0] ?? null;
+
+/** 이 문서가 읽기 전용 참조 프로젝트의 문서인지. */
+export const selectIsReferenceDocument =
+  (docId: string | null | undefined) =>
+  (s: ProjectStoreState): boolean =>
+    Boolean(docId) && s.projects.some((p) => p.isReferenceOnly && p.docIds.includes(docId!));
+
+/** 문서가 속한 프로젝트 (참조 카드 제목 등). */
+export const selectProjectOfDocument =
+  (docId: string | null | undefined) =>
+  (s: ProjectStoreState): VProjectManifest | undefined =>
+    docId ? s.projects.find((p) => p.docIds.includes(docId)) : undefined;
 
 /** 연결 가능한 모든 참조 프로젝트 ID (참조 덱 기본 구성). */
 export const selectAllReferenceProjectIds = (s: ProjectStoreState): string[] =>

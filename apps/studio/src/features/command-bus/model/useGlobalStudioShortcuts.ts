@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 
+import { useAiStagingStore } from "@/entities/ai-staging";
 import { useSlotSelectionStore } from "@/entities/slot";
-import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useHistoryStore } from "@/shared/lib";
 
 /**
@@ -25,17 +26,18 @@ export function useGlobalStudioShortcuts(): void {
       const isEditingField =
         !!target &&
         (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
-      const session = useWorkspaceSessionStore.getState();
+      const staging = useAiStagingStore.getState();
+      const layout = useWorkspaceLayoutStore.getState();
       const slots = useSlotSelectionStore.getState();
       const history = useHistoryStore.getState();
 
       if (e.key === "Escape") {
-        if (session.isAiStreaming) {
+        if (staging.isRunning) {
           e.preventDefault();
-          session.abortAiRun();
-        } else if (session.shortcutPopoverOpen) {
+          staging.abortRun();
+        } else if (layout.shortcutHelpOpen) {
           e.preventDefault();
-          session.setShortcutPopoverOpen(false);
+          layout.setShortcutHelpOpen(false);
         } else if (slots.composerOpenSlotId) {
           e.preventDefault();
           slots.setComposerOpenSlotId(null);
@@ -55,7 +57,7 @@ export function useGlobalStudioShortcuts(): void {
 
       if (e.key === "?") {
         e.preventDefault();
-        session.setShortcutPopoverOpen(!session.shortcutPopoverOpen);
+        layout.setShortcutHelpOpen(!layout.shortcutHelpOpen);
         return;
       }
 

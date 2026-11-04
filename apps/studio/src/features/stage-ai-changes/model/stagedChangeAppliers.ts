@@ -1,9 +1,10 @@
-import type {
-  StagedAiChange,
-  StagedOutlineNodeChange,
-  StagedSlotHtmlChange,
-  StagedTargetKind,
-  StagedTemplateBlockChange,
+import {
+  setSlotContent,
+  type StagedAiChange,
+  type StagedOutlineNodeChange,
+  type StagedSlotHtmlChange,
+  type StagedTargetKind,
+  type StagedTemplateBlockChange,
 } from "@vibe/vdoc-schema";
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
@@ -38,17 +39,12 @@ const applyTemplateBlock: Applier<StagedTemplateBlockChange> = ({ payload }) =>
   useProjectStore.getState().assignTemplateToNode(payload.nodeId, payload.templateKind);
 
 const applySlotHtml: Applier<StagedSlotHtmlChange> = async ({ payload }) => {
-  useStudioDocumentStore.getState().updateCurrentDoc(
-    (prev) => {
-      const existing = prev.slots[payload.slotId];
-      if (!existing) return prev;
-      return {
-        ...prev,
-        slots: { ...prev.slots, [payload.slotId]: { ...existing, content: payload.html, isEdited: true } },
-      };
-    },
-    { history: true, label: "AI 슬롯 초안 적용" }
-  );
+  useStudioDocumentStore
+    .getState()
+    .updateCurrentDoc((doc) => setSlotContent(doc, payload.slotId, payload.html), {
+      history: true,
+      label: "AI 슬롯 초안 적용",
+    });
 };
 
 const APPLIERS: { [K in StagedTargetKind]: Applier<Extract<StagedAiChange, { targetKind: K }>> } = {

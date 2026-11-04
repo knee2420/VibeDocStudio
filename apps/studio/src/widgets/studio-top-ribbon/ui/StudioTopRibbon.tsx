@@ -7,7 +7,7 @@ import {
   Square,
 } from "lucide-react";
 
-import { useSlotSelectionStore } from "@/entities/slot";
+import { useAiStagingStore } from "@/entities/ai-staging";
 import {
   DocumentStatusBadges,
   selectActiveDocument,
@@ -18,11 +18,11 @@ import {
   selectReferenceDocId,
   useProjectStore,
 } from "@/entities/vdoc-project";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
 import { ImportPdfButton } from "@/features/import-pdf-form";
-import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { OutlineBreadcrumbBar } from "@/features/zoom-hierarchy";
 import { useHistoryStore } from "@/shared/lib";
 
@@ -42,27 +42,19 @@ export const StudioTopRibbon: React.FC = () => {
   const activeProject = useProjectStore(selectActiveProject);
   const referenceDocId = useProjectStore(selectReferenceDocId);
 
-  const stagingCount = useWorkspaceSessionStore((s) => s.stagingQueue.length);
-  const setActiveActivityTab = useWorkspaceSessionStore(
-    (s) => s.setActiveActivityTab
-  );
-  const splitReferenceDocId = useWorkspaceSessionStore(
-    (s) => s.splitReferenceDocId
-  );
-  const setSplitReferenceDocId = useWorkspaceSessionStore(
-    (s) => s.setSplitReferenceDocId
-  );
+  const stagingCount = useAiStagingStore((s) => s.queue.length);
+  const isAiRunning = useAiStagingStore((s) => s.isRunning);
+  const abortAiRun = useAiStagingStore((s) => s.abortRun);
 
-  const setLeftSidebarOpen = useWorkspaceSessionStore(
-    (s) => s.setLeftSidebarOpen
-  );
-  const leftSidebarOpen = useWorkspaceSessionStore((s) => s.leftSidebarOpen);
-  const setRightSidebarOpen = useSlotSelectionStore(
-    (s) => s.setRightSidebarOpen
-  );
-  const rightSidebarOpen = useSlotSelectionStore((s) => s.rightSidebarOpen);
+  const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceDocIds.length);
+  const openReferenceDoc = useWorkspaceSessionStore((s) => s.openReferenceDoc);
+  const closeAllReferenceDocs = useWorkspaceSessionStore((s) => s.closeAllReferenceDocs);
 
-  const { isAiStreaming, abortActiveAiRun } = useStageAiChanges();
+  const setActiveActivityTab = useWorkspaceLayoutStore((s) => s.setActiveActivityTab);
+  const leftSidebarOpen = useWorkspaceLayoutStore((s) => s.leftSidebarOpen);
+  const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
+  const rightSidebarOpen = useWorkspaceLayoutStore((s) => s.rightSidebarOpen);
+  const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
 
   if (!doc || !activeProject) return null;
 
@@ -220,11 +212,11 @@ export const StudioTopRibbon: React.FC = () => {
         {/* Right: AI Abort / Staged Diff / Settings / Shortcuts */}
         <div className="flex items-center gap-2 shrink-0 text-xs">
           {/* AI Streaming Abort Button */}
-          {isAiStreaming && (
+          {isAiRunning && (
             <button
               type="button"
               data-testid="ai-abort-btn"
-              onClick={abortActiveAiRun}
+              onClick={abortAiRun}
               className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold shadow-xs animate-pulse cursor-pointer"
               title="실행 중인 AI 생성 작업을 즉시 중단합니다 (Esc)"
             >
@@ -237,10 +229,7 @@ export const StudioTopRibbon: React.FC = () => {
           <button
             type="button"
             data-testid="staged-diffs-pill"
-            onClick={() => {
-              setActiveActivityTab("source-control");
-              setLeftSidebarOpen(true);
-            }}
+            onClick={() => setActiveActivityTab("source-control")}
             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[11px] font-semibold cursor-pointer transition font-mono tabular-nums ${
               stagingCount > 0
                 ? "bg-amber-500 text-slate-950 border-amber-400 font-bold hover:bg-amber-400"
@@ -298,17 +287,16 @@ export const StudioTopRibbon: React.FC = () => {
           <button
             type="button"
             data-testid="canvas-toggle-split-ref-btn"
+            disabled={openReferenceCount === 0 && !referenceDocId}
             onClick={() =>
-              setSplitReferenceDocId(
-                splitReferenceDocId ? null : referenceDocId
-              )
+              openReferenceCount > 0 ? closeAllReferenceDocs() : referenceDocId && openReferenceDoc(referenceDocId)
             }
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold border cursor-pointer transition ${
-              splitReferenceDocId
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold border cursor-pointer transition disabled:opacity-40 ${
+              openReferenceCount > 0
                 ? "bg-violet-100 text-violet-900 border-violet-300"
                 : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
             }`}
-            title="참조 문서 나란히 비교 (Split View)"
+            title={openReferenceCount > 0 ? "참조 작업창 모두 닫기" : "선택한 참조 문서를 캔버스 옆에 띄우기"}
           >
             <Columns className="w-3 h-3" />
             <span>스플릿 뷰</span>

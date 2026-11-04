@@ -10,17 +10,15 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { useHistoryStore } from "@/shared/lib";
 import { EmptyStateCard } from "@/shared/ui";
 
 export const SourceControlSidebarPanel: React.FC = () => {
-  const stagingQueue = useWorkspaceSessionStore((s) => s.stagingQueue);
-  const setLeftSidebarOpen = useWorkspaceSessionStore(
-    (s) => s.setLeftSidebarOpen
-  );
+  const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
   const {
+    stagingQueue,
     acceptAllStagedChanges,
     rejectAllStagedChanges,
     acceptStagedChange,
@@ -42,16 +40,10 @@ export const SourceControlSidebarPanel: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <GitBranch className="w-4 h-4 text-violet-600 shrink-0" />
             <h3 className="text-xs font-bold text-slate-900 truncate">
-              소스 제어 & Staged 변경안
+              Staged 변경안 & 되돌리기 이력
             </h3>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5 font-mono">
-            <span
-              data-testid="git-branch-badge"
-              className="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-semibold"
-            >
-              branch: bigbang-patch
-            </span>
             <span>· 변경 {stagingQueue.length}건</span>
           </div>
         </div>
@@ -81,7 +73,7 @@ export const SourceControlSidebarPanel: React.FC = () => {
                   type="button"
                   data-testid="accept-all-staged-btn"
                   onClick={acceptAllStagedChanges}
-                  title="모든 변경사항 승인 및 커밋 반영"
+                  title="모든 변경안을 승인해 문서 · 프로젝트에 반영"
                   className="px-1.5 py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-semibold flex items-center gap-0.5 cursor-pointer"
                 >
                   <CheckCheck className="w-2.5 h-2.5" />
@@ -157,20 +149,20 @@ export const SourceControlSidebarPanel: React.FC = () => {
           <div className="flex items-center justify-between pb-1 text-slate-700">
             <span className="text-[11px] font-bold flex items-center gap-1">
               <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-              로컬 버전 히스토리 스택 ({totalCommits})
+              되돌리기 이력 ({totalCommits})
             </span>
           </div>
           <p className="text-[10px] text-slate-500 mb-2">
-            실행 취소(Ctrl+Z) 및 재실행(Ctrl+Y)으로 자유롭게 이전 커밋 시점으로 롤백할 수 있습니다.
+            실행 취소(Ctrl+Z) · 다시 실행(Ctrl+Y)으로 되돌릴 수 있는 이 세션의 변경 수입니다. 문서는 자동 저장됩니다.
           </p>
 
           <div className="space-y-1 text-slate-600 text-[11px] font-mono">
             <div className="px-2 py-1 rounded bg-slate-50 border border-slate-200 flex items-center justify-between">
-              <span>Project Tree Commits</span>
+              <span>아웃라인 · 프로젝트 변경</span>
               <span className="font-bold text-slate-900">{projPastCount}</span>
             </div>
             <div className="px-2 py-1 rounded bg-slate-50 border border-slate-200 flex items-center justify-between">
-              <span>Document Slot Commits</span>
+              <span>문서 구조 변경</span>
               <span className="font-bold text-slate-900">{docPastCount}</span>
             </div>
           </div>

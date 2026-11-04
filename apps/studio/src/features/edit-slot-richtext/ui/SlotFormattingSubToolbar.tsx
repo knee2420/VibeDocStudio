@@ -41,9 +41,10 @@ import { TABLE_LINE_STYLES, type TableCommand } from "@vibe/vdoc-schema";
 
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useHistoryStore } from "@/shared/lib";
 
-import { findTable, findTableForSlot, wholeTableRange } from "../model/findTableForSlot";
+import { useTableEditTarget } from "../model/useTableEditTarget";
 import {
   BORDER_MODES,
   BorderModeIcon,
@@ -101,9 +102,8 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
   const canRedoDoc = useHistoryStore((s) => s.future.length > 0);
   const activeEditor = useActiveSlotEditorStore((s) => s.activeEditor);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
-  const tableSelection = useSlotSelectionStore((s) => s.tableSelection);
   const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
-  const setRightSidebarOpen = useSlotSelectionStore((s) => s.setRightSidebarOpen);
+  const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
 
   useEditorTick(activeEditor);
 
@@ -113,19 +113,11 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
   const [linkDraft, setLinkDraft] = useState("");
 
   const currentSlot = selectedSlotId ? doc?.slots[selectedSlotId] : undefined;
+  const firstVariable = Object.keys(doc?.variables ?? {})[0] ?? null;
   const editor = activeEditor && !activeEditor.isDestroyed ? activeEditor : null;
   const editable = mode === "Editing" && Boolean(editor?.isEditable);
 
-  // Table context: an explicit range/table selection wins, else the cell holding the caret.
-  const tableTarget = (() => {
-    if (!doc) return null;
-    if (tableSelection) {
-      const loc = findTable(doc, tableSelection.blockId, tableSelection.sectionId);
-      if (loc) return { ...loc, range: tableSelection.range ?? wholeTableRange(loc.table) };
-    }
-    const cell = selectedSlotId ? findTableForSlot(doc, selectedSlotId) : null;
-    return cell ? { ...cell, range: cell.cellRange } : null;
-  })();
+  const tableTarget = useTableEditTarget();
   const runTable = (cmd: TableCommand) =>
     tableTarget && onTableCommand?.(tableTarget.pageId, tableTarget.blockId, tableTarget.sectionId, cmd);
   const lineCss = () => {
@@ -438,11 +430,11 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
 
         <ToolDivider />
         <ToolButton
-          title="변수 칩 삽입"
-          disabled={!editable}
+          title={firstVariable ? `변수 칩 삽입 (${firstVariable})` : "이 문서에 정의된 변수가 없습니다"}
+          disabled={!editable || !firstVariable}
           onClick={() => {
-            const firstVar = Object.keys(doc?.variables || {})[0] || "Sender.Company";
-            editor?.chain().focus().insertContent({ type: "variableChip", attrs: { variableName: firstVar } }).run();
+            if (!firstVariable) return;
+            editor?.chain().focus().insertContent({ type: "variableChip", attrs: { variableName: firstVariable } }).run();
           }}
           className="gap-1 px-2 text-[12px] text-amber-900"
         >

@@ -1,18 +1,14 @@
 import React from "react";
 import { Check, CheckCheck, Sparkles, Trash2, X } from "lucide-react";
 
-import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { useAiStagingStore } from "@/entities/ai-staging";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { EmptyStateCard, TruncatedLabel } from "@/shared/ui";
 
 export const AiStagingDrawer: React.FC = () => {
-  const stagingDrawerOpen = useWorkspaceSessionStore(
-    (s) => s.stagingDrawerOpen
-  );
-  const setStagingDrawerOpen = useWorkspaceSessionStore(
-    (s) => s.setStagingDrawerOpen
-  );
-  const lastAbortedRunId = useWorkspaceSessionStore((s) => s.lastAbortedRunId);
+  const reviewOpen = useAiStagingStore((s) => s.reviewOpen);
+  const setReviewOpen = useAiStagingStore((s) => s.setReviewOpen);
+  const lastAbortedRunId = useAiStagingStore((s) => s.lastAbortedRunId);
 
   const {
     stagingQueue,
@@ -22,7 +18,9 @@ export const AiStagingDrawer: React.FC = () => {
     rejectAllStagedChanges,
   } = useStageAiChanges();
 
-  if (!stagingDrawerOpen && stagingQueue.length === 0 && !lastAbortedRunId) {
+  // 변경안이 들어오거나 실행을 멈추면 열리고, 닫기를 누르면 대기열이 남아 있어도 닫힌다
+  // (대기열은 소스 제어 탭 · 리본의 Staged 배지에서 다시 볼 수 있다).
+  if (!reviewOpen) {
     return null;
   }
 
@@ -77,7 +75,7 @@ export const AiStagingDrawer: React.FC = () => {
           )}
           <button
             type="button"
-            onClick={() => setStagingDrawerOpen(false)}
+            onClick={() => setReviewOpen(false)}
             className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
             title="서랍 닫기"
           >

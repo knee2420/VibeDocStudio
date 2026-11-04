@@ -13,6 +13,7 @@
   "dependencies": {
     "@vibe/agent-core": "workspace:*",
     "@vibe/ai-composer": "workspace:*",
+    "@vibe/document-viewer": "workspace:*",
     "@vibe/slot-canvas": "workspace:*",
     "@vibe/slot-editor": "workspace:*",
     "@vibe/vdoc-schema": "workspace:*",

@@ -1,29 +1,23 @@
 import React from "react";
 
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
-import {
-  GlobalUndoToastHost,
-  useGlobalStudioShortcuts,
-} from "@/features/command-bus";
+import { GlobalUndoToastHost, useGlobalStudioShortcuts } from "@/features/command-bus";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
-import {
-  useWorkspaceBootstrap,
-  useWorkspaceUrlSync,
-} from "@/features/workspace-persistence";
-import {
-  HoverPagePeekCard,
-  OutlinePreviewSidebar,
-  PandaDocDocumentPreviewPanel,
-} from "@/widgets/outline-preview-sidebar";
+import { HoverPagePeekCard } from "@/features/peek-page";
+import { useWorkspaceBootstrap, useWorkspaceUrlSync } from "@/features/workspace-persistence";
+import { useZoomHierarchySync } from "@/features/zoom-hierarchy";
+import { DocumentPreviewPanel, OutlinePreviewSidebar } from "@/widgets/outline-preview-sidebar";
 import { SlotInspectorDrawer } from "@/widgets/slot-inspector-drawer";
 import { StudioActivityBar } from "@/widgets/studio-activity-bar";
 import { StudioTopRibbon } from "@/widgets/studio-top-ribbon";
 import { VDocPageCanvas } from "@/widgets/vdoc-page-canvas";
 
+/** 전역 부작용(URL · 단축키 · 줌 위계)은 여기서 한 번씩만 건다. */
 const StudioWorkspace: React.FC = () => {
   useWorkspaceUrlSync();
   useGlobalStudioShortcuts();
+  useZoomHierarchySync();
 
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const blocks = useMutateCanvasBlocks();
@@ -34,7 +28,7 @@ const StudioWorkspace: React.FC = () => {
 
       <div className="flex-1 flex overflow-hidden relative">
         <StudioActivityBar />
-        <PandaDocDocumentPreviewPanel />
+        <DocumentPreviewPanel />
 
         {/* 중앙 에디터 작업 공간: 상단 서식 툴바 + (좌측 아웃라이너 | 중앙 캔버스) */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">

@@ -9,7 +9,7 @@ import {
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useProjectStore } from "@/entities/vdoc-project";
-import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { TruncatedLabel } from "@/shared/ui";
 
 export const TemplateHubSidebarPanel: React.FC = () => {
@@ -18,12 +18,8 @@ export const TemplateHubSidebarPanel: React.FC = () => {
   const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
   const setActiveDocId = useStudioDocumentStore((s) => s.setActiveDocId);
   const insertStorylineNode = useProjectStore((s) => s.insertStorylineNode);
-  const setLeftSidebarOpen = useWorkspaceSessionStore(
-    (s) => s.setLeftSidebarOpen
-  );
-  const setActiveActivityTab = useWorkspaceSessionStore(
-    (s) => s.setActiveActivityTab
-  );
+  const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
+  const setActiveActivityTab = useWorkspaceLayoutStore((s) => s.setActiveActivityTab);
 
   const filteredDocs = docs.filter((d) =>
     d.title.toLowerCase().includes(query.toLowerCase())

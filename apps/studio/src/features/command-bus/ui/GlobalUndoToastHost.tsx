@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 
+import { useAiStagingStore } from "@/entities/ai-staging";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useProjectStore } from "@/entities/vdoc-project";
 import { useHistoryStore } from "@/shared/lib";
@@ -7,7 +8,7 @@ import { ActionUndoToast } from "@/shared/ui";
 
 const TOAST_MS = 6000;
 
-/** 공용 이력의 마지막 변경 안내 + 서버 오류 안내. */
+/** 공용 이력의 마지막 변경 안내 + 서버 · AI 오류 안내 (각 저장소의 `dismissError` 로 닫는다). */
 export const GlobalUndoToastHost: React.FC = () => {
   const lastMessage = useHistoryStore((s) => s.lastMessage);
   const canUndo = useHistoryStore((s) => s.past.length > 0);
@@ -18,7 +19,8 @@ export const GlobalUndoToastHost: React.FC = () => {
 
   const projectError = useProjectStore((s) => s.lastError);
   const documentError = useStudioDocumentStore((s) => s.lastError);
-  const errorMessage = projectError ?? documentError;
+  const aiError = useAiStagingStore((s) => s.lastError);
+  const errorMessage = projectError ?? documentError ?? aiError;
 
   useEffect(() => {
     if (!lastMessage) return;
@@ -29,8 +31,9 @@ export const GlobalUndoToastHost: React.FC = () => {
   useEffect(() => {
     if (!errorMessage) return;
     const timer = window.setTimeout(() => {
-      useProjectStore.setState({ lastError: null });
-      useStudioDocumentStore.setState({ lastError: null });
+      useProjectStore.getState().dismissError();
+      useStudioDocumentStore.getState().dismissError();
+      useAiStagingStore.getState().dismissError();
     }, TOAST_MS);
     return () => window.clearTimeout(timer);
   }, [errorMessage]);
