@@ -25,7 +25,6 @@ import { type OutlinerNode } from "@vibe/vdoc-schema";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
-import { BlockInsertionPalette } from "@/features/mutate-canvas-blocks";
 import { useFractalZoomNavigation } from "@/features/zoom-hierarchy";
 import {
   CollapsedPanelRail,
@@ -44,8 +43,6 @@ import { TemplateHubSidebarPanel } from "./TemplateHubSidebarPanel";
 export const OutlinePreviewSidebar: React.FC = () => {
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const doc = useStudioDocumentStore(selectActiveDocument);
-  const activePageId = useStudioDocumentStore((s) => s.activePageId);
-  const mode = useStudioDocumentStore((s) => s.mode);
 
   const leftSidebarOpen = useWorkspaceSessionStore((s) => s.leftSidebarOpen);
   const setLeftSidebarOpen = useWorkspaceSessionStore((s) => s.setLeftSidebarOpen);
@@ -512,13 +509,6 @@ export const OutlinePreviewSidebar: React.FC = () => {
 
           {/* Bottom Accordion: Read-Only Reference Projects Deck */}
           <ReferenceDeckSection />
-
-          {/* Block Insertion Palette in Editing Mode */}
-          {mode === "Editing" && (
-            <BlockInsertionPalette
-              targetPageId={activePageId || doc.pages[0]?.pageId || ""}
-            />
-          )}
         </>
       )}
     </aside>
