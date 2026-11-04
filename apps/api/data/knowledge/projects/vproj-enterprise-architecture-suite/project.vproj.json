@@ -5,15 +5,13 @@
   "isReferenceOnly": false,
   "activePhase": "drafting",
   "docIds": [
-    "vdoc_meeting_minutes_1028",
-    "vdoc_pandadoc_vc_proposal",
-    "vdoc_yesform_07_bansanghoe",
-    "atticus-invoice-000081709"
+    "vdoc_meeting_minutes_1028"
   ],
   "referenceProjectIds": [
-    "vproj-ref-cloud-migration-rfp",
-    "vproj-ref-iso27001-audit",
-    "vproj-ref-series-b-ir-deck"
+    "vproj-ref-seoul-startup-hub",
+    "vproj-ref-intl-exchange-rules",
+    "vproj-ref-reward-penalty-rules",
+    "vproj-ref-toss-safezone-travel"
   ],
   "storylineNodes": [
     {
@@ -79,118 +77,6 @@
       "provenanceSourceProjectId": null,
       "provenanceSourceNodeId": null,
       "aiStatus": "idle"
-    },
-    {
-      "nodeId": "node-doc-proposal",
-      "parentId": "node-proj-root",
-      "depth": 1,
-      "zoomLevel": "document",
-      "title": "02. 엔터프라이즈 도입 및 투자 제안서 (PandaDoc VC)",
-      "summary": "도입 배경, ROI 산정 테이블, 마일스톤 로드맵",
-      "targetDocId": "vdoc_pandadoc_vc_proposal",
-      "targetPageId": null,
-      "targetBlockId": null,
-      "targetSlotId": null,
-      "recommendedTemplateId": "cover-banner",
-      "provenanceSourceProjectId": null,
-      "provenanceSourceNodeId": null,
-      "aiStatus": "idle"
-    },
-    {
-      "nodeId": "node-page-proposal-p1",
-      "parentId": "node-doc-proposal",
-      "depth": 2,
-      "zoomLevel": "page",
-      "title": "Page 1 · 표지 배너 및 총괄 요약 (Executive Summary)",
-      "summary": "제안사/수신사 메타데이터 및 핵심 가치 제안",
-      "targetDocId": "vdoc_pandadoc_vc_proposal",
-      "targetPageId": "page_1",
-      "targetBlockId": null,
-      "targetSlotId": null,
-      "recommendedTemplateId": "cover-banner",
-      "provenanceSourceProjectId": null,
-      "provenanceSourceNodeId": null,
-      "aiStatus": "idle"
-    },
-    {
-      "nodeId": "node-doc-invoice",
-      "parentId": "node-proj-root",
-      "depth": 1,
-      "zoomLevel": "document",
-      "title": "03. 라이선스 및 기술지원 정산 인보이스 (Atticus)",
-      "summary": "품목별 단가, 수량, 공급가액 및 세액 정산 표",
-      "targetDocId": "atticus-invoice-000081709",
-      "targetPageId": null,
-      "targetBlockId": null,
-      "targetSlotId": null,
-      "recommendedTemplateId": "structured-table",
-      "provenanceSourceProjectId": null,
-      "provenanceSourceNodeId": null,
-      "aiStatus": "idle"
-    },
-    {
-      "nodeId": "node-1a1a12cd189-4689bcf7",
-      "parentId": "node-doc-proposal",
-      "depth": 2,
-      "zoomLevel": "page",
-      "title": "가용성 99.99% SLA 보장 및 복구 목표(RTO/RPO) 명세",
-      "summary": "1등급 핵심 원장 시스템 15분 이내 자동 페일오버 보증 조항",
-      "targetDocId": "vdoc_pandadoc_vc_proposal",
-      "targetPageId": null,
-      "targetBlockId": null,
-      "targetSlotId": null,
-      "recommendedTemplateId": "structured-table",
-      "provenanceSourceProjectId": "vproj-ref-cloud-migration-rfp",
-      "provenanceSourceNodeId": "ref1-sec-sla",
-      "aiStatus": "applied"
-    },
-    {
-      "nodeId": "node-1a1a1378058-cfcbc350",
-      "parentId": "node-doc-proposal",
-      "depth": 2,
-      "zoomLevel": "page",
-      "title": "가용성 99.99% SLA 보장 및 복구 목표(RTO/RPO) 명세",
-      "summary": "1등급 핵심 원장 시스템 15분 이내 자동 페일오버 보증 조항",
-      "targetDocId": "vdoc_pandadoc_vc_proposal",
-      "targetPageId": null,
-      "targetBlockId": null,
-      "targetSlotId": null,
-      "recommendedTemplateId": "structured-table",
-      "provenanceSourceProjectId": "vproj-ref-cloud-migration-rfp",
-      "provenanceSourceNodeId": "ref1-sec-sla",
-      "aiStatus": "applied"
-    },
-    {
-      "nodeId": "node-1a1a14683e3-4807f884",
-      "parentId": "node-doc-proposal",
-      "depth": 2,
-      "zoomLevel": "page",
-      "title": "가용성 99.99% SLA 보장 및 복구 목표(RTO/RPO) 명세",
-      "summary": "1등급 핵심 원장 시스템 15분 이내 자동 페일오버 보증 조항",
-      "targetDocId": "vdoc_pandadoc_vc_proposal",
-      "targetPageId": null,
-      "targetBlockId": null,
-      "targetSlotId": null,
-      "recommendedTemplateId": "structured-table",
-      "provenanceSourceProjectId": "vproj-ref-cloud-migration-rfp",
-      "provenanceSourceNodeId": "ref1-sec-sla",
-      "aiStatus": "applied"
-    },
-    {
-      "nodeId": "node-1a1a15f0e92-dcccd029",
-      "parentId": "node-doc-proposal",
-      "depth": 2,
-      "zoomLevel": "page",
-      "title": "가용성 99.99% SLA 보장 및 복구 목표(RTO/RPO) 명세",
-      "summary": "1등급 핵심 원장 시스템 15분 이내 자동 페일오버 보증 조항",
-      "targetDocId": "vdoc_pandadoc_vc_proposal",
-      "targetPageId": null,
-      "targetBlockId": null,
-      "targetSlotId": null,
-      "recommendedTemplateId": "structured-table",
-      "provenanceSourceProjectId": "vproj-ref-cloud-migration-rfp",
-      "provenanceSourceNodeId": "ref1-sec-sla",
-      "aiStatus": "applied"
     }
   ],
   "provenanceLineage": [
@@ -235,5 +121,5 @@
       "clonedAt": "2026-11-03T12:25:23Z"
     }
   ],
-  "updatedAt": "2026-11-03T14:26:31Z"
+  "updatedAt": ""
 }

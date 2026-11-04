@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -69,6 +69,53 @@ export const OutlinePreviewSidebar: React.FC = () => {
   const selectedOutlinerNodeId = useWorkspaceSessionStore((s) => s.selectedOutlinerNodeId);
   const quickFilterQuery = useWorkspaceSessionStore((s) => s.quickFilterQuery);
   const setQuickFilterQuery = useWorkspaceSessionStore((s) => s.setQuickFilterQuery);
+  const isPageViewMode = useWorkspaceSessionStore((s) => s.isPageViewMode);
+  const togglePageViewMode = useWorkspaceSessionStore((s) => s.togglePageViewMode);
+  const setPreviewDocId = useWorkspaceSessionStore((s) => s.setPreviewDocId);
+  const setPeekPage = useWorkspaceSessionStore((s) => s.setPeekPage);
+  const hoveredNodePeekRef = useRef<{ pageId: string; docId: string; pos: { x: number; y: number } } | null>(null);
+
+  // Ctrl 키를 누르거나 뗄 때 아웃라인 노드 퀵 피크 반응
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === "Control" || e.key === "Meta") && hoveredNodePeekRef.current) {
+        setPeekPage(
+          hoveredNodePeekRef.current.pageId,
+          hoveredNodePeekRef.current.pos,
+          hoveredNodePeekRef.current.docId
+        );
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!e.ctrlKey && !e.metaKey) {
+        setPeekPage(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [setPeekPage]);
+
+
+  const resolveOutlineNodePage = (targetNode: OutlinerNode): { pageId: string; docId: string } => {
+    let pageId = targetNode.targetPageId;
+    if (!pageId) {
+      const match = targetNode.title.match(/Page\s*(\d+)/i);
+      if (match) {
+        const pageNum = parseInt(match[1], 10);
+        pageId = doc?.pages[pageNum - 1]?.pageId || `mm_page_${pageNum}`;
+      } else {
+        pageId = doc?.pages[0]?.pageId || "mm_page_1";
+      }
+    }
+    const targetDocId = targetNode.targetDocId || doc?.docId || "vdoc_meeting_minutes_1028";
+    return { pageId, docId: targetDocId };
+  };
 
   const {
     projection,
@@ -166,8 +213,8 @@ export const OutlinePreviewSidebar: React.FC = () => {
         <TemplateHubSidebarPanel />
       ) : (
         <>
-          {/* Top Header - Workflowy Minimalist Header */}
-          <div className="px-3 py-2 flex items-center justify-between gap-1.5 shrink-0 bg-white/60 border-b border-slate-200/50">
+          {/* Top Header - Workflowy Minimalist Header OR PandaDoc Document Preview Header */}
+          <div className="px-3 py-2 flex items-center justify-between gap-1.5 shrink-0 bg-white border-b border-slate-200/80">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="text-[13px] font-semibold text-slate-800 tracking-tight truncate">
                 Home
@@ -177,7 +224,27 @@ export const OutlinePreviewSidebar: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center gap-0.5 shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
+              {/* PandaDoc Pageview / Document preview ON/OFF Toggle Button (User-Requested Red Box) */}
+              <button
+                type="button"
+                data-testid="pageview-toggle-btn"
+                onClick={() => togglePageViewMode()}
+                title={
+                  isPageViewMode
+                    ? "페이지 프리뷰 패널 닫기"
+                    : "PandaDoc 페이지 프리뷰 패널(Document preview) 열기"
+                }
+                className={`p-1 rounded cursor-pointer transition-all flex items-center gap-1 text-[11px] font-semibold ${
+                  isPageViewMode
+                    ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300 font-bold px-1.5 shadow-2xs"
+                    : "hover:bg-slate-200/70 text-slate-500 hover:text-slate-800 border border-transparent"
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5 text-current" />
+                {isPageViewMode && <span className="text-[10px]">Preview</span>}
+              </button>
+
               {/* Collapse / Expand All Toggle Button */}
               <button
                 type="button"
@@ -261,6 +328,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
             </div>
           </div>
 
+          
           {/* Quick Filter Search Bar */}
           <div className="px-2.5 py-1.5 bg-white/40 border-b border-slate-200/40 shrink-0">
             <div className="relative flex items-center">
@@ -318,7 +386,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
           <div
             role="tree"
             aria-label="Workflowy Outliner Tree"
-            className="p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden flex-1"
+            className="p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden flex-1 min-h-0"
           >
             {projection.visibleNodes.length === 0 ? (
               <EmptyStateCard
@@ -353,17 +421,44 @@ export const OutlinePreviewSidebar: React.FC = () => {
                     aria-selected={isSelected}
                     data-testid={`outline-node-row-${node.nodeId}`}
                     style={{ paddingLeft: `${indentPadding}px` }}
-                    onClick={() => handleSelectOutlineNode(node)}
+                    onClick={() => {
+                      handleSelectOutlineNode(node);
+                      setPreviewDocId(null);
+                    }}
                     onKeyDown={(e) => handleNodeKeyDown(e, node)}
-                    onMouseEnter={() =>
+                    onMouseEnter={(e) => {
                       setHoveredOutlinerNodeId(
                         node.targetSlotId ||
                           node.targetBlockId ||
                           node.targetPageId ||
                           node.nodeId
-                      )
-                    }
-                    onMouseLeave={() => setHoveredOutlinerNodeId(null)}
+                      );
+                      const target = resolveOutlineNodePage(node);
+                      hoveredNodePeekRef.current = {
+                        pageId: target.pageId,
+                        docId: target.docId,
+                        pos: { x: e.clientX, y: e.clientY },
+                      };
+                      if (e.ctrlKey || e.metaKey) {
+                        setPeekPage(target.pageId, { x: e.clientX, y: e.clientY }, target.docId);
+                      }
+                    }}
+                    onMouseMove={(e) => {
+                      const target = resolveOutlineNodePage(node);
+                      hoveredNodePeekRef.current = {
+                        pageId: target.pageId,
+                        docId: target.docId,
+                        pos: { x: e.clientX, y: e.clientY },
+                      };
+                      if (e.ctrlKey || e.metaKey) {
+                        setPeekPage(target.pageId, { x: e.clientX, y: e.clientY }, target.docId);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredOutlinerNodeId(null);
+                      hoveredNodePeekRef.current = null;
+                      setPeekPage(null);
+                    }}
                     className={`group relative flex items-center gap-1.5 h-7 px-1.5 rounded-md transition-colors cursor-pointer text-[13px] leading-none ${
                       isSelected || isZoomRoot
                         ? "bg-slate-200/80 text-slate-950 font-medium"
@@ -511,7 +606,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom Accordion: Read-Only Reference Projects Deck */}
+            {/* Bottom Accordion: Read-Only Reference Projects Deck */}
           <ReferenceDeckSection />
         </>
       )}

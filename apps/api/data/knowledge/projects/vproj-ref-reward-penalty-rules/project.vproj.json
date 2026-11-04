@@ -1,0 +1,79 @@
+{
+  "projectId": "vproj-ref-reward-penalty-rules",
+  "title": "[참조 3] 예스폼_무료상벌위원회규정서식자료모음(구글문서변환)",
+  "description": "상벌위원회 규정 본문, 부칙, 및 상벌위원회 회의록 표준 양식 레퍼런스 (3p)",
+  "isReferenceOnly": true,
+  "activePhase": "storylining",
+  "docIds": [
+    "vdoc_ref_reward_penalty_rules"
+  ],
+  "referenceProjectIds": [],
+  "storylineNodes": [
+    {
+      "nodeId": "rp-root",
+      "parentId": null,
+      "depth": 0,
+      "zoomLevel": "project",
+      "title": "[참조 3] 예스폼_무료상벌위원회규정서식자료모음(구글문서변환)",
+      "summary": "사원 상벌 심사 규정 및 정형 회의록 서식 패키지 (3p)",
+      "targetDocId": "vdoc_ref_reward_penalty_rules",
+      "targetPageId": null,
+      "targetBlockId": null,
+      "targetSlotId": null,
+      "recommendedTemplateId": null,
+      "provenanceSourceProjectId": null,
+      "provenanceSourceNodeId": null,
+      "aiStatus": "idle"
+    },
+    {
+      "nodeId": "rp-p1-regulations",
+      "parentId": "rp-root",
+      "depth": 1,
+      "zoomLevel": "page",
+      "title": "Page 1 · 상벌위원회 규정 본문 (목적 · 적용범위 · 위원회 구성)",
+      "summary": "포상 및 징계 심의의 공정성을 확보하기 위한 기본 운영 원칙 및 조직 구성",
+      "targetDocId": "vdoc_ref_reward_penalty_rules",
+      "targetPageId": "page_1",
+      "targetBlockId": null,
+      "targetSlotId": null,
+      "recommendedTemplateId": null,
+      "provenanceSourceProjectId": null,
+      "provenanceSourceNodeId": null,
+      "aiStatus": "idle"
+    },
+    {
+      "nodeId": "rp-p2-procedure",
+      "parentId": "rp-root",
+      "depth": 1,
+      "zoomLevel": "page",
+      "title": "Page 2 · 심사 절차, 의결 요건, 재심 청구 및 부칙",
+      "summary": "출석위원 의결 정족수, 징계 대상자 소명 기회 보장 및 시행 규정",
+      "targetDocId": "vdoc_ref_reward_penalty_rules",
+      "targetPageId": "page_2",
+      "targetBlockId": null,
+      "targetSlotId": null,
+      "recommendedTemplateId": null,
+      "provenanceSourceProjectId": null,
+      "provenanceSourceNodeId": null,
+      "aiStatus": "idle"
+    },
+    {
+      "nodeId": "rp-p3-minutes-form",
+      "parentId": "rp-root",
+      "depth": 1,
+      "zoomLevel": "page",
+      "title": "Page 3 · [별지서식 제1호] 상벌위원회 회의록 양식",
+      "summary": "일시, 장소, 출석위원, 의안 및 심의 결과 기재용 정형 표 서식",
+      "targetDocId": "vdoc_ref_reward_penalty_rules",
+      "targetPageId": "page_3",
+      "targetBlockId": null,
+      "targetSlotId": null,
+      "recommendedTemplateId": null,
+      "provenanceSourceProjectId": null,
+      "provenanceSourceNodeId": null,
+      "aiStatus": "idle"
+    }
+  ],
+  "provenanceLineage": [],
+  "updatedAt": ""
+}

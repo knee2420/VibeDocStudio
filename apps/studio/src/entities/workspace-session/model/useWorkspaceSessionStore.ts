@@ -54,12 +54,27 @@ export interface WorkspaceSessionState {
   setLeftSidebarOpen: (open: boolean) => void;
   sidebarWidth: number;
   setSidebarWidth: (width: number) => void;
+  referenceDeckHeight: number;
+  setReferenceDeckHeight: (height: number) => void;
   collapsedNodeIds: string[];
   toggleNodeCollapse: (nodeId: string) => void;
   collapseAllNodes: (nodeIds: string[]) => void;
   expandAllNodes: () => void;
   hoveredOutlinerNodeId: string | null;
   setHoveredOutlinerNodeId: (id: string | null) => void;
+  isPageViewMode: boolean;
+  previewDocId: string | null;
+  peekPageId: string | null;
+  peekDocId: string | null;
+  peekPosition: { x: number; y: number } | null;
+  setPageViewMode: (on: boolean) => void;
+  togglePageViewMode: () => void;
+  setPreviewDocId: (docId: string | null) => void;
+  setPeekPage: (
+    pageId: string | null,
+    pos?: { x: number; y: number } | null,
+    docId?: string | null
+  ) => void;
 }
 
 /** 실행 중단 방법은 직렬화할 값이 아니므로 상태 밖에 둔다. */
@@ -83,8 +98,27 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set, get)
     typeof window !== "undefined"
       ? Number(window.localStorage.getItem("vdoc-sidebar-width")) || 320
       : 320,
+  referenceDeckHeight:
+    typeof window !== "undefined"
+      ? Number(window.localStorage.getItem("vdoc-ref-deck-height")) || 140
+      : 140,
   collapsedNodeIds: [],
   hoveredOutlinerNodeId: null,
+  isPageViewMode: false,
+  previewDocId: null,
+  peekPageId: null,
+  peekDocId: null,
+  peekPosition: null,
+
+  setPageViewMode: (on) => set({ isPageViewMode: on }),
+  togglePageViewMode: () => set((s) => ({ isPageViewMode: !s.isPageViewMode })),
+  setPreviewDocId: (docId) => set({ previewDocId: docId }),
+  setPeekPage: (pageId, pos, docId) =>
+    set({
+      peekPageId: pageId,
+      peekPosition: pos ?? null,
+      peekDocId: pageId ? (docId ?? null) : null,
+    }),
 
   restoreLocation: ({ phase, zoom, splitRef }) =>
     set({
@@ -160,6 +194,22 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set, get)
       }
     }
     set({ sidebarWidth: clamped });
+  },
+
+  setReferenceDeckHeight: (height) => {
+    const maxHeight =
+      typeof window !== "undefined"
+        ? Math.max(300, Math.floor(window.innerHeight * 0.75))
+        : 500;
+    const clamped = Math.max(50, Math.min(maxHeight, height));
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem("vdoc-ref-deck-height", String(clamped));
+      } catch {
+        // ignore quota errors
+      }
+    }
+    set({ referenceDeckHeight: clamped });
   },
 
   toggleNodeCollapse: (nodeId) =>

@@ -11,7 +11,11 @@ import {
   useWorkspaceBootstrap,
   useWorkspaceUrlSync,
 } from "@/features/workspace-persistence";
-import { OutlinePreviewSidebar } from "@/widgets/outline-preview-sidebar";
+import {
+  HoverPagePeekCard,
+  OutlinePreviewSidebar,
+  PandaDocDocumentPreviewPanel,
+} from "@/widgets/outline-preview-sidebar";
 import { SlotInspectorDrawer } from "@/widgets/slot-inspector-drawer";
 import { StudioActivityBar } from "@/widgets/studio-activity-bar";
 import { StudioTopRibbon } from "@/widgets/studio-top-ribbon";
@@ -30,8 +34,9 @@ const StudioWorkspace: React.FC = () => {
 
       <div className="flex-1 flex overflow-hidden relative">
         <StudioActivityBar />
+        <PandaDocDocumentPreviewPanel />
 
-        {/* 중앙 에디터 작업 공간: 상단 전체 폭 서식 툴바 + (좌측 아웃라이너 | 중앙 캔버스) */}
+        {/* 중앙 에디터 작업 공간: 상단 서식 툴바 + (좌측 아웃라이너 | 중앙 캔버스) */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {currentPhase === "drafting" && (
             <SlotFormattingSubToolbar onTableCommand={blocks.runTableCommand} />
@@ -47,6 +52,7 @@ const StudioWorkspace: React.FC = () => {
       </div>
 
       <GlobalUndoToastHost />
+      <HoverPagePeekCard />
     </div>
   );
 };
