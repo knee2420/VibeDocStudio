@@ -1,9 +1,12 @@
 import React from "react";
 
+import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import {
   GlobalUndoToastHost,
   useGlobalStudioShortcuts,
 } from "@/features/command-bus";
+import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
+import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import {
   useWorkspaceBootstrap,
   useWorkspaceUrlSync,
@@ -18,14 +21,28 @@ const StudioWorkspace: React.FC = () => {
   useWorkspaceUrlSync();
   useGlobalStudioShortcuts();
 
+  const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
+  const blocks = useMutateCanvasBlocks();
+
   return (
     <div className="h-screen w-screen flex flex-col bg-[#f4f5f7] text-slate-900 overflow-hidden select-none">
       <StudioTopRibbon />
 
       <div className="flex-1 flex overflow-hidden relative">
         <StudioActivityBar />
-        <OutlinePreviewSidebar />
-        <VDocPageCanvas />
+
+        {/* 중앙 에디터 작업 공간: 상단 전체 폭 서식 툴바 + (좌측 아웃라이너 | 중앙 캔버스) */}
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+          {currentPhase === "drafting" && (
+            <SlotFormattingSubToolbar onTableCommand={blocks.runTableCommand} />
+          )}
+
+          <div className="flex-1 flex overflow-hidden relative">
+            <OutlinePreviewSidebar />
+            <VDocPageCanvas />
+          </div>
+        </div>
+
         <SlotInspectorDrawer />
       </div>
 

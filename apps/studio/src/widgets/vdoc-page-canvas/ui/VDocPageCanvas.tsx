@@ -15,10 +15,7 @@ import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-do
 import { selectReferenceDocId, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { SlotInlineComposerHost } from "@/features/compose-slot-ai";
-import {
-  SlotFormattingSubToolbar,
-  useSlotContentActions,
-} from "@/features/edit-slot-richtext";
+import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { useFractalZoomNavigation } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
@@ -174,10 +171,7 @@ export const VDocPageCanvas: React.FC = () => {
         `}</style>
       )}
 
-      {/* Phase 3 슬롯 본문 집필 전용 서식 툴바: 중앙 캔버스 패널 안쪽 너비에만 귀속 */}
-      {currentPhase === "drafting" && (
-        <SlotFormattingSubToolbar onTableCommand={onTableCommand} />
-      )}
+
 
       <div className="flex-1 flex overflow-hidden">
         {currentPhase === "storylining" ? (
