@@ -274,7 +274,7 @@ export function slotRangeRef(doc: VDocDocument, slotIds: string[], unitIds: stri
   return {
     kind: "slot-range",
     id: `range:${hash(unitIds.join("|"))}`,
-    label: `${unitIds.length}개 선택 · ${first}${unitIds.length > 1 ? " …" : ""}`,
+    label: `${unitIds.length}개 요소 · ${first}${unitIds.length > 1 ? " …" : ""}`,
     hint: `${unitIds.map((id) => doc.slots[id]?.label ?? unitLabel(doc, id) ?? id).slice(0, 8).join(", ")}${unitIds.length > 8 ? " …" : ""}${
       editable < slots.length ? ` (잠김 · 고정 ${slots.length - editable}개는 바꿀 수 없음)` : ""
     }${others > 0 ? ` · 슬롯 아닌 요소 ${others}개(이미지 등)` : ""}`,

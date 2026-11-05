@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowUp, AtSign, Slash, Square } from "lucide-react";
+import { ArrowUp, AtSign, Plus, Slash, Square } from "lucide-react";
 
 import {
   assignHandle,
@@ -24,6 +24,8 @@ export interface PromptInputProps {
   slashSurface: string;
   /** 자동 첨부 후보 (현재 선택 등). 사용자가 끌 수 있다. */
   autoContexts?: ContextRef[];
+  /** 첨부 제안 — 칩으로만 보이고, 누르면 첨부된다 (현재 선택 등). */
+  suggestedContexts?: ContextRef[];
   busy?: boolean;
   placeholder?: string;
   /** 외부 초안 (인라인 → Composer 이어하기). revision 이 바뀌면 받아들인다. */
@@ -39,6 +41,7 @@ export const PromptInput: React.FC<PromptInputProps> = ({
   runtime,
   slashSurface,
   autoContexts = [],
+  suggestedContexts = [],
   busy,
   placeholder,
   draft,
@@ -133,6 +136,16 @@ export const PromptInput: React.FC<PromptInputProps> = ({
   // 같은 대상(id)을 직접 첨부했다면 자동 칩은 숨긴다 (선택 슬롯 = @슬롯).
   const shadowed = (c: ContextRef) => attached.some((a) => a.id === c.id);
   const activeAuto = autoContexts.filter((c) => !disabledAuto.has(autoKey(c)) && !shadowed(c));
+  // 첨부 제안(현재 캔버스 선택 등): 보내기에는 들어가지 않고, 눌렀을 때만 첨부된다.
+  const openSuggestions = suggestedContexts.filter((c) => !attached.some((a) => sameContext(a, c)));
+  const attachSuggestion = (ref: ContextRef) => {
+    const { next, handles } = addAttachments([ref]);
+    setAttached(next);
+    const el = areaRef.current;
+    const value = el?.value ?? text;
+    const at = el && document.activeElement === el ? el.selectionStart : value.length;
+    insertAtCaret(value, handles[0] ?? "", at, el && document.activeElement === el ? el.selectionEnd : value.length);
+  };
 
   const refreshPopover = (value: string, caret: number) => {
     const before = value.slice(0, caret);
@@ -268,8 +281,23 @@ export const PromptInput: React.FC<PromptInputProps> = ({
       )}
 
       <div className="rounded-xl border border-slate-300 bg-white shadow-xs focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition">
-        {(activeAuto.length > 0 || attached.length > 0 || autoContexts.length > 0) && (
+        {(activeAuto.length > 0 || attached.length > 0 || autoContexts.length > 0 || openSuggestions.length > 0) && (
           <div className="flex flex-wrap items-center gap-1 px-2 pt-2">
+            {openSuggestions.map((c) => (
+              <button
+                key={`sug-${autoKey(c)}`}
+                type="button"
+                data-testid="ai-context-suggestion"
+                title={`${c.hint ?? c.label}\n눌러서 첨부 (Ctrl+L 과 같음)`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => attachSuggestion(c)}
+                className="inline-flex items-center gap-1 max-w-[240px] px-1.5 py-0.5 rounded-md border border-dashed border-slate-300 bg-white text-[11px] text-slate-500 hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50/50 cursor-pointer"
+              >
+                <Plus className="w-3 h-3 shrink-0" />
+                <span className="shrink-0 text-slate-400">선택</span>
+                <span className="truncate">{c.label}</span>
+              </button>
+            ))}
             {autoContexts.map((c) => {
               const off = disabledAuto.has(autoKey(c));
               if (shadowed(c)) return null;

@@ -46,8 +46,10 @@ export interface ComposerSuggestion {
 export interface ComposerPanelProps {
   runtime: AiRuntime;
   controller: ComposerSessionController;
-  /** 현재 선택 등 자동 첨부 후보. */
+  /** 매 메시지에 붙는 배경 정보 (열린 문서 등). 칩을 눌러 끌 수 있다. */
   autoContexts: ContextRef[];
+  /** 첨부 제안 (현재 캔버스 선택 등) — 눌러야 첨부된다. */
+  suggestedContexts?: ContextRef[];
   engines: EngineStatus | null;
   enginesError?: string | null;
   onChangeEngine(provider: string, model: string): void;
@@ -74,6 +76,7 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   runtime,
   controller,
   autoContexts,
+  suggestedContexts = [],
   engines,
   enginesError,
   onChangeEngine,
@@ -158,7 +161,7 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
         className="flex-1 min-h-0 overflow-y-auto px-3.5 py-3 space-y-2.5 select-text"
       >
         {state.items.length === 0 ? (
-          <EmptyState suggestions={suggestions} onPick={(p) => void controller.send(p, autoContexts)} />
+          <EmptyState suggestions={suggestions} onPick={(p) => void controller.send(p, [...autoContexts, ...suggestedContexts])} />
         ) : (
           state.items.map((item) => (
             <ThreadItem key={item.id} item={item} onApprove={(id) => controller.approve(id)} onDeny={(id) => controller.deny(id)} />
@@ -180,6 +183,7 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
           runtime={runtime}
           slashSurface="composer"
           autoContexts={autoContexts}
+          suggestedContexts={suggestedContexts}
           busy={busy}
           draft={state.draft}
           inbox={state.inbox}

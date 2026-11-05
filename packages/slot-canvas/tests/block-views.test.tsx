@@ -51,6 +51,27 @@ describe("블록 뷰", () => {
     for (const def of listBlockKinds()) for (const kind of def.kinds) assert.ok(hasBlockView(kind), `뷰 없음: ${kind}`);
   });
 
+  it("블록 전용 조작(controls)은 id 가 겹치지 않고 이름 · 아이콘이 있으며, 실행해도 오류가 나지 않는다", async () => {
+    for (const doc of seedDocuments()) {
+      for (const page of doc.pages) {
+        for (const block of page.blocks as LayoutBlock[]) {
+          let updated = 0;
+          const controls =
+            getBlockView(block.kind).controls?.(block, {
+              updateBlock: () => void updated++,
+              pickFile: async () => null,
+              prompt: () => null,
+            }) ?? [];
+          assert.equal(new Set(controls.map((c) => c.id)).size, controls.length, `${block.blockId}: 조작 id 중복`);
+          for (const control of controls) {
+            assert.ok(control.label && control.icon, `${block.kind}.${control.id}: 이름 · 아이콘`);
+            await control.run();
+          }
+        }
+      }
+    }
+  });
+
   it("시드 문서의 모든 블록이 자기 선택 단위를 전부 화면에 표시한다", () => {
     for (const doc of seedDocuments()) {
       for (const page of doc.pages) {

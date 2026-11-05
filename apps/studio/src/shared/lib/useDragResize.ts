@@ -2,8 +2,8 @@ import { useCallback, useState } from "react";
 import type React from "react";
 
 export interface DragResizeOptions {
-  /** 끌기 방향. `"x"` 는 오른쪽으로 끌면 커지고, `"y-up"` 은 위로 끌면 커진다. */
-  axis: "x" | "y-up";
+  /** 끌기 방향. `"x"` 는 오른쪽으로 끌면 커지고, `"x-left"` 는 왼쪽으로 끌면 커지고, `"y-up"` 은 위로 끌면 커진다. */
+  axis: "x" | "x-left" | "y-up";
   /** 끌기를 시작할 때의 크기. */
   size: number;
   onResize: (next: number) => void;
@@ -16,11 +16,12 @@ export function useDragResize({ axis, size, onResize }: DragResizeOptions) {
   const onResizeStart = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      const start = axis === "x" ? e.clientX : e.clientY;
+      const start = axis === "x" || axis === "x-left" ? e.clientX : e.clientY;
       setIsResizing(true);
 
       const onMove = (move: MouseEvent) => {
-        const delta = axis === "x" ? move.clientX - start : start - move.clientY;
+        const delta =
+          axis === "x" ? move.clientX - start : axis === "x-left" ? start - move.clientX : start - move.clientY;
         onResize(size + delta);
       };
       const onUp = () => {

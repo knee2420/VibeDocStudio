@@ -74,9 +74,37 @@ export interface BlockViewProps<B extends LayoutBlock = LayoutBlock> {
   ctx: BlockRenderContext;
 }
 
+/**
+ * 블록 전용 조작 하나 (이미지 교체 · 정렬, 상자 색 …). 뷰 안에 툴바를 직접 띄우지 않고 이 목록으로 내놓으면
+ * 위쪽 서식 툴바의 "블록 도구" 묶음이 모든 블록에 같은 자리 · 같은 모양으로 그린다.
+ */
+export interface BlockControl {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  /** 아이콘 옆에 글자도 보인다 (짧은 상태 표시: "담당: 홍길동"). */
+  showLabel?: boolean;
+  active?: boolean;
+  disabled?: boolean;
+  /** 같은 묶음끼리 붙여 그리고, 묶음 사이에 구분선을 넣는다. */
+  group?: string;
+  run(): void | Promise<void>;
+}
+
+/** 조작이 쓰는 도구 — 툴바가 넘긴다. */
+export interface BlockControlApi {
+  updateBlock(updater: (prev: LayoutBlock) => LayoutBlock): void;
+  /** 파일 고르기 창 (취소하면 null). */
+  pickFile(accept: string): Promise<File | null>;
+  /** 한 줄 입력 (취소하면 null). */
+  prompt(message: string, initial?: string): string | null;
+}
+
 export interface BlockViewDefinition<B extends LayoutBlock = LayoutBlock> {
   kinds: readonly string[];
   View: React.ComponentType<BlockViewProps<B>>;
+  /** 블록을 골랐을 때 위쪽 툴바에 나오는 이 종류 전용 조작. 공통 조작(복제 · 잠금 · 삭제)은 ⚙ 메뉴가 맡는다. */
+  controls?(block: B, api: BlockControlApi): BlockControl[];
 }
 
 export function defineBlockView<B extends LayoutBlock>(definition: BlockViewDefinition<B>): BlockViewDefinition<B> {

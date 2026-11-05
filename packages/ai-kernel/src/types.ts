@@ -79,6 +79,11 @@ export interface ContextProvider {
   label: string;
   /** true 면 현재 값(`current`)이 매 메시지에 자동 첨부 후보로 붙는다. */
   auto?: boolean;
+  /**
+   * true 면 현재 값(`current`)을 "첨부 제안"으로만 보여 준다 — 사용자가 눌러야 첨부된다.
+   * 캔버스 선택처럼 Composer 와 함께 쓸 수도, 안 쓸 수도 있는 것에 쓴다.
+   */
+  suggest?: boolean;
   current?(): ContextRef[];
   /** `@` 멘션 검색. */
   search?(query: string): ContextRef[];

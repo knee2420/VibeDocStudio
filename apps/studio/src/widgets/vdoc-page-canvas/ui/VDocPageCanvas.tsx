@@ -91,7 +91,6 @@ const DraftingCanvas: React.FC = () => {
   const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
   const openComposerWithPrompt = useSlotSelectionStore((s) => s.openComposerWithPrompt);
   const setTableSelection = useSlotSelectionStore((s) => s.setTableSelection);
-  const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
   const openRightPanel = useWorkspaceLayoutStore((s) => s.openRightPanel);
   const setSelectedOutlinerNodeId = useWorkspaceSessionStore((s) => s.setSelectedOutlinerNodeId);
 
@@ -111,9 +110,9 @@ const DraftingCanvas: React.FC = () => {
     const matched = projection.allNodes.find((n) => n.targetSlotId === slotId);
     if (matched) setSelectedOutlinerNodeId(matched.nodeId);
   });
+  // 블록을 고른다고 오른쪽 패널을 열지 않는다 — 사용자가 접어 둔 Composer 는 접힌 채로 둔다.
   const onSelectBlock = useStableCallback((blockId: string) => {
     setSelectedBlockId(blockId);
-    setRightSidebarOpen(true);
   });
   const onOpenBackdataDrawer = useStableCallback((slotId: string) => {
     setSelectedSlotId(slotId);

@@ -68,7 +68,14 @@ export class ContextRegistry extends Registry<ContextProvider> {
   /** 자동 첨부 후보 (현재 선택 등). */
   autoContexts(): ContextRef[] {
     return this.list()
-      .filter((p) => p.auto && p.current)
+      .filter((p) => p.auto && !p.suggest && p.current)
+      .flatMap((p) => safe(() => p.current!(), []));
+  }
+
+  /** 첨부 제안 (현재 선택 등) — 보내기에 들어가지 않고, 사용자가 눌러야 첨부된다. */
+  suggestedContexts(): ContextRef[] {
+    return this.list()
+      .filter((p) => p.suggest && p.current)
       .flatMap((p) => safe(() => p.current!(), []));
   }
 

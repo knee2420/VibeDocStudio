@@ -2,6 +2,7 @@ import React from "react";
 import {
   ArrowUp,
   Check,
+  ChevronUp,
   ClipboardCopy,
   FileText,
   GitPullRequestDraft,
@@ -10,6 +11,7 @@ import {
   Loader2,
   MessageSquareShare,
   Minimize2,
+  MoreHorizontal,
   PencilLine,
   RotateCcw,
   Wand2,
@@ -17,8 +19,9 @@ import {
 } from "lucide-react";
 
 import { useInlineAiRun, useRegistryList } from "@vibe/ai-react";
+import { findBlock, getBlockUnits, type VDocDocument } from "@vibe/vdoc-schema";
 
-import { useSlotSelectionStore, type SlotRangeSelection } from "@/entities/slot";
+import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import {
   applySlotMap,
@@ -82,27 +85,28 @@ const RangeHighlight: React.FC<{ unitIds: string[]; withinTable?: boolean }> = (
   const css = unitIds
     .map((id) => {
       const sel = CSS.escape(id);
-      return `td[data-vdoc-unit="${sel}"], [data-vdoc-unit="${sel}"]:not(td *) {
+      return `td[data-vdoc-unit="${sel}"], [data-vdoc-unit="${sel}"][data-unit-kind="slot"]:not(td *) {
         ${withinTable ? "" : "background-color: rgba(4, 114, 227, 0.07) !important;"}
         box-shadow: inset 0 0 0 1.5px rgba(4, 114, 227, 0.6) !important;
+      }
+      /* 이미지 같은 슬롯 아닌 단위: 배경 · 안쪽 그림자는 그림에 가려지므로 그림 "위"에 덮는다. */
+      [data-vdoc-unit="${sel}"]:not([data-unit-kind="slot"]) { position: relative; }
+      [data-vdoc-unit="${sel}"]:not([data-unit-kind="slot"])::after {
+        content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+        background: rgba(4, 114, 227, 0.12); box-shadow: inset 0 0 0 1.5px rgba(4, 114, 227, 0.6);
       }`;
     })
     .join("\n");
   return <style>{css}</style>;
 };
 
-/** 바를 띄울 자리: 손을 뗀 점(스크롤을 따라감) → 없으면 범위 상자 아래. */
-function anchorPoint(range: SlotRangeSelection): { x: number; y: number } | null {
-  const main = document.querySelector<HTMLElement>("main");
-  if (range.endPoint && main) {
-    return {
-      x: range.endPoint.x - (main.scrollLeft - range.endPoint.scrollLeft),
-      y: range.endPoint.y - (main.scrollTop - range.endPoint.scrollTop),
-    };
-  }
-  const rects = rangeElements(range.unitIds).map((el) => el.getBoundingClientRect());
+/** 범위를 감싸는 상자 (화면 좌표). */
+function rangeBox(unitIds: string[]): DOMRect | null {
+  const rects = rangeElements(unitIds).map((el) => el.getBoundingClientRect());
   if (rects.length === 0) return null;
-  return { x: Math.min(...rects.map((r) => r.left)), y: Math.max(...rects.map((r) => r.bottom)) };
+  const left = Math.min(...rects.map((r) => r.left));
+  const top = Math.min(...rects.map((r) => r.top));
+  return new DOMRect(left, top, Math.max(...rects.map((r) => r.right)) - left, Math.max(...rects.map((r) => r.bottom)) - top);
 }
 
 type Phase =
@@ -112,38 +116,74 @@ type Phase =
   | { kind: "done"; message: string; tone: "ok" | "error" };
 
 /**
- * 여러 슬롯 범위의 AI 바 — 드래그를 끝낸 자리 옆에 뜬다 (텍스트 선택 버블과 같은 모양).
- * 빠른 지시 · 직접 지시 → 칸별 미리보기 → 모두 적용(되돌리기 한 번) / Staged 로 / Composer 에서 이어하기.
+ * 선택 도구는 단계적으로 펼친다 — 고를 때마다 큰 AI 바가 뜨지 않게.
+ * - icon: 범위 오른쪽 위에 기본 아이콘 하나 (끌어서 Composer 에 놓을 수도 있다)
+ * - menu: AI 디렉팅 · Composer 에 첨부 · 복사
+ * - ai:   AI 작업창 (빠른 지시 · 직접 지시 · 칸별 미리보기 · 적용 / Staged / Composer)
  */
+type Level = "icon" | "menu" | "ai";
+
+const ICON_SIZE = 28;
+const GAP = 6;
+
+/** 선택 도구가 다루는 것: 여러 요소 범위, 없으면 지금 고른 슬롯 하나 · 블록 하나. */
+interface ToolSelection {
+  unitIds: string[];
+  slotIds: string[];
+  source: "drag" | "native" | "single";
+  withinTable?: boolean;
+}
+
+function singleSelection(doc: VDocDocument | undefined, slotId: string | null, blockId: string | null): ToolSelection | null {
+  if (!doc) return null;
+  if (slotId && doc.slots[slotId]) return { unitIds: [slotId], slotIds: [slotId], source: "single" };
+  const loc = blockId ? findBlock(doc, blockId) : null;
+  if (!loc) return null;
+  const units = getBlockUnits(loc.block).filter((u) => u.kind !== "slot" || doc.slots[u.slotId ?? u.unitId]);
+  if (units.length === 0) return null;
+  return { unitIds: units.map((u) => u.unitId), slotIds: units.filter((u) => u.kind === "slot").map((u) => u.unitId), source: "single" };
+}
+
 export const SlotRangeAiBar: React.FC = () => {
-  const range = useSlotSelectionStore((s) => s.slotRange);
+  const multi = useSlotSelectionStore((s) => s.slotRange);
+  const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
+  const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
   const doc = useStudioDocumentStore(selectActiveDocument);
+  // 여러 요소를 고르지 않았어도, 슬롯 하나 · 블록 하나를 고르면 같은 선택 도구가 뜬다.
+  const range = React.useMemo<ToolSelection | null>(
+    () => multi ?? singleSelection(doc, selectedSlotId, selectedBlockId),
+    [multi, doc, selectedSlotId, selectedBlockId]
+  );
   const actions = useRegistryList(aiRuntime.actions).filter((a) => a.surfaces.includes(SLOT_RANGE_SURFACE));
   const run = useInlineAiRun(aiRuntime);
   const [instruction, setInstruction] = React.useState("");
+  const [level, setLevel] = React.useState<Level>("icon");
   const [phase, setPhase] = React.useState<Phase>({ kind: "bar" });
-  const [point, setPoint] = React.useState<{ x: number; y: number } | null>(null);
+  const [copied, setCopied] = React.useState(false);
+  const [box, setBox] = React.useState<DOMRect | null>(null);
   const [dragging, setDragging] = React.useState(false);
   const lastLabel = React.useRef("AI 지시");
   const barRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const rangeKey = range?.unitIds.join("|") ?? "";
 
-  // 범위가 바뀌면 새로 시작
+  // 범위가 바뀌면 다시 아이콘부터
   React.useEffect(() => {
+    setLevel("icon");
     setPhase({ kind: "bar" });
+    setCopied(false);
     run.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rangeKey]);
 
-  // 위치: 손을 뗀 자리를 스크롤 · 창 크기에 맞춰 따라간다 (백그라운드 탭에서도 돌도록 타이머)
+  // 위치: 범위 상자를 스크롤 · 창 크기에 맞춰 따라간다 (백그라운드 탭에서도 돌도록 타이머)
   React.useEffect(() => {
     if (!range) return;
     let timer = 0;
     const measure = () => {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
-        setPoint(anchorPoint(range));
+        setBox(rangeBox(range.unitIds));
         setDragging(document.body.classList.contains("vdoc-range-dragging"));
       }, 16);
     };
@@ -172,25 +212,48 @@ export const SlotRangeAiBar: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run.status, run.result]);
 
-  // Ctrl+C: 편집기 글자 선택이 없으면 고른 칸들을 표 배치대로 복사
+  const copy = React.useCallback(() => {
+    if (!range) return;
+    void navigator.clipboard?.writeText(rangeText(range.unitIds));
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1500);
+  }, [range]);
+
+  // Ctrl+C: 편집기 글자 선택이 없으면 고른 칸들을 표 배치대로 복사 · Esc: 펼친 도구를 한 단계씩 접는다
   React.useEffect(() => {
     if (!range) return;
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && level !== "icon") {
+        e.stopImmediatePropagation(); // 범위 해제 · 전역 Esc 보다 먼저: 펼친 도구부터 접는다
+        if (level === "ai") run.cancel();
+        setLevel("icon");
+        return;
+      }
       if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "c") return;
+      if (range.source === "single") return; // 슬롯 하나: 편집기 · 브라우저 복사를 그대로
       if (range.source === "native" && window.getSelection()?.toString()) return; // 브라우저 복사를 그대로
       const active = document.activeElement as HTMLElement | null;
       if (active?.closest("input, textarea, [data-testid='ai-composer-panel']")) return;
       e.preventDefault();
-      void navigator.clipboard?.writeText(rangeText(range.unitIds));
-      setPhase({ kind: "done", message: `${range.unitIds.length}개를 복사했습니다 (같은 행은 탭으로 구분)`, tone: "ok" });
+      copy();
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [range]);
+  }, [range, level, copy, run]);
+
+  // 메뉴는 바깥을 누르면 접힌다 (AI 작업창은 작업 중일 수 있어 그대로 둔다).
+  React.useEffect(() => {
+    if (level !== "menu") return;
+    const onDown = (e: PointerEvent) => {
+      if (!barRef.current?.contains(e.target as Node)) setLevel("icon");
+    };
+    window.addEventListener("pointerdown", onDown, true);
+    return () => window.removeEventListener("pointerdown", onDown, true);
+  }, [level]);
 
   React.useEffect(() => {
-    if (phase.kind === "prompt") window.setTimeout(() => inputRef.current?.focus(), 0);
-  }, [phase.kind]);
+    if (level === "ai" && phase.kind === "prompt") window.setTimeout(() => inputRef.current?.focus(), 0);
+  }, [level, phase.kind]);
 
   if (!range || !doc) return null;
   const ref = slotRangeRef(doc, range.slotIds, range.unitIds);
@@ -211,160 +274,216 @@ export const SlotRangeAiBar: React.FC = () => {
 
   const close = () => {
     run.cancel();
-    useSlotSelectionStore.getState().setSlotRange(null);
+    const store = useSlotSelectionStore.getState();
+    if (range.source === "single") store.clearSelection();
+    else store.setSlotRange(null);
   };
 
-  // 손을 뗀 점 바로 아래(버블과 같은 간격). 화면 아래로 넘치면 점 위로 올린다.
-  // 너비는 맨 윗줄(도구 줄)에 맞춘다 — 입력칸 · 미리보기는 그 폭을 그대로 쓴다.
-  const width = undefined;
-  const estimatedH = phase.kind === "preview" ? 380 : phase.kind === "prompt" || running ? 84 : 40;
-  const estimatedW = barRef.current?.offsetWidth || 700;
-  const anchor = point ?? { x: 24, y: window.innerHeight - estimatedH - 24 };
-  const left = Math.max(12, Math.min(anchor.x - 12, window.innerWidth - estimatedW - 12));
-  const top = anchor.y + 12 + estimatedH < window.innerHeight - 8 ? anchor.y + 12 : Math.max(60, anchor.y - estimatedH - 12);
+  // 자리: 범위 오른쪽 위 모서리 바로 위. 펼치면 오른쪽 끝을 맞춘 채 왼쪽 · 아래로 넓어진다. 캔버스 안에서만.
+  const canvas = document.querySelector("main")?.getBoundingClientRect();
+  const bounds = {
+    left: (canvas?.left ?? 0) + 8,
+    right: (canvas?.right ?? window.innerWidth) - 8,
+    top: (canvas?.top ?? 0) + 8,
+    bottom: (canvas?.bottom ?? window.innerHeight) - 8,
+  };
+  // 오른쪽 끝(right)으로 고정한다 — 펼칠 때 폭을 미리 몰라도 늘 왼쪽으로 넓어진다.
+  const height = level === "ai" ? 84 : ICON_SIZE;
+  const anchorRight = Math.min(box ? box.right : bounds.right, bounds.right);
+  const anchorTop = box ? box.top - ICON_SIZE - GAP : bounds.top;
+  const right = Math.max(0, window.innerWidth - anchorRight);
+  const maxWidth = Math.max(ICON_SIZE, anchorRight - bounds.left);
+  const top = Math.max(bounds.top, Math.min(anchorTop, bounds.bottom - height));
+  const countLabel = `${range.slotIds.length}칸${mediaCount > 0 ? ` · 이미지 ${mediaCount}` : ""}`;
 
   return (
     <>
-      <RangeHighlight unitIds={range.unitIds} withinTable={range.withinTable} />
+      {/* 하나만 고른 것은 슬롯 · 블록이 자기 선택 테두리를 그린다 */}
+      {range.source !== "single" && <RangeHighlight unitIds={range.unitIds} withinTable={range.withinTable} />}
       {!dragging && (
         <div
           ref={barRef}
           data-testid="slot-range-ai-bar"
+          data-level={level}
           data-keep-table-selection
-          style={{ left, top, width }}
+          style={{ right, top, maxWidth }}
           className={`fixed z-[60] select-none ${SURFACE}`}
           onPointerDown={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center gap-1 p-1 whitespace-nowrap">
-            <span
+          {level === "icon" && (
+            <button
+              type="button"
+              data-testid="slot-range-toolbar-icon"
               {...attachable(() => [ref])}
-              title={`${ref.hint ?? ""}\n끌어서 Composer 에 놓으면 첨부`}
-              className="inline-flex h-7 items-center gap-1 rounded-md bg-[#eef5fd] px-1.5 text-[11.5px] font-semibold text-[#0363c7] cursor-grab active:cursor-grabbing"
+              onClick={() => setLevel("menu")}
+              title={`선택 도구 · ${countLabel}\n클릭: 도구 열기 · 끌기: Composer 에 첨부`}
+              className="relative flex h-7 w-7 items-center justify-center rounded-lg text-[#0472e3] hover:bg-[#eef5fd] cursor-pointer"
             >
-              <GripVertical className="w-3 h-3 opacity-60" />
-              {range.slotIds.length}칸
-              {mediaCount > 0 && <span className="font-normal text-[#5a8fc9]">· 이미지 {mediaCount}</span>}
-              {lockedCount > 0 && <span className="font-normal text-[#5a8fc9]">· 잠김 {lockedCount}</span>}
-            </span>
-            <button
-              type="button"
-              data-testid="slot-range-prompt"
-              disabled={running}
-              onClick={() => setPhase((p) => (p.kind === "prompt" ? { kind: "bar" } : { kind: "prompt" }))}
-              className={PRIMARY}
-              title="고른 칸들에 직접 지시"
-            >
-              <Wand2 className="w-3.5 h-3.5" /> AI 제안
+              <MoreHorizontal className="w-4 h-4" />
+              <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-[#0472e3] text-white text-[9.5px] font-bold leading-4 text-center">
+                {range.unitIds.length}
+              </span>
             </button>
-            {actions.map((action) => {
-              const Icon = ACTION_ICONS[action.icon ?? ""] ?? Wand2;
-              return (
-                <button
-                  key={action.id}
-                  type="button"
-                  data-testid={`slot-range-action-${action.id}`}
-                  disabled={running}
-                  title={typeof action.instruction === "string" ? action.instruction : action.label}
-                  onClick={() => start(typeof action.instruction === "string" ? action.instruction : action.instruction({}), action.label)}
-                  className={BUTTON}
-                >
-                  <Icon className="w-3.5 h-3.5 text-gray-500" />
-                  {action.label}
-                </button>
-              );
-            })}
-            <span className="mx-0.5 h-4 w-px bg-[#eaeaea]" />
-            <button
-              type="button"
-              data-testid="slot-range-to-composer"
-              title="Composer 에 첨부 (Ctrl+L)"
-              onClick={() => attachToComposer([ref], { role: "target" })}
-              className={ICON_BUTTON}
-            >
-              <MessageSquareShare className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              title="복사 (Ctrl+C)"
-              onClick={() => {
-                void navigator.clipboard?.writeText(rangeText(range.unitIds));
-                setPhase({ kind: "done", message: `${range.unitIds.length}개를 복사했습니다`, tone: "ok" });
-              }}
-              className={ICON_BUTTON}
-            >
-              <ClipboardCopy className="w-3.5 h-3.5" />
-            </button>
-            <button type="button" title="선택 해제 (Esc)" onClick={close} className={ICON_BUTTON}>
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {phase.kind === "prompt" && !running && (
-            <form
-              className="flex w-0 min-w-full items-center gap-1.5 border-t border-[#eaeaea] px-2 py-1.5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                start(instruction, instruction.slice(0, 16));
-              }}
-            >
-              <input
-                ref={inputRef}
-                data-testid="slot-range-instruction"
-                value={instruction}
-                onChange={(e) => setInstruction(e.target.value)}
-                onKeyDown={(e) => e.key === "Escape" && setPhase({ kind: "bar" })}
-                placeholder="고른 칸들에 지시 (예: 결의사항을 항목별 한 줄로)"
-                className="h-7 flex-1 min-w-0 rounded-md border border-[#eaeaea] bg-white px-2 text-[12px] text-gray-800 placeholder-gray-400 focus:border-[#0472e3] focus:outline-none select-text"
-              />
-              <button type="submit" disabled={!instruction.trim()} className={PRIMARY} title="실행 (Enter)">
-                <ArrowUp className="w-3.5 h-3.5" />
-              </button>
-            </form>
           )}
 
-          {running && (
-            <div className="flex w-0 min-w-full items-center gap-2 border-t border-[#eaeaea] px-2.5 py-2 text-gray-600">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: ACCENT }} />
-              <span className="flex-1">
-                {lastLabel.current} — {run.streamText ? `${run.streamText.length}자 받는 중` : "작성 중"}
-              </span>
-              <button type="button" onClick={() => run.cancel()} className={BUTTON}>
-                중단
+          {level === "menu" && (
+            <div className="flex items-center gap-0.5 p-1 whitespace-nowrap">
+              <button
+                type="button"
+                data-testid="slot-range-ai-directing"
+                onClick={() => {
+                  setLevel("ai");
+                  setPhase({ kind: "prompt" });
+                }}
+                className={PRIMARY}
+                title="고른 요소들에 AI 로 지시"
+              >
+                <Wand2 className="w-3.5 h-3.5" /> AI 디렉팅
+              </button>
+              <button
+                type="button"
+                data-testid="slot-range-to-composer"
+                onClick={() => {
+                  attachToComposer([ref], { role: "target" });
+                  setLevel("icon");
+                }}
+                className={BUTTON}
+                title="Composer 에 첨부 (Ctrl+L)"
+              >
+                <MessageSquareShare className="w-3.5 h-3.5 text-gray-500" /> Composer 에 첨부
+              </button>
+              <button type="button" data-testid="slot-range-copy" onClick={copy} className={BUTTON} title="복사 (Ctrl+C)">
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <ClipboardCopy className="w-3.5 h-3.5 text-gray-500" />}
+                {copied ? "복사됨" : "복사"}
               </button>
             </div>
           )}
-          {run.status === "error" && <div className="w-0 min-w-full border-t border-[#eaeaea] px-2.5 py-2 text-rose-600">{run.error}</div>}
-          {phase.kind === "done" && (
-            <div className={`w-0 min-w-full border-t border-[#eaeaea] px-2.5 py-2 ${phase.tone === "ok" ? "text-emerald-700" : "text-rose-600"}`}>{phase.message}</div>
-          )}
 
-          {phase.kind === "preview" && (
-            <RangePreview
-              phase={phase}
-              onToggle={(slotId) =>
-                setPhase((p) => {
-                  if (p.kind !== "preview") return p;
-                  const picked = new Set(p.picked);
-                  if (picked.has(slotId)) picked.delete(slotId);
-                  else picked.add(slotId);
-                  return { ...p, picked };
-                })
-              }
-              onApply={(map) => {
-                const n = applySlotMap(map, phase.label);
-                setPhase({ kind: "done", message: `${n}칸을 반영했습니다 · Ctrl+Z 한 번으로 모두 되돌립니다`, tone: "ok" });
-              }}
-              onStage={(map) => {
-                const n = stageSlotMap(map, phase.label);
-                setPhase({ kind: "done", message: `${n}건을 Staged 대기열에 올렸습니다`, tone: "ok" });
-              }}
-              onComposer={() => {
-                attachToComposer([ref], { role: "target", prompt: `{handles} 에 대해: ${lastLabel.current}` });
-                setPhase({ kind: "bar" });
-              }}
-              onRetry={() => run.retry()}
-              onCancel={() => setPhase({ kind: "bar" })}
-            />
+          {level === "ai" && (
+            <>
+              <div className="flex items-center gap-1 p-1 whitespace-nowrap">
+                <span
+                  {...attachable(() => [ref])}
+                  title={`${ref.hint ?? ""}\n끌어서 Composer 에 놓으면 첨부`}
+                  className="inline-flex h-7 items-center gap-1 rounded-md bg-[#eef5fd] px-1.5 text-[11.5px] font-semibold text-[#0363c7] cursor-grab active:cursor-grabbing"
+                >
+                  <GripVertical className="w-3 h-3 opacity-60" />
+                  {countLabel}
+                  {lockedCount > 0 && <span className="font-normal text-[#5a8fc9]">· 잠김 {lockedCount}</span>}
+                </span>
+                <button
+                  type="button"
+                  data-testid="slot-range-prompt"
+                  disabled={running}
+                  onClick={() => setPhase((p) => (p.kind === "prompt" ? { kind: "bar" } : { kind: "prompt" }))}
+                  className={PRIMARY}
+                  title="고른 칸들에 직접 지시"
+                >
+                  <Wand2 className="w-3.5 h-3.5" /> 직접 지시
+                </button>
+                {actions.map((action) => {
+                  const Icon = ACTION_ICONS[action.icon ?? ""] ?? Wand2;
+                  return (
+                    <button
+                      key={action.id}
+                      type="button"
+                      data-testid={`slot-range-action-${action.id}`}
+                      disabled={running}
+                      title={typeof action.instruction === "string" ? action.instruction : action.label}
+                      onClick={() => start(typeof action.instruction === "string" ? action.instruction : action.instruction({}), action.label)}
+                      className={BUTTON}
+                    >
+                      <Icon className="w-3.5 h-3.5 text-gray-500" />
+                      {action.label}
+                    </button>
+                  );
+                })}
+                <span className="mx-0.5 h-4 w-px bg-[#eaeaea]" />
+                <button
+                  type="button"
+                  title="접기 (Esc)"
+                  onClick={() => {
+                    run.cancel();
+                    setLevel("icon");
+                  }}
+                  className={ICON_BUTTON}
+                >
+                  <ChevronUp className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" title="선택 해제" onClick={close} className={ICON_BUTTON}>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {phase.kind === "prompt" && !running && (
+                <form
+                  className="flex w-0 min-w-full items-center gap-1.5 border-t border-[#eaeaea] px-2 py-1.5"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    start(instruction, instruction.slice(0, 16));
+                  }}
+                >
+                  <input
+                    ref={inputRef}
+                    data-testid="slot-range-instruction"
+                    value={instruction}
+                    onChange={(e) => setInstruction(e.target.value)}
+                    placeholder="고른 요소들에 지시 (예: 결의사항을 항목별 한 줄로)"
+                    className="h-7 flex-1 min-w-0 rounded-md border border-[#eaeaea] bg-white px-2 text-[12px] text-gray-800 placeholder-gray-400 focus:border-[#0472e3] focus:outline-none select-text"
+                  />
+                  <button type="submit" disabled={!instruction.trim()} className={PRIMARY} title="실행 (Enter)">
+                    <ArrowUp className="w-3.5 h-3.5" />
+                  </button>
+                </form>
+              )}
+
+              {running && (
+                <div className="flex w-0 min-w-full items-center gap-2 border-t border-[#eaeaea] px-2.5 py-2 text-gray-600">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: ACCENT }} />
+                  <span className="flex-1">
+                    {lastLabel.current} — {run.streamText ? `${run.streamText.length}자 받는 중` : "작성 중"}
+                  </span>
+                  <button type="button" onClick={() => run.cancel()} className={BUTTON}>
+                    중단
+                  </button>
+                </div>
+              )}
+              {run.status === "error" && <div className="w-0 min-w-full border-t border-[#eaeaea] px-2.5 py-2 text-rose-600">{run.error}</div>}
+              {phase.kind === "done" && (
+                <div className={`w-0 min-w-full border-t border-[#eaeaea] px-2.5 py-2 ${phase.tone === "ok" ? "text-emerald-700" : "text-rose-600"}`}>
+                  {phase.message}
+                </div>
+              )}
+
+              {phase.kind === "preview" && (
+                <RangePreview
+                  phase={phase}
+                  onToggle={(slotId) =>
+                    setPhase((p) => {
+                      if (p.kind !== "preview") return p;
+                      const picked = new Set(p.picked);
+                      if (picked.has(slotId)) picked.delete(slotId);
+                      else picked.add(slotId);
+                      return { ...p, picked };
+                    })
+                  }
+                  onApply={(map) => {
+                    const n = applySlotMap(map, phase.label);
+                    setPhase({ kind: "done", message: `${n}칸을 반영했습니다 · Ctrl+Z 한 번으로 모두 되돌립니다`, tone: "ok" });
+                  }}
+                  onStage={(map) => {
+                    const n = stageSlotMap(map, phase.label);
+                    setPhase({ kind: "done", message: `${n}건을 Staged 대기열에 올렸습니다`, tone: "ok" });
+                  }}
+                  onComposer={() => {
+                    attachToComposer([ref], { role: "target", prompt: `{handles} 에 대해: ${lastLabel.current}` });
+                    setLevel("icon");
+                  }}
+                  onRetry={() => run.retry()}
+                  onCancel={() => setPhase({ kind: "prompt" })}
+                />
+              )}
+            </>
           )}
         </div>
       )}

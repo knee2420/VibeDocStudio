@@ -1,11 +1,21 @@
 import type { ContextProvider, ContextRef } from "@vibe/ai-kernel";
 import type { VDocDocument } from "@vibe/vdoc-schema";
 
-import { slotContext, useSlotSelectionStore } from "@/entities/slot";
+import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { htmlToPlain } from "@/shared/lib";
 
-import { backdataRef, blockRef, docIndex, pageRef, referenceRef, resolveContextContent, slotRef, variableRef } from "./contextBuilders";
+import {
+  backdataRef,
+  blockRef,
+  docIndex,
+  pageRef,
+  referenceRef,
+  resolveContextContent,
+  slotRangeRef,
+  slotRef,
+  variableRef,
+} from "./contextBuilders";
 import { referenceDocs } from "./referenceDocs";
 
 const doc = (): VDocDocument | undefined => selectActiveDocument(useStudioDocumentStore.getState());
@@ -17,14 +27,19 @@ function matches(query: string, ...fields: string[]): boolean {
 
 export const WORKSPACE_CONTEXT_PROVIDERS: ContextProvider[] = [
   {
+    // 캔버스 선택은 자동으로 붙이지 않는다 — Composer 입력창에 "첨부 제안"으로만 보이고,
+    // 사용자가 누르거나(제안 칩) Ctrl+L · 끌어 놓기 · 우클릭으로 첨부할 때만 들어간다.
     id: "selection",
-    label: "현재 선택한 슬롯",
-    auto: true,
+    label: "현재 선택",
+    suggest: true,
     current: () => {
       const d = doc();
-      const slotId = useSlotSelectionStore.getState().selectedSlotId;
-      const slot = d && slotId ? d.slots[slotId] : undefined;
-      return d && slot ? [slotContext(d, slot, "selection")] : [];
+      if (!d) return [];
+      const { slotRange, selectedSlotId, selectedBlockId } = useSlotSelectionStore.getState();
+      if (slotRange) return [slotRangeRef(d, slotRange.slotIds, slotRange.unitIds)];
+      if (selectedSlotId && d.slots[selectedSlotId]) return [slotRef(d, d.slots[selectedSlotId])];
+      const found = selectedBlockId ? docIndex(d).blocks.get(selectedBlockId) : undefined;
+      return found ? [blockRef(d, found.page, found.block)] : [];
     },
   },
   {

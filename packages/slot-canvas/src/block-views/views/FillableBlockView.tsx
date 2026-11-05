@@ -1,3 +1,5 @@
+import { UserRoundPen } from "lucide-react";
+
 import type { FillableGroupBlockDef } from "@vibe/vdoc-schema";
 
 import { defineBlockView } from "../contract";
@@ -15,4 +17,16 @@ export const fillableView = defineBlockView<FillableGroupBlockDef>({
       {ctx.renderSlot(block.slotId)}
     </div>
   ),
+  controls: (block, api) => [
+    {
+      id: "assignee",
+      label: `담당: ${block.assigneeName || "미지정"}`,
+      icon: UserRoundPen,
+      showLabel: true,
+      run: () => {
+        const name = api.prompt("담당자 이름", block.assigneeName);
+        if (name !== null) api.updateBlock((prev) => ({ ...prev, assigneeName: name.trim() }) as FillableGroupBlockDef);
+      },
+    },
+  ],
 });

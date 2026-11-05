@@ -5,13 +5,14 @@ import { findBlock, type ImageBlockDef } from "@vibe/vdoc-schema";
 
 import { SlotMetadataCard, useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { RIGHT_SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { AiComposerView } from "@/features/ai-composer";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
 import { SlotBackdataSection } from "@/features/bind-slot-backdata";
 import { SlotPlainTextEditorCard, SlotTypographyCard, useSlotContentActions } from "@/features/edit-slot-richtext";
 import { BlockInsertionPalette, useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { useDragResize } from "@/shared/lib";
 import { CollapsedPanelRail } from "@/shared/ui";
 
 import { ImageInspectorCard } from "./ImageInspectorCard";
@@ -37,8 +38,17 @@ export const SlotInspectorDrawer: React.FC = () => {
   const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
   const rightSidebarOpen = useWorkspaceLayoutStore((s) => s.rightSidebarOpen);
   const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
+  const rightSidebarWidth = useWorkspaceLayoutStore((s) => s.rightSidebarWidth);
+  const setRightSidebarWidth = useWorkspaceLayoutStore((s) => s.setRightSidebarWidth);
+  const resetRightSidebarWidth = useWorkspaceLayoutStore((s) => s.resetRightSidebarWidth);
   const viewMode = useWorkspaceLayoutStore((s) => s.rightPanelTab);
   const setViewMode = useWorkspaceLayoutStore((s) => s.openRightPanel);
+
+  const { isResizing, onResizeStart } = useDragResize({
+    axis: "x-left",
+    size: rightSidebarWidth,
+    onResize: setRightSidebarWidth,
+  });
 
   const { toggleSlotLock } = useSlotContentActions();
   const { updateBlock, deleteBlock } = useMutateCanvasBlocks();
@@ -64,8 +74,19 @@ export const SlotInspectorDrawer: React.FC = () => {
   return (
     <aside
       data-testid="slot-inspector-drawer"
-      className={`${viewMode === "composer" ? "w-[420px]" : "w-[360px]"} bg-white border-l border-slate-200 flex flex-col shrink-0 select-none relative z-10 min-h-0`}
+      style={{ width: `${rightSidebarWidth}px` }}
+      className={`bg-white border-l border-slate-200 flex flex-col shrink-0 select-none relative z-10 min-h-0 ${
+        isResizing ? "transition-none" : "transition-[width] duration-75"
+      }`}
     >
+      <div
+        data-testid="right-sidebar-resize-handle"
+        onMouseDown={onResizeStart}
+        onDoubleClick={resetRightSidebarWidth}
+        title={`드래그하여 너비 조절 · 더블클릭 시 기본 너비(${RIGHT_SIDEBAR_WIDTH.default}px) 복원`}
+        className="absolute -left-1 top-0 bottom-0 w-2 hover:w-2.5 cursor-col-resize hover:bg-slate-400/40 active:bg-slate-500/60 transition-all z-30"
+      />
+
       <div className="px-2.5 py-2 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
         <div className="flex items-center p-0.5 bg-slate-100 rounded-lg text-xs font-semibold">
           <button

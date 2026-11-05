@@ -45,6 +45,7 @@ import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useHistoryStore } from "@/shared/lib";
 
 import { useTableEditTarget } from "../model/useTableEditTarget";
+import { BlockControlsGroup } from "./BlockControlsGroup";
 import {
   BORDER_MODES,
   BorderModeIcon,
@@ -180,6 +181,7 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
         </ToolButton>
         <ToolDivider />
 
+        <BlockControlsGroup />
         {tableTarget && mode === "Editing" && (
           <>
             <ToolPopover title="표 편집" trigger={<Table className="w-4 h-4" />} width={300}>

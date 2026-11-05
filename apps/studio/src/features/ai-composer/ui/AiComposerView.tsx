@@ -34,18 +34,20 @@ function useEngineStatus() {
   return { engines, error, refresh };
 }
 
-/** 자동 첨부 후보는 선택 · 문서 · 등록된 제공자가 바뀔 때만 다시 계산한다. */
-function useAutoContexts(): ContextRef[] {
+/** 배경 정보 · 첨부 제안은 선택 · 문서 · 등록된 제공자가 바뀔 때만 다시 계산한다. */
+function useAutoContexts(): { auto: ContextRef[]; suggested: ContextRef[] } {
   // 제공자 등록은 페이지 effect 에서 일어나므로(첫 렌더 이후) 레지스트리 변화도 구독한다.
   const providers = useRegistryList(aiRuntime.contexts);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
+  const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
+  const slotRange = useSlotSelectionStore((s) => s.slotRange);
   const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
   const activePageId = useStudioDocumentStore((s) => s.activePageId);
   const docs = useStudioDocumentStore((s) => s.docs);
   return React.useMemo(
-    () => aiRuntime.contexts.autoContexts(),
+    () => ({ auto: aiRuntime.contexts.autoContexts(), suggested: aiRuntime.contexts.suggestedContexts() }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [providers, selectedSlotId, activeDocId, activePageId, docs]
+    [providers, selectedSlotId, selectedBlockId, slotRange, activeDocId, activePageId, docs]
   );
 }
 
@@ -56,7 +58,7 @@ export interface AiComposerViewProps {
 /** 스튜디오 오른쪽 패널의 AI Composer (공용 런타임 · 세션에 연결). */
 export const AiComposerView: React.FC<AiComposerViewProps> = ({ headerActions }) => {
   const { engines, error, refresh } = useEngineStatus();
-  const autoContexts = useAutoContexts();
+  const { auto: autoContexts, suggested: suggestedContexts } = useAutoContexts();
 
   const onChangeEngine = async (provider: string, model: string) => {
     composerController.setEngine(provider, model);
@@ -75,6 +77,7 @@ export const AiComposerView: React.FC<AiComposerViewProps> = ({ headerActions })
       runtime={aiRuntime}
       controller={composerController}
       autoContexts={autoContexts}
+      suggestedContexts={suggestedContexts}
       engines={engines}
       enginesError={error}
       onChangeEngine={(p, m) => void onChangeEngine(p, m)}

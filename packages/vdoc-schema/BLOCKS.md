@@ -43,6 +43,9 @@ pnpm test
 - 표는 `<InteractiveTable … {...ctx.tableBindings(sectionId)} />`.
 - 슬롯이 아닌 선택 단위는 `{...ctx.unitAttrs(unitId, "media")}` 를 그 요소에 붙입니다. 이 표시(`data-vdoc-unit`)가 없으면 사각형 선택과 AI 첨부가 그 요소를 찾지 못합니다.
 - 블록 속성 변경은 `ctx.updateBlock(prev => …)`.
+- **블록 전용 조작(이미지 교체 · 정렬, 상자 색, 담당자 …)은 뷰 안에 툴바를 띄우지 말고 `controls(block, api)` 로 내놓습니다.**
+  블록을 고르면 위쪽 서식 툴바의 "블록 도구" 묶음이 모든 종류에 같은 자리 · 같은 모양으로 그립니다.
+  공통 조작(복제 · 잠금 · 이동 · 삭제)은 ⚙ 메뉴, 여러 요소 선택의 AI · 첨부 · 복사는 선택 도구(범위 오른쪽 위 아이콘)가 맡습니다.
 
 ## 규격 검사
 

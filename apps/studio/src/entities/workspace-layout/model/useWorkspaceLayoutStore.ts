@@ -14,10 +14,12 @@ export type RightPanelTab = "composer" | "blockbox" | "inspector";
 export const SIDEBAR_WIDTH = { default: 320, min: 250, max: 650 } as const;
 export const REFERENCE_DECK_HEIGHT = { default: 140, min: 50 } as const;
 export const REFERENCE_SPLIT_WIDTH = { default: 520, min: 360, max: 1000 } as const;
+export const RIGHT_SIDEBAR_WIDTH = { default: 420, min: 320, max: 960 } as const;
 
 const SIDEBAR_WIDTH_KEY = "vdoc-sidebar-width";
 const DECK_HEIGHT_KEY = "vdoc-ref-deck-height";
 const REFERENCE_SPLIT_WIDTH_KEY = "vdoc-ref-split-width";
+const RIGHT_SIDEBAR_WIDTH_KEY = "vdoc-right-sidebar-width";
 
 function maxDeckHeight(): number {
   return typeof window === "undefined" ? 500 : Math.max(300, Math.floor(window.innerHeight * 0.75));
@@ -31,6 +33,7 @@ export interface WorkspaceLayoutState {
   rightSidebarOpen: boolean;
   rightPanelTab: RightPanelTab;
   sidebarWidth: number;
+  rightSidebarWidth: number;
   referenceDeckHeight: number;
   referenceSplitWidth: number;
   /** 아웃라이너 왼쪽의 페이지 미리보기 패널. */
@@ -48,6 +51,8 @@ export interface WorkspaceLayoutState {
   openRightPanel: (tab: RightPanelTab) => void;
   setSidebarWidth: (width: number) => void;
   resetSidebarWidth: () => void;
+  setRightSidebarWidth: (width: number) => void;
+  resetRightSidebarWidth: () => void;
   setReferenceDeckHeight: (height: number) => void;
   resetReferenceDeckHeight: () => void;
   setReferenceSplitWidth: (width: number) => void;
@@ -66,6 +71,11 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   rightSidebarOpen: true,
   rightPanelTab: "composer",
   sidebarWidth: clamp(readStoredNumber(SIDEBAR_WIDTH_KEY, SIDEBAR_WIDTH.default), SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max),
+  rightSidebarWidth: clamp(
+    readStoredNumber(RIGHT_SIDEBAR_WIDTH_KEY, RIGHT_SIDEBAR_WIDTH.default),
+    RIGHT_SIDEBAR_WIDTH.min,
+    RIGHT_SIDEBAR_WIDTH.max
+  ),
   referenceDeckHeight: clamp(
     readStoredNumber(DECK_HEIGHT_KEY, REFERENCE_DECK_HEIGHT.default),
     REFERENCE_DECK_HEIGHT.min,
@@ -95,6 +105,13 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
     set({ sidebarWidth: next });
   },
   resetSidebarWidth: () => get().setSidebarWidth(SIDEBAR_WIDTH.default),
+
+  setRightSidebarWidth: (width) => {
+    const next = clamp(width, RIGHT_SIDEBAR_WIDTH.min, RIGHT_SIDEBAR_WIDTH.max);
+    writeStoredValue(RIGHT_SIDEBAR_WIDTH_KEY, next);
+    set({ rightSidebarWidth: next });
+  },
+  resetRightSidebarWidth: () => get().setRightSidebarWidth(RIGHT_SIDEBAR_WIDTH.default),
 
   setReferenceDeckHeight: (height) => {
     const next = clamp(height, REFERENCE_DECK_HEIGHT.min, maxDeckHeight());
