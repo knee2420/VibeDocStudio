@@ -123,3 +123,31 @@ def test_tool_manifest_is_rendered_as_compact_signatures() -> None:
     text = render_tools([ToolSpec("slot.read", "읽기", "read", {"type": "object", "properties": {"slotId": {"type": "string"}}, "required": ["slotId"]})])
     assert "slot.read(slotId*: string) [read]" in text
     assert "{" not in text.split("\n", 1)[1]
+
+
+def test_attachment_role_and_handle_reach_the_prompt() -> None:
+    from app.assistant.prompts import render_contexts
+    from app.assistant.schemas import ContextItemPayload
+
+    items = [
+        ContextItemPayload(kind="block", id="blk_1", label='결정 "표"', content="r1: ...", role="target", handle="@블록1").to_model(),
+        ContextItemPayload(kind="ref-region", id="doc:p1", label="참조1 p1 영역", content="본문", role="reference", handle="@영역1").to_model(),
+        ContextItemPayload(kind="document", id="doc", label="열린 문서", content="docId", role="bogus").to_model(),
+    ]
+    rendered = render_contexts(items)
+    assert 'kind="block" id="blk_1" label="결정 \'표\'" role="target" handle="@블록1"' in rendered
+    assert 'role="reference" handle="@영역1"' in rendered
+    # 모르는 역할 · 자동 첨부는 역할 없이
+    assert '<context kind="document" id="doc" label="열린 문서">' in rendered
+
+
+def test_slot_map_inline_format_is_accepted() -> None:
+    from app.assistant.prompts import inline_message
+    from app.assistant.schemas import InlineRunRequest
+
+    request = InlineRunRequest.model_validate(
+        {"instruction": "다듬어줘", "contexts": [], "outputFormat": "slot-map"}
+    )
+    assert request.outputFormat == "slot-map"
+    message = inline_message("다듬어줘", [], "slot-map")
+    assert "JSON 객체 하나만" in message and "slotId" in message

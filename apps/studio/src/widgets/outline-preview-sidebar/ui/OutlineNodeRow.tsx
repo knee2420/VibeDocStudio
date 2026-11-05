@@ -37,12 +37,16 @@ export interface OutlineNodeRowProps {
   node: OutlinerNode;
   isSelected: boolean;
   isHighlighted: boolean;
+  /** Ctrl/Shift+클릭으로 AI 첨부 묶음에 고른 노드. */
+  isPicked?: boolean;
+  /** 끌기 · 우클릭으로 Composer 에 첨부 (`attachable()`). */
+  attachProps?: Partial<Pick<React.HTMLAttributes<HTMLDivElement>, "draggable" | "onDragStart" | "onContextMenu">>;
   hasChildren: boolean;
   isCollapsed: boolean;
   /** 사용자가 만든 노드만 옮기고 지울 수 있다. */
   editable: boolean;
   peekHandlers: Partial<Pick<React.HTMLAttributes<HTMLDivElement>, "onMouseEnter" | "onMouseMove" | "onMouseLeave">>;
-  onSelect: () => void;
+  onSelect: (e: React.MouseEvent) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
   onHoverChange: (hovering: boolean) => void;
   onToggleCollapse: () => void;
@@ -56,6 +60,8 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
   node,
   isSelected,
   isHighlighted,
+  isPicked,
+  attachProps,
   hasChildren,
   isCollapsed,
   editable,
@@ -79,6 +85,8 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
       tabIndex={0}
       aria-selected={isSelected}
       data-testid={`outline-node-row-${node.nodeId}`}
+      data-picked={isPicked ? "true" : undefined}
+      {...attachProps}
       style={{ paddingLeft: `${Math.min(node.depth, 6) * 16 + 4}px` }}
       onClick={onSelect}
       onKeyDown={onKeyDown}
@@ -92,6 +100,8 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
         peekHandlers.onMouseLeave?.(e);
       }}
       className={`group relative flex items-center gap-1.5 h-7 px-1.5 rounded-md transition-colors cursor-pointer text-[13px] leading-none ${
+        isPicked ? "ring-1 ring-violet-400 bg-violet-50 text-violet-950 " : ""
+      }${
         isSelected
           ? "bg-slate-200/80 text-slate-950 font-medium"
           : isHighlighted

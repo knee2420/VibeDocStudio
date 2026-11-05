@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { attachable, stagedRef } from "@/features/ai-workspace";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { useHistoryStore } from "@/shared/lib";
 import { EmptyStateCard } from "@/shared/ui";
@@ -105,6 +106,7 @@ export const SourceControlSidebarPanel: React.FC = () => {
               stagingQueue.map((diff) => (
                 <div
                   key={diff.diffId}
+                  {...attachable(() => [stagedRef(diff)])}
                   className="rounded-lg border border-amber-200 bg-amber-50/40 p-2 text-xs space-y-1.5"
                 >
                   <div className="flex items-center justify-between gap-1">

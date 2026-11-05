@@ -1,46 +1,10 @@
+import { getBlockKind } from "./block-kit";
 import type { LayoutBlock, VDocPage, VDocSlot } from "./types";
 
-/** Every slotId a layout block renders, in reading order. */
+/** Every slotId a layout block renders, in reading order (각 블록 종류의 정의가 정한다 — `block-kit`). */
 export function getBlockSlotIds(block: LayoutBlock): string[] {
   if (!block) return [];
-  switch (block.kind) {
-    case "heading":
-    case "form-title":
-    case "fillable-group":
-    case "text":
-    case "callout-box" as unknown as LayoutBlock["kind"]:
-      return (block as { slotId?: string }).slotId ? [(block as { slotId: string }).slotId] : [];
-    case "section-block":
-      return [block.headingSlotId, block.bodySlotId].filter(Boolean);
-    case "cover-banner":
-      return [block.headlineSlotId, block.preparedBySlotId, block.preparedForSlotId].filter(Boolean);
-    case "columns-grid":
-      return block.columns
-        ? block.columns.flatMap((c) => (c.slotId ? [c.slotId] : []))
-        : block.slotIds ?? [];
-    case "structured-table":
-    case "table":
-      return [
-        ...block.rows.flatMap((r) => r.cells.map((c) => c.slotId)),
-        ...(block.footerSummary?.items.flatMap((i) =>
-          [i.slotId, i.labelSlotId, i.valueSlotId].filter((s): s is string => Boolean(s))
-        ) ?? []),
-      ];
-    case "composite-form-frame":
-      return block.sections.flatMap((s) => s.rows.flatMap((r) => r.cells.map((c) => c.slotId)));
-    case "summary-list":
-      return block.items.flatMap((i) =>
-        [i.slotId, i.labelSlotId, i.valueSlotId].filter((s): s is string => Boolean(s))
-      );
-    case "image":
-      return [];
-    default: {
-      const b = block as Record<string, unknown>;
-      if (typeof b.slotId === "string") return [b.slotId];
-      if (Array.isArray(b.slotIds)) return b.slotIds.filter((s): s is string => typeof s === "string");
-      return [];
-    }
-  }
+  return getBlockKind(block.kind).slotIds(block);
 }
 
 /** A block is locked when it has slots and every one of them is locked. */

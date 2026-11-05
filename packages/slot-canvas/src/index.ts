@@ -6,3 +6,4 @@ export * from "./BlockFrame";
 export * from "./tokens";
 export * from "./base";
 export * from "./blocks/ImageBlockView";
+export * from "./block-views";

@@ -2,6 +2,7 @@ import React from "react";
 import { Check, CheckCheck, Sparkles, Trash2, X } from "lucide-react";
 
 import { useAiStagingStore } from "@/entities/ai-staging";
+import { attachable, stagedRef } from "@/features/ai-workspace";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { EmptyStateCard, TruncatedLabel } from "@/shared/ui";
 
@@ -97,6 +98,7 @@ export const AiStagingDrawer: React.FC = () => {
             <div
               key={diff.diffId}
               data-testid={`staged-diff-item-${diff.diffId}`}
+              {...attachable(() => [stagedRef(diff)])}
               className="rounded-xl border border-amber-200/90 bg-amber-50/40 px-3.5 py-2.5 flex items-center justify-between gap-4"
             >
               <div className="min-w-0 flex-1 space-y-1">

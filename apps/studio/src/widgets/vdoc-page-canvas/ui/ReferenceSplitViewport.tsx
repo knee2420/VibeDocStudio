@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Check,
   Copy,
+  Loader2,
   Lock,
   MousePointerClick,
+  Sparkles,
   Type,
   X,
 } from "lucide-react";
@@ -24,6 +26,14 @@ import {
 } from "@/entities/vdoc-project";
 import { REFERENCE_SPLIT_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import {
+  attachable,
+  attachToComposer,
+  extractPdfRegionText,
+  referenceRegionRef,
+  referenceTextRef,
+  useReferenceRegionStore,
+} from "@/features/ai-workspace";
 import { useDragResize } from "@/shared/lib";
 
 const FEEDBACK_MS = 2000;
@@ -108,6 +118,74 @@ const ReferenceCard: React.FC<{
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
 
   const [feedback, setFeedback] = useState<string | null>(null);
+  // 고른 영역의 글자 (AI 첨부용). 끌기 시작 순간에는 비동기로 읽을 수 없어서 미리 뽑아 둔다.
+  const [regionText, setRegionText] = useState<{ segmentId: string; text: string } | null>(null);
+  const selectedSegment = customSegments.find((s) => s.id === selectedSegmentId) ?? customSegments[0] ?? null;
+  const pdfUrl = refDoc?.preview?.sourcePdfUrl;
+
+  useEffect(() => {
+    if (!selectedSegment || !pdfUrl) return; // 지난 글자는 segmentId 가 달라 쓰이지 않는다
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      extractPdfRegionText(pdfUrl, selectedSegment.page, selectedSegment.box)
+        .then((text) => !cancelled && setRegionText({ segmentId: selectedSegment.id, text }))
+        .catch(() => !cancelled && setRegionText({ segmentId: selectedSegment.id, text: "" }));
+    }, 250); // 모서리 핸들을 끄는 동안은 기다린다
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [pdfUrl, selectedSegment?.id, selectedSegment?.page, selectedSegment?.box.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const regionReady = Boolean(selectedSegment && regionText?.segmentId === selectedSegment.id);
+  const regionRef = useMemo(
+    () =>
+      selectedSegment && regionReady
+        ? referenceRegionRef(docId, { page: selectedSegment.page, box: selectedSegment.box, text: regionText!.text, deckNumber: refNumber })
+        : null,
+    [docId, selectedSegment, regionReady, regionText, refNumber]
+  );
+
+  // AI 답변의 영역 칩을 누르면 그 자리에 강조 상자를 그리고 스크롤한다 (8초 뒤 사라짐).
+  const focus = useReferenceRegionStore((s) => (s.focus?.docId === docId ? s.focus : null));
+  const articleRef = React.useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!focus) return;
+    const timer = window.setTimeout(() => {
+      const root = articleRef.current;
+      const pageEl = root?.querySelector<HTMLElement>(`[data-page-number="${focus.page}"]`);
+      if (!pageEl) return;
+      pageEl.scrollIntoView({ block: "start" });
+      const scroller = pageEl.closest<HTMLElement>(".overflow-y-auto, .overflow-auto");
+      if (scroller) scroller.scrollTop += (focus.box[0] / 1000) * pageEl.offsetHeight - 24;
+    }, 400); // 작업창이 막 열렸으면 PDF 가 그려질 때까지 기다린다
+    const clear = window.setTimeout(() => {
+      const store = useReferenceRegionStore.getState();
+      if (store.focus?.at === focus.at) store.setFocus(null);
+    }, 8000);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(clear);
+    };
+  }, [focus]);
+  const focusHighlights = useMemo(
+    () => (focus ? [{ id: `ai-focus-${focus.at}`, page: focus.page, box: focus.box, label: "AI", variant: "primary" as const }] : undefined),
+    [focus]
+  );
+
+  // Ctrl+L 이 "지금 고른 영역"을 알 수 있게 알린다.
+  useEffect(() => {
+    const store = useReferenceRegionStore.getState();
+    if (regionRef) store.setCurrent(regionRef);
+    else if (store.current?.meta?.entityId === docId) store.setCurrent(null);
+  }, [regionRef, docId]);
+  useEffect(
+    () => () => {
+      const store = useReferenceRegionStore.getState();
+      if (store.current?.meta?.entityId === docId) store.setCurrent(null);
+    },
+    [docId]
+  );
 
   const showFeedback = (msg: string) => {
     setFeedback(msg);
@@ -147,7 +225,9 @@ const ReferenceCard: React.FC<{
 
   return (
     <article
+      ref={articleRef}
       data-testid={`reference-card-${docId}`}
+      data-ai-entity={docId}
       className={`w-full ${
         totalCount > 1 ? "h-[620px] min-h-[460px] shrink-0" : "h-full"
       } bg-white rounded border border-slate-300 shadow-sm ring-1 ring-slate-900/5 flex flex-col overflow-hidden transition-all`}
@@ -211,7 +291,16 @@ const ReferenceCard: React.FC<{
       </header>
 
       {/* 바디 영역: 오직 원본(PDF 또는 웹뷰어)만 렌더링 */}
-      <div className="flex-1 w-full h-full overflow-hidden flex flex-col relative min-h-0 select-text">
+      <div
+        className="flex-1 w-full h-full overflow-hidden flex flex-col relative min-h-0 select-text"
+        onContextMenu={
+          // 긁어 둔 글자 위에서 우클릭하면 AI 첨부 메뉴 (선택이 없으면 브라우저 기본 메뉴)
+          attachable(() => {
+            const text = window.getSelection()?.toString() ?? "";
+            return text.trim() ? [referenceTextRef(docId, text)] : [];
+          }).onContextMenu
+        }
+      >
         {hasWeb && refDoc.preview?.sourceWebUrl ? (
           <WebViewer
             url={refDoc.preview.sourceWebUrl}
@@ -226,6 +315,7 @@ const ReferenceCard: React.FC<{
             title={cleanTitle}
             isSpread={false}
             isEditMode={pdfInteractionMode === "box"}
+            highlights={focusHighlights}
             enableSmartSnap={true}
             segments={customSegments}
             selectedSegmentId={selectedSegmentId}
@@ -295,6 +385,25 @@ const ReferenceCard: React.FC<{
             <Copy className="w-3.5 h-3.5 text-slate-600" />
             원문 텍스트 복사
           </button>
+          {customSegments.length > 0 && (
+            <button
+              type="button"
+              data-testid="reference-region-attach"
+              disabled={!regionRef}
+              {...(regionRef ? attachable(() => [regionRef]) : {})}
+              onClick={() => regionRef && attachToComposer([regionRef])}
+              className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white border border-violet-700 rounded-sm text-xs font-semibold cursor-grab active:cursor-grabbing shadow-2xs transition"
+              title={
+                regionRef
+                  ? `선택 영역을 AI Composer 에 첨부 (클릭 · 끌어서 놓기 · Ctrl+L)
+${regionText?.text ? regionText.text.slice(0, 120) : "텍스트를 찾지 못한 영역"}`
+                  : "영역 글자를 읽는 중…"
+              }
+            >
+              {regionRef ? <Sparkles className="w-3.5 h-3.5" /> : <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              AI 첨부
+            </button>
+          )}
           {customSegments.length > 0 && (
             <button
               type="button"

@@ -33,6 +33,8 @@ export interface WorkspaceSessionState {
   collapsedNodeIds: string[];
   /** 아웃라인에서 가리키고 있는 캔버스 대상(슬롯 · 블록 · 페이지 · 노드 ID). */
   hoveredOutlineTargetId: string | null;
+  /** AI 답변 · 첨부 칩이 가리키는 화면 요소 (페이지 · 블록 · 슬롯 · 참조 문서 id). 호버 동안만. */
+  highlightedEntityId: string | null;
   /** 캔버스 왼쪽에 나란히 띄운 참조 문서 작업창 (띄운 순서). */
   openReferenceDocIds: string[];
   previewDocId: string | null;
@@ -46,6 +48,7 @@ export interface WorkspaceSessionState {
   collapseAllNodes: (nodeIds: string[]) => void;
   expandAllNodes: () => void;
   setHoveredOutlineTargetId: (id: string | null) => void;
+  setHighlightedEntityId: (id: string | null) => void;
   toggleReferenceDoc: (docId: string) => void;
   openReferenceDoc: (docId: string) => void;
   closeReferenceDoc: (docId: string) => void;
@@ -65,6 +68,7 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
   quickFilterQuery: "",
   collapsedNodeIds: [],
   hoveredOutlineTargetId: null,
+  highlightedEntityId: null,
   openReferenceDocIds: [],
   previewDocId: null,
 
@@ -96,6 +100,7 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
   expandAllNodes: () => set({ collapsedNodeIds: [] }),
 
   setHoveredOutlineTargetId: (id) => set({ hoveredOutlineTargetId: id }),
+  setHighlightedEntityId: (id) => set({ highlightedEntityId: id }),
 
   toggleReferenceDoc: (docId) =>
     set((s) => ({

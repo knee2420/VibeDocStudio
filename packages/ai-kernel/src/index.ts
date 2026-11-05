@@ -4,3 +4,4 @@ export * from "./client";
 export * from "./runtime";
 export * from "./composerSession";
 export * from "./inline";
+export * from "./attach";

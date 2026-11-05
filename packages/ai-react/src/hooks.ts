@@ -27,7 +27,7 @@ export type InlineRunStatus = "idle" | "running" | "done" | "error";
 export interface InlineRunRequest {
   instruction: string;
   contexts: ContextRef[];
-  outputFormat: "html" | "text" | "markdown";
+  outputFormat: "html" | "text" | "markdown" | "slot-map";
   action?: AiAction;
 }
 

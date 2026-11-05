@@ -49,6 +49,14 @@ export interface ComposerDraft {
   revision: number;
 }
 
+/** 다른 위젯이 입력창에 넣는 첨부 (끌어 놓기 · 우클릭 · Ctrl+L). revision 이 바뀌면 입력창이 받아들인다. */
+export interface ComposerAttachInbox {
+  refs: ContextRef[];
+  /** 함께 넣을 지시문 앞부분 (예: "채워줘"). `{handles}` 는 첨부 이름들로 바뀐다. */
+  prompt?: string;
+  revision: number;
+}
+
 export interface ComposerState {
   sessionId: string | null;
   status: ComposerStatus;
@@ -58,6 +66,7 @@ export interface ComposerState {
   /** 실행 중에 보낸 메시지 (끝나면 순서대로 보낸다). */
   queue: { text: string; contexts: ContextRef[] }[];
   draft: ComposerDraft;
+  inbox: ComposerAttachInbox;
 }
 
 const MAX_TOOL_ROUNDS = 16;
@@ -80,6 +89,7 @@ export class ComposerSessionController {
     engine: null,
     queue: [],
     draft: { text: "", contexts: [], revision: 0 },
+    inbox: { refs: [], revision: 0 },
   };
   private readonly listeners = new Set<() => void>();
   private abort: AbortController | null = null;
@@ -136,6 +146,12 @@ export class ComposerSessionController {
   /** 인라인 AI 등 다른 표면이 Composer 입력창에 초안을 넣는다 ("Composer 에서 이어하기"). */
   setDraft(text: string, contexts: ContextRef[] = []): void {
     this.set({ draft: { text, contexts, revision: this.state.draft.revision + 1 } });
+  }
+
+  /** 첨부를 입력창으로 보낸다 (입력 중인 글은 그대로 두고 커서 위치에 `@이름` 을 넣는다). */
+  attach(refs: ContextRef[], options: { prompt?: string } = {}): void {
+    if (refs.length === 0 && !options.prompt) return;
+    this.set({ inbox: { refs, prompt: options.prompt, revision: this.state.inbox.revision + 1 } });
   }
 
   async send(text: string, contexts: ContextRef[] = []): Promise<void> {

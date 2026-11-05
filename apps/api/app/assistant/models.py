@@ -15,6 +15,10 @@ class ContextItem:
     ref_id: str
     label: str
     content: str = ""
+    #: "target"(고칠 대상) · "reference"(참고자료) · "" (자동 첨부 등 역할 없음)
+    role: str = ""
+    #: 프롬프트에서 사용자가 가리킬 때 쓰는 짧은 이름 (`@블록1`)
+    handle: str = ""
 
 
 @dataclass(frozen=True)

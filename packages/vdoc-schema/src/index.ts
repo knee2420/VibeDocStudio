@@ -12,3 +12,4 @@ export * from "./command-contracts";
 export * from "./slot-ops";
 export * from "./document-ops";
 export * from "./block-templates";
+export * from "./block-kit";

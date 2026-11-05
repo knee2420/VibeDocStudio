@@ -1,15 +1,23 @@
 import React from "react";
-import { AtSign, BookOpen, Database, FileText, MousePointerSquareDashed, Paperclip, X } from "lucide-react";
+import { AtSign, MousePointerSquareDashed, Paperclip, X } from "lucide-react";
 
-import type { ContextRef } from "@vibe/ai-kernel";
+import { contextRole, type ContextRef, type EntityInfo } from "@vibe/ai-kernel";
 
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  slot: FileText,
+import { useAiSurface } from "./AiSurface";
+import { entityIcon } from "./EntityChip";
+
+const ICON_OVERRIDES: Record<string, React.ComponentType<{ className?: string }>> = {
   selection: MousePointerSquareDashed,
-  backdata: Database,
-  reference: BookOpen,
+  "text-range": MousePointerSquareDashed,
   document: Paperclip,
 };
+
+/** 첨부가 가리키는 화면 요소 id (영역 · 발췌는 소속 문서). */
+function entityTarget(context: ContextRef): { id: string; kind?: string } {
+  const meta = context.meta ?? {};
+  if (typeof meta.entityId === "string") return { id: meta.entityId, kind: typeof meta.entityKind === "string" ? meta.entityKind : undefined };
+  return { id: context.id, kind: context.kind === "reference" ? "doc" : context.kind };
+}
 
 export interface ContextChipProps {
   context: ContextRef;
@@ -19,27 +27,71 @@ export interface ContextChipProps {
   muted?: boolean;
   onRemove?: () => void;
   onClick?: () => void;
+  /** 대상 ↔ 참고자료 전환 (쓸 수 있는 요소만). */
+  onToggleRole?: () => void;
 }
 
-export const ContextChip: React.FC<ContextChipProps> = ({ context, tone = "light", auto, muted, onRemove, onClick }) => {
-  const Icon = ICONS[context.kind] ?? AtSign;
+/**
+ * 첨부 칩. 호버하면 화면에서 그 요소를 강조하고, 명시 첨부는 `@이름` 과 역할(대상 · 참조)을 보여준다.
+ */
+export const ContextChip: React.FC<ContextChipProps> = ({ context, tone = "light", auto, muted, onRemove, onClick, onToggleRole }) => {
+  const surface = useAiSurface();
+  const target = entityTarget(context);
+  const Icon = ICON_OVERRIDES[context.kind] ?? (context.kind === "custom" ? AtSign : entityIcon(context.kind));
+  const role = contextRole(context);
+  const explicit = Boolean(context.handle);
+  const hoverRef = React.useRef<EntityInfo | null>(null);
+
+  React.useEffect(() => () => hoverRef.current?.highlight(false), []);
+
   const palette =
     tone === "dark"
       ? "bg-slate-800 text-slate-200 border-slate-700"
       : auto
         ? "bg-white text-slate-600 border-dashed border-slate-300"
-        : "bg-indigo-50 text-indigo-800 border-indigo-200";
+        : explicit && role === "target"
+          ? "bg-amber-50 text-amber-900 border-amber-300"
+          : "bg-indigo-50 text-indigo-800 border-indigo-200";
   return (
     <span
       data-testid="ai-context-chip"
-      title={context.hint ?? `${context.kind}: ${context.label}`}
+      data-context-kind={context.kind}
+      data-context-role={explicit ? role : "auto"}
+      title={`${context.hint ?? `${context.kind}: ${context.label}`}${explicit ? `\n${role === "target" ? "고칠 대상" : "참고자료"}` : ""}`}
       onClick={onClick}
-      className={`inline-flex items-center gap-1 max-w-[220px] px-1.5 py-0.5 rounded-md border text-[11px] font-medium ${palette} ${
+      onMouseEnter={() => {
+        const info = surface?.runtime.entities.lookup(target.id, target.kind) ?? null;
+        hoverRef.current = info;
+        info?.highlight(true);
+      }}
+      onMouseLeave={() => {
+        hoverRef.current?.highlight(false);
+        hoverRef.current = null;
+      }}
+      className={`inline-flex items-center gap-1 max-w-[240px] px-1.5 py-0.5 rounded-md border text-[11px] font-medium ${palette} ${
         muted ? "opacity-45 line-through" : ""
       } ${onClick ? "cursor-pointer" : ""}`}
     >
       <Icon className="w-3 h-3 shrink-0 opacity-70" />
+      {context.handle && <span className="shrink-0 font-bold">{context.handle}</span>}
       <span className="truncate">{context.label}</span>
+      {explicit && (
+        <button
+          type="button"
+          data-testid="ai-context-chip-role"
+          disabled={!onToggleRole}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleRole?.();
+          }}
+          title={onToggleRole ? "클릭: 고칠 대상 ↔ 참고자료" : "읽기 전용 요소 — 참고자료로만 쓰입니다"}
+          className={`shrink-0 px-1 rounded text-[9.5px] font-bold border ${
+            role === "target" ? "bg-amber-500 text-white border-amber-500" : "bg-white text-indigo-600 border-indigo-200"
+          } ${onToggleRole ? "cursor-pointer hover:opacity-80" : "cursor-default"}`}
+        >
+          {role === "target" ? "대상" : "참조"}
+        </button>
+      )}
       {onRemove && (
         <button
           type="button"

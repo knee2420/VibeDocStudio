@@ -23,6 +23,7 @@
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-pdf": "^10.5.0",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

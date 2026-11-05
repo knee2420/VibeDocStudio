@@ -22,6 +22,14 @@ COMPOSER_RULES = """\
 - stage 도구(문서 변경안)는 바로 반영되지 않고 사용자 검토 대기열(Staged)에 올라간다.
   변경 내용 설명을 먼저 쓰고, stage 도구 호출은 답변의 맨 끝에 둬라.
 - 모르는 내용은 먼저 읽기 도구로 확인하고, 추측으로 문서를 채우지 마라.
+- 첨부(<context>)의 role="target" 은 고칠 대상, role="reference" 는 참고자료다. 사용자는 handle(@블록1 등)로 가리킨다.
+  대상의 내용 · 구조가 이미 첨부돼 있으면 다시 읽지 말고 바로 변경안을 만든다. 참고자료는 바꾸지 않는다.
+  여러 슬롯(표 · 그리드 · 섹션)을 바꿀 때는 slots.proposeBatch 한 번으로 묶어 제출한다.
+  슬롯이 아닌 요소(이미지 대체 텍스트 · 정렬, 담당자 등)는 blocks.proposeProps 로, 첨부에 적힌 "바꿀 수 있는 블록 속성"만 바꾼다.
+- 화면의 위치(페이지 · 블록 · 슬롯 · 참조 문서 · 백데이터)를 말할 때는 클릭할 수 있는 링크로 쓴다:
+  [사람이 읽는 이름](vdoc:종류/id)   종류 = page · block · slot · doc · backdata · node · ref-region
+  첨부한 요소를 가리킬 때는 그 <context> 의 kind 와 id 를 그대로 쓴다 (reference 는 doc).
+  예: [의사결정 테이블](vdoc:block/mm_blk_decision_table), [Page 1](vdoc:page/mm_page_1). id 만 따로 늘어놓지 마라.
 - 사용자의 언어(기본 한국어)로 간결하게 답하고, 필요하면 마크다운을 써라.
 """
 
@@ -36,6 +44,12 @@ OUTPUT_FORMATS = {
     "html": "출력 형식: HTML 조각만 (<p>, <ul>, <ol>, <li>, <strong>, <em>, <br> 만 사용). 마크다운 금지.",
     "text": "출력 형식: 일반 텍스트만.",
     "markdown": "출력 형식: 마크다운.",
+    # 여러 슬롯(표 칸 · 서식 구역)을 한 번에 고칠 때. 프론트가 슬롯별 미리보기 · 일괄 적용을 한다.
+    "slot-map": (
+        "출력 형식: JSON 객체 하나만. 키는 고칠 슬롯의 slotId, 값은 그 슬롯의 새 본문 HTML 조각"
+        " (<p>, <ul>, <ol>, <li>, <strong>, <em>, <br> 만). 바꿀 필요가 없는 슬롯과 locked 슬롯은 넣지 않는다."
+        " 설명 · 머리말 · 코드펜스 금지."
+    ),
 }
 
 
@@ -61,6 +75,10 @@ def render_tools(tools: Iterable[ToolSpec]) -> str:
     return "\n".join(lines)
 
 
+def _attr(value: str) -> str:
+    return value.replace('"', "'").replace("\n", " ")
+
+
 def render_contexts(contexts: Iterable[ContextItem], limit: int = 24000) -> str:
     blocks: list[str] = []
     budget = limit
@@ -69,9 +87,12 @@ def render_contexts(contexts: Iterable[ContextItem], limit: int = 24000) -> str:
         if len(content) > budget:
             content = content[: max(budget, 0)] + "…(truncated)"
         budget -= len(content)
-        blocks.append(
-            f'<context kind="{item.kind}" id="{item.ref_id}" label="{item.label}">\n{content}\n</context>'
-        )
+        attrs = f'kind="{item.kind}" id="{item.ref_id}" label="{_attr(item.label)}"'
+        if item.role:
+            attrs += f' role="{item.role}"'
+        if item.handle:
+            attrs += f' handle="{_attr(item.handle)}"'
+        blocks.append(f"<context {attrs}>\n{content}\n</context>")
     if not blocks:
         return ""
     return "<workspace_context>\n" + "\n".join(blocks) + "\n</workspace_context>"

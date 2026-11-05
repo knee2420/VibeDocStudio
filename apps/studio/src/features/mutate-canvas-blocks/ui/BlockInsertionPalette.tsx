@@ -1,7 +1,8 @@
 import React from "react";
-import { Columns2, Table as TableIcon, FileText, UserCheck, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 
-import { NEW_BLOCK_DRAG_MIME } from "@vibe/slot-canvas";
+import { blockIcon, NEW_BLOCK_DRAG_MIME } from "@vibe/slot-canvas";
+import { listInsertableBlocks } from "@vibe/vdoc-schema";
 
 import { useMutateCanvasBlocks, type InsertableBlockKind } from "../model/useMutateCanvasBlocks";
 
@@ -11,32 +12,11 @@ export interface BlockInsertionPaletteProps {
   showHeader?: boolean;
 }
 
-const ITEMS: { kind: InsertableBlockKind; label: string; desc: string; icon: React.ReactNode }[] = [
-  {
-    kind: "section-block",
-    label: "텍스트 섹션",
-    desc: "제목 + 본문 단락",
-    icon: <FileText className="w-4 h-4 text-emerald-600" />,
-  },
-  {
-    kind: "structured-table",
-    label: "구조화 표",
-    desc: "행/열 데이터 테이블",
-    icon: <TableIcon className="w-4 h-4 text-emerald-600" />,
-  },
-  {
-    kind: "columns-grid",
-    label: "2단 그리드",
-    desc: "좌우 분할 2단 슬롯",
-    icon: <Columns2 className="w-4 h-4 text-emerald-600" />,
-  },
-  {
-    kind: "fillable-group",
-    label: "할당형 필드",
-    desc: "담당자 및 실행과제",
-    icon: <UserCheck className="w-4 h-4 text-emerald-600" />,
-  },
-];
+/** 블록 정의에 `insertable` 이 있는 종류 (레지스트리 순서 — 새 블록은 정의만 등록하면 여기 나온다). */
+const ITEMS = listInsertableBlocks().map((item) => {
+  const Icon = blockIcon(item.icon);
+  return { kind: item.kind as InsertableBlockKind, label: item.label, desc: item.description, icon: <Icon className="w-4 h-4 text-emerald-600" /> };
+});
 
 /** Block palette: drag an item onto the page (drop line shows where), or click to append. */
 export const BlockInsertionPalette: React.FC<BlockInsertionPaletteProps> = ({

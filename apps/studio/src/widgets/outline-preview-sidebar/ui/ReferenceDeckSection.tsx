@@ -13,6 +13,7 @@ import {
 } from "@/entities/vdoc-project";
 import { REFERENCE_DECK_HEIGHT, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { attachable, referenceRef, useAttachPickStore, withPicked } from "@/features/ai-workspace";
 import { resolvePeekTarget, usePeekTrigger } from "@/features/peek-page";
 import { useDragResize } from "@/shared/lib";
 import { EmptyStateCard } from "@/shared/ui";
@@ -50,6 +51,36 @@ export const ReferenceDeckSection: React.FC = () => {
   const resetDeckHeight = useWorkspaceLayoutStore((s) => s.resetReferenceDeckHeight);
 
   const peekTrigger = usePeekTrigger();
+  const pickedRefs = useAttachPickStore((s) => s.picked.reference);
+  const highlightedEntityId = useWorkspaceSessionStore((s) => s.highlightedEntityId);
+  const pickAnchor = React.useRef<number | null>(null);
+  const deckRef = (docId: string, idx: number) => referenceRef(docId, deckTitle(boundRefProjects[idx], idx));
+
+  /** Ctrl/⌘+클릭: AI 첨부 묶음에 넣고 빼기 · Shift+클릭: 범위. 처리했으면 true. */
+  const pickDeckRow = (e: React.MouseEvent, docId: string | undefined, idx: number) => {
+    if (!docId) return false;
+    const picks = useAttachPickStore.getState();
+    if (e.ctrlKey || e.metaKey) {
+      picks.togglePick("reference", deckRef(docId, idx));
+      pickAnchor.current = idx;
+      return true;
+    }
+    if (e.shiftKey && pickAnchor.current !== null) {
+      const [a, b] = pickAnchor.current < idx ? [pickAnchor.current, idx] : [idx, pickAnchor.current];
+      picks.setPicks(
+        "reference",
+        boundRefProjects
+          .slice(a, b + 1)
+          .map((p, i) => (p.docIds[0] ? deckRef(p.docIds[0], a + i) : null))
+          .filter((r): r is NonNullable<typeof r> => Boolean(r))
+      );
+      window.getSelection()?.removeAllRanges();
+      return true;
+    }
+    if (picks.picked.reference?.length) picks.clearPicks("reference");
+    pickAnchor.current = idx;
+    return false;
+  };
   const { isResizing, onResizeStart } = useDragResize({ axis: "y-up", size: deckHeight, onResize: setDeckHeight });
 
   const toggleVisibility = (projectId: string, docId: string | undefined) => {
@@ -138,6 +169,8 @@ export const ReferenceDeckSection: React.FC = () => {
               const isSelected = rp.projectId === currentRefProject?.projectId;
               const docId = rp.docIds[0];
               const isOn = !hiddenProjectIds.includes(rp.projectId);
+              const isPicked = Boolean(docId && pickedRefs?.some((r) => r.id === docId));
+              const isAiHighlighted = Boolean(docId && highlightedEntityId === docId);
               const isWorking = Boolean(docId && openReferenceDocIds.includes(docId));
 
               return (
@@ -146,13 +179,19 @@ export const ReferenceDeckSection: React.FC = () => {
                   data-testid={`ref-project-pill-${idx + 1}`}
                   title={`${rp.title} (Ctrl + 호버 시 실물 썸네일 미리보기)`}
                   {...peekTrigger(resolvePeekTarget(docs, docId))}
-                  onClick={() => {
+                  {...(docId ? attachable(() => withPicked("reference", deckRef(docId, idx))) : {})}
+                  data-ai-entity={docId}
+                  data-picked={isPicked ? "true" : undefined}
+                  onClick={(e) => {
+                    if (pickDeckRow(e, docId, idx)) return;
                     setSelectedReferenceProjectId(rp.projectId);
                     setPagePreviewOpen(true);
                     if (docId) setPreviewDocId(docId);
                     if (!isOn) toggleVisibility(rp.projectId, docId);
                   }}
                   className={`group flex items-center justify-between h-7.5 px-2 rounded text-xs transition-all cursor-pointer select-none border ${
+                    isPicked || isAiHighlighted ? "ring-2 ring-violet-400 ring-offset-1 " : ""
+                  }${
                     isOn
                       ? isSelected
                         ? "bg-violet-50 text-violet-950 border-violet-400 font-bold shadow-2xs opacity-100"

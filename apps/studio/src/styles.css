@@ -179,3 +179,10 @@
 [data-exact-layout] .vdoc-tiptap-slot p:empty {
   min-height: 0;
 }
+
+/* 슬롯 범위 선택 드래그 중: 편집기 글자 선택 · 캐럿을 멈춘다 (useCanvasRangeSelection). */
+.vdoc-range-dragging,
+.vdoc-range-dragging * {
+  user-select: none !important;
+  caret-color: transparent !important;
+}

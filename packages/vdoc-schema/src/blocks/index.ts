@@ -1,3 +1,4 @@
+import type { CalloutBoxBlockDef } from "./callout-block";
 import type { ImageBlockDef } from "./image-block";
 import type { TextBlockDef } from "./text-block";
 import type { SectionBlockDef } from "./section-block";
@@ -11,6 +12,7 @@ import type {
   CoverBannerBlockDef,
 } from "./summary-banner-blocks";
 
+export * from "./callout-block";
 export * from "./image-block";
 export * from "./text-block";
 export * from "./section-block";
@@ -31,5 +33,6 @@ export type LayoutBlock =
   | FormTitleBlockDef
   | CompositeFormFrameBlockDef
   | SummaryListBlockDef
-  | CoverBannerBlockDef;
+  | CoverBannerBlockDef
+  | CalloutBoxBlockDef;
 

@@ -1,6 +1,8 @@
 import {
+  patchBlockProps,
   setSlotContent,
   type StagedAiChange,
+  type StagedBlockPropsChange,
   type StagedOutlineNodeChange,
   type StagedSlotHtmlChange,
   type StagedTargetKind,
@@ -47,10 +49,20 @@ const applySlotHtml: Applier<StagedSlotHtmlChange> = async ({ payload }) => {
     });
 };
 
+const applyBlockProps: Applier<StagedBlockPropsChange> = async ({ payload }) => {
+  useStudioDocumentStore
+    .getState()
+    .updateCurrentDoc((doc) => patchBlockProps(doc, payload.blockId, payload.props), {
+      history: true,
+      label: "AI 블록 속성 적용",
+    });
+};
+
 const APPLIERS: { [K in StagedTargetKind]: Applier<Extract<StagedAiChange, { targetKind: K }>> } = {
   "outline-node": applyOutlineNode,
   "template-block": applyTemplateBlock,
   "slot-html": applySlotHtml,
+  "block-props": applyBlockProps,
 };
 
 export function applyStagedChange(change: StagedAiChange): Promise<void> {

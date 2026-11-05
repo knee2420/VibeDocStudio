@@ -54,6 +54,8 @@ class StagedTargetKind(StrEnum):
     OUTLINE_NODE = "outline-node"
     TEMPLATE_BLOCK = "template-block"
     SLOT_HTML = "slot-html"
+    #: 블록 속성 변경안 (이미지 대체 텍스트 · 정렬 …). 허용 속성은 블록 정의(`block-kit`)의 editableProps.
+    BLOCK_PROPS = "block-props"
 
 
 @dataclass(frozen=True)

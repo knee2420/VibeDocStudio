@@ -1,7 +1,16 @@
 import React from "react";
 import { ArrowUp, AtSign, Slash, Square } from "lucide-react";
 
-import { resolveActionInstruction, type AiAction, type AiRuntime, type ContextRef } from "@vibe/ai-kernel";
+import {
+  assignHandle,
+  contextRole,
+  resolveActionInstruction,
+  sameContext,
+  type AiAction,
+  type AiRuntime,
+  type ComposerAttachInbox,
+  type ContextRef,
+} from "@vibe/ai-kernel";
 
 import { ContextChip } from "./ContextChip";
 
@@ -19,6 +28,8 @@ export interface PromptInputProps {
   placeholder?: string;
   /** 외부 초안 (인라인 → Composer 이어하기). revision 이 바뀌면 받아들인다. */
   draft?: { text: string; contexts: ContextRef[]; revision: number };
+  /** 다른 위젯이 보낸 첨부 (끌어 놓기 · 우클릭 · Ctrl+L). revision 이 바뀌면 칩을 만들고 `@이름` 을 커서에 넣는다. */
+  inbox?: ComposerAttachInbox;
   onSubmit(text: string, contexts: ContextRef[]): void;
   onStop?(): void;
 }
@@ -31,6 +42,7 @@ export const PromptInput: React.FC<PromptInputProps> = ({
   busy,
   placeholder,
   draft,
+  inbox,
   onSubmit,
   onStop,
 }) => {
@@ -53,6 +65,62 @@ export const PromptInput: React.FC<PromptInputProps> = ({
       el.setSelectionRange(el.value.length, el.value.length);
     }, 60);
   }, [draft?.revision]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** 첨부를 칩으로 만들고(이름 부여) 그 이름들을 돌려준다. 이미 있는 요소면 기존 이름. */
+  const addAttachments = (refs: ContextRef[]): { next: ContextRef[]; handles: string[] } => {
+    const next = [...attachedRef.current];
+    const handles: string[] = [];
+    for (const ref of refs) {
+      const existing = next.find((p) => sameContext(p, ref));
+      if (existing) {
+        if (existing.handle) handles.push(existing.handle);
+        continue;
+      }
+      const handle = assignHandle(ref, next);
+      next.push({ ...ref, handle, role: ref.role ?? contextRole(ref) });
+      handles.push(handle);
+    }
+    return { next, handles };
+  };
+  const attachedRef = React.useRef(attached);
+  attachedRef.current = attached;
+
+  /** 커서 자리에 글자를 넣고 커서를 그 뒤로 옮긴다. */
+  const insertAtCaret = (value: string, insert: string, from: number, to: number) => {
+    const before = value.slice(0, from);
+    const after = value.slice(to);
+    const pad = before && !/\s$/.test(before) ? " " : "";
+    const tail = after.startsWith(" ") ? "" : " ";
+    const next = `${before}${pad}${insert}${tail}${after}`;
+    const caret = before.length + pad.length + insert.length + tail.length;
+    setText(next);
+    window.setTimeout(() => {
+      const el = areaRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(caret, caret);
+    }, 30);
+  };
+
+  React.useEffect(() => {
+    if (!inbox || inbox.revision === 0) return;
+    const { next, handles } = addAttachments(inbox.refs);
+    setAttached(next);
+    const el = areaRef.current;
+    const value = el?.value ?? text;
+    // 이미 입력창에 적힌 이름(같은 요소를 다시 끈 경우)은 또 넣지 않는다.
+    const joined = handles.filter((h) => !new RegExp(`${escapeRegExp(h)}(?![0-9])`).test(value)).join(" ");
+    if (inbox.prompt && !value.trim()) {
+      const body = inbox.prompt.includes("{handles}") ? inbox.prompt.replace("{handles}", joined) : `${joined} ${inbox.prompt}`;
+      insertAtCaret("", body.trim(), 0, 0);
+    } else if (joined) {
+      const from = el && document.activeElement === el ? el.selectionStart : value.length;
+      const to = el && document.activeElement === el ? el.selectionEnd : value.length;
+      insertAtCaret(value, joined, from, to);
+    } else {
+      window.setTimeout(() => areaRef.current?.focus(), 30);
+    }
+  }, [inbox?.revision]); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useLayoutEffect(() => {
     const el = areaRef.current;
@@ -94,8 +162,11 @@ export const PromptInput: React.FC<PromptInputProps> = ({
     if (popover.kind === "mention") {
       const ref = popover.items[index];
       if (!ref) return;
-      setAttached((prev) => mergeContexts(prev, [ref]));
-      setText(text.slice(0, popover.start) + text.slice(caret));
+      const { next, handles } = addAttachments([ref]);
+      setAttached(next);
+      setPopover(null);
+      insertAtCaret(text, handles[0] ?? "", popover.start, caret);
+      return;
     } else {
       const action = popover.items[index];
       if (!action) return;
@@ -223,7 +294,21 @@ export const PromptInput: React.FC<PromptInputProps> = ({
               <ContextChip
                 key={`att-${autoKey(c)}`}
                 context={c}
-                onRemove={() => setAttached((prev) => prev.filter((p) => autoKey(p) !== autoKey(c)))}
+                onToggleRole={
+                  c.access === "write"
+                    ? () =>
+                        setAttached((prev) =>
+                          prev.map((p) =>
+                            autoKey(p) === autoKey(c) ? { ...p, role: contextRole(p) === "target" ? "reference" : "target" } : p
+                          )
+                        )
+                    : undefined
+                }
+                onRemove={() => {
+                  setAttached((prev) => prev.filter((p) => autoKey(p) !== autoKey(c)));
+                  // 입력창에 남은 `@이름` 도 함께 지운다.
+                  if (c.handle) setText((t) => t.replace(new RegExp(`\\s?${escapeRegExp(c.handle!)}(?![0-9])`, "g"), ""));
+                }}
               />
             ))}
           </div>
@@ -310,6 +395,10 @@ export const PromptInput: React.FC<PromptInputProps> = ({
     </div>
   );
 };
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 function mergeContexts(prev: ContextRef[], next: ContextRef[]): ContextRef[] {
   const out = [...prev];

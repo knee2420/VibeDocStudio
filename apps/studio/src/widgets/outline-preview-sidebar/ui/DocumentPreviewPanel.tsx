@@ -19,6 +19,7 @@ import {
   type DocumentSourceView,
 } from "@/entities/vdoc-document";
 import { selectCurrentReferenceProject, selectIsReferenceDocument, useProjectStore } from "@/entities/vdoc-project";
+import { attachable, pageRef } from "@/features/ai-workspace";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { usePeekTrigger } from "@/features/peek-page";
@@ -195,6 +196,8 @@ export const DocumentPreviewPanel: React.FC = () => {
             <div
               key={page.pageId}
               data-testid={`page-preview-item-${pageNumber}`}
+              data-ai-entity={page.pageId}
+              {...attachable(() => [{ ...pageRef(targetDoc, page), access: isViewingOtherDoc ? "read" : "write" }])}
               onClick={() => selectPage(page.pageId, pageNumber)}
               {...peekTrigger({ docId: targetDoc.docId, pageId: page.pageId })}
               title={`${page.pageLabel || `Page ${pageNumber}`} (Ctrl + 호버 시 썸네일 미리보기)`}

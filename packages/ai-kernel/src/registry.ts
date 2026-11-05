@@ -1,4 +1,4 @@
-import type { AiAction, ContextProvider, ContextRef, WorkspaceTool } from "./types";
+import type { AiAction, ContextProvider, ContextRef, DropTranslator, EntityInfo, EntityResolver, WorkspaceTool } from "./types";
 
 type Listener = () => void;
 
@@ -106,6 +106,29 @@ export class ActionRegistry extends Registry<AiAction> {
 
   forSurface(surface: string): AiAction[] {
     return this.list().filter((a) => a.surfaces.includes(surface));
+  }
+}
+
+export class EntityRegistry extends Registry<EntityResolver> {
+  constructor() {
+    super((resolver) => resolver.id);
+  }
+
+  /** id(와 종류)로 화면 요소를 찾는다. 등록 순서대로 처음 찾은 것. */
+  lookup(id: string, kind?: string): EntityInfo | null {
+    if (!id) return null;
+    for (const resolver of this.list()) {
+      const found = safe(() => resolver.resolve(id, kind), null);
+      if (found) return found;
+    }
+    // 모델이 종류를 잘못 적어도(`vdoc:backdata/<영역 id>`) id 가 실제로 있으면 찾아 준다.
+    return kind ? this.lookup(id) : null;
+  }
+}
+
+export class DropTranslatorRegistry extends Registry<DropTranslator> {
+  constructor() {
+    super((t) => t.mime);
   }
 }
 

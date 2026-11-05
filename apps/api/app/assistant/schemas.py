@@ -13,9 +13,18 @@ class ContextItemPayload(BaseModel):
     id: str
     label: str = ""
     content: str = ""
+    role: str = ""
+    handle: str = ""
 
     def to_model(self) -> ContextItem:
-        return ContextItem(kind=self.kind, ref_id=self.id, label=self.label or self.id, content=self.content)
+        return ContextItem(
+            kind=self.kind,
+            ref_id=self.id,
+            label=self.label or self.id,
+            content=self.content,
+            role=self.role if self.role in ("target", "reference") else "",
+            handle=self.handle[:40],
+        )
 
 
 class ToolSpecPayload(BaseModel):
@@ -65,5 +74,5 @@ class InlineRunRequest(BaseModel):
     actionId: Optional[str] = None
     instruction: str
     contexts: list[ContextItemPayload] = Field(default_factory=list)
-    outputFormat: Literal["html", "text", "markdown"] = "html"
+    outputFormat: Literal["html", "text", "markdown", "slot-map"] = "html"
     model: Optional[str] = None

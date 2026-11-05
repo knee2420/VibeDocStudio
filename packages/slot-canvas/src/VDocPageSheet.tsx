@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import {
+  getBlockKind,
   getBlockSlotIds,
   isBlockLocked,
   type BackdataChunk,
@@ -13,8 +14,8 @@ import { SlotRichTextEditor, type SlotAiAction } from "@vibe/slot-editor";
 
 import { BlockFrame, type DropEdge, type QuickAddKind } from "./BlockFrame";
 import { BaseBlockWrapper } from "./base/BaseBlockWrapper";
-import { ImageBlockView } from "./blocks/ImageBlockView";
-import { InteractiveTable, type TableSelectionInfo } from "./InteractiveTable";
+import { getBlockView, type BlockRenderContext, type SlotBoxOptions, type TableCellLike } from "./block-views";
+import type { TableSelectionInfo } from "./InteractiveTable";
 import { ACCENT, BLOCK_DRAG_MIME, DROP_LINE, NEW_BLOCK_DRAG_MIME } from "./tokens";
 
 export interface TableSelectionTarget extends TableSelectionInfo {
@@ -55,15 +56,6 @@ export interface VDocPageSheetProps {
   renderInlineComposer?: (slot: VDocSlot, boundChunks: BackdataChunk[]) => React.ReactNode;
 }
 
-interface SlotBoxOptions {
-  /** `cell`: fills a table cell edge to edge, the cell draws focus. `inline`: free-standing slot. */
-  variant?: "cell" | "inline";
-  className?: string;
-  darkTheme?: boolean;
-  /** Dense table cells keep the original 12.5px / snug leading. */
-  compact?: boolean;
-  style?: React.CSSProperties;
-}
 
 const readDragPayload = (e: React.DragEvent) => {
   const moved = e.dataTransfer.getData(BLOCK_DRAG_MIME);
@@ -176,6 +168,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
       <div
         key={slotId}
         data-slot-id={slotId}
+        data-vdoc-unit={slotId}
+        data-unit-kind="slot"
         onClick={(e) => {
           e.stopPropagation();
           onSelectSlot(slotId);
@@ -217,10 +211,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     );
   };
 
-  const cellSlot = (
-    cell: { slotId: string; compact?: boolean; padding?: string; fontSize?: string; lineHeight?: string; color?: string; fontWeight?: string; hAlign?: string; fontFamily?: string },
-    hAlignClass: string
-  ) =>
+  const cellSlot = (cell: TableCellLike, hAlignClass: string) =>
     renderSlotBox(cell.slotId, {
       variant: "cell",
       className: hAlignClass,
@@ -235,202 +226,33 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
       },
     });
 
-  const tableSelectionHandler = (blockId: string, sectionId: string | null) => (info: TableSelectionInfo | null) =>
-    onTableSelectionChange?.(info ? { ...info, pageId: page.pageId, blockId, sectionId } : null);
+  /** 블록 뷰에 넘기는 공통 연결 — 뷰는 이것만 보고 몸통을 그린다 (`block-views`). */
+  const renderContext = (block: LayoutBlock): BlockRenderContext => ({
+    page,
+    slots,
+    editable,
+    selectedBlockId: selectedBlockId ?? null,
+    selectedSlotId,
+    renderSlot: renderSlotBox,
+    renderSummary,
+    tableBindings: (sectionId) => ({
+      editable,
+      selectedSlotId,
+      onSelectSlot,
+      onCommand: (cmd) => onTableCommand?.(page.pageId, block.blockId, sectionId, cmd),
+      onDeleteTable: () => onDeleteBlock(page.pageId, block.blockId),
+      onSelectionChange: (info) =>
+        onTableSelectionChange?.(info ? { ...info, pageId: page.pageId, blockId: block.blockId, sectionId } : null),
+      gripDragProps: block.frame ? undefined : blockDragProps(block),
+      renderCell: (cell, { hAlignClass }) => cellSlot(cell, hAlignClass),
+    }),
+    updateBlock: (updater) => onUpdateBlock?.(page.pageId, block.blockId, updater),
+    unitAttrs: (unitId, kind) => ({ "data-vdoc-unit": unitId, "data-unit-kind": kind }),
+  });
 
   const renderBlockBody = (block: LayoutBlock) => {
-    switch (block.kind) {
-      case "heading":
-      case "form-title": {
-        const alignClass = block.align === "left" ? "text-left" : block.align === "right" ? "text-right" : "text-center";
-        return (
-          <div
-            className={`flex flex-col pt-1 pb-3 ${
-              block.align === "left" ? "items-start" : block.align === "right" ? "items-end" : "items-center"
-            }`}
-          >
-            <div
-              className="font-bold text-slate-950 w-full"
-              style={{ letterSpacing: block.letterSpacing || (block.kind === "form-title" ? "0.35em" : undefined) }}
-            >
-              {renderSlotBox(block.slotId, {
-                className: `${alignClass} ${block.kind === "form-title" ? "text-[24px]" : "text-[20px]"} font-bold`,
-              })}
-            </div>
-            {(block.underline || block.underlineWidth) && (
-              <div
-                style={{
-                  width: block.underline?.width || block.underlineWidth || "286px",
-                  height: block.underline?.thickness || block.underlineThickness || "2px",
-                  backgroundColor: block.underline?.color || "#0f172a",
-                  marginTop: block.underline?.marginTop || "4px",
-                }}
-              />
-            )}
-          </div>
-        );
-      }
-
-            case "image":
-        return (
-          <ImageBlockView
-            block={block}
-            editable={editable}
-            selected={selectedBlockId === block.blockId}
-            onUpdateBlock={(updater) => onUpdateBlock?.(page.pageId, block.blockId, updater as (prev: LayoutBlock) => LayoutBlock)}
-          />
-        );
-
-case "composite-form-frame":
-        return (
-          <div className="bg-white border-slate-950" style={{ borderWidth: block.outerBorderWidth || "2px", borderStyle: "solid" }}>
-            {block.sections.map((sec, sIdx) => {
-              const isLastSec = sIdx === block.sections.length - 1;
-              return (
-                <div
-                  key={sec.sectionId}
-                  style={{
-                    borderBottom: isLastSec ? undefined : sec.bottomBorderThick ? "2px solid #020617" : "1px solid #1e293b",
-                  }}
-                >
-                  <InteractiveTable
-                    table={sec}
-                    borderRules={{
-                      outer: "none",
-                      rowBottom: "1px solid #1e293b",
-                      vertical: "1px solid #1e293b",
-                      ...sec.borderRules,
-                    }}
-                    headerStyle={{ bg: "rgba(241,245,249,0.9)", fontWeight: "600", ...sec.headerStyle }}
-                    roundedOuter={false}
-                    editable={editable}
-                    selectedSlotId={selectedSlotId}
-                    onSelectSlot={onSelectSlot}
-                    onCommand={(cmd) => onTableCommand?.(page.pageId, block.blockId, sec.sectionId, cmd)}
-                    onDeleteTable={() => onDeleteBlock(page.pageId, block.blockId)}
-                    onSelectionChange={tableSelectionHandler(block.blockId, sec.sectionId)}
-                    gripDragProps={block.frame ? undefined : blockDragProps(block)}
-                    renderCell={(cell, { hAlignClass }) => cellSlot(cell, hAlignClass)}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        );
-
-      case "cover-banner":
-        return (
-          <div className="rounded-lg bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-8 min-h-[540px] flex flex-col justify-between shadow-inner">
-            <div className="text-xs uppercase tracking-widest text-emerald-400 font-semibold">PandaDoc Kolas Cover Container · WYSIWYM</div>
-            <div className="my-auto py-8">{renderSlotBox(block.headlineSlotId, { className: "text-3xl font-bold", darkTheme: true })}</div>
-            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/15">
-              {renderSlotBox(block.preparedBySlotId, { className: "bg-white/5 rounded-lg p-2", darkTheme: true })}
-              {renderSlotBox(block.preparedForSlotId, { className: "bg-white/5 rounded-lg p-2", darkTheme: true })}
-            </div>
-          </div>
-        );
-
-      case "section-block":
-        return (
-          <div className="space-y-3">
-            {renderSlotBox(block.headingSlotId)}
-            {renderSlotBox(block.bodySlotId)}
-          </div>
-        );
-
-      case "columns-grid": {
-        const cardClass =
-          block.cardStyle === "plain" ? "min-w-0 bg-transparent p-0" : "min-w-0 rounded-lg border border-slate-200 bg-slate-50/50 p-2.5";
-        return (
-          <div
-            className={`grid ${block.cardStyle === "plain" ? "gap-6" : "gap-4"} items-start w-full`}
-            style={{ gridTemplateColumns: block.widths.map((w) => (w.endsWith("fr") ? `minmax(0, ${w})` : w)).join(" ") }}
-          >
-            {block.columns
-              ? block.columns.map((col, cIdx) => (
-                  <div key={cIdx} className={cardClass}>
-                    {col.image ? (
-                      <div className={`flex py-1 ${col.image.align === "right" ? "justify-end" : col.image.align === "center" ? "justify-center" : "justify-start"}`}>
-                        <img
-                          src={col.image.src}
-                          alt={col.image.alt || "Image"}
-                          draggable={false}
-                          style={{
-                            width: col.image.width || "auto",
-                            height: col.image.height || "auto",
-                            maxHeight: col.image.maxHeight || "90px",
-                            objectFit: col.image.objectFit || "contain",
-                          }}
-                        />
-                      </div>
-                    ) : col.slotId ? (
-                      renderSlotBox(col.slotId)
-                    ) : null}
-                  </div>
-                ))
-              : block.slotIds?.map((sid) => (
-                  <div key={sid} className={cardClass}>
-                    {renderSlotBox(sid)}
-                  </div>
-                ))}
-          </div>
-        );
-      }
-
-      case "structured-table":
-      case "table":
-        return (
-          <InteractiveTable
-            table={block}
-            borderRules={block.borderRules}
-            headerStyle={block.headerStyle}
-            cellPadding={block.cellPadding}
-            editable={editable}
-            selectedSlotId={selectedSlotId}
-            onSelectSlot={onSelectSlot}
-            onCommand={(cmd) => onTableCommand?.(page.pageId, block.blockId, null, cmd)}
-            onDeleteTable={() => onDeleteBlock(page.pageId, block.blockId)}
-            onSelectionChange={tableSelectionHandler(block.blockId, null)}
-            gripDragProps={block.frame ? undefined : blockDragProps(block)}
-            renderCell={(cell, { hAlignClass }) => cellSlot(cell, hAlignClass)}
-            footer={block.footerSummary && renderSummary(block.footerSummary, "mt-3")}
-          />
-        );
-
-      case "summary-list":
-        return renderSummary(block, "my-2");
-
-      case "text":
-        return renderSlotBox(block.slotId, {
-          className: block.align === "right" ? "text-right" : block.align === "center" ? "text-center" : "",
-        });
-
-      case "fillable-group":
-        return (
-          <div className="rounded-lg border-2 border-dashed border-amber-400/80 bg-amber-50/30 p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-bold text-amber-900">📌 {block.title}</span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-semibold border border-amber-300">
-                👤 담당: {block.assigneeName || "미지정"}
-              </span>
-            </div>
-            {renderSlotBox(block.slotId)}
-          </div>
-        );
-
-      case "callout-box" as unknown as LayoutBlock["kind"]:
-        return (
-          <div className="rounded-md border border-slate-200 bg-slate-50/80 p-3.5 my-2">
-            {renderSlotBox((block as { slotId: string }).slotId)}
-          </div>
-        );
-
-      default:
-        if ((block as { slotId?: string }).slotId) {
-          return renderSlotBox((block as { slotId: string }).slotId);
-        }
-        return null;
-    }
+    const { View } = getBlockView(block.kind);
+    return <View block={block} ctx={renderContext(block)} />;
   };
 
   function renderSummary(
@@ -508,15 +330,15 @@ case "composite-form-frame":
   }, [selectedBlockId, selectedSlotId, page.blocks]);
 
   const renderFramedOrFlowBlock = (block: LayoutBlock, bIdx: number) => {
-    const isTable = block.kind === "structured-table" || block.kind === "table" || block.kind === "composite-form-frame";
+    const model = getBlockKind(block.kind);
     const frame = block.frame;
     return (
       <BaseBlockWrapper
         block={block}
         editable={editable}
         selected={selectedBlockId === block.blockId}
-        resizable={block.kind === "image" || Boolean(frame)}
-        hasOwnGrip={isTable && !frame}
+        resizable={Boolean(model.layout?.resizable) || Boolean(frame)}
+        hasOwnGrip={Boolean(model.layout?.ownGrip) && !frame}
         locked={isBlockLocked(block, slots)}
         onSelectBlock={onSelectBlock}
         dropEdge={!frame && dropTarget?.blockId === block.blockId ? dropTarget.edge : null}

@@ -1,0 +1,2464 @@
+{
+ "blocks": {
+  "atticus-invoice-000081709/att_page_1/att_blk_header_grid": {
+   "kind": "columns-grid",
+   "slots": [
+    "att_slot_company_info"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_company_info_copy_x0"
+   ]
+  },
+  "atticus-invoice-000081709/att_page_1/att_blk_mid_grid": {
+   "kind": "columns-grid",
+   "slots": [
+    "att_slot_billing_info",
+    "att_slot_total_summary"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_billing_info_copy_x0",
+    "att_slot_total_summary_copy_x1"
+   ]
+  },
+  "atticus-invoice-000081709/att_page_1/att_blk_items_table": {
+   "kind": "structured-table",
+   "slots": [
+    "att_slot_th_desc",
+    "att_slot_th_amount",
+    "att_slot_th_total",
+    "att_slot_td_item1",
+    "att_slot_td_amount1",
+    "att_slot_td_total1",
+    "att_slot_td_label_sub",
+    "att_slot_td_val_sub",
+    "att_slot_td_label_tot",
+    "att_slot_td_val_tot"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_th_desc_copy_x0",
+    "att_slot_th_amount_copy_x1",
+    "att_slot_th_total_copy_x2",
+    "att_slot_td_item1_copy_x3",
+    "att_slot_td_amount1_copy_x4",
+    "att_slot_td_total1_copy_x5",
+    "att_slot_td_label_sub_copy_x6",
+    "att_slot_td_val_sub_copy_x7",
+    "att_slot_td_label_tot_copy_x8",
+    "att_slot_td_val_tot_copy_x9"
+   ]
+  },
+  "atticus-invoice-000081709/att_page_1/att_blk_footer": {
+   "kind": "columns-grid",
+   "slots": [
+    "att_slot_footer_meta"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_footer_meta_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_1/mm_blk_summary_cols": {
+   "kind": "columns-grid",
+   "slots": [
+    "mm_slot_meta_card",
+    "mm_slot_exec_summary"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "mm_slot_meta_card_copy_x0",
+    "mm_slot_exec_summary_copy_x1"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_1/mm_blk_decision_table": {
+   "kind": "structured-table",
+   "slots": [
+    "mm_slot_th1",
+    "mm_slot_th2",
+    "mm_slot_th3",
+    "mm_slot_r1c1",
+    "mm_slot_r1c2",
+    "mm_slot_r1c3",
+    "mm_slot_r2c1",
+    "mm_slot_r2c2",
+    "mm_slot_r2c3",
+    "mm_slot_r3c1",
+    "mm_slot_r3c2",
+    "mm_slot_r3c3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "mm_slot_th1_copy_x0",
+    "mm_slot_th2_copy_x1",
+    "mm_slot_th3_copy_x2",
+    "mm_slot_r1c1_copy_x3",
+    "mm_slot_r1c2_copy_x4",
+    "mm_slot_r1c3_copy_x5",
+    "mm_slot_r2c1_copy_x6",
+    "mm_slot_r2c2_copy_x7",
+    "mm_slot_r2c3_copy_x8",
+    "mm_slot_r3c1_copy_x9",
+    "mm_slot_r3c2_copy_x10",
+    "mm_slot_r3c3_copy_x11"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_1/mm_blk_action_items": {
+   "kind": "fillable-group",
+   "slots": [
+    "mm_slot_action_items"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "mm_slot_action_items_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_2/blk_bs_title": {
+   "kind": "form-title",
+   "slots": [
+    "bs_slot_main_title"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "bs_slot_main_title_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_2/blk_bs_composite_frame": {
+   "kind": "composite-form-frame",
+   "slots": [
+    "bs_z1_datetime",
+    "bs_z1_role1",
+    "bs_z1_sign1",
+    "bs_z1_role2",
+    "bs_z1_seal2",
+    "bs_z2_label",
+    "bs_z2_body",
+    "bs_z3_label",
+    "bs_z3_body",
+    "bs_z3_official_hdr",
+    "bs_z3_official_body",
+    "bs_z4_label",
+    "bs_z4_body",
+    "bs_z4_pub_hdr",
+    "bs_z4_pub_body",
+    "bs_z5_title",
+    "bs_z6_h_name_1",
+    "bs_z6_h_seal_1",
+    "bs_z6_h_name_2",
+    "bs_z6_h_seal_2",
+    "bs_z6_h_name_3",
+    "bs_z6_h_seal_3",
+    "bs_z6_r1c1_name",
+    "bs_z6_r1c1_stamp",
+    "bs_z6_r1c2_name",
+    "bs_z6_r1c2_stamp",
+    "bs_z6_r1c3_name",
+    "bs_z6_r1c3_stamp",
+    "bs_z6_r2c1_name",
+    "bs_z6_r2c1_stamp",
+    "bs_z6_r2c2_name",
+    "bs_z6_r2c2_stamp",
+    "bs_z6_r2c3_name",
+    "bs_z6_r2c3_stamp",
+    "bs_z6_r3c1_name",
+    "bs_z6_r3c1_stamp",
+    "bs_z6_r3c2_name",
+    "bs_z6_r3c2_stamp",
+    "bs_z6_r3c3_name",
+    "bs_z6_r3c3_stamp",
+    "bs_z6_r4c1_name",
+    "bs_z6_r4c1_stamp",
+    "bs_z6_r4c2_name",
+    "bs_z6_r4c2_stamp",
+    "bs_z6_r4c3_name",
+    "bs_z6_r4c3_stamp",
+    "bs_z6_r5c1_name",
+    "bs_z6_r5c1_stamp",
+    "bs_z6_r5c2_name",
+    "bs_z6_r5c2_stamp",
+    "bs_z6_r5c3_name",
+    "bs_z6_r5c3_stamp"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "bs_z1_datetime_copy_x0",
+    "bs_z1_role1_copy_x1",
+    "bs_z1_sign1_copy_x2",
+    "bs_z1_role2_copy_x3",
+    "bs_z1_seal2_copy_x4",
+    "bs_z2_label_copy_x5",
+    "bs_z2_body_copy_x6",
+    "bs_z3_label_copy_x7",
+    "bs_z3_body_copy_x8",
+    "bs_z3_official_hdr_copy_x9",
+    "bs_z3_official_body_copy_x10",
+    "bs_z4_label_copy_x11",
+    "bs_z4_body_copy_x12",
+    "bs_z4_pub_hdr_copy_x13",
+    "bs_z4_pub_body_copy_x14",
+    "bs_z5_title_copy_x15",
+    "bs_z6_h_name_1_copy_x16",
+    "bs_z6_h_seal_1_copy_x17",
+    "bs_z6_h_name_2_copy_x18",
+    "bs_z6_h_seal_2_copy_x19",
+    "bs_z6_h_name_3_copy_x20",
+    "bs_z6_h_seal_3_copy_x21",
+    "bs_z6_r1c1_name_copy_x22",
+    "bs_z6_r1c1_stamp_copy_x23",
+    "bs_z6_r1c2_name_copy_x24",
+    "bs_z6_r1c2_stamp_copy_x25",
+    "bs_z6_r1c3_name_copy_x26",
+    "bs_z6_r1c3_stamp_copy_x27",
+    "bs_z6_r2c1_name_copy_x28",
+    "bs_z6_r2c1_stamp_copy_x29",
+    "bs_z6_r2c2_name_copy_x30",
+    "bs_z6_r2c2_stamp_copy_x31",
+    "bs_z6_r2c3_name_copy_x32",
+    "bs_z6_r2c3_stamp_copy_x33",
+    "bs_z6_r3c1_name_copy_x34",
+    "bs_z6_r3c1_stamp_copy_x35",
+    "bs_z6_r3c2_name_copy_x36",
+    "bs_z6_r3c2_stamp_copy_x37",
+    "bs_z6_r3c3_name_copy_x38",
+    "bs_z6_r3c3_stamp_copy_x39",
+    "bs_z6_r4c1_name_copy_x40",
+    "bs_z6_r4c1_stamp_copy_x41",
+    "bs_z6_r4c2_name_copy_x42",
+    "bs_z6_r4c2_stamp_copy_x43",
+    "bs_z6_r4c3_name_copy_x44",
+    "bs_z6_r4c3_stamp_copy_x45",
+    "bs_z6_r5c1_name_copy_x46",
+    "bs_z6_r5c1_stamp_copy_x47",
+    "bs_z6_r5c2_name_copy_x48",
+    "bs_z6_r5c2_stamp_copy_x49",
+    "bs_z6_r5c3_name_copy_x50",
+    "bs_z6_r5c3_stamp_copy_x51"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_3/att_blk_logo": {
+   "kind": "image",
+   "slots": [],
+   "locked": false,
+   "cloneSlots": []
+  },
+  "vdoc_meeting_minutes_1028/mm_page_3/att_blk_company": {
+   "kind": "text",
+   "slots": [
+    "att_slot_company_info"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_company_info_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_3/att_blk_billing": {
+   "kind": "text",
+   "slots": [
+    "att_slot_billing_info"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_billing_info_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_3/att_blk_total": {
+   "kind": "text",
+   "slots": [
+    "att_slot_total_summary"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_total_summary_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_3/att_blk_items_table": {
+   "kind": "structured-table",
+   "slots": [
+    "att_slot_th_desc",
+    "att_slot_th_amount",
+    "att_slot_th_total",
+    "att_slot_td_item1",
+    "att_slot_td_amount1",
+    "att_slot_td_total1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_th_desc_copy_x0",
+    "att_slot_th_amount_copy_x1",
+    "att_slot_th_total_copy_x2",
+    "att_slot_td_item1_copy_x3",
+    "att_slot_td_amount1_copy_x4",
+    "att_slot_td_total1_copy_x5"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_3/att_blk_summary": {
+   "kind": "structured-table",
+   "slots": [
+    "att_slot_td_label_sub",
+    "att_slot_td_val_sub",
+    "att_slot_td_label_tot",
+    "att_slot_td_val_tot"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_td_label_sub_copy_x0",
+    "att_slot_td_val_sub_copy_x1",
+    "att_slot_td_label_tot_copy_x2",
+    "att_slot_td_val_tot_copy_x3"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_3/att_blk_footer": {
+   "kind": "text",
+   "slots": [
+    "att_slot_footer_meta"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_footer_meta_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_3/att_blk_pageno": {
+   "kind": "text",
+   "slots": [
+    "att_slot_pageno"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "att_slot_pageno_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_title": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_title"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_title_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_mark_y": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_mark_y"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_mark_y_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art1": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art1_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art2": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art2_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art3": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art3_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art4": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art4"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art4_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art5": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art5"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art5_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art6": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art6"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art6_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art7": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art7"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art7_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art8": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art8"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art8_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art9": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art9"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art9_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_art10": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_art10"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_art10_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_addendum_title": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_addendum_title"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_addendum_title_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_4/acad_blk_addendum_art1": {
+   "kind": "text",
+   "slots": [
+    "slot_acad_blk_addendum_art1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_acad_blk_addendum_art1_copy_x0"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_5/p5_blk_1": {
+   "kind": "composite-form-frame",
+   "slots": [
+    "p5_tbl_1_r0_c0",
+    "p5_tbl_1_r0_c1",
+    "p5_tbl_1_r0_c2",
+    "p5_tbl_1_r0_c3",
+    "p5_tbl_1_r1_c2",
+    "p5_tbl_1_r1_c3",
+    "p5_tbl_1_r2_c2",
+    "p5_tbl_1_r2_c3",
+    "p5_tbl_1_r3_c2",
+    "p5_tbl_1_r3_c3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p5_tbl_1_r0_c0_copy_x0",
+    "p5_tbl_1_r0_c1_copy_x1",
+    "p5_tbl_1_r0_c2_copy_x2",
+    "p5_tbl_1_r0_c3_copy_x3",
+    "p5_tbl_1_r1_c2_copy_x4",
+    "p5_tbl_1_r1_c3_copy_x5",
+    "p5_tbl_1_r2_c2_copy_x6",
+    "p5_tbl_1_r2_c3_copy_x7",
+    "p5_tbl_1_r3_c2_copy_x8",
+    "p5_tbl_1_r3_c3_copy_x9"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_5/p5_blk_2": {
+   "kind": "composite-form-frame",
+   "slots": [
+    "p5_tbl_2_r0_c0",
+    "p5_tbl_2_r0_c1",
+    "p5_tbl_2_r0_c2",
+    "p5_tbl_2_r0_c4",
+    "p5_tbl_2_r0_c6",
+    "p5_tbl_2_r0_c8",
+    "p5_tbl_2_r1_c0",
+    "p5_tbl_2_r1_c1",
+    "p5_tbl_2_r1_c5",
+    "p5_tbl_2_r1_c7",
+    "p5_tbl_2_r2_c0",
+    "p5_tbl_2_r2_c1",
+    "p5_tbl_2_r3_c0",
+    "p5_tbl_2_r3_c1",
+    "p5_tbl_2_r4_c0",
+    "p5_tbl_2_r4_c1",
+    "p5_tbl_2_r4_c3",
+    "p5_tbl_2_r4_c6",
+    "p5_tbl_2_r5_c0",
+    "p5_tbl_2_r5_c1",
+    "p5_tbl_2_r6_c0",
+    "p5_tbl_2_r6_c1",
+    "p5_tbl_2_r6_c5",
+    "p5_tbl_2_r6_c7",
+    "p5_tbl_2_r7_c0",
+    "p5_tbl_2_r7_c1",
+    "p5_tbl_2_r7_c5",
+    "p5_tbl_2_r7_c7",
+    "p5_tbl_2_r8_c0",
+    "p5_tbl_2_r8_c1",
+    "p5_tbl_2_r8_c5",
+    "p5_tbl_2_r8_c7",
+    "p5_tbl_2_r9_c0",
+    "p5_tbl_2_r9_c1",
+    "p5_tbl_2_r9_c5",
+    "p5_tbl_2_r9_c7"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p5_tbl_2_r0_c0_copy_x0",
+    "p5_tbl_2_r0_c1_copy_x1",
+    "p5_tbl_2_r0_c2_copy_x2",
+    "p5_tbl_2_r0_c4_copy_x3",
+    "p5_tbl_2_r0_c6_copy_x4",
+    "p5_tbl_2_r0_c8_copy_x5",
+    "p5_tbl_2_r1_c0_copy_x6",
+    "p5_tbl_2_r1_c1_copy_x7",
+    "p5_tbl_2_r1_c5_copy_x8",
+    "p5_tbl_2_r1_c7_copy_x9",
+    "p5_tbl_2_r2_c0_copy_x10",
+    "p5_tbl_2_r2_c1_copy_x11",
+    "p5_tbl_2_r3_c0_copy_x12",
+    "p5_tbl_2_r3_c1_copy_x13",
+    "p5_tbl_2_r4_c0_copy_x14",
+    "p5_tbl_2_r4_c1_copy_x15",
+    "p5_tbl_2_r4_c3_copy_x16",
+    "p5_tbl_2_r4_c6_copy_x17",
+    "p5_tbl_2_r5_c0_copy_x18",
+    "p5_tbl_2_r5_c1_copy_x19",
+    "p5_tbl_2_r6_c0_copy_x20",
+    "p5_tbl_2_r6_c1_copy_x21",
+    "p5_tbl_2_r6_c5_copy_x22",
+    "p5_tbl_2_r6_c7_copy_x23",
+    "p5_tbl_2_r7_c0_copy_x24",
+    "p5_tbl_2_r7_c1_copy_x25",
+    "p5_tbl_2_r7_c5_copy_x26",
+    "p5_tbl_2_r7_c7_copy_x27",
+    "p5_tbl_2_r8_c0_copy_x28",
+    "p5_tbl_2_r8_c1_copy_x29",
+    "p5_tbl_2_r8_c5_copy_x30",
+    "p5_tbl_2_r8_c7_copy_x31",
+    "p5_tbl_2_r9_c0_copy_x32",
+    "p5_tbl_2_r9_c1_copy_x33",
+    "p5_tbl_2_r9_c5_copy_x34",
+    "p5_tbl_2_r9_c7_copy_x35"
+   ]
+  },
+  "vdoc_meeting_minutes_1028/mm_page_5/p5_blk_3": {
+   "kind": "section-block",
+   "slots": [
+    "p5_zone_section_heading",
+    "p5_zone_section_body"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p5_zone_section_heading_copy_x0",
+    "p5_zone_section_body_copy_x1"
+   ]
+  },
+  "vdoc_pandadoc_vc_proposal/page_1/blk_cover_1": {
+   "kind": "cover-banner",
+   "slots": [
+    "slot_cover_headline",
+    "slot_cover_prepared_by",
+    "slot_cover_prepared_for"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_cover_headline_copy_x0",
+    "slot_cover_prepared_by_copy_x1",
+    "slot_cover_prepared_for_copy_x2"
+   ]
+  },
+  "vdoc_pandadoc_vc_proposal/page_2/blk_what_we_do": {
+   "kind": "section-block",
+   "slots": [
+    "slot_wwd_heading",
+    "slot_wwd_body"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_wwd_heading_copy_x0",
+    "slot_wwd_body_copy_x1"
+   ]
+  },
+  "vdoc_pandadoc_vc_proposal/page_2/blk_fillable_short_desc": {
+   "kind": "fillable-group",
+   "slots": [
+    "slot_short_desc_field"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_short_desc_field_copy_x0"
+   ]
+  },
+  "vdoc_pandadoc_vc_proposal/page_2/blk_inv_summary": {
+   "kind": "section-block",
+   "slots": [
+    "slot_inv_sum_heading",
+    "slot_inv_sum_body"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_inv_sum_heading_copy_x0",
+    "slot_inv_sum_body_copy_x1"
+   ]
+  },
+  "vdoc_pandadoc_vc_proposal/page_2/blk_inv_desc": {
+   "kind": "section-block",
+   "slots": [
+    "slot_inv_desc_heading",
+    "slot_inv_desc_body"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_inv_desc_heading_copy_x0",
+    "slot_inv_desc_body_copy_x1"
+   ]
+  },
+  "vdoc_pandadoc_vc_proposal/page_3/blk_expected_returns": {
+   "kind": "section-block",
+   "slots": [
+    "slot_returns_heading",
+    "slot_returns_body"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_returns_heading_copy_x0",
+    "slot_returns_body_copy_x1"
+   ]
+  },
+  "vdoc_pandadoc_vc_proposal/page_3/blk_fillable_areas": {
+   "kind": "fillable-group",
+   "slots": [
+    "slot_investment_areas_field"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_investment_areas_field_copy_x0"
+   ]
+  },
+  "vdoc_pandadoc_vc_proposal/page_3/blk_allocation_table": {
+   "kind": "structured-table",
+   "slots": [
+    "slot_tbl_h1",
+    "slot_tbl_h2",
+    "slot_tbl_h3",
+    "slot_tbl_r1c1",
+    "slot_tbl_r1c2",
+    "slot_tbl_r1c3",
+    "slot_tbl_r2c1",
+    "slot_tbl_r2c2",
+    "slot_tbl_r2c3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_tbl_h1_copy_x0",
+    "slot_tbl_h2_copy_x1",
+    "slot_tbl_h3_copy_x2",
+    "slot_tbl_r1c1_copy_x3",
+    "slot_tbl_r1c2_copy_x4",
+    "slot_tbl_r1c3_copy_x5",
+    "slot_tbl_r2c1_copy_x6",
+    "slot_tbl_r2c2_copy_x7",
+    "slot_tbl_r2c3_copy_x8"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_1": {
+   "kind": "form-title",
+   "slots": [
+    "slot_p1_blk_1"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "slot_p1_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_2": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_2_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_3": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_3_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_4": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_4"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_4_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_5": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_5"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_5_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_6": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_6"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_6_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_7": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_7"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_7_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_8": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_8"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_8_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_9": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_9"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_9_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_10": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_10"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_10_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_11": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_11"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_11_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_12": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_12"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_12_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_13": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_13"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_13_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_14": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_14"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_14_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_15": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_15"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_15_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_16": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_16"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_16_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_17": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_17"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_17_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_18": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_18"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_18_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_19": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_19"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_19_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_20": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_20"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_20_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_21": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_21"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_21_copy_x0"
+   ]
+  },
+  "vdoc_ref_intl_exchange_rules/page_1/p1_blk_22": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_22"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_22_copy_x0"
+   ]
+  },
+  "vdoc_ref_reward_penalty_rules/page_1/p1_blk_1": {
+   "kind": "form-title",
+   "slots": [
+    "slot_p1_blk_1"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "slot_p1_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_reward_penalty_rules/page_1/p1_blk_2": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_2_copy_x0"
+   ]
+  },
+  "vdoc_ref_reward_penalty_rules/page_2/p2_blk_1": {
+   "kind": "text",
+   "slots": [
+    "slot_p2_blk_1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p2_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_reward_penalty_rules/page_2/p2_blk_2": {
+   "kind": "text",
+   "slots": [
+    "slot_p2_blk_2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p2_blk_2_copy_x0"
+   ]
+  },
+  "vdoc_ref_reward_penalty_rules/page_3/p3_tbl_1": {
+   "kind": "structured-table",
+   "slots": [
+    "p3_tbl_1_r0_c0",
+    "p3_tbl_1_r0_c1",
+    "p3_tbl_1_r0_c2",
+    "p3_tbl_1_r0_c3",
+    "p3_tbl_1_r1_c0",
+    "p3_tbl_1_r1_c1",
+    "p3_tbl_1_r2_c0",
+    "p3_tbl_1_r3_c0",
+    "p3_tbl_1_r3_c1",
+    "p3_tbl_1_r4_c0",
+    "p3_tbl_1_r4_c1",
+    "p3_tbl_1_r5_c0",
+    "p3_tbl_1_r5_c1",
+    "p3_tbl_1_r6_c0"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p3_tbl_1_r0_c0_copy_x0",
+    "p3_tbl_1_r0_c1_copy_x1",
+    "p3_tbl_1_r0_c2_copy_x2",
+    "p3_tbl_1_r0_c3_copy_x3",
+    "p3_tbl_1_r1_c0_copy_x4",
+    "p3_tbl_1_r1_c1_copy_x5",
+    "p3_tbl_1_r2_c0_copy_x6",
+    "p3_tbl_1_r3_c0_copy_x7",
+    "p3_tbl_1_r3_c1_copy_x8",
+    "p3_tbl_1_r4_c0_copy_x9",
+    "p3_tbl_1_r4_c1_copy_x10",
+    "p3_tbl_1_r5_c0_copy_x11",
+    "p3_tbl_1_r5_c1_copy_x12",
+    "p3_tbl_1_r6_c0_copy_x13"
+   ]
+  },
+  "vdoc_ref_reward_penalty_rules/page_3/p3_blk_1": {
+   "kind": "form-title",
+   "slots": [
+    "slot_p3_blk_1"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "slot_p3_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_tbl_1": {
+   "kind": "structured-table",
+   "slots": [
+    "p1_tbl_1_r0_c0",
+    "p1_tbl_1_r0_c1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p1_tbl_1_r0_c0_copy_x0",
+    "p1_tbl_1_r0_c1_copy_x1"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_tbl_2": {
+   "kind": "structured-table",
+   "slots": [
+    "p1_tbl_2_r0_c0",
+    "p1_tbl_2_r0_c1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p1_tbl_2_r0_c0_copy_x0",
+    "p1_tbl_2_r0_c1_copy_x1"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_tbl_3": {
+   "kind": "structured-table",
+   "slots": [
+    "p1_tbl_3_r0_c0",
+    "p1_tbl_3_r0_c1",
+    "p1_tbl_3_r0_c2",
+    "p1_tbl_3_r0_c3",
+    "p1_tbl_3_r0_c4",
+    "p1_tbl_3_r0_c5",
+    "p1_tbl_3_r1_c0",
+    "p1_tbl_3_r1_c1",
+    "p1_tbl_3_r1_c2",
+    "p1_tbl_3_r1_c3",
+    "p1_tbl_3_r2_c0",
+    "p1_tbl_3_r2_c1",
+    "p1_tbl_3_r2_c2",
+    "p1_tbl_3_r3_c0",
+    "p1_tbl_3_r3_c1",
+    "p1_tbl_3_r3_c2",
+    "p1_tbl_3_r4_c0",
+    "p1_tbl_3_r4_c1",
+    "p1_tbl_3_r4_c2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p1_tbl_3_r0_c0_copy_x0",
+    "p1_tbl_3_r0_c1_copy_x1",
+    "p1_tbl_3_r0_c2_copy_x2",
+    "p1_tbl_3_r0_c3_copy_x3",
+    "p1_tbl_3_r0_c4_copy_x4",
+    "p1_tbl_3_r0_c5_copy_x5",
+    "p1_tbl_3_r1_c0_copy_x6",
+    "p1_tbl_3_r1_c1_copy_x7",
+    "p1_tbl_3_r1_c2_copy_x8",
+    "p1_tbl_3_r1_c3_copy_x9",
+    "p1_tbl_3_r2_c0_copy_x10",
+    "p1_tbl_3_r2_c1_copy_x11",
+    "p1_tbl_3_r2_c2_copy_x12",
+    "p1_tbl_3_r3_c0_copy_x13",
+    "p1_tbl_3_r3_c1_copy_x14",
+    "p1_tbl_3_r3_c2_copy_x15",
+    "p1_tbl_3_r4_c0_copy_x16",
+    "p1_tbl_3_r4_c1_copy_x17",
+    "p1_tbl_3_r4_c2_copy_x18"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_tbl_4": {
+   "kind": "structured-table",
+   "slots": [
+    "p1_tbl_4_r0_c0",
+    "p1_tbl_4_r0_c1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p1_tbl_4_r0_c0_copy_x0",
+    "p1_tbl_4_r0_c1_copy_x1"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_tbl_5": {
+   "kind": "structured-table",
+   "slots": [
+    "p1_tbl_5_r0_c0",
+    "p1_tbl_5_r0_c1",
+    "p1_tbl_5_r0_c2",
+    "p1_tbl_5_r0_c3",
+    "p1_tbl_5_r0_c4"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p1_tbl_5_r0_c0_copy_x0",
+    "p1_tbl_5_r0_c1_copy_x1",
+    "p1_tbl_5_r0_c2_copy_x2",
+    "p1_tbl_5_r0_c3_copy_x3",
+    "p1_tbl_5_r0_c4_copy_x4"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_blk_1": {
+   "kind": "form-title",
+   "slots": [
+    "slot_p1_blk_1"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "slot_p1_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_blk_2": {
+   "kind": "form-title",
+   "slots": [
+    "slot_p1_blk_2"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "slot_p1_blk_2_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_blk_3": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_3_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_blk_4": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_4"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_4_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_blk_5": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_5"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_5_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_1/p1_blk_6": {
+   "kind": "text",
+   "slots": [
+    "slot_p1_blk_6"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p1_blk_6_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_2/p2_tbl_1": {
+   "kind": "structured-table",
+   "slots": [
+    "p2_tbl_1_r0_c0",
+    "p2_tbl_1_r0_c1",
+    "p2_tbl_1_r0_c2",
+    "p2_tbl_1_r1_c0",
+    "p2_tbl_1_r1_c1",
+    "p2_tbl_1_r1_c2",
+    "p2_tbl_1_r2_c0",
+    "p2_tbl_1_r2_c1",
+    "p2_tbl_1_r4_c0",
+    "p2_tbl_1_r4_c1",
+    "p2_tbl_1_r5_c0",
+    "p2_tbl_1_r5_c1",
+    "p2_tbl_1_r6_c0",
+    "p2_tbl_1_r6_c1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p2_tbl_1_r0_c0_copy_x0",
+    "p2_tbl_1_r0_c1_copy_x1",
+    "p2_tbl_1_r0_c2_copy_x2",
+    "p2_tbl_1_r1_c0_copy_x3",
+    "p2_tbl_1_r1_c1_copy_x4",
+    "p2_tbl_1_r1_c2_copy_x5",
+    "p2_tbl_1_r2_c0_copy_x6",
+    "p2_tbl_1_r2_c1_copy_x7",
+    "p2_tbl_1_r4_c0_copy_x8",
+    "p2_tbl_1_r4_c1_copy_x9",
+    "p2_tbl_1_r5_c0_copy_x10",
+    "p2_tbl_1_r5_c1_copy_x11",
+    "p2_tbl_1_r6_c0_copy_x12",
+    "p2_tbl_1_r6_c1_copy_x13"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_2/p2_blk_1": {
+   "kind": "text",
+   "slots": [
+    "slot_p2_blk_1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p2_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_2/p2_blk_2": {
+   "kind": "text",
+   "slots": [
+    "slot_p2_blk_2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p2_blk_2_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_2/p2_blk_3": {
+   "kind": "text",
+   "slots": [
+    "slot_p2_blk_3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p2_blk_3_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_2/p2_blk_4": {
+   "kind": "text",
+   "slots": [
+    "slot_p2_blk_4"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p2_blk_4_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_2/p2_blk_5": {
+   "kind": "text",
+   "slots": [
+    "slot_p2_blk_5"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p2_blk_5_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_tbl_1": {
+   "kind": "structured-table",
+   "slots": [
+    "p3_tbl_1_r0_c0",
+    "p3_tbl_1_r0_c1",
+    "p3_tbl_1_r0_c2",
+    "p3_tbl_1_r1_c0",
+    "p3_tbl_1_r1_c1",
+    "p3_tbl_1_r1_c2",
+    "p3_tbl_1_r2_c0",
+    "p3_tbl_1_r2_c1",
+    "p3_tbl_1_r2_c2",
+    "p3_tbl_1_r3_c0",
+    "p3_tbl_1_r3_c1",
+    "p3_tbl_1_r3_c2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p3_tbl_1_r0_c0_copy_x0",
+    "p3_tbl_1_r0_c1_copy_x1",
+    "p3_tbl_1_r0_c2_copy_x2",
+    "p3_tbl_1_r1_c0_copy_x3",
+    "p3_tbl_1_r1_c1_copy_x4",
+    "p3_tbl_1_r1_c2_copy_x5",
+    "p3_tbl_1_r2_c0_copy_x6",
+    "p3_tbl_1_r2_c1_copy_x7",
+    "p3_tbl_1_r2_c2_copy_x8",
+    "p3_tbl_1_r3_c0_copy_x9",
+    "p3_tbl_1_r3_c1_copy_x10",
+    "p3_tbl_1_r3_c2_copy_x11"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_tbl_2": {
+   "kind": "structured-table",
+   "slots": [
+    "p3_tbl_2_r0_c0",
+    "p3_tbl_2_r0_c1",
+    "p3_tbl_2_r0_c2",
+    "p3_tbl_2_r1_c0",
+    "p3_tbl_2_r1_c1",
+    "p3_tbl_2_r1_c2",
+    "p3_tbl_2_r2_c0",
+    "p3_tbl_2_r2_c1",
+    "p3_tbl_2_r2_c2",
+    "p3_tbl_2_r3_c0",
+    "p3_tbl_2_r3_c1",
+    "p3_tbl_2_r3_c2",
+    "p3_tbl_2_r4_c0",
+    "p3_tbl_2_r4_c1",
+    "p3_tbl_2_r4_c2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p3_tbl_2_r0_c0_copy_x0",
+    "p3_tbl_2_r0_c1_copy_x1",
+    "p3_tbl_2_r0_c2_copy_x2",
+    "p3_tbl_2_r1_c0_copy_x3",
+    "p3_tbl_2_r1_c1_copy_x4",
+    "p3_tbl_2_r1_c2_copy_x5",
+    "p3_tbl_2_r2_c0_copy_x6",
+    "p3_tbl_2_r2_c1_copy_x7",
+    "p3_tbl_2_r2_c2_copy_x8",
+    "p3_tbl_2_r3_c0_copy_x9",
+    "p3_tbl_2_r3_c1_copy_x10",
+    "p3_tbl_2_r3_c2_copy_x11",
+    "p3_tbl_2_r4_c0_copy_x12",
+    "p3_tbl_2_r4_c1_copy_x13",
+    "p3_tbl_2_r4_c2_copy_x14"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_1": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_2": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_2_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_3": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_3_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_4": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_4"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_4_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_5": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_5"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_5_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_6": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_6"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_6_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_7": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_7"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_7_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_8": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_8"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_8_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_9": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_9"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_9_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_10": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_10"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_10_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_3/p3_blk_11": {
+   "kind": "text",
+   "slots": [
+    "slot_p3_blk_11"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p3_blk_11_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_4/p4_tbl_1": {
+   "kind": "structured-table",
+   "slots": [
+    "p4_tbl_1_r0_c0",
+    "p4_tbl_1_r0_c1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p4_tbl_1_r0_c0_copy_x0",
+    "p4_tbl_1_r0_c1_copy_x1"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_4/p4_tbl_2": {
+   "kind": "structured-table",
+   "slots": [
+    "p4_tbl_2_r0_c0",
+    "p4_tbl_2_r0_c1",
+    "p4_tbl_2_r0_c2",
+    "p4_tbl_2_r0_c3",
+    "p4_tbl_2_r1_c0",
+    "p4_tbl_2_r1_c1",
+    "p4_tbl_2_r1_c2",
+    "p4_tbl_2_r2_c0",
+    "p4_tbl_2_r2_c1",
+    "p4_tbl_2_r3_c0",
+    "p4_tbl_2_r3_c1",
+    "p4_tbl_2_r4_c0",
+    "p4_tbl_2_r4_c1",
+    "p4_tbl_2_r5_c0",
+    "p4_tbl_2_r5_c1",
+    "p4_tbl_2_r6_c0",
+    "p4_tbl_2_r6_c1",
+    "p4_tbl_2_r7_c0",
+    "p4_tbl_2_r7_c1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p4_tbl_2_r0_c0_copy_x0",
+    "p4_tbl_2_r0_c1_copy_x1",
+    "p4_tbl_2_r0_c2_copy_x2",
+    "p4_tbl_2_r0_c3_copy_x3",
+    "p4_tbl_2_r1_c0_copy_x4",
+    "p4_tbl_2_r1_c1_copy_x5",
+    "p4_tbl_2_r1_c2_copy_x6",
+    "p4_tbl_2_r2_c0_copy_x7",
+    "p4_tbl_2_r2_c1_copy_x8",
+    "p4_tbl_2_r3_c0_copy_x9",
+    "p4_tbl_2_r3_c1_copy_x10",
+    "p4_tbl_2_r4_c0_copy_x11",
+    "p4_tbl_2_r4_c1_copy_x12",
+    "p4_tbl_2_r5_c0_copy_x13",
+    "p4_tbl_2_r5_c1_copy_x14",
+    "p4_tbl_2_r6_c0_copy_x15",
+    "p4_tbl_2_r6_c1_copy_x16",
+    "p4_tbl_2_r7_c0_copy_x17",
+    "p4_tbl_2_r7_c1_copy_x18"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_4/p4_tbl_3": {
+   "kind": "structured-table",
+   "slots": [
+    "p4_tbl_3_r0_c0",
+    "p4_tbl_3_r0_c1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p4_tbl_3_r0_c0_copy_x0",
+    "p4_tbl_3_r0_c1_copy_x1"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_4/p4_tbl_4": {
+   "kind": "structured-table",
+   "slots": [
+    "p4_tbl_4_r0_c0",
+    "p4_tbl_4_r0_c1",
+    "p4_tbl_4_r0_c2",
+    "p4_tbl_4_r0_c3"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "p4_tbl_4_r0_c0_copy_x0",
+    "p4_tbl_4_r0_c1_copy_x1",
+    "p4_tbl_4_r0_c2_copy_x2",
+    "p4_tbl_4_r0_c3_copy_x3"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_4/p4_blk_1": {
+   "kind": "text",
+   "slots": [
+    "slot_p4_blk_1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p4_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_5/p5_tbl_1": {
+   "kind": "structured-table",
+   "slots": [
+    "p5_tbl_1_r0_c0"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p5_tbl_1_r0_c0_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_5/p5_tbl_2": {
+   "kind": "structured-table",
+   "slots": [
+    "p5_tbl_2_r0_c0",
+    "p5_tbl_2_r0_c1",
+    "p5_tbl_2_r1_c0",
+    "p5_tbl_2_r1_c1",
+    "p5_tbl_2_r2_c0",
+    "p5_tbl_2_r2_c1",
+    "p5_tbl_2_r3_c0",
+    "p5_tbl_2_r3_c1",
+    "p5_tbl_2_r4_c0",
+    "p5_tbl_2_r4_c1",
+    "p5_tbl_2_r4_c2",
+    "p5_tbl_2_r4_c3",
+    "p5_tbl_2_r5_c1",
+    "p5_tbl_2_r5_c2",
+    "p5_tbl_2_r5_c3",
+    "p5_tbl_2_r6_c0",
+    "p5_tbl_2_r6_c1",
+    "p5_tbl_2_r6_c2",
+    "p5_tbl_2_r6_c3",
+    "p5_tbl_2_r7_c1",
+    "p5_tbl_2_r7_c2",
+    "p5_tbl_2_r7_c3",
+    "p5_tbl_2_r8_c0",
+    "p5_tbl_2_r8_c1",
+    "p5_tbl_2_r8_c2",
+    "p5_tbl_2_r8_c3",
+    "p5_tbl_2_r9_c1",
+    "p5_tbl_2_r9_c2",
+    "p5_tbl_2_r9_c3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p5_tbl_2_r0_c0_copy_x0",
+    "p5_tbl_2_r0_c1_copy_x1",
+    "p5_tbl_2_r1_c0_copy_x2",
+    "p5_tbl_2_r1_c1_copy_x3",
+    "p5_tbl_2_r2_c0_copy_x4",
+    "p5_tbl_2_r2_c1_copy_x5",
+    "p5_tbl_2_r3_c0_copy_x6",
+    "p5_tbl_2_r3_c1_copy_x7",
+    "p5_tbl_2_r4_c0_copy_x8",
+    "p5_tbl_2_r4_c1_copy_x9",
+    "p5_tbl_2_r4_c2_copy_x10",
+    "p5_tbl_2_r4_c3_copy_x11",
+    "p5_tbl_2_r5_c1_copy_x12",
+    "p5_tbl_2_r5_c2_copy_x13",
+    "p5_tbl_2_r5_c3_copy_x14",
+    "p5_tbl_2_r6_c0_copy_x15",
+    "p5_tbl_2_r6_c1_copy_x16",
+    "p5_tbl_2_r6_c2_copy_x17",
+    "p5_tbl_2_r6_c3_copy_x18",
+    "p5_tbl_2_r7_c1_copy_x19",
+    "p5_tbl_2_r7_c2_copy_x20",
+    "p5_tbl_2_r7_c3_copy_x21",
+    "p5_tbl_2_r8_c0_copy_x22",
+    "p5_tbl_2_r8_c1_copy_x23",
+    "p5_tbl_2_r8_c2_copy_x24",
+    "p5_tbl_2_r8_c3_copy_x25",
+    "p5_tbl_2_r9_c1_copy_x26",
+    "p5_tbl_2_r9_c2_copy_x27",
+    "p5_tbl_2_r9_c3_copy_x28"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_5/p5_tbl_3": {
+   "kind": "structured-table",
+   "slots": [
+    "p5_tbl_3_r0_c0",
+    "p5_tbl_3_r0_c1",
+    "p5_tbl_3_r1_c0",
+    "p5_tbl_3_r1_c1",
+    "p5_tbl_3_r3_c0",
+    "p5_tbl_3_r3_c1",
+    "p5_tbl_3_r4_c0",
+    "p5_tbl_3_r4_c1",
+    "p5_tbl_3_r5_c0",
+    "p5_tbl_3_r5_c1",
+    "p5_tbl_3_r5_c2",
+    "p5_tbl_3_r5_c3",
+    "p5_tbl_3_r6_c1",
+    "p5_tbl_3_r6_c2",
+    "p5_tbl_3_r6_c3",
+    "p5_tbl_3_r7_c0",
+    "p5_tbl_3_r7_c1",
+    "p5_tbl_3_r7_c2",
+    "p5_tbl_3_r7_c3",
+    "p5_tbl_3_r8_c1",
+    "p5_tbl_3_r8_c2",
+    "p5_tbl_3_r8_c3",
+    "p5_tbl_3_r9_c0",
+    "p5_tbl_3_r9_c1",
+    "p5_tbl_3_r9_c2",
+    "p5_tbl_3_r9_c3",
+    "p5_tbl_3_r10_c1",
+    "p5_tbl_3_r10_c2",
+    "p5_tbl_3_r10_c3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p5_tbl_3_r0_c0_copy_x0",
+    "p5_tbl_3_r0_c1_copy_x1",
+    "p5_tbl_3_r1_c0_copy_x2",
+    "p5_tbl_3_r1_c1_copy_x3",
+    "p5_tbl_3_r3_c0_copy_x4",
+    "p5_tbl_3_r3_c1_copy_x5",
+    "p5_tbl_3_r4_c0_copy_x6",
+    "p5_tbl_3_r4_c1_copy_x7",
+    "p5_tbl_3_r5_c0_copy_x8",
+    "p5_tbl_3_r5_c1_copy_x9",
+    "p5_tbl_3_r5_c2_copy_x10",
+    "p5_tbl_3_r5_c3_copy_x11",
+    "p5_tbl_3_r6_c1_copy_x12",
+    "p5_tbl_3_r6_c2_copy_x13",
+    "p5_tbl_3_r6_c3_copy_x14",
+    "p5_tbl_3_r7_c0_copy_x15",
+    "p5_tbl_3_r7_c1_copy_x16",
+    "p5_tbl_3_r7_c2_copy_x17",
+    "p5_tbl_3_r7_c3_copy_x18",
+    "p5_tbl_3_r8_c1_copy_x19",
+    "p5_tbl_3_r8_c2_copy_x20",
+    "p5_tbl_3_r8_c3_copy_x21",
+    "p5_tbl_3_r9_c0_copy_x22",
+    "p5_tbl_3_r9_c1_copy_x23",
+    "p5_tbl_3_r9_c2_copy_x24",
+    "p5_tbl_3_r9_c3_copy_x25",
+    "p5_tbl_3_r10_c1_copy_x26",
+    "p5_tbl_3_r10_c2_copy_x27",
+    "p5_tbl_3_r10_c3_copy_x28"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_5/p5_blk_1": {
+   "kind": "text",
+   "slots": [
+    "slot_p5_blk_1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p5_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_6/p6_tbl_1": {
+   "kind": "structured-table",
+   "slots": [
+    "p6_tbl_1_r0_c0",
+    "p6_tbl_1_r0_c2",
+    "p6_tbl_1_r1_c0",
+    "p6_tbl_1_r1_c2",
+    "p6_tbl_1_r1_c6",
+    "p6_tbl_1_r2_c2",
+    "p6_tbl_1_r2_c6",
+    "p6_tbl_1_r3_c2",
+    "p6_tbl_1_r3_c6",
+    "p6_tbl_1_r4_c0",
+    "p6_tbl_1_r4_c3",
+    "p6_tbl_1_r5_c0",
+    "p6_tbl_1_r5_c1",
+    "p6_tbl_1_r5_c3",
+    "p6_tbl_1_r5_c4",
+    "p6_tbl_1_r6_c3",
+    "p6_tbl_1_r6_c4",
+    "p6_tbl_1_r7_c0",
+    "p6_tbl_1_r7_c1",
+    "p6_tbl_1_r7_c3",
+    "p6_tbl_1_r7_c4",
+    "p6_tbl_1_r8_c3",
+    "p6_tbl_1_r8_c4",
+    "p6_tbl_1_r9_c1",
+    "p6_tbl_1_r9_c3",
+    "p6_tbl_1_r9_c4",
+    "p6_tbl_1_r10_c3",
+    "p6_tbl_1_r10_c4",
+    "p6_tbl_1_r11_c1",
+    "p6_tbl_1_r11_c3",
+    "p6_tbl_1_r11_c4",
+    "p6_tbl_1_r16_c3",
+    "p6_tbl_1_r16_c4"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p6_tbl_1_r0_c0_copy_x0",
+    "p6_tbl_1_r0_c2_copy_x1",
+    "p6_tbl_1_r1_c0_copy_x2",
+    "p6_tbl_1_r1_c2_copy_x3",
+    "p6_tbl_1_r1_c6_copy_x4",
+    "p6_tbl_1_r2_c2_copy_x5",
+    "p6_tbl_1_r2_c6_copy_x6",
+    "p6_tbl_1_r3_c2_copy_x7",
+    "p6_tbl_1_r3_c6_copy_x8",
+    "p6_tbl_1_r4_c0_copy_x9",
+    "p6_tbl_1_r4_c3_copy_x10",
+    "p6_tbl_1_r5_c0_copy_x11",
+    "p6_tbl_1_r5_c1_copy_x12",
+    "p6_tbl_1_r5_c3_copy_x13",
+    "p6_tbl_1_r5_c4_copy_x14",
+    "p6_tbl_1_r6_c3_copy_x15",
+    "p6_tbl_1_r6_c4_copy_x16",
+    "p6_tbl_1_r7_c0_copy_x17",
+    "p6_tbl_1_r7_c1_copy_x18",
+    "p6_tbl_1_r7_c3_copy_x19",
+    "p6_tbl_1_r7_c4_copy_x20",
+    "p6_tbl_1_r8_c3_copy_x21",
+    "p6_tbl_1_r8_c4_copy_x22",
+    "p6_tbl_1_r9_c1_copy_x23",
+    "p6_tbl_1_r9_c3_copy_x24",
+    "p6_tbl_1_r9_c4_copy_x25",
+    "p6_tbl_1_r10_c3_copy_x26",
+    "p6_tbl_1_r10_c4_copy_x27",
+    "p6_tbl_1_r11_c1_copy_x28",
+    "p6_tbl_1_r11_c3_copy_x29",
+    "p6_tbl_1_r11_c4_copy_x30",
+    "p6_tbl_1_r16_c3_copy_x31",
+    "p6_tbl_1_r16_c4_copy_x32"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_6/p6_tbl_2": {
+   "kind": "structured-table",
+   "slots": [
+    "p6_tbl_2_r0_c0",
+    "p6_tbl_2_r0_c1",
+    "p6_tbl_2_r1_c0",
+    "p6_tbl_2_r1_c1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p6_tbl_2_r0_c0_copy_x0",
+    "p6_tbl_2_r0_c1_copy_x1",
+    "p6_tbl_2_r1_c0_copy_x2",
+    "p6_tbl_2_r1_c1_copy_x3"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_6/p6_tbl_3": {
+   "kind": "structured-table",
+   "slots": [
+    "p6_tbl_3_r0_c0",
+    "p6_tbl_3_r0_c1",
+    "p6_tbl_3_r1_c0",
+    "p6_tbl_3_r1_c1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p6_tbl_3_r0_c0_copy_x0",
+    "p6_tbl_3_r0_c1_copy_x1",
+    "p6_tbl_3_r1_c0_copy_x2",
+    "p6_tbl_3_r1_c1_copy_x3"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_6/p6_blk_1": {
+   "kind": "form-title",
+   "slots": [
+    "slot_p6_blk_1"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "slot_p6_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_6/p6_blk_2": {
+   "kind": "text",
+   "slots": [
+    "slot_p6_blk_2"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p6_blk_2_copy_x0"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_7/p7_tbl_1": {
+   "kind": "structured-table",
+   "slots": [
+    "p7_tbl_1_r0_c0",
+    "p7_tbl_1_r0_c1",
+    "p7_tbl_1_r0_c2",
+    "p7_tbl_1_r0_c3",
+    "p7_tbl_1_r1_c3",
+    "p7_tbl_1_r2_c2",
+    "p7_tbl_1_r2_c3",
+    "p7_tbl_1_r3_c3",
+    "p7_tbl_1_r4_c1",
+    "p7_tbl_1_r4_c2",
+    "p7_tbl_1_r4_c3",
+    "p7_tbl_1_r5_c2",
+    "p7_tbl_1_r5_c3",
+    "p7_tbl_1_r6_c1",
+    "p7_tbl_1_r6_c2",
+    "p7_tbl_1_r6_c3",
+    "p7_tbl_1_r7_c2",
+    "p7_tbl_1_r7_c3",
+    "p7_tbl_1_r8_c1",
+    "p7_tbl_1_r8_c2",
+    "p7_tbl_1_r8_c3",
+    "p7_tbl_1_r9_c2",
+    "p7_tbl_1_r9_c3",
+    "p7_tbl_1_r10_c1",
+    "p7_tbl_1_r10_c2",
+    "p7_tbl_1_r10_c3",
+    "p7_tbl_1_r11_c2",
+    "p7_tbl_1_r11_c3",
+    "p7_tbl_1_r12_c1",
+    "p7_tbl_1_r12_c2",
+    "p7_tbl_1_r12_c3",
+    "p7_tbl_1_r13_c2",
+    "p7_tbl_1_r13_c3"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "p7_tbl_1_r0_c0_copy_x0",
+    "p7_tbl_1_r0_c1_copy_x1",
+    "p7_tbl_1_r0_c2_copy_x2",
+    "p7_tbl_1_r0_c3_copy_x3",
+    "p7_tbl_1_r1_c3_copy_x4",
+    "p7_tbl_1_r2_c2_copy_x5",
+    "p7_tbl_1_r2_c3_copy_x6",
+    "p7_tbl_1_r3_c3_copy_x7",
+    "p7_tbl_1_r4_c1_copy_x8",
+    "p7_tbl_1_r4_c2_copy_x9",
+    "p7_tbl_1_r4_c3_copy_x10",
+    "p7_tbl_1_r5_c2_copy_x11",
+    "p7_tbl_1_r5_c3_copy_x12",
+    "p7_tbl_1_r6_c1_copy_x13",
+    "p7_tbl_1_r6_c2_copy_x14",
+    "p7_tbl_1_r6_c3_copy_x15",
+    "p7_tbl_1_r7_c2_copy_x16",
+    "p7_tbl_1_r7_c3_copy_x17",
+    "p7_tbl_1_r8_c1_copy_x18",
+    "p7_tbl_1_r8_c2_copy_x19",
+    "p7_tbl_1_r8_c3_copy_x20",
+    "p7_tbl_1_r9_c2_copy_x21",
+    "p7_tbl_1_r9_c3_copy_x22",
+    "p7_tbl_1_r10_c1_copy_x23",
+    "p7_tbl_1_r10_c2_copy_x24",
+    "p7_tbl_1_r10_c3_copy_x25",
+    "p7_tbl_1_r11_c2_copy_x26",
+    "p7_tbl_1_r11_c3_copy_x27",
+    "p7_tbl_1_r12_c1_copy_x28",
+    "p7_tbl_1_r12_c2_copy_x29",
+    "p7_tbl_1_r12_c3_copy_x30",
+    "p7_tbl_1_r13_c2_copy_x31",
+    "p7_tbl_1_r13_c3_copy_x32"
+   ]
+  },
+  "vdoc_ref_seoul_startup_hub/page_7/p7_blk_1": {
+   "kind": "text",
+   "slots": [
+    "slot_p7_blk_1"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "slot_p7_blk_1_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_1/blk_toss_title": {
+   "kind": "text",
+   "slots": [
+    "toss_p1_title"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "toss_p1_title_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_1/blk_toss_callout": {
+   "kind": "callout-box",
+   "slots": [
+    "toss_p1_callout"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "toss_p1_callout_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_1/blk_toss_p1_body": {
+   "kind": "text",
+   "slots": [
+    "toss_p1_body"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "toss_p1_body_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_2/blk_toss_p2_title": {
+   "kind": "text",
+   "slots": [
+    "toss_p2_title"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "toss_p2_title_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_2/blk_toss_p2_body": {
+   "kind": "text",
+   "slots": [
+    "toss_p2_body"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "toss_p2_body_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_3/blk_toss_p3_title": {
+   "kind": "text",
+   "slots": [
+    "toss_p3_title"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "toss_p3_title_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_3/blk_toss_p3_body": {
+   "kind": "text",
+   "slots": [
+    "toss_p3_body"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "toss_p3_body_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_4/blk_toss_p4_title": {
+   "kind": "text",
+   "slots": [
+    "toss_p4_title"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "toss_p4_title_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_4/blk_toss_p4_body": {
+   "kind": "text",
+   "slots": [
+    "toss_p4_body"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "toss_p4_body_copy_x0"
+   ]
+  },
+  "vdoc_ref_toss_safezone_travel/toss_page_4/blk_toss_p4_outro": {
+   "kind": "text",
+   "slots": [
+    "toss_p4_outro"
+   ],
+   "locked": true,
+   "cloneSlots": [
+    "toss_p4_outro_copy_x0"
+   ]
+  },
+  "vdoc_yesform_07_bansanghoe/bs_page_1/blk_bs_title": {
+   "kind": "form-title",
+   "slots": [
+    "bs_slot_main_title"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "bs_slot_main_title_copy_x0"
+   ]
+  },
+  "vdoc_yesform_07_bansanghoe/bs_page_1/blk_bs_composite_frame": {
+   "kind": "composite-form-frame",
+   "slots": [
+    "bs_z1_datetime",
+    "bs_z1_role1",
+    "bs_z1_sign1",
+    "bs_z1_role2",
+    "bs_z1_seal2",
+    "bs_z2_label",
+    "bs_z2_body",
+    "bs_z3_label",
+    "bs_z3_body",
+    "bs_z3_official_hdr",
+    "bs_z3_official_body",
+    "bs_z4_label",
+    "bs_z4_body",
+    "bs_z4_pub_hdr",
+    "bs_z4_pub_body",
+    "bs_z5_title",
+    "bs_z6_h_name_1",
+    "bs_z6_h_seal_1",
+    "bs_z6_h_name_2",
+    "bs_z6_h_seal_2",
+    "bs_z6_h_name_3",
+    "bs_z6_h_seal_3",
+    "bs_z6_r1c1_name",
+    "bs_z6_r1c1_stamp",
+    "bs_z6_r1c2_name",
+    "bs_z6_r1c2_stamp",
+    "bs_z6_r1c3_name",
+    "bs_z6_r1c3_stamp",
+    "bs_z6_r2c1_name",
+    "bs_z6_r2c1_stamp",
+    "bs_z6_r2c2_name",
+    "bs_z6_r2c2_stamp",
+    "bs_z6_r2c3_name",
+    "bs_z6_r2c3_stamp",
+    "bs_z6_r3c1_name",
+    "bs_z6_r3c1_stamp",
+    "bs_z6_r3c2_name",
+    "bs_z6_r3c2_stamp",
+    "bs_z6_r3c3_name",
+    "bs_z6_r3c3_stamp",
+    "bs_z6_r4c1_name",
+    "bs_z6_r4c1_stamp",
+    "bs_z6_r4c2_name",
+    "bs_z6_r4c2_stamp",
+    "bs_z6_r4c3_name",
+    "bs_z6_r4c3_stamp",
+    "bs_z6_r5c1_name",
+    "bs_z6_r5c1_stamp",
+    "bs_z6_r5c2_name",
+    "bs_z6_r5c2_stamp",
+    "bs_z6_r5c3_name",
+    "bs_z6_r5c3_stamp"
+   ],
+   "locked": false,
+   "cloneSlots": [
+    "bs_z1_datetime_copy_x0",
+    "bs_z1_role1_copy_x1",
+    "bs_z1_sign1_copy_x2",
+    "bs_z1_role2_copy_x3",
+    "bs_z1_seal2_copy_x4",
+    "bs_z2_label_copy_x5",
+    "bs_z2_body_copy_x6",
+    "bs_z3_label_copy_x7",
+    "bs_z3_body_copy_x8",
+    "bs_z3_official_hdr_copy_x9",
+    "bs_z3_official_body_copy_x10",
+    "bs_z4_label_copy_x11",
+    "bs_z4_body_copy_x12",
+    "bs_z4_pub_hdr_copy_x13",
+    "bs_z4_pub_body_copy_x14",
+    "bs_z5_title_copy_x15",
+    "bs_z6_h_name_1_copy_x16",
+    "bs_z6_h_seal_1_copy_x17",
+    "bs_z6_h_name_2_copy_x18",
+    "bs_z6_h_seal_2_copy_x19",
+    "bs_z6_h_name_3_copy_x20",
+    "bs_z6_h_seal_3_copy_x21",
+    "bs_z6_r1c1_name_copy_x22",
+    "bs_z6_r1c1_stamp_copy_x23",
+    "bs_z6_r1c2_name_copy_x24",
+    "bs_z6_r1c2_stamp_copy_x25",
+    "bs_z6_r1c3_name_copy_x26",
+    "bs_z6_r1c3_stamp_copy_x27",
+    "bs_z6_r2c1_name_copy_x28",
+    "bs_z6_r2c1_stamp_copy_x29",
+    "bs_z6_r2c2_name_copy_x30",
+    "bs_z6_r2c2_stamp_copy_x31",
+    "bs_z6_r2c3_name_copy_x32",
+    "bs_z6_r2c3_stamp_copy_x33",
+    "bs_z6_r3c1_name_copy_x34",
+    "bs_z6_r3c1_stamp_copy_x35",
+    "bs_z6_r3c2_name_copy_x36",
+    "bs_z6_r3c2_stamp_copy_x37",
+    "bs_z6_r3c3_name_copy_x38",
+    "bs_z6_r3c3_stamp_copy_x39",
+    "bs_z6_r4c1_name_copy_x40",
+    "bs_z6_r4c1_stamp_copy_x41",
+    "bs_z6_r4c2_name_copy_x42",
+    "bs_z6_r4c2_stamp_copy_x43",
+    "bs_z6_r4c3_name_copy_x44",
+    "bs_z6_r4c3_stamp_copy_x45",
+    "bs_z6_r5c1_name_copy_x46",
+    "bs_z6_r5c1_stamp_copy_x47",
+    "bs_z6_r5c2_name_copy_x48",
+    "bs_z6_r5c2_stamp_copy_x49",
+    "bs_z6_r5c3_name_copy_x50",
+    "bs_z6_r5c3_stamp_copy_x51"
+   ]
+  }
+ },
+ "outlines": {
+  "vproj-enterprise-architecture-suite": [
+   "node-proj-root |  | 0 | project | 2026 엔터프라이즈 문서 거버넌스 & 제안 패키지 (통합 스토리라인) | 4종 핵심 비즈니스 문서 패키지 아웃라인 루트 |  |  |  | 0 | 0",
+   "node-doc-minutes | node-proj-root | 1 | document | 01. 아키텍처 위원회 의사결정 회의록 | 표준 서식 카탈로그 및 하이브리드 슬롯 엔진 채택 결의 |  |  |  | 0 | 0",
+   "node-page-minutes-p1 | node-doc-minutes | 2 | page | Page 1 · 회의 개요 및 핵심 의결사항 매트릭스 | 참석자 명단, 상정 안건 3건, 액션 아이템 테이블 | mm_page_1 |  |  | 0 | 0",
+   "auto-blk-vdoc_meeting_minutes_1028-mm_blk_summary_cols | node-page-minutes-p1 | 3 | page | 회의 개요 및 핵심 결론 2단 그리드 | 다단 그리드 · 2칸 | mm_page_1 | mm_blk_summary_cols |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_meta_card | auto-blk-vdoc_meeting_minutes_1028-mm_blk_summary_cols | 4 | slot | 회의 기본 메타데이터 | 일시: [Meeting.Date] 주관: [Meeting.Owner] 전용 포맷: *.vdoc (UTF-8 JSON) 핵심 기조: PandaDoc 80% + 백데 | mm_page_1 | mm_blk_summary_cols | mm_slot_meta_card | 0 | 0",
+   "node-slot-minutes-agenda | auto-blk-vdoc_meeting_minutes_1028-mm_blk_summary_cols | 4 | slot | 핵심 협의 및 결의사항 본문 슬롯 | WYSIWYM × WYSIWYG 하이브리드 조판 엔진 아키텍처 확정 | mm_page_1 | mm_blk_summary_cols | mm_slot_exec_summary | 0 | 0",
+   "auto-blk-vdoc_meeting_minutes_1028-mm_blk_decision_table | node-page-minutes-p1 | 3 | page | [표] 레이어별 오픈소스 발췌 합체 결정사항 표 | 표 (4행) | mm_page_1 | mm_blk_decision_table |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_r1c1 | auto-blk-vdoc_meeting_minutes_1028-mm_blk_decision_table | 4 | slot | 외곽 3단 쉘 & Grid/Slot | 외곽 3단 쉘 & Grid/Slot | mm_page_1 | mm_blk_decision_table | mm_slot_r1c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_r1c2 | auto-slot-vdoc_meeting_minutes_1028-mm_slot_r1c1 | 5 | slot | 채택 오픈소스 코어 | measuredco/puck (MIT) | mm_page_1 | mm_blk_decision_table | mm_slot_r1c2 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_r1c3 | auto-slot-vdoc_meeting_minutes_1028-mm_slot_r1c1 | 5 | slot | 핵심 역할 및 개조 포인트 | 깨지지 않는 2차원 CSS Grid/Table 틀 고정(WYSIWYM) 및 클릭 시 우측 백데이터 서랍 즉시 연동 | mm_page_1 | mm_blk_decision_table | mm_slot_r1c3 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_r2c1 | auto-blk-vdoc_meeting_minutes_1028-mm_blk_decision_table | 4 | slot | 슬롯 내부 위지윅 (WYSIWYG) | 슬롯 내부 위지윅 (WYSIWYG) | mm_page_1 | mm_blk_decision_table | mm_slot_r2c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_r2c2 | auto-slot-vdoc_meeting_minutes_1028-mm_slot_r2c1 | 5 | slot | 채택 오픈소스 코어 | arikchakma/maily.to (Tiptap, MIT) | mm_page_1 | mm_blk_decision_table | mm_slot_r2c2 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_r2c3 | auto-slot-vdoc_meeting_minutes_1028-mm_slot_r2c1 | 5 | slot | 핵심 역할 및 개조 포인트 | 각 slotId 내부 독립 리치 텍스트 편집, 상단 공통 서식 툴바 연동 및 변수/인장 칩 렌더링 | mm_page_1 | mm_blk_decision_table | mm_slot_r2c3 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_r3c1 | auto-blk-vdoc_meeting_minutes_1028-mm_blk_decision_table | 4 | slot | 컴포넌트 부착형 AI Composer | 컴포넌트 부착형 AI Composer | mm_page_1 | mm_blk_decision_table | mm_slot_r3c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_r3c2 | auto-slot-vdoc_meeting_minutes_1028-mm_slot_r3c1 | 5 | slot | 채택 오픈소스 코어 | steven-tey/novel + assistant-ui | mm_page_1 | mm_blk_decision_table | mm_slot_r3c2 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_r3c3 | auto-slot-vdoc_meeting_minutes_1028-mm_slot_r3c1 | 5 | slot | 핵심 역할 및 개조 포인트 | 선택한 블록/슬롯 바로 아래에 자석처럼 붙는 플로팅 프롬프트 바 + 📎 백데이터 컨텍스트 칩 연동 | mm_page_1 | mm_blk_decision_table | mm_slot_r3c3 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-mm_slot_action_items | node-page-minutes-p1 | 3 | slot | 차주 핵심 실행 과제 (Action Items) | [완료] VibeDocStudio 모노레포 초기화 및 catalog/ 1서식=1폴더 번들 구축 [완료] REA MCP 연결 및 판다독 Kolas Editor 실시 | mm_page_1 | mm_blk_action_items | mm_slot_action_items | 0 | 0",
+   "auto-page-vdoc_meeting_minutes_1028-mm_page_2 | node-doc-minutes | 2 | page | Page 2 · 반상회 회의록 (예스폼 07번 정밀 서식) | 블록 2개 | mm_page_2 |  |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_slot_main_title | auto-page-vdoc_meeting_minutes_1028-mm_page_2 | 3 | slot | 문서 메인 타이틀 (반상회 회의록) | 반 상 회 회 의 록 | mm_page_2 | blk_bs_title | bs_slot_main_title | 1 | 0",
+   "auto-blk-vdoc_meeting_minutes_1028-blk_bs_composite_frame | auto-page-vdoc_meeting_minutes_1028-mm_page_2 | 3 | page | 반상회 회의록 6구역 정밀 복합 프레임 | 서식 프레임 · 6구역 | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_1 | auto-blk-vdoc_meeting_minutes_1028-blk_bs_composite_frame | 4 | page | 1구역 · 일시 및 결재란 | 구역 · 1행 | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z1_datetime | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_1 | 5 | slot | 개최 일시 | 2026 년 10 월 27 일 19 시 30 분부터 20 시 45 분 까지 | mm_page_2 | blk_bs_composite_frame | bs_z1_datetime | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z1_sign1 | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_1 | 5 | slot | 결재 1 서명 | (서명) | mm_page_2 | blk_bs_composite_frame | bs_z1_sign1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z1_seal2 | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_1 | 5 | slot | 결재 2 날인 | 金 (인) | mm_page_2 | blk_bs_composite_frame | bs_z1_seal2 | 0 | 0",
+   "auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_2 | auto-blk-vdoc_meeting_minutes_1028-blk_bs_composite_frame | 4 | page | 2구역 · 협의 및 결의사항 | 구역 · 1행 | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z2_body | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_2 | 5 | slot | 협의 및 결의사항 본문 | 1. 단지 내 재활용 분리수거 배출 체계 개선의 건 • 기존 수시 배출로 인한 악취 및 통행 불편 해소를 위해 매주 화·금요일 18:00~23:00 지정 시간 집 | mm_page_2 | blk_bs_composite_frame | bs_z2_body | 0 | 0",
+   "auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_3 | auto-blk-vdoc_meeting_minutes_1028-blk_bs_composite_frame | 4 | page | 3구역 · 건의요망 사항요지 및 임석공무원 | 구역 · 2행 | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z3_body | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_3 | 5 | slot | 건의요망 사항요지 본문 | 1. 단지 후문 보행로 노후 보안등 LED 전면 교체 건의 - 야간 통행 시 조도 미확보로 인한 안전사고 우려 해소 요망 2. 어린이 놀이터 주변 불법 이륜차 진 | mm_page_2 | blk_bs_composite_frame | bs_z3_body | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z3_official_body | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_3 | 5 | slot | 임석공무원 확인란 | 소 속 : 행복동 주민센터 직 명 : 행정주무관 성 명 : 이 동 관 (인) | mm_page_2 | blk_bs_composite_frame | bs_z3_official_body | 0 | 0",
+   "auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_4 | auto-blk-vdoc_meeting_minutes_1028-blk_bs_composite_frame | 4 | page | 4구역 · 기타사항 및 윤독중인간행물 | 구역 · 2행 | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z4_body | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_4 | 5 | slot | 기타사항 본문 | • 2026년 하반기 독감 무료 예방접종 지정 의료기관 안내문 게시 • 동절기 에너지 바우처 접수 기간(11.1~12.31) 주민센터 홍보 협조 | mm_page_2 | blk_bs_composite_frame | bs_z4_body | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z4_pub_body | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_4 | 5 | slot | 윤독중인간행물 목록 | • 행복 시정소식지 (10월호) • 우리마을 반상회보 제412호 | mm_page_2 | blk_bs_composite_frame | bs_z4_pub_body | 0 | 0",
+   "auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_5 | auto-blk-vdoc_meeting_minutes_1028-blk_bs_composite_frame | 4 | page | 5구역 · 반원 출석 상황 헤더 | 고정 텍스트 구역 | mm_page_2 | blk_bs_composite_frame |  | 1 | 0",
+   "auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6 | auto-blk-vdoc_meeting_minutes_1028-blk_bs_composite_frame | 4 | page | 6구역 · 15인 출석부 매트릭스 | 구역 · 6행 | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r1 | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6 | 5 | page | 1행 | 101호 김철수 · (인) · 102호 이영희 · (인) · 103호 박상우 · (인) | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r1c1_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r1 | 6 | slot | 출석 101호 김철수 | 101호 김철수 | mm_page_2 | blk_bs_composite_frame | bs_z6_r1c1_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r1c1_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r1 | 6 | slot | 날인 101호 김철수 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r1c1_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r1c2_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r1 | 6 | slot | 출석 102호 이영희 | 102호 이영희 | mm_page_2 | blk_bs_composite_frame | bs_z6_r1c2_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r1c2_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r1 | 6 | slot | 날인 102호 이영희 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r1c2_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r1c3_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r1 | 6 | slot | 출석 103호 박상우 | 103호 박상우 | mm_page_2 | blk_bs_composite_frame | bs_z6_r1c3_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r1c3_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r1 | 6 | slot | 날인 103호 박상우 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r1c3_stamp | 0 | 0",
+   "auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r2 | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6 | 5 | page | 2행 | 201호 정다은 · (인) · 202호 최현우 · (인) · 203호 강민서 · (서명) | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r2c1_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r2 | 6 | slot | 출석 201호 정다은 | 201호 정다은 | mm_page_2 | blk_bs_composite_frame | bs_z6_r2c1_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r2c1_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r2 | 6 | slot | 날인 201호 정다은 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r2c1_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r2c2_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r2 | 6 | slot | 출석 202호 최현우 | 202호 최현우 | mm_page_2 | blk_bs_composite_frame | bs_z6_r2c2_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r2c2_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r2 | 6 | slot | 날인 202호 최현우 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r2c2_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r2c3_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r2 | 6 | slot | 출석 203호 강민서 | 203호 강민서 | mm_page_2 | blk_bs_composite_frame | bs_z6_r2c3_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r2c3_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r2 | 6 | slot | 날인 203호 강민서 | (서명) | mm_page_2 | blk_bs_composite_frame | bs_z6_r2c3_stamp | 0 | 0",
+   "auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r3 | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6 | 5 | page | 3행 | 301호 윤재호 · (인) · 302호 조은지 · (인) · 303호 한승민 · (인) | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r3c1_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r3 | 6 | slot | 출석 301호 윤재호 | 301호 윤재호 | mm_page_2 | blk_bs_composite_frame | bs_z6_r3c1_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r3c1_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r3 | 6 | slot | 날인 301호 윤재호 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r3c1_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r3c2_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r3 | 6 | slot | 출석 302호 조은지 | 302호 조은지 | mm_page_2 | blk_bs_composite_frame | bs_z6_r3c2_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r3c2_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r3 | 6 | slot | 날인 302호 조은지 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r3c2_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r3c3_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r3 | 6 | slot | 출석 303호 한승민 | 303호 한승민 | mm_page_2 | blk_bs_composite_frame | bs_z6_r3c3_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r3c3_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r3 | 6 | slot | 날인 303호 한승민 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r3c3_stamp | 0 | 0",
+   "auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r4 | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6 | 5 | page | 4행 | 401호 송예린 · (서명) · 402호 백동현 · (인) · 403호 서유진 · (인) | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r4c1_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r4 | 6 | slot | 출석 401호 송예린 | 401호 송예린 | mm_page_2 | blk_bs_composite_frame | bs_z6_r4c1_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r4c1_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r4 | 6 | slot | 날인 401호 송예린 | (서명) | mm_page_2 | blk_bs_composite_frame | bs_z6_r4c1_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r4c2_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r4 | 6 | slot | 출석 402호 백동현 | 402호 백동현 | mm_page_2 | blk_bs_composite_frame | bs_z6_r4c2_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r4c2_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r4 | 6 | slot | 날인 402호 백동현 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r4c2_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r4c3_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r4 | 6 | slot | 출석 403호 서유진 | 403호 서유진 | mm_page_2 | blk_bs_composite_frame | bs_z6_r4c3_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r4c3_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r4 | 6 | slot | 날인 403호 서유진 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r4c3_stamp | 0 | 0",
+   "auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r5 | auto-sec-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6 | 5 | page | 5행 | 501호 임태양 · (인) · 502호 오세훈 · (인) · 503호 배수현 · (인) | mm_page_2 | blk_bs_composite_frame |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r5c1_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r5 | 6 | slot | 출석 501호 임태양 | 501호 임태양 | mm_page_2 | blk_bs_composite_frame | bs_z6_r5c1_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r5c1_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r5 | 6 | slot | 날인 501호 임태양 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r5c1_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r5c2_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r5 | 6 | slot | 출석 502호 오세훈 | 502호 오세훈 | mm_page_2 | blk_bs_composite_frame | bs_z6_r5c2_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r5c2_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r5 | 6 | slot | 날인 502호 오세훈 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r5c2_stamp | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r5c3_name | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r5 | 6 | slot | 출석 503호 배수현 | 503호 배수현 | mm_page_2 | blk_bs_composite_frame | bs_z6_r5c3_name | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-bs_z6_r5c3_stamp | auto-row-vdoc_meeting_minutes_1028-blk_bs_composite_frame-bs_sec_6-r5 | 6 | slot | 날인 503호 배수현 | (인) | mm_page_2 | blk_bs_composite_frame | bs_z6_r5c3_stamp | 0 | 0",
+   "auto-page-vdoc_meeting_minutes_1028-mm_page_3 | node-doc-minutes | 2 | page | Page 3 · Atticus Invoice #000081709 | 블록 8개 | mm_page_3 |  |  | 0 | 0",
+   "auto-blk-vdoc_meeting_minutes_1028-att_blk_logo | auto-page-vdoc_meeting_minutes_1028-mm_page_3 | 3 | slot | 로고 | 이미지 | mm_page_3 | att_blk_logo |  | 1 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_company_info | auto-page-vdoc_meeting_minutes_1028-mm_page_3 | 3 | slot | 공급자 정보 | August 25th 2026 Company info Atticus LLC 1309 Coffeen Ave. Ste. 2513 Sheridan Wyoming, 82 | mm_page_3 | att_blk_company | att_slot_company_info | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_billing_info | auto-page-vdoc_meeting_minutes_1028-mm_page_3 | 3 | slot | 청구 정보 | Billing info qround SEO MINGYU seoul, 40-6 South Korea | mm_page_3 | att_blk_billing | att_slot_billing_info | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_total_summary | auto-page-vdoc_meeting_minutes_1028-mm_page_3 | 3 | slot | 결제 총액 | Total (USD) $147.00 Paid via credit card | mm_page_3 | att_blk_total | att_slot_total_summary | 0 | 0",
+   "auto-blk-vdoc_meeting_minutes_1028-att_blk_items_table | auto-page-vdoc_meeting_minutes_1028-mm_page_3 | 3 | page | [표] 품목 명세서 (Invoice Line Items) | 표 (2행) | mm_page_3 | att_blk_items_table |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_td_item1 | auto-blk-vdoc_meeting_minutes_1028-att_blk_items_table | 4 | slot | Atticus One-time payment ($147.00) | Atticus One-time payment ($147.00) | mm_page_3 | att_blk_items_table | att_slot_td_item1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_td_amount1 | auto-slot-vdoc_meeting_minutes_1028-att_slot_td_item1 | 5 | slot | 품목 1 금액 | $147.00 | mm_page_3 | att_blk_items_table | att_slot_td_amount1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_td_total1 | auto-slot-vdoc_meeting_minutes_1028-att_slot_td_item1 | 5 | slot | 품목 1 합계 | $147.00 | mm_page_3 | att_blk_items_table | att_slot_td_total1 | 0 | 0",
+   "auto-blk-vdoc_meeting_minutes_1028-att_blk_summary | auto-page-vdoc_meeting_minutes_1028-mm_page_3 | 3 | page | [표] 합계 (Subtotal / Total) | 표 (2행) | mm_page_3 | att_blk_summary |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_td_val_sub | auto-blk-vdoc_meeting_minutes_1028-att_blk_summary | 4 | slot | 소계 | $147.00 | mm_page_3 | att_blk_summary | att_slot_td_val_sub | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_td_val_tot | auto-blk-vdoc_meeting_minutes_1028-att_blk_summary | 4 | slot | 총계 | $147.00 | mm_page_3 | att_blk_summary | att_slot_td_val_tot | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_footer_meta | auto-page-vdoc_meeting_minutes_1028-mm_page_3 | 3 | slot | 하단 안내 | Contact support: support@atticus.io Click here to manage your billing details and view pur | mm_page_3 | att_blk_footer | att_slot_footer_meta | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-att_slot_pageno | auto-page-vdoc_meeting_minutes_1028-mm_page_3 | 3 | slot | 쪽 번호 | Page 1 of 1 | mm_page_3 | att_blk_pageno | att_slot_pageno | 0 | 0",
+   "auto-page-vdoc_meeting_minutes_1028-mm_page_4 | node-doc-minutes | 2 | page | Page 4 · 학술정보운영위원회 규정 | 블록 14개 | mm_page_4 |  |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_title | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 학술정보운영위원회 규정 제목 | 학술정보운영위원회 규정 | mm_page_4 | acad_blk_title | slot_acad_blk_title | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_mark_y | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 페이지 표식 y | y | mm_page_4 | acad_blk_mark_y | slot_acad_blk_mark_y | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art1 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제1조 (목적) | 제 1 조 【 목 적 】 이 규정은 ○○ 대학교(이하 “ 본교 ” 라 한다) 학술정보운영위원회(이하 “ 위원회 ” 라 한다) 조직과 운영에 관한 사항을 규정함을  | mm_page_4 | acad_blk_art1 | slot_acad_blk_art1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art2 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제2조 (기능) | 제 2 조 【 기 능 】 위원회는 다음 각호의 사항을 심의한다. 1. 연구비 관련 사항 2. 연구년제 교원 선발 3. 전산운영에 관한 사항 4. 도서관 운영에 관 | mm_page_4 | acad_blk_art2 | slot_acad_blk_art2 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art3 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제3조 (구성) | 제 3 조 【 구 성 】 1. 위원장은 학술정보처장이 되며 위원회를 대표하고 위원회의 업무를 총괄한다. 2. 위원회는 학술정보처장의 제청을 받아 총장이 위촉하는  | mm_page_4 | acad_blk_art3 | slot_acad_blk_art3 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art4 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제4조 (임기) | 제 4 조 【 임 기 】 위원 중 당연직 위원의 임기는 당해 보직 재임기간 중으로 하고 그외 위원의 임기는 1년 으로 하며 연임할 수 있다. | mm_page_4 | acad_blk_art4 | slot_acad_blk_art4 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art5 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제5조 (회의) | 제 5 조 【 회 의 】 1. 위원장은 회의를 소집하고 그 의장이 된다. 2. 위원회는 위원 과반수의 출석으로 개회하고 출석위원 과반수의 찬성으로 의결한다. | mm_page_4 | acad_blk_art5 | slot_acad_blk_art5 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art6 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제6조 (간사) | 제 6 조 【 간 사 】 위원회의 원활한 회의진행을 위하여 간사 1인을 두며 간사는 학술정보처 연구지원팀장이 된다. | mm_page_4 | acad_blk_art6 | slot_acad_blk_art6 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art7 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제7조 (회의록 작성 및 보관) | 제 7 조 【 회의록 작성 및 보관 】 위원회의 간사는 회의록을 작성하여 위원장의 확인 후 총장에게 보고하여야 한다. | mm_page_4 | acad_blk_art7 | slot_acad_blk_art7 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art8 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제8조 (소관부서) | 제 8 조 【 소관부서 】 위원회의 소관부서는 사무처 학술정보처 연구지원팀으로 한다. | mm_page_4 | acad_blk_art8 | slot_acad_blk_art8 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art9 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제9조 (기밀유지의무) | 제 9 조 【 기밀유지의무 】 위원회의 위원 및 참석자는 회의내용 및 제반 자료에 관하여 직무상 비밀을 유지하여야 한다. | mm_page_4 | acad_blk_art9 | slot_acad_blk_art9 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_art10 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 제10조 (운영세칙) | 제10조 【 운영세칙 】 이 규정에서 정하지 아니한 사항은 위원회 설치 및 운영 규정에서 정한 바에 따른다. | mm_page_4 | acad_blk_art10 | slot_acad_blk_art10 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_addendum_title | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 부칙 제목 | 부 칙 | mm_page_4 | acad_blk_addendum_title | slot_acad_blk_addendum_title | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-slot_acad_blk_addendum_art1 | auto-page-vdoc_meeting_minutes_1028-mm_page_4 | 3 | slot | 부칙 제1조 (시행일) | 제 1 조 【 시행일 】 이 규정은 20 년 월 일부터 시행한다. | mm_page_4 | acad_blk_addendum_art1 | slot_acad_blk_addendum_art1 | 0 | 0",
+   "auto-page-vdoc_meeting_minutes_1028-mm_page_5 | node-doc-minutes | 2 | page | Page 5 · 설계 심사회의록 (예스폼 51번 정밀 서식) | 블록 3개 | mm_page_5 |  |  | 0 | 0",
+   "auto-blk-vdoc_meeting_minutes_1028-p5_blk_1 | auto-page-vdoc_meeting_minutes_1028-mm_page_5 | 3 | page | 설계 심사회의록 · 문서분류 외 | 서식 프레임 · 1구역 | mm_page_5 | p5_blk_1 |  | 0 | 1",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_1_r0_c0 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_1 | 4 | slot | 로고/이미지 | (빈 슬롯) | mm_page_5 | p5_blk_1 | p5_tbl_1_r0_c0 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_1_r1_c3 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_1 | 4 | slot | 페이지번호 | 1/1페이지 | mm_page_5 | p5_blk_1 | p5_tbl_1_r1_c3 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_1_r2_c3 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_1 | 4 | slot | 작성자 | (빈 슬롯) | mm_page_5 | p5_blk_1 | p5_tbl_1_r2_c3 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_1_r3_c3 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_1 | 4 | slot | 작성일자 | 20 . . . | mm_page_5 | p5_blk_1 | p5_tbl_1_r3_c3 | 0 | 0",
+   "auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | auto-page-vdoc_meeting_minutes_1028-mm_page_5 | 3 | page | 회의일시 · 회의장소 외 | 서식 프레임 · 1구역 | mm_page_5 | p5_blk_2 |  | 0 | 1",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r0_c1 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 회의일시 | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r0_c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r0_c4 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 회의장소 | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r0_c4 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r0_c8 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 수신부서 | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r0_c8 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r1_c1 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 공사명 | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r1_c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r1_c7 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 도면명 | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r1_c7 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r2_c1 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 제목 | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r2_c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r3_c1 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 내용 | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r3_c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r4_c1 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 검토자 | / | mm_page_5 | p5_blk_2 | p5_tbl_2_r4_c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r4_c6 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 승인자 | / | mm_page_5 | p5_blk_2 | p5_tbl_2_r4_c6 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r5_c1 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 참석자 | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r5_c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r6_c0 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 참석자 (2) | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r6_c0 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r7_c1 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 설계의뢰 | 20 . . . | mm_page_5 | p5_blk_2 | p5_tbl_2_r7_c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r7_c5 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 설계입력 | 20 . . . | mm_page_5 | p5_blk_2 | p5_tbl_2_r7_c5 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r7_c7 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 설계검토 | 20 . . . | mm_page_5 | p5_blk_2 | p5_tbl_2_r7_c7 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r9_c0 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 및 업무처리기간 | (빈 슬롯) | mm_page_5 | p5_blk_2 | p5_tbl_2_r9_c0 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r9_c1 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 설계출력 | 20 . . . | mm_page_5 | p5_blk_2 | p5_tbl_2_r9_c1 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r9_c5 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 설계검증 | 20 . . . | mm_page_5 | p5_blk_2 | p5_tbl_2_r9_c5 | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_tbl_2_r9_c7 | auto-blk-vdoc_meeting_minutes_1028-p5_blk_2 | 4 | slot | 유효성확인 | 20 . . . | mm_page_5 | p5_blk_2 | p5_tbl_2_r9_c7 | 0 | 0",
+   "auto-blk-vdoc_meeting_minutes_1028-p5_blk_3 | auto-page-vdoc_meeting_minutes_1028-mm_page_5 | 3 | page | 문서 본문 구획 | 구획 · 제목 + 본문 | mm_page_5 | p5_blk_3 |  | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_zone_section_heading | auto-blk-vdoc_meeting_minutes_1028-p5_blk_3 | 4 | slot | 제목 | 문서 본문 구획 | mm_page_5 | p5_blk_3 | p5_zone_section_heading | 0 | 0",
+   "auto-slot-vdoc_meeting_minutes_1028-p5_zone_section_body | auto-blk-vdoc_meeting_minutes_1028-p5_blk_3 | 4 | slot | 본문 | 주식회사 ○○○○ A4(210x297mm) | mm_page_5 | p5_blk_3 | p5_zone_section_body | 0 | 0"
+  ],
+  "vproj-ref-intl-exchange-rules": [
+   "intl-root |  | 0 | project | [참조 2] 예스폼_무료국제교류위원회규정및운영세칙안내 | 국제교류위원회 조직과 운영에 관한 기본 규정 및 조항 체계 |  |  |  | 0 | 0",
+   "auto-doc-vdoc_ref_intl_exchange_rules | intl-root | 1 | document | 국제교류위원회 규정 및 운영세칙 안내 | 1p · 슬롯 24개 |  |  |  | 0 | 0",
+   "intl-p1-art1-4 | intl-root | 1 | page | 제1조~제4조 (목적 · 기능 · 구성 · 위원 임기) | 국제교류 기본계획 수립, 해외 자매결연 체결 심의 및 15인 이내 위원 구성 | page_1 |  |  | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_1 | intl-p1-art1-4 | 2 | slot | 국제교류위원회 규정 | 국제교류위원회 규정 | page_1 | p1_blk_1 | slot_p1_blk_1 | 1 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_2 | intl-p1-art1-4 | 2 | slot | 본문 구획 | Y | page_1 | p1_blk_2 | slot_p1_blk_2 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_3 | intl-p1-art1-4 | 2 | slot | 제1조【목 적】 | 제 1 조 【 목 적 】 “ ” “ ” 이 규정은 ○○ 대학교(이하 본교 라 한다) 국제교류위원회(이하 위원회 라 한다)의 조 직과 운영에 관한 사항을 규정함을  | page_1 | p1_blk_3 | slot_p1_blk_3 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_4 | intl-p1-art1-4 | 2 | slot | 제2조【기 능】 | 제 2 조 【 기 능 】 위원회는 다음 각호 중 위원장이 부의하는 다음의 사항을 심의한다. | page_1 | p1_blk_4 | slot_p1_blk_4 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_5 | intl-p1-art1-4 | 2 | slot | 1. 외국대학과 학술교류협정 및 활동에 관한 사항 | 1. 외국대학과 학술교류협정 및 활동에 관한 사항 | page_1 | p1_blk_5 | slot_p1_blk_5 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_6 | intl-p1-art1-4 | 2 | slot | 2. 외국대학과의 교직원 상호교류 및 연수에 관한 사항 | 2. 외국대학과의 교직원 상호교류 및 연수에 관한 사항 | page_1 | p1_blk_6 | slot_p1_blk_6 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_7 | intl-p1-art1-4 | 2 | slot | 3. 학생유학 알선 및 교류에 관한 사항 | 3. 학생유학 알선 및 교류에 관한 사항 | page_1 | p1_blk_7 | slot_p1_blk_7 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_8 | intl-p1-art1-4 | 2 | slot | 4. 기타 국제교류 및 협력에 관한 사항 | 4. 기타 국제교류 및 협력에 관한 사항 | page_1 | p1_blk_8 | slot_p1_blk_8 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_9 | intl-p1-art1-4 | 2 | slot | 제3조【구 성】 | 제 3 조 【 구 성 】 | page_1 | p1_blk_9 | slot_p1_blk_9 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_10 | intl-p1-art1-4 | 2 | slot | 1. 위원장은 기획처장이 되며 위원회를 대표하고 위원회 | 1. 위원장은 기획처장이 되며 위원회를 대표하고 위원회의 업무를 총괄한다. | page_1 | p1_blk_10 | slot_p1_blk_10 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_11 | intl-p1-art1-4 | 2 | slot | 2. 위원회는 위원장의 제청을 받아 총장이 위촉하는 7 | 2. 위원회는 위원장의 제청을 받아 총장이 위촉하는 7인 이하 위원으로 구성한다. | page_1 | p1_blk_11 | slot_p1_blk_11 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_12 | intl-p1-art1-4 | 2 | slot | 제4조【임 기】 | 제 4 조 【 임 기 】 위원 중 당연직 위원의 임기는 당해 보직 재임기간 중으로 하고 그외 위원의 임기는 1년 으로 하며 연임할 수 있다. | page_1 | p1_blk_12 | slot_p1_blk_12 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_13 | intl-p1-art1-4 | 2 | slot | 제5조【회 의】 | 제 5 조 【 회 의 】 | page_1 | p1_blk_13 | slot_p1_blk_13 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_14 | intl-p1-art1-4 | 2 | slot | 1. 위원장은 회의를 소집하고 그 의장이 된다. | 1. 위원장은 회의를 소집하고 그 의장이 된다. | page_1 | p1_blk_14 | slot_p1_blk_14 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_15 | intl-p1-art1-4 | 2 | slot | 2. 위원회는 위원 과반수의 출석으로 개회하고 출석위원 | 2. 위원회는 위원 과반수의 출석으로 개회하고 출석위원 과반수의 찬성으로 의결한다. | page_1 | p1_blk_15 | slot_p1_blk_15 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_16 | intl-p1-art1-4 | 2 | slot | 제6조【간 사】 | 제 6 조 【 간 사 】 위원회의 원활한 회의진행을 위하여 간사 1인을 두며 간사는 대외협력/홍보팀장이 된다. | page_1 | p1_blk_16 | slot_p1_blk_16 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_17 | intl-p1-art1-4 | 2 | slot | 제7조【회의록 작성 및 보고】 | 제 7 조 【 회의록 작성 및 보고 】 위원회의 간사는 회의록을 작성하여 위원장의 확인 후 총장에게 보고하여야 한다. | page_1 | p1_blk_17 | slot_p1_blk_17 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_18 | intl-p1-art1-4 | 2 | slot | 제8조【소관부서】 | 제 8 조 【 소관부서 】 위원회의 소관부서는 기획처 대외협력/홍보팀으로 한다. | page_1 | p1_blk_18 | slot_p1_blk_18 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_19 | intl-p1-art1-4 | 2 | slot | 제9조【기밀유지의무】 | 제 9 조 【 기밀유지의무 】 위원회의 위원 및 참석자는 회의내용 및 제반 자료에 관하여 직무상 비밀을 유지하여야 한다. | page_1 | p1_blk_19 | slot_p1_blk_19 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_20 | intl-p1-art1-4 | 2 | slot | 제10조【운영세칙】 | 제10조 【 운영세칙 】 이 규정에서 정하지 아니한 사항은 위원회 설치 및 운영규정에서 정한 바에 따른다. | page_1 | p1_blk_20 | slot_p1_blk_20 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_21 | intl-p1-art1-4 | 2 | slot | 부칙 | 부 칙 | page_1 | p1_blk_21 | slot_p1_blk_21 | 0 | 0",
+   "auto-slot-vdoc_ref_intl_exchange_rules-slot_p1_blk_22 | intl-p1-art1-4 | 2 | slot | 제1조【시행일】 | 제 1 조 【 시행일 】 본 규정은 20 년 월 일부터 시행한다. | page_1 | p1_blk_22 | slot_p1_blk_22 | 0 | 0",
+   "intl-p1-art5-7 | intl-root | 1 | page | 제5조~제7조 (회의 소집 · 의결 정족수 · 회의록 보관) | 재적위원 과반수 출석 및 출석위원 과반수 찬성 의결, 회의록 의무 보관 | page_1 |  |  | 0 | 0",
+   "intl-p1-art8-10 | intl-root | 1 | page | 제8조~제10조 및 부칙 (소관부서 · 기밀유지 · 시행일) | 대외협력처 주관 업무 관장, 직무상 비밀 준수의무 및 시행일자 명시 | page_1 |  |  | 0 | 0"
+  ],
+  "vproj-ref-reward-penalty-rules": [
+   "rp-root |  | 0 | project | [참조 3] 예스폼_무료상벌위원회규정서식자료모음(구글문서변환) | 사원 상벌 심사 규정 및 정형 회의록 서식 패키지 (3p) |  |  |  | 0 | 0",
+   "auto-doc-vdoc_ref_reward_penalty_rules | rp-root | 1 | document | 상벌위원회 규정 및 회의록 서식 자료모음 | 3p · 슬롯 25개 |  |  |  | 0 | 0",
+   "rp-p1-regulations | rp-root | 1 | page | Page 1 · 상벌위원회 규정 본문 (목적 · 적용범위 · 위원회 구성) | 포상 및 징계 심의의 공정성을 확보하기 위한 기본 운영 원칙 및 조직 구성 | page_1 |  |  | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-slot_p1_blk_1 | rp-p1-regulations | 2 | slot | 상벌위원회규정 | 상벌위원회규정 | page_1 | p1_blk_1 | slot_p1_blk_1 | 1 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-slot_p1_blk_2 | rp-p1-regulations | 2 | slot | 본문 구획 | 1 【 】 제 조 목 적 ​ ​ ( “ ” ) ( “ ” ) 이 규정은 가나다 주식회사 이하 회사 라고 한다 의 상벌위원회 이하 위원회 라고 한다 조직과 운영에  | page_1 | p1_blk_2 | slot_p1_blk_2 | 0 | 0",
+   "rp-p2-procedure | rp-root | 1 | page | Page 2 · 심사 절차, 의결 요건, 재심 청구 및 부칙 | 출석위원 의결 정족수, 징계 대상자 소명 기회 보장 및 시행 규정 | page_2 |  |  | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-slot_p2_blk_1 | rp-p2-procedure | 2 | slot | 본문 구획 | ​ ​ ( 1 ) 위원회는 회의에 관한 상벌위원회 회의록 별지서식 제 호 을 작성하여 인사 담당부서에서 보관하게 . 하여야 한다 | page_2 | p2_blk_1 | slot_p2_blk_1 | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-slot_p2_blk_2 | rp-p2-procedure | 2 | slot | 부칙 | 부 칙 1 【 】 제 조 시행일 ​ 20 . 이 규정은 년 월 일부터 시행한다 ---------------------------------------------- | page_2 | p2_blk_2 | slot_p2_blk_2 | 0 | 0",
+   "rp-p3-minutes-form | rp-root | 1 | page | Page 3 · [별지서식 제1호] 상벌위원회 회의록 양식 | 일시, 장소, 출석위원, 의안 및 심의 결과 기재용 정형 표 서식 | page_3 |  |  | 0 | 0",
+   "auto-blk-vdoc_ref_reward_penalty_rules-p3_tbl_1 | rp-p3-minutes-form | 2 | page | [표] 표 구획 1 | 표 (7행) | page_3 | p3_tbl_1 |  | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-p3_tbl_1_r0_c1 | auto-blk-vdoc_ref_reward_penalty_rules-p3_tbl_1 | 3 | slot | 날짜 | 20 년 월 일 | page_3 | p3_tbl_1 | p3_tbl_1_r0_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-p3_tbl_1_r1_c1 | auto-blk-vdoc_ref_reward_penalty_rules-p3_tbl_1 | 3 | slot | 전체 위원 중 출석위원 00명 | 전체 위원 중 출석위원 00명 (참석률 00%) | page_3 | p3_tbl_1 | p3_tbl_1_r1_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-p3_tbl_1_r2_c0 | auto-blk-vdoc_ref_reward_penalty_rules-p3_tbl_1 | 3 | slot | 상벌위원회 위원장 홍길동은 출석위원을 확인한 | 상벌위원회 위원장 홍길동은 출석위원을 확인한 후 개회를 선언하고 다음 의안을 부의한다. | page_3 | p3_tbl_1 | p3_tbl_1_r2_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-p3_tbl_1_r3_c1 | auto-blk-vdoc_ref_reward_penalty_rules-p3_tbl_1 | 3 | slot | 의안 | (빈 슬롯) | page_3 | p3_tbl_1 | p3_tbl_1_r3_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-p3_tbl_1_r4_c1 | auto-blk-vdoc_ref_reward_penalty_rules-p3_tbl_1 | 3 | slot | 회의내용 | (빈 슬롯) | page_3 | p3_tbl_1 | p3_tbl_1_r4_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-p3_tbl_1_r5_c1 | auto-blk-vdoc_ref_reward_penalty_rules-p3_tbl_1 | 3 | slot | 의결사항 | (빈 슬롯) | page_3 | p3_tbl_1 | p3_tbl_1_r5_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_reward_penalty_rules-slot_p3_blk_1 | rp-p3-minutes-form | 2 | slot | 상벌위원회회의록 | 상벌위원회 회의록 | page_3 | p3_blk_1 | slot_p3_blk_1 | 1 | 0"
+  ],
+  "vproj-ref-seoul-startup-hub": [
+   "hub-root |  | 0 | project | [참조 1] 2026 서울창업허브 글로벌 진출 「PoC·액셀러레이팅」 | 글로벌 시장 진출 지원사업 모집공고 및 운영 규정 레퍼런스 (7p) |  |  |  | 0 | 0",
+   "auto-doc-vdoc_ref_seoul_startup_hub | hub-root | 1 | document | 2026 서울창업허브 글로벌 진출 PoC·액셀러레이팅 사업공고 | 7p · 슬롯 272개 |  |  |  | 0 | 0",
+   "auto-page-vdoc_ref_seoul_startup_hub-page_7 | auto-doc-vdoc_ref_seoul_startup_hub | 2 | page | Page 7 · 2026 서울창업허브 글로벌 진출 PoC·액셀러레이팅 사업공고 (7p) | 블록 2개 | page_7 |  |  | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | auto-page-vdoc_ref_seoul_startup_hub-page_7 | 3 | page | [표] 표 구획 1 | 표 (14행) | page_7 | p7_tbl_1 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r0_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 1행 1열 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r0_c0 | 0 | 1",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r5_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 증빙서류 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r5_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r6_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 정의 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r6_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r7_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 증빙서류 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r7_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r8_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 정의 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r8_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r9_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 증빙서류 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r9_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r10_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 정의 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r10_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r11_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 증빙서류 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r11_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r12_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 정의 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r12_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p7_tbl_1_r13_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p7_tbl_1 | 4 | slot | 증빙서류 | (빈 슬롯) | page_7 | p7_tbl_1 | p7_tbl_1_r13_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p7_blk_1 | auto-page-vdoc_ref_seoul_startup_hub-page_7 | 3 | slot | 본문 구획 | - 7 - | page_7 | p7_blk_1 | slot_p7_blk_1 | 0 | 0",
+   "hub-p1-overview | hub-root | 1 | page | 사업 개요 및 4대 글로벌 프로그램 (보스턴·실리콘밸리·스페인·태국) | 민간 전문 액셀러레이터 협력 현지 몰입형 액셀러레이팅 및 PoC 기술실증 지원 | page_1 |  |  | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_1 | hub-p1-overview | 2 | page | [표] 표 구획 1 | 표 (1행) | page_1 | p1_tbl_1 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_1_r0_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_1 | 3 | slot | 사업 개요 | (빈 슬롯) | page_1 | p1_tbl_1 | p1_tbl_1_r0_c1 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_2 | hub-p1-overview | 2 | page | [표] 표 구획 2 | 표 (1행) | page_1 | p1_tbl_2 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_2_r0_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_2 | 3 | slot | 운영 프로그램 | (빈 슬롯) | page_1 | p1_tbl_2 | p1_tbl_2_r0_c1 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_3 | hub-p1-overview | 2 | page | [표] 표 구획 3 | 표 (5행) | page_1 | p1_tbl_3 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_3_r1_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_3 | 3 | slot | 1 | 1 | page_1 | p1_tbl_3 | p1_tbl_3_r1_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_3_r1_c3 | auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_3_r1_c0 | 4 | slot | CIC (Cambridge Innovatio | CIC (Cambridge Innovation Center) 6개사 바이오테크, 생명과학, MedTech, 디지털 헬스, 헬스케어 AI 등 500 Global 1 | page_1 | p1_tbl_3 | p1_tbl_3_r1_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_3_r2_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_3 | 3 | slot | 연번 | 2 | page_1 | p1_tbl_3 | p1_tbl_3_r2_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_3_r3_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_3 | 3 | slot | 연번 | 3 | page_1 | p1_tbl_3 | p1_tbl_3_r3_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_3_r4_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_3 | 3 | slot | 연번 | 4 | page_1 | p1_tbl_3 | p1_tbl_3_r4_c0 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_4 | hub-p1-overview | 2 | page | [표] 표 구획 4 | 표 (1행) | page_1 | p1_tbl_4 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_4_r0_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_4 | 3 | slot | 모집 개요 | (빈 슬롯) | page_1 | p1_tbl_4 | p1_tbl_4_r0_c1 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_5 | hub-p1-overview | 2 | page | [표] 표 구획 5 | 표 (1행) | page_1 | p1_tbl_5 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_5_r0_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p1_tbl_5 | 3 | slot | 1. 진출 희망 국가(프로그램) 선택 기업 보유 아이템에 적합한 국가 진 | 1. 진출 희망 국가(프로그램) 선택 기업 보유 아이템에 적합한 국가 진출 (연간 최대 2개 프로그램 참여 가능) | page_1 | p1_tbl_5 | p1_tbl_5_r0_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_5_r0_c2 | auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_5_r0_c0 | 4 | slot | 2. [별첨] 사업계획서 작성 (필수서류 미 | 2. [별첨] 사업계획서 작성 (필수서류 미제출시 접수무효처리) | page_1 | p1_tbl_5 | p1_tbl_5_r0_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_5_r0_c4 | auto-slot-vdoc_ref_seoul_startup_hub-p1_tbl_5_r0_c0 | 4 | slot | 3. 사업계획서 제출 스타트업플러스 접수 ( | 3. 사업계획서 제출 스타트업플러스 접수 (이메일 접수 무효처리) | page_1 | p1_tbl_5 | p1_tbl_5_r0_c4 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p1_blk_1 | hub-p1-overview | 2 | slot | 2026 서울창업허브 글로벌 진출 | 2026 서울창업허브 글로벌 진출 | page_1 | p1_blk_1 | slot_p1_blk_1 | 1 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p1_blk_2 | hub-p1-overview | 2 | slot | 「PoC·액셀러레이팅」참여기업 2차 모집 | 「PoC·액셀러레이팅」참여기업 2차 모집 | page_1 | p1_blk_2 | slot_p1_blk_2 | 1 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p1_blk_3 | hub-p1-overview | 2 | slot | 본문 구획 | 서울창업허브는 서울 혁신기업의 글로벌 시장 진출을 지원하고자, 민간 전문 액셀러레이터 및 유관 기관, 현지 전문가 그룹과 협력하여 글로벌 진출 프로그램을 운영합니 | page_1 | p1_blk_3 | slot_p1_blk_3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p1_blk_4 | hub-p1-overview | 2 | slot | ① 액셀러레이팅: 글로벌 멘토링 및 IR피칭, 네트워킹 | ① 액셀러레이팅: 글로벌 멘토링 및 IR피칭, 네트워킹 행사 등 현지 몰입형 프로그램 ○ 지원내용: | page_1 | p1_blk_4 | slot_p1_blk_4 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p1_blk_5 | hub-p1-overview | 2 | slot | ② PoC(기술실증): 현지 수요처 기반 기술 실증을 | ② PoC(기술실증): 현지 수요처 기반 기술 실증을 통한 시장 검증 및 기술 현지화 지원 | page_1 | p1_blk_5 | slot_p1_blk_5 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p1_blk_6 | hub-p1-overview | 2 | slot | 2026. 6. 25.(목) 24:00 ○ 모집기간:모 | 2026. 6. 25.(목) 24:00 ○ 모집기간: 모집공고일 ~ 「2026년 2차 서울창업허브 글로벌 진출 프로그램 안내서」 ○ 모집내용: 참조 ○ 신청방법: | page_1 | p1_blk_6 | slot_p1_blk_6 | 0 | 0",
+   "hub-p2-eligibility | hub-root | 1 | page | 지원자격 및 5종 제출서류 목록 (사업계획서·IR Deck·재무제표 등) | C레벨 어학 소통 역량, 서울 소재 법인, MVP 보유 기업 대상 온라인 접수 요건 | page_2 |  |  | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p2_tbl_1 | hub-p2-eligibility | 2 | page | [표] 표 구획 1 | 표 (7행) | page_2 | p2_tbl_1 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p2_tbl_1_r1_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p2_tbl_1 | 3 | slot | 연번 | 1 | page_2 | p2_tbl_1 | p2_tbl_1_r1_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p2_tbl_1_r2_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p2_tbl_1 | 3 | slot | 연번 | 2 | page_2 | p2_tbl_1 | p2_tbl_1_r2_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p2_tbl_1_r4_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p2_tbl_1 | 3 | slot | 연번 | 3 | page_2 | p2_tbl_1 | p2_tbl_1_r4_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p2_tbl_1_r5_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p2_tbl_1 | 3 | slot | 연번 | 4 | page_2 | p2_tbl_1 | p2_tbl_1_r5_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p2_tbl_1_r6_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p2_tbl_1 | 3 | slot | 연번 | 5 | page_2 | p2_tbl_1 | p2_tbl_1_r6_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p2_blk_1 | hub-p2-eligibility | 2 | slot | 본문 구획 | - 스타트업플러스 홈페이지 (https://www.startup-plus.kr/) 에 온라인 접수 홈페이지 가입(필수) 후 로그인 → Apply 지원사업 신청 → | page_2 | p2_blk_1 | slot_p2_blk_1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p2_blk_2 | hub-p2-eligibility | 2 | slot | ① 이상이 가능 기업 영어로 업무소통이 원활한 C레벨 | ① 이상이 가능 기업 영어로 업무소통이 원활한 C레벨 담당자 또는 대표자 현지 체류일정에 참여 ※ 선정 이후 참가 포기 및 C레벨 담당자/대표자가 프로그램에 참여 | page_2 | p2_blk_2 | slot_p2_blk_2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p2_blk_3 | hub-p2-eligibility | 2 | slot | ② 본사가 서울에 소재하거나, 법인등기부등본에 서울 지 | ② 본사가 서울에 소재하거나, 법인등기부등본에 서울 지점이 등록된 기업 ※ 단, 종된사업장을 서울 소재로 한 사업장은 해당하지 않음 | page_2 | p2_blk_3 | slot_p2_blk_3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p2_blk_4 | hub-p2-eligibility | 2 | slot | ③ 본 프로그램의 모집 분야에 해당하는 기술이나 솔루션 | ③ 본 프로그램의 모집 분야에 해당하는 기술이나 솔루션, MVP(최소기능제품) 보유한 기업 | page_2 | p2_blk_4 | slot_p2_blk_4 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p2_blk_5 | hub-p2-eligibility | 2 | slot | ④ 1개 이상 국가로 비즈니스 진출이 가능한 준비 된 | ④ 1개 이상 국가로 비즈니스 진출이 가능한 준비 된 기업 - 공개모집 단계에서 프로그램 신청 수 제한 없음 (예: 2차 모집시 4개 프로그램 모두 지원 가능)  | page_2 | p2_blk_5 | slot_p2_blk_5 | 0 | 0",
+   "hub-p3-budget | hub-root | 1 | page | 국가별 지원금 차등 지급 기준 및 4대 신청제외 대상 조항 | 국가별 3,000~5,500천원 차등 지급 기준 및 금융/세무 규제 대상자 필터링 | page_3 |  |  | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p3_tbl_1 | hub-p3-budget | 2 | page | [표] 표 구획 1 | 표 (4행) | page_3 | p3_tbl_1 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_1_r1_c2 | auto-blk-vdoc_ref_seoul_startup_hub-p3_tbl_1 | 3 | slot | 액셀러레이팅 | 4,500 | page_3 | p3_tbl_1 | p3_tbl_1_r1_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_1_r2_c2 | auto-blk-vdoc_ref_seoul_startup_hub-p3_tbl_1 | 3 | slot | 5,500 ※ 현지 시설이용 보험료(150유 | 5,500 ※ 현지 시설이용 보험료(150유로) 납부 필수 | page_3 | p3_tbl_1 | p3_tbl_1_r2_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_1_r3_c2 | auto-blk-vdoc_ref_seoul_startup_hub-p3_tbl_1 | 3 | slot | 액셀러레이팅 | 3,000 | page_3 | p3_tbl_1 | p3_tbl_1_r3_c2 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p3_tbl_2 | hub-p3-budget | 2 | page | [표] 표 구획 2 | 표 (5행) | page_3 | p3_tbl_2 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r1_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p3_tbl_2 | 3 | slot | 1 | 1 | page_3 | p3_tbl_2 | p3_tbl_2_r1_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r1_c2 | auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r1_c0 | 4 | slot | 코드번호 | 56211 | page_3 | p3_tbl_2 | p3_tbl_2_r1_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r2_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p3_tbl_2 | 3 | slot | 2 | 2 | page_3 | p3_tbl_2 | p3_tbl_2_r2_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r2_c2 | auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r2_c0 | 4 | slot | 코드번호 | 56212 | page_3 | p3_tbl_2 | p3_tbl_2_r2_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r3_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p3_tbl_2 | 3 | slot | 3 | 3 | page_3 | p3_tbl_2 | p3_tbl_2_r3_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r3_c2 | auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r3_c0 | 4 | slot | 코드번호 | 9124 | page_3 | p3_tbl_2 | p3_tbl_2_r3_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r4_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p3_tbl_2 | 3 | slot | 4 | 4 | page_3 | p3_tbl_2 | p3_tbl_2_r4_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r4_c1 | auto-slot-vdoc_ref_seoul_startup_hub-p3_tbl_2_r4_c0 | 4 | slot | 1~3까지 규정에 준하는 업종으로서 중소벤처 | 1~3까지 규정에 준하는 업종으로서 중소벤처기업부령으로 정하는 업종 | page_3 | p3_tbl_2 | p3_tbl_2_r4_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_1 | hub-p3-budget | 2 | slot | 본문 구획 | ○ 지원금 지급 기준 - 국가별 물가 및 항공료 숙박비를 고려하여 차등 지급 ž - 최종 선정기업을 대상으로, 사업 종료 후 SBA 지정 회계법인 정산을 거쳐 지 | page_3 | p3_blk_1 | slot_p3_blk_1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_2 | hub-p3-budget | 2 | slot | ① 금융기관 등으로부터 채무불이행으로 규제중인 자(기업 | ① 금융기관 등으로부터 채무불이행으로 규제중인 자(기업) &lt; ① 조건 예외 대상(사업 신청·접수 마감일 기준) &gt; | page_3 | p3_blk_2 | slot_p3_blk_2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_3 | hub-p3-budget | 2 | slot | 1. 채무변제 완료 후 증빙이 가능한 자 | 1. 채무변제 완료 후 증빙이 가능한 자 | page_3 | p3_blk_3 | slot_p3_blk_3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_4 | hub-p3-budget | 2 | slot | 2. 신용회복위원회 프리워크아웃 또는 개인워크아웃 제도 | 2. 신용회복위원회 프리워크아웃 또는 개인워크아웃 제도를 통해 채무조정합의서를 체결한 자 | page_3 | p3_blk_4 | slot_p3_blk_4 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_5 | hub-p3-budget | 2 | slot | 3. 법원의 회생계획인가 또는 변제계획인가를 받은 자, | 3. 법원의 회생계획인가 또는 변제계획인가를 받은 자, 파산절차에서 면책결정이 확정된 자 | page_3 | p3_blk_5 | slot_p3_blk_5 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_6 | hub-p3-budget | 2 | slot | 4. 신용보증기금·기술보증기금의 ‘재도전·재창업 재기지 | 4. 신용보증기금·기술보증기금의 ‘재도전·재창업 재기지원보증’ 또는 중소벤처기업진흥공단·신용회복위원 회의 ‘재창업 자금지원’을 받은 자 | page_3 | p3_blk_6 | slot_p3_blk_6 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_7 | hub-p3-budget | 2 | slot | ② 국세 또는 지방세 체납으로 규제 중인 자(기업) | ② 국세 또는 지방세 체납으로 규제 중인 자(기업) &lt; ② 조건 예외 대상(사업 신청·접수 마감일 기준) &gt; | page_3 | p3_blk_7 | slot_p3_blk_7 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_8 | hub-p3-budget | 2 | slot | 1. 국세징수법 제105조제1항에 따라 강제징수의 유예 | 1. 국세징수법 제105조제1항에 따라 강제징수의 유예를 받은 자 또는 지방세징수법 제105조제1항에 따라 체납처분의 유예를 받은 자 | page_3 | p3_blk_8 | slot_p3_blk_8 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_9 | hub-p3-budget | 2 | slot | 2. 국세·지방세 등의 특수채무 변제 후 증빙이 가능한 | 2. 국세·지방세 등의 특수채무 변제 후 증빙이 가능한 자 | page_3 | p3_blk_9 | slot_p3_blk_9 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_10 | hub-p3-budget | 2 | slot | ③ 중소기업창업 지원법 시행령 제4조(창업에서 제외되는 | ③ 중소기업창업 지원법 시행령 제4조(창업에서 제외되는 업종)의 업종을 영위하고자 하는 자(기업) * 대상 업종의 세부사항은 한국표준산업분류코드(통계청, kssc | page_3 | p3_blk_10 | slot_p3_blk_10 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p3_blk_11 | hub-p3-budget | 2 | slot | ④ 공고 마감일 기준 휴업 중인 기업 | ④ 공고 마감일 기준 휴업 중인 기업 - 3 - | page_3 | p3_blk_11 | slot_p3_blk_11 | 0 | 0",
+   "hub-p4-schedule | hub-root | 1 | page | 모집·평가·현지체류 주요 추진 일정 및 글로벌 전담 문의처 | 6월 모집 마감부터 12월 회계정산 결과보고까지 단계별 일정 매트릭스 | page_4 |  |  | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_1 | hub-p4-schedule | 2 | page | [표] 표 구획 1 | 표 (1행) | page_4 | p4_tbl_1 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_1_r0_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_1 | 3 | slot | 주요 일정 | (빈 슬롯) | page_4 | p4_tbl_1 | p4_tbl_1_r0_c1 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_2 | hub-p4-schedule | 2 | page | [표] 표 구획 2 | 표 (8행) | page_4 | p4_tbl_2 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r1_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_2 | 3 | slot | 순서 | 1 | page_4 | p4_tbl_2 | p4_tbl_2_r1_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r2_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_2 | 3 | slot | 순서 | 2 | page_4 | p4_tbl_2 | p4_tbl_2_r2_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r3_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_2 | 3 | slot | 순서 | 3 | page_4 | p4_tbl_2 | p4_tbl_2_r3_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r4_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_2 | 3 | slot | 순서 | 4 | page_4 | p4_tbl_2 | p4_tbl_2_r4_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r5_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_2 | 3 | slot | 5 | 5 | page_4 | p4_tbl_2 | p4_tbl_2_r5_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r5_c1 | auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r5_c0 | 4 | slot | <프로그램> 국내 | &lt;프로그램&gt; 국내 | page_4 | p4_tbl_2 | p4_tbl_2_r5_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r6_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_2 | 3 | slot | 6 | 6 | page_4 | p4_tbl_2 | p4_tbl_2_r6_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r6_c1 | auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r6_c0 | 4 | slot | <프로그램> 현지체류 | &lt;프로그램&gt; 현지체류 | page_4 | p4_tbl_2 | p4_tbl_2_r6_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_2_r7_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_2 | 3 | slot | 순서 | 7 | page_4 | p4_tbl_2 | p4_tbl_2_r7_c0 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_3 | hub-p4-schedule | 2 | page | [표] 표 구획 3 | 표 (1행) | page_4 | p4_tbl_3 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p4_tbl_3_r0_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_3 | 3 | slot | 문의처 | (빈 슬롯) | page_4 | p4_tbl_3 | p4_tbl_3_r0_c1 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p4_tbl_4 | hub-p4-schedule | 2 | page | [표] 표 구획 4 | 표 (1행) | page_4 | p4_tbl_4 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p4_blk_1 | hub-p4-schedule | 2 | slot | 본문 구획 | • 연락처: 02-2115-2019 1 미국(보스턴) 조은소라 책임 • 메일주소: eunsora@sba.seoul.kr • 연락처: 02-2115-2028 2 미 | page_4 | p4_blk_1 | slot_p4_blk_1 | 0 | 0",
+   "hub-p5-evaluation | hub-root | 1 | page | [붙임 1] 참가기업 서류평가 및 인터뷰 평가지표 매트릭스 | 제품/서비스(40), 글로벌역량(40), 기업현황(20) 100점 만점 평가 기준표 | page_5 |  |  | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_1 | hub-p5-evaluation | 2 | page | [표] 표 구획 1 | 표 (1행) | page_5 | p5_tbl_1 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_1_r0_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_1 | 3 | slot | 1행 1열 | 붙임1 | page_5 | p5_tbl_1 | p5_tbl_1_r0_c0 | 0 | 1",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | hub-p5-evaluation | 2 | page | [표] 표 구획 2 | 표 (10행) | page_5 | p5_tbl_2 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r0_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | 평가방법 | 제출한 사업계획서 및 서류기반 평가 | page_5 | p5_tbl_2 | p5_tbl_2_r0_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r1_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | 평가위원의 총 합산평균이 70점 이상인 기업 | 평가위원의 총 합산평균이 70점 이상인 기업 중, 고득점 순으로 인터뷰 평가 대상기업으로 1.5~2배수 선정 예정 | page_5 | p5_tbl_2 | p5_tbl_2_r1_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r2_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | 글로벌 파트너사 프로그램 담당 2인~5인 평 | 글로벌 파트너사 프로그램 담당 2인~5인 평가 (구성:AC담당자, PoC수요처 등) | page_5 | p5_tbl_2 | p5_tbl_2_r2_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r4_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | 제품/ 서비스 (40) | 제품/ 서비스 (40) | page_5 | p5_tbl_2 | p5_tbl_2_r4_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r4_c2 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r4_c0 | 4 | slot | - 글로벌 진출을 위한 최소 실행가능한 제품 | - 글로벌 진출을 위한 최소 실행가능한 제품/서비스를 보유하고 있는가? - 타겟고객이 명확하며, 타겟고객의 문제해결 BM이 구체적인가? | page_5 | p5_tbl_2 | p5_tbl_2_r4_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r4_c3 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r4_c0 | 4 | slot | 평가내용 | 20 | page_5 | p5_tbl_2 | p5_tbl_2_r4_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r5_c2 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | - 제품/서비스가 경쟁사 대비 우위요소를 보 | - 제품/서비스가 경쟁사 대비 우위요소를 보유하고 있는가? | page_5 | p5_tbl_2 | p5_tbl_2_r5_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r5_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | 평가내용 | 20 | page_5 | p5_tbl_2 | p5_tbl_2_r5_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r6_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | 글로벌 역량 (40) | 글로벌 역량 (40) | page_5 | p5_tbl_2 | p5_tbl_2_r6_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r6_c2 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r6_c0 | 4 | slot | - 목표하는 글로벌 시장 내 타겟고객 및 시 | - 목표하는 글로벌 시장 내 타겟고객 및 시장규모에 대한 분석이 명확한가? - 타겟하는 글로벌 시장의 규모가 성장 가능한가? | page_5 | p5_tbl_2 | p5_tbl_2_r6_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r6_c3 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r6_c0 | 4 | slot | 평가내용 | 20 | page_5 | p5_tbl_2 | p5_tbl_2_r6_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r7_c2 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | - 글로벌 시장진입을 위한 타겟고객, 제품, | - 글로벌 시장진입을 위한 타겟고객, 제품, 판매채널이 구체적이며 현실적인가? | page_5 | p5_tbl_2 | p5_tbl_2_r7_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r7_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | 평가내용 | 20 | page_5 | p5_tbl_2 | p5_tbl_2_r7_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r8_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | 기업현황 (20) | 기업현황 (20) | page_5 | p5_tbl_2 | p5_tbl_2_r8_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r8_c2 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r8_c0 | 4 | slot | - 대표자가 특정 산업분야 관련 지식·기술 | - 대표자가 특정 산업분야 관련 지식·기술 등 전문역량을 보유하고 있는가? - 프로그램에 투입되는 인력 규모 및 담당역할이 적절한가? | page_5 | p5_tbl_2 | p5_tbl_2_r8_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r8_c3 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r8_c0 | 4 | slot | 평가내용 | 10 | page_5 | p5_tbl_2 | p5_tbl_2_r8_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r9_c2 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | - 글로벌 시장 진출시 경영활동이 가능한 안 | - 글로벌 시장 진출시 경영활동이 가능한 안정적인 자금을 보유하고 있는가? | page_5 | p5_tbl_2 | p5_tbl_2_r9_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_2_r9_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_2 | 3 | slot | 평가내용 | 10 | page_5 | p5_tbl_2 | p5_tbl_2_r9_c3 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | hub-p5-evaluation | 2 | page | [표] 표 구획 3 | 표 (11행) | page_5 | p5_tbl_3 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r0_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | 평가방법 | 기업별 1:1 인터뷰 기반 평가 | page_5 | p5_tbl_3 | p5_tbl_3_r0_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r1_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | 평가위원의 총 합산평균이 70점 이상인 기업 | 평가위원의 총 합산평균이 70점 이상인 기업 중, 고득점 순으로 1배수 선발 및 후순위 부여가능 ※적격한 기업이 없을 경우 최종 선발규모 변동 가능 | page_5 | p5_tbl_3 | p5_tbl_3_r1_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r3_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | 글로벌 파트너사 프로그램 운영담당 2인~5인 | 글로벌 파트너사 프로그램 운영담당 2인~5인 평가 (구성: AC담당자, PoC수요처 등) | page_5 | p5_tbl_3 | p5_tbl_3_r3_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r5_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | 팀 역량 (20) | 팀 역량 (20) | page_5 | p5_tbl_3 | p5_tbl_3_r5_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r5_c3 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r5_c0 | 4 | slot | 평가내용 | 10 | page_5 | p5_tbl_3 | p5_tbl_3_r5_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r6_c2 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | - 대표자 및 담당자의 외국어 활용 비즈니스 | - 대표자 및 담당자의 외국어 활용 비즈니스 역량이 우수한가? - 대표자 및 담당자는 글로벌 타겟시장에 대한 이해도를 보유하고 있는가? | page_5 | p5_tbl_3 | p5_tbl_3_r6_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r6_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | 평가내용 | 10 | page_5 | p5_tbl_3 | p5_tbl_3_r6_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r7_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | 글로벌 진출 계획 (40) | 글로벌 진출 계획 (40) | page_5 | p5_tbl_3 | p5_tbl_3_r7_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r7_c2 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r7_c0 | 4 | slot | - 글로벌 현지 파트너사/수요처에 대한 이해 | - 글로벌 현지 파트너사/수요처에 대한 이해도가 적절한가? - 글로벌 진출 프로그램에 즉시 투입가능한 내부인력 및 제품/서비스를 보유 하고 있는가? | page_5 | p5_tbl_3 | p5_tbl_3_r7_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r7_c3 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r7_c0 | 4 | slot | 평가내용 | 20 | page_5 | p5_tbl_3 | p5_tbl_3_r7_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r8_c2 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | - 글로벌 현지 파트너사/수요처와 사업화/P | - 글로벌 현지 파트너사/수요처와 사업화/PoC 추진을 위한 시장진입 전략이 구체적인가? | page_5 | p5_tbl_3 | p5_tbl_3_r8_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r8_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | 평가내용 | 20 | page_5 | p5_tbl_3 | p5_tbl_3_r8_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r9_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | 성과창출 가능성 (40) | 성과창출 가능성 (40) | page_5 | p5_tbl_3 | p5_tbl_3_r9_c0 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r9_c2 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r9_c0 | 4 | slot | - 글로벌 프로그램 기간 내 가시적 정량성과 | - 글로벌 프로그램 기간 내 가시적 정량성과 창출 가능성이 있는가? (성과: 법인설립, 해외매출창출, 해외 투자유치, 현지 제품/서비스 출시 등) | page_5 | p5_tbl_3 | p5_tbl_3_r9_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r9_c3 | auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r9_c0 | 4 | slot | 평가내용 | 20 | page_5 | p5_tbl_3 | p5_tbl_3_r9_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r10_c2 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | - 현지 파트너사와 공동연구, 거래계약 등 | - 현지 파트너사와 공동연구, 거래계약 등 정성성과를 창출할 만한 차별화된 기술을 보유하고 있는가? | page_5 | p5_tbl_3 | p5_tbl_3_r10_c2 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p5_tbl_3_r10_c3 | auto-blk-vdoc_ref_seoul_startup_hub-p5_tbl_3 | 3 | slot | 평가내용 | 20 | page_5 | p5_tbl_3 | p5_tbl_3_r10_c3 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p5_blk_1 | hub-p5-evaluation | 2 | slot | 본문 구획 | ○ 서류평가 지표 ○ 인터뷰평가 지표 - 5 - | page_5 | p5_blk_1 | slot_p5_blk_1 | 0 | 0",
+   "hub-p6-guideline | hub-root | 1 | page | [붙임 2] 직접비·간접비·국제화 여비 지원금 사용 및 정산 규정 | 인건비, 경영서비스, 항공/숙박비 등 세부 비목 정의 및 적격증빙 가이드라인 | page_6 |  |  | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | hub-p6-guideline | 2 | page | [표] 표 구획 1 | 표 (20행) | page_6 | p6_tbl_1 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_1_r1_c6 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | 3 | slot | 거래처 사업자등록증, 전자세금계산서, 거래처 | 거래처 사업자등록증, 전자세금계산서, 거래처 통장사본 | page_6 | p6_tbl_1 | p6_tbl_1_r1_c6 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_1_r2_c6 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | 3 | slot | 거래처 사업자등록증, 신용카드 영수증(카드매 | 거래처 사업자등록증, 신용카드 영수증(카드매출전표) | page_6 | p6_tbl_1 | p6_tbl_1_r2_c6 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_1_r3_c6 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | 3 | slot | 거래처 사업자등록증, 해외(외화)송금증, 이 | 거래처 사업자등록증, 해외(외화)송금증, 이체내역 등 | page_6 | p6_tbl_1 | p6_tbl_1_r3_c6 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_1_r5_c4 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | 3 | slot | • 프로그램 수행에 참여하는 정규직 근로자에 | • 프로그램 수행에 참여하는 정규직 근로자에게 지급하는 인건비 • 해당 기업 소속으로 4대 보험에 가입된 근로자로 협약 체결일 최소 1개월 이전부터 고용된 인원에 | page_6 | p6_tbl_1 | p6_tbl_1_r5_c4 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_1_r6_c4 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | 3 | slot | 참여인력 현황표(성명, 참여기간, 사업참여율 | 참여인력 현황표(성명, 참여기간, 사업참여율, 변경사항 등) 월별 급여명세서, 급여 계좌이체 증빙서류, 4대보험 사업장 가입자 명부 | page_6 | p6_tbl_1 | p6_tbl_1_r6_c4 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_1_r7_c4 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | 3 | slot | • 현지 법인 및 사무소 관련 소요비용 • | • 현지 법인 및 사무소 관련 소요비용 • 해외진출 위한 제품(서비스) 관련 지식재산권 등 출원·등록 • 지급보증보험료 • 회계, 법무 등 전문 경영서비스 이용료 | page_6 | p6_tbl_1 | p6_tbl_1_r7_c4 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_1_r8_c4 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | 3 | slot | 내부결재문서, 견적서, 출원(등록) 청구서 | 내부결재문서, 견적서, 출원(등록) 청구서 및 등록증, 관납료 영수증 등 | page_6 | p6_tbl_1 | p6_tbl_1_r8_c4 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_1_r9_c4 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | 3 | slot | • 제품 수출에 소요되는 제반비용(물류, 통 | • 제품 수출에 소요되는 제반비용(물류, 통관비 등) | page_6 | p6_tbl_1 | p6_tbl_1_r9_c4 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_1_r10_c4 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_1 | 3 | slot | 내부결재문서, 견적서, 운송확인증, 보관확인 | 내부결재문서, 견적서, 운송확인증, 보관확인증, 인수증, 관납료 영수증 등 | page_6 | p6_tbl_1 | p6_tbl_1_r10_c4 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_2 | hub-p6-guideline | 2 | page | [표] 표 구획 2 | 표 (2행) | page_6 | p6_tbl_2 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_2_r0_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_2 | 3 | slot | 1행 1열 | (빈 슬롯) | page_6 | p6_tbl_2 | p6_tbl_2_r0_c0 | 0 | 1",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_2_r0_c1 | auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_2_r0_c0 | 4 | slot | 항공비 프로그램의 목적에 부합하는 출장 관련 | 항공비 프로그램의 목적에 부합하는 출장 관련 항공권 구매비 | page_6 | p6_tbl_2 | p6_tbl_2_r0_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_2_r1_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_2 | 3 | slot | 프로그램의 목적에 부합하는 출장 중 숙박시설 | 프로그램의 목적에 부합하는 출장 중 숙박시설 이용비 | page_6 | p6_tbl_2 | p6_tbl_2_r1_c1 | 0 | 0",
+   "auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_3 | hub-p6-guideline | 2 | page | [표] 표 구획 3 | 표 (2행) | page_6 | p6_tbl_3 |  | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_3_r0_c0 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_3 | 3 | slot | 1행 1열 | (빈 슬롯) | page_6 | p6_tbl_3 | p6_tbl_3_r0_c0 | 0 | 1",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_3_r0_c1 | auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_3_r0_c0 | 4 | slot | 항공비 금액 표시된 E-ticket 또는 실 | 항공비 금액 표시된 E-ticket 또는 실물 티켓 스캔본 | page_6 | p6_tbl_3 | p6_tbl_3_r0_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-p6_tbl_3_r1_c1 | auto-blk-vdoc_ref_seoul_startup_hub-p6_tbl_3 | 3 | slot | 숙박비 | 결제완료 화면 캡쳐 이미지(숙박일 이후) | page_6 | p6_tbl_3 | p6_tbl_3_r1_c1 | 0 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p6_blk_1 | hub-p6-guideline | 2 | slot | 붙임2글로벌 진출 프로그램 지원금 사용 규정 | 붙임2 글로벌 진출 프로그램 지원금 사용 규정 | page_6 | p6_blk_1 | slot_p6_blk_1 | 1 | 0",
+   "auto-slot-vdoc_ref_seoul_startup_hub-slot_p6_blk_2 | hub-p6-guideline | 2 | slot | 본문 구획 | ※ 국가, 프로그램 유형별 차등지급 (3p 참조) - 6 - | page_6 | p6_blk_2 | slot_p6_blk_2 | 0 | 0"
+  ],
+  "vproj-ref-toss-safezone-travel": [
+   "toss-root |  | 0 | project | [참조 4] 바쁜 마음을 내려놓는 가을 여행지 3곳 (토스피드) | 분주한 마음을 내려놓기 좋은 국내 소도시 안정감 큐레이션 아티클 (4p) |  |  |  | 0 | 0",
+   "auto-doc-vdoc_ref_toss_safezone_travel | toss-root | 1 | document | 바쁜 마음을 내려놓는 가을 여행지 3곳 (토스 안정감 프로젝트) | 4p · 슬롯 14개 |  |  |  | 0 | 0",
+   "toss-p1-intro | toss-root | 1 | page | 토스 안정감 프로젝트 기획 취지 및 인트로 | 일상의 불안을 덜어주는 토스 안정감 프로젝트 및 한국관광공사 협업 취지 | toss_page_1 |  | toss_p1_body | 0 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p1_title | toss-p1-intro | 2 | slot | 아티클 메인 타이틀 | 바쁜 마음을 내려놓는 가을 여행지 3곳 한국관광공사의 안정감 큐레이션: 제천의 산, 고창의 습지, 부여의 성곽길 | toss_page_1 | blk_toss_title | toss_p1_title | 1 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p1_callout | toss-p1-intro | 2 | slot | 기획 취지 안내 | 이 글은 토스 〈Find Your Safe Zone: 안정감 프로젝트〉의 콘텐츠입니다. 우리에게 필요한 진짜 안정감을 찾아줄 콘텐츠를 매달 전해드릴게요. 오늘은  | toss_page_1 | blk_toss_callout | toss_p1_callout | 0 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p1_body | toss-p1-intro | 2 | slot | 인트로 본문 | 요즘은 별일이 없어도 마음이 바쁩니다. 눈을 뜨자마자 휴대전화를 확인하고, 출근하기도 전에 밤새 도착한 메시지와 뉴스에 마음 한구석을 내어줍니다. 해야 할 일은  | toss_page_1 | blk_toss_p1_body | toss_p1_body | 0 | 0",
+   "toss-p2-jecheon | toss-root | 1 | page | Spot 1. 제천: 산을 오르다 보면 생각도 단순해진다 (옥순봉·의림지) | 월악산 옥순봉 암릉 구간, 자기만의 속도 및 환경심리학 주의 회복 이론(ART) | toss_page_2 |  | toss_p2_body | 0 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p2_title | toss-p2-jecheon | 2 | slot | Spot 1 타이틀 | Spot 1. 제천: 산을 오르다 보면 생각도 단순해진다 | toss_page_2 | blk_toss_p2_title | toss_p2_title | 1 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p2_body | toss-p2-jecheon | 2 | slot | Spot 1 본문 | 충북 제천에 있는 옥순봉은 월악산국립공원이 품은 아름다운 봉우리입니다. 희고 푸른 바위들이 대나무 순처럼 솟았다고 해서 옥순봉이라 불러요. 해발 283m로 낮은  | toss_page_2 | blk_toss_p2_body | toss_p2_body | 0 | 0",
+   "toss-p3-gochang | toss-root | 1 | page | Spot 2. 고창: 다시 제 모습을 찾아가는 힘, 회복탄력성 (운곡람사르습지) | 스스로 치유하고 원시 습지를 복원한 자연의 거대한 회복탄력성(Resilience) | toss_page_3 |  | toss_p3_body | 0 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p3_title | toss-p3-gochang | 2 | slot | Spot 2 타이틀 | Spot 2. 고창: 다시 제 모습을 찾아가는 힘, 회복탄력성 | toss_page_3 | blk_toss_p3_title | toss_p3_title | 1 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p3_body | toss-p3-gochang | 2 | slot | Spot 2 본문 | 전북 고창에 자리한 운곡람사르습지는 사람의 손길이 닿지 않은 채 스스로 치유된 특별한 자연 공간입니다. 과거 계단식 논과 농가들이 있던 자리였지만, 1980년대  | toss_page_3 | blk_toss_p3_body | toss_p3_body | 0 | 0",
+   "toss-p4-buyeo | toss-root | 1 | page | Spot 3. 부여: 오래된 시간 곁을 걷는다는 것 (부소산성·반월루) | 부소산성 판축 기법, 흘러가는 시간의 위로 및 잘 쉬었다는 감각의 완성 | toss_page_4 |  | toss_p4_body | 0 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p4_title | toss-p4-buyeo | 2 | slot | Spot 3 타이틀 | Spot 3. 부여: 오래된 시간 곁을 걷는다는 것 | toss_page_4 | blk_toss_p4_title | toss_p4_title | 1 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p4_body | toss-p4-buyeo | 2 | slot | Spot 3 본문 | 오래된 공간을 여행하면 내가 살지 못한 시간을 조금 빌려 사는 기분이 듭니다. 정현종 시인의 「방문객」을 읽을 때와 비슷해요. 한 사람을 만난다는 건 그 사람이  | toss_page_4 | blk_toss_p4_body | toss_p4_body | 0 | 0",
+   "auto-slot-vdoc_ref_toss_safezone_travel-toss_p4_outro | toss-p4-buyeo | 2 | slot | 에필로그 및 크레딧 | 잘 쉬었다는 감각. 다시 내 일상으로 돌아가도 괜찮겠다는 마음. 그 정도를 챙겨올 수 있다면 여행은 제 몫을 다한 것입니다. • 글: 송윤경 여행작가 (소도시트래 | toss_page_4 | blk_toss_p4_outro | toss_p4_outro | 1 | 0"
+  ]
+ }
+}

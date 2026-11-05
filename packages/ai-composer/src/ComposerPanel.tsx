@@ -10,6 +10,7 @@ import {
   Hand,
   Loader2,
   MessageSquarePlus,
+  Paperclip,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
@@ -18,6 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 
+import { isAttachableDrag, readContextDrag } from "@vibe/ai-kernel";
 import type {
   AiRuntime,
   ComposerItem,
@@ -26,7 +28,15 @@ import type {
   EngineStatus,
   PermissionMode,
 } from "@vibe/ai-kernel";
-import { ContextChip, MarkdownText, PromptInput, useComposerState } from "@vibe/ai-react";
+import {
+  AiSurfaceProvider,
+  ContextChip,
+  EntityChip,
+  MarkdownText,
+  PromptInput,
+  useComposerState,
+  type AiSurfaceValue,
+} from "@vibe/ai-react";
 
 export interface ComposerSuggestion {
   label: string;
@@ -74,6 +84,40 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const stickRef = React.useRef(true);
   const busy = state.status !== "idle";
+  const surface = React.useMemo<AiSurfaceValue>(
+    () => ({ runtime, attach: (refs) => controller.attach(refs) }),
+    [runtime, controller]
+  );
+  // 패널 전체가 놓는 곳 — 자식 요소를 오가며 생기는 dragenter/leave 짝을 세어 깜빡임을 막는다.
+  const [dropping, setDropping] = React.useState(false);
+  const dragDepth = React.useRef(0);
+  const dropHandlers = {
+    onDragEnter: (e: React.DragEvent) => {
+      if (!isAttachableDrag(e.dataTransfer, runtime)) return;
+      e.preventDefault();
+      dragDepth.current += 1;
+      setDropping(true);
+    },
+    onDragOver: (e: React.DragEvent) => {
+      if (!isAttachableDrag(e.dataTransfer, runtime)) return;
+      e.preventDefault();
+      // 출처가 허용한 효과와 맞춰야 drop 이 일어난다 (캔버스 블록 핸들은 재배치용이라 move 만 허용).
+      const allowed = e.dataTransfer.effectAllowed;
+      e.dataTransfer.dropEffect = allowed === "move" ? "move" : allowed === "link" ? "link" : "copy";
+    },
+    onDragLeave: () => {
+      dragDepth.current = Math.max(0, dragDepth.current - 1);
+      if (dragDepth.current === 0) setDropping(false);
+    },
+    onDrop: (e: React.DragEvent) => {
+      dragDepth.current = 0;
+      setDropping(false);
+      if (!isAttachableDrag(e.dataTransfer, runtime)) return;
+      e.preventDefault(); // 입력창에 텍스트로 붙는 기본 동작 막기
+      const refs = readContextDrag(e.dataTransfer, runtime);
+      if (refs.length) controller.attach(refs);
+    },
+  };
 
   React.useEffect(() => {
     const el = scrollRef.current;
@@ -81,7 +125,20 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   }, [state.items]);
 
   return (
-    <div data-testid="ai-composer-panel" className="flex flex-col h-full min-h-0 bg-white">
+    <AiSurfaceProvider value={surface}>
+    <div data-testid="ai-composer-panel" className="relative flex flex-col h-full min-h-0 bg-white" {...dropHandlers}>
+      {dropping && (
+        <div
+          data-testid="composer-drop-overlay"
+          className="absolute inset-1.5 z-40 rounded-xl border-2 border-dashed border-indigo-400 bg-indigo-50/95 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 pointer-events-none"
+        >
+          <Paperclip className="w-6 h-6 text-indigo-500" />
+          <div className="text-[13px] font-bold text-indigo-900">여기에 놓아 첨부</div>
+          <div className="text-[11px] text-indigo-700 text-center px-6 leading-relaxed">
+            입력창에 <span className="font-mono font-bold">@이름</span> 이 들어갑니다. 칩의 <b>대상</b> · <b>참조</b> 를 눌러 역할을 바꿀 수 있어요.
+          </div>
+        </div>
+      )}
       <ComposerHeader
         state={state}
         engines={engines}
@@ -125,11 +182,13 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
           autoContexts={autoContexts}
           busy={busy}
           draft={state.draft}
+          inbox={state.inbox}
           onSubmit={(text, contexts) => void controller.send(text, contexts)}
           onStop={() => controller.stop()}
         />
       </div>
     </div>
+    </AiSurfaceProvider>
   );
 };
 
@@ -273,8 +332,13 @@ const ThreadItem: React.FC<{ item: ComposerItem; onApprove(callId: string): void
             {item.contexts.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-1.5">
                 {item.contexts.map((c) => (
-                  <span key={`${c.kind}:${c.id}`} className="px-1.5 py-px rounded bg-white/15 text-[10.5px]">
-                    @{c.label}
+                  <span
+                    key={`${c.kind}:${c.id}`}
+                    title={c.hint ?? c.label}
+                    className={`px-1.5 py-px rounded text-[10.5px] ${c.handle && c.role === "target" ? "bg-amber-300/30 ring-1 ring-amber-200/60" : "bg-white/15"}`}
+                  >
+                    {c.handle ? `${c.handle} ${c.label}` : `@${c.label}`}
+                    {c.handle && <span className="ml-1 opacity-75">{c.role === "target" ? "대상" : "참조"}</span>}
                   </span>
                 ))}
               </div>
@@ -393,6 +457,7 @@ const ToolCallCard: React.FC<{
         <span className={`ml-auto shrink-0 px-1.5 py-px rounded border text-[9.5px] font-bold uppercase ${RISK_STYLE[item.risk]}`}>{item.risk}</span>
         {open ? <ChevronDown className="w-3 h-3 text-slate-400" /> : <ChevronRight className="w-3 h-3 text-slate-400" />}
       </button>
+      <ToolTargets args={item.arguments} />
       {item.status === "awaiting_approval" && (
         <div className="flex items-center gap-1.5 px-2.5 pb-2">
           <span className="text-amber-800 text-[11px] mr-auto">이 도구를 실행할까요?</span>
@@ -420,6 +485,36 @@ const ToolCallCard: React.FC<{
           {item.error && <div className="text-rose-600">{item.error}</div>}
         </div>
       )}
+    </div>
+  );
+};
+
+/** 도구 인자에 들어 있는 위치(slotId · blockId · pageId · docId)를 칩으로 — 어디가 바뀌는지 바로 눌러 본다. */
+const TARGET_KEYS: [string, string][] = [
+  ["pageId", "page"],
+  ["blockId", "block"],
+  ["slotId", "slot"],
+  ["docId", "doc"],
+  ["chunkId", "backdata"],
+];
+
+const ToolTargets: React.FC<{ args: Record<string, unknown> }> = ({ args }) => {
+  const targets: { id: string; kind: string }[] = [];
+  for (const [key, kind] of TARGET_KEYS) {
+    const value = args?.[key];
+    if (typeof value === "string" && value) targets.push({ id: value, kind });
+  }
+  const batch = Array.isArray(args?.changes) ? (args.changes as { slotId?: unknown }[]) : [];
+  for (const change of batch.slice(0, 12)) {
+    if (typeof change?.slotId === "string") targets.push({ id: change.slotId, kind: "slot" });
+  }
+  if (targets.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1 px-2.5 pb-1.5 -mt-0.5">
+      {targets.map((t) => (
+        <EntityChip key={`${t.kind}:${t.id}`} id={t.id} kind={t.kind} fallback={null} />
+      ))}
+      {batch.length > 12 && <span className="text-[10.5px] text-slate-400">외 {batch.length - 12}개</span>}
     </div>
   );
 };

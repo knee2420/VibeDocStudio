@@ -1,10 +1,13 @@
 import type { WorkspaceTool } from "@vibe/ai-kernel";
 import {
+  findBlock,
+  getBlockKind,
   getBlockSlotIds,
   getSlotBackdata,
   htmlToSummary,
   type StagedAiChange,
   type VDocDocument,
+  validateBlockProps,
 } from "@vibe/vdoc-schema";
 
 import { useAiStagingStore } from "@/entities/ai-staging";
@@ -163,6 +166,99 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
       };
       useAiStagingStore.getState().enqueue([change]);
       return { staged: true, diffId: change.diffId, note: "Staged 대기열에 올렸습니다. 사용자가 승인하면 반영됩니다." };
+    },
+  },
+  {
+    name: "slots.proposeBatch",
+    description:
+      "여러 슬롯(표 셀 · 그리드 칸 · 섹션)의 새 본문을 한 번에 변경안으로 제출한다. 블록 하나를 채우거나 고칠 때 slot.proposeContent 를 여러 번 부르지 말고 이것을 쓴다. 잠긴 · 고정 문구 슬롯은 건너뛴다",
+    risk: "stage",
+    inputSchema: {
+      type: "object",
+      properties: {
+        changes: { type: "array", description: "[{slotId, html}] — html 은 <p>, <ul>, <li>, <strong>, <em> 만" },
+        reason: { type: "string", description: "변경 이유 한 줄" },
+      },
+      required: ["changes"],
+    },
+    describe: (args: { changes?: unknown[]; reason?: string }) =>
+      `슬롯 ${Array.isArray(args.changes) ? args.changes.length : 0}개 변경안 제출${args.reason ? ` — ${args.reason}` : ""}`,
+    run: (args: { changes: { slotId: string; html: string }[]; reason?: string }) => {
+      const doc = activeDoc();
+      if (!Array.isArray(args.changes) || args.changes.length === 0) throw new Error("changes 가 비어 있습니다.");
+      const staged: StagedAiChange[] = [];
+      const skipped: { slotId: string; why: string }[] = [];
+      for (const change of args.changes) {
+        const slot = doc.slots[change?.slotId];
+        if (!slot) skipped.push({ slotId: String(change?.slotId), why: "없는 슬롯" });
+        else if (slot.constraints?.locked) skipped.push({ slotId: slot.slotId, why: "잠김" });
+        else if (slot.role === "boilerplate") skipped.push({ slotId: slot.slotId, why: "고정 문구" });
+        else if (typeof change.html !== "string" || !change.html.trim()) skipped.push({ slotId: slot.slotId, why: "빈 html" });
+        else if (change.html.trim() === slot.content.trim()) skipped.push({ slotId: slot.slotId, why: "변경 없음" });
+        else
+          staged.push({
+            diffId: newId("stg-composer"),
+            phase: "drafting",
+            targetKind: "slot-html",
+            targetId: slot.slotId,
+            title: `[AI Composer] ${slot.label}${args.reason ? ` — ${args.reason}` : ""}`,
+            beforeSummary: htmlToSummary(slot.content, 80) || "(빈 슬롯)",
+            afterSummary: htmlToSummary(change.html, 110),
+            payload: { slotId: slot.slotId, html: change.html },
+            sourceReferenceIds: slot.backDataRefs,
+          });
+      }
+      if (staged.length) useAiStagingStore.getState().enqueue(staged);
+      return {
+        staged: staged.length,
+        diffIds: staged.map((c) => c.diffId),
+        skipped,
+        note: staged.length ? `${staged.length}건을 Staged 대기열에 올렸습니다. 사용자가 한꺼번에 승인 · 거절할 수 있습니다.` : "올린 변경안이 없습니다.",
+      };
+    },
+  },
+  {
+    name: "blocks.proposeProps",
+    description:
+      "슬롯 밖 블록 속성(이미지 대체 텍스트 · 정렬 · 너비, 담당자 등)의 변경안을 제출한다. 바꿀 수 있는 속성은 블록 종류마다 다르며 블록 첨부 내용의 '바꿀 수 있는 블록 속성' 에 나온다",
+    risk: "stage",
+    inputSchema: {
+      type: "object",
+      properties: {
+        blockId: { type: "string" },
+        props: { type: "object", description: "{속성: 새 값}" },
+        reason: { type: "string", description: "변경 이유 한 줄" },
+      },
+      required: ["blockId", "props"],
+    },
+    describe: (args: { blockId?: string; props?: Record<string, unknown> }) =>
+      `블록 ${args.blockId} 속성 변경안 (${Object.keys(args.props ?? {}).join(", ")})`,
+    run: (args: { blockId: string; props: Record<string, unknown>; reason?: string }) => {
+      const doc = activeDoc();
+      const loc = findBlock(doc, args.blockId);
+      if (!loc) throw new Error(`블록을 찾을 수 없습니다: ${args.blockId}`);
+      if (loc.block.locked) throw new Error(`잠긴 블록입니다: ${loc.block.title}`);
+      const { ok, rejected } = validateBlockProps(loc.block, args.props);
+      const allowed = Object.keys(getBlockKind(loc.block.kind).ai?.editableProps ?? {});
+      if (Object.keys(ok).length === 0) {
+        throw new Error(`바꿀 수 있는 속성이 없습니다. 이 블록에서 허용: ${allowed.join(", ") || "(없음)"} · 거부: ${rejected.map((r) => `${r.key}(${r.why})`).join(", ")}`);
+      }
+      const before = Object.keys(ok)
+        .map((k) => `${k}=${String((loc.block as unknown as Record<string, unknown>)[k] ?? "-")}`)
+        .join(", ");
+      const change: StagedAiChange = {
+        diffId: newId("stg-composer"),
+        phase: "drafting",
+        targetKind: "block-props",
+        targetId: loc.block.blockId,
+        title: `[AI Composer] ${loc.block.title || getBlockKind(loc.block.kind).label} 속성${args.reason ? ` — ${args.reason}` : ""}`,
+        beforeSummary: before,
+        afterSummary: Object.entries(ok).map(([k, v]) => `${k}=${String(v)}`).join(", "),
+        payload: { blockId: loc.block.blockId, props: ok },
+        sourceReferenceIds: [],
+      };
+      useAiStagingStore.getState().enqueue([change]);
+      return { staged: true, diffId: change.diffId, applied: ok, rejected };
     },
   },
   {

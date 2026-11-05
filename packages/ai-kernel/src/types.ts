@@ -21,6 +21,56 @@ export interface ContextRef {
   content?: string;
   /** 칩 툴팁 등 화면용 부가 정보. 모델에는 가지 않는다. */
   hint?: string;
+  /** 이 요소를 고칠 수 있는가. write 만 "대상"이 될 수 있다 (기본 read). */
+  access?: ContextAccess;
+  /** 이번 요청에서의 역할 — target(고칠 대상) · reference(참고자료). 비우면 access 로 정한다. */
+  role?: ContextRole;
+  /** 프롬프트에서 가리키는 짧은 이름 (`@블록1`). 입력창이 첨부할 때 붙인다. */
+  handle?: string;
+  /** 화면 복원용 부가 정보 (페이지 · 좌표 · 소속 문서 …). 모델에는 가지 않는다. */
+  meta?: Record<string, unknown>;
+}
+
+export type ContextAccess = "read" | "write";
+export type ContextRole = "target" | "reference";
+
+/** 첨부의 실제 역할: 명시한 role, 없으면 쓸 수 있는 요소는 대상 · 나머지는 참고자료. */
+export function contextRole(ref: ContextRef): ContextRole {
+  if (ref.role) return ref.role;
+  return ref.access === "write" ? "target" : "reference";
+}
+
+/**
+ * 화면 요소 하나 (페이지 · 블록 · 슬롯 · 참조 문서 …) — 답변 속 위치 링크와 첨부 칩이 같은 정보를 쓴다.
+ * 기능이 `EntityResolver` 로 등록하고, UI 는 id 만 들고 있다가 여기서 찾아 강조 · 이동한다.
+ */
+export interface EntityInfo {
+  kind: string;
+  id: string;
+  label: string;
+  /** 칩 옆 작은 설명 (예: "3페이지 · 표"). */
+  detail?: string;
+  /** 화면에서 그 위치로 이동 · 선택한다. */
+  reveal(): void;
+  /** 이동하지 않고 잠깐 강조한다 (호버). */
+  highlight(on: boolean): void;
+  /** 첨부용 컨텍스트 (끌기 · Ctrl+클릭). */
+  toContext?(): ContextRef;
+}
+
+export interface EntityResolver {
+  id: string;
+  /** `kind` 가 주어지면(링크 `vdoc:block/…`) 그 종류만, 없으면 맨 id 로 찾는다. */
+  resolve(id: string, kind?: string): EntityInfo | null;
+}
+
+/**
+ * 다른 위젯이 이미 쓰는 드래그 데이터(MIME)를 첨부로 바꾸는 번역기.
+ * 예: 캔버스 블록 재배치용 `application/x-vdoc-block` → 블록 컨텍스트.
+ */
+export interface DropTranslator {
+  mime: string;
+  translate(data: string): ContextRef[];
 }
 
 /** 위젯 · 기능이 자기 컨텍스트를 노출하는 통로. */
@@ -63,7 +113,7 @@ export interface AiAction {
   icon?: string;
   /** 지시문. 함수면 선택 텍스트 등으로 만든다. */
   instruction: string | ((input: AiActionInput) => string);
-  outputFormat?: "html" | "text" | "markdown";
+  outputFormat?: "html" | "text" | "markdown" | "slot-map";
   /** 이 액션이 보일 표면 id 들 (`slot-richtext`, `slot-selection`, `composer` …). */
   surfaces: string[];
   group?: string;

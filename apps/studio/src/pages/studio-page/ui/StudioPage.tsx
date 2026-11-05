@@ -1,7 +1,7 @@
 import React from "react";
 
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
-import { registerWorkspaceAi } from "@/features/ai-workspace";
+import { AiAttachLayer, registerWorkspaceAi } from "@/features/ai-workspace";
 import { GlobalUndoToastHost, useGlobalStudioShortcuts } from "@/features/command-bus";
 import { registerSlotAiActions } from "@/features/compose-slot-ai";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
@@ -54,6 +54,7 @@ const StudioWorkspace: React.FC = () => {
 
       <GlobalUndoToastHost />
       <HoverPagePeekCard />
+      <AiAttachLayer />
     </div>
   );
 };

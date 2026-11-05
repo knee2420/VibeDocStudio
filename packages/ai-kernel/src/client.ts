@@ -1,4 +1,5 @@
 import type { AssistantEvent, ContextRef, EngineStatus, PermissionMode, ToolManifestEntry } from "./types";
+import { contextRole } from "./types";
 
 export interface AssistantClientOptions {
   baseUrl: string;
@@ -20,7 +21,7 @@ export interface InlineRunPayload {
   actionId?: string;
   instruction: string;
   contexts: ContextRef[];
-  outputFormat: "html" | "text" | "markdown";
+  outputFormat: "html" | "text" | "markdown" | "slot-map";
   model?: string;
 }
 
@@ -170,7 +171,9 @@ async function errorText(res: Response): Promise<string> {
 }
 
 function toWireContext(ref: ContextRef) {
-  return { kind: ref.kind, id: ref.id, label: ref.label, content: ref.content ?? "" };
+  // 역할은 명시한 첨부(handle 이 있는 것)에만 붙인다 — 자동 첨부(현재 선택 · 문서)는 배경 정보.
+  const role = ref.handle ? contextRole(ref) : "";
+  return { kind: ref.kind, id: ref.id, label: ref.label, content: ref.content ?? "", role, handle: ref.handle ?? "" };
 }
 
 function toWireMessage(payload: SendMessagePayload) {

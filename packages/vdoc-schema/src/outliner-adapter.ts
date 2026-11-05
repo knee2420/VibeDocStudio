@@ -1,4 +1,4 @@
-import { getBlockSlotIds } from "./block-ops";
+import { genericBlockKind, getBlockKind, type BlockOutlineContext } from "./block-kit";
 import { PROJECT_ROOT_CRUMB_ID } from "./layout-constants";
 import {
   dedupeNames,
@@ -356,90 +356,42 @@ export function buildProjectFractalTree(
       });
     };
 
+    /** 블록 종류마다 아웃라인 모양은 그 정의(`block-kit`)가 정하고, 여기서는 이 블록에 묶인 도구를 넘긴다. */
     const emitBlock = (pageNode: OutlinerNode, page: VDocPage, blk: LayoutBlock) => {
       const blockTitle = tidyBlockTitle(blk.title);
       const blockNodeId = `auto-blk-${doc.docId}-${blk.blockId}`;
-      switch (blk.kind) {
-        case "heading":
-        case "form-title":
-        case "text":
-        case "fillable-group": {
-          const slot = doc.slots[blk.slotId];
-          if (!slot) return;
-          emitSlot(pageNode, page, blk.blockId, blk.slotId, nameStandaloneSlot(slot, blockTitle), slot.role === "boilerplate");
-          return;
-        }
-        case "image":
+      const ctx: BlockOutlineContext = {
+        doc,
+        page,
+        pageNode,
+        blockNodeId,
+        blockTitle,
+        emitSlot: (parent, slotId, name, isStatic) => emitSlot(parent, page, blk.blockId, slotId, name, isStatic),
+        emitContainer: (parent, nodeId, title, summary, needsReview) => emitContainer(parent, nodeId, page, blk, title, summary, needsReview),
+        emitSlotGroup: (parent, entries) => emitSlotGroup(parent, page, blk.blockId, entries),
+        emitStatic: (title, summary) =>
           emit({
             nodeId: blockNodeId,
             parentId: pageNode.nodeId,
             depth: pageNode.depth + 1,
             zoomLevel: "slot",
-            title: blockTitle || "이미지",
-            summary: "이미지",
+            title,
+            summary,
             targetDocId: doc.docId,
             targetPageId: page.pageId,
             targetBlockId: blk.blockId,
             aiStatus: "idle",
             isStatic: true,
-          });
-          return;
-        case "section-block": {
-          const heading = doc.slots[blk.headingSlotId];
-          const title = tidyName(plainText(heading?.content)).slice(0, 60) || blockTitle || "구획";
-          if (!heading || heading.role === "boilerplate") {
-            // 제목이 고정 텍스트면 구획 = 본문 한 칸이다.
-            emitSlot(pageNode, page, blk.blockId, blk.bodySlotId, { title, needsReview: false });
-            return;
-          }
-          const sectionNode = emitContainer(pageNode, blockNodeId, page, blk, title, "구획 · 제목 + 본문");
-          emitSlotGroup(sectionNode, page, blk.blockId, [
-            { slotId: blk.headingSlotId, name: { title: "제목", needsReview: false } },
-            { slotId: blk.bodySlotId, name: { title: "본문", needsReview: false } },
-          ]);
-          return;
-        }
-        case "columns-grid":
-        case "cover-banner": {
-          const slotIds = getBlockSlotIds(blk).filter((id) => doc.slots[id]);
-          if (slotIds.length === 1) {
-            const slot = doc.slots[slotIds[0]];
-            emitSlot(pageNode, page, blk.blockId, slotIds[0], nameStandaloneSlot(slot, blockTitle), slot.role === "boilerplate");
-            return;
-          }
-          const groupNode = emitContainer(
-            pageNode,
-            blockNodeId,
-            page,
-            blk,
-            blockTitle || (blk.kind === "cover-banner" ? "표지" : "다단 그리드"),
-            blk.kind === "cover-banner" ? "표지 배너" : `다단 그리드 · ${slotIds.length}칸`
-          );
-          emitSlotGroup(
-            groupNode,
-            page,
-            blk.blockId,
-            slotIds.map((slotId) => ({
-              slotId,
-              name: nameStandaloneSlot(doc.slots[slotId], ""),
-              isStatic: doc.slots[slotId].role === "boilerplate",
-            }))
-          );
-          return;
-        }
-        case "summary-list": {
-          const listNode = emitContainer(pageNode, blockNodeId, page, blk, blockTitle || "요약 목록", `요약 목록 · ${blk.items.length}항목`);
-          emitSlotGroup(listNode, page, blk.blockId, summaryItemEntries(blk.items));
-          return;
-        }
-        case "structured-table":
-        case "table":
-          emitTable(pageNode, page, blk);
-          return;
-        case "composite-form-frame":
-          emitFrame(pageNode, page, blk);
-          return;
-      }
+          }),
+        emitTable: (table) => emitTable(pageNode, page, table),
+        emitFrame: (frame) => emitFrame(pageNode, page, frame),
+        summaryItemEntries,
+        nameStandaloneSlot,
+        plainText,
+        tidyName,
+      };
+      const def = getBlockKind(blk.kind);
+      def.outline ? def.outline(blk, ctx) : genericBlockKind.outline!(blk, ctx);
     };
 
     for (const page of doc.pages) {

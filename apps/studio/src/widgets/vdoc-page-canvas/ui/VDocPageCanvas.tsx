@@ -17,10 +17,12 @@ import { StressPagesToggleButton } from "@/features/simulate-large-document";
 import { useFractalZoomNavigation } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
 
+import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
 import { AiStagingDrawer } from "./AiStagingDrawer";
 import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
 import { ReferenceSplitViewport } from "./ReferenceSplitViewport";
+import { SlotRangeAiBar } from "./SlotRangeAiBar";
 
 /** 한 번에 DOM 에 올리는 페이지 수 (슬라이딩 윈도우). */
 const WINDOW_CHUNK_PAGES = 15;
@@ -98,6 +100,11 @@ const DraftingCanvas: React.FC = () => {
   const { projection, handleZoomOutOneLevel } = useFractalZoomNavigation();
   const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceDocIds.length);
 
+  // 표 구역 · 블록 · 페이지를 넘는 슬롯 범위 선택 (드래그 · 브라우저 선택)
+  const mainRef = React.useRef<HTMLElement>(null);
+  const getMain = React.useCallback(() => mainRef.current, []);
+  useCanvasRangeSelection(getMain);
+
   // 페이지 시트에 넘기는 콜백은 모두 고정 참조여야 MemoVDocPageSheet 의 메모가 유지된다.
   const onSelectSlot = useStableCallback((slotId: string) => {
     setSelectedSlotId(slotId);
@@ -149,6 +156,7 @@ const DraftingCanvas: React.FC = () => {
 
   return (
     <main
+      ref={mainRef}
       onClick={() => clearSelection()}
       className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6]"
     >
@@ -246,6 +254,7 @@ export const VDocPageCanvas: React.FC = () => {
           <DraftingCanvas />
         )}
       </div>
+      {currentPhase === "drafting" && <SlotRangeAiBar />}
       <AiStagingDrawer />
     </div>
   );

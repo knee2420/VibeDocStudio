@@ -1,10 +1,11 @@
-import type { ContextProvider } from "@vibe/ai-kernel";
+import type { ContextProvider, ContextRef } from "@vibe/ai-kernel";
 import type { VDocDocument } from "@vibe/vdoc-schema";
 
 import { slotContext, useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { htmlToPlain } from "@/shared/lib";
 
+import { backdataRef, blockRef, docIndex, pageRef, referenceRef, resolveContextContent, slotRef, variableRef } from "./contextBuilders";
 import { referenceDocs } from "./referenceDocs";
 
 const doc = (): VDocDocument | undefined => selectActiveDocument(useStudioDocumentStore.getState());
@@ -55,12 +56,33 @@ export const WORKSPACE_CONTEXT_PROVIDERS: ContextProvider[] = [
       return Object.values(d.slots)
         .filter((s) => s.role !== "boilerplate" && matches(q, s.label, s.slotId))
         .slice(0, 10)
-        .map((s) => ({ kind: "slot", id: s.slotId, label: s.label, hint: htmlToPlain(s.content, 40) }));
+        .map((s) => ({ ...slotRef(d, s), hint: htmlToPlain(s.content, 40) }));
     },
-    resolve: (ref) => {
+  },
+  {
+    id: "blocks",
+    label: "블록",
+    search: (q) => {
       const d = doc();
-      if (ref.kind !== "slot" || !d?.slots[ref.id]) return ref;
-      return slotContext(d, d.slots[ref.id]);
+      if (!d) return [];
+      const out: ContextRef[] = [];
+      for (const { page, block } of docIndex(d).blocks.values()) {
+        if (matches(q, block.title ?? "", block.blockId, block.kind)) out.push(blockRef(d, page, block));
+        if (out.length >= 8) break;
+      }
+      return out;
+    },
+  },
+  {
+    id: "pages",
+    label: "페이지",
+    search: (q) => {
+      const d = doc();
+      if (!d) return [];
+      return d.pages
+        .filter((p) => matches(q, p.pageLabel ?? "", p.pageId))
+        .slice(0, 6)
+        .map((p) => pageRef(d, p));
     },
   },
   {
@@ -72,11 +94,8 @@ export const WORKSPACE_CONTEXT_PROVIDERS: ContextProvider[] = [
       return Object.values(d.backdata)
         .filter((c) => matches(q, c.sourceTitle, c.excerpt))
         .slice(0, 6)
-        .map((c) => ({ kind: "backdata", id: c.chunkId, label: c.sourceTitle, hint: c.excerpt.slice(0, 40) }));
-    },
-    resolve: (ref) => {
-      const chunk = ref.kind === "backdata" ? doc()?.backdata[ref.id] : undefined;
-      return chunk ? { ...ref, content: `[${chunk.sourceTitle}] (${chunk.sourceType})\n${chunk.excerpt}` } : ref;
+        .map((c) => backdataRef(d, c.chunkId))
+        .filter((r): r is ContextRef => Boolean(r));
     },
   },
   {
@@ -85,16 +104,27 @@ export const WORKSPACE_CONTEXT_PROVIDERS: ContextProvider[] = [
     search: (q) =>
       referenceDocs()
         .filter((r) => matches(q, r.title))
-        .map((r) => ({ kind: "reference", id: r.docId, label: r.title, hint: `${r.pageCount ?? "?"}페이지${r.openInSplit ? " · 분할보기" : ""}` })),
+        .map((r) => ({ ...referenceRef(r.docId, r.title), hint: `${r.pageCount ?? "?"}페이지${r.openInSplit ? " · 분할보기" : ""}` })),
+  },
+  {
+    id: "variables",
+    label: "문서 변수",
+    search: (q) => {
+      const d = doc();
+      if (!d) return [];
+      return Object.keys(d.variables ?? {})
+        .filter((name) => matches(q, name, d.variables[name] ?? ""))
+        .slice(0, 6)
+        .map((name) => variableRef(d, name));
+    },
+  },
+  {
+    // 끌어 놓기 · 우클릭 · Ctrl+L · @ 로 붙은 칩(슬롯 · 블록 · 페이지 · 노드 · 참조)의 본문을 보내기 직전에 채운다.
+    id: "workspace-elements",
+    label: "워크스페이스 요소",
     resolve: (ref) => {
-      if (ref.kind !== "reference") return ref;
-      const d = useStudioDocumentStore.getState().docs.find((x) => x.docId === ref.id);
-      if (!d) return ref;
-      const text = Object.values(d.slots)
-        .map((s) => `[${s.label}] ${htmlToPlain(s.content)}`)
-        .filter((line) => line.length > 4)
-        .join("\n");
-      return { ...ref, content: `참조 문서: ${d.title}\n${text.slice(0, 12000)}` };
+      const content = resolveContextContent(ref);
+      return content == null ? ref : { ...ref, content };
     },
   },
 ];

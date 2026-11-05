@@ -81,8 +81,14 @@ export interface StagedSlotHtmlChange extends StagedAiChangeBase {
   payload: { slotId: string; html: string };
 }
 
+/** Phase 3: 블록 속성 변경안 (이미지 대체 텍스트 · 정렬 · 담당자 …). 바꿀 수 있는 속성은 블록 정의가 정한다. */
+export interface StagedBlockPropsChange extends StagedAiChangeBase {
+  targetKind: "block-props";
+  payload: { blockId: string; props: Record<string, string | number | boolean> };
+}
+
 /** AI 가 작업대에 제안하는 Staged 변경안. `targetKind` 로 `payload` 모양이 정해진다. */
-export type StagedAiChange = StagedOutlineNodeChange | StagedTemplateBlockChange | StagedSlotHtmlChange;
+export type StagedAiChange = StagedOutlineNodeChange | StagedTemplateBlockChange | StagedSlotHtmlChange | StagedBlockPropsChange;
 export type StagedTargetKind = StagedAiChange["targetKind"];
 
 export interface VProjectManifest {

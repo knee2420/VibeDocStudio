@@ -17,6 +17,7 @@ import { PROJECT_ROOT_CRUMB_ID, type OutlinerNode } from "@vibe/vdoc-schema";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { attachable, outlineNodeRef, useAttachPickStore, withPicked } from "@/features/ai-workspace";
 import { isEditableOutlineNode, useOutlineNodeEditing } from "@/features/edit-outline";
 import { resolvePeekTarget, usePeekTrigger } from "@/features/peek-page";
 import { useFractalZoomNavigation } from "@/features/zoom-hierarchy";
@@ -104,6 +105,9 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
   const quickFilterQuery = useWorkspaceSessionStore((s) => s.quickFilterQuery);
   const setQuickFilterQuery = useWorkspaceSessionStore((s) => s.setQuickFilterQuery);
   const setPreviewDocId = useWorkspaceSessionStore((s) => s.setPreviewDocId);
+  const highlightedEntityId = useWorkspaceSessionStore((s) => s.highlightedEntityId);
+  const pickedOutline = useAttachPickStore((s) => s.picked.outline);
+  const pickAnchor = React.useRef<string | null>(null);
 
   const { projection, handleBulletZoomIn, handleSelectOutlineNode, handleBreadcrumbClick, handleZoomOutOneLevel } =
     useFractalZoomNavigation();
@@ -119,8 +123,34 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
   };
 
   const isHighlighted = (node: OutlinerNode) =>
-    hoveredTargetId !== null &&
-    [node.targetSlotId, node.targetBlockId, node.targetPageId, node.nodeId].includes(hoveredTargetId);
+    (hoveredTargetId !== null &&
+      [node.targetSlotId, node.targetBlockId, node.targetPageId, node.nodeId].includes(hoveredTargetId)) ||
+    // AI 칩 호버는 정확히 그 대상을 가리키는 노드만
+    (highlightedEntityId !== null && (outlineNodeTargetId(node) === highlightedEntityId || node.nodeId === highlightedEntityId));
+
+  /** Ctrl/⌘+클릭: 첨부 묶음에 넣고 빼기 · Shift+클릭: 범위로 고르기 · 그냥 클릭: 묶음 해제 후 선택. */
+  const pickOrSelect = (e: React.MouseEvent, node: OutlinerNode) => {
+    const picks = useAttachPickStore.getState();
+    if (e.ctrlKey || e.metaKey) {
+      picks.togglePick("outline", outlineNodeRef(node));
+      pickAnchor.current = node.nodeId;
+      return true;
+    }
+    if (e.shiftKey) {
+      const nodes = projection.visibleNodes;
+      const from = nodes.findIndex((n) => n.nodeId === (pickAnchor.current ?? selectedOutlinerNodeId));
+      const to = nodes.findIndex((n) => n.nodeId === node.nodeId);
+      if (from !== -1 && to !== -1) {
+        const [a, b] = from < to ? [from, to] : [to, from];
+        picks.setPicks("outline", nodes.slice(a, b + 1).map(outlineNodeRef));
+        window.getSelection()?.removeAllRanges();
+        return true;
+      }
+    }
+    if (picks.picked.outline?.length) picks.clearPicks("outline");
+    pickAnchor.current = node.nodeId;
+    return false;
+  };
 
   return (
     <>
@@ -261,11 +291,14 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
               node={node}
               isSelected={selectedOutlinerNodeId === node.nodeId || projection.rootNodeId === node.nodeId}
               isHighlighted={isHighlighted(node)}
+              isPicked={Boolean(pickedOutline?.some((r) => r.id === outlineNodeTargetId(node) || r.id === node.nodeId))}
+              attachProps={attachable(() => withPicked("outline", outlineNodeRef(node)))}
               hasChildren={Boolean(projection.hasChildrenMap[node.nodeId])}
               isCollapsed={collapsedNodeIds.includes(node.nodeId)}
               editable={isEditableOutlineNode(node)}
               peekHandlers={peekTrigger(resolvePeekTarget(docs, node.targetDocId || activeDocId, node.targetPageId))}
-              onSelect={() => {
+              onSelect={(e) => {
+                if (pickOrSelect(e, node)) return;
                 handleSelectOutlineNode(node);
                 setPreviewDocId(null);
               }}

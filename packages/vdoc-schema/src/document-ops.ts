@@ -2,6 +2,7 @@
  * @vibe/vdoc-schema — 블록 단위 순수 문서 연산 (이동 · 삽입 · 삭제 · 복제 · 잠금 · 프레임 · 표).
  * 바뀐 것이 없으면 같은 문서 참조를 돌려준다.
  */
+import { getBlockKind } from "./block-kit";
 import { cloneBlockWithSlots, getBlockSlotIds, isBlockLocked } from "./block-ops";
 import { applyTableCommand, type TableCommand } from "./table-ops";
 import type { LayoutBlock, VDocDocument, VDocSlot } from "./types";
@@ -195,6 +196,36 @@ export function resizeBlockFrame(doc: VDocDocument, pageId: string, blockId: str
   });
 }
 
+/**
+ * 블록 정의가 허용한 속성(`ai.editableProps`)만 골라 검사한다. 허용되지 않거나 형식이 틀린 값은 이유와 함께 돌려준다.
+ */
+export function validateBlockProps(
+  block: LayoutBlock,
+  props: Record<string, unknown>
+): { ok: Record<string, string | number | boolean>; rejected: { key: string; why: string }[] } {
+  const specs = getBlockKind(block.kind).ai?.editableProps ?? {};
+  const ok: Record<string, string | number | boolean> = {};
+  const rejected: { key: string; why: string }[] = [];
+  for (const [key, value] of Object.entries(props ?? {})) {
+    const spec = specs[key];
+    if (!spec) rejected.push({ key, why: "이 블록 종류에서 바꿀 수 없는 속성" });
+    else if (typeof value !== spec.type) rejected.push({ key, why: `${spec.type} 값이어야 함` });
+    else if (spec.enum && !spec.enum.includes(String(value))) rejected.push({ key, why: `허용 값: ${spec.enum.join(", ")}` });
+    else ok[key] = value as string | number | boolean;
+  }
+  return { ok, rejected };
+}
+
+/** 검사를 통과한 속성만 블록에 덮어쓴다. */
+export function patchBlockProps(doc: VDocDocument, blockId: string, props: Record<string, unknown>): VDocDocument {
+  const loc = findBlock(doc, blockId);
+  if (!loc) return doc;
+  const { ok } = validateBlockProps(loc.block, props);
+  if (Object.keys(ok).length === 0) return doc;
+  const next = mapBlock(doc, loc.pageId, blockId, (block) => ({ ...block, ...ok }) as LayoutBlock);
+  return next === doc ? doc : { ...next, updatedAt: new Date().toISOString() };
+}
+
 /** 표 명령을 표 블록 또는 복합 양식 프레임의 한 구역에 적용한다. */
 export function applyTableCommandToDocument(
   doc: VDocDocument,
@@ -206,25 +237,16 @@ export function applyTableCommandToDocument(
 ): VDocDocument {
   let slots = doc.slots;
   const next = mapBlock(doc, pageId, blockId, (block) => {
-    if (block.kind === "structured-table" || block.kind === "table") {
-      const result = applyTableCommand(block, slots, cmd, newId);
-      if (!result) return block;
-      slots = result.slots;
-      return result.block;
-    }
-    if (block.kind === "composite-form-frame" && sectionId) {
-      let changed = false;
-      const sections = block.sections.map((sec) => {
-        if (sec.sectionId !== sectionId) return sec;
-        const result = applyTableCommand(sec, slots, cmd, newId);
-        if (!result) return sec;
-        slots = result.slots;
-        changed = true;
-        return result.block;
-      });
-      return changed ? { ...block, sections } : block;
-    }
-    return block;
+    // 블록 안의 표(단일 표 · 서식 구역)는 블록 정의가 알려 준다.
+    const def = getBlockKind(block.kind);
+    const tables = def.tables?.(block) ?? [];
+    const target =
+      tables.length === 1 && tables[0].sectionId === null ? tables[0] : tables.find((t) => sectionId && t.sectionId === sectionId);
+    if (!target || !def.replaceTable) return block;
+    const result = applyTableCommand(target.table, slots, cmd, newId);
+    if (!result) return block;
+    slots = result.slots;
+    return def.replaceTable(block, target.sectionId, result.block);
   });
   if (slots === doc.slots && next === doc) return doc;
   return { ...next, slots, updatedAt: new Date().toISOString() };
