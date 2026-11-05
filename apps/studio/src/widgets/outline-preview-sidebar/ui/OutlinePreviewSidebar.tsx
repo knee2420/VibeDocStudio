@@ -19,8 +19,8 @@ import { SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-lay
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachable, outlineNodeRef, useAttachPickStore, withPicked } from "@/features/ai-workspace";
 import { isEditableOutlineNode, useOutlineNodeEditing } from "@/features/edit-outline";
-import { resolvePeekTarget, usePeekTrigger } from "@/features/peek-page";
-import { useFractalZoomNavigation } from "@/features/zoom-hierarchy";
+import { resolvePeekTarget, usePeekTrigger, type PeekHandlers } from "@/features/peek-page";
+import { useFractalZoomNavigation, useOutlineSelector } from "@/features/zoom-hierarchy";
 import { useDragResize } from "@/shared/lib";
 import { CollapsedPanelRail, EmptyStateCard } from "@/shared/ui";
 
@@ -34,7 +34,8 @@ const menuItem = "w-full text-left px-2 py-1.5 rounded hover:bg-slate-100 text-s
 
 /** 좌측 사이드바: 활성 도구 탭에 따라 아웃라이너 · 변경안 검토 · 템플릿 허브를 보여준다. */
 export const OutlinePreviewSidebar: React.FC = () => {
-  const doc = useStudioDocumentStore(selectActiveDocument);
+  // 문서 객체를 구독하면 타이핑마다 사이드바 전체가 다시 그려진다. ID 만 본다.
+  const activeDocId = useStudioDocumentStore((s) => selectActiveDocument(s)?.docId);
   const leftSidebarOpen = useWorkspaceLayoutStore((s) => s.leftSidebarOpen);
   const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
   const sidebarWidth = useWorkspaceLayoutStore((s) => s.sidebarWidth);
@@ -42,16 +43,16 @@ export const OutlinePreviewSidebar: React.FC = () => {
   const resetSidebarWidth = useWorkspaceLayoutStore((s) => s.resetSidebarWidth);
   const activeActivityTab = useWorkspaceLayoutStore((s) => s.activeActivityTab);
   const { onResizeStart } = useDragResize({ axis: "x", size: sidebarWidth, onResize: setSidebarWidth });
-  const { projection } = useFractalZoomNavigation();
+  const visibleNodeCount = useOutlineSelector((p) => p.visibleNodes.length);
 
-  if (!doc) return null;
+  if (!activeDocId) return null;
 
   if (!leftSidebarOpen) {
     return (
       <CollapsedPanelRail
         side="left"
         label="Outline & References"
-        badgeCount={projection.visibleNodes.length}
+        badgeCount={visibleNodeCount}
         onExpand={() => setLeftSidebarOpen(true)}
         testId="left-sidebar-collapsed-rail"
       />
@@ -78,7 +79,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
         <TemplateHubSidebarPanel />
       ) : (
         <>
-          <OutlineExplorer activeDocId={doc.docId} />
+          <OutlineExplorer activeDocId={activeDocId} />
           <ReferenceDeckSection />
         </>
       )}
@@ -89,7 +90,6 @@ export const OutlinePreviewSidebar: React.FC = () => {
 /** 아웃라이너 본체: 머리말 · 빠른 필터 · 줌아웃 배너 · 노드 트리. */
 const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => {
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-  const docs = useStudioDocumentStore((s) => s.docs);
   const setActiveActivityTab = useWorkspaceLayoutStore((s) => s.setActiveActivityTab);
   const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
   const pagePreviewOpen = useWorkspaceLayoutStore((s) => s.pagePreviewOpen);
@@ -151,6 +151,46 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
     pickAnchor.current = node.nodeId;
     return false;
   };
+
+  // 줄마다 새 콜백을 만들면 메모된 줄이 매번 다시 그려진다. 최신 핸들러를 읽는 고정 참조 하나를 넘긴다
+  // (최신 핸들러는 커밋 뒤에 갱신하고, 이벤트에서만 읽는다).
+  type RowHandlers = Omit<OutlineRowActions, "peek">;
+  const handlers: RowHandlers = {
+    select: (e, node) => {
+      if (pickOrSelect(e, node)) return;
+      handleSelectOutlineNode(node);
+      setPreviewDocId(null);
+    },
+    keyDown: (e, node) => editing.handleNodeKeyDown(e, node),
+    hover: (node, hovering) => setHoveredTargetId(hovering ? outlineNodeTargetId(node) : null),
+    toggleCollapse: (node) => toggleNodeCollapse(node.nodeId),
+    zoomIn: (node) => handleBulletZoomIn(node),
+    move: (node, direction) => void editing.moveNode(node.nodeId, direction),
+    remove: (node) => void editing.deleteNode(node.nodeId),
+  };
+  const latest = React.useRef(handlers);
+  React.useLayoutEffect(() => {
+    latest.current = handlers;
+  });
+  const rowActions = React.useMemo<OutlineRowActions>(
+    () => ({
+      select: (e, node) => latest.current.select(e, node),
+      keyDown: (e, node) => latest.current.keyDown(e, node),
+      hover: (node, hovering) => latest.current.hover(node, hovering),
+      toggleCollapse: (node) => latest.current.toggleCollapse(node),
+      zoomIn: (node) => latest.current.zoomIn(node),
+      move: (node, direction) => latest.current.move(node, direction),
+      remove: (node) => latest.current.remove(node),
+      // 피크 대상(문서 · 첫 페이지)은 마우스 이벤트 순간에 스토어에서 읽는다.
+      peek: (node) =>
+        peekTrigger(() => {
+          const docs = useStudioDocumentStore.getState();
+          return resolvePeekTarget(docs.docs, node.targetDocId || selectActiveDocument(docs)?.docId, node.targetPageId);
+        }),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- peekTrigger 는 고정된 스토어 동작(hover)만 쓴다
+    []
+  );
 
   return (
     <>
@@ -286,28 +326,15 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
           />
         ) : (
           projection.visibleNodes.map((node) => (
-            <OutlineNodeRow
+            <OutlineTreeRow
               key={node.nodeId}
               node={node}
               isSelected={selectedOutlinerNodeId === node.nodeId || projection.rootNodeId === node.nodeId}
               isHighlighted={isHighlighted(node)}
               isPicked={Boolean(pickedOutline?.some((r) => r.id === outlineNodeTargetId(node) || r.id === node.nodeId))}
-              attachProps={attachable(() => withPicked("outline", outlineNodeRef(node)))}
               hasChildren={Boolean(projection.hasChildrenMap[node.nodeId])}
               isCollapsed={collapsedNodeIds.includes(node.nodeId)}
-              editable={isEditableOutlineNode(node)}
-              peekHandlers={peekTrigger(resolvePeekTarget(docs, node.targetDocId || activeDocId, node.targetPageId))}
-              onSelect={(e) => {
-                if (pickOrSelect(e, node)) return;
-                handleSelectOutlineNode(node);
-                setPreviewDocId(null);
-              }}
-              onKeyDown={(e) => editing.handleNodeKeyDown(e, node)}
-              onHoverChange={(hovering) => setHoveredTargetId(hovering ? outlineNodeTargetId(node) : null)}
-              onToggleCollapse={() => toggleNodeCollapse(node.nodeId)}
-              onZoomIn={() => handleBulletZoomIn(node)}
-              onMove={(direction) => void editing.moveNode(node.nodeId, direction)}
-              onDelete={() => void editing.deleteNode(node.nodeId)}
+              actions={rowActions}
             />
           ))
         )}
@@ -327,3 +354,66 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
     </>
   );
 };
+
+interface OutlineRowActions {
+  select: (e: React.MouseEvent, node: OutlinerNode) => void;
+  keyDown: (e: React.KeyboardEvent, node: OutlinerNode) => void;
+  hover: (node: OutlinerNode, hovering: boolean) => void;
+  toggleCollapse: (node: OutlinerNode) => void;
+  zoomIn: (node: OutlinerNode) => void;
+  move: (node: OutlinerNode, direction: -1 | 1) => void;
+  remove: (node: OutlinerNode) => void;
+  /** 피크 핸들러 — 문서 목록은 호버 순간에 읽는다 (문서 구독으로 트리 전체가 다시 그려지지 않게). */
+  peek: (node: OutlinerNode) => PeekHandlers;
+}
+
+interface OutlineTreeRowProps {
+  node: OutlinerNode;
+  isSelected: boolean;
+  isHighlighted: boolean;
+  isPicked: boolean;
+  hasChildren: boolean;
+  isCollapsed: boolean;
+  actions: OutlineRowActions;
+}
+
+/**
+ * 메모된 아웃라인 줄. `node` 는 투영이 구조 공유로 유지하므로(`useOutlineProjection`) 타이핑 중에는
+ * 내용이 바뀐 줄만 다시 그린다. 핸들러는 마우스가 올라올 때 만들어지는 피크 핸들러를 빼고 모두 고정이다.
+ */
+const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
+  node,
+  isSelected,
+  isHighlighted,
+  isPicked,
+  hasChildren,
+  isCollapsed,
+  actions,
+}) {
+  const handlers = React.useMemo(
+    () => ({
+      attachProps: attachable(() => withPicked("outline", outlineNodeRef(node))),
+      peekHandlers: actions.peek(node),
+      onSelect: (e: React.MouseEvent) => actions.select(e, node),
+      onKeyDown: (e: React.KeyboardEvent) => actions.keyDown(e, node),
+      onHoverChange: (hovering: boolean) => actions.hover(node, hovering),
+      onToggleCollapse: () => actions.toggleCollapse(node),
+      onZoomIn: () => actions.zoomIn(node),
+      onMove: (direction: -1 | 1) => actions.move(node, direction),
+      onDelete: () => actions.remove(node),
+    }),
+    [node, actions]
+  );
+  return (
+    <OutlineNodeRow
+      node={node}
+      isSelected={isSelected}
+      isHighlighted={isHighlighted}
+      isPicked={isPicked}
+      hasChildren={hasChildren}
+      isCollapsed={isCollapsed}
+      editable={isEditableOutlineNode(node)}
+      {...handlers}
+    />
+  );
+});

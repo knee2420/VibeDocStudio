@@ -36,12 +36,22 @@ export const usePagePeekStore = create<PagePeekState>((set, get) => ({
 
 const hasModifier = (e: { ctrlKey: boolean; metaKey: boolean }) => e.ctrlKey || e.metaKey;
 
-/** 목록 항목에 붙일 호버 핸들러. `target` 이 `null` 이면 피크하지 않는다. */
+export type PeekHandlers = Partial<Record<"onMouseEnter" | "onMouseMove" | "onMouseLeave", (e: React.MouseEvent) => void>>;
+
+/**
+ * 목록 항목에 붙일 호버 핸들러. `target` 이 `null` 이면 피크하지 않는다.
+ * 함수를 넘기면 대상은 마우스 이벤트 순간에 계산한다 — 문서 목록을 구독하지 않아도 되므로
+ * 타이핑 때마다 목록 전체가 다시 그려지지 않는다.
+ */
 export function usePeekTrigger() {
   const hover = usePagePeekStore((s) => s.hover);
-  return (target: PeekTarget | null) => {
+  return (target: PeekTarget | null | (() => PeekTarget | null)): PeekHandlers => {
     if (!target) return {};
-    const track = (e: React.MouseEvent) => hover({ ...target, x: e.clientX, y: e.clientY }, hasModifier(e));
+    const resolve = typeof target === "function" ? target : () => target;
+    const track = (e: React.MouseEvent) => {
+      const t = resolve();
+      hover(t ? { ...t, x: e.clientX, y: e.clientY } : null, hasModifier(e));
+    };
     return {
       onMouseEnter: track,
       onMouseMove: track,

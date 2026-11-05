@@ -65,8 +65,12 @@ export class AssistantClient {
     return this.json("POST", "/api/assistant/sessions", engine ?? {});
   }
 
-  async closeSession(sessionId: string): Promise<void> {
-    await this.fetchFn(`${this.baseUrl}/api/assistant/sessions/${sessionId}`, { method: "DELETE" }).catch(() => undefined);
+  /** `keepalive` 는 페이지를 떠나는 중에도 요청이 끝까지 가게 한다 (새로고침 · 탭 닫기). */
+  async closeSession(sessionId: string, options: { keepalive?: boolean } = {}): Promise<void> {
+    await this.fetchFn(`${this.baseUrl}/api/assistant/sessions/${sessionId}`, {
+      method: "DELETE",
+      keepalive: options.keepalive,
+    }).catch(() => undefined);
   }
 
   async interrupt(sessionId: string): Promise<void> {

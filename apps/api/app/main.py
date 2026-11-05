@@ -30,6 +30,7 @@ from app.composer import router as composer_router_module
 from app.core.config import Settings, get_settings
 from app.documents import router as documents_router_module
 from app.projects import router as projects_router_module
+from app.resources import router as resources_router_module
 from app.runtime import router as runtime_router_module
 
 #: (라우터 모듈, URL 접두사, 태그). 도메인을 추가하면 여기 한 줄만 늘린다.
@@ -39,6 +40,7 @@ _DOMAIN_ROUTERS = (
     (backdata_router_module, "/api/backdata", "backdata"),
     (composer_router_module, "/api/ai", "composer"),
     (projects_router_module, "/api/projects", "projects"),
+    (resources_router_module, "/api/resources", "resources"),
     (runtime_router_module, "/api", "runtime"),
     (assistant_router_module, "/api/assistant", "assistant"),
 )

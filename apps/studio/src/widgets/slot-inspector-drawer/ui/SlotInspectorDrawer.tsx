@@ -1,19 +1,20 @@
 import React from "react";
-import { Boxes, ChevronRight, Settings, Sliders, Sparkles, Wrench } from "lucide-react";
+import { Boxes, ChevronRight, FolderTree, Settings, Sliders, Sparkles, Wrench } from "lucide-react";
 
 import { findBlock, type ImageBlockDef } from "@vibe/vdoc-schema";
 
 import { SlotMetadataCard, useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { RIGHT_SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
-import { AiComposerView } from "@/features/ai-composer";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
+import { AiComposerView } from "@/features/ai-composer";
 import { SlotBackdataSection } from "@/features/bind-slot-backdata";
 import { SlotPlainTextEditorCard, SlotTypographyCard, useSlotContentActions } from "@/features/edit-slot-richtext";
 import { BlockInsertionPalette, useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { useDragResize } from "@/shared/lib";
 import { CollapsedPanelRail } from "@/shared/ui";
+import { ResourceManagerWidget } from "@/widgets/resource-manager";
 
 import { ImageInspectorCard } from "./ImageInspectorCard";
 
@@ -29,7 +30,7 @@ const tabClass = (active: boolean, activeTone: string) =>
     active ? `bg-white ${activeTone} shadow-2xs font-bold` : "text-slate-500 hover:text-slate-700"
   }`;
 
-/** 우측 작업 패널: AI Composer(기본) · 블록 박스(끼워 넣기) · 선택한 슬롯 · 블록의 속성 인스펙터. */
+/** 우측 작업 패널: AI Composer(기본) · 블록 박스 · 인스펙터 · 리소스 매니저. */
 export const SlotInspectorDrawer: React.FC = () => {
   const doc = useStudioDocumentStore(selectActiveDocument);
   const activePageId = useStudioDocumentStore((s) => s.activePageId);
@@ -100,6 +101,15 @@ export const SlotInspectorDrawer: React.FC = () => {
           </button>
           <button
             type="button"
+            data-testid="tab-view-resource-manager"
+            onClick={() => setViewMode("resource-manager")}
+            className={tabClass(viewMode === "resource-manager", "text-purple-900")}
+          >
+            <FolderTree className="w-3.5 h-3.5 text-purple-600" />
+            <span>리소스</span>
+          </button>
+          <button
+            type="button"
             data-testid="tab-view-blockbox"
             onClick={() => setViewMode("blockbox")}
             className={tabClass(viewMode === "blockbox", "text-emerald-900")}
@@ -139,6 +149,12 @@ export const SlotInspectorDrawer: React.FC = () => {
               </StudioAgentSettingsButton>
             }
           />
+        </div>
+      )}
+
+      {viewMode === "resource-manager" && (
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <ResourceManagerWidget />
         </div>
       )}
 

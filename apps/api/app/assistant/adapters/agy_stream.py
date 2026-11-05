@@ -26,6 +26,8 @@ import time
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
+from app.core.process_tree import popen_tree
+
 from ..models import EngineChoice
 
 logger = logging.getLogger(__name__)
@@ -62,7 +64,8 @@ class AgyStreamProcess:
         if resume_conversation_id:
             cmd.extend(["--conversation", resume_conversation_id])
         cwd.mkdir(parents=True, exist_ok=True)
-        self._proc = subprocess.Popen(
+        # Job Object 로 묶어 API 프로세스가 강제 종료돼도 agy 트리가 고아로 남지 않게 한다.
+        self._tree = popen_tree(
             cmd,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
@@ -74,6 +77,7 @@ class AgyStreamProcess:
             bufsize=1,
             creationflags=CREATE_NO_WINDOW,
         )
+        self._proc = self._tree.proc
         self._reader = threading.Thread(target=self._read_loop, name=f"agy-reader-{self._proc.pid}", daemon=True)
         self._reader.start()
 
@@ -88,11 +92,7 @@ class AgyStreamProcess:
         return self._ready.is_set()
 
     def kill(self) -> None:
-        if self._proc.poll() is None:
-            try:
-                self._proc.kill()
-            except OSError:
-                pass
+        self._tree.kill()  # agy 가 띄운 자손(도구 실행 셸 등)까지 함께 끝낸다
         try:
             if self._proc.stdin:
                 self._proc.stdin.close()
@@ -223,13 +223,18 @@ def _normalize_step(step: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 class WarmPool:
-    """모델별로 목표 개수만큼 대기 agy 프로세스를 미리 띄워 둔다.
+    """지금 쓰는 모델에 한해 대기 agy 프로세스를 미리 띄워 둔다.
 
-    - `take()` 는 준비된(init 받은) 대기 프로세스를 우선 가져가고, 뒤에서 즉시 보충한다.
+    - 목표는 `retarget()` 이 통째로 바꾼다. 목록에서 빠진 모델의 대기 프로세스는 바로 내린다
+      (예전에는 한 번이라도 고른 모델마다 대기 프로세스가 영구히 남아 모델을 바꿀수록 상주 agy 가 늘었다).
+    - 전체 대기 수는 `MAX_TOTAL_SPARES` 를 넘지 않는다.
+    - `take()` 는 준비된(init 받은) 대기 프로세스를 우선 가져가고, 목표 모델일 때만 뒤에서 보충한다.
     - keeper 스레드가 주기적으로 죽거나 오래된 대기 프로세스를 교체해, 오래 쉬었다 와도 기동 지연이 없다.
+    - `shutdown()` 뒤에는 어떤 경로로도 새 프로세스를 띄우지 않는다.
     """
 
     KEEPER_INTERVAL_SECONDS = 20
+    MAX_TOTAL_SPARES = 2
 
     def __init__(self, executable: str, cwd: Path, *, enabled: bool = True, max_age_seconds: float = 1800) -> None:
         self.executable = executable
@@ -246,27 +251,62 @@ class WarmPool:
     def cli_available(self) -> bool:
         return shutil.which(self.executable) is not None
 
+    @property
+    def active(self) -> bool:
+        return self.enabled and not self._stop.is_set()
+
     def _fresh(self, proc: AgyStreamProcess) -> bool:
         return proc.alive and time.monotonic() - proc.spawned_at < self.max_age_seconds
 
-    def warm(self, model: str, target: Optional[int] = None) -> None:
-        """대기 프로세스를 목표 개수까지 채운다 (목표는 지금까지 요청된 값 중 최댓값)."""
-        if not self.enabled or not self.cli_available:
+    def retarget(self, targets: dict[str, int]) -> None:
+        """모델별 대기 목표를 통째로 바꾸고 채운다. 합계는 `MAX_TOTAL_SPARES` 로 자른다."""
+        if not self.active or not self.cli_available:
             return
-        self._ensure_keeper()
+        capped: dict[str, int] = {}
+        budget = self.MAX_TOTAL_SPARES
+        for model, want in targets.items():
+            take = max(0, min(want, budget))
+            if take:
+                capped[model] = take
+                budget -= take
+        dropped: list[AgyStreamProcess] = []
         with self._lock:
-            want = max(self._targets.get(model, 0), target or 1)
-            self._targets[model] = want
+            self._targets = capped
+            for model in list(self._spares):
+                pool = self._spares[model]
+                keep = capped.get(model, 0)
+                dropped.extend(pool[keep:])
+                del pool[keep:]
+                if not pool:
+                    del self._spares[model]
+        for proc in dropped:
+            proc.kill()
+        self._ensure_keeper()
+        for model in capped:
+            self.warm(model)
+
+    def warm(self, model: str) -> None:
+        """목표 모델의 대기 프로세스를 목표 개수까지 채운다 (목표에 없는 모델은 띄우지 않는다)."""
+        if not self.active or not self.cli_available:
+            return
+        stale: list[AgyStreamProcess] = []
+        with self._lock:
+            want = self._targets.get(model, 0)
             pool = self._spares.setdefault(model, [])
-            for stale in [p for p in pool if not self._fresh(p)]:
-                stale.kill()
+            stale = [p for p in pool if not self._fresh(p)]
             pool[:] = [p for p in pool if self._fresh(p)]
             for _ in range(max(want - len(pool), 0)):
+                if self._stop.is_set():
+                    break
                 try:
                     pool.append(AgyStreamProcess(self.executable, model, self.cwd))
                 except OSError as exc:
                     logger.warning("[assistant] agy 예열 실패: %s", exc)
                     break
+            if not pool:
+                self._spares.pop(model, None)
+        for proc in stale:
+            proc.kill()
 
     def take(self, model: str, *, resume_conversation_id: Optional[str] = None) -> AgyStreamProcess:
         if resume_conversation_id:
@@ -278,9 +318,10 @@ class WarmPool:
             if usable:
                 proc = next((p for p in usable if p.ready), usable[0])
                 pool.remove(proc)
+            refill = model in self._targets
         if proc is None:
             proc = AgyStreamProcess(self.executable, model, self.cwd)
-        if self.enabled:
+        if refill and self.active:
             threading.Thread(target=self.warm, args=(model,), daemon=True).start()
         return proc
 
@@ -313,10 +354,11 @@ class WarmPool:
     def shutdown(self) -> None:
         self._stop.set()
         with self._lock:
-            for pool in self._spares.values():
-                for proc in pool:
-                    proc.kill()
+            procs = [proc for pool in self._spares.values() for proc in pool]
             self._spares.clear()
+            self._targets.clear()
+        for proc in procs:
+            proc.kill()
 
 
 class AgyConversation:
@@ -380,6 +422,18 @@ class AgyConversation:
                 self.close()
             elif not self._proc.alive:
                 self._respawn_in_background()
+
+    def release_process(self) -> None:
+        """쉬는 동안 프로세스만 내린다. 다음 턴이 `--conversation` 으로 대화를 다시 잇는다."""
+        if self._single_turn or self._closed:
+            return
+        proc = self._proc
+        if proc is None or not proc.alive:
+            return
+        # 대화가 아직 없으면 다음 턴은 예열 풀에서 새 프로세스를 받는다.
+        self._conversation_id = proc.conversation_id or self._conversation_id
+        self._proc = None
+        proc.kill()
 
     def export_state(self) -> dict[str, Any]:
         conv = (self._proc.conversation_id if self._proc else None) or self._conversation_id

@@ -197,6 +197,18 @@ export class ComposerSessionController {
     if (old) await this.client.closeSession(old);
   }
 
+  /**
+   * 페이지를 떠날 때(새로고침 · 탭 닫기 · HMR 모듈 교체) 서버 세션을 닫는다.
+   * 닫지 않으면 서버가 세션마다 agy 프로세스(170MB 이상)를 30분 동안 붙잡고 있었다.
+   */
+  closeOnPageExit(): void {
+    const id = this.state.sessionId;
+    if (!id) return;
+    this.abort?.abort();
+    this.set({ sessionId: null });
+    void this.client.closeSession(id, { keepalive: true });
+  }
+
   // --- 루프 ---------------------------------------------------------------------
 
   private async ensureSession(): Promise<string> {

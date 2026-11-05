@@ -7,10 +7,14 @@ import { hasStressPages, STRESS_PAGE_COUNT, toggleStressPages } from "../model/s
 
 /** 개발 빌드 전용: 활성 문서에 시뮬레이션 페이지를 붙이거나 걷어낸다 (되돌리기 가능). */
 export const StressPagesToggleButton: React.FC = () => {
-  const doc = useStudioDocumentStore(selectActiveDocument);
+  // 문서 전체 대신 원시값만 구독한다 (슬롯 타이핑에 반응하지 않게).
+  const pageCount = useStudioDocumentStore((s) => selectActiveDocument(s)?.pages.length ?? -1);
+  const active = useStudioDocumentStore((s) => {
+    const d = selectActiveDocument(s);
+    return d ? hasStressPages(d) : false;
+  });
   const updateCurrentDoc = useStudioDocumentStore((s) => s.updateCurrentDoc);
-  if (!import.meta.env.DEV || !doc) return null;
-  const active = hasStressPages(doc);
+  if (!import.meta.env.DEV || pageCount < 0) return null;
 
   return (
     <button
@@ -21,7 +25,7 @@ export const StressPagesToggleButton: React.FC = () => {
     >
       <Layers className="w-3.5 h-3.5 text-emerald-600" />
       {active
-        ? `시뮬레이션 페이지 걷어내기 (현재 ${doc.pages.length}p)`
+        ? `시뮬레이션 페이지 걷어내기 (현재 ${pageCount}p)`
         : `⚡ ${STRESS_PAGE_COUNT}p 대용량 슬라이딩 윈도우 시뮬레이션`}
     </button>
   );

@@ -12,3 +12,12 @@ export const aiRuntime = createAiRuntime({ baseUrl: env.apiBaseUrl });
 
 /** 오른쪽 패널 Composer 의 대화. 인라인 표면이 "Composer 로 이어하기" 할 때도 여기로 보낸다. */
 export const composerController = new ComposerSessionController(aiRuntime);
+
+// 페이지를 떠나면 서버 세션(agy 프로세스)을 바로 놓아 준다. bfcache 로 보관되는 경우(persisted)는 되살아날 수 있으니 둔다.
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", (e) => {
+    if (!e.persisted) composerController.closeOnPageExit();
+  });
+}
+// 개발 중 이 모듈이 HMR 로 교체되면 새 컨트롤러가 생기므로, 이전 컨트롤러의 세션을 닫는다.
+import.meta.hot?.dispose(() => composerController.closeOnPageExit());

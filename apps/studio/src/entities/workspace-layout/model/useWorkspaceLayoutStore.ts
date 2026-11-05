@@ -9,17 +9,22 @@ import { readStoredNumber, writeStoredValue } from "@/shared/lib";
 export type ActivityBarTab = "explorer" | "source-control" | "template-hub";
 
 /** 오른쪽 작업 패널의 탭. AI Composer 가 기본이다. */
-export type RightPanelTab = "composer" | "blockbox" | "inspector";
+export type RightPanelTab = "composer" | "blockbox" | "inspector" | "resource-manager";
+
+/** Resource Manager 도킹 및 배치 위치 */
+export type RmPlacement = "right-tab" | "between-split" | "left-dock" | "closed";
 
 export const SIDEBAR_WIDTH = { default: 320, min: 250, max: 650 } as const;
 export const REFERENCE_DECK_HEIGHT = { default: 140, min: 50 } as const;
 export const REFERENCE_SPLIT_WIDTH = { default: 520, min: 360, max: 1000 } as const;
 export const RIGHT_SIDEBAR_WIDTH = { default: 420, min: 320, max: 960 } as const;
+export const RM_SPLIT_WIDTH = { default: 460, min: 320, max: 800 } as const;
 
 const SIDEBAR_WIDTH_KEY = "vdoc-sidebar-width";
 const DECK_HEIGHT_KEY = "vdoc-ref-deck-height";
 const REFERENCE_SPLIT_WIDTH_KEY = "vdoc-ref-split-width";
 const RIGHT_SIDEBAR_WIDTH_KEY = "vdoc-right-sidebar-width";
+const RM_SPLIT_WIDTH_KEY = "vdoc-rm-split-width";
 
 function maxDeckHeight(): number {
   return typeof window === "undefined" ? 500 : Math.max(300, Math.floor(window.innerHeight * 0.75));
@@ -36,6 +41,9 @@ export interface WorkspaceLayoutState {
   rightSidebarWidth: number;
   referenceDeckHeight: number;
   referenceSplitWidth: number;
+  /** Resource Manager 배치 위치 */
+  rmPlacement: RmPlacement;
+  rmSplitWidth: number;
   /** 아웃라이너 왼쪽의 페이지 미리보기 패널. */
   pagePreviewOpen: boolean;
   shortcutHelpOpen: boolean;
@@ -49,6 +57,9 @@ export interface WorkspaceLayoutState {
   setRightSidebarOpen: (open: boolean) => void;
   /** 오른쪽 패널을 펼치고 해당 탭으로 간다. */
   openRightPanel: (tab: RightPanelTab) => void;
+  setRmPlacement: (placement: RmPlacement) => void;
+  setRmSplitWidth: (width: number) => void;
+  resetRmSplitWidth: () => void;
   setSidebarWidth: (width: number) => void;
   resetSidebarWidth: () => void;
   setRightSidebarWidth: (width: number) => void;
@@ -70,6 +81,8 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   leftSidebarOpen: true,
   rightSidebarOpen: true,
   rightPanelTab: "composer",
+  rmPlacement: "right-tab",
+  rmSplitWidth: clamp(readStoredNumber(RM_SPLIT_WIDTH_KEY, RM_SPLIT_WIDTH.default), RM_SPLIT_WIDTH.min, RM_SPLIT_WIDTH.max),
   sidebarWidth: clamp(readStoredNumber(SIDEBAR_WIDTH_KEY, SIDEBAR_WIDTH.default), SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max),
   rightSidebarWidth: clamp(
     readStoredNumber(RIGHT_SIDEBAR_WIDTH_KEY, RIGHT_SIDEBAR_WIDTH.default),
@@ -98,6 +111,13 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   setLeftSidebarOpen: (open) => set({ leftSidebarOpen: open }),
   setRightSidebarOpen: (open) => set({ rightSidebarOpen: open }),
   openRightPanel: (tab) => set({ rightSidebarOpen: true, rightPanelTab: tab }),
+  setRmPlacement: (placement) => set({ rmPlacement: placement }),
+  setRmSplitWidth: (width) => {
+    const next = clamp(width, RM_SPLIT_WIDTH.min, RM_SPLIT_WIDTH.max);
+    writeStoredValue(RM_SPLIT_WIDTH_KEY, next);
+    set({ rmSplitWidth: next });
+  },
+  resetRmSplitWidth: () => get().setRmSplitWidth(RM_SPLIT_WIDTH.default),
 
   setSidebarWidth: (width) => {
     const next = clamp(width, SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max);

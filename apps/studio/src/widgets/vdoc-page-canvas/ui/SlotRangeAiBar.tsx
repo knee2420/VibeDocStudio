@@ -52,10 +52,15 @@ const ACTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 
 /** 범위 안 선택 단위의 바깥 요소 (표 칸 td · 슬롯 상자 · 이미지). */
 function rangeElements(unitIds: string[]): HTMLElement[] {
+  if (unitIds.length === 0) return [];
+  // 고른 단위만 속성 선택자로 찾는다. 예전에는 캔버스의 모든 단위(수천 개)를 훑어 걸러서,
+  // 선택 · 스크롤 · 타이핑 반영 때마다 수십 ms 가 들었다. 아주 큰 범위만 예전 방식으로 훑는다.
+  const candidates =
+    unitIds.length <= 300
+      ? document.querySelectorAll<HTMLElement>(unitIds.map((id) => `main [data-vdoc-unit="${CSS.escape(id)}"]`).join(","))
+      : document.querySelectorAll<HTMLElement>("main [data-vdoc-unit]");
   const wanted = new Set(unitIds);
-  return [...document.querySelectorAll<HTMLElement>("main [data-vdoc-unit]")].filter(
-    (el) => wanted.has(el.dataset.vdocUnit!) && !el.parentElement?.closest("[data-vdoc-unit]")
-  );
+  return [...candidates].filter((el) => wanted.has(el.dataset.vdocUnit!) && !el.parentElement?.closest("[data-vdoc-unit]"));
 }
 
 /** 고른 칸의 글자를 표 배치대로 (같은 행은 탭, 행 · 블록은 줄바꿈). */
@@ -150,10 +155,23 @@ export const SlotRangeAiBar: React.FC = () => {
   const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
   const doc = useStudioDocumentStore(selectActiveDocument);
   // 여러 요소를 고르지 않았어도, 슬롯 하나 · 블록 하나를 고르면 같은 선택 도구가 뜬다.
-  const range = React.useMemo<ToolSelection | null>(
+  const computed = React.useMemo<ToolSelection | null>(
     () => multi ?? singleSelection(doc, selectedSlotId, selectedBlockId),
     [multi, doc, selectedSlotId, selectedBlockId]
   );
+  // 문서가 바뀔 때마다(타이핑 반영) 같은 범위의 새 객체가 생겨 위치 측정 effect 가 다시 돌지 않게,
+  // 내용이 같으면 이전 객체를 유지한다.
+  const stableRange = React.useRef<ToolSelection | null>(null);
+  const sameRange = (a: ToolSelection | null, b: ToolSelection | null) =>
+    a === b ||
+    (!!a &&
+      !!b &&
+      a.source === b.source &&
+      a.withinTable === b.withinTable &&
+      a.unitIds.join("|") === b.unitIds.join("|") &&
+      a.slotIds.join("|") === b.slotIds.join("|"));
+  if (!sameRange(stableRange.current, computed)) stableRange.current = computed;
+  const range = stableRange.current;
   const actions = useRegistryList(aiRuntime.actions).filter((a) => a.surfaces.includes(SLOT_RANGE_SURFACE));
   const run = useInlineAiRun(aiRuntime);
   const [instruction, setInstruction] = React.useState("");

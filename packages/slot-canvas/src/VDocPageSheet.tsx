@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   getBlockKind,
@@ -64,6 +64,47 @@ const readDragPayload = (e: React.DragEvent) => {
   if (added) return { kind: "new" as const, blockKind: added as QuickAddKind };
   return null;
 };
+
+const blockSlotIdsCache = new WeakMap<LayoutBlock, readonly string[]>();
+
+/** 블록이 담은 슬롯 ID (블록 객체가 같으면 다시 계산하지 않는다). */
+function blockSlotIdsOf(block: LayoutBlock): readonly string[] {
+  let ids = blockSlotIdsCache.get(block);
+  if (!ids) {
+    ids = getBlockSlotIds(block);
+    blockSlotIdsCache.set(block, ids);
+  }
+  return ids;
+}
+
+interface PageBlockProps {
+  block: LayoutBlock;
+  bIdx: number;
+  /** 이 블록 렌더에 영향을 주는 원시값들 (선택 · 드롭 위치 · 편집 가능 · 블록 수). */
+  sig: string;
+  /** 이 블록 슬롯들의 객체 — 하나라도 바뀌면 다시 그린다. */
+  slotRefs: readonly unknown[];
+  /** 인라인 Composer 가 이 블록에 열렸을 때만 백데이터를 본다. */
+  backdataRef: unknown;
+  render: (block: LayoutBlock, bIdx: number) => React.ReactNode;
+}
+
+/**
+ * 블록 하나. 슬롯 선택 · 타이핑 반영이 바뀌어도 관계없는 블록(특히 칸이 많은 표)은 다시 그리지 않는다.
+ * `render` 는 항상 최신 클로저를 부르는 고정 참조라 비교하지 않는다.
+ */
+const PageBlock = React.memo(
+  function PageBlock({ block, bIdx, render }: PageBlockProps) {
+    return <>{render(block, bIdx)}</>;
+  },
+  (a, b) =>
+    a.block === b.block &&
+    a.bIdx === b.bIdx &&
+    a.sig === b.sig &&
+    a.backdataRef === b.backdataRef &&
+    a.slotRefs.length === b.slotRefs.length &&
+    a.slotRefs.every((ref, i) => ref === b.slotRefs[i])
+);
 
 /**
  * `.vdoc` A4 page renderer (`@vibe/slot-canvas`): page sheet, header/footer slots and the
@@ -364,6 +405,35 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     );
   };
 
+  const renderRef = useRef(renderFramedOrFlowBlock);
+  renderRef.current = renderFramedOrFlowBlock;
+  const renderBlock = useCallback((block: LayoutBlock, bIdx: number) => renderRef.current(block, bIdx), []);
+
+  /** 블록에 관계있는 선택만 남긴 렌더 입력. */
+  const pageBlock = (block: LayoutBlock, bIdx: number) => {
+    const ids = blockSlotIdsOf(block);
+    const inBlock = (id: string | null | undefined) => (id && ids.includes(id) ? id : "");
+    const composerHere = inBlock(composerOpenSlotId);
+    const sig = [
+      editable ? 1 : 0,
+      inBlock(selectedSlotId),
+      composerHere,
+      selectedBlockId === block.blockId ? 1 : 0,
+      dropTarget?.blockId === block.blockId ? dropTarget.edge : "",
+      page.blocks.length,
+    ].join("");
+    return (
+      <PageBlock
+        block={block}
+        bIdx={bIdx}
+        sig={sig}
+        slotRefs={ids.map((id) => slots[id])}
+        backdataRef={composerHere ? backdata : null}
+        render={renderBlock}
+      />
+    );
+  };
+
   return (
     <section id={`vdoc-page-${page.pageId}`} onClick={() => onSelectPage(page.pageId)} className="w-[794px] min-w-[794px] mx-auto">
       {/* A4 sheet: 794 × 1123 px at 96 dpi. The ring does not take layout space, so frames map 1:1. */}
@@ -410,7 +480,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
                   isCurrentBlockActive ? "my-4 relative z-20" : "my-0"
                 } ${draggingBlockId === block.blockId ? "opacity-40" : "opacity-100"}`}
               >
-                {renderFramedOrFlowBlock(block, bIdx)}
+                {pageBlock(block, bIdx)}
               </div>
             );
           })}
@@ -429,7 +499,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
               }`}
               style={{ left: block.frame.x, top: block.frame.y, width: block.frame.w, height: block.frame.h }}
             >
-              {renderFramedOrFlowBlock(block, bIdx)}
+              {pageBlock(block, bIdx)}
             </div>
           );
         })}

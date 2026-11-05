@@ -19,7 +19,9 @@ function useEngineStatus() {
   const [error, setError] = React.useState<string | null>(null);
   const refresh = React.useCallback(async () => {
     try {
-      setEngines(await aiRuntime.client.engines());
+      const next = await aiRuntime.client.engines();
+      // 15초 폴링 결과가 같으면 상태를 바꾸지 않는다 (패널 전체 재렌더 방지).
+      setEngines((prev) => (prev && JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -34,21 +36,42 @@ function useEngineStatus() {
   return { engines, error, refresh };
 }
 
-/** 배경 정보 · 첨부 제안은 선택 · 문서 · 등록된 제공자가 바뀔 때만 다시 계산한다. */
+/**
+ * 배경 정보 · 첨부 제안. 선택 · 문서 스토어를 컴포넌트 밖에서 구독해 다시 계산하고, 결과가 실제로
+ * 달라졌을 때만 상태를 바꾼다. (예전에는 `docs` 를 구독해 슬롯에 글자를 칠 때마다 Composer 패널
+ * 전체 — 대화 기록까지 — 가 다시 그려졌다.)
+ */
 function useAutoContexts(): { auto: ContextRef[]; suggested: ContextRef[] } {
   // 제공자 등록은 페이지 effect 에서 일어나므로(첫 렌더 이후) 레지스트리 변화도 구독한다.
   const providers = useRegistryList(aiRuntime.contexts);
-  const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
-  const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
-  const slotRange = useSlotSelectionStore((s) => s.slotRange);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
-  const activePageId = useStudioDocumentStore((s) => s.activePageId);
-  const docs = useStudioDocumentStore((s) => s.docs);
-  return React.useMemo(
-    () => ({ auto: aiRuntime.contexts.autoContexts(), suggested: aiRuntime.contexts.suggestedContexts() }),
+  const compute = () => ({ auto: aiRuntime.contexts.autoContexts(), suggested: aiRuntime.contexts.suggestedContexts() });
+  const [value, setValue] = React.useState(compute);
+  const keyRef = React.useRef(JSON.stringify(value));
+
+  React.useEffect(() => {
+    let timer: number | null = null;
+    const recompute = () => {
+      timer = null;
+      const next = compute();
+      const key = JSON.stringify(next);
+      if (key === keyRef.current) return;
+      keyRef.current = key;
+      setValue(next);
+    };
+    // 같은 틱의 여러 변경(선택 + 문서)은 한 번만 계산한다.
+    const schedule = () => {
+      if (timer === null) timer = window.setTimeout(recompute, 0);
+    };
+    recompute();
+    const unsubscribers = [useSlotSelectionStore.subscribe(schedule), useStudioDocumentStore.subscribe(schedule)];
+    return () => {
+      unsubscribers.forEach((u) => u());
+      if (timer !== null) window.clearTimeout(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [providers, selectedSlotId, selectedBlockId, slotRange, activeDocId, activePageId, docs]
-  );
+  }, [providers]);
+
+  return value;
 }
 
 export interface AiComposerViewProps {

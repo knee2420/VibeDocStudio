@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { createDocument, getHTMLFromFragment, getSchema, type AnyExtension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
@@ -16,6 +17,7 @@ import { VariableChipNode, StampChipNode } from "./variable-node";
 import { BlockStyle, FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight, Indent, InlineMargin } from "./format-extensions";
 import { normalizeLegacyHtml } from "./legacy-html";
 import { useActiveSlotEditorStore } from "./active-editor-store";
+import { ensureEditorBaseStyles } from "./editor-base-style";
 
 /** Actions of the floating bar shown over a text selection (yesform `AI 제안 · 요약 · 번역 · 문법 수정 · 톤 수정`). */
 export type SlotAiAction = "expand" | "summarize" | "translate" | "grammar" | "tone";
@@ -44,11 +46,81 @@ interface BubbleState {
   text: string;
 }
 
+/** 슬롯 편집기 확장 목록 (정적 렌더와 실제 편집기가 같은 스키마를 쓰도록 한 곳에서 만든다). */
+function buildSlotExtensions(placeholder: string): AnyExtension[] {
+  return [
+    StarterKit.configure({
+      heading: { levels: [1, 2, 3, 4] },
+      dropcursor: { color: "#3b82f6", width: 2 },
+      history: { depth: 20, newGroupDelay: 500 },
+    }),
+    Underline,
+    TextAlign.configure({ types: ["heading", "paragraph"], alignments: ["left", "center", "right", "justify"] }),
+    Placeholder.configure({ placeholder }),
+    TextStyle,
+    Color,
+    Highlight.configure({ multicolor: true }),
+    FontFamily,
+    FontSize,
+    FontWeight,
+    LetterSpacing,
+    InlineMargin,
+    LineHeight,
+    Indent,
+    BlockStyle,
+    Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } }),
+    VariableChipNode,
+    StampChipNode,
+  ];
+}
+
+/** 편집기 루트에 붙는 클래스 (정적 렌더도 같은 클래스를 써서 레이아웃이 같다). */
+const EDITOR_CLASS = "vdoc-tiptap-slot focus:outline-none min-h-[1.25rem]";
+
+let staticSchema: ReturnType<typeof getSchema> | null = null;
+const staticHtmlCache = new Map<string, string>();
+
+/**
+ * 편집기가 그릴 DOM 과 같은 HTML. 편집기와 같은 스키마로 파싱 · 직렬화하고(`editor.getHTML()` 과 동일),
+ * ProseMirror 가 화면에 덧붙이는 빈 줄 높이용 `<br class="ProseMirror-trailingBreak">` 를 흉내 낸다
+ * (빈 문단 · 줄바꿈으로 끝나는 문단). 노드뷰가 없는 확장만 쓰므로 나머지 DOM 은 그대로 같다.
+ */
+export function renderStaticSlotHtml(content: string): string {
+  const cached = staticHtmlCache.get(content);
+  if (cached !== undefined) return cached;
+  staticSchema ??= getSchema(buildSlotExtensions(""));
+  let html: string;
+  try {
+    const doc = createDocument(normalizeLegacyHtml(content), staticSchema);
+    html = getHTMLFromFragment(doc.content, staticSchema)
+      .replace(/<(p|h[1-6])(\s[^>]*)?><\/\1>/g, '<$1$2><br class="ProseMirror-trailingBreak"></$1>')
+      .replace(/<br><\/(p|h[1-6])>/g, '<br><br class="ProseMirror-trailingBreak"></$1>');
+  } catch {
+    html = normalizeLegacyHtml(content);
+  }
+  if (staticHtmlCache.size > 4000) staticHtmlCache.clear();
+  staticHtmlCache.set(content, html);
+  return html;
+}
+
+/** 타이핑을 문서에 반영하기까지 기다리는 시간. 그 사이 입력은 편집기 안에만 있다. */
+const COMMIT_DELAY_MS = 300;
+
 /**
  * Isolated rich-text editor mounted inside each `slotId` (WYSIWYG inside WYSIWYM).
  * Carries the yesform formatting set (font, pt size, color, highlight, link, line height, indent).
+ *
+ * 성능: 글자마다 `onChangeContent` 를 부르면 문서 스토어가 매번 바뀌어 캔버스 · 아웃라인 · 툴바 ·
+ * Composer 가 키 입력마다 다시 그려졌다. 그래서 입력이 잠깐 멈출 때(`COMMIT_DELAY_MS`), 포커스가
+ * 빠질 때, 언마운트될 때 한 번에 반영한다. 컴포넌트는 메모되어 같은 페이지의 다른 슬롯이 바뀌어도
+ * 다시 그려지지 않는다 (콜백은 호출하는 쪽에서 고정 참조로 넘긴다).
  */
-export const SlotRichTextEditor: React.FC<SlotRichTextEditorProps> = ({
+interface LiveSlotEditorProps extends SlotRichTextEditorProps {
+  /** 정적 화면을 누른 위치(화면 좌표) 또는 끝 — 편집기를 띄우자마자 그 자리에 캐럿을 둔다. */
+  initialFocus: { x: number; y: number } | "end" | null;
+}
+
+const LiveSlotEditor: React.FC<LiveSlotEditorProps> = ({
   slotId,
   content,
   readOnly = false,
@@ -57,41 +129,25 @@ export const SlotRichTextEditor: React.FC<SlotRichTextEditorProps> = ({
   onSelectSlot,
   onChangeContent,
   onAiAction,
+  initialFocus,
 }) => {
   const setActiveSlotEditor = useActiveSlotEditorStore((s) => s.setActiveSlotEditor);
   const [bubble, setBubble] = useState<BubbleState | null>(null);
+  const commitTimer = useRef<number | null>(null);
+  const onChangeRef = useRef(onChangeContent);
+  onChangeRef.current = onChangeContent;
+
+  /** 미뤄 둔 입력을 지금 문서에 반영한다. */
+  const flushRef = useRef<() => void>(() => undefined);
 
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3, 4] },
-        dropcursor: { color: "#3b82f6", width: 2 },
-        history: { depth: 20, newGroupDelay: 500 },
-      }),
-      Underline,
-      TextAlign.configure({ types: ["heading", "paragraph"], alignments: ["left", "center", "right", "justify"] }),
-      Placeholder.configure({ placeholder }),
-      TextStyle,
-      Color,
-      Highlight.configure({ multicolor: true }),
-      FontFamily,
-      FontSize,
-      FontWeight,
-      LetterSpacing,
-      InlineMargin,
-      LineHeight,
-      Indent,
-      BlockStyle,
-      Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } }),
-      VariableChipNode,
-      StampChipNode,
-    ],
+    extensions: buildSlotExtensions(placeholder),
     content: normalizeLegacyHtml(content),
     editable: !readOnly,
     editorProps: {
       attributes: {
         spellcheck: "false",
-        class: "vdoc-tiptap-slot focus:outline-none min-h-[1.25rem]",
+        class: EDITOR_CLASS,
       },
     },
     onFocus: ({ editor: ed }) => {
@@ -99,7 +155,14 @@ export const SlotRichTextEditor: React.FC<SlotRichTextEditorProps> = ({
       onSelectSlot?.(slotId);
     },
     onUpdate: ({ editor: ed }) => {
-      onChangeContent?.(slotId, ed.getHTML());
+      if (commitTimer.current !== null) window.clearTimeout(commitTimer.current);
+      flushRef.current = () => {
+        if (commitTimer.current !== null) window.clearTimeout(commitTimer.current);
+        commitTimer.current = null;
+        flushRef.current = () => undefined;
+        onChangeRef.current?.(slotId, ed.getHTML());
+      };
+      commitTimer.current = window.setTimeout(() => flushRef.current(), COMMIT_DELAY_MS);
     },
     onSelectionUpdate: ({ editor: ed }) => {
       const { from, to, empty } = ed.state.selection;
@@ -112,10 +175,38 @@ export const SlotRichTextEditor: React.FC<SlotRichTextEditorProps> = ({
       setBubble({ left: Math.min(start.left, end.left), top: Math.max(start.bottom, end.bottom) + 8, text: ed.state.doc.textBetween(from, to, " ") });
     },
     onBlur: () => {
+      flushRef.current();
       // Let a click on the bubble land before it disappears.
       window.setTimeout(() => setBubble(null), 150);
     },
   });
+
+  // 언마운트(정적 화면으로 돌아감 · 페이지 창 이동 · 문서 전환) 전에 미뤄 둔 입력을 반영한다.
+  useEffect(() => () => flushRef.current(), []);
+
+  // 정적 화면을 눌러 띄운 경우: 누른 자리에 캐럿을 둔다.
+  // 편집기 인스턴스 기준으로 한 번만 준다 — 개발 모드 StrictMode 는 편집기를 한 번 파괴하고 다시
+  // 만들기 때문에, 첫 인스턴스에만 포커스를 주면 실제로 남는 편집기는 포커스를 받지 못한다.
+  const focusedFor = useRef<typeof editor>(null);
+  useLayoutEffect(() => {
+    if (!editor || editor.isDestroyed || focusedFor.current === editor || !initialFocus) return;
+    focusedFor.current = editor;
+    const pos =
+      initialFocus === "end" ? null : editor.view.posAtCoords({ left: initialFocus.x, top: initialFocus.y })?.pos;
+    editor.commands.focus(pos ?? "end");
+    // Tiptap 의 focus 는 다음 프레임(rAF)에 DOM 포커스를 준다. 정적 화면이 막 바뀐 지금 바로 줘야
+    // Tab 이동 · 클릭 직후의 키 입력이 새 편집기로 들어간다 (rAF 가 멈춘 백그라운드 창에서도).
+    editor.view.focus();
+  }, [editor, initialFocus]);
+
+  // 활성 편집기로 등록돼 있던 채로 내려가면 툴바가 죽은 편집기를 잡지 않게 비운다.
+  useEffect(
+    () => () => {
+      const store = useActiveSlotEditorStore.getState();
+      if (editor && store.activeEditor === editor) store.setActiveSlotEditor(null, null);
+    },
+    [editor]
+  );
 
   useEffect(() => {
     if (!editor) return;
@@ -127,7 +218,8 @@ export const SlotRichTextEditor: React.FC<SlotRichTextEditorProps> = ({
   useEffect(() => {
     if (!editor) return;
     const normalized = normalizeLegacyHtml(content);
-    if (normalized !== editor.getHTML() && !editor.isFocused) {
+    // 반영 대기 중인 입력이 있으면 편집기 쪽이 더 최신이다.
+    if (commitTimer.current === null && !editor.isFocused && normalized !== editor.getHTML()) {
       editor.commands.setContent(normalized, false);
     }
   }, [content, editor]);
@@ -199,3 +291,84 @@ export const SlotRichTextEditor: React.FC<SlotRichTextEditorProps> = ({
     </div>
   );
 };
+
+/**
+ * 슬롯 본문. 평소에는 편집기와 같은 DOM 을 정적으로 그리고(`renderStaticSlotHtml`), 누르거나(포인터) ·
+ * 포커스가 들어오면(Tab) 그때 Tiptap 편집기를 띄운다. 다른 슬롯이 활성 편집기가 되면 다시 정적 화면으로
+ * 돌아간다 — 그래서 문서 크기와 상관없이 떠 있는 편집기는 한두 개다.
+ *
+ * 예전에는 슬롯마다 편집기(ProseMirror 뷰 · 플러그인 · 이력 · 리스너)가 상주해, 7쪽 문서에서 258개가
+ * 떠 있었고 첫 표시 · 메모리 · 선택 변경 비용을 키웠다.
+ */
+const SlotRichTextEditorImpl: React.FC<SlotRichTextEditorProps> = (props) => {
+  const { slotId, content, readOnly = false, className = "", onSelectSlot } = props;
+  const [live, setLive] = useState<LiveSlotEditorProps["initialFocus"] | false>(false);
+
+  // 다른 슬롯이 활성 편집기가 되면 정적 화면으로 돌아간다 (활성인 동안만 구독한다).
+  useEffect(() => {
+    if (live === false) return;
+    return useActiveSlotEditorStore.subscribe((st) => {
+      if (st.activeSlotId !== null && st.activeSlotId !== slotId) setLive(false);
+    });
+  }, [live, slotId]);
+
+  if (live !== false) return <LiveSlotEditor {...props} initialFocus={live} />;
+  return (
+    <StaticSlotView
+      slotId={slotId}
+      content={content}
+      editable={!readOnly}
+      className={className}
+      onSelectSlot={onSelectSlot}
+      onActivate={setLive}
+    />
+  );
+};
+
+interface StaticSlotViewProps {
+  slotId: string;
+  content: string;
+  editable: boolean;
+  className: string;
+  onSelectSlot?: (slotId: string) => void;
+  onActivate: (focus: { x: number; y: number } | "end") => void;
+}
+
+const StaticSlotView: React.FC<StaticSlotViewProps> = ({ slotId, content, editable, className, onSelectSlot, onActivate }) => {
+  ensureEditorBaseStyles();
+  const html = useMemo(() => renderStaticSlotHtml(content), [content]);
+  return (
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelectSlot?.(slotId);
+      }}
+      className={`vdoc-slot-editor max-w-none focus:outline-none ${className}`}
+    >
+      <div>
+        <div
+          className={`tiptap ProseMirror ${EDITOR_CLASS}`}
+          data-lazy-slot-editor=""
+          spellCheck={false}
+          translate="no"
+          tabIndex={editable ? 0 : undefined}
+          onMouseDown={(e) => {
+            // 기본 동작(이 요소로 포커스)은 곧 사라질 정적 요소로 간다 — 캐럿은 편집기가 직접 둔다.
+            if (editable && e.button === 0 && !e.shiftKey && !e.ctrlKey && !e.metaKey) e.preventDefault();
+          }}
+          onPointerDown={(e) => {
+            if (!editable || e.button !== 0 || e.shiftKey || e.ctrlKey || e.metaKey) return;
+            onActivate({ x: e.clientX, y: e.clientY });
+          }}
+          onFocus={() => {
+            if (editable) onActivate("end");
+          }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
+    </div>
+  );
+};
+
+export const SlotRichTextEditor = React.memo(SlotRichTextEditorImpl);
+SlotRichTextEditor.displayName = "SlotRichTextEditor";

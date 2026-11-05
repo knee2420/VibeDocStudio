@@ -38,7 +38,6 @@ export const ReferenceDeckSection: React.FC = () => {
   const allReferenceIds = useProjectStore(useShallow(selectAllReferenceProjectIds));
   const setSelectedReferenceProjectId = useProjectStore((s) => s.setSelectedReferenceProjectId);
   const bindReferenceProjects = useProjectStore((s) => s.bindReferenceProjects);
-  const docs = useStudioDocumentStore((s) => s.docs);
 
   const openReferenceDocIds = useWorkspaceSessionStore((s) => s.openReferenceDocIds);
   const toggleReferenceDoc = useWorkspaceSessionStore((s) => s.toggleReferenceDoc);
@@ -178,7 +177,7 @@ export const ReferenceDeckSection: React.FC = () => {
                   key={rp.projectId}
                   data-testid={`ref-project-pill-${idx + 1}`}
                   title={`${rp.title} (Ctrl + 호버 시 실물 썸네일 미리보기)`}
-                  {...peekTrigger(resolvePeekTarget(docs, docId))}
+                  {...peekTrigger(() => resolvePeekTarget(useStudioDocumentStore.getState().docs, docId))}
                   {...(docId ? attachable(() => withPicked("reference", deckRef(docId, idx))) : {})}
                   data-ai-entity={docId}
                   data-picked={isPicked ? "true" : undefined}

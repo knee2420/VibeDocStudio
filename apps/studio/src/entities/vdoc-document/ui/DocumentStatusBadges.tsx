@@ -3,7 +3,7 @@ import React from "react";
 import type { VDocDocument } from "@vibe/vdoc-schema";
 
 export interface DocumentStatusBadgesProps {
-  doc: VDocDocument;
+  doc: Pick<VDocDocument, "status" | "totalValueText">;
 }
 
 export const DocumentStatusBadges: React.FC<DocumentStatusBadgesProps> = ({ doc }) => {

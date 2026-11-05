@@ -94,9 +94,12 @@ class AssistantEngineProvider:
             single_turn=lane == "inline",
         )
 
-    def warmup(self, choice: EngineChoice, *, lane: Lane, spares: int = 1) -> None:
-        if choice.provider == AGY_PROVIDER:
-            threading.Thread(target=self._pool.warm, args=(choice.model, spares), daemon=True).start()
+    def warmup(self, targets: dict[EngineChoice, int]) -> None:
+        agy_targets: dict[str, int] = {}
+        for choice, spares in targets.items():
+            if choice.provider == AGY_PROVIDER:
+                agy_targets[choice.model] = agy_targets.get(choice.model, 0) + spares
+        threading.Thread(target=self._pool.retarget, args=(agy_targets,), daemon=True).start()
 
     # --- 모델 목록 --------------------------------------------------------------
 

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import {
   Columns,
   RotateCcw,
@@ -29,10 +30,16 @@ import { useHistoryStore } from "@/shared/lib";
 import { ExecutionPhaseStepper } from "./ExecutionPhaseStepper";
 import { ShortcutHelpPopover } from "./ShortcutHelpPopover";
 
+const selectRibbonDocFields = (s: Parameters<typeof selectActiveDocument>[0]) => {
+  const d = selectActiveDocument(s);
+  return d ? { docId: d.docId, title: d.title, status: d.status, totalValueText: d.totalValueText } : null;
+};
+
 export const StudioTopRibbon: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  const doc = useStudioDocumentStore(selectActiveDocument);
+  // 슬롯 내용이 바뀌어도 리본이 다시 그려지지 않게, 리본이 쓰는 필드만 고른다.
+  const doc = useStudioDocumentStore(useShallow(selectRibbonDocFields));
   const updateCurrentDoc = useStudioDocumentStore((s) => s.updateCurrentDoc);
   const totalUndoCount = useHistoryStore((s) => s.past.length);
   const totalRedoCount = useHistoryStore((s) => s.future.length);

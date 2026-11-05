@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import {
   buildProjectFractalTree,
@@ -13,7 +13,7 @@ import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
-import { revealCanvasElement, scrollToCanvasPage, useStableCallback } from "@/shared/lib";
+import { revealCanvasElement, scrollToCanvasPage } from "@/shared/lib";
 
 const EMPTY_PROJECT: VProjectManifest = {
   projectId: "",
@@ -39,19 +39,87 @@ let lastProjection: FractalOutlineProjection | null = null;
 function projectOutline(...inputs: ProjectionInputs): FractalOutlineProjection {
   if (lastProjection && lastInputs && inputs.every((v, i) => v === lastInputs![i])) return lastProjection;
   lastInputs = inputs;
-  lastProjection = buildProjectFractalTree(...inputs);
+  lastProjection = shareStructure(lastProjection, buildProjectFractalTree(...inputs));
   return lastProjection;
 }
 
-/** 현재 줌 · 필터 · 접힘 상태의 아웃라인 투영 (읽기 전용). */
+/** 얕은 비교 (노드 · 브레드크럼 항목은 원시값 필드만 가진다). */
+function shallowEqual<T extends object>(a: T, b: T): boolean {
+  if (a === b) return true;
+  const ka = Object.keys(a) as (keyof T)[];
+  if (ka.length !== Object.keys(b).length) return false;
+  return ka.every((k) => a[k] === b[k]);
+}
+
+function shareArray<T extends object>(prev: readonly T[] | undefined, next: T[], pool: Map<string, T>, key: (v: T) => string): T[] {
+  let same = prev !== undefined && prev.length === next.length;
+  const out = next.map((item, i) => {
+    const old = pool.get(key(item));
+    const kept = old && shallowEqual(old, item) ? old : item;
+    if (same && prev![i] !== kept) same = false;
+    return kept;
+  });
+  return same ? (prev as T[]) : out;
+}
+
+function shallowRecordEqual(a: Record<string, boolean>, b: Record<string, boolean>): boolean {
+  const ka = Object.keys(a);
+  return ka.length === Object.keys(b).length && ka.every((k) => a[k] === b[k]);
+}
+
+/**
+ * 새 투영에서 바뀌지 않은 노드는 이전 객체를 그대로 쓴다. 타이핑 한 번에 트리가 새로 만들어져도
+ * 실제로 달라진 줄만 새 객체가 되어, 메모된 아웃라인 줄은 그 줄만 다시 그린다.
+ * 아무것도 달라지지 않았으면 이전 투영 객체를 그대로 돌려준다.
+ */
+function shareStructure(prev: FractalOutlineProjection | null, next: FractalOutlineProjection): FractalOutlineProjection {
+  if (!prev) return next;
+  const pool = new Map(prev.allNodes.map((n) => [n.nodeId, n]));
+  const nodeKey = (n: OutlinerNode) => n.nodeId;
+  const allNodes = shareArray(prev.allNodes, next.allNodes, pool, nodeKey);
+  const visibleNodes = shareArray(prev.visibleNodes, next.visibleNodes, pool, nodeKey);
+  const crumbPool = new Map(prev.breadcrumbs.map((c) => [c.nodeId, c]));
+  const breadcrumbs = shareArray(prev.breadcrumbs, next.breadcrumbs, crumbPool, (c) => c.nodeId);
+  const hasChildrenMap = shallowRecordEqual(prev.hasChildrenMap, next.hasChildrenMap) ? prev.hasChildrenMap : next.hasChildrenMap;
+  const shared = { ...next, allNodes, visibleNodes, breadcrumbs, hasChildrenMap };
+  return shallowEqual(prev, shared) ? prev : shared;
+}
+
+/**
+ * 지금 스토어 상태의 아웃라인 투영 (렌더 밖에서도 부를 수 있다).
+ * 입력이 같으면 캐시를 돌려주고, 바뀌어도 달라진 노드만 새 객체가 된다 (`shareStructure`).
+ */
+export function getOutlineProjection(): FractalOutlineProjection {
+  const session = useWorkspaceSessionStore.getState();
+  return projectOutline(
+    selectActiveProject(useProjectStore.getState()) ?? EMPTY_PROJECT,
+    useStudioDocumentStore.getState().docs,
+    session.zoomRootNodeId,
+    session.quickFilterQuery,
+    session.collapsedNodeIds
+  );
+}
+
+function subscribeOutlineInputs(onChange: () => void): () => void {
+  const unsubscribers = [
+    useProjectStore.subscribe(onChange),
+    useStudioDocumentStore.subscribe(onChange),
+    useWorkspaceSessionStore.subscribe(onChange),
+  ];
+  return () => unsubscribers.forEach((u) => u());
+}
+
+/**
+ * 투영에서 필요한 값만 구독한다. 선택 결과가 같으면(원시값 · 같은 객체) 다시 그리지 않는다.
+ * 예전에는 페이지 최상위가 `docs` 를 통째로 구독해, 슬롯 한 칸이 바뀌어도 앱 전체가 두 번씩 다시 그려졌다.
+ */
+export function useOutlineSelector<T>(select: (projection: FractalOutlineProjection) => T): T {
+  return useSyncExternalStore(subscribeOutlineInputs, () => select(getOutlineProjection()));
+}
+
+/** 현재 줌 · 필터 · 접힘 상태의 아웃라인 투영 (읽기 전용). 투영 내용이 실제로 바뀔 때만 다시 그린다. */
 export function useOutlineProjection(): FractalOutlineProjection {
-  const activeProject = useProjectStore(selectActiveProject) ?? EMPTY_PROJECT;
-  // 아웃라인 트리는 문서 내용(슬롯 요약)까지 반영하지만 타이핑보다 늦어도 된다.
-  const docs = useDeferredValue(useStudioDocumentStore((s) => s.docs));
-  const zoomRootNodeId = useWorkspaceSessionStore((s) => s.zoomRootNodeId);
-  const quickFilterQuery = useWorkspaceSessionStore((s) => s.quickFilterQuery);
-  const collapsedNodeIds = useWorkspaceSessionStore((s) => s.collapsedNodeIds);
-  return projectOutline(activeProject, docs, zoomRootNodeId, quickFilterQuery, collapsedNodeIds);
+  return useSyncExternalStore(subscribeOutlineInputs, getOutlineProjection);
 }
 
 /** 노드가 가리키는 문서 · 페이지 · 블록 · 슬롯을 캔버스에서 고르고 보여준다. */
@@ -82,23 +150,21 @@ function openProjectFirstDocument(): void {
   if (firstDocId) useStudioDocumentStore.getState().setActiveDocId(firstDocId);
 }
 
-/** 아웃라인 줌 · 선택 명령. 부작용(리스너 · 자동 동기화)은 `useZoomHierarchySync` 한 곳에만 있다. */
-export function useFractalZoomNavigation() {
-  const projection = useOutlineProjection();
-
-  const handleBulletZoomIn = (node: OutlinerNode) => {
+/** 아웃라인 줌 · 선택 명령 (구독 없음 — 투영은 실행 순간에 읽는다). */
+export const outlineCommands = {
+  zoomIntoNode(node: OutlinerNode) {
     useWorkspaceSessionStore.getState().zoomIntoNode(node.nodeId);
     focusNodeOnCanvas(node);
-  };
+  },
 
-  const handleSelectOutlineNode = (node: OutlinerNode) => {
+  selectNode(node: OutlinerNode) {
     useWorkspaceSessionStore.getState().setSelectedOutlinerNodeId(node.nodeId);
     focusNodeOnCanvas(node);
-  };
+  },
 
-  const handleBreadcrumbClick = (nodeId: string) => {
+  breadcrumbClick(nodeId: string) {
     useWorkspaceSessionStore.getState().zoomIntoNode(nodeId);
-    const found = projection.allNodes.find((n) => n.nodeId === nodeId);
+    const found = getOutlineProjection().allNodes.find((n) => n.nodeId === nodeId);
     if (found) {
       focusNodeOnCanvas(found);
       if (!found.targetBlockId && !found.targetSlotId) {
@@ -107,9 +173,10 @@ export function useFractalZoomNavigation() {
     } else if (nodeId === PROJECT_ROOT_CRUMB_ID) {
       openProjectFirstDocument();
     }
-  };
+  },
 
-  const handleZoomOutOneLevel = () => {
+  zoomOutOneLevel() {
+    const projection = getOutlineProjection();
     const crumbs = projection.breadcrumbs;
     const targetNodeId =
       projection.parentZoomNodeId ?? (crumbs.length > 1 ? crumbs[crumbs.length - 2].nodeId : PROJECT_ROOT_CRUMB_ID);
@@ -131,14 +198,18 @@ export function useFractalZoomNavigation() {
     } else {
       focusNodeOnCanvas(targetNode);
     }
-  };
+  },
+};
 
+/** 투영 + 명령. 투영 전체가 필요한 곳(아웃라이너 · 브레드크럼)만 쓴다. */
+export function useFractalZoomNavigation() {
+  const projection = useOutlineProjection();
   return {
     projection,
-    handleBulletZoomIn,
-    handleSelectOutlineNode,
-    handleBreadcrumbClick,
-    handleZoomOutOneLevel,
+    handleBulletZoomIn: outlineCommands.zoomIntoNode,
+    handleSelectOutlineNode: outlineCommands.selectNode,
+    handleBreadcrumbClick: outlineCommands.breadcrumbClick,
+    handleZoomOutOneLevel: outlineCommands.zoomOutOneLevel,
   };
 }
 
@@ -148,10 +219,8 @@ export function useFractalZoomNavigation() {
  * - 줌 루트가 가리키는 문서가 활성 문서와 다르면 활성 문서를 맞춘다
  */
 export function useZoomHierarchySync(): void {
-  const { projection, handleZoomOutOneLevel } = useFractalZoomNavigation();
-  const zoomOut = useStableCallback(handleZoomOutOneLevel);
-
-  const zoomedDocId = projection.allNodes.find((n) => n.nodeId === projection.rootNodeId)?.targetDocId;
+  // 페이지 최상위에서 도는 훅이라 원시값 하나만 구독한다.
+  const zoomedDocId = useOutlineSelector((p) => p.allNodes.find((n) => n.nodeId === p.rootNodeId)?.targetDocId ?? null);
   useEffect(() => {
     const documents = useStudioDocumentStore.getState();
     if (zoomedDocId && zoomedDocId !== documents.activeDocId) documents.setActiveDocId(zoomedDocId);
@@ -161,10 +230,10 @@ export function useZoomHierarchySync(): void {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.altKey && e.key === "ArrowUp") {
         e.preventDefault();
-        zoomOut();
+        outlineCommands.zoomOutOneLevel();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [zoomOut]);
+  }, []);
 }

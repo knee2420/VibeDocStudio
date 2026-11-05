@@ -14,7 +14,7 @@ import { buildSlotAiActionPrompt, SlotInlineComposerHost } from "@/features/comp
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { StressPagesToggleButton } from "@/features/simulate-large-document";
-import { useFractalZoomNavigation } from "@/features/zoom-hierarchy";
+import { getOutlineProjection, outlineCommands, useOutlineSelector } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
 
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
@@ -96,7 +96,9 @@ const DraftingCanvas: React.FC = () => {
 
   const { updateSlotContent } = useSlotContentActions();
   const blocks = useMutateCanvasBlocks();
-  const { projection, handleZoomOutOneLevel } = useFractalZoomNavigation();
+  // 캔버스는 줌 상태만 구독한다 (투영 전체를 구독하면 아웃라인 요약이 바뀔 때마다 캔버스가 다시 그려진다).
+  const zoomLevel = useOutlineSelector((p) => p.activeZoomLevel);
+  const zoomedNode = useOutlineSelector((p) => p.allNodes.find((n) => n.nodeId === p.rootNodeId));
   const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceDocIds.length);
 
   // 표 구역 · 블록 · 페이지를 넘는 슬롯 범위 선택 (드래그 · 브라우저 선택)
@@ -107,7 +109,7 @@ const DraftingCanvas: React.FC = () => {
   // 페이지 시트에 넘기는 콜백은 모두 고정 참조여야 MemoVDocPageSheet 의 메모가 유지된다.
   const onSelectSlot = useStableCallback((slotId: string) => {
     setSelectedSlotId(slotId);
-    const matched = projection.allNodes.find((n) => n.targetSlotId === slotId);
+    const matched = getOutlineProjection().allNodes.find((n) => n.targetSlotId === slotId);
     if (matched) setSelectedOutlinerNodeId(matched.nodeId);
   });
   // 블록을 고른다고 오른쪽 패널을 열지 않는다 — 사용자가 접어 둔 Composer 는 접힌 채로 둔다.
@@ -143,11 +145,10 @@ const DraftingCanvas: React.FC = () => {
   if (!doc) return null;
 
   // 페이지 단위로 줌인했으면 그 페이지만 격리해 보여준다.
-  const zoomedNode = projection.allNodes.find((n) => n.nodeId === projection.rootNodeId);
   const zoomedPageId = zoomedNode?.targetPageId;
   const isPageZoomed =
-    projection.activeZoomLevel !== "project" &&
-    projection.activeZoomLevel !== "document" &&
+    zoomLevel !== "project" &&
+    zoomLevel !== "document" &&
     Boolean(zoomedPageId) &&
     doc.pages.length > 1 &&
     doc.pages.some((p) => p.pageId === zoomedPageId);
@@ -175,7 +176,7 @@ const DraftingCanvas: React.FC = () => {
             <button
               type="button"
               data-testid="canvas-page-zoom-out-btn"
-              onClick={handleZoomOutOneLevel}
+              onClick={outlineCommands.zoomOutOneLevel}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-emerald-100/70 text-emerald-800 border border-emerald-300 rounded-lg font-semibold text-xs cursor-pointer transition shadow-2xs"
               title="전체 페이지 조망으로 복귀 (Alt+↑)"
             >

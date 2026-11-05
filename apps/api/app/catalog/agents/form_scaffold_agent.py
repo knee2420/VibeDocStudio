@@ -28,6 +28,7 @@ from app.catalog.agents.fidelity_loop import (
     create_fidelity_config,
 )
 from app.core.llm.execution_policy import CLI_PROVIDER, RuntimeExecutionPolicy
+from app.core.process_tree import popen_tree
 
 logger = logging.getLogger(__name__)
 
@@ -352,12 +353,14 @@ class FormScaffoldAgent:
                 timeout_seconds,
             )
 
-            proc = subprocess.Popen(
+            # Job Object 로 묶어 API 가 죽거나 타임아웃이 나도 agy 트리가 고아로 남지 않게 한다.
+            tree = popen_tree(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 creationflags=CREATE_NO_WINDOW,
             )
+            proc = tree.proc
             stdout_bytes, stderr_bytes = proc.communicate(timeout=timeout_seconds)
             stdout = stdout_bytes.decode("utf-8", errors="replace")
             stderr = stderr_bytes.decode("utf-8", errors="replace")
@@ -417,10 +420,7 @@ class FormScaffoldAgent:
 
         except subprocess.TimeoutExpired:
             logger.warning("[FormScaffoldAgent] agy CLI 호출 타임아웃 (%ss 초과) -> 기본 추출본 사용", timeout_seconds)
-            try:
-                proc.kill()
-            except Exception:
-                pass
+            tree.kill()
         except Exception as exc:
             logger.warning("[FormScaffoldAgent] agy CLI 실행 중 예외 발생: %s -> 기본 추출본 사용", exc)
 
