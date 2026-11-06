@@ -484,7 +484,7 @@ const ScopeRow: React.FC = () => {
   const live = useAiScopeStore((s) => s.live);
   const scopeOn = useAiScopeStore((s) => s.scopeOn);
   const setScopeOn = useAiScopeStore((s) => s.setScopeOn);
-  const { setMode, setFixed, pinTarget, pinPage, togglePageExcluded, clearPin } = useAiScopeStore.getState();
+  const { setMode, setFixed, pinTarget, pinPage, togglePageSelected, selectAllPages, clearSelectedPages, togglePageExcluded, clearPin } = useAiScopeStore.getState();
   const [open, setOpen, menuRef] = usePopover();
 
   if (!doc) return null;
@@ -492,6 +492,12 @@ const ScopeRow: React.FC = () => {
   const resolved = resolveScope(doc, setting, liveHere);
   const currentTarget = setting.fixed ? setting.target : liveHere.target ?? setting.target;
   const currentPage = (setting.fixed ? setting.pageId : liveHere.pageId) ?? setting.pageId ?? doc.pages[0]?.pageId ?? "";
+  const selectedPageIds = React.useMemo(() => {
+    if (setting.pageIds && setting.pageIds.length > 0) return setting.pageIds;
+    if (setting.pageId) return [setting.pageId];
+    if (!setting.fixed && liveHere.pageId) return [liveHere.pageId];
+    return doc.pages[0]?.pageId ? [doc.pages[0].pageId] : [];
+  }, [setting.pageIds, setting.pageId, setting.fixed, liveHere.pageId, doc.pages]);
   const excluded = setting.excludedPageIds.filter((p) => doc.pages.some((x) => x.pageId === p));
 
   // 고정 중에 캔버스 초점이 달라지면 점선 제안 (메뉴 밖 — 눌러야 바뀐다)
@@ -508,7 +514,9 @@ const ScopeRow: React.FC = () => {
   const waitingForSelection = setting.mode === "selection" && !currentTarget;
   const modeDetail: Record<ScopeMode, string> = {
     selection: currentTarget ? `${pageTitle(doc, currentTarget.pageId).split(" ")[0]} ${currentTarget.label}` : "칸을 고르세요",
-    page: pageTitle(doc, currentPage).split(" ")[0],
+    page: selectedPageIds.length > 1
+      ? `${selectedPageIds.length}쪽 선택`
+      : pageTitle(doc, selectedPageIds[0] || currentPage).split(" ")[0],
     document: `${doc.pages.length - excluded.length}/${doc.pages.length}쪽`,
   };
 
@@ -520,7 +528,11 @@ const ScopeRow: React.FC = () => {
       return currentTarget ? `${pName} ${currentTarget.label}` : "선택만";
     }
     if (setting.mode === "page") {
-      return pageTitle(doc, currentPage).split(" ")[0];
+      if (selectedPageIds.length > 1) {
+        const labels = selectedPageIds.map((id) => pageTitle(doc, id).split(" ")[0]).join(", ");
+        return `${labels} (${selectedPageIds.length}쪽)`;
+      }
+      return pageTitle(doc, selectedPageIds[0] || currentPage).split(" ")[0];
     }
     return `전체 (${doc.pages.length - excluded.length}쪽)`;
   }, [scopeOn, waitingForSelection, setting.mode, doc, currentTarget, currentPage, excluded.length]);
@@ -564,15 +576,35 @@ const ScopeRow: React.FC = () => {
 
             {setting.mode === "page" && (
               <>
-                <MenuHeader label="페이지 — 고르면 그 페이지로 고정" />
+                <MenuHeader
+                  label="페이지 — 여러 쪽 중복 선택 가능"
+                  action={
+                    <div className="flex items-center gap-1.5 text-[10px]">
+                      <button
+                        type="button"
+                        className="text-amber-700 hover:underline font-semibold cursor-pointer"
+                        onClick={() => selectAllPages(docId, doc.pages.map((p) => p.pageId))}
+                      >
+                        전체
+                      </button>
+                      <span className="text-slate-300">|</span>
+                      <button
+                        type="button"
+                        className="text-slate-500 hover:underline cursor-pointer"
+                        onClick={() => clearSelectedPages(docId)}
+                      >
+                        초기화
+                      </button>
+                    </div>
+                  }
+                />
                 {doc.pages.map((p) => (
                   <MenuItem
                     key={p.pageId}
-                    radio
                     testId="scope-page-item"
                     title={pageTitle(doc, p.pageId)}
-                    checked={p.pageId === currentPage}
-                    onClick={() => pinPage(docId, p.pageId)}
+                    checked={selectedPageIds.includes(p.pageId)}
+                    onClick={() => togglePageSelected(docId, p.pageId)}
                   />
                 ))}
               </>

@@ -118,9 +118,9 @@ export const ReferenceDeckSection: React.FC = () => {
         }}
         onDoubleClick={resetDeckHeight}
         title={`위아래로 드래그하여 참조 레이어 높이 조절 · 더블클릭 시 기본 높이(${REFERENCE_DECK_HEIGHT.default}px) 복원`}
-        className="absolute -top-1.5 left-0 right-0 h-3 cursor-row-resize hover:bg-violet-400/30 active:bg-violet-500/50 flex items-center justify-center group z-30 transition-colors"
+        className="absolute -top-1.5 left-0 right-0 h-3 cursor-row-resize hover:bg-amber-400/30 active:bg-amber-500/50 flex items-center justify-center group z-30 transition-colors"
       >
-        <div className="w-10 h-0.5 rounded-full bg-slate-300 group-hover:bg-violet-600 transition-colors" />
+        <div className="w-10 h-0.5 rounded-full bg-slate-300 group-hover:bg-amber-600 transition-colors" />
       </div>
 
       <div className="px-3 py-1.5 border-b border-slate-200/70 flex items-center justify-between gap-1.5 bg-white shrink-0">
@@ -129,9 +129,9 @@ export const ReferenceDeckSection: React.FC = () => {
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-1.5 text-left min-w-0 cursor-pointer hover:opacity-80 transition"
         >
-          <Layers className="w-3.5 h-3.5 text-violet-600 shrink-0" />
+          <Layers className="w-3.5 h-3.5 text-amber-600 shrink-0" />
           <span className="text-[11px] font-bold text-slate-800 tracking-tight">참조 레이어</span>
-          <span className="px-1 py-0.2 rounded-full bg-violet-50 text-violet-700 border border-violet-200 text-[10px] font-bold font-mono tabular-nums">
+          <span className="px-1 py-0.2 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold font-mono tabular-nums">
             {boundRefProjects.length}
           </span>
           {expanded ? <ChevronDown className="w-3 h-3 text-slate-400" /> : <ChevronUp className="w-3 h-3 text-slate-400" />}
@@ -157,7 +157,7 @@ export const ReferenceDeckSection: React.FC = () => {
           {boundRefProjects.length === 0 ? (
             <EmptyStateCard
               testId="reference-deck-empty-state"
-              icon={<Lock className="w-3.5 h-3.5 text-violet-600" />}
+              icon={<Lock className="w-3.5 h-3.5 text-amber-600" />}
               title="연결된 참조 레이어 없음"
               description="참조할 표준 문서를 레이어로 연결하세요."
               actionLabel={`+ ${allReferenceIds.length}종 연결`}
@@ -189,11 +189,11 @@ export const ReferenceDeckSection: React.FC = () => {
                     if (!isOn) toggleVisibility(rp.projectId, docId);
                   }}
                   className={`group flex items-center justify-between h-7.5 px-2 rounded text-xs transition-all cursor-pointer select-none border ${
-                    isPicked || isAiHighlighted ? "ring-2 ring-violet-400 ring-offset-1 " : ""
+                    isPicked || isAiHighlighted ? "ring-2 ring-amber-400 ring-offset-1 " : ""
                   }${
                     isOn
                       ? isSelected
-                        ? "bg-violet-50 text-violet-950 border-violet-400 font-bold shadow-2xs opacity-100"
+                        ? "bg-amber-50 text-amber-950 border-amber-400 font-bold shadow-2xs opacity-100"
                         : "bg-white text-slate-800 border-slate-300 hover:border-slate-400 font-semibold shadow-2xs opacity-100"
                       : "bg-slate-50/70 text-slate-400 border-slate-200/60 opacity-50 hover:opacity-75"
                   }`}
@@ -217,7 +217,7 @@ export const ReferenceDeckSection: React.FC = () => {
                       className={`truncate text-[11px] leading-tight tracking-tight transition-colors ${
                         isOn
                           ? isSelected
-                            ? "text-violet-950 font-bold"
+                            ? "text-amber-950 font-bold"
                             : "text-slate-800 font-semibold"
                           : "text-slate-400 font-normal line-through"
                       }`}
@@ -237,7 +237,7 @@ export const ReferenceDeckSection: React.FC = () => {
                       }}
                       className={`px-1.5 py-0.5 rounded text-[10px] font-mono shrink-0 transition flex items-center gap-1 cursor-pointer ${
                         isWorking
-                          ? "bg-violet-600 text-white font-bold ring-1 ring-violet-400 shadow-2xs"
+                          ? "bg-amber-600 text-white font-bold ring-1 ring-amber-400 shadow-2xs"
                           : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 font-medium"
                       }`}
                     >

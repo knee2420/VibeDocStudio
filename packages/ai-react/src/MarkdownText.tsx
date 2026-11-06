@@ -1,5 +1,5 @@
 import React from "react";
-import { Bookmark, BookOpen, Layers } from "lucide-react";
+import { BookOpen, Database, FolderTree, GitPullRequestDraft, Layers } from "lucide-react";
 
 import type { EntityInfo, EntityRegistry } from "@vibe/ai-kernel";
 
@@ -9,7 +9,7 @@ import { CATEGORY_STYLES, EntityCategory, EntityChip, getEntityCategory } from "
 export interface MarkdownTextProps {
   text: string;
   className?: string;
-  /** 맨 하단에 엔티티들을 카테고리별(레퍼런스/인용/에디터)로 Group by 리스트업할지 여부 (기본 true) */
+  /** 맨 하단에 엔티티들을 카테고리별로 Group by 리스트업할지 여부 (기본 true) */
   showGroupByFooter?: boolean;
 }
 
@@ -20,7 +20,7 @@ export interface MarkdownTextProps {
  * 위치 링크: `[이름](vdoc:block/id)` 과, 화면에 실제로 있는 id 를 쓴 인라인 코드 · 맨 id(`mm_page_1`)는
  * 클릭할 수 있는 위치 칩이 된다 (AI 표면 안에서만 — `AiSurfaceProvider`).
  *
- * 답변 맨 하단에는 언급된 엔티티들을 레퍼런스, 인용(Resource), 에디터 그룹으로 묶어 Group by 리스트업합니다.
+ * 답변 맨 하단에는 언급된 엔티티들을 리소스, 레퍼런스, 아웃라이너, 에디터 위치, 변경안 그룹으로 묶어 Group by 리스트업합니다.
  */
 export const MarkdownText: React.FC<MarkdownTextProps> = ({
   text,
@@ -51,39 +51,69 @@ export const MarkdownText: React.FC<MarkdownTextProps> = ({
 
 // --- Group By 푸터 컴포넌트 -----------------------------------------------------
 
-const GROUP_CONFIG: Record<EntityCategory, { label: string; icon: React.ComponentType<{ className?: string }>; border: string; bg: string; titleColor: string }> = {
-  reference: {
-    label: "레퍼런스 (지식 덱)",
-    icon: Bookmark,
+const GROUP_CONFIG: Record<
+  EntityCategory,
+  {
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    border: string;
+    bg: string;
+    titleColor: string;
+  }
+> = {
+  // 1. 리소스: 연보라 (Purple) - 사용자 지정 고정
+  resource: {
+    label: "리소스 (지식 덱 · 카드 · 원천 데이터)",
+    icon: Database,
     border: "border-purple-200/80",
     bg: "bg-purple-50/40",
     titleColor: "text-purple-900",
   },
-  resource: {
-    label: "인용 (Resource 원본)",
+  // 2. 레퍼런스: 앰버 (Amber)
+  reference: {
+    label: "레퍼런스 (참조 규정 · PDF)",
     icon: BookOpen,
+    border: "border-amber-200/80",
+    bg: "bg-amber-50/40",
+    titleColor: "text-amber-900",
+  },
+  // 3. 아웃라이너: 스카이 블루 (Sky Blue)
+  outliner: {
+    label: "아웃라이너 (문서 구조 · 목차)",
+    icon: FolderTree,
     border: "border-sky-200/80",
     bg: "bg-sky-50/40",
     titleColor: "text-sky-900",
   },
+  // 4. 에디터 위치: 연두 (Emerald) - 사용자 지정 고정
   editor: {
-    label: "에디터 위치 (슬롯 · 블록 · 페이지)",
+    label: "에디터 위치 (슬롯 · 표 셀 · 블록)",
     icon: Layers,
     border: "border-emerald-200/80",
     bg: "bg-emerald-50/40",
     titleColor: "text-emerald-900",
   },
+  // 5. 변경안: 로즈 (Rose)
+  staged: {
+    label: "변경안 (Staged 제안)",
+    icon: GitPullRequestDraft,
+    border: "border-rose-200/80",
+    bg: "bg-rose-50/40",
+    titleColor: "text-rose-900",
+  },
 };
 
-const ORDERED_CATEGORIES: EntityCategory[] = ["reference", "resource", "editor"];
+const ORDERED_CATEGORIES: EntityCategory[] = ["resource", "reference", "outliner", "editor", "staged"];
 
 export const CitationGroupByFooter: React.FC<{ entities: EntityInfo[] }> = ({ entities }) => {
   if (entities.length === 0) return null;
 
   const grouped: Record<EntityCategory, EntityInfo[]> = {
-    reference: [],
     resource: [],
+    reference: [],
+    outliner: [],
     editor: [],
+    staged: [],
   };
 
   const seenIds = new Set<string>();
@@ -153,14 +183,15 @@ function extractEntities(text: string, entities: EntityRegistry | null): EntityI
     }
   };
 
-  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|\[[^\]]+\]\([^)]+\))/g;
+  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|\[(?:\[[^\]]*\]|[^\]])+\]\([^)]+\))/g;
   for (const match of text.matchAll(pattern)) {
     const token = match[0];
     if (token.startsWith("`")) {
       const body = token.slice(1, -1).trim();
       add(entities.lookup(body));
     } else if (token.startsWith("[")) {
-      const href = token.slice(token.indexOf("](") + 2, -1).trim();
+      const sepIdx = token.lastIndexOf("](");
+      const href = sepIdx !== -1 ? token.slice(sepIdx + 2, -1).trim() : "";
       const link = VDOC_LINK.exec(href);
       if (link) {
         add(entities.lookup(decodeURIComponent(link[2]), link[1]));
@@ -267,7 +298,7 @@ const BARE_ID = /\b[A-Za-z][A-Za-z0-9]*(?:[_-][A-Za-z0-9]+)*_[A-Za-z0-9]+\b/g;
 
 function inlineNodes(text: string, entities: EntityRegistry | null): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|\[[^\]]+\]\([^)]+\))/g;
+  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|\[(?:\[[^\]]*\]|[^\]])+\]\([^)]+\))/g;
   let last = 0;
   let key = 0;
   const pushText = (value: string) => {
@@ -299,8 +330,9 @@ function inlineNodes(text: string, entities: EntityRegistry | null): React.React
     } else if (token.startsWith("**")) {
       parts.push(<strong key={key++}>{inlineNodes(token.slice(2, -2), entities)}</strong>);
     } else if (token.startsWith("[")) {
-      const label = token.slice(1, token.indexOf("]"));
-      const href = token.slice(token.indexOf("](") + 2, -1).trim();
+      const sepIdx = token.lastIndexOf("](");
+      const label = sepIdx !== -1 ? token.slice(1, sepIdx) : token.slice(1, -1);
+      const href = sepIdx !== -1 ? token.slice(sepIdx + 2, -1).trim() : "";
       const link = VDOC_LINK.exec(href);
       if (link) {
         parts.push(

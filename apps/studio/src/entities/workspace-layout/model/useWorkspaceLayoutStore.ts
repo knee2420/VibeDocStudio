@@ -14,6 +14,12 @@ export type RightPanelTab = "composer" | "blockbox" | "inspector" | "resource-ma
 /** Resource Manager 도킹 및 배치 위치 */
 export type RmPlacement = "right-tab" | "between-split" | "left-dock" | "closed";
 
+/** 좌측 사이드바(탐색기) 내부 탭: 아웃라이너 vs 레퍼런스 매니저 */
+export type LeftPanelTab = "outliner" | "reference-manager";
+
+/** Reference Manager 도킹 및 배치 위치: 좌측 탭 모드 vs 에디터 독립 스플릿 vs 닫힘 */
+export type RefPlacement = "left-tab" | "split" | "closed";
+
 export const SIDEBAR_WIDTH = { default: 320, min: 250, max: 650 } as const;
 export const REFERENCE_DECK_HEIGHT = { default: 140, min: 50 } as const;
 export const REFERENCE_SPLIT_WIDTH = { default: 520, min: 360, max: 1000 } as const;
@@ -44,6 +50,14 @@ export interface WorkspaceLayoutState {
   /** Resource Manager 배치 위치 */
   rmPlacement: RmPlacement;
   rmSplitWidth: number;
+  /** 좌측 탐색기 내부 탭 */
+  leftPanelTab: LeftPanelTab;
+  /** Reference Manager 도킹 위치 */
+  refPlacement: RefPlacement;
+  /** 활성 선택된 참조 문서 ID */
+  activeReferenceDocId: string | null;
+  /** 참조 스플릿 패널 접힘 여부 (CollapsedPanelRail 로 접힘) */
+  refSplitCollapsed: boolean;
   /** 아웃라이너 왼쪽의 페이지 미리보기 패널. */
   pagePreviewOpen: boolean;
   shortcutHelpOpen: boolean;
@@ -60,6 +74,11 @@ export interface WorkspaceLayoutState {
   setRmPlacement: (placement: RmPlacement) => void;
   setRmSplitWidth: (width: number) => void;
   resetRmSplitWidth: () => void;
+  setLeftPanelTab: (tab: LeftPanelTab) => void;
+  setRefPlacement: (placement: RefPlacement) => void;
+  setActiveReferenceDocId: (docId: string | null) => void;
+  openReferenceSplit: (docId?: string) => void;
+  setRefSplitCollapsed: (collapsed: boolean) => void;
   setSidebarWidth: (width: number) => void;
   resetSidebarWidth: () => void;
   setRightSidebarWidth: (width: number) => void;
@@ -83,6 +102,10 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   rightPanelTab: "composer",
   rmPlacement: "right-tab",
   rmSplitWidth: clamp(readStoredNumber(RM_SPLIT_WIDTH_KEY, RM_SPLIT_WIDTH.default), RM_SPLIT_WIDTH.min, RM_SPLIT_WIDTH.max),
+  leftPanelTab: "outliner",
+  refPlacement: "closed",
+  activeReferenceDocId: null,
+  refSplitCollapsed: false,
   sidebarWidth: clamp(readStoredNumber(SIDEBAR_WIDTH_KEY, SIDEBAR_WIDTH.default), SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max),
   rightSidebarWidth: clamp(
     readStoredNumber(RIGHT_SIDEBAR_WIDTH_KEY, RIGHT_SIDEBAR_WIDTH.default),
@@ -111,7 +134,52 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   setLeftSidebarOpen: (open) => set({ leftSidebarOpen: open }),
   setRightSidebarOpen: (open) => set({ rightSidebarOpen: open }),
   openRightPanel: (tab) => set({ rightSidebarOpen: true, rightPanelTab: tab }),
-  setRmPlacement: (placement) => set({ rmPlacement: placement }),
+  setRmPlacement: (placement) => {
+    const { rightPanelTab } = get();
+    if (placement === "between-split") {
+      set({
+        rmPlacement: placement,
+        rightPanelTab: rightPanelTab === "resource-manager" ? "composer" : rightPanelTab,
+      });
+    } else if (placement === "right-tab") {
+      set({
+        rmPlacement: placement,
+        rightSidebarOpen: true,
+        rightPanelTab: "resource-manager",
+      });
+    } else {
+      set({ rmPlacement: placement });
+    }
+  },
+  setLeftPanelTab: (tab) => set({ leftPanelTab: tab }),
+  setRefPlacement: (placement) => {
+    const { leftPanelTab } = get();
+    if (placement === "split") {
+      set({
+        refPlacement: placement,
+        leftPanelTab: leftPanelTab === "reference-manager" ? "outliner" : leftPanelTab,
+      });
+    } else if (placement === "left-tab") {
+      set({
+        refPlacement: placement,
+        leftSidebarOpen: true,
+        leftPanelTab: "reference-manager",
+      });
+    } else {
+      set({ refPlacement: placement });
+    }
+  },
+  setActiveReferenceDocId: (docId) => set({ activeReferenceDocId: docId }),
+  openReferenceSplit: (docId) => {
+    const { leftPanelTab, activeReferenceDocId } = get();
+    set({
+      refPlacement: "split",
+      refSplitCollapsed: false,
+      leftPanelTab: leftPanelTab === "reference-manager" ? "outliner" : leftPanelTab,
+      activeReferenceDocId: docId ?? activeReferenceDocId,
+    });
+  },
+  setRefSplitCollapsed: (collapsed) => set({ refSplitCollapsed: collapsed }),
   setRmSplitWidth: (width) => {
     const next = clamp(width, RM_SPLIT_WIDTH.min, RM_SPLIT_WIDTH.max);
     writeStoredValue(RM_SPLIT_WIDTH_KEY, next);

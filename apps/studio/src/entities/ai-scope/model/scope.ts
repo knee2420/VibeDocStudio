@@ -27,13 +27,15 @@ export interface DocScopeSetting {
   fixed: boolean;
   /** 고정된 선택 (mode=selection) */
   target: ScopeTarget | null;
-  /** 고정된 페이지 (mode=page) */
+  /** 고정된 페이지 (단일 / 하위 호환) */
   pageId: string | null;
+  /** 고정/선택된 복수 페이지 목록 (mode=page) */
+  pageIds?: string[];
   /** 문서 전체에서 뺀 페이지 */
   excludedPageIds: string[];
 }
 
-export const DEFAULT_SCOPE: DocScopeSetting = { mode: "page", fixed: false, target: null, pageId: null, excludedPageIds: [] };
+export const DEFAULT_SCOPE: DocScopeSetting = { mode: "page", fixed: false, target: null, pageId: null, pageIds: [], excludedPageIds: [] };
 
 export interface ResolvedScope {
   docId: string;
@@ -138,11 +140,29 @@ export function resolveScope(
     };
   }
   // page (선택 모드인데 고른 것이 없으면 페이지로)
+  const selectedPages = (setting.pageIds && setting.pageIds.length > 0)
+    ? setting.pageIds.filter((id) => doc.pages.some((p) => p.pageId === id))
+    : (pageId ? [pageId] : [doc.pages[0]?.pageId ?? ""]);
+
+  if (selectedPages.length > 1) {
+    const labels = selectedPages.map((id) => pageTitle(doc, id).split(" ")[0]).join(", ");
+    return {
+      docId: doc.docId,
+      mode: "page",
+      label: `페이지 ${selectedPages.length}쪽 (${labels})`,
+      pageIds: new Set(selectedPages),
+      slotIds: null,
+      blockIds: null,
+      oneOff: false,
+    };
+  }
+
+  const singlePage = selectedPages[0] || pageId;
   return {
     docId: doc.docId,
     mode: "page",
-    label: `이 페이지 · ${pageTitle(doc, pageId)}`,
-    pageIds: new Set([pageId]),
+    label: `이 페이지 · ${pageTitle(doc, singlePage)}`,
+    pageIds: new Set([singlePage]),
     slotIds: null,
     blockIds: null,
     oneOff: false,

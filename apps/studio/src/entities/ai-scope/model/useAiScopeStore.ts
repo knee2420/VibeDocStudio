@@ -26,6 +26,10 @@ export interface AiScopeState {
   /** 특정 대상을 범위로 고정한다 (프롬프트 칩의 📌, 초점 제안 수락) */
   pinTarget: (docId: string, target: ScopeTarget) => void;
   pinPage: (docId: string, pageId: string) => void;
+  /** 페이지를 복수로 토글하여 선택 (중복 선택 지원) */
+  togglePageSelected: (docId: string, pageId: string) => void;
+  selectAllPages: (docId: string, allPageIds: string[]) => void;
+  clearSelectedPages: (docId: string) => void;
   /** 고정 해제 — 붙잡아 둔 선택 · 페이지를 지우고 캔버스 초점을 따라가게 한다 */
   clearPin: (docId: string) => void;
   togglePageExcluded: (docId: string, pageId: string) => void;
@@ -103,7 +107,34 @@ export const useAiScopeStore = create<AiScopeState>((set, get) => {
     pinTarget: (docId, target) => update(docId, (s) => ({ ...s, mode: "selection", fixed: true, target, pageId: target.pageId })),
     clearPin: (docId) => update(docId, (s) => ({ ...s, fixed: false, target: null, pageId: null })),
     // 페이지를 직접 고르면 그 페이지로 고정 (초점을 따라가면 고른 의미가 없다)
-    pinPage: (docId, pageId) => update(docId, (s) => ({ ...s, pageId, fixed: true })),
+    pinPage: (docId, pageId) => update(docId, (s) => ({ ...s, pageId, pageIds: [pageId], fixed: true })),
+    togglePageSelected: (docId, pageId) =>
+      update(docId, (s) => {
+        const cur = s.pageIds && s.pageIds.length > 0 ? s.pageIds : (s.pageId ? [s.pageId] : []);
+        const next = cur.includes(pageId) ? cur.filter((id) => id !== pageId) : [...cur, pageId];
+        return {
+          ...s,
+          mode: "page",
+          fixed: next.length > 0,
+          pageId: next[0] ?? null,
+          pageIds: next,
+        };
+      }),
+    selectAllPages: (docId, allPageIds) =>
+      update(docId, (s) => ({
+        ...s,
+        mode: "page",
+        fixed: true,
+        pageId: allPageIds[0] ?? null,
+        pageIds: [...allPageIds],
+      })),
+    clearSelectedPages: (docId) =>
+      update(docId, (s) => ({
+        ...s,
+        fixed: false,
+        pageId: null,
+        pageIds: [],
+      })),
     togglePageExcluded: (docId, pageId) =>
       update(docId, (s) => ({
         ...s,

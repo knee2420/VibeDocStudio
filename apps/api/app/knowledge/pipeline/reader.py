@@ -349,8 +349,35 @@ class DeckReader:
         return [{"sectionId": s.section_id, "title": s.title, "source": s.source, "cardIds": s.card_ids,
                  "keywords": s.keywords[:6], "description": s.description} for s in d.sections]
 
+    def full_document(self, card_id: str) -> dict[str, Any]:
+        """카드가 속한 원본 문서 전체를 아카이브 세그먼트들로부터 복원한다."""
+        d = self._load()
+        card = d.by_id.get(card_id)
+        if not card or not card.archive_path:
+            return {}
+        card_file = self.deck_dir / card.archive_path
+        section_dir = card_file.parent
+        if not section_dir.exists() or not section_dir.is_dir():
+            return {}
+        md_files = sorted([p for p in section_dir.iterdir() if p.is_file() and p.suffix.lower() == ".md"])
+        total_lines: list[str] = []
+        for p in md_files:
+            try:
+                raw_lines = p.read_text(encoding="utf-8").split("\n")
+                # 프론트매터 7줄 다음이 본문
+                body = raw_lines[7:] if len(raw_lines) > 7 else raw_lines
+                total_lines.extend(body)
+            except OSError:
+                continue
+        return {
+            "source": card.anchor.source,
+            "totalLines": len(total_lines),
+            "lines": [f"L{idx + 1}: {line}" for idx, line in enumerate(total_lines)],
+            "highlight": [card.anchor.line_start, card.anchor.line_end],
+        }
+
     def card_detail(self, card_id: str) -> dict[str, Any]:
-        """화면의 카드 미리보기 — 카드 전체 + 원문 조각."""
+        """화면의 카드 미리보기 — 카드 전체 + 원문 조각 및 전체 원본 문서 복원."""
         found = self.cards([card_id], max_elements=48)
         detail = found[0] if found else {"cardId": card_id, "error": "없는 카드"}
         if "error" not in detail:
@@ -361,6 +388,53 @@ class DeckReader:
             detail["questions"] = card.questions
             detail["depth"] = card.depth
             detail["sourceText"] = self.source(card_id, max_chars=12000)["text"]
+            full_doc = self.full_document(card_id)
+            if full_doc and full_doc.get("lines"):
+                detail["fullDocument"] = "\n".join(full_doc["lines"])
+                detail["highlightRange"] = full_doc["highlight"]
+                detail["totalDocumentLines"] = full_doc["totalLines"]
+
+            # 원문이 PDF 인 경우의 서빙 URL 및 하이라이트 페이지/박스 연동
+            source_name = getattr(card.anchor, "source", "") or ""
+            anchor_page = getattr(card.anchor, "page", None)
+            is_pdf = source_name.lower().endswith(".pdf") or anchor_page is not None
+            if is_pdf:
+                detail["isPdf"] = True
+                detail["pdfPage"] = anchor_page or 1
+                detail["pdfBox"] = getattr(card.anchor, "box", None)
+                # 원본 PDF 파일 탐색
+                pdf_file = None
+                candidates = [
+                    self.deck_dir / "sources" / source_name,
+                    self.deck_dir / source_name,
+                ]
+                for c in candidates:
+                    if c.exists() and c.is_file():
+                        pdf_file = c
+                        break
+                if not pdf_file:
+                    for sp in d.manifest.get("sourcePaths", []):
+                        p = Path(sp)
+                        if p.name == source_name or (p.is_file() and p.suffix.lower() == ".pdf"):
+                            if p.exists():
+                                pdf_file = p
+                                break
+                if pdf_file and pdf_file.exists():
+                    detail["pdfUrl"] = f"/api/resources/raw-file?path={pdf_file.resolve().as_posix()}"
+
+            # 같은 원본 문서(source)를 공유하는 동일 문서 내 카드들의 하이라이트 구간들
+            siblings = []
+            for other_card in d.cards:
+                if other_card.anchor.source == card.anchor.source:
+                    siblings.append({
+                        "cardId": other_card.card_id,
+                        "title": other_card.title,
+                        "lines": [other_card.anchor.line_start, other_card.anchor.line_end],
+                        "page": other_card.anchor.page,
+                        "box": getattr(other_card.anchor, "box", None),
+                        "isCurrent": other_card.card_id == card_id,
+                    })
+            detail["siblings"] = siblings
         return detail
 
     def scoped(self, sections: Optional[set[str]]) -> "DeckReader":

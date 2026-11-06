@@ -2,7 +2,7 @@ import React from "react";
 import {
   Crosshair,
   PanelRightClose,
-  SplitSquareVertical,
+  SquareSplitHorizontal,
   X,
 } from "lucide-react";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
@@ -27,8 +27,32 @@ export const ResourceManagerHeader: React.FC<Props> = ({
 
   return (
     <div className="px-3 py-2 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between shrink-0 select-none">
-      {/* 좌측: 타이틀 및 Choice 카운터 */}
-      <div className="flex items-center gap-2 min-w-0">
+      {/* 좌측: 꺼내기/집어넣기 버튼, 타이틀 및 Choice 카운터 */}
+      <div className="flex items-center gap-1.5 min-w-0">
+        {rmPlacement === "right-tab" ? (
+          <button
+            type="button"
+            data-testid="rm-popout-btn-left"
+            onClick={() => setRmPlacement("between-split")}
+            className="p-1 rounded hover:bg-violet-100 text-slate-500 hover:text-violet-700 transition cursor-pointer"
+            title="에디터 우측 독립 스플릿 뷰로 꺼내기 (Pop-out to Split View)"
+          >
+            <SquareSplitHorizontal className="w-3.5 h-3.5" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            data-testid="rm-dockin-btn-left"
+            onClick={() => {
+              setRmPlacement("right-tab");
+              openRightPanel("resource-manager");
+            }}
+            className="p-1 rounded hover:bg-violet-100 text-slate-500 hover:text-violet-700 transition cursor-pointer"
+            title="우측 탭으로 다시 집어넣기 (Dock to Tab)"
+          >
+            <PanelRightClose className="w-3.5 h-3.5" />
+          </button>
+        )}
         <span className="font-bold text-xs text-slate-800 tracking-tight flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-violet-600 animate-pulse" />
           Resource Manager
@@ -56,24 +80,27 @@ export const ResourceManagerHeader: React.FC<Props> = ({
           <Crosshair className="w-3 h-3" />
           {focusCount > 0 ? `초점 ${focusCount}` : "초점"}
         </button>
+
         {rmPlacement === "right-tab" ? (
           <button
             type="button"
+            data-testid="rm-popout-btn-right"
             onClick={() => setRmPlacement("between-split")}
             className="p-1 rounded hover:bg-slate-200/80 hover:text-slate-800 transition cursor-pointer"
-            title="에디터와 AI Composer 사이 독립 스플릿으로 분리 (Popout)"
+            title="에디터 우측 독립 스플릿 뷰로 꺼내기 (Pop-out)"
           >
-            <SplitSquareVertical className="w-3.5 h-3.5" />
+            <SquareSplitHorizontal className="w-3.5 h-3.5" />
           </button>
         ) : (
           <button
             type="button"
+            data-testid="rm-dockin-btn-right"
             onClick={() => {
               setRmPlacement("right-tab");
               openRightPanel("resource-manager");
             }}
             className="p-1 rounded hover:bg-slate-200/80 hover:text-slate-800 transition cursor-pointer"
-            title="우측 사이드 패널 탭으로 도킹 (Dock to Right Tab)"
+            title="우측 패널 탭으로 다시 집어넣기 (Dock to Tab)"
           >
             <PanelRightClose className="w-3.5 h-3.5" />
           </button>
@@ -86,7 +113,7 @@ export const ResourceManagerHeader: React.FC<Props> = ({
             else setRmPlacement("closed");
           }}
           className="p-1 rounded hover:bg-rose-100 hover:text-rose-600 transition cursor-pointer"
-          title="닫기"
+          title={rmPlacement === "right-tab" ? "우측 패널 닫기" : "스플릿 작업창 닫기"}
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -94,4 +121,3 @@ export const ResourceManagerHeader: React.FC<Props> = ({
     </div>
   );
 };
-

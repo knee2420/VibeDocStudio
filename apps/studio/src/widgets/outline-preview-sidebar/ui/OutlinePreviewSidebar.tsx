@@ -3,6 +3,7 @@ import {
   ArrowUpLeft,
   BookOpen,
   ChevronLeft,
+  FolderTree,
   ChevronsDownUp,
   ChevronsUpDown,
   LayoutGrid,
@@ -28,9 +29,15 @@ import { OutlineNodeRow, outlineNodeTargetId } from "./OutlineNodeRow";
 import { ReferenceDeckSection } from "./ReferenceDeckSection";
 import { SourceControlSidebarPanel } from "./SourceControlSidebarPanel";
 import { TemplateHubSidebarPanel } from "./TemplateHubSidebarPanel";
+import { ReferenceManagerWidget } from "@/widgets/vdoc-page-canvas";
 
 const headerButton = "p-1 rounded hover:bg-slate-200/70 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors";
 const menuItem = "w-full text-left px-2 py-1.5 rounded hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 cursor-pointer";
+
+const leftTabClass = (active: boolean, activeTone: string) =>
+  `px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1.5 text-xs ${
+    active ? `bg-white ${activeTone} shadow-2xs font-bold` : "text-slate-500 hover:text-slate-700"
+  }`;
 
 /** 좌측 사이드바: 활성 도구 탭에 따라 아웃라이너 · 변경안 검토 · 템플릿 허브를 보여준다. */
 export const OutlinePreviewSidebar: React.FC = () => {
@@ -42,6 +49,9 @@ export const OutlinePreviewSidebar: React.FC = () => {
   const setSidebarWidth = useWorkspaceLayoutStore((s) => s.setSidebarWidth);
   const resetSidebarWidth = useWorkspaceLayoutStore((s) => s.resetSidebarWidth);
   const activeActivityTab = useWorkspaceLayoutStore((s) => s.activeActivityTab);
+  const leftPanelTab = useWorkspaceLayoutStore((s) => s.leftPanelTab);
+  const setLeftPanelTab = useWorkspaceLayoutStore((s) => s.setLeftPanelTab);
+  const refPlacement = useWorkspaceLayoutStore((s) => s.refPlacement);
   const { onResizeStart } = useDragResize({ axis: "x", size: sidebarWidth, onResize: setSidebarWidth });
   const visibleNodeCount = useOutlineSelector((p) => p.visibleNodes.length);
 
@@ -53,6 +63,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
         side="left"
         label="Outline & References"
         badgeCount={visibleNodeCount}
+        tone="sky"
         onExpand={() => setLeftSidebarOpen(true)}
         testId="left-sidebar-collapsed-rail"
       />
@@ -78,10 +89,48 @@ export const OutlinePreviewSidebar: React.FC = () => {
       ) : activeActivityTab === "template-hub" ? (
         <TemplateHubSidebarPanel />
       ) : (
-        <>
-          <OutlineExplorer activeDocId={activeDocId} />
-          <ReferenceDeckSection />
-        </>
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          {/* 상단 탭 바: 아웃라이너 ↔ 레퍼런스 매니저 */}
+          <div className="px-2 py-1.5 bg-slate-100/90 border-b border-slate-200/90 flex items-center justify-between shrink-0 select-none">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                data-testid="left-tab-outliner"
+                onClick={() => setLeftPanelTab("outliner")}
+                className={leftTabClass(leftPanelTab === "outliner", "text-sky-900")}
+              >
+                <FolderTree className="w-3.5 h-3.5 text-sky-600" />
+                <span>아웃라이너</span>
+              </button>
+              {refPlacement !== "split" && (
+                <button
+                  type="button"
+                  data-testid="left-tab-reference-manager"
+                  onClick={() => setLeftPanelTab("reference-manager")}
+                  className={leftTabClass(leftPanelTab === "reference-manager", "text-amber-900")}
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+                  <span>레퍼런스</span>
+                </button>
+              )}
+            </div>
+            <button
+              type="button"
+              data-testid="collapse-left-sidebar-btn"
+              onClick={() => setLeftSidebarOpen(false)}
+              className="p-1 rounded hover:bg-slate-200/60 text-slate-400 hover:text-slate-700 cursor-pointer"
+              title="좌측 패널 접기"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {leftPanelTab === "outliner" ? (
+            <OutlineExplorer activeDocId={activeDocId} />
+          ) : (
+            <ReferenceManagerWidget isSplit={false} />
+          )}
+        </div>
       )}
     </aside>
   );

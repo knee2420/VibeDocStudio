@@ -46,6 +46,7 @@ export const SlotInspectorDrawer: React.FC = () => {
   const resetRightSidebarWidth = useWorkspaceLayoutStore((s) => s.resetRightSidebarWidth);
   const viewMode = useWorkspaceLayoutStore((s) => s.rightPanelTab);
   const setViewMode = useWorkspaceLayoutStore((s) => s.openRightPanel);
+  const rmPlacement = useWorkspaceLayoutStore((s) => s.rmPlacement);
 
   const { isResizing, onResizeStart } = useDragResize({
     axis: "x-left",
@@ -68,6 +69,7 @@ export const SlotInspectorDrawer: React.FC = () => {
         side="right"
         label="AI Composer · 작업 도구"
         badgeCount={Object.keys(doc.backdata).length}
+        tone="purple"
         onExpand={() => setRightSidebarOpen(true)}
         testId="right-sidebar-collapsed-rail"
       />
@@ -101,15 +103,17 @@ export const SlotInspectorDrawer: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5 text-violet-600" />
             <span>AI Composer</span>
           </button>
-          <button
-            type="button"
-            data-testid="tab-view-resource-manager"
-            onClick={() => setViewMode("resource-manager")}
-            className={tabClass(viewMode === "resource-manager", "text-purple-900")}
-          >
-            <FolderTree className="w-3.5 h-3.5 text-purple-600" />
-            <span>리소스</span>
-          </button>
+          {rmPlacement !== "between-split" && (
+            <button
+              type="button"
+              data-testid="tab-view-resource-manager"
+              onClick={() => setViewMode("resource-manager")}
+              className={tabClass(viewMode === "resource-manager", "text-purple-900")}
+            >
+              <FolderTree className="w-3.5 h-3.5 text-purple-600" />
+              <span>리소스</span>
+            </button>
+          )}
           <button
             type="button"
             data-testid="tab-view-blockbox"
@@ -154,7 +158,7 @@ export const SlotInspectorDrawer: React.FC = () => {
         </div>
       )}
 
-      {viewMode === "resource-manager" && (
+      {viewMode === "resource-manager" && rmPlacement !== "between-split" && (
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <ResourceManagerWidget />
         </div>

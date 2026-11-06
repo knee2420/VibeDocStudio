@@ -147,6 +147,15 @@ export interface DeckOverview {
   assets: { total: number; assets: DeckAsset[] };
 }
 
+export interface DeckCardSibling {
+  cardId: string;
+  title: string;
+  lines?: [number, number];
+  page?: number | null;
+  box?: [number, number, number, number] | null;
+  isCurrent?: boolean;
+}
+
 export interface DeckCardDetail {
   cardId: string;
   section: string;
@@ -162,5 +171,13 @@ export interface DeckCardDetail {
   questions?: string[];
   depth?: DeckDepth;
   sourceText?: string;
+  fullDocument?: string;
+  highlightRange?: [number, number];
+  totalDocumentLines?: number;
+  isPdf?: boolean;
+  pdfUrl?: string;
+  pdfPage?: number;
+  pdfBox?: [number, number, number, number];
+  siblings?: DeckCardSibling[];
   error?: string;
 }

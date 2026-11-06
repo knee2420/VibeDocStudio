@@ -5,6 +5,7 @@ import {
   Compass,
   Database,
   FileText,
+  FolderTree,
   GitPullRequestDraft,
   Layers,
   LayoutGrid,
@@ -19,37 +20,43 @@ import { writeContextDrag, type EntityInfo } from "@vibe/ai-kernel";
 
 import { useAiSurface } from "./AiSurface";
 
-export type EntityCategory = "reference" | "resource" | "editor";
+export type EntityCategory = "resource" | "reference" | "outliner" | "editor" | "staged";
 
 export function getEntityCategory(kind?: string): EntityCategory {
   if (!kind) return "editor";
   switch (kind) {
-    // 1. 레퍼런스 (지식 덱, 카드, 섹션 등 지식 베이스)
+    // 1. 리소스: 연보라 (Purple) - 사용자 지정 고정 (지식 덱, 카드, 백데이터, 원본 데이터)
     case "kcard":
     case "kdeck":
     case "ksection":
     case "deck":
-      return "reference";
-
-    // 2. 인용 (Resource / RM 원본 파일, 참조 구역, 백데이터)
     case "resource":
+    case "backdata":
+    case "sector":
+      return "resource";
+
+    // 2. 레퍼런스: 앰버 (Amber / Warm Gold) (좌측 Reference Manager - 참조 규정집, PDF/Doc 문서, 참조 구역 발췌)
     case "reference":
     case "ref-region":
     case "ref-text":
-    case "sector":
-    case "backdata":
-      return "resource";
+      return "reference";
 
-    // 3. 에디터 (캔버스 내부 슬롯, 블록, 페이지, 문서, 노드 등)
+    // 3. 아웃라이너: 스카이 블루 (Sky Blue) (좌측 Outliner - 문서 구조, 트리 노드, 목차, 상위 문서)
+    case "node":
+    case "doc":
+    case "document":
+      return "outliner";
+
+    // 4. 변경안: 로즈 (Rose / Coral) (슬롯/문서 변경안 제출 액션)
+    case "staged":
+      return "staged";
+
+    // 5. 에디터 위치: 연두 (Emerald) - 사용자 지정 고정 (캔버스 내부 슬롯, 표 셀, 블록, 페이지, 변수)
     case "slot":
     case "block":
     case "page":
-    case "doc":
-    case "document":
-    case "node":
     case "slot-range":
     case "text-range":
-    case "staged":
     case "variable":
     default:
       return "editor";
@@ -57,52 +64,68 @@ export function getEntityCategory(kind?: string): EntityCategory {
 }
 
 export const CATEGORY_STYLES: Record<EntityCategory, { light: string; dark: string; label: string }> = {
-  // 1. 레퍼런스: 바이올렛 / 퍼플 톤 (지식 베이스)
-  reference: {
+  // 1. 리소스: 연보라 / 퍼플 톤 (지식 베이스 · 지식 카드) - 사용자 지정 고정
+  resource: {
     light: "bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100 hover:border-purple-300",
     dark: "bg-purple-950/60 text-purple-200 border-purple-700/60 hover:bg-purple-900/60",
-    label: "지식 덱 (Reference)",
+    label: "리소스 (Resource)",
   },
-  // 2. 인용: 블루 / 스카이 톤 (원본 Resource)
-  resource: {
+  // 2. 레퍼런스: 앰버 / 웜 오렌지 톤 (참조 규정 · PDF 원본 문서)
+  reference: {
+    light: "bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100 hover:border-amber-300",
+    dark: "bg-amber-950/60 text-amber-200 border-amber-700/60 hover:bg-amber-900/60",
+    label: "레퍼런스 (Reference)",
+  },
+  // 3. 아웃라이너: 스카이 블루 톤 (문서 구조 · 목차 · 트리 노드)
+  outliner: {
     light: "bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100 hover:border-sky-300",
     dark: "bg-sky-950/60 text-sky-200 border-sky-700/60 hover:bg-sky-900/60",
-    label: "인용 (Resource)",
+    label: "아웃라이너 (Outliner)",
   },
-  // 3. 에디터: 에메랄드 / 민트 톤 (문서 슬롯 · 블록 · 페이지)
+  // 4. 에디터 위치: 연두 / 에메랄드 톤 (캔버스 슬롯 · 표 셀 · 블록) - 사용자 지정 고정
   editor: {
     light: "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300",
     dark: "bg-emerald-950/60 text-emerald-200 border-emerald-700/60 hover:bg-emerald-900/60",
     label: "에디터 위치 (Editor)",
   },
+  // 5. 변경안: 로즈 / 코랄 톤 (슬롯 변경안 제안)
+  staged: {
+    light: "bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100 hover:border-rose-300",
+    dark: "bg-rose-950/60 text-rose-200 border-rose-700/60 hover:bg-rose-900/60",
+    label: "변경안 (Staged)",
+  },
 };
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  // 에디터
+  // 아웃라이너 (문서 구조)
+  node: ListTree,
+  doc: FolderTree,
+  document: FileText,
+
+  // 에디터 위치 (작업 캔버스)
   page: Layers,
   block: LayoutGrid,
   slot: Type,
-  doc: BookOpen,
-  document: FileText,
-  node: ListTree,
   variable: Variable,
-  staged: GitPullRequestDraft,
   "slot-range": Type,
   "text-range": Type,
 
-  // 인용 / Resource
+  // 변경안 (제안)
+  staged: GitPullRequestDraft,
+
+  // 레퍼런스 (참조 규정 / PDF)
   reference: BookOpen,
-  resource: FileText,
-  backdata: Database,
   "ref-region": SquareDashedMousePointer,
   "ref-text": FileText,
-  sector: SquareDashedMousePointer,
 
-  // 레퍼런스 (지식 덱 / 카드)
+  // 리소스 (지식 덱 / 카드 / 백데이터)
   kcard: Bookmark,
-  kdeck: BookOpen,
+  kdeck: Database,
   ksection: Compass,
-  deck: BookOpen,
+  deck: Database,
+  resource: Database,
+  backdata: Database,
+  sector: SquareDashedMousePointer,
 };
 
 export function entityIcon(kind: string): React.ComponentType<{ className?: string }> {

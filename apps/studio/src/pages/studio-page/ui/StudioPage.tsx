@@ -13,7 +13,7 @@ import { HoverPagePeekCard } from "@/features/peek-page";
 import { useWorkspaceBootstrap, useWorkspaceUrlSync } from "@/features/workspace-persistence";
 import { useZoomHierarchySync } from "@/features/zoom-hierarchy";
 import { DocumentPreviewPanel, OutlinePreviewSidebar } from "@/widgets/outline-preview-sidebar";
-import { ResourcePreviewHost } from "@/widgets/resource-manager";
+import { ResourceManagerSplitViewport, ResourcePreviewHost } from "@/widgets/resource-manager";
 import { SlotInspectorDrawer } from "@/widgets/slot-inspector-drawer";
 import { StudioActivityBar } from "@/widgets/studio-activity-bar";
 import { StudioTopRibbon } from "@/widgets/studio-top-ribbon";
@@ -58,13 +58,18 @@ const StudioWorkspace: React.FC = () => {
           </div>
         </div>
 
+        {/* 에디터 캔버스와 Composer 사이에 도킹되는 원문 뷰어 스플릿 패널 */}
+        <DeckCardPreview />
+
+        {/* 에디터 우측에 도킹되는 독립 Resource Manager 스플릿 패널 */}
+        <ResourceManagerSplitViewport />
+
         <SlotInspectorDrawer />
       </div>
 
       <GlobalUndoToastHost />
       <HoverPagePeekCard />
       <AiAttachLayer />
-      <DeckCardPreview />
       <ResourcePreviewHost />
     </div>
   );
