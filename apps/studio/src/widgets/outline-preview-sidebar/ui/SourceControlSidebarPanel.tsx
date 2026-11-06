@@ -10,7 +10,9 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { RevisionTimeline } from "@/features/document-revisions";
 import { attachable, stagedRef } from "@/features/ai-workspace";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { useHistoryStore } from "@/shared/lib";
@@ -29,6 +31,7 @@ export const SourceControlSidebarPanel: React.FC = () => {
   const projPastCount = useHistoryStore((s) => s.past.filter((e) => e.scope === "project").length);
   const docPastCount = useHistoryStore((s) => s.past.filter((e) => e.scope === "document").length);
   const totalCommits = docPastCount + projPastCount;
+  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
 
   return (
     <div
@@ -144,6 +147,11 @@ export const SourceControlSidebarPanel: React.FC = () => {
               ))
             )}
           </div>
+        </div>
+
+        {/* 문서 개정 이력 (서버 · 작성자별 · 복원) */}
+        <div className="pt-2 border-t border-slate-100">
+          <RevisionTimeline docId={activeDocId} limit={60} />
         </div>
 
         {/* Local Git & Project Undo History */}

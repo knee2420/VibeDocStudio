@@ -15,6 +15,10 @@ export interface SlotInlineComposerHostProps {
   targetSlot: VDocSlot;
   boundChunks: BackdataChunk[];
   onApplySlotContent: (slotId: string, newHtml: string) => void;
+  /** AI 결과를 승인 경로로 반영 (채움 메타 · 근거 · 이력 · 개정 작성자). 없으면 일반 편집으로 반영한다. */
+  onApplyAiResult?: (slotId: string, html: string) => void;
+  /** 편집기 안 선택 범위를 AI 가 고친 뒤 — 칸의 작성자를 AI 로 남긴다. */
+  onAiEditedSelection?: (slotId: string) => void;
 }
 
 /**
@@ -25,6 +29,8 @@ export const SlotInlineComposerHost: React.FC<SlotInlineComposerHostProps> = ({
   targetSlot,
   boundChunks,
   onApplySlotContent,
+  onApplyAiResult,
+  onAiEditedSelection,
 }) => {
   const composerPrompt = useSlotSelectionStore((s) => s.composerPrompt);
   const composerRange = useSlotSelectionStore((s) => s.composerRange);
@@ -34,7 +40,7 @@ export const SlotInlineComposerHost: React.FC<SlotInlineComposerHostProps> = ({
   const surface = React.useMemo<InlineAiSurface<VDocSlot>>(
     () =>
       composerRange
-        ? selectionSurface(composerRange, onApplySlotContent)
+        ? selectionSurface(composerRange, onApplySlotContent, onAiEditedSelection)
         : {
             id: "slot-richtext",
             targetLabel: (slot) => `타겟 슬롯: ${slot.label}`,
@@ -44,9 +50,9 @@ export const SlotInlineComposerHost: React.FC<SlotInlineComposerHostProps> = ({
             },
             outputFormat: "html",
             preview: "html",
-            apply: (slot, html) => onApplySlotContent(slot.slotId, html),
+            apply: (slot, html) => (onApplyAiResult ?? onApplySlotContent)(slot.slotId, html),
           },
-    [composerRange, onApplySlotContent]
+    [composerRange, onApplySlotContent, onApplyAiResult, onAiEditedSelection]
   );
 
   return (
@@ -107,7 +113,8 @@ export const SlotInlineComposerHost: React.FC<SlotInlineComposerHostProps> = ({
  */
 function selectionSurface(
   range: SlotTextRange,
-  onApplySlotContent: (slotId: string, html: string) => void
+  onApplySlotContent: (slotId: string, html: string) => void,
+  onAiEdited?: (slotId: string) => void
 ): InlineAiSurface<VDocSlot> {
   return {
     id: "slot-selection",
@@ -136,10 +143,14 @@ ${range.text}`,
       const stillThere = editor && editor.state.doc.textBetween(range.from, range.to, " ") === range.text;
       if (editor && stillThere) {
         editor.chain().focus().insertContentAt({ from: range.from, to: range.to }, text).run();
+        onAiEdited?.(slot.slotId);
         return;
       }
       // 편집기가 바뀌었거나 범위가 밀렸으면 슬롯 HTML 에서 같은 텍스트 첫 위치만 바꾼다.
-      if (slot.content.includes(range.text)) onApplySlotContent(slot.slotId, slot.content.replace(range.text, escapeHtml(text)));
+      if (slot.content.includes(range.text)) {
+        onApplySlotContent(slot.slotId, slot.content.replace(range.text, escapeHtml(text)));
+        onAiEdited?.(slot.slotId);
+      }
     },
   };
 }

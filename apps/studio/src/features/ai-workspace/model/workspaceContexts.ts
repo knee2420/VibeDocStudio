@@ -17,6 +17,7 @@ import {
   variableRef,
 } from "./contextBuilders";
 import { referenceDocs } from "./referenceDocs";
+import { SCOPE_CONTEXT_PROVIDER } from "./scopeAi";
 
 const doc = (): VDocDocument | undefined => selectActiveDocument(useStudioDocumentStore.getState());
 
@@ -42,26 +43,8 @@ export const WORKSPACE_CONTEXT_PROVIDERS: ContextProvider[] = [
       return found ? [blockRef(d, found.page, found.block)] : [];
     },
   },
-  {
-    id: "document",
-    label: "열린 문서",
-    auto: true,
-    current: () => {
-      const d = doc();
-      if (!d) return [];
-      const pageId = useStudioDocumentStore.getState().activePageId;
-      const page = d.pages.find((p) => p.pageId === pageId);
-      return [
-        {
-          kind: "document",
-          id: d.docId,
-          label: d.title,
-          content: `docId: ${d.docId}\ntitle: ${d.title}\nstatus: ${d.status}\npages: ${d.pages.length}\nactivePage: ${page?.pageLabel ?? pageId}\n(구조는 document.getOutline 도구로 읽는다)`,
-          hint: `${d.pages.length}페이지`,
-        },
-      ];
-    },
-  },
+  // 예전 "열린 문서" 자동 첨부 자리 → 작업 범위 (설정바 · 이번 메시지 @선택). 범위가 좁으면 문서 제목도 싣지 않는다.
+  SCOPE_CONTEXT_PROVIDER,
   {
     id: "slots",
     label: "슬롯",

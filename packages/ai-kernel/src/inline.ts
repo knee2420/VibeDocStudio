@@ -49,7 +49,7 @@ export async function runInlineAction(
         streamed += event.text;
         callbacks.onDelta?.(streamed);
       } else if (event.type === "result") {
-        result = event.text;
+        result = event.text ?? event.html ?? null;
       } else if (event.type === "error") {
         error = event.message;
       } else if (event.type === "status") {

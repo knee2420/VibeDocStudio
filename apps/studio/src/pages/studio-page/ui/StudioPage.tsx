@@ -1,15 +1,19 @@
 import React from "react";
 
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
-import { AiAttachLayer, registerWorkspaceAi } from "@/features/ai-workspace";
+import { useComposerDocBinding } from "@/features/ai-composer";
+import { AiAttachLayer, registerWorkspaceAi, useAiScopeLiveSync } from "@/features/ai-workspace";
+import { registerCitationNavigation, registerEvidenceFocusAi, useEvidenceFocusSync, useEvidenceStaleCheck } from "@/features/evidence-focus";
 import { GlobalUndoToastHost, useGlobalStudioShortcuts } from "@/features/command-bus";
 import { registerSlotAiActions } from "@/features/compose-slot-ai";
+import { DeckCardPreview, registerKnowledgeDeckAi, useKnowledgeDeckBootstrap } from "@/features/knowledge-deck-ai";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { HoverPagePeekCard } from "@/features/peek-page";
 import { useWorkspaceBootstrap, useWorkspaceUrlSync } from "@/features/workspace-persistence";
 import { useZoomHierarchySync } from "@/features/zoom-hierarchy";
 import { DocumentPreviewPanel, OutlinePreviewSidebar } from "@/widgets/outline-preview-sidebar";
+import { ResourcePreviewHost } from "@/widgets/resource-manager";
 import { SlotInspectorDrawer } from "@/widgets/slot-inspector-drawer";
 import { StudioActivityBar } from "@/widgets/studio-activity-bar";
 import { StudioTopRibbon } from "@/widgets/studio-top-ribbon";
@@ -20,9 +24,14 @@ const StudioWorkspace: React.FC = () => {
   useWorkspaceUrlSync();
   useGlobalStudioShortcuts();
   useZoomHierarchySync();
+  useKnowledgeDeckBootstrap();
+  useEvidenceFocusSync();
+  useEvidenceStaleCheck();
+  useComposerDocBinding();
+  useAiScopeLiveSync();
   // AI 런타임 확장 지점: 기능마다 도구 · 컨텍스트 · 액션을 등록한다 (Composer · 인라인 공용).
   React.useEffect(() => {
-    const offs = [registerWorkspaceAi(), registerSlotAiActions()];
+    const offs = [registerWorkspaceAi(), registerSlotAiActions(), registerKnowledgeDeckAi(), registerCitationNavigation(), registerEvidenceFocusAi()];
     return () => offs.forEach((off) => off());
   }, []);
 
@@ -55,6 +64,8 @@ const StudioWorkspace: React.FC = () => {
       <GlobalUndoToastHost />
       <HoverPagePeekCard />
       <AiAttachLayer />
+      <DeckCardPreview />
+      <ResourcePreviewHost />
     </div>
   );
 };

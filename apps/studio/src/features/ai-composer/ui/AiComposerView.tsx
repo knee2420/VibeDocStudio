@@ -4,9 +4,96 @@ import type { ContextRef, EngineStatus } from "@vibe/ai-kernel";
 import { ComposerPanel, type ComposerSuggestion } from "@vibe/ai-composer";
 import { useRegistryList } from "@vibe/ai-react";
 
+import {
+  currentScope,
+  offScope,
+  oneOffScope,
+  SCOPE_CONTEXT_KIND,
+  scopeContextRef,
+  targetFromBlock,
+  targetFromSlots,
+  useAiScopeStore,
+  type ScopeTarget,
+} from "@/entities/ai-scope";
+import { useKnowledgeDeckStore } from "@/entities/knowledge-deck";
 import { useSlotSelectionStore } from "@/entities/slot";
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { aiRuntime, composerController } from "@/shared/ai";
+
+import { ComposerSettingsBar } from "./ComposerSettingsBar";
+
+/** 지식 덱 첨부 종류 (knowledge-deck-ai 의 DECK_CONTEXT_KIND 와 같은 값 — 기능끼리 import 하지 않으려 값만 맞춘다) */
+const DECK_KIND = "deck";
+
+/** 📌 고정 · 이번 메시지 범위가 될 수 있는 첨부 — 칸 · 블록 · 칸 범위 */
+const SELECTION_KINDS = new Set(["slot", "block", "slot-range"]);
+
+function refTarget(ref: ContextRef): ScopeTarget | null {
+  const doc = selectActiveDocument(useStudioDocumentStore.getState());
+  if (!doc) return null;
+  const meta = ref.meta ?? {};
+  if (typeof meta.docId === "string" && meta.docId !== doc.docId) return null;
+  if (ref.kind === "slot") return targetFromSlots(doc, [ref.id], [ref.id], ref.label);
+  if (ref.kind === "block") return targetFromBlock(doc, ref.id);
+  if (ref.kind === "slot-range") {
+    const slotIds = Array.isArray(meta.slotIds) ? (meta.slotIds as string[]) : [];
+    const unitIds = Array.isArray(meta.unitIds) ? (meta.unitIds as string[]) : slotIds;
+    return targetFromSlots(doc, slotIds, unitIds, ref.label);
+  }
+  return null;
+}
+
+/**
+ * 보내기 직전: 이번 메시지의 범위를 정한다.
+ * 프롬프트에 @선택(칸 · 블록 · 칸 범위 · 페이지)이 있으면 이번 메시지만 그것으로 좁히고, 없으면 설정바 범위.
+ * 범위 첨부를 그 범위로 바꿔 싣고, 문서 도구가 같은 범위를 지키도록 `turn` 에 걸어 둔다.
+ */
+function scopeForSend(_text: string, contexts: ContextRef[]): ContextRef[] {
+  const docState = useStudioDocumentStore.getState();
+  const doc = selectActiveDocument(docState);
+  const { sourcesOn, scopeOn } = useAiScopeStore.getState();
+  // 자료 OFF: 자동으로 붙는 덱을 뺀다 (프롬프트에서 직접 @멘션한 덱은 사용자의 뜻이므로 둔다)
+  const kept = sourcesOn ? contexts : contexts.filter((c) => !(c.kind === DECK_KIND && !c.handle));
+  if (!doc) {
+    useAiScopeStore.getState().setTurn(null);
+    return kept;
+  }
+  const explicit = kept.filter((c) => c.handle);
+  const targets = explicit.filter((c) => SELECTION_KINDS.has(c.kind)).map(refTarget).filter((t): t is ScopeTarget => !!t);
+  const pages = explicit.filter((c) => c.kind === "page" && doc.pages.some((p) => p.pageId === c.id)).map((c) => c.id);
+  // 프롬프트의 @선택이 가장 우선 (범위 OFF 여도 사용자가 이번 메시지에 직접 집은 것) → 설정바 범위 → 범위 OFF 면 문서 없이
+  const base =
+    oneOffScope(doc, targets, pages) ??
+    (scopeOn ? currentScope(doc, useSlotSelectionStore.getState(), docState.activePageId || null) : offScope(doc.docId));
+  if (!base) {
+    useAiScopeStore.getState().setTurn(null);
+    return kept;
+  }
+  const scope = { ...base, sourcesOff: !sourcesOn };
+  useAiScopeStore.getState().setTurn(scope);
+  const ref = scopeContextRef(doc, scope, docState.activePageId || null);
+  return [ref, ...kept.filter((c) => c.kind !== SCOPE_CONTEXT_KIND)];
+}
+
+/** 📌 — 범위로 고정. 이미 그것이 고정돼 있으면 다시 눌러 해제한다. */
+function pinContext(ref: ContextRef) {
+  const doc = selectActiveDocument(useStudioDocumentStore.getState());
+  const target = refTarget(ref);
+  if (!doc || !target) return;
+  const store = useAiScopeStore.getState();
+  const current = store.settingFor(doc.docId);
+  if (current.fixed && current.target?.id === target.id) store.clearPin(doc.docId);
+  else store.pinTarget(doc.docId, target);
+}
+
+/** 이 첨부가 지금 범위로 고정돼 있는가 (📌 표시) */
+function isPinned(ref: ContextRef): boolean {
+  const doc = selectActiveDocument(useStudioDocumentStore.getState());
+  const target = refTarget(ref);
+  if (!doc || !target) return false;
+  const current = useAiScopeStore.getState().settingFor(doc.docId);
+  return current.fixed && current.target?.id === target.id;
+}
 
 const SUGGESTIONS: ComposerSuggestion[] = [
   { label: "이 문서 구조를 요약하고 비어 있는 슬롯을 찾아줘", prompt: "이 문서 구조를 요약하고, 내용이 비어 있거나 부족한 슬롯을 찾아줘." },
@@ -63,7 +150,14 @@ function useAutoContexts(): { auto: ContextRef[]; suggested: ContextRef[] } {
       if (timer === null) timer = window.setTimeout(recompute, 0);
     };
     recompute();
-    const unsubscribers = [useSlotSelectionStore.subscribe(schedule), useStudioDocumentStore.subscribe(schedule)];
+    const unsubscribers = [
+      useSlotSelectionStore.subscribe(schedule),
+      useStudioDocumentStore.subscribe(schedule),
+      // 체크된 지식 덱도 자동 첨부된다 — 덱 목록이 늦게 오거나 체크가 바뀌면 다시 계산한다
+      useKnowledgeDeckStore.subscribe(schedule),
+      // 설정바 범위가 바뀌면 범위 첨부도 다시
+      useAiScopeStore.subscribe(schedule),
+    ];
     return () => {
       unsubscribers.forEach((u) => u());
       if (timer !== null) window.clearTimeout(timer);
@@ -82,6 +176,9 @@ export interface AiComposerViewProps {
 export const AiComposerView: React.FC<AiComposerViewProps> = ({ headerActions }) => {
   const { engines, error, refresh } = useEngineStatus();
   const { auto: autoContexts, suggested: suggestedContexts } = useAutoContexts();
+  // 고정 상태가 바뀌면 입력창의 📌 표시도 다시 그린다 (판정 함수가 새로 만들어져 칩이 다시 그려진다)
+  const scopeSettings = useAiScopeStore((s) => s.settings);
+  const isPinnedNow = React.useCallback((ref: ContextRef) => isPinned(ref), [scopeSettings]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onChangeEngine = async (provider: string, model: string) => {
     composerController.setEngine(provider, model);
@@ -106,6 +203,11 @@ export const AiComposerView: React.FC<AiComposerViewProps> = ({ headerActions })
       onChangeEngine={(p, m) => void onChangeEngine(p, m)}
       suggestions={SUGGESTIONS}
       headerActions={headerActions}
+      settingsBar={<ComposerSettingsBar />}
+      pinnable={(ref) => SELECTION_KINDS.has(ref.kind)}
+      onPinContext={pinContext}
+      isPinned={isPinnedNow}
+      onBeforeSend={scopeForSend}
     />
   );
 };

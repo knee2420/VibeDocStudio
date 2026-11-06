@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronsDownUp, ChevronsUpDown, Eye } from "lucide-react";
+import { ChevronsDownUp, ChevronsUpDown, Eye, Link2Off } from "lucide-react";
 import type { ResourceItem } from "@vibe/vdoc-schema";
 
 export interface NodeCountInfo {
@@ -10,11 +10,13 @@ export interface NodeCountInfo {
 export interface ResourceNodeToolboxProps {
   item: ResourceItem;
   isDirectory: boolean;
+  depth?: number;
   countInfo?: NodeCountInfo;
   hasSubFolders?: boolean;
   isSubtreeAnyOpen?: boolean;
   onToggleSubtree?: () => void;
   onOpenViewer?: (item: ResourceItem) => void;
+  onDecouple?: (item: ResourceItem) => void;
   /** 향후 필요한 기능(추가 액션, 플러그인, 컨텍스트 메뉴 등)을 유연하게 주입할 수 있는 확장 슬롯 */
   extraActions?: React.ReactNode;
 }
@@ -42,14 +44,28 @@ export const isResourceViewable = (item: ResourceItem): boolean => {
 export const ResourceNodeToolbox: React.FC<ResourceNodeToolboxProps> = ({
   item,
   isDirectory,
+  depth,
   countInfo,
   hasSubFolders = false,
   isSubtreeAnyOpen = true,
   onToggleSubtree,
   onOpenViewer,
+  onDecouple,
   extraActions,
 }) => {
   const isViewable = !isDirectory && isResourceViewable(item);
+  const canDecouple = depth === undefined || depth === 0 || !isDirectory;
+
+  const handleDecoupleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const isRoot = isDirectory;
+    const msg = isRoot
+      ? `[${item.title}] 루트 폴더를 프로젝트 리소스에서 연결 해제하시겠습니까?\n\n※ 로컬 디스크의 원본 파일은 전혀 삭제되지 않고 안전하게 유지됩니다.`
+      : `[${item.title}] 리소스를 프로젝트에서 연결 해제하시겠습니까?\n\n※ 로컬 원본 파일은 삭제되지 않습니다.`;
+    if (window.confirm(msg)) {
+      onDecouple?.(item);
+    }
+  };
 
   return (
     <div
@@ -70,6 +86,18 @@ export const ResourceNodeToolbox: React.FC<ResourceNodeToolboxProps> = ({
             title="문서 미리보기 (오른쪽 패널 열기)"
           >
             <Eye className="w-3.5 h-3.5" />
+          </button>
+        )}
+
+        {/* 연결 해제 (Decouple / Unlink) 버튼: 로컬 원본을 삭제하지 않고 프로젝트 세션에서만 분리 */}
+        {onDecouple && canDecouple && (
+          <button
+            type="button"
+            onClick={handleDecoupleClick}
+            className="p-0.5 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 hidden group-hover:flex items-center justify-center transition-all cursor-pointer"
+            title={isDirectory ? "루트 폴더 연결 해제 (로컬 원본 파일 보존)" : "리소스 연결 해제 (로컬 원본 보존)"}
+          >
+            <Link2Off className="w-3.5 h-3.5" />
           </button>
         )}
 

@@ -27,7 +27,7 @@ COMPOSER_RULES = """\
   여러 슬롯(표 · 그리드 · 섹션)을 바꿀 때는 slots.proposeBatch 한 번으로 묶어 제출한다.
   슬롯이 아닌 요소(이미지 대체 텍스트 · 정렬, 담당자 등)는 blocks.proposeProps 로, 첨부에 적힌 "바꿀 수 있는 블록 속성"만 바꾼다.
 - 화면의 위치(페이지 · 블록 · 슬롯 · 참조 문서 · 백데이터)를 말할 때는 클릭할 수 있는 링크로 쓴다:
-  [사람이 읽는 이름](vdoc:종류/id)   종류 = page · block · slot · doc · backdata · node · ref-region
+  [사람이 읽는 이름](vdoc:종류/id)   종류 = page · block · slot · doc · backdata · node · ref-region · kcard(지식 덱 카드: id = <deckId>:<cardId>)
   첨부한 요소를 가리킬 때는 그 <context> 의 kind 와 id 를 그대로 쓴다 (reference 는 doc).
   예: [의사결정 테이블](vdoc:block/mm_blk_decision_table), [Page 1](vdoc:page/mm_page_1). id 만 따로 늘어놓지 마라.
 - 사용자의 언어(기본 한국어)로 간결하게 답하고, 필요하면 마크다운을 써라.
@@ -104,11 +104,17 @@ def composer_message(
     *,
     tools: list[ToolSpec] | None,
     mode: str,
+    skill: str = "",
 ) -> str:
-    """Composer 한 턴의 사용자 메시지. `tools` 가 주어지면(첫 턴 · 변경 시) 규칙과 목록을 앞에 붙인다."""
+    """Composer 한 턴의 사용자 메시지. `tools` 가 주어지면(첫 턴 · 변경 시) 규칙과 목록을 앞에 붙인다.
+
+    `skill` 은 서버 도구(지식 덱 등)를 쓰는 절차 — 도구 목록과 함께 한 번만 보낸다.
+    """
     parts: list[str] = []
     if tools is not None:
         parts.append(COMPOSER_RULES)
+        if skill:
+            parts.append(f'[지식 덱 탐색 절차 — 지식 덱 첨부가 있을 때 따른다]\n{skill}')
         parts.append(render_tools(tools))
     if mode == "plan":
         parts.append("[모드: plan] 문서를 바꾸는 도구는 호출하지 말고, 실행 계획만 제시하라.")

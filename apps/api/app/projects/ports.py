@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import Protocol
+from typing import Any, Protocol
 
 from .models import VProjectManifestRecord
 
@@ -29,3 +29,15 @@ class VProjectRepositoryPort(Protocol):
         ...
 
     def delete(self, project_id: str) -> None: ...
+
+
+class StagingStorePort(Protocol):
+    """프로젝트별 Staged 변경안 대기열 (`staging.json`)."""
+
+    def list(self, project_id: str) -> list[dict[str, Any]]: ...
+
+    def replace(self, project_id: str, changes: list[dict[str, Any]]) -> list[dict[str, Any]]: ...
+
+    def append(self, project_id: str, changes: list[dict[str, Any]]) -> list[dict[str, Any]]: ...
+
+    def merge(self, project_id: str, changes: list[dict[str, Any]], removed: list[str]) -> list[dict[str, Any]]: ...

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   Check,
@@ -17,15 +17,19 @@ import {
 import {
   PdfViewer,
   WebViewer,
+  type ViewerHighlight,
   type ViewerSegment,
 } from "@vibe/document-viewer";
 import type { ResourceItem } from "@vibe/vdoc-schema";
+import type { ResourcePreviewFocus } from "@/entities/resource";
 import { env } from "@/shared/config";
 import { useDragResize } from "@/shared/lib";
 import { attachToComposer, referenceTextRef } from "@/features/ai-workspace";
 
 interface Props {
   item: ResourceItem | null;
+  /** 인용 · 근거에서 열었을 때 보여 줄 자리 (PDF 페이지 + 영역, 텍스트 줄 범위) */
+  focus?: ResourcePreviewFocus | null;
   onClose: () => void;
 }
 
@@ -35,7 +39,7 @@ interface Props {
  * createPortal(..., document.body) 를 통해 최상위 document.body 에 마운트되므로,
  * 부모의 overflow/transform 에 절대 갇히지 않고 상단 메뉴바가 z-[100] 최전면으로 확실하게 튀어나옵니다.
  */
-export const ResourceViewerDrawer: React.FC<Props> = ({ item, onClose }) => {
+export const ResourceViewerDrawer: React.FC<Props> = ({ item, focus, onClose }) => {
   const [drawerWidth, setDrawerWidth] = useState<number>(640);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -47,6 +51,14 @@ export const ResourceViewerDrawer: React.FC<Props> = ({ item, onClose }) => {
   // 텍스트/코드 파일 프리뷰 상태
   const [textContent, setTextContent] = useState<string | null>(null);
   const [textLoading, setTextLoading] = useState<boolean>(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // 근거 초점 → PDF 강조 상자 (참조 영역 · RM 섹터와 같은 1000분율 좌표)
+  const focusHighlights = useMemo<ViewerHighlight[]>(() => {
+    if (!focus?.page || !focus.bbox) return [];
+    return [{ id: "evidence-focus", page: focus.page, box: focus.bbox, label: focus.label, variant: "primary" }];
+  }, [focus]);
+  const focusLines = focus?.lines ?? null;
 
   const { isResizing, onResizeStart } = useDragResize({
     axis: "x-left",
@@ -121,6 +133,36 @@ export const ResourceViewerDrawer: React.FC<Props> = ({ item, onClose }) => {
       cancelled = true;
     };
   }, [item, isTextLike, fileUrl]);
+
+  // 근거 자리로 스크롤 — PDF 는 페이지가 그려질 때까지 몇 번 다시 찾는다
+  useEffect(() => {
+    if (!focus) return;
+    let tries = 0;
+    let timer: number | undefined;
+    const seek = () => {
+      const root = bodyRef.current;
+      if (!root) return;
+      const target = focus.lines
+        ? root.querySelector<HTMLElement>("[data-focus-line='start']")
+        : focus.page
+        ? root.querySelector<HTMLElement>(`[data-page-number="${focus.page}"]`)
+        : null;
+      if (target) {
+        if (focus.page && focus.bbox && !focus.lines) {
+          // 페이지 안에서 상자 높이만큼 내려 상자가 화면 위쪽에 오게
+          const scroller = target.closest<HTMLElement>(".overflow-y-auto") ?? root;
+          const offset = target.offsetTop + (target.offsetHeight * focus.bbox[0]) / 1000 - 80;
+          scroller.scrollTo({ top: Math.max(offset, 0), behavior: "smooth" });
+        } else {
+          target.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+        return;
+      }
+      if (tries++ < 40) timer = window.setTimeout(seek, 150);
+    };
+    seek();
+    return () => window.clearTimeout(timer);
+  }, [focus, textContent]);
 
   // Esc 키를 누르면 닫힘
   useEffect(() => {
@@ -268,7 +310,7 @@ export const ResourceViewerDrawer: React.FC<Props> = ({ item, onClose }) => {
         )}
 
         {/* 바디 영역: 문서 종류별 뷰어 */}
-        <div className="flex-1 w-full h-full overflow-hidden flex flex-col relative min-h-0 bg-slate-100 select-text">
+        <div ref={bodyRef} className="flex-1 w-full h-full overflow-hidden flex flex-col relative min-h-0 bg-slate-100 select-text">
           {isPdf ? (
             <PdfViewer
               url={fileUrl}
@@ -277,6 +319,7 @@ export const ResourceViewerDrawer: React.FC<Props> = ({ item, onClose }) => {
               isEditMode={pdfInteractionMode === "box"}
               enableSmartSnap={true}
               segments={customSegments}
+              highlights={focusHighlights}
               selectedSegmentId={selectedSegmentId}
               onSelectSegment={(seg) => setSelectedSegmentId(seg.id)}
               onCreateSegment={(seg) => {
@@ -349,7 +392,7 @@ export const ResourceViewerDrawer: React.FC<Props> = ({ item, onClose }) => {
                 ) : (
                   <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg border border-slate-200 shadow-2xs">
                     <pre className="font-mono text-xs text-slate-800 whitespace-pre-wrap leading-relaxed select-text font-normal">
-                      {textContent}
+                      {focusLines && textContent ? <FocusedText text={textContent} lines={focusLines} /> : textContent}
                     </pre>
                   </div>
                 )}
@@ -389,3 +432,24 @@ export const ResourceViewerDrawer: React.FC<Props> = ({ item, onClose }) => {
     document.body
   );
 };
+
+const NL = "\n";
+
+/** 근거 줄 범위를 칠한 본문 — 나머지는 그대로 둔다. */
+const FocusedText: React.FC<{ text: string; lines: [number, number] }> = ({ text, lines }) => {
+  const all = text.split(NL);
+  const start = Math.max(1, lines[0]);
+  const end = Math.min(all.length, Math.max(start, lines[1]));
+  return (
+    <>
+      {all.slice(0, start - 1).join(NL)}
+      {start > 1 ? NL : ""}
+      <mark data-focus-line="start" className="bg-amber-100 text-slate-900 rounded-sm outline outline-2 outline-amber-300">
+        {all.slice(start - 1, end).join(NL)}
+      </mark>
+      {end < all.length ? NL : ""}
+      {all.slice(end).join(NL)}
+    </>
+  );
+};
+

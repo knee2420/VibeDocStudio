@@ -1,0 +1,74 @@
+{
+  "corpus": "fsd",
+  "notes": "Feature-Sliced Design 문서 사이트 저장소 (번역본 9개 언어 + 사이트 코드 포함, 원문 탐색 비교군은 폴더 전체를 본다). 색인은 영어 원문 문서만 범위로 잡았다.",
+  "questions": [
+    {
+      "id": "fsd-s1", "type": "toc", "criterion": 2,
+      "question": "FSD 레이어는 몇 개야? 위에서부터 순서대로, deprecated 된 것도 표시해서.",
+      "facts": [["\\b7\\b|seven|일곱"], ["\\bapp\\b"], ["processes"], ["pages"], ["widgets"], ["features"], ["entities"], ["shared"], ["deprecated|폐기|사용 중단|더 이상"]],
+      "sources": ["overview", "layers"]
+    },
+    {
+      "id": "fsd-f1", "type": "figure", "criterion": 1,
+      "question": "개념 계층을 보여주는 그림(기둥 세 개)에서 각 기둥 이름이 뭐고, Slices 기둥과 Segments 기둥에 예시로 나온 이름들은?",
+      "facts": [["layers"], ["slices"], ["segments"], ["\\buser\\b"], ["\\bpost\\b"], ["\\bcomment\\b"], ["\\bui\\b"], ["\\bmodel\\b"], ["\\bapi\\b"]],
+      "sources": ["overview"]
+    },
+    {
+      "id": "fsd-s2", "type": "toc", "criterion": 2,
+      "question": "커스텀 아키텍처에서 FSD 로 옮기는 마이그레이션 가이드는 몇 단계야? 필수 단계와 선택 단계를 나눠서 단계 이름까지.",
+      "facts": [["\\b8\\b|eight|여덟"], ["\\b5\\b|다섯|five"], ["pages"], ["cross-import|교차"], ["shared"], ["technical purpose|기술적|segment|세그먼트"], ["redux"], ["shared/ui"]],
+      "sources": ["from-custom"]
+    },
+    {
+      "id": "fsd-s3", "type": "toc", "criterion": 2,
+      "question": "guides/tech 에 프레임워크별 가이드가 몇 개 있고 어떤 것들이야?",
+      "facts": [["\\b6\\b|six|여섯"], ["astro"], ["electron"], ["next"], ["nuxt"], ["react.?query|tanstack"], ["svelte"]],
+      "sources": ["with-astro", "with-nextjs", "with-react-query"]
+    },
+    {
+      "id": "fsd-l1", "type": "lookup", "criterion": 3,
+      "question": "레이어 import 규칙 한 줄 요약이랑, 그 규칙의 예외인 레이어는?",
+      "facts": [["strictly below|아래|하위|below"], ["\\bapp\\b"], ["shared"]],
+      "sources": ["layers"]
+    },
+    {
+      "id": "fsd-v1", "type": "vague", "criterion": 3,
+      "question": "feature 끼리 서로 가져다 써야 할 때 어떻게 하라는 거임?",
+      "facts": [["merge|병합|합치"], ["entities"], ["compose|조합|upper layer|상위|pages"], ["public api|@x"]],
+      "sources": ["cross-imports"]
+    },
+    {
+      "id": "fsd-v2", "type": "vague", "criterion": 3,
+      "question": "widgets 레이어 쓰라는 거야 말라는 거야?",
+      "facts": [["discourag|권장하지|지양|피하|쓰지 않"], ["pages"]],
+      "sources": ["layers"]
+    },
+    {
+      "id": "fsd-a1", "type": "analysis", "criterion": 4,
+      "question": "슬라이스마다 index 파일(public API)을 두는 방식의 문제점을 빠짐없이 정리해줘",
+      "facts": [["circular|순환"], ["tree.?shak|bundle|번들"], ["side.?step|우회|bypass"], ["performance|성능|bundler"]],
+      "sources": ["public-api"]
+    },
+    {
+      "id": "fsd-w1", "type": "write", "criterion": 6,
+      "question": "신입 개발자 온보딩 문서에 넣을 '세그먼트 이름 규칙' 단락을 써줘. 표준 세그먼트 각각의 역할과, 피해야 할 이름 예시까지 출처와 함께.",
+      "facts": [["\\bui\\b"], ["\\bapi\\b"], ["\\bmodel\\b"], ["\\blib\\b"], ["\\bconfig\\b"], ["request|backend|백엔드|요청"], ["store|schema|business logic|스토어|스키마"], ["feature flag|기능 플래그"], ["components|hooks|types"]],
+      "sources": ["slices-segments"]
+    },
+    {
+      "id": "fsd-o1", "type": "outline", "criterion": 7,
+      "question": "기존 React 프로젝트를 FSD 로 점진 전환하는 사내 가이드 문서의 아웃라인을 전문적으로 잡아줘. 각 장에 근거 출처.",
+      "facts": [["\\bapp\\b"], ["shared"], ["pages"], ["widgets"], ["entities"], ["features"], ["import|violation|위반"], ["cross-import|교차"], ["public api"], ["migration|마이그레이션|from-"], ["steiger|linter|린터"]],
+      "sources": ["overview", "from-custom", "public-api", "cross-imports"]
+    },
+    {
+      "id": "fsd-n1", "type": "negative", "criterion": 3,
+      "question": "FSD 공식 아키텍처 린터 이름이랑, 그 린터가 기본으로 쓰는 서버 포트 번호 알려줘",
+      "negative": true,
+      "facts": [["steiger"], ["없|찾지 못|나오지 않|언급|not (found|mention)|no port|포트.{0,30}(없|않)"]],
+      "forbid": ["포트(는|가)?\\s*\\d{3,5}", "port\\s*(is|:)?\\s*\\d{3,5}"],
+      "sources": ["faq", "overview"]
+    }
+  ]
+}

@@ -1,4 +1,8 @@
+import { useAiScopeStore } from "@/entities/ai-scope";
 import { useAiStagingStore } from "@/entities/ai-staging";
+import { useEvidenceFocusStore } from "@/entities/evidence";
+import { useKnowledgeDeckStore } from "@/entities/knowledge-deck";
+import { useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
@@ -22,6 +26,10 @@ declare global {
       selection: typeof useSlotSelectionStore;
       layout: typeof useWorkspaceLayoutStore;
       staging: typeof useAiStagingStore;
+      evidence: typeof useEvidenceFocusStore;
+      resources: typeof useResourceStore;
+      decks: typeof useKnowledgeDeckStore;
+      scope: typeof useAiScopeStore;
     };
   }
 }
@@ -35,6 +43,10 @@ export function installAutomationBridge(): void {
       selection: useSlotSelectionStore,
       layout: useWorkspaceLayoutStore,
       staging: useAiStagingStore,
+      evidence: useEvidenceFocusStore,
+      resources: useResourceStore,
+      decks: useKnowledgeDeckStore,
+      scope: useAiScopeStore,
     };
   }
 }

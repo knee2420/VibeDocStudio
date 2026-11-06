@@ -13,8 +13,8 @@ from pathlib import Path
 
 from dependency_injector import containers, providers
 
-from app.assistant.adapters import AssistantEngineProvider
-from app.assistant.use_cases import AssistantService
+from app.assistant.adapters import AssistantEngineProvider, JsonlUsageLedger
+from app.assistant.use_cases import AssistantService, HarnessJobRunner, HarnessService
 from app.backdata.adapters import LocalBackdataRepository
 from app.backdata.use_cases import (
     ImportRawBackdataUseCase,
@@ -58,11 +58,24 @@ from app.documents.use_cases import (
     GetDocumentPageChunkUseCase,
     GetDocumentUseCase,
     ListDocumentsUseCase,
+    ListRevisionsUseCase,
     PatchDocumentStructureUseCase,
     SaveDocumentUseCase,
     UpdateSlotContentUseCase,
 )
-from app.projects.adapters import LocalVProjectRepository
+from app.knowledge.adapters import (
+    AgyCardEnricher,
+    FileEnrichmentCache,
+    FsDeckFiles,
+    LocalDeckRegistry,
+    LocalJobStore,
+)
+from app.knowledge.use_cases import (
+    IndexJobRunner,
+    KnowledgeDeckService,
+    KnowledgeToolbox,
+)
+from app.projects.adapters import LocalStagingStore, LocalVProjectRepository
 from app.projects.use_cases import (
     ApplyOutlineCommandUseCase,
     BindReferenceProjectsUseCase,
@@ -71,6 +84,7 @@ from app.projects.use_cases import (
     GetProjectUseCase,
     ListProjectsUseCase,
     SaveProjectUseCase,
+    StagingQueueUseCase,
 )
 from app.runtime.models import ModelOption
 from app.runtime.use_cases import (
@@ -95,6 +109,22 @@ def _model_options(settings: Settings) -> tuple[ModelOption, ...]:
         ModelOption("gemini-3.5-flash-lite", "google_api", "Google Direct REST API 고속", recommended=True),
         ModelOption("gemini-3.5-flash", "google_api", "Google Direct REST API 주력"),
     )
+
+
+def _card_enricher_factory(settings: Settings, policy: RuntimeExecutionPolicy, sandbox: Path):
+    """색인 작업마다 부르는 LLM 실행기 팩토리 — 실행 정책의 현재 agy 모델을 따른다 (설정 화면에서 바꾸면 다음 작업부터)."""
+
+    def make():
+        if not settings.external_llm_enabled:
+            return None
+        return AgyCardEnricher(
+            executable=policy.agent_cli_bin or "agy",
+            model=settings.knowledge_index_model or policy.agent_cli_model,
+            sandbox_dir=sandbox,
+            timeout_seconds=420,
+        )
+
+    return make
 
 
 def _cli_model(settings: Settings) -> str:
@@ -171,6 +201,7 @@ class Container(containers.DeclarativeContainer):
     get_document = providers.Factory(GetDocumentUseCase, repository=document_repository)
     get_document_page_chunk = providers.Factory(GetDocumentPageChunkUseCase, repository=document_repository)
     save_document = providers.Factory(SaveDocumentUseCase, repository=document_repository)
+    list_document_revisions = providers.Factory(ListRevisionsUseCase, repository=document_repository)
     update_slot_content = providers.Factory(UpdateSlotContentUseCase, repository=document_repository)
     patch_document_structure = providers.Factory(PatchDocumentStructureUseCase, repository=document_repository)
     delete_document = providers.Factory(DeleteDocumentUseCase, repository=document_repository)
@@ -228,8 +259,43 @@ class Container(containers.DeclarativeContainer):
         repository=project_repository,
     )
     apply_outline_command = providers.Factory(ApplyOutlineCommandUseCase, repository=project_repository)
+    staging_store = providers.Singleton(
+        LocalStagingStore, root_dir=providers.Callable(lambda st: st.knowledge_of("projects"), storage)
+    )
+    staging_queue = providers.Factory(StagingQueueUseCase, store=staging_store)
 
-    # --- 7. assistant 도메인 (AI Composer · 인라인 AI 공용 실행 계층) ---
+    # --- 7. knowledge 도메인 (Auto-Index 지식 덱: `data/knowledge/decks` · `data/knowledge/jobs`) ---
+    knowledge_files = providers.Singleton(FsDeckFiles, root=providers.Callable(lambda st: st.knowledge_of("decks"), storage))
+    knowledge_registry = providers.Singleton(
+        LocalDeckRegistry,
+        root=providers.Callable(lambda st: st.knowledge_of("decks"), storage),
+        legacy_projects_dir=providers.Callable(lambda st: st.state / "projects", storage),
+    )
+    knowledge_job_store = providers.Singleton(LocalJobStore, root=providers.Callable(lambda st: st.knowledge_of("jobs"), storage))
+    knowledge_cache = providers.Singleton(
+        FileEnrichmentCache, root=providers.Callable(lambda st: st.cache_of("knowledge") / "enrich", storage)
+    )
+    knowledge_jobs = providers.Singleton(
+        IndexJobRunner,
+        registry=knowledge_registry,
+        files=knowledge_files,
+        jobs=knowledge_job_store,
+        cache=knowledge_cache,
+        enricher_factory=providers.Callable(
+            _card_enricher_factory, settings, runtime_policy,
+            providers.Callable(lambda st: st.state / "knowledge" / "sandbox", storage),
+        ),
+        max_parallel_jobs=providers.Callable(lambda s: s.knowledge_parallel_jobs, settings),
+        llm_concurrency=providers.Callable(lambda s: s.knowledge_llm_concurrency, settings),
+    )
+    knowledge_decks = providers.Singleton(KnowledgeDeckService, registry=knowledge_registry, files=knowledge_files)
+    knowledge_toolbox = providers.Singleton(
+        KnowledgeToolbox,
+        files=knowledge_files,
+        skill_dir=providers.Object(_REPO_ROOT / ".agents" / "skills" / "knowledge_deck_reader"),
+    )
+
+    # --- 8. assistant 도메인 (AI Composer · 인라인 AI 공용 실행 계층) ---
     assistant_engines = providers.Singleton(
         AssistantEngineProvider,
         agy_executable=providers.Callable(lambda p: p.agent_cli_bin, runtime_policy),
@@ -242,4 +308,22 @@ class Container(containers.DeclarativeContainer):
         engines=assistant_engines,
         policy=runtime_policy,
         inline_model=providers.Callable(lambda s: s.assistant_inline_model, settings),
+        server_tools=knowledge_toolbox,
+    )
+    usage_ledger = providers.Singleton(
+        JsonlUsageLedger, path=providers.Callable(lambda st: st.state / "assistant" / "ledger.jsonl", storage)
+    )
+    harness_service = providers.Singleton(
+        HarnessService,
+        engines=assistant_engines,
+        policy=runtime_policy,
+        inline_model=providers.Callable(lambda s: s.assistant_inline_model, settings),
+        server_tools=knowledge_toolbox,
+        ledger=usage_ledger,
+    )
+    harness_jobs = providers.Singleton(
+        HarnessJobRunner,
+        harness=harness_service,
+        # 일괄 채우기 결과는 프로젝트 대기열(projects 도메인)로 — assistant 는 projects 를 모르므로 함수로 꽂는다
+        staging_sink=providers.Callable(lambda store: store.append, staging_store),
     )

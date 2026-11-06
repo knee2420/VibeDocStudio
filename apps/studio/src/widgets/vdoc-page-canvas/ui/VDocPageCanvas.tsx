@@ -10,15 +10,19 @@ import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-do
 import { selectReferenceDocId, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { attachToComposer, referenceTextRef } from "@/features/ai-workspace";
 import { buildSlotAiActionPrompt, SlotInlineComposerHost } from "@/features/compose-slot-ai";
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { StressPagesToggleButton } from "@/features/simulate-large-document";
+import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes";
 import { getOutlineProjection, outlineCommands, useOutlineSelector } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
 
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
 import { AiStagingDrawer } from "./AiStagingDrawer";
+import { Phase3FocusBar } from "./Phase3FocusBar";
+import { SlotFrame } from "./SlotFrame";
 import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
 import { ReferenceSplitViewport } from "./ReferenceSplitViewport";
@@ -100,6 +104,7 @@ const DraftingCanvas: React.FC = () => {
   const zoomLevel = useOutlineSelector((p) => p.activeZoomLevel);
   const zoomedNode = useOutlineSelector((p) => p.allNodes.find((n) => n.nodeId === p.rootNodeId));
   const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceDocIds.length);
+  const currentPhaseIsDrafting = useWorkspaceSessionStore((s) => s.currentPhase === "drafting");
 
   // 표 구역 · 블록 · 페이지를 넘는 슬롯 범위 선택 (드래그 · 브라우저 선택)
   const mainRef = React.useRef<HTMLElement>(null);
@@ -121,6 +126,11 @@ const DraftingCanvas: React.FC = () => {
     openRightPanel("inspector");
   });
   const onSlotAiAction = useStableCallback((slotId: string, action: SlotAiAction, text: string) => {
+    if (action === "attach") {
+      attachToComposer([referenceTextRef(slotId, text)], { role: "reference" });
+      openRightPanel("composer");
+      return;
+    }
     // 선택 영역 AI 바: 그 범위만 고치도록 편집기 문서 위치를 함께 넘긴다.
     const { activeSlotId, activeEditor } = useActiveSlotEditorStore.getState();
     const sel = activeSlotId === slotId ? activeEditor?.state.selection : undefined;
@@ -128,6 +138,11 @@ const DraftingCanvas: React.FC = () => {
     openComposerWithPrompt(slotId, buildSlotAiActionPrompt(action, text), range);
   });
   const onUpdateSlotContent = useStableCallback(updateSlotContent);
+  const onApplyAiResult = useStableCallback((slotId: string, html: string) => {
+    void applyAiSlotResult(slotId, html, { source: "인라인 AI", harnessId: "inline.slot" });
+  });
+  const onAiEditedSelection = useStableCallback((slotId: string) => markSlotAiEdited(slotId, "inline.selection"));
+  const wrapSlotContent = useStableCallback((slot: VDocSlot, content: React.ReactNode) => <SlotFrame slot={slot}>{content}</SlotFrame>);
   const onMoveBlock = useStableCallback(blocks.moveBlock);
   const onMoveBlockTo = useStableCallback(blocks.moveBlockTo);
   const onDeleteBlock = useStableCallback(blocks.deleteBlock);
@@ -139,7 +154,13 @@ const DraftingCanvas: React.FC = () => {
   const onUpdateBlock = useStableCallback(blocks.updateBlock);
   const onTableCommand = useStableCallback(blocks.runTableCommand);
   const renderInlineComposer = useStableCallback((slot: VDocSlot, boundChunks: BackdataChunk[]) => (
-    <SlotInlineComposerHost targetSlot={slot} boundChunks={boundChunks} onApplySlotContent={onUpdateSlotContent} />
+    <SlotInlineComposerHost
+      targetSlot={slot}
+      boundChunks={boundChunks}
+      onApplySlotContent={onUpdateSlotContent}
+      onApplyAiResult={onApplyAiResult}
+      onAiEditedSelection={onAiEditedSelection}
+    />
   ));
 
   if (!doc) return null;
@@ -162,6 +183,7 @@ const DraftingCanvas: React.FC = () => {
     >
       <div className={`w-fit min-w-[794px] ${openReferenceCount > 0 ? "ml-2.5 mr-auto" : "mx-auto"} flex flex-col items-center`}>
         <CanvasUtilityBar />
+        {currentPhaseIsDrafting && <Phase3FocusBar />}
 
         {isPageZoomed && (
           <div
@@ -222,6 +244,7 @@ const DraftingCanvas: React.FC = () => {
                 onTableSelectionChange={setTableSelection}
                 onSlotAiAction={onSlotAiAction}
                 renderInlineComposer={renderInlineComposer}
+                wrapSlotContent={wrapSlotContent}
               />
             )}
           />

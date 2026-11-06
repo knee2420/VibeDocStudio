@@ -15,6 +15,8 @@ from app.resources.models import ResourceItem, ResourceSector, ResourceSession
 from app.resources.schemas import (
     AiContextBundleResponse,
     AiContextSource,
+    BatchDecoupleRequest,
+    DecoupleItemRequest,
     ExtractSectorRequest,
     IngestDirectoryRequest,
     IngestWebUrlRequest,
@@ -83,6 +85,86 @@ def ingest_directory(project_id: str, req: IngestDirectoryRequest) -> dict:
     return session.to_dict()
 
 
+def _collect_state_map(items: list[ResourceItem]) -> dict[str, tuple[bool, list[ResourceSector]]]:
+    """기존 소스의 is_checked 상태와 섹터들을 경로 및 ID 기준으로 맵핑합니다."""
+    state_map: dict[str, tuple[bool, list[ResourceSector]]] = {}
+
+    def traverse(node: ResourceItem) -> None:
+        key = node.path_or_url or node.id
+        state_map[key] = (node.is_checked, node.sectors)
+        state_map[node.id] = (node.is_checked, node.sectors)
+        for child in node.children:
+            traverse(child)
+
+    for it in items:
+        traverse(it)
+    return state_map
+
+
+def _restore_state(items: list[ResourceItem], state_map: dict[str, tuple[bool, list[ResourceSector]]]) -> None:
+    def traverse(node: ResourceItem) -> None:
+        key = node.path_or_url or node.id
+        if key in state_map:
+            node.is_checked, node.sectors = state_map[key]
+        elif node.id in state_map:
+            node.is_checked, node.sectors = state_map[node.id]
+        for child in node.children:
+            traverse(child)
+
+    for it in items:
+        traverse(it)
+
+
+def _remove_item_recursive(items: list[ResourceItem], target_id: str) -> bool:
+    for i, it in enumerate(items):
+        if it.id == target_id:
+            items.pop(i)
+            return True
+        if it.children and _remove_item_recursive(it.children, target_id):
+            return True
+    return False
+
+
+@router.post("/{project_id}/rescan", response_model=ResourceSessionResponse)
+def rescan_resources(project_id: str) -> dict:
+    """기 등록된 로컬 디렉토리 원본을 재스캔하여 변경된 파일 구조를 동기화합니다 (체크/섹터 상태 보존)."""
+    session = _repo.get_session(project_id)
+    state_map = _collect_state_map(session.items)
+
+    rescanned_items: list[ResourceItem] = []
+    for item in session.items:
+        if item.type == "file" and item.children is not None and item.path_or_url:
+            # 로컬 디렉토리 소스: 재스캔
+            p = Path(item.path_or_url)
+            if p.exists() and p.is_dir():
+                fresh = _file_provider.ingest(str(p))
+                if fresh:
+                    _restore_state(fresh, state_map)
+                    rescanned_items.extend(fresh)
+                    continue
+        # 웹 소스나 비디렉토리, 혹은 재스캔 실패한 것은 그대로 유지
+        rescanned_items.append(item)
+
+    session.items = rescanned_items
+    _repo.save_session(session)
+    return session.to_dict()
+
+
+@router.post("/{project_id}/decouple", response_model=ResourceSessionResponse)
+def decouple_resource(project_id: str, req: DecoupleItemRequest) -> dict:
+    """프로젝트 세션에서 해당 리소스 연결을 해제(Decouple)합니다. 로컬 원본 파일은 삭제되지 않습니다."""
+    session = _repo.get_session(project_id)
+    removed = _remove_item_recursive(session.items, req.item_id)
+    if not removed:
+        raise HTTPException(status_code=404, detail="연결 해제할 리소스를 찾을 수 없습니다.")
+
+    if session.active_resource_id == req.item_id:
+        session.active_resource_id = session.items[0].id if session.items else None
+
+    _repo.save_session(session)
+    return session.to_dict()
+
+
 @router.post("/{project_id}/ingest-url", response_model=ResourceSessionResponse)
 def ingest_url(project_id: str, req: IngestWebUrlRequest) -> dict:
     """웹 URL을 아티클 리소스로 프로젝트에 추가합니다."""
@@ -90,6 +172,86 @@ def ingest_url(project_id: str, req: IngestWebUrlRequest) -> dict:
     session = _repo.get_session(project_id)
     for item in new_items:
         session.items.insert(0, item)
+
+    _repo.save_session(session)
+    return session.to_dict()
+
+
+def _collect_state_map(items: list[ResourceItem]) -> dict[str, tuple[bool, list[ResourceSector]]]:
+    """기존 소스의 is_checked 상태와 섹터들을 경로 및 ID 기준으로 맵핑합니다."""
+    state_map: dict[str, tuple[bool, list[ResourceSector]]] = {}
+
+    def traverse(node: ResourceItem) -> None:
+        key = node.path_or_url or node.id
+        state_map[key] = (node.is_checked, node.sectors)
+        state_map[node.id] = (node.is_checked, node.sectors)
+        for child in node.children:
+            traverse(child)
+
+    for it in items:
+        traverse(it)
+    return state_map
+
+
+def _restore_state(items: list[ResourceItem], state_map: dict[str, tuple[bool, list[ResourceSector]]]) -> None:
+    def traverse(node: ResourceItem) -> None:
+        key = node.path_or_url or node.id
+        if key in state_map:
+            node.is_checked, node.sectors = state_map[key]
+        elif node.id in state_map:
+            node.is_checked, node.sectors = state_map[node.id]
+        for child in node.children:
+            traverse(child)
+
+    for it in items:
+        traverse(it)
+
+
+def _remove_item_recursive(items: list[ResourceItem], target_id: str) -> bool:
+    for i, it in enumerate(items):
+        if it.id == target_id:
+            items.pop(i)
+            return True
+        if it.children and _remove_item_recursive(it.children, target_id):
+            return True
+    return False
+
+
+@router.post("/{project_id}/rescan", response_model=ResourceSessionResponse)
+def rescan_resources(project_id: str) -> dict:
+    """기 등록된 로컬 디렉토리 원본을 재스캔하여 변경된 파일 구조를 동기화합니다 (체크/섹터 상태 보존)."""
+    session = _repo.get_session(project_id)
+    state_map = _collect_state_map(session.items)
+
+    rescanned_items: list[ResourceItem] = []
+    for item in session.items:
+        if item.type == "file" and item.children is not None and item.path_or_url:
+            # 로컬 디렉토리 소스: 재스캔
+            p = Path(item.path_or_url)
+            if p.exists() and p.is_dir():
+                fresh = _file_provider.ingest(str(p))
+                if fresh:
+                    _restore_state(fresh, state_map)
+                    rescanned_items.extend(fresh)
+                    continue
+        # 웹 소스나 비디렉토리, 혹은 재스캔 실패한 것은 그대로 유지
+        rescanned_items.append(item)
+
+    session.items = rescanned_items
+    _repo.save_session(session)
+    return session.to_dict()
+
+
+@router.post("/{project_id}/decouple", response_model=ResourceSessionResponse)
+def decouple_resource(project_id: str, req: DecoupleItemRequest) -> dict:
+    """프로젝트 세션에서 해당 리소스 연결을 해제(Decouple)합니다. 로컬 원본 파일은 삭제되지 않습니다."""
+    session = _repo.get_session(project_id)
+    removed = _remove_item_recursive(session.items, req.item_id)
+    if not removed:
+        raise HTTPException(status_code=404, detail="연결 해제할 리소스를 찾을 수 없습니다.")
+
+    if session.active_resource_id == req.item_id:
+        session.active_resource_id = session.items[0].id if session.items else None
 
     _repo.save_session(session)
     return session.to_dict()
@@ -107,6 +269,86 @@ def toggle_choice(project_id: str, req: ToggleChoiceRequest) -> dict:
         _set_checked_recursive(target, req.is_checked)
     else:
         target.is_checked = req.is_checked
+
+    _repo.save_session(session)
+    return session.to_dict()
+
+
+def _collect_state_map(items: list[ResourceItem]) -> dict[str, tuple[bool, list[ResourceSector]]]:
+    """기존 소스의 is_checked 상태와 섹터들을 경로 및 ID 기준으로 맵핑합니다."""
+    state_map: dict[str, tuple[bool, list[ResourceSector]]] = {}
+
+    def traverse(node: ResourceItem) -> None:
+        key = node.path_or_url or node.id
+        state_map[key] = (node.is_checked, node.sectors)
+        state_map[node.id] = (node.is_checked, node.sectors)
+        for child in node.children:
+            traverse(child)
+
+    for it in items:
+        traverse(it)
+    return state_map
+
+
+def _restore_state(items: list[ResourceItem], state_map: dict[str, tuple[bool, list[ResourceSector]]]) -> None:
+    def traverse(node: ResourceItem) -> None:
+        key = node.path_or_url or node.id
+        if key in state_map:
+            node.is_checked, node.sectors = state_map[key]
+        elif node.id in state_map:
+            node.is_checked, node.sectors = state_map[node.id]
+        for child in node.children:
+            traverse(child)
+
+    for it in items:
+        traverse(it)
+
+
+def _remove_item_recursive(items: list[ResourceItem], target_id: str) -> bool:
+    for i, it in enumerate(items):
+        if it.id == target_id:
+            items.pop(i)
+            return True
+        if it.children and _remove_item_recursive(it.children, target_id):
+            return True
+    return False
+
+
+@router.post("/{project_id}/rescan", response_model=ResourceSessionResponse)
+def rescan_resources(project_id: str) -> dict:
+    """기 등록된 로컬 디렉토리 원본을 재스캔하여 변경된 파일 구조를 동기화합니다 (체크/섹터 상태 보존)."""
+    session = _repo.get_session(project_id)
+    state_map = _collect_state_map(session.items)
+
+    rescanned_items: list[ResourceItem] = []
+    for item in session.items:
+        if item.type == "file" and item.children is not None and item.path_or_url:
+            # 로컬 디렉토리 소스: 재스캔
+            p = Path(item.path_or_url)
+            if p.exists() and p.is_dir():
+                fresh = _file_provider.ingest(str(p))
+                if fresh:
+                    _restore_state(fresh, state_map)
+                    rescanned_items.extend(fresh)
+                    continue
+        # 웹 소스나 비디렉토리, 혹은 재스캔 실패한 것은 그대로 유지
+        rescanned_items.append(item)
+
+    session.items = rescanned_items
+    _repo.save_session(session)
+    return session.to_dict()
+
+
+@router.post("/{project_id}/decouple", response_model=ResourceSessionResponse)
+def decouple_resource(project_id: str, req: DecoupleItemRequest) -> dict:
+    """프로젝트 세션에서 해당 리소스 연결을 해제(Decouple)합니다. 로컬 원본 파일은 삭제되지 않습니다."""
+    session = _repo.get_session(project_id)
+    removed = _remove_item_recursive(session.items, req.item_id)
+    if not removed:
+        raise HTTPException(status_code=404, detail="연결 해제할 리소스를 찾을 수 없습니다.")
+
+    if session.active_resource_id == req.item_id:
+        session.active_resource_id = session.items[0].id if session.items else None
 
     _repo.save_session(session)
     return session.to_dict()
@@ -177,4 +419,98 @@ def get_raw_file(path: str) -> FileResponse:
 
     return FileResponse(target_path, media_type=media_type)
 
+def _collect_state_map(items: list[ResourceItem]) -> dict[str, tuple[bool, list[ResourceSector]]]:
+    """기존 소스의 is_checked 상태와 섹터들을 경로 및 ID 기준으로 맵핑합니다."""
+    state_map: dict[str, tuple[bool, list[ResourceSector]]] = {}
+
+    def traverse(node: ResourceItem) -> None:
+        key = node.path_or_url or node.id
+        state_map[key] = (node.is_checked, node.sectors)
+        state_map[node.id] = (node.is_checked, node.sectors)
+        for child in node.children:
+            traverse(child)
+
+    for it in items:
+        traverse(it)
+    return state_map
+
+
+def _restore_state(items: list[ResourceItem], state_map: dict[str, tuple[bool, list[ResourceSector]]]) -> None:
+    def traverse(node: ResourceItem) -> None:
+        key = node.path_or_url or node.id
+        if key in state_map:
+            node.is_checked, node.sectors = state_map[key]
+        elif node.id in state_map:
+            node.is_checked, node.sectors = state_map[node.id]
+        for child in node.children:
+            traverse(child)
+
+    for it in items:
+        traverse(it)
+
+
+def _remove_item_recursive(items: list[ResourceItem], target_id: str) -> bool:
+    for i, it in enumerate(items):
+        if it.id == target_id:
+            items.pop(i)
+            return True
+        if it.children and _remove_item_recursive(it.children, target_id):
+            return True
+    return False
+
+
+@router.post("/{project_id}/rescan", response_model=ResourceSessionResponse)
+def rescan_resources(project_id: str) -> dict:
+    """기 등록된 로컬 디렉토리 원본을 재스캔하여 변경된 파일 구조를 동기화합니다 (체크/섹터 상태 보존)."""
+    session = _repo.get_session(project_id)
+    state_map = _collect_state_map(session.items)
+
+    rescanned_items: list[ResourceItem] = []
+    for item in session.items:
+        if item.type == "file" and item.children is not None and item.path_or_url:
+            p = Path(item.path_or_url)
+            if p.exists() and p.is_dir():
+                fresh = _file_provider.ingest(str(p))
+                if fresh:
+                    _restore_state(fresh, state_map)
+                    rescanned_items.extend(fresh)
+                    continue
+        rescanned_items.append(item)
+
+    session.items = rescanned_items
+    _repo.save_session(session)
+    return session.to_dict()
+
+
+@router.post("/{project_id}/decouple", response_model=ResourceSessionResponse)
+def decouple_resource(project_id: str, req: DecoupleItemRequest) -> dict:
+    """프로젝트 세션에서 해당 리소스 연결을 해제(Decouple)합니다. 로컬 원본 파일은 삭제되지 않습니다."""
+    session = _repo.get_session(project_id)
+    removed = _remove_item_recursive(session.items, req.item_id)
+    if not removed:
+        raise HTTPException(status_code=404, detail="연결 해제할 리소스를 찾을 수 없습니다.")
+
+    if session.active_resource_id == req.item_id:
+        session.active_resource_id = session.items[0].id if session.items else None
+
+    _repo.save_session(session)
+    return session.to_dict()
+
+@router.post("/{project_id}/batch-decouple", response_model=ResourceSessionResponse)
+def batch_decouple_resources(project_id: str, req: BatchDecoupleRequest) -> dict:
+    """프로젝트 세션에서 여러 리소스 연결을 일괄 해제(Batch Decouple)합니다. 로컬 원본 파일은 보존됩니다."""
+    session = _repo.get_session(project_id)
+    removed_any = False
+    for target_id in req.item_ids:
+        if _remove_item_recursive(session.items, target_id):
+            removed_any = True
+
+    if not removed_any:
+        raise HTTPException(status_code=404, detail="연결 해제할 리소스 항목을 찾지 못했습니다.")
+
+    if session.active_resource_id in req.item_ids:
+        session.active_resource_id = session.items[0].id if session.items else None
+
+    _repo.save_session(session)
+    return session.to_dict()
 

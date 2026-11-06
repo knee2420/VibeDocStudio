@@ -82,6 +82,20 @@ class ExtractSectorRequest(BaseModel):
         populate_by_name = True
 
 
+class DecoupleItemRequest(BaseModel):
+    item_id: str = Field(alias="itemId")
+
+    class Config:
+        populate_by_name = True
+
+
+class BatchDecoupleRequest(BaseModel):
+    item_ids: list[str] = Field(alias="itemIds")
+
+    class Config:
+        populate_by_name = True
+
+
 class AiContextSource(BaseModel):
     id: str
     title: str

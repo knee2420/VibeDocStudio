@@ -11,16 +11,17 @@ import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 // import FontFamily from "@tiptap/extension-font-family";
 import Link from "@tiptap/extension-link";
-import { FileText, Languages, MessageSquareText, SpellCheck, Wand2 } from "lucide-react";
+import { Check, ClipboardCopy, FileText, Languages, MessageSquareShare, MessageSquareText, MoreHorizontal, SpellCheck, Wand2, X } from "lucide-react";
 
 import { VariableChipNode, StampChipNode } from "./variable-node";
+import { CitationNode, handleCitationPointer } from "./citation-node";
 import { BlockStyle, FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight, Indent, InlineMargin } from "./format-extensions";
 import { normalizeLegacyHtml } from "./legacy-html";
 import { useActiveSlotEditorStore } from "./active-editor-store";
 import { ensureEditorBaseStyles } from "./editor-base-style";
 
 /** Actions of the floating bar shown over a text selection (yesform `AI 제안 · 요약 · 번역 · 문법 수정 · 톤 수정`). */
-export type SlotAiAction = "expand" | "summarize" | "translate" | "grammar" | "tone";
+export type SlotAiAction = "expand" | "summarize" | "translate" | "grammar" | "tone" | "attach";
 
 export const SLOT_AI_ACTIONS: { action: SlotAiAction; label: string; title: string; icon: React.ReactNode }[] = [
   { action: "summarize", label: "요약", title: "텍스트를 간결하게 요약", icon: <FileText className="w-3.5 h-3.5" /> },
@@ -41,7 +42,7 @@ export interface SlotRichTextEditorProps {
 }
 
 interface BubbleState {
-  left: number;
+  right: number;
   top: number;
   text: string;
 }
@@ -71,6 +72,7 @@ function buildSlotExtensions(placeholder: string): AnyExtension[] {
     Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } }),
     VariableChipNode,
     StampChipNode,
+    CitationNode,
   ];
 }
 
@@ -133,6 +135,8 @@ const LiveSlotEditor: React.FC<LiveSlotEditorProps> = ({
 }) => {
   const setActiveSlotEditor = useActiveSlotEditorStore((s) => s.setActiveSlotEditor);
   const [bubble, setBubble] = useState<BubbleState | null>(null);
+  const [level, setLevel] = useState<"icon" | "menu">("icon");
+  const [copied, setCopied] = useState<boolean>(false);
   const commitTimer = useRef<number | null>(null);
   const onChangeRef = useRef(onChangeContent);
   onChangeRef.current = onChangeContent;
@@ -168,11 +172,18 @@ const LiveSlotEditor: React.FC<LiveSlotEditorProps> = ({
       const { from, to, empty } = ed.state.selection;
       if (empty || !ed.isEditable || !onAiAction) {
         setBubble(null);
+        setLevel("icon");
         return;
       }
       const end = ed.view.coordsAtPos(to);
       const start = ed.view.coordsAtPos(from);
-      setBubble({ left: Math.min(start.left, end.left), top: Math.max(start.bottom, end.bottom) + 8, text: ed.state.doc.textBetween(from, to, " ") });
+      const targetRight = Math.max(start.right, end.right);
+      const targetTop = Math.min(start.top, end.top);
+      const anchorRight = Math.min(window.innerWidth - 8, targetRight + 8);
+      const right = Math.max(8, window.innerWidth - anchorRight);
+      const top = Math.max(8, targetTop - 26);
+      setBubble({ right, top, text: ed.state.doc.textBetween(from, to, " ") });
+      setLevel("icon");
     },
     onBlur: () => {
       flushRef.current();
@@ -256,35 +267,88 @@ const LiveSlotEditor: React.FC<LiveSlotEditorProps> = ({
           <div
             data-keep-table-selection
             onMouseDown={(e) => e.preventDefault()}
-            className="fixed z-[1000] flex items-center gap-1 rounded-lg border border-[#eaeaea] bg-white p-1 shadow-[0px_4px_12px_0px_rgba(47,44,44,0.1)]"
-            style={{ left: bubble.left, top: bubble.top }}
+            style={{ right: bubble.right, top: bubble.top }}
+            className="fixed z-[1000] select-none"
           >
-            <button
-              type="button"
-              title="더 상세하게 확장"
-              onClick={() => {
-                onAiAction(slotId, "expand", bubble.text);
-                setBubble(null);
-              }}
-              className="inline-flex h-7 items-center gap-1 rounded-md bg-[#0472e3] px-2 text-[12px] font-semibold text-white hover:bg-[#0363c7] cursor-pointer"
-            >
-              <Wand2 className="w-3.5 h-3.5" /> AI 제안
-            </button>
-            {SLOT_AI_ACTIONS.map((a) => (
+            {level === "icon" ? (
               <button
-                key={a.action}
                 type="button"
-                title={a.title}
-                onClick={() => {
-                  onAiAction(slotId, a.action, bubble.text);
-                  setBubble(null);
-                }}
-                className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] text-gray-800 hover:bg-neutral-100 cursor-pointer"
+                data-testid="slot-text-selection-toolbar-icon"
+                onClick={() => setLevel("menu")}
+                title={`선택 도구 · ${bubble.text.length}자\n클릭: 도구 열기`}
+                className="relative flex h-7 w-7 items-center justify-center rounded-lg border border-[#eaeaea] bg-white shadow-[0px_4px_12px_0px_rgba(47,44,44,0.12)] text-[#0472e3] hover:bg-[#eef5fd] cursor-pointer transition-transform hover:scale-105"
               >
-                {a.icon}
-                {a.label}
+                <MoreHorizontal className="w-4 h-4" />
+                <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-[#0472e3] text-white text-[9.5px] font-bold leading-4 text-center shadow-xs">
+                  1
+                </span>
               </button>
-            ))}
+            ) : (
+              <div className="flex items-center gap-1 rounded-lg border border-[#eaeaea] bg-white p-1 shadow-[0px_4px_12px_0px_rgba(47,44,44,0.15)] text-[12px] text-gray-800 whitespace-nowrap animate-in fade-in zoom-in-95 duration-100">
+                <button
+                  type="button"
+                  title="더 상세하게 확장"
+                  onClick={() => {
+                    onAiAction(slotId, "expand", bubble.text);
+                    setBubble(null);
+                    setLevel("icon");
+                  }}
+                  className="inline-flex h-7 items-center gap-1 rounded-md bg-[#0472e3] px-2 text-[12px] font-semibold text-white hover:bg-[#0363c7] cursor-pointer"
+                >
+                  <Wand2 className="w-3.5 h-3.5" /> AI 제안
+                </button>
+                {SLOT_AI_ACTIONS.map((a) => (
+                  <button
+                    key={a.action}
+                    type="button"
+                    title={a.title}
+                    onClick={() => {
+                      onAiAction(slotId, a.action, bubble.text);
+                      setBubble(null);
+                      setLevel("icon");
+                    }}
+                    className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] text-gray-800 hover:bg-neutral-100 cursor-pointer"
+                  >
+                    {a.icon}
+                    {a.label}
+                  </button>
+                ))}
+                <div className="w-[1px] h-4 bg-slate-200 mx-0.5" />
+                <button
+                  type="button"
+                  title="Composer 에 첨부 (Ctrl+L)"
+                  onClick={() => {
+                    onAiAction(slotId, "attach", bubble.text);
+                    setBubble(null);
+                    setLevel("icon");
+                  }}
+                  className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] text-gray-800 hover:bg-neutral-100 cursor-pointer"
+                >
+                  <MessageSquareShare className="w-3.5 h-3.5 text-gray-500" /> Composer 에 첨부
+                </button>
+                <button
+                  type="button"
+                  title="복사 (Ctrl+C)"
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(bubble.text);
+                    setCopied(true);
+                    window.setTimeout(() => setCopied(false), 1500);
+                  }}
+                  className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] text-gray-800 hover:bg-neutral-100 cursor-pointer"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <ClipboardCopy className="w-3.5 h-3.5 text-gray-500" />}
+                  {copied ? "복사됨" : "복사"}
+                </button>
+                <button
+                  type="button"
+                  title="도구 접기"
+                  onClick={() => setLevel("icon")}
+                  className="inline-flex h-7 w-6 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-neutral-100 cursor-pointer ml-0.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>,
           document.body
         )}
@@ -312,16 +376,31 @@ const SlotRichTextEditorImpl: React.FC<SlotRichTextEditorProps> = (props) => {
     });
   }, [live, slotId]);
 
-  if (live !== false) return <LiveSlotEditor {...props} initialFocus={live} />;
+  // 인용 표식은 편집기를 띄우거나 캐럿을 옮기지 않고 원본 위치를 연다 (정적 · 편집 화면 공통)
+  const onCitationPointer = (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    if (handleCitationPointer(slotId, e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+  if (live !== false)
+    return (
+      <div onPointerDownCapture={onCitationPointer}>
+        <LiveSlotEditor {...props} initialFocus={live} />
+      </div>
+    );
   return (
-    <StaticSlotView
-      slotId={slotId}
-      content={content}
-      editable={!readOnly}
-      className={className}
-      onSelectSlot={onSelectSlot}
-      onActivate={setLive}
-    />
+    <div onPointerDownCapture={onCitationPointer}>
+      <StaticSlotView
+        slotId={slotId}
+        content={content}
+        editable={!readOnly}
+        className={className}
+        onSelectSlot={onSelectSlot}
+        onActivate={setLive}
+      />
+    </div>
   );
 };
 

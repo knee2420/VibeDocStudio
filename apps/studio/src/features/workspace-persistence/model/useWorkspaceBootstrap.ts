@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { findFirstEditableSlotId } from "@vibe/vdoc-schema";
 
+import { useAiStagingStore } from "@/entities/ai-staging";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
@@ -46,6 +47,9 @@ export function useWorkspaceBootstrap(): {
         setStatus("error");
         return;
       }
+      const activeProjectId = selectActiveProject(projectState)?.projectId;
+      // 승인 전 변경안 대기열은 프로젝트별로 서버에 있다 (새로고침 뒤에도 이어서 검토)
+      if (activeProjectId) void useAiStagingStore.getState().hydrate(activeProjectId);
       const recordedPhase = selectActiveProject(projectState)?.activePhase;
       if (!params.get("phase") && recordedPhase) session.setPhase(recordedPhase);
 

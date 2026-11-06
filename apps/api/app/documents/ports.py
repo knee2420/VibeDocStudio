@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Protocol
+from typing import Any, Protocol
 
 from .models import VDocAggregateRecord, VDocSummaryRecord
 
@@ -27,3 +27,13 @@ class VDocDocumentRepositoryPort(Protocol):
         ...
 
     def delete(self, doc_id: str) -> None: ...
+
+    # --- 개정 이력 (`revisions.jsonl`) ---
+
+    def append_revision(self, doc_id: str, entry: dict[str, Any]) -> None: ...
+
+    def replace_last_revision(self, doc_id: str, entry: dict[str, Any]) -> None: ...
+
+    def list_revisions(self, doc_id: str, limit: int = 200) -> list[dict[str, Any]]:
+        """최신이 앞."""
+        ...

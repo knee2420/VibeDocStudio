@@ -1,0 +1,246 @@
+{
+ "agy-structural": {
+  "wallSeconds": 0.9,
+  "stats": {
+   "files": 39,
+   "skipped": 0,
+   "segments": 282,
+   "sections": 39,
+   "cards": 282,
+   "enrichedCards": 0,
+   "tables": 60,
+   "figures": 0,
+   "codeBlocks": 186,
+   "chars": 255577
+  },
+  "usage": {
+   "llmCalls": 0,
+   "cacheHits": 0,
+   "inputTokens": 0,
+   "outputTokens": 0,
+   "totalTokens": 0,
+   "llmSeconds": 0.0,
+   "failedBatches": 0
+  },
+  "quality": {
+   "coverage": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.97"
+   },
+   "segmentSize": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.95"
+   },
+   "anchors": {
+    "pass": true,
+    "value": "0",
+    "threshold": "0"
+   },
+   "brokenLinks": {
+    "pass": true,
+    "value": "0",
+    "threshold": "0"
+   },
+   "elementDensity": {
+    "pass": true,
+    "value": "4.06",
+    "threshold": "1.50"
+   },
+   "tableLabels": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.90"
+   }
+  }
+ },
+ "fsd-structural": {
+  "wallSeconds": 2.6,
+  "stats": {
+   "files": 39,
+   "skipped": 0,
+   "segments": 266,
+   "sections": 40,
+   "cards": 266,
+   "enrichedCards": 0,
+   "tables": 2,
+   "figures": 20,
+   "codeBlocks": 171,
+   "chars": 291045
+  },
+  "usage": {
+   "llmCalls": 0,
+   "cacheHits": 0,
+   "inputTokens": 0,
+   "outputTokens": 0,
+   "totalTokens": 0,
+   "llmSeconds": 0.0,
+   "failedBatches": 0
+  },
+  "quality": {
+   "coverage": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.97"
+   },
+   "segmentSize": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.95"
+   },
+   "anchors": {
+    "pass": true,
+    "value": "0",
+    "threshold": "0"
+   },
+   "brokenLinks": {
+    "pass": true,
+    "value": "0",
+    "threshold": "0"
+   },
+   "elementDensity": {
+    "pass": true,
+    "value": "3.26",
+    "threshold": "1.50"
+   },
+   "tableLabels": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.90"
+   },
+   "figureLabels": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.80"
+   }
+  }
+ },
+ "agy-enriched": {
+  "wallSeconds": 81.3,
+  "stats": {
+   "files": 39,
+   "skipped": 0,
+   "segments": 282,
+   "sections": 39,
+   "cards": 282,
+   "enrichedCards": 282,
+   "tables": 60,
+   "figures": 0,
+   "codeBlocks": 186,
+   "chars": 255577
+  },
+  "usage": {
+   "llmCalls": 4,
+   "cacheHits": 264,
+   "inputTokens": 104219,
+   "outputTokens": 17456,
+   "totalTokens": 121675,
+   "llmSeconds": 175.01,
+   "failedBatches": 0
+  },
+  "quality": {
+   "coverage": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.97"
+   },
+   "segmentSize": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.95"
+   },
+   "anchors": {
+    "pass": true,
+    "value": "0",
+    "threshold": "0"
+   },
+   "brokenLinks": {
+    "pass": true,
+    "value": "0",
+    "threshold": "0"
+   },
+   "elementDensity": {
+    "pass": true,
+    "value": "7.78",
+    "threshold": "1.50"
+   },
+   "tableLabels": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.90"
+   },
+   "grounding": {
+    "pass": true,
+    "value": "0.99",
+    "threshold": "0.85"
+   }
+  }
+ },
+ "fsd-enriched": {
+  "wallSeconds": 185.1,
+  "stats": {
+   "files": 39,
+   "skipped": 0,
+   "segments": 266,
+   "sections": 40,
+   "cards": 266,
+   "enrichedCards": 266,
+   "tables": 2,
+   "figures": 20,
+   "codeBlocks": 171,
+   "chars": 291045
+  },
+  "usage": {
+   "llmCalls": 7,
+   "cacheHits": 234,
+   "inputTokens": 224291,
+   "outputTokens": 54140,
+   "totalTokens": 278431,
+   "llmSeconds": 581.01,
+   "failedBatches": 0
+  },
+  "quality": {
+   "coverage": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.97"
+   },
+   "segmentSize": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.95"
+   },
+   "anchors": {
+    "pass": true,
+    "value": "0",
+    "threshold": "0"
+   },
+   "brokenLinks": {
+    "pass": true,
+    "value": "0",
+    "threshold": "0"
+   },
+   "elementDensity": {
+    "pass": true,
+    "value": "8.06",
+    "threshold": "1.50"
+   },
+   "tableLabels": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.90"
+   },
+   "figureLabels": {
+    "pass": true,
+    "value": "1.00",
+    "threshold": "0.80"
+   },
+   "grounding": {
+    "pass": true,
+    "value": "0.98",
+    "threshold": "0.85"
+   }
+  }
+ }
+}

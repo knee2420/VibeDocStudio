@@ -4,7 +4,8 @@ import type { VDocDocument } from "@vibe/vdoc-schema";
 
 import { errorMessage, useHistoryStore } from "@/shared/lib";
 
-import { documentApi } from "../api/documentApi";
+import { type ChangeNote, documentApi } from "../api/documentApi";
+import { ApiError } from "@/shared/api";
 
 /**
  * 열려 있는 `.vdoc` 문서들의 클라이언트 작업 사본.
@@ -16,7 +17,14 @@ import { documentApi } from "../api/documentApi";
  * 구조 편집(`{ history: true }`)은 공용 이력(`useHistoryStore`)에 남아 `Ctrl+Z` 로 되돌린다.
  * 슬롯 타이핑은 슬롯 편집기 자체 이력을 쓰므로 여기 남기지 않는다.
  */
-export type DocumentSaveState = "saved" | "dirty" | "saving" | "error";
+export type DocumentSaveState = "saved" | "dirty" | "saving" | "error" | "conflict";
+
+export interface UpdateDocOptions {
+  history?: boolean;
+  label?: string;
+  /** 이 변경의 출처 (AI 변경안 승인 등). 저장할 때 서버 개정 이력에 작성자로 남는다. */
+  change?: ChangeNote;
+}
 
 export interface StudioDocumentState {
   docs: VDocDocument[];
@@ -33,10 +41,11 @@ export interface StudioDocumentState {
   setActivePageId: (pageId: string) => void;
   setMode: (mode: "Editing" | "Viewing") => void;
   toggleMode: () => void;
-  updateCurrentDoc: (
-    updater: (prev: VDocDocument) => VDocDocument,
-    opts?: { history?: boolean; label?: string }
-  ) => void;
+  updateCurrentDoc: (updater: (prev: VDocDocument) => VDocDocument, opts?: UpdateDocOptions) => void;
+  /** 활성 문서가 아니어도 id 로 고친다 (AI 변경안은 자기 문서를 가리킨다). 없는 문서면 false. */
+  updateDoc: (docId: string, updater: (prev: VDocDocument) => VDocDocument, opts?: UpdateDocOptions) => boolean;
+  /** 서버 판으로 다시 불러온다 (저장 충돌 뒤). 저장하지 못한 로컬 변경은 버린다. */
+  reloadDoc: (docId: string) => Promise<void>;
   /** 화면에만 올리는 임시 문서 (저장하지 않는다). 측정 도구 브리지 계약이므로 시그니처를 바꾸지 않는다. */
   upsertDocument: (doc: VDocDocument) => void;
   /** 서버에 저장되는 새 작업 문서 (PDF 가져오기 · .vdoc 파일 열기). */
@@ -46,6 +55,8 @@ export interface StudioDocumentState {
 
 const AUTOSAVE_DELAY_MS = 800;
 const autosaveTimers = new Map<string, number>();
+/** 다음 저장에 실어 보낼 변경 출처 (문서별). 저장이 성공하면 비운다. */
+const pendingNotes = new Map<string, ChangeNote[]>();
 
 
 export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => {
@@ -59,12 +70,25 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
     autosaveTimers.delete(docId);
     const doc = get().docs.find((d) => d.docId === docId);
     if (!doc || !get().persistedDocIds.has(docId)) return;
+    if (get().saveState[docId] === "conflict") return; // 충돌을 풀 때까지 덮어쓰지 않는다
+    const notes = pendingNotes.get(docId) ?? [];
+    pendingNotes.delete(docId);
     setSaveState(docId, "saving");
     try {
-      await documentApi.save(doc);
+      const saved = await documentApi.save(doc, { baseRevision: doc.revision, changes: notes });
+      // 서버가 매긴 새 버전만 받는다 (저장 중에 친 글자를 서버 판으로 덮지 않게)
+      set((s) => ({
+        docs: s.docs.map((d) => (d.docId === docId ? { ...d, revision: saved.revision } : d)),
+      }));
       // 저장 중에 또 바뀌었으면 다음 자동 저장이 이미 예약돼 있다.
       if (!autosaveTimers.has(docId)) setSaveState(docId, "saved");
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setSaveState(docId, "conflict");
+        set({ lastError: err.detail || "다른 곳에서 먼저 저장된 문서입니다. 다시 불러오세요." });
+        return;
+      }
+      pendingNotes.set(docId, [...notes, ...(pendingNotes.get(docId) ?? [])]); // 다음 저장에 다시 싣는다
       setSaveState(docId, "error");
       set({ lastError: errorMessage(err, "문서를 저장하지 못했습니다.") });
     }
@@ -125,20 +149,38 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
     toggleMode: () => set((s) => ({ mode: s.mode === "Editing" ? "Viewing" : "Editing" })),
 
     updateCurrentDoc: (updater, opts) => {
-      const current = get().docs.find((d) => d.docId === get().activeDocId);
-      if (!current) return;
+      get().updateDoc(get().activeDocId, updater, opts);
+    },
+
+    updateDoc: (docId, updater, opts) => {
+      const current = get().docs.find((d) => d.docId === docId);
+      if (!current) return false;
       const next = updater(current);
-      if (next === current) return;
+      if (next === current) return true;
       replaceDoc(next);
+      if (opts?.change) pendingNotes.set(docId, [...(pendingNotes.get(docId) ?? []), opts.change]);
       scheduleSave(next.docId);
       if (opts?.history) {
         useHistoryStore.getState().push({
           label: opts.label ?? "문서 구조가 변경되었습니다.",
-          scope: "document",
+          // 활성 문서가 아닌 문서의 변경은 프로젝트 범위로 둔다 (문서를 바꿔도 되돌릴 수 있게)
+          scope: docId === get().activeDocId ? "document" : "project",
           undo: () => restore(current),
           redo: () => restore(next),
         });
       }
+      return true;
+    },
+
+    reloadDoc: async (docId) => {
+      const fresh = await documentApi.get(docId);
+      const timer = autosaveTimers.get(docId);
+      if (timer) window.clearTimeout(timer);
+      autosaveTimers.delete(docId);
+      pendingNotes.delete(docId);
+      replaceDoc(fresh);
+      setSaveState(docId, "saved");
+      set({ lastError: null });
     },
 
     upsertDocument: (doc) =>

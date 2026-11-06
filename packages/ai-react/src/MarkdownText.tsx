@@ -1,9 +1,17 @@
 import React from "react";
+import { Bookmark, BookOpen, Layers } from "lucide-react";
 
-import type { EntityRegistry } from "@vibe/ai-kernel";
+import type { EntityInfo, EntityRegistry } from "@vibe/ai-kernel";
 
 import { useAiSurface } from "./AiSurface";
-import { EntityChip } from "./EntityChip";
+import { CATEGORY_STYLES, EntityCategory, EntityChip, getEntityCategory } from "./EntityChip";
+
+export interface MarkdownTextProps {
+  text: string;
+  className?: string;
+  /** 맨 하단에 엔티티들을 카테고리별(레퍼런스/인용/에디터)로 Group by 리스트업할지 여부 (기본 true) */
+  showGroupByFooter?: boolean;
+}
 
 /**
  * 가벼운 마크다운 렌더러 (HTML 을 해석하지 않는다 — 모델 출력은 전부 텍스트로 다룬다).
@@ -11,8 +19,14 @@ import { EntityChip } from "./EntityChip";
  *
  * 위치 링크: `[이름](vdoc:block/id)` 과, 화면에 실제로 있는 id 를 쓴 인라인 코드 · 맨 id(`mm_page_1`)는
  * 클릭할 수 있는 위치 칩이 된다 (AI 표면 안에서만 — `AiSurfaceProvider`).
+ *
+ * 답변 맨 하단에는 언급된 엔티티들을 레퍼런스, 인용(Resource), 에디터 그룹으로 묶어 Group by 리스트업합니다.
  */
-export const MarkdownText: React.FC<{ text: string; className?: string }> = ({ text, className }) => {
+export const MarkdownText: React.FC<MarkdownTextProps> = ({
+  text,
+  className,
+  showGroupByFooter = true,
+}) => {
   const surface = useAiSurface();
   const entities = surface?.runtime.entities ?? null;
   // 해석기가 나중에 등록되거나 바뀌면(HMR · 기능 추가) 칩을 다시 찾는다.
@@ -21,9 +35,148 @@ export const MarkdownText: React.FC<{ text: string; className?: string }> = ({ t
     () => entities?.list() ?? null,
     () => entities?.list() ?? null
   );
+
   const blocks = React.useMemo(() => parseBlocks(text, entities), [text, entities, resolvers]); // eslint-disable-line react-hooks/exhaustive-deps
-  return <div className={className ?? "space-y-1.5 text-[13px] leading-relaxed text-slate-800"}>{blocks}</div>;
+  const collectedEntities = React.useMemo(() => (showGroupByFooter ? extractEntities(text, entities) : []), [text, entities, resolvers, showGroupByFooter]);
+
+  return (
+    <div className={className ?? "space-y-1.5 text-[13px] leading-relaxed text-slate-800"}>
+      {blocks}
+      {showGroupByFooter && collectedEntities.length > 0 && (
+        <CitationGroupByFooter entities={collectedEntities} />
+      )}
+    </div>
+  );
 };
+
+// --- Group By 푸터 컴포넌트 -----------------------------------------------------
+
+const GROUP_CONFIG: Record<EntityCategory, { label: string; icon: React.ComponentType<{ className?: string }>; border: string; bg: string; titleColor: string }> = {
+  reference: {
+    label: "레퍼런스 (지식 덱)",
+    icon: Bookmark,
+    border: "border-purple-200/80",
+    bg: "bg-purple-50/40",
+    titleColor: "text-purple-900",
+  },
+  resource: {
+    label: "인용 (Resource 원본)",
+    icon: BookOpen,
+    border: "border-sky-200/80",
+    bg: "bg-sky-50/40",
+    titleColor: "text-sky-900",
+  },
+  editor: {
+    label: "에디터 위치 (슬롯 · 블록 · 페이지)",
+    icon: Layers,
+    border: "border-emerald-200/80",
+    bg: "bg-emerald-50/40",
+    titleColor: "text-emerald-900",
+  },
+};
+
+const ORDERED_CATEGORIES: EntityCategory[] = ["reference", "resource", "editor"];
+
+export const CitationGroupByFooter: React.FC<{ entities: EntityInfo[] }> = ({ entities }) => {
+  if (entities.length === 0) return null;
+
+  const grouped: Record<EntityCategory, EntityInfo[]> = {
+    reference: [],
+    resource: [],
+    editor: [],
+  };
+
+  const seenIds = new Set<string>();
+  for (const ent of entities) {
+    if (seenIds.has(ent.id)) continue;
+    seenIds.add(ent.id);
+    const cat = getEntityCategory(ent.kind);
+    grouped[cat].push(ent);
+  }
+
+  const activeCategories = ORDERED_CATEGORIES.filter((cat) => grouped[cat].length > 0);
+  if (activeCategories.length === 0) return null;
+
+  return (
+    <div
+      data-testid="citation-group-by-footer"
+      className="mt-3.5 pt-2.5 border-t border-slate-200 select-none text-[11px]"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5 font-bold text-slate-600">
+          <span>📌 인용 및 참조 목록 (Group by)</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-500 font-mono">
+            {seenIds.size}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        {activeCategories.map((cat) => {
+          const items = grouped[cat];
+          const cfg = GROUP_CONFIG[cat];
+          const Icon = cfg.icon;
+          return (
+            <div
+              key={cat}
+              className={`p-1.5 rounded-lg border ${cfg.border} ${cfg.bg} flex flex-col gap-1`}
+            >
+              <div className="flex items-center gap-1 font-bold text-[10.5px]">
+                <Icon className={`w-3 h-3 shrink-0 ${cfg.titleColor}`} />
+                <span className={cfg.titleColor}>{cfg.label}</span>
+                <span className="text-[9.5px] opacity-60 font-mono">({items.length})</span>
+              </div>
+              <div className="flex flex-wrap gap-1 items-center pl-4">
+                {items.map((item) => (
+                  <EntityChip key={item.id} id={item.id} kind={item.kind} label={item.label} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// --- 엔티티 추출 로직 -------------------------------------------------------------
+
+function extractEntities(text: string, entities: EntityRegistry | null): EntityInfo[] {
+  if (!entities) return [];
+  const result: EntityInfo[] = [];
+  const seen = new Set<string>();
+
+  const add = (info: EntityInfo | null) => {
+    if (info && !seen.has(info.id)) {
+      seen.add(info.id);
+      result.push(info);
+    }
+  };
+
+  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|\[[^\]]+\]\([^)]+\))/g;
+  for (const match of text.matchAll(pattern)) {
+    const token = match[0];
+    if (token.startsWith("`")) {
+      const body = token.slice(1, -1).trim();
+      add(entities.lookup(body));
+    } else if (token.startsWith("[")) {
+      const href = token.slice(token.indexOf("](") + 2, -1).trim();
+      const link = VDOC_LINK.exec(href);
+      if (link) {
+        add(entities.lookup(decodeURIComponent(link[2]), link[1]));
+      }
+    }
+  }
+
+  // Bare ID 스캔
+  for (const m of text.matchAll(BARE_ID)) {
+    add(entities.lookup(m[0]));
+  }
+
+  return result;
+}
+
+// --- 블록 및 인라인 파싱 -----------------------------------------------------------
 
 function parseBlocks(text: string, entities: EntityRegistry | null): React.ReactNode[] {
   const inline = (value: string) => inlineNodes(value, entities);

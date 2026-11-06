@@ -3,7 +3,7 @@ from .get_document import GetDocumentUseCase
 from .get_document_page_chunk import GetDocumentPageChunkUseCase
 from .list_documents import ListDocumentsUseCase
 from .patch_document_structure import PatchDocumentStructureUseCase
-from .save_document import SaveDocumentUseCase
+from .save_document import ListRevisionsUseCase, SaveDocumentUseCase
 from .update_slot_content import UpdateSlotContentUseCase
 
 __all__ = [
@@ -11,6 +11,7 @@ __all__ = [
     "GetDocumentUseCase",
     "GetDocumentPageChunkUseCase",
     "SaveDocumentUseCase",
+    "ListRevisionsUseCase",
     "UpdateSlotContentUseCase",
     "PatchDocumentStructureUseCase",
     "DeleteDocumentUseCase",

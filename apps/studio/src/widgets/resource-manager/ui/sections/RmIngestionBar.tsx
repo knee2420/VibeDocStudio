@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { FolderDown, Globe, Loader2, Plus } from "lucide-react";
+import { FolderDown, Globe, Loader2, Plus, Sparkles } from "lucide-react";
 import { useResourceStore } from "@/entities/resource";
+import { useKnowledgeDeckStore } from "@/entities/knowledge-deck";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 
 export const RmIngestionBar: React.FC = () => {
@@ -10,28 +11,46 @@ export const RmIngestionBar: React.FC = () => {
   const ingestDirectory = useResourceStore((s) => s.ingestDirectory);
   const ingestWebUrl = useResourceStore((s) => s.ingestWebUrl);
   const isLoading = useResourceStore((s) => s.isLoading);
+  const promoteToDeck = useKnowledgeDeckStore((s) => s.promoteToDeck);
 
   const [dirInputOpen, setDirInputOpen] = useState(false);
   const [urlInputOpen, setUrlInputOpen] = useState(false);
   const [dirPath, setDirPath] = useState("");
   const [url, setUrl] = useState("");
   const [urlTitle, setUrlTitle] = useState("");
+  const [autoIndexToDeck, setAutoIndexToDeck] = useState(false);
 
   const handleIngestDir = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dirPath.trim()) return;
-    await ingestDirectory(projectId, dirPath.trim());
+    const targetPath = dirPath.trim();
+    await ingestDirectory(projectId, targetPath);
+
+    if (autoIndexToDeck) {
+      const folderName = targetPath.replace(/\\/g, "/").split("/").filter(Boolean).pop() || "폴더 지식 덱";
+      await promoteToDeck(projectId, { title: `${folderName} 지식 덱`, sourcePaths: [targetPath], tags: ["폴더덤핑"] });
+    }
+
     setDirPath("");
     setDirInputOpen(false);
+    setAutoIndexToDeck(false);
   };
 
   const handleIngestUrl = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
-    await ingestWebUrl(projectId, url.trim(), urlTitle.trim() || undefined);
+    const targetUrl = url.trim();
+    const title = urlTitle.trim() || undefined;
+    await ingestWebUrl(projectId, targetUrl, title);
+
+    if (autoIndexToDeck) {
+      await promoteToDeck(projectId, { title: `${title || "웹 아티클"} 지식 덱`, sourcePaths: [targetUrl], tags: ["웹URL"] });
+    }
+
     setUrl("");
     setUrlTitle("");
     setUrlInputOpen(false);
+    setAutoIndexToDeck(false);
   };
 
   return (
@@ -73,7 +92,7 @@ export const RmIngestionBar: React.FC = () => {
       </div>
 
       {dirInputOpen && (
-        <form onSubmit={handleIngestDir} className="p-2 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+        <form onSubmit={handleIngestDir} className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
           <label className="text-[11px] font-bold text-slate-700 block">로컬 폴더 절대 경로</label>
           <div className="flex gap-1.5">
             <input
@@ -87,17 +106,28 @@ export const RmIngestionBar: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading || !dirPath.trim()}
-              className="px-2.5 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded text-xs font-bold disabled:opacity-50 flex items-center gap-1"
+              className="px-2.5 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded text-xs font-bold disabled:opacity-50 flex items-center gap-1 cursor-pointer"
             >
               {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               추가
             </button>
           </div>
+
+          <label className="flex items-center gap-1.5 text-[11px] text-slate-600 font-medium cursor-pointer pt-0.5">
+            <input
+              type="checkbox"
+              checked={autoIndexToDeck}
+              onChange={(e) => setAutoIndexToDeck(e.target.checked)}
+              className="rounded border-slate-300 text-violet-600 focus:ring-violet-500 w-3 h-3"
+            />
+            <Sparkles className="w-3 h-3 text-amber-500 fill-amber-200" />
+            <span>Knowledge Deck(구조화 지식 덱)에도 즉시 색인 등록</span>
+          </label>
         </form>
       )}
 
       {urlInputOpen && (
-        <form onSubmit={handleIngestUrl} className="p-2 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+        <form onSubmit={handleIngestUrl} className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
           <label className="text-[11px] font-bold text-slate-700 block">웹 아티클 URL</label>
           <input
             type="url"
@@ -118,15 +148,25 @@ export const RmIngestionBar: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading || !url.trim()}
-              className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold disabled:opacity-50 flex items-center gap-1"
+              className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold disabled:opacity-50 flex items-center gap-1 cursor-pointer"
             >
               {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               추가
             </button>
           </div>
+
+          <label className="flex items-center gap-1.5 text-[11px] text-slate-600 font-medium cursor-pointer pt-0.5">
+            <input
+              type="checkbox"
+              checked={autoIndexToDeck}
+              onChange={(e) => setAutoIndexToDeck(e.target.checked)}
+              className="rounded border-slate-300 text-violet-600 focus:ring-violet-500 w-3 h-3"
+            />
+            <Sparkles className="w-3 h-3 text-amber-500 fill-amber-200" />
+            <span>Knowledge Deck(구조화 지식 덱)에도 즉시 색인 등록</span>
+          </label>
         </form>
       )}
     </div>
   );
 };
-

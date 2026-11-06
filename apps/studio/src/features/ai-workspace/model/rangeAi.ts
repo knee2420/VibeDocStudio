@@ -3,9 +3,9 @@
  * 미리보기에서 고른 것만 한꺼번에 반영(되돌리기 한 번)하거나 Staged 로 보낸다.
  */
 import type { AiAction } from "@vibe/ai-kernel";
-import { htmlToSummary, setSlotContent, type StagedAiChange } from "@vibe/vdoc-schema";
+import { setSlotContent, withSlotFill, type StagedAiChange } from "@vibe/vdoc-schema";
 
-import { useAiStagingStore } from "@/entities/ai-staging";
+import { buildSlotHtmlChange, useAiStagingStore } from "@/entities/ai-staging";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { newId } from "@/shared/lib";
 
@@ -52,10 +52,20 @@ export function applySlotMap(map: Record<string, string>, label: string): number
   if (entries.length === 0) return 0;
   useStudioDocumentStore
     .getState()
-    .updateCurrentDoc((doc) => entries.reduce((acc, [slotId, html]) => setSlotContent(acc, slotId, html), doc), {
-      history: true,
-      label: `AI ${label} (${entries.length}칸)`,
-    });
+    .updateCurrentDoc(
+      (doc) => {
+        const at = new Date().toISOString();
+        return entries.reduce(
+          (acc, [slotId, html]) => withSlotFill(setSlotContent(acc, slotId, html), slotId, { author: "ai", harnessId: "rewrite.range", at }),
+          doc
+        );
+      },
+      {
+        history: true,
+        label: `AI ${label} (${entries.length}칸)`,
+        change: { slotIds: entries.map(([id]) => id), author: "ai", harnessId: "rewrite.range", label: `[범위 AI] ${label}` },
+      }
+    );
   return entries.length;
 }
 
@@ -63,19 +73,9 @@ export function applySlotMap(map: Record<string, string>, label: string): number
 export function stageSlotMap(map: Record<string, string>, reason: string): number {
   const doc = selectActiveDocument(useStudioDocumentStore.getState());
   if (!doc) return 0;
-  const changes: StagedAiChange[] = Object.entries(map).map(([slotId, html]) => {
+  const changes: StagedAiChange[] = Object.entries(map).flatMap(([slotId, html]) => {
     const slot = doc.slots[slotId];
-    return {
-      diffId: newId("stg-inline-range"),
-      phase: "drafting",
-      targetKind: "slot-html",
-      targetId: slotId,
-      title: `[인라인 AI] ${slot?.label ?? slotId} — ${reason}`,
-      beforeSummary: htmlToSummary(slot?.content ?? "", 80) || "(빈 슬롯)",
-      afterSummary: htmlToSummary(html, 110),
-      payload: { slotId, html },
-      sourceReferenceIds: slot?.backDataRefs ?? [],
-    };
+    return slot ? [buildSlotHtmlChange(doc, slot, html, { source: "인라인 AI", reason, idPrefix: "stg-inline-range", harnessId: "rewrite.range" })] : [];
   });
   if (changes.length) useAiStagingStore.getState().enqueue(changes);
   return changes.length;

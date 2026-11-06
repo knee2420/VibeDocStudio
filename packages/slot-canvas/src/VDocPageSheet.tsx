@@ -54,6 +54,11 @@ export interface VDocPageSheetProps {
   onTableSelectionChange?: (target: TableSelectionTarget | null) => void;
   onSlotAiAction?: (slotId: string, action: SlotAiAction, selectedText: string) => void;
   renderInlineComposer?: (slot: VDocSlot, boundChunks: BackdataChunk[]) => React.ReactNode;
+  /**
+   * 슬롯 본문을 감싼다 — 승인 대기 변경안이 있으면 diff 를 보이고, 채움 상태 · 강조를 덧칠한다.
+   * 고정 참조여야 한다 (상태는 감싸는 컴포넌트가 스스로 구독한다).
+   */
+  wrapSlotContent?: (slot: VDocSlot, content: React.ReactNode) => React.ReactNode;
 }
 
 
@@ -135,6 +140,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   onTableSelectionChange,
   onSlotAiAction,
   renderInlineComposer,
+  wrapSlotContent,
 }) => {
   const editable = mode === "Editing";
   const layout = page.layout;
@@ -228,19 +234,23 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
                 : "text-sm"
           } ${darkTheme ? "text-white" : inheritsTypography ? "" : "text-slate-900"}`}
         >
-          {slot.constraints?.tone === "brand-logo" || Boolean(slot.content && slot.content.includes("<img")) ? (
-            <div className="py-1 select-none flex items-center justify-center w-full" dangerouslySetInnerHTML={{ __html: slot.content }} />
-          ) : (
-            <SlotRichTextEditor
-              slotId={slotId}
-              content={slot.content}
-              readOnly={isLocked}
-              placeholder={slot.constraints?.placeholder}
-              onSelectSlot={onSelectSlot}
-              onChangeContent={onUpdateSlotContent}
-              onAiAction={onSlotAiAction}
-            />
-          )}
+          {(() => {
+            const content =
+              slot.constraints?.tone === "brand-logo" || Boolean(slot.content && slot.content.includes("<img")) ? (
+                <div className="py-1 select-none flex items-center justify-center w-full" dangerouslySetInnerHTML={{ __html: slot.content }} />
+              ) : (
+                <SlotRichTextEditor
+                  slotId={slotId}
+                  content={slot.content}
+                  readOnly={isLocked}
+                  placeholder={slot.constraints?.placeholder}
+                  onSelectSlot={onSelectSlot}
+                  onChangeContent={onUpdateSlotContent}
+                  onAiAction={onSlotAiAction}
+                />
+              );
+            return wrapSlotContent ? wrapSlotContent(slot, content) : content;
+          })()}
         </div>
 
         {isComposerOpen && editable && renderInlineComposer && (

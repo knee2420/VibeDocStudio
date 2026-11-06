@@ -1,6 +1,7 @@
 export * from "./base-block";
 export * from "./blocks";
 export * from "./types";
+export * from "./evidence";
 export * from "./layout-constants";
 export * from "./table-ops";
 export * from "./block-ops";

@@ -142,9 +142,11 @@ class VDocAggregateRecord:
     # --- 변경 ---------------------------------------------------------------
 
     def _with(self, *, now: str, **changes: Any) -> VDocAggregateRecord:
+        # 서버 쪽 부분 변경(슬롯 패치 · 구조 패치)도 저장 버전을 올린다 — 클라이언트의 낙관적 잠금과 같은 축
+        revision = int(self.payload.get("revision") or 0) + 1
         return VDocAggregateRecord(
             doc_id=self.doc_id,
-            payload={**self.payload, **changes, "updatedAt": now},
+            payload={**self.payload, **changes, "updatedAt": now, "revision": revision},
         )
 
     def with_payload(self, payload: dict[str, Any], *, now: str) -> VDocAggregateRecord:

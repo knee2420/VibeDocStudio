@@ -29,6 +29,7 @@ from app.catalog import router as catalog_router_module
 from app.composer import router as composer_router_module
 from app.core.config import Settings, get_settings
 from app.documents import router as documents_router_module
+from app.knowledge import router as knowledge_router_module
 from app.projects import router as projects_router_module
 from app.resources import router as resources_router_module
 from app.runtime import router as runtime_router_module
@@ -41,6 +42,7 @@ _DOMAIN_ROUTERS = (
     (composer_router_module, "/api/ai", "composer"),
     (projects_router_module, "/api/projects", "projects"),
     (resources_router_module, "/api/resources", "resources"),
+    (knowledge_router_module, "/api/knowledge", "knowledge"),
     (runtime_router_module, "/api", "runtime"),
     (assistant_router_module, "/api/assistant", "assistant"),
 )
@@ -91,7 +93,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         if settings.external_llm_enabled:
             container.assistant_service().warmup()  # 첫 질문 전에 agy 를 예열 (백그라운드)
+        container.knowledge_jobs().start()  # 서버가 꺼지기 전에 돌던 색인 작업을 이어서 돌린다
         yield
+        container.knowledge_jobs().shutdown()
         # agy 상주 프로세스(Composer 세션 · 예열 풀)는 API 와 함께 내려간다.
         container.assistant_service().shutdown()
 

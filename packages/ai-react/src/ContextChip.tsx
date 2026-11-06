@@ -1,5 +1,5 @@
 import React from "react";
-import { AtSign, MousePointerSquareDashed, Paperclip, X } from "lucide-react";
+import { AtSign, Crosshair, MousePointerSquareDashed, Paperclip, Pin, X } from "lucide-react";
 
 import { contextRole, type ContextRef, type EntityInfo } from "@vibe/ai-kernel";
 
@@ -10,6 +10,7 @@ const ICON_OVERRIDES: Record<string, React.ComponentType<{ className?: string }>
   selection: MousePointerSquareDashed,
   "text-range": MousePointerSquareDashed,
   document: Paperclip,
+  scope: Crosshair,
 };
 
 /** 첨부가 가리키는 화면 요소 id (영역 · 발췌는 소속 문서). */
@@ -29,12 +30,16 @@ export interface ContextChipProps {
   onClick?: () => void;
   /** 대상 ↔ 참고자료 전환 (쓸 수 있는 요소만). */
   onToggleRole?: () => void;
+  /** 📌 — 이 첨부를 설정바의 범위로 고정 (프롬프트는 보내면 비워지지만 고정한 범위는 남는다) */
+  onPin?: () => void;
+  /** 이미 고정됨 — 📌 을 채워 보이고 누르면 해제 */
+  pinned?: boolean;
 }
 
 /**
  * 첨부 칩. 호버하면 화면에서 그 요소를 강조하고, 명시 첨부는 `@이름` 과 역할(대상 · 참조)을 보여준다.
  */
-export const ContextChip: React.FC<ContextChipProps> = ({ context, tone = "light", auto, muted, onRemove, onClick, onToggleRole }) => {
+export const ContextChip: React.FC<ContextChipProps> = ({ context, tone = "light", auto, muted, onRemove, onClick, onToggleRole, onPin, pinned }) => {
   const surface = useAiSurface();
   const target = entityTarget(context);
   const Icon = ICON_OVERRIDES[context.kind] ?? (context.kind === "custom" ? AtSign : entityIcon(context.kind));
@@ -90,6 +95,20 @@ export const ContextChip: React.FC<ContextChipProps> = ({ context, tone = "light
           } ${onToggleRole ? "cursor-pointer hover:opacity-80" : "cursor-default"}`}
         >
           {role === "target" ? "대상" : "참조"}
+        </button>
+      )}
+      {onPin && (
+        <button
+          type="button"
+          data-testid="ai-context-chip-pin"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPin();
+          }}
+          className={`shrink-0 rounded p-px cursor-pointer ${pinned ? "bg-amber-500 text-white hover:bg-amber-600" : "hover:bg-black/10"}`}
+          title={pinned ? "범위로 고정됨 — 누르면 고정 해제" : "범위로 고정 — 설정바에 남아 다음 메시지에도 이 범위로 작업합니다"}
+        >
+          <Pin className="w-2.5 h-2.5" />
         </button>
       )}
       {onRemove && (

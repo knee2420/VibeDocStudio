@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowUp, AtSign, Plus, Slash, Square } from "lucide-react";
+import { ArrowUp, AtSign, Pin, Plus, Slash, Square } from "lucide-react";
 
 import {
   assignHandle,
@@ -34,6 +34,14 @@ export interface PromptInputProps {
   inbox?: ComposerAttachInbox;
   onSubmit(text: string, contexts: ContextRef[]): void;
   onStop?(): void;
+  /** 자동 첨부 칩을 입력창에 그리지 않는다 (설정바가 대신 보여 주고 켜고 끈다). 보내기에는 그대로 들어간다. */
+  hideAutoChips?: boolean;
+  /** 📌 고정할 수 있는 첨부인가 (선택 · 칸 · 블록 등) */
+  pinnable?(ref: ContextRef): boolean;
+  /** 📌 — 첨부를 설정바 범위로 고정 (이미 고정된 것이면 해제) */
+  onPinContext?(ref: ContextRef): void;
+  /** 이미 고정된 첨부인가 */
+  isPinned?(ref: ContextRef): boolean;
 }
 
 /** Composer 입력창 — `@` 멘션(컨텍스트 레지스트리) · `/` 명령(액션 레지스트리) · 첨부 칩. */
@@ -48,6 +56,10 @@ export const PromptInput: React.FC<PromptInputProps> = ({
   inbox,
   onSubmit,
   onStop,
+  hideAutoChips,
+  pinnable,
+  onPinContext,
+  isPinned,
 }) => {
   const [text, setText] = React.useState("");
   const [attached, setAttached] = React.useState<ContextRef[]>([]);
@@ -135,7 +147,9 @@ export const PromptInput: React.FC<PromptInputProps> = ({
   const autoKey = (c: ContextRef) => `${c.kind}:${c.id}`;
   // 같은 대상(id)을 직접 첨부했다면 자동 칩은 숨긴다 (선택 슬롯 = @슬롯).
   const shadowed = (c: ContextRef) => attached.some((a) => a.id === c.id);
-  const activeAuto = autoContexts.filter((c) => !disabledAuto.has(autoKey(c)) && !shadowed(c));
+  // 설정바가 켜고 끄는 경우(hideAutoChips)엔 입력창에서 끈 상태를 쓰지 않는다
+  const activeAuto = autoContexts.filter((c) => (hideAutoChips || !disabledAuto.has(autoKey(c))) && !shadowed(c));
+  const canPin = (c: ContextRef) => Boolean(onPinContext && pinnable?.(c));
   // 첨부 제안(현재 캔버스 선택 등): 보내기에는 들어가지 않고, 눌렀을 때만 첨부된다.
   const openSuggestions = suggestedContexts.filter((c) => !attached.some((a) => sameContext(a, c)));
   const attachSuggestion = (ref: ContextRef) => {
@@ -281,7 +295,7 @@ export const PromptInput: React.FC<PromptInputProps> = ({
       )}
 
       <div className="rounded-xl border border-slate-300 bg-white shadow-xs focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition">
-        {(activeAuto.length > 0 || attached.length > 0 || autoContexts.length > 0 || openSuggestions.length > 0) && (
+        {(attached.length > 0 || openSuggestions.length > 0 || (!hideAutoChips && autoContexts.length > 0)) && (
           <div className="flex flex-wrap items-center gap-1 px-2 pt-2">
             {openSuggestions.map((c) => (
               <button
@@ -296,9 +310,23 @@ export const PromptInput: React.FC<PromptInputProps> = ({
                 <Plus className="w-3 h-3 shrink-0" />
                 <span className="shrink-0 text-slate-400">선택</span>
                 <span className="truncate">{c.label}</span>
+                {canPin(c) && (
+                  <span
+                    role="button"
+                    data-testid="ai-context-suggestion-pin"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPinContext?.(c);
+                    }}
+                    className={`shrink-0 rounded p-px ${isPinned?.(c) ? "bg-amber-500 text-white hover:bg-amber-600" : "hover:bg-indigo-100"}`}
+                    title={isPinned?.(c) ? "범위로 고정됨 — 누르면 고정 해제" : "범위로 고정 — 첨부하지 않고 설정바 범위로 걸어 둡니다"}
+                  >
+                    <Pin className="w-2.5 h-2.5" />
+                  </span>
+                )}
               </button>
             ))}
-            {autoContexts.map((c) => {
+            {!hideAutoChips && autoContexts.map((c) => {
               const off = disabledAuto.has(autoKey(c));
               if (shadowed(c)) return null;
               return (
@@ -322,6 +350,8 @@ export const PromptInput: React.FC<PromptInputProps> = ({
               <ContextChip
                 key={`att-${autoKey(c)}`}
                 context={c}
+                onPin={canPin(c) ? () => onPinContext?.(c) : undefined}
+                pinned={isPinned?.(c)}
                 onToggleRole={
                   c.access === "write"
                     ? () =>

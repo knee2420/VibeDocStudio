@@ -192,11 +192,24 @@ class AgyStreamProcess:
                     yield {"type": "error", "message": str(result.get("error") or "agy 가 오류를 반환했습니다.")}
                 yield {
                     "type": "turn_done",
-                    "usage": result.get("usage") or {},
+                    "usage": self._turn_usage(result.get("usage") or {}),
                     "durationMs": int((time.monotonic() - started) * 1000),
                     "firstTokenMs": first_token_ms,
                 }
                 return
+
+    def _turn_usage(self, cumulative: dict[str, Any]) -> dict[str, Any]:
+        """stream-json 의 `result.usage` 는 대화 누적값이다 (실측: 2턴째 input = 1턴 + 2턴). 이번 턴 몫만 돌려준다."""
+        last = getattr(self, "_last_usage", None) or {}
+        self._last_usage = dict(cumulative)
+        out: dict[str, Any] = {}
+        for key, value in cumulative.items():
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                prev = last.get(key, 0)
+                out[key] = value - prev if isinstance(prev, (int, float)) and value >= prev else value
+            else:
+                out[key] = value
+        return out
 
 
 def _normalize_step(step: dict[str, Any]) -> list[dict[str, Any]]:

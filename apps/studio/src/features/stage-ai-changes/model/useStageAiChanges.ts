@@ -6,7 +6,7 @@ import {
   type VDocSlot,
 } from "@vibe/vdoc-schema";
 
-import { useAiStagingStore } from "@/entities/ai-staging";
+import { buildSlotHtmlChange, isStagedChangeStale, useAiStagingStore } from "@/entities/ai-staging";
 import { slotComposerApi } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import {
@@ -19,6 +19,12 @@ import { errorMessage, historyTransaction, newId } from "@/shared/lib";
 
 import { phaseComposerApi } from "../api/phaseComposerApi";
 import { applyStagedChange } from "./stagedChangeAppliers";
+
+/** 변경안이 가리키는 문서 (예전 변경안은 활성 문서). */
+function docOf(change: StagedAiChange): VDocDocument | undefined {
+  const { docs, activeDocId } = useStudioDocumentStore.getState();
+  return docs.find((d) => d.docId === (change.docId ?? activeDocId));
+}
 
 const SLOT_DRAFT_PROMPT = "연결된 백데이터와 참조 레퍼런스를 근거로 이 슬롯의 정밀 초안을 작성해줘";
 
@@ -50,18 +56,8 @@ async function runCancellable(
   }
 }
 
-function slotDraftChange(slot: VDocSlot, html: string): StagedAiChange {
-  return {
-    diffId: newId("stg-slot"),
-    phase: "drafting",
-    targetKind: "slot-html",
-    targetId: slot.slotId,
-    title: `[Phase 3 슬롯 초안] ${slot.label}`,
-    beforeSummary: htmlToSummary(slot.content, 80) || "(빈 슬롯)",
-    afterSummary: htmlToSummary(html, 110),
-    payload: { slotId: slot.slotId, html },
-    sourceReferenceIds: slot.backDataRefs,
-  };
+function slotDraftChange(doc: VDocDocument, slot: VDocSlot, html: string): StagedAiChange {
+  return buildSlotHtmlChange(doc, slot, html, { source: "Phase 3 슬롯 초안", idPrefix: "stg-slot" });
 }
 
 /** AI 실행(Phase 1 · 2 · 슬롯 초안)과 Staged 변경안 승인 · 반려. */
@@ -134,22 +130,50 @@ export function useStageAiChanges() {
         signal
       );
       if (!res.html) throw new Error("AI 가 빈 초안을 돌려주었습니다.");
-      return [slotDraftChange(slot, res.html)];
+      return [slotDraftChange(doc, slot, res.html)];
     }, false);
 
-  const acceptStagedChange = async (diff: StagedAiChange) => {
-    remove(diff.diffId);
-    await applyStagedChange(diff);
+  /**
+   * 승인 하나. 변경안을 만든 뒤 사람이 그 칸을 고쳤으면(오래됨) 덮어써도 되는지 먼저 묻는다.
+   * `force` 는 화면이 이미 확인을 받은 경우.
+   */
+  const acceptStagedChange = async (diff: StagedAiChange, opts: { force?: boolean } = {}) => {
+    const doc = docOf(diff);
+    if (!opts.force && isStagedChangeStale(diff, doc)) {
+      const ok = window.confirm(`'${diff.title}'
+
+이 변경안을 만든 뒤 해당 칸이 바뀌었습니다. 지금 내용을 덮어쓸까요?`);
+      if (!ok) return false;
+    }
+    try {
+      await applyStagedChange(diff);
+      remove(diff.diffId);
+      return true;
+    } catch (err) {
+      useAiStagingStore.getState().failRun(errorMessage(err, "변경안을 적용하지 못했습니다."));
+      return false;
+    }
   };
 
-  /** 모두 적용 = Undo 한 번으로 되돌릴 수 있는 하나의 묶음. */
+  /** 모두 적용 = Undo 한 번으로 되돌릴 수 있는 하나의 묶음. 오래된 변경안은 건너뛰고 대기열에 남긴다. */
   const acceptAllStagedChanges = async () => {
     const pending = [...useAiStagingStore.getState().queue];
     if (pending.length === 0) return;
-    clear();
-    await historyTransaction(`AI 변경안 ${pending.length}건 일괄 적용`, "project", async () => {
-      for (const diff of pending) await applyStagedChange(diff);
+    const fresh = pending.filter((d) => !isStagedChangeStale(d, docOf(d)));
+    const stale = pending.length - fresh.length;
+    const applied: string[] = [];
+    await historyTransaction(`AI 변경안 ${fresh.length}건 일괄 적용`, "project", async () => {
+      for (const diff of fresh) {
+        try {
+          await applyStagedChange(diff);
+          applied.push(diff.diffId);
+        } catch {
+          /* 대상이 없는 변경안은 남겨 둔다 */
+        }
+      }
     });
+    useAiStagingStore.getState().removeMany(applied);
+    if (stale) useAiStagingStore.getState().failRun(`그사이 바뀐 칸의 변경안 ${stale}건은 건너뛰었습니다 (하나씩 확인 후 승인).`);
   };
 
   return {

@@ -56,6 +56,18 @@ export interface ComposerPanelProps {
   suggestions?: ComposerSuggestion[];
   /** 헤더 오른쪽에 끼울 버튼 (AI 설정 · 패널 접기 등). */
   headerActions?: React.ReactNode;
+  /**
+   * 입력창 위 설정바 — 오래 걸어 두는 세팅(자료 · 범위). 이것을 주면 자동 첨부 칩은 입력창에 그리지 않는다
+   * (입력창은 보내면 비워지는 일회용 칸: @멘션 · /스킬 · 이번 메시지의 선택).
+   */
+  settingsBar?: React.ReactNode;
+  /** 📌 고정할 수 있는 첨부 / 고정 동작 (입력창 칩 → 설정바 범위) */
+  pinnable?(ref: ContextRef): boolean;
+  onPinContext?(ref: ContextRef): void;
+  /** 이미 고정된 첨부인가 (📌 을 채워 보이고, 다시 누르면 해제) */
+  isPinned?(ref: ContextRef): boolean;
+  /** 보내기 직전에 첨부를 고친다 (이번 메시지의 범위 확정 등). */
+  onBeforeSend?(text: string, contexts: ContextRef[]): ContextRef[];
 }
 
 const MODE_META: Record<PermissionMode, { label: string; icon: React.ComponentType<{ className?: string }>; hint: string }> = {
@@ -82,7 +94,13 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   onChangeEngine,
   suggestions = [],
   headerActions,
+  settingsBar,
+  pinnable,
+  onPinContext,
+  isPinned,
+  onBeforeSend,
 }) => {
+  const send = (text: string, contexts: ContextRef[]) => void controller.send(text, onBeforeSend ? onBeforeSend(text, contexts) : contexts);
   const state = useComposerState(controller);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const stickRef = React.useRef(true);
@@ -161,7 +179,7 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
         className="flex-1 min-h-0 overflow-y-auto px-3.5 py-3 space-y-2.5 select-text"
       >
         {state.items.length === 0 ? (
-          <EmptyState suggestions={suggestions} onPick={(p) => void controller.send(p, [...autoContexts, ...suggestedContexts])} />
+          <EmptyState suggestions={suggestions} onPick={(p) => send(p, autoContexts)} />
         ) : (
           state.items.map((item) => (
             <ThreadItem key={item.id} item={item} onApprove={(id) => controller.approve(id)} onDeny={(id) => controller.deny(id)} />
@@ -179,15 +197,20 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
         {state.queue.length > 0 && (
           <div className="mb-1.5 text-[10.5px] text-slate-500">대기열 {state.queue.length}건 — 현재 실행이 끝나면 순서대로 보냅니다</div>
         )}
+        {settingsBar}
         <PromptInput
           runtime={runtime}
           slashSurface="composer"
           autoContexts={autoContexts}
           suggestedContexts={suggestedContexts}
+          hideAutoChips={Boolean(settingsBar)}
+          pinnable={pinnable}
+          onPinContext={onPinContext}
+          isPinned={isPinned}
           busy={busy}
           draft={state.draft}
           inbox={state.inbox}
-          onSubmit={(text, contexts) => void controller.send(text, contexts)}
+          onSubmit={(text, contexts) => send(text, contexts)}
           onStop={() => controller.stop()}
         />
       </div>
@@ -453,6 +476,11 @@ const ToolCallCard: React.FC<{
               ? item.summary
               : ""}
         </span>
+        {item.server && (
+          <span className="shrink-0 px-1 py-px rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[9.5px] font-bold" title="서버가 실행한 도구 (지식 덱 탐색) — 브라우저 왕복 없이 같은 답변 안에서 이어진다">
+            서버
+          </span>
+        )}
         {item.async && item.status !== "drafting" && (
           <span className="shrink-0 px-1 py-px rounded bg-violet-50 text-violet-700 border border-violet-200 text-[9.5px] font-bold" title="결과를 기다리지 않고 답변 중에 바로 실행됨">
             즉시

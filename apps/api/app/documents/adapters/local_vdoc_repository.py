@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import json
 import shutil
 from collections.abc import Callable
 from dataclasses import asdict
@@ -17,6 +18,7 @@ from ..models import VDocAggregateRecord, VDocSummaryRecord
 
 _DOCUMENT_FILE = "document.vdoc.json"
 _SUMMARY_FILE = "summary.json"
+_REVISIONS_FILE = "revisions.jsonl"
 
 
 class LocalVDocDocumentRepository:
@@ -88,3 +90,42 @@ class LocalVDocDocumentRepository:
         if not doc_dir.exists():
             raise VDocDocumentNotFoundError(f"Document not found: {doc_id}")
         shutil.rmtree(doc_dir)
+
+    # --- 개정 이력 -------------------------------------------------------------
+
+    def _revisions_file(self, doc_id: str) -> Path:
+        return self._doc_dir(doc_id) / _REVISIONS_FILE
+
+    def append_revision(self, doc_id: str, entry: dict) -> None:
+        path = self._revisions_file(doc_id)
+        with locked_path(path):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    def replace_last_revision(self, doc_id: str, entry: dict) -> None:
+        path = self._revisions_file(doc_id)
+        with locked_path(path):
+            lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+            lines = [ln for ln in lines if ln.strip()]
+            if lines:
+                lines[-1] = json.dumps(entry, ensure_ascii=False)
+            else:
+                lines = [json.dumps(entry, ensure_ascii=False)]
+            path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def list_revisions(self, doc_id: str, limit: int = 200) -> list[dict]:
+        path = self._revisions_file(doc_id)
+        if not path.exists():
+            return []
+        with locked_path(path):
+            lines = [ln for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()]
+        out: list[dict] = []
+        for line in reversed(lines):
+            try:
+                out.append(json.loads(line))
+            except ValueError:
+                continue
+            if len(out) >= limit:
+                break
+        return out

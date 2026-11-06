@@ -15,8 +15,27 @@ class VDocSummaryResponse(BaseModel):
     slotCount: int
 
 
+class ChangeNotePayload(BaseModel):
+    """이번 저장에 들어간 변경의 출처 — 슬롯별 작성자를 개정 이력에 남긴다 (없으면 사람의 편집)."""
+
+    slotIds: list[str] = Field(default_factory=list)
+    variables: list[str] = Field(default_factory=list)
+    author: str = "human"
+    harnessId: str | None = None
+    runId: str | None = None
+    label: str | None = None
+
+
 class SaveVDocRequest(BaseModel):
     document: dict[str, Any] = Field(..., description="전체 .vdoc 문서 JSON")
+    #: 클라이언트가 마지막으로 받은 서버 버전. 서버 버전과 다르면 409 (덮어쓰지 않는다).
+    baseRevision: int | None = None
+    changes: list[ChangeNotePayload] = Field(default_factory=list)
+
+
+class RevisionListResponse(BaseModel):
+    docId: str
+    revisions: list[dict[str, Any]]
 
 
 class PatchSlotContentRequest(BaseModel):

@@ -11,6 +11,7 @@ import {
 import { useAiStagingStore } from "@/entities/ai-staging";
 import {
   DocumentStatusBadges,
+  SaveConflictPill,
   selectActiveDocument,
   useStudioDocumentStore,
 } from "@/entities/vdoc-document";
@@ -231,6 +232,8 @@ export const StudioTopRibbon: React.FC = () => {
               ⏹ 중단 (Esc)
             </button>
           )}
+
+          <SaveConflictPill />
 
           {/* Staged AI Diffs Pill -> Links directly to Source Control Activity */}
           <button

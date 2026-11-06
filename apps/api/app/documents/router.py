@@ -11,6 +11,7 @@ from .models import VDocAggregateRecord, VDocSummaryRecord
 from .schemas import (
     PatchDocumentStructureRequest,
     PatchSlotContentRequest,
+    RevisionListResponse,
     SaveVDocRequest,
     VDocDocumentResponse,
     VDocPageChunkResponse,
@@ -21,6 +22,7 @@ from .use_cases import (
     GetDocumentPageChunkUseCase,
     GetDocumentUseCase,
     ListDocumentsUseCase,
+    ListRevisionsUseCase,
     PatchDocumentStructureUseCase,
     SaveDocumentUseCase,
     UpdateSlotContentUseCase,
@@ -35,6 +37,7 @@ SaveDep = Annotated[SaveDocumentUseCase, Depends(Provide["save_document"])]
 UpdateSlotDep = Annotated[UpdateSlotContentUseCase, Depends(Provide["update_slot_content"])]
 PatchStructureDep = Annotated[PatchDocumentStructureUseCase, Depends(Provide["patch_document_structure"])]
 DeleteDep = Annotated[DeleteDocumentUseCase, Depends(Provide["delete_document"])]
+RevisionsDep = Annotated[ListRevisionsUseCase, Depends(Provide["list_document_revisions"])]
 
 
 def _summary_response(item: VDocSummaryRecord) -> VDocSummaryResponse:
@@ -91,7 +94,25 @@ def get_document_page_chunk(
 @router.put("/{doc_id}", response_model=VDocDocumentResponse)
 @inject
 def save_document(doc_id: str, body: SaveVDocRequest, use_case: SaveDep) -> VDocDocumentResponse:
-    return _document_response(use_case.execute(doc_id, body.document))
+    return _document_response(
+        use_case.execute(
+            doc_id,
+            body.document,
+            base_revision=body.baseRevision,
+            changes=[c.model_dump() for c in body.changes],
+        )
+    )
+
+
+@router.get("/{doc_id}/revisions", response_model=RevisionListResponse)
+@inject
+def list_revisions(
+    doc_id: str,
+    use_case: RevisionsDep,
+    slotId: str | None = Query(default=None),  # noqa: N803
+    limit: int = Query(default=100, ge=1, le=500),
+) -> RevisionListResponse:
+    return RevisionListResponse(docId=doc_id, revisions=use_case.execute(doc_id, slot_id=slotId, limit=limit))
 
 
 @router.patch("/{doc_id}/slots/{slot_id}", response_model=VDocDocumentResponse)

@@ -25,6 +25,20 @@ export interface InlineRunPayload {
   model?: string;
 }
 
+/** 하네스 한 번 (`/api/assistant/harness/run`) — 근거 묶음을 모아 단발 실행 후 출력 계약 · 게이트를 적용한다. */
+export interface HarnessRunPayload {
+  harnessId: string;
+  runId?: string;
+  instruction?: string;
+  /** 대상 칸(들) — slotId · label · currentHtml · currentText · constraints · widthPx · fontSizePx · headingPath · neighbors · slots · variables */
+  target: Record<string, unknown>;
+  /** 근거 위치들 (EvidenceLocator + tier) — backdata · sector · resource 는 excerpt 를 실어 보낸다 */
+  evidence: Record<string, unknown>[];
+  /** 근거가 약할 때 후보를 찾을 지식 덱 */
+  deckIds?: string[];
+  model?: string;
+}
+
 export interface ToolResultPayload {
   id: string;
   name: string;
@@ -94,6 +108,15 @@ export class AssistantClient {
       onEvent,
       signal
     );
+  }
+
+  runHarness(payload: HarnessRunPayload, onEvent: EventHandler, signal?: AbortSignal) {
+    return this.stream("/api/assistant/harness/run", payload, onEvent, signal);
+  }
+
+  /** 하네스별 토큰 · 시간 원장 요약. */
+  ledger(): Promise<{ harnesses: Record<string, Record<string, number>>; recent: Record<string, unknown>[] }> {
+    return this.json("GET", "/api/assistant/ledger");
   }
 
   /** AI 설정(`/api/runtime/policy`)의 1순위 엔진 · 모델을 바꾼다 — 모달과 Composer 헤더가 같은 원장을 쓴다. */

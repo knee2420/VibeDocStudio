@@ -11,6 +11,25 @@ const TIPTAP_BASE_CSS = `.ProseMirror {
   position: relative;
 }
 
+/* 인용 표식 (<sup data-cite="1">) — 번호는 CSS 가 그리고, 누르면 원본 위치가 열린다 */
+sup[data-cite] {
+  cursor: pointer;
+  font-size: 0.7em;
+  line-height: 0;
+  vertical-align: super;
+  color: #6d28d9;
+  font-weight: 700;
+  padding: 0 1px;
+  border-radius: 3px;
+  user-select: none;
+}
+sup[data-cite]::before {
+  content: "[" attr(data-cite) "]";
+}
+sup[data-cite]:hover {
+  background: #ede9fe;
+}
+
 .ProseMirror {
   word-wrap: break-word;
   white-space: pre-wrap;

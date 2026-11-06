@@ -5,12 +5,14 @@ import { aiRuntime } from "@/shared/ai";
 import { SLOT_RANGE_ACTIONS } from "./model/rangeAi";
 import { WORKSPACE_CONTEXT_PROVIDERS } from "./model/workspaceContexts";
 import { WORKSPACE_ENTITY_RESOLVERS } from "./model/workspaceEntities";
+import { withScopeGuards } from "./model/scopeAi";
 import { WORKSPACE_TOOLS } from "./model/workspaceTools";
 
 /** 워크스페이스 기본 도구 · 컨텍스트 · 화면 요소 해석기 · 드래그 번역기를 AI 런타임에 등록한다. */
 export function registerWorkspaceAi(): () => void {
   const offs = [
-    aiRuntime.tools.registerAll(WORKSPACE_TOOLS),
+    // 문서 도구는 Composer 작업 범위 밖을 거부한다 (설정바 범위 · 이번 메시지 @선택)
+    aiRuntime.tools.registerAll(withScopeGuards(WORKSPACE_TOOLS)),
     aiRuntime.contexts.registerAll(WORKSPACE_CONTEXT_PROVIDERS),
     aiRuntime.entities.registerAll(WORKSPACE_ENTITY_RESOLVERS),
     aiRuntime.actions.registerAll(SLOT_RANGE_ACTIONS),
@@ -27,6 +29,7 @@ export function registerWorkspaceAi(): () => void {
   return () => offs.forEach((off) => off());
 }
 
+export { useAiScopeLiveSync } from "./model/scopeAi";
 export { AiAttachLayer } from "./ui/AiAttachLayer";
 export { attachable, type AttachableProps } from "./lib/useAttachable";
 export { extractPdfRegionText } from "./lib/pdfRegionText";

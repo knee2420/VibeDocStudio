@@ -1,10 +1,12 @@
 import React from "react";
 import {
+  Crosshair,
   PanelRightClose,
   SplitSquareVertical,
   X,
 } from "lucide-react";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { useEvidenceFocusStore } from "@/features/evidence-focus";
 
 interface Props {
   checkedCount: number;
@@ -19,6 +21,9 @@ export const ResourceManagerHeader: React.FC<Props> = ({
   const setRmPlacement = useWorkspaceLayoutStore((s) => s.setRmPlacement);
   const openRightPanel = useWorkspaceLayoutStore((s) => s.openRightPanel);
   const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
+  const follow = useEvidenceFocusStore((s) => s.follow);
+  const setFollow = useEvidenceFocusStore((s) => s.setFollow);
+  const focusCount = useEvidenceFocusStore((s) => s.focusEvidence.length);
 
   return (
     <div className="px-3 py-2 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between shrink-0 select-none">
@@ -38,6 +43,19 @@ export const ResourceManagerHeader: React.FC<Props> = ({
 
       {/* 우측: 도킹 및 배치 컨트롤러 */}
       <div className="flex items-center gap-1 text-slate-500">
+        <button
+          type="button"
+          data-testid="rm-follow-focus"
+          onClick={() => setFollow(!follow)}
+          aria-pressed={follow}
+          className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer ${
+            follow ? "bg-amber-100 text-amber-800" : "hover:bg-slate-200/80 text-slate-500"
+          }`}
+          title="초점 따라가기 — 캔버스에서 칸을 고르면 그 칸의 근거 자료로 RM 이 펼쳐지고 스크롤합니다 (체크는 바꾸지 않음)"
+        >
+          <Crosshair className="w-3 h-3" />
+          {focusCount > 0 ? `초점 ${focusCount}` : "초점"}
+        </button>
         {rmPlacement === "right-tab" ? (
           <button
             type="button"

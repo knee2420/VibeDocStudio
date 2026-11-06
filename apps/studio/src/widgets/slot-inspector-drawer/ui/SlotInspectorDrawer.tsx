@@ -9,6 +9,8 @@ import { RIGHT_SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspa
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
 import { AiComposerView } from "@/features/ai-composer";
 import { SlotBackdataSection } from "@/features/bind-slot-backdata";
+import { RevisionTimeline } from "@/features/document-revisions";
+import { runFillSlot } from "@/features/fill-slots";
 import { SlotPlainTextEditorCard, SlotTypographyCard, useSlotContentActions } from "@/features/edit-slot-richtext";
 import { BlockInsertionPalette, useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
@@ -53,7 +55,7 @@ export const SlotInspectorDrawer: React.FC = () => {
 
   const { toggleSlotLock } = useSlotContentActions();
   const { updateBlock, deleteBlock } = useMutateCanvasBlocks();
-  const { stageSlotAiDraft, isAiStreaming } = useStageAiChanges();
+  const { isAiStreaming } = useStageAiChanges();
 
   if (!doc) return null;
 
@@ -210,20 +212,33 @@ export const SlotInspectorDrawer: React.FC = () => {
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-amber-950 flex items-center gap-1">
                       <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                      AI 슬롯 초안 스테이징
+                      근거로 채우기 (fill.slot)
                     </span>
-                    <button
-                      type="button"
-                      data-testid="stage-slot-ai-draft-btn"
-                      disabled={isAiStreaming}
-                      onClick={() => void stageSlotAiDraft(doc, selectedSlot)}
-                      className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-wait"
-                    >
-                      {isAiStreaming ? "AI 작성 중…" : "+ AI 초안 생성"}
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        data-testid="ground-cite-btn"
+                        disabled={isAiStreaming || !selectedSlot.content.trim()}
+                        onClick={() => void runFillSlot(selectedSlot.slotId, { harnessId: "ground.cite", docId: doc.docId })}
+                        className="px-2 py-1 rounded-lg border border-amber-300 bg-white text-amber-800 text-[11px] font-semibold cursor-pointer disabled:opacity-40"
+                        title="본문은 그대로 두고, 근거가 있는 문장에 출처 표식만 붙인다"
+                      >
+                        출처 달기
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="stage-slot-ai-draft-btn"
+                        disabled={isAiStreaming}
+                        onClick={() => void runFillSlot(selectedSlot.slotId, { docId: doc.docId })}
+                        className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-wait"
+                      >
+                        {isAiStreaming ? "AI 작성 중…" : "+ 근거로 채우기"}
+                      </button>
+                    </div>
                   </div>
                   <p className="text-[10px] text-amber-800">
-                    연결된 백데이터로 AI 초안을 만들어, 본문을 바로 덮어쓰지 않고 하단 Staged 대기열에 올립니다.
+                    이 칸의 근거(연결된 자료 · 이웃 칸 근거 · RM 고정 자료 · 열린 참조 문서, 부족하면 지식 덱 추천)만으로 쓰고,
+                    문장마다 출처를 답니다. 결과는 캔버스 자리에서 diff 로 검토합니다.
                   </p>
                 </div>
 
@@ -231,6 +246,9 @@ export const SlotInspectorDrawer: React.FC = () => {
                 <SlotTypographyCard slot={selectedSlot} />
                 <SlotPlainTextEditorCard key={selectedSlot.slotId} slot={selectedSlot} />
                 <SlotBackdataSection doc={doc} slot={selectedSlot} />
+                <div className="rounded-lg border border-slate-200 p-2">
+                  <RevisionTimeline docId={doc.docId} slotId={selectedSlot.slotId} limit={10} title="이 칸의 기록 (누가 썼나)" />
+                </div>
               </>
             )}
           </div>

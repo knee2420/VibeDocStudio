@@ -61,12 +61,35 @@ export function parseReferenceDocIds(raw: string | null | undefined): string[] {
   return [...new Set((raw ?? "").split(",").map((s) => s.trim()).filter(Boolean))];
 }
 
+const SESSION_STORAGE_KEY_OUTLINER = "vdoc:outliner_collapsed_nodes";
+
+const loadOutlinerCollapsedFromSession = (): string[] => {
+  if (typeof window === "undefined" || !window.sessionStorage) return [];
+  try {
+    const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY_OUTLINER);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveOutlinerCollapsedToSession = (ids: string[]) => {
+  if (typeof window === "undefined" || !window.sessionStorage) return;
+  try {
+    window.sessionStorage.setItem(SESSION_STORAGE_KEY_OUTLINER, JSON.stringify(ids));
+  } catch {
+    // quota exceeded 등 무시
+  }
+};
+
 export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => ({
   currentPhase: "drafting",
   zoomRootNodeId: PROJECT_ROOT_CRUMB_ID,
   selectedOutlinerNodeId: null,
   quickFilterQuery: "",
-  collapsedNodeIds: [],
+  collapsedNodeIds: loadOutlinerCollapsedFromSession(),
   hoveredOutlineTargetId: null,
   highlightedEntityId: null,
   openReferenceDocIds: [],
@@ -91,13 +114,21 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
   setQuickFilterQuery: (query) => set({ quickFilterQuery: query }),
 
   toggleNodeCollapse: (nodeId) =>
-    set((s) => ({
-      collapsedNodeIds: s.collapsedNodeIds.includes(nodeId)
+    set((s) => {
+      const next = s.collapsedNodeIds.includes(nodeId)
         ? s.collapsedNodeIds.filter((id) => id !== nodeId)
-        : [...s.collapsedNodeIds, nodeId],
-    })),
-  collapseAllNodes: (nodeIds) => set({ collapsedNodeIds: nodeIds }),
-  expandAllNodes: () => set({ collapsedNodeIds: [] }),
+        : [...s.collapsedNodeIds, nodeId];
+      saveOutlinerCollapsedToSession(next);
+      return { collapsedNodeIds: next };
+    }),
+  collapseAllNodes: (nodeIds) => {
+    saveOutlinerCollapsedToSession(nodeIds);
+    set({ collapsedNodeIds: nodeIds });
+  },
+  expandAllNodes: () => {
+    saveOutlinerCollapsedToSession([]);
+    set({ collapsedNodeIds: [] });
+  },
 
   setHoveredOutlineTargetId: (id) => set({ hoveredOutlineTargetId: id }),
   setHighlightedEntityId: (id) => set({ highlightedEntityId: id }),

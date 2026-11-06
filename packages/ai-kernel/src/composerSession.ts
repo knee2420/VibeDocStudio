@@ -27,6 +27,8 @@ export type ComposerItem =
       chars?: number;
       /** 결과를 기다리지 않고 스트리밍 중 즉시 실행된 도구 (ui · stage). */
       async?: boolean;
+      /** 서버가 실행한 도구 (지식 덱 등). */
+      server?: boolean;
       output?: unknown;
       error?: string;
     }
@@ -70,6 +72,22 @@ export interface ComposerState {
 }
 
 const MAX_TOOL_ROUNDS = 16;
+/** 저장하는 대화 항목 수 상한 (오래된 것부터 버린다) */
+const MAX_SAVED_ITEMS = 160;
+const RECAP_TURNS = 8;
+const RECAP_CHARS = 600;
+
+/** 문서별 대화를 담는 저장소 — 스튜디오가 localStorage 로 구현해 넣는다. */
+export interface ComposerPersistence {
+  load(key: string): ComposerSnapshot | null;
+  save(key: string, snapshot: ComposerSnapshot): void;
+}
+
+export interface ComposerSnapshot {
+  items: ComposerItem[];
+  sessionId: string | null;
+  savedAt: string;
+}
 
 let seq = 0;
 const nid = (p: string) => `${p}-${Date.now().toString(36)}-${(seq++).toString(36)}`;
@@ -100,8 +118,80 @@ export class ComposerSessionController {
   /** 즉시 실행된 도구 결과 — 다음 메시지에 실어 모델에 알린다. */
   private deferred: ToolResultPayload[] = [];
   private asyncRuns: Promise<unknown>[] = [];
+  /** 지금 대화의 저장 열쇠 (문서별) — null 이면 저장하지 않는다 */
+  private conversationKey: string | null = null;
+  private persistence: ComposerPersistence | null = null;
+  private saveTimer: ReturnType<typeof setTimeout> | undefined;
+  /** 서버 세션 없이 이어 가는 대화 — 다음 메시지 앞에 지난 대화 요약을 붙인다 */
+  private needsRecap = false;
+  /** 실행 중에 문서가 바뀌면, 실행이 끝난 뒤 그 대화로 옮긴다 */
+  private pendingKey: string | null = null;
 
   constructor(private readonly runtime: AiRuntime) {}
+
+  // --- 대화 보존 (문서별) --------------------------------------------------------
+
+  setPersistence(persistence: ComposerPersistence | null): void {
+    this.persistence = persistence;
+  }
+
+  /**
+   * 대화를 문서 하나에 묶는다. 지금 대화를 저장하고 그 문서의 대화를 불러온다.
+   * 서버 세션은 살아 있으면 그대로 잇고, 없거나 만료됐으면 다음 메시지에 지난 대화 요약을 붙여 새 세션으로 잇는다.
+   */
+  bindConversation(key: string | null): void {
+    if (key === this.conversationKey) return;
+    if (this.state.status !== "idle") {
+      this.pendingKey = key;
+      return;
+    }
+    this.flushSave();
+    this.conversationKey = key;
+    const snap = key && this.persistence ? this.persistence.load(key) : null;
+    this.generation++;
+    this.deferred = [];
+    this.asyncRuns = [];
+    const items = (snap?.items ?? []).map(settleItem);
+    this.needsRecap = items.some((i) => i.kind === "user") && !snap?.sessionId;
+    this.set({ sessionId: snap?.sessionId ?? null, items, status: "idle", queue: [] });
+  }
+
+  private scheduleSave(): void {
+    if (!this.conversationKey || !this.persistence) return;
+    clearTimeout(this.saveTimer);
+    this.saveTimer = setTimeout(() => this.flushSave(), 500);
+  }
+
+  private flushSave(): void {
+    clearTimeout(this.saveTimer);
+    if (!this.conversationKey || !this.persistence) return;
+    try {
+      this.persistence.save(this.conversationKey, {
+        items: this.state.items.slice(-MAX_SAVED_ITEMS).map(settleItem),
+        sessionId: this.state.sessionId,
+        savedAt: new Date().toISOString(),
+      });
+    } catch {
+      /* 저장소가 가득 차도 대화는 계속 */
+    }
+  }
+
+  /** 새 서버 세션에 실을 지난 대화 요약 (최근 몇 턴의 질문 · 답). */
+  private recap(): string {
+    const turns = this.state.items.filter(
+      (i): i is Extract<ComposerItem, { kind: "user" | "assistant" }> => i.kind === "user" || i.kind === "assistant"
+    );
+    const recent = turns.slice(-RECAP_TURNS * 2);
+    if (!recent.length) return "";
+    const lines = recent.map((i) => `${i.kind === "user" ? "사용자" : "AI"}: ${i.text.replace(/\s+/g, " ").slice(0, RECAP_CHARS)}`);
+    return [
+      "[이전 대화 요약 — 서버 세션이 새로 열려 앞 대화를 기억하지 못한다. 아래를 맥락으로 이어라]",
+      ...lines,
+      "[/이전 대화 요약]",
+      "",
+      "",
+    ].join("\n");
+  }
 
   get client(): AssistantClient {
     return this.runtime.client;
@@ -119,6 +209,7 @@ export class ComposerSessionController {
   private set(patch: Partial<ComposerState>): void {
     this.state = { ...this.state, ...patch };
     this.listeners.forEach((l) => l());
+    if ("items" in patch || "sessionId" in patch) this.scheduleSave();
   }
 
   private push(item: ComposerItem): void {
@@ -167,6 +258,11 @@ export class ComposerSessionController {
       this.set({ queue: rest });
       await this.runConversation(next.text, next.contexts);
     }
+    if (this.pendingKey !== null && this.state.status === "idle") {
+      const key = this.pendingKey;
+      this.pendingKey = null;
+      this.bindConversation(key);
+    }
   }
 
   stop(): void {
@@ -193,6 +289,7 @@ export class ComposerSessionController {
     const old = this.state.sessionId;
     this.deferred = [];
     this.asyncRuns = [];
+    this.needsRecap = false;
     this.set({ sessionId: null, items: [], status: "idle", queue: [] });
     if (old) await this.client.closeSession(old);
   }
@@ -206,6 +303,8 @@ export class ComposerSessionController {
     if (!id) return;
     this.abort?.abort();
     this.set({ sessionId: null });
+    // 떠나는 중이라 타이머가 돌지 않는다 — 바로 저장 (다음에 열면 요약을 붙여 새 세션으로 잇는다)
+    this.flushSave();
     void this.client.closeSession(id, { keepalive: true });
   }
 
@@ -221,6 +320,10 @@ export class ComposerSessionController {
   private async runConversation(text: string, contexts: ContextRef[]): Promise<void> {
     const gen = this.generation;
     const resolved = this.runtime.contexts.resolve(contexts);
+    // 지난 대화가 있는데 서버 세션이 없으면(새로고침 · 문서 전환 · 만료) 요약을 실어 보낸다
+    const prior = this.state.items.some((i) => i.kind === "user");
+    if (prior && !this.state.sessionId) this.needsRecap = true;
+    const recap = this.needsRecap ? this.recap() : "";
     this.push({ kind: "user", id: nid("u"), text, contexts: resolved });
     this.set({ status: "connecting" });
     const controller = new AbortController();
@@ -236,24 +339,36 @@ export class ComposerSessionController {
       const engine = this.engineOverride ?? undefined;
       const deferredResults = this.deferred;
       this.deferred = [];
-      let done = await this.streamTurn(
-        (onEvent) =>
-          this.client.sendMessage(
-            sessionId,
-            {
-              text,
-              contexts: resolved,
-              tools: this.runtime.tools.manifest(),
-              mode: permissionToServerMode(this.state.mode),
-              provider: engine?.provider,
-              model: engine?.model,
-              deferredResults,
-            },
-            onEvent,
-            controller.signal
-          ),
-        controller.signal
-      );
+      const first = (sid: string, body: string) =>
+        this.streamTurn(
+          (onEvent) =>
+            this.client.sendMessage(
+              sid,
+              {
+                text: body,
+                contexts: resolved,
+                tools: this.runtime.tools.manifest(),
+                mode: permissionToServerMode(this.state.mode),
+                provider: engine?.provider,
+                model: engine?.model,
+                deferredResults,
+              },
+              onEvent,
+              controller.signal
+            ),
+          controller.signal
+        );
+      let done: Awaited<ReturnType<typeof first>>;
+      try {
+        done = await first(sessionId, recap + text);
+      } catch (err) {
+        // 되살린 세션이 서버에서 이미 닫혔다 — 새 세션 + 지난 대화 요약으로 한 번 다시
+        if (!isExpired(err) || controller.signal.aborted || !prior) throw err;
+        this.set({ sessionId: null });
+        sessionId = await this.ensureSession();
+        done = await first(sessionId, this.recap() + text);
+      }
+      this.needsRecap = false;
       let rounds = 0;
       while (done.stopReason === "tool_calls" && !controller.signal.aborted) {
         if (++rounds > MAX_TOOL_ROUNDS) {
@@ -369,6 +484,26 @@ export class ComposerSessionController {
           break;
         }
         case "tool_call": {
+          if (event.server) {
+            // 서버 도구: 서버가 실행하고 결과(tool_result)를 같은 스트림으로 보낸다 — 카드만 띄운다.
+            const id = draftId ?? nid("tc");
+            const fields: ComposerItem = {
+              kind: "tool_call",
+              id,
+              callId: event.id,
+              name: event.name,
+              arguments: event.arguments,
+              risk: event.risk ?? "read",
+              summary: event.summary ?? event.name,
+              status: "running",
+              server: true,
+            };
+            if (draftId) this.update(draftId, fields);
+            else this.push(fields);
+            draftId = null;
+            assistantId = null;
+            break;
+          }
           const tool = this.runtime.tools.get(event.name);
           const id = draftId ?? nid("tc");
           const fields: ComposerItem = {
@@ -388,6 +523,19 @@ export class ComposerSessionController {
           if (event.async) this.asyncRuns.push(this.executeCall(id, sessionId, signal, true));
           else this.pendingCallItems.push(id);
           assistantId = null;
+          break;
+        }
+        case "tool_result": {
+          const item = this.state.items.find((i) => i.kind === "tool_call" && i.callId === event.id);
+          if (item) {
+            let output: unknown = event.output;
+            try {
+              output = event.output ? JSON.parse(event.output) : null;
+            } catch {
+              /* 잘린 미리보기 — 문자열 그대로 */
+            }
+            this.update(item.id, event.ok ? { status: "done", output } : { status: "error", error: String(event.output ?? "") });
+          }
           break;
         }
         case "status":
@@ -495,6 +643,20 @@ function safeDescribe(tool: { describe?: (args: any) => string } | undefined, ar
   } catch {
     return undefined;
   }
+}
+
+function isExpired(err: unknown): boolean {
+  return err instanceof Error && "status" in err && (err as { status: number }).status === 404;
+}
+
+/** 저장 · 복원할 때 진행 중 상태를 끝난 상태로 (되살린 대화에 돌고 있는 것은 없다). */
+function settleItem(item: ComposerItem): ComposerItem {
+  if (item.kind === "assistant" && item.streaming) return { ...item, streaming: false };
+  if (item.kind === "tool_call" && (item.status === "drafting" || item.status === "running" || item.status === "awaiting_approval")) {
+    return { ...item, status: "error", error: item.error ?? "대화를 다시 열어 실행이 끊겼습니다." };
+  }
+  if (item.kind === "agent_tool" && item.state === "running") return { ...item, state: "done" };
+  return item;
 }
 
 function message(err: unknown): string {

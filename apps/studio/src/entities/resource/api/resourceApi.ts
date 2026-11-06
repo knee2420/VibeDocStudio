@@ -53,4 +53,20 @@ export const resourceApi = {
   /** AI Composer 컨텍스트 번들 조회 */
   getAiContext: (projectId: string) =>
     httpClient.get<AiContextBundle>(`/api/resources/${projectId}/ai-context`),
+
+  /** 기 등록된 로컬 디렉토리 원본 재스캔 및 동기화 */
+  rescanSession: (projectId: string) =>
+    httpClient.post<ResourceSessionState>(`/api/resources/${projectId}/rescan`, {}),
+
+  /** 프로젝트 세션에서 해당 리소스 연결 해제 (로컬 원본 보존) */
+  decoupleItem: (projectId: string, itemId: string) =>
+    httpClient.post<ResourceSessionState>(`/api/resources/${projectId}/decouple`, {
+      itemId,
+    }),
+
+  /** 여러 리소스 항목 일괄 연결 해제 (로컬 원본 보존) */
+  batchDecouple: (projectId: string, itemIds: string[]) =>
+    httpClient.post<ResourceSessionState>(`/api/resources/${projectId}/batch-decouple`, {
+      itemIds,
+    }),
 };

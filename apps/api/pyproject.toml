@@ -35,6 +35,8 @@ type = "forbidden"
 source_modules = ["app.core"]
 forbidden_modules = [
     "app.assistant",
+    "app.knowledge",
+    "app.resources",
     "app.backdata",
     "app.catalog",
     "app.composer",
@@ -88,7 +90,9 @@ forbidden_modules = [
     "app.catalog",
     "app.composer",
     "app.documents",
+    "app.knowledge",
     "app.projects",
+    "app.resources",
     "app.runtime",
 ]
 
@@ -106,7 +110,9 @@ forbidden_modules = [
     "app.backdata",
     "app.composer",
     "app.documents",
+    "app.knowledge",
     "app.projects",
+    "app.resources",
     "app.runtime",
 ]
 
@@ -124,7 +130,9 @@ forbidden_modules = [
     "app.backdata",
     "app.catalog",
     "app.documents",
+    "app.knowledge",
     "app.projects",
+    "app.resources",
     "app.runtime",
 ]
 
@@ -141,7 +149,9 @@ forbidden_modules = [
     "app.backdata",
     "app.catalog",
     "app.composer",
+    "app.knowledge",
     "app.projects",
+    "app.resources",
     "app.runtime",
 ]
 
@@ -159,6 +169,8 @@ forbidden_modules = [
     "app.catalog",
     "app.composer",
     "app.documents",
+    "app.knowledge",
+    "app.resources",
     "app.runtime",
 ]
 
@@ -174,7 +186,9 @@ forbidden_modules = [
     "app.catalog",
     "app.composer",
     "app.documents",
+    "app.knowledge",
     "app.projects",
+    "app.resources",
 ]
 
 [[tool.importlinter.contracts]]
@@ -190,6 +204,45 @@ forbidden_modules = [
     "app.catalog",
     "app.composer",
     "app.documents",
+    "app.knowledge",
+    "app.projects",
+    "app.resources",
+    "app.runtime",
+]
+
+[[tool.importlinter.contracts]]
+name = "knowledge must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.knowledge.use_cases",
+    "app.knowledge.adapters",
+    "app.knowledge.ports",
+]
+forbidden_modules = [
+    "app.assistant",
+    "app.backdata",
+    "app.catalog",
+    "app.composer",
+    "app.documents",
+    "app.projects",
+    "app.resources",
+    "app.runtime",
+]
+
+[[tool.importlinter.contracts]]
+name = "resources must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.resources.adapters",
+    "app.resources.ports",
+]
+forbidden_modules = [
+    "app.assistant",
+    "app.backdata",
+    "app.catalog",
+    "app.composer",
+    "app.documents",
+    "app.knowledge",
     "app.projects",
     "app.runtime",
 ]

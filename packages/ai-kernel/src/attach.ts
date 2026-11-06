@@ -61,6 +61,8 @@ const HANDLE_PREFIX: Record<string, string> = {
   message: "답변",
   image: "이미지",
   document: "문서",
+  deck: "덱",
+  kcard: "카드",
 };
 
 /** 입력창에 들어갈 짧은 이름: 종류별 번호 (`@블록1`, `@영역2`). */

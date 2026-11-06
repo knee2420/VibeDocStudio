@@ -147,17 +147,47 @@ export type AssistantEvent =
   | { type: "text_delta"; text: string }
   | { type: "thinking_delta"; text: string }
   | { type: "agent_tool"; stepIndex?: number; name: string; state: "running" | "done"; params: Record<string, unknown>; output?: string }
-  | { type: "tool_call"; id: string; name: string; arguments: Record<string, unknown>; async?: boolean }
+  | {
+      type: "tool_call";
+      id: string;
+      name: string;
+      arguments: Record<string, unknown>;
+      async?: boolean;
+      /** 서버가 직접 실행하는 도구 (지식 덱 `knowledge.*`) — 프론트는 표시만 하고 실행하지 않는다. */
+      server?: boolean;
+      risk?: RiskLevel;
+      summary?: string;
+    }
+  /** 서버 도구의 실행 결과 (output 은 화면용 미리보기 JSON 문자열). */
+  | { type: "tool_result"; id: string; name: string; ok: boolean; output?: string; durationMs?: number; chars?: number }
   | { type: "tool_call_progress"; name: string | null; chars: number }
   | { type: "status"; state: string; message: string }
   | { type: "error"; message: string; code?: string }
-  | { type: "result"; text: string; format: string }
+  | {
+      type: "result";
+      text?: string;
+      format?: string;
+      /** 하네스 결과 (`/harness/run`): 출력 계약별로 html · map 중 하나 */
+      output?: string;
+      html?: string;
+      map?: Record<string, unknown>;
+      /** 결과가 실제로 인용한 근거 [{citationId, locator}] */
+      evidence?: { citationId?: string; locator: Record<string, unknown> }[];
+      /** 게이트 경고 (근거 없는 문장 · 길이 초과 …) */
+      warnings?: string[];
+      harnessId?: string;
+      runId?: string;
+    }
+  /** 하네스가 모은 근거 묶음 (E1, E2 … — 결과의 인용 표식이 가리킨다) */
+  | { type: "evidence"; items: { id: string; tier: string; locator: Record<string, unknown> }[] }
   | {
       type: "turn_done";
       stopReason: "end_turn" | "tool_calls" | "error" | "tool_limit";
       usage?: TurnUsage;
       durationMs?: number;
       firstTokenMs?: number | null;
+      /** 서버 도구 왕복으로 모델을 다시 부른 횟수 (한 스트림 안에서). */
+      serverRounds?: number;
     };
 
 export interface EngineModel {
