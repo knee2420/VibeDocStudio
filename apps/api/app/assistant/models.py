@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
 Lane = Literal["composer", "inline"]
 
@@ -52,3 +52,4 @@ class EngineChoice:
 
     provider: str
     model: str
+    effort: Optional[str] = None

@@ -1,0 +1,690 @@
+[
+ {
+  "id": "S1-decision-standard",
+  "skill": "묶음 종합 · 의도 파악 · 함정(템플릿/예시/동일본/세대 차이)",
+  "prompt": "리소스의 Decision 들을 읽고 공통 형식과 차이를 정리해서, 앞으로 쓸 결정 카드 표준을 제안해줘.",
+  "session": "asst-f4b484e60025",
+  "seconds": 71.3,
+  "usage": {
+   "input_tokens": 37429,
+   "output_tokens": 6665,
+   "thought_tokens": 3797,
+   "cached_read_tokens": 127838,
+   "total_tokens": 171932
+  },
+  "tools": [
+   {
+    "name": "mcp_vibefs_8986496f_ws_duplicates",
+    "state": "done",
+    "params": {
+     "toolSummary": "Find duplicate files"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_8986496f_ws_collect",
+    "state": "done",
+    "params": {
+     "query": "결정 카드",
+     "toolSummary": "Collect decision cards"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_8986496f_ws_collect",
+    "state": "done",
+    "params": {
+     "query": "템플릿",
+     "toolSummary": "Collect templates"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_8986496f_ws_tree",
+    "state": "done",
+    "params": {
+     "depth": 4,
+     "toolSummary": "Inspect file tree"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_8986496f_ws_tree",
+    "state": "done",
+    "params": {
+     "path": "archive/2025.01.20 주간회의/A4.meta",
+     "toolSummary": "Inspect meta directory"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "archive/2025.01.20 주간회의/A4.meta/templates/decision_card_template.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "archive/2025.01.20 주간회의/A4.meta/examples/sample_decision_output.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "discussions/25.01.06/decisions/Decision 01 — 검색은 로컬 색인으로 시작한다.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "discussions/25.01.06/decisions/Decision 02 — 첫 고객은 법무팀으로 좁힌다.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "discussions/25.01.13/decisions/Decision 01 — 요금제는 좌석 기반으로 간다 (v1).md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "discussions/25.01.20/decisions/Decision 03 — 요금제는 사용량 기반으로 바꾼다.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "discussions/25.01.20/decisions/Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_8986496f_ws_coverage",
+    "state": "done",
+    "params": {
+     "toolSummary": "Check read coverage"
+    },
+    "error": null
+   }
+  ],
+  "vibefs_calls": 6,
+  "read_calls": 7,
+  "denies": [],
+  "files_read": [
+   "archive/2025.01.20 주간회의/A4.meta/examples/sample_decision_output.md",
+   "archive/2025.01.20 주간회의/A4.meta/templates/decision_card_template.md",
+   "projects/alpha/discussions/25.01.06/decisions/Decision 01 — 검색은 로컬 색인으로 시작한다.md",
+   "projects/alpha/discussions/25.01.06/decisions/Decision 02 — 첫 고객은 법무팀으로 좁힌다.md",
+   "projects/alpha/discussions/25.01.13/decisions/Decision 01 — 요금제는 좌석 기반으로 간다 (v1).md",
+   "projects/alpha/discussions/25.01.20/decisions/Decision 03 — 요금제는 사용량 기반으로 바꾼다.md",
+   "projects/alpha/discussions/25.01.20/decisions/Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md"
+  ],
+  "checks": [
+   {
+    "ok": true,
+    "note": "실제 결정 카드 읽음(동일본 제외): 5/5",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "범위 주장 없음 (결정 카드 5/5 읽음)",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "형식의 세대 차이(실행 가이드라인 유무) 지적: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "예시 카드(Decision 09)를 실제 결정으로 취급 안 함: 통과",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "resource 링크 8개 모두 실제 id",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "실패한 도구 0개",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "6/6",
+  "answer": "읽은 대상: 8개 (결정 카드 6개, 템플릿 1개, 작성 예시 1개 — 동일본 1건 포함)\n1. [decision_card_template.md](vdoc:resource/file_631f0ce953) (L1-9)\n2. [sample_decision_output.md](vdoc:resource/file_04a351c024) (L1-9)\n3. [Decision 01 — 검색은 로컬 색인으로 시작한다.md](vdoc:resource/file_7a92f1593b) (L1-21)\n4. [Decision 02 — 첫 고객은 법무팀으로 좁힌다.md](vdoc:resource/file_be75b165d0) (L1-21)\n5. [Decision 01 — 요금제는 좌석 기반으로 간다 (v1).md](vdoc:resource/file_969bb91849) (L1-21)\n6. [Decision 03 — 요금제는 사용량 기반으로 바꾼다.md](vdoc:resource/file_75d5f55476) (L1-27) *(동일본: [D3_요금제는_사용량_기반으로_바꾼다.md](vdoc:resource/file_8db3356039))*\n7. [Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md](vdoc:resource/file_4926aa33c3) (L1-27)\n\n---\n\n### 1. 결정 카드 공통 형식 분석\n\n기존 결정 카드들([Decision 01](vdoc:resource/file_7a92f1593b), [Decision 02](vdoc:resource/file_be75b165d0), [Decision 03](vdoc:resource/file_75d5f55476), [Decision 04](vdoc:resource/file_4926aa33c3))에서 공통으로 유지되고 있는 구조는 다음과 같습니다.\n\n* **Frontmatter(메타데이터)**:\n  * `유형`: `할일`로 분류\n  * `상태`: `결정 사항` (대체 시 `대체됨`으로 갱신)\n  * `요약`: 결정의 핵심 내용 한 줄\n  * `작성일`: `YYYY-MM-DD`\n  * `상위`: 상위 프로젝트/목표 위키링크 (`[[알파 프로젝트 목표]]`)\n  * `담당`: 담당자 위키링크 (`[[민지]]`)\n* **문서 제목(H1)**: `# 🎯 Decision <번호> — <결정 한 문장>`\n* **핵심 섹션**:\n  * `## 1. 결정 내용 (What)`: 본문 상단에 `> [!check]` 콜아웃을 사용하여 결정된 사항을 1~2줄로 명확하게 선언\n  * `## 2. 결정 사유 (Why)`: 번호 목록 형태로 정량/정성적 판단 배경 기술\n\n---\n\n### 2. 시점별 차이 및 문제점 분석\n\n| 구분 | 초기 결정 카드 (25.01.06, 25.01.13) | 후기 결정 카드 (25.01.20) | 기본 템플릿 원본 ([decision_card_template.md](vdoc:resource/file_631f0ce953)) |\n| :--- | :--- | :--- | :--- |\n| **포함 섹션** | • 1. 결정 내용 (What)<br>• 2. 결정 사유 (Why) | • 1. 결정 내용 (What)<br>• 2. 결정 사유 (Why)<br>• **3. 실행 가이드라인 (Boundary & Criteria)** | • 1. 결정 내용 (What)<br>• 2. 결정 사유 (Why)<br>• 3. 실행 가이드라인<br>• **4. 아직 안 정한 것** |\n| **실행 가이드** | 없음 (단순 결정 선언에 그침) | **Do / Don't / DoD** 3요소 정의로 실행 범위 명확화 | 헤더만 존재하고 세부 필드 가이드 없음 |\n| **미결 사항** | 없음 | 미작성 (누락) | `## 4. 아직 안 정한 것` 항목 존재 |\n| **상태 변경 추적** | [25.01.13 Decision 01](vdoc:resource/file_969bb91849) (L3, L17): 메타데이터 `상태: 대체됨` 및 본문 `⚠️ YYYY-MM-DD [[대체문서]] 로 대체됨` 인라인 경고 추가 | 신규 결정([Decision 03](vdoc:resource/file_75d5f55476) L17)에서 이전 좌석 기반 폐기 명시 | 변경 및 대체 이력 표기 규격 없음 |\n\n#### 주요 발견 사항:\n1. **템플릿과 실무 간 괴리**: 템플릿([decision_card_template.md](vdoc:resource/file_631f0ce953))에는 필수 Frontmatter 속성과 `> [!check]` 콜아웃 구조가 누락되어 있어 실무진이 작성할 때 메타데이터 불일치가 발생할 위험이 있습니다.\n2. **번호 체계 충돌**: `25.01.06`의 [Decision 01](vdoc:resource/file_7a92f1593b)과 `25.01.13`의 [Decision 01 (v1)](vdoc:resource/file_969bb91849)처럼 주차별로 번호가 리셋되다가, `25.01.20`부터 [Decision 03](vdoc:resource/file_75d5f55476), [Decision 04](vdoc:resource/file_4926aa33c3)로 이어지는 등 식별자 일관성이 부족합니다.\n3. **가이드라인의 진화**: 25.01.20 카드([Decision 03](vdoc:resource/file_75d5f55476) L23-27, [Decision 04](vdoc:resource/file_4926aa33c3) L23-27)에 도입된 **집중 대상(Do)**, **제외 대상(Don't)**, **완료 판단 기준(DoD)** 구조가 실행력을 담보하는 가장 완성도 높은 포맷입니다.\n\n---\n\n### 3. 앞으로 쓸 결정 카드 표준안 제안\n\n25.01.20의 발전된 실무 포맷을 흡수하고, 미비했던 대체/폐기 규칙과 미결 사항 섹션을 보완한 표준안입니다.\n\n```markdown\n---\n유형: 할일\n상태: 결정 사항 # 결정 사항 | 진행 중 | 대체됨 | 폐기됨\n요약: <결정 사항을 요약한 한 문장>\n작성일: YYYY-MM-DD\n상위:\n  - \"[[상위 프로젝트 또는 상위 목표]]\"\n담당:\n  - \"[[담당자]]\"\n근거:\n  - \"[[참조 문서 또는 데이터 기준선]]\" # (선택) 근거 문서 위키링크\n---\n\n# 🎯 Decision <고유번호 2자리> — <결정 한 문장>\n\n## 1. 결정 내용 (What)\n\n> [!check]\n> - <결정된 핵심 규칙이나 정책을 1~2줄로 명확하게 정의>\n> <!-- 다른 결정에 의해 대체/폐기된 경우 아래 경고문 추가 -->\n> <!-- ⚠️ YYYY-MM-DD [[Decision XX — 제목]] 로 대체됨 -->\n\n## 2. 결정 사유 (Why)\n\n1. <정량적 실측 데이터, 고객 요구사항 또는 전략적 근거 기술 (필요 시 [[근거 문서]] 링크)>\n\n## 3. 실행 가이드라인 (Boundary & Criteria)\n\n- **집중 대상 (Do)**: <반드시 구현하거나 적용해야 할 범위>\n- **제외 대상 (Don't)**: <의도적으로 이번 범위에서 제외하는 사항>\n- **완료 판단 기준 (DoD)**: <검증 가능한 종료 조건 (수치, 일정, 산출물 등)>\n\n## 4. 미결 사항 및 다음 검토 (Open Questions)\n\n- <아직 확정되지 않았거나, 추후 재검토가 필요한 조건/시점 명시 (없을 시 '없음')>\n```\n\n#### 표준 운영 가이드\n1. **식별자 일관성**: 프로젝트 전반에 걸쳐 Decision 번호는 주차별로 리셋하지 않고 순차적 고유 번호(`Decision 01`, `Decision 02`, …)를 부여합니다.\n2. **변경 이력 추적**: 결정 사항이 변경될 경우 원본 카드를 삭제하지 않고 `상태: 대체됨` 표기와 함께 `## 1. 결정 내용`의 콜아웃 내에 대체 링크(`⚠️ YYYY-MM-DD [[대체 결정]]`)를 기록합니다.\n3. **Do/Don't/DoD 필수화**: 단순 합의에 그치지 않도록 `## 3. 실행 가이드라인`의 3개 항목은 필수로 작성하도록 강제합니다.",
+  "thinking": "I'm thinking through how to approach this.\n\n\nInitial hypothesis is that two files need to be read to understand the decision format: a template and a sample output. The template likely defines the structure, and the example shows how it's populated.\n\n\nDecision 01.md` (resourceId=file_a8a860f38b)\n5. `discussions/25.01.06/decisions/Decision 02.md` (resourceId=file_2dd7224219)\n6. `discussions/25.01.06/decisions/Decision 03.md` (resourceId=file_a5b9e0f666)\n7. `discussions/25.01.10/decisions/Decision 04.md` (resourceId=file_13c3830c23)\n8. `discussions/25.01.10/decisions/Decision 05.md` (resourceId=file_6d8d9b1a50)\nThe files seem to represent several decisions made. The file names suggest they are related to meetings and discussions held in January 2025. These are the key decision files.\n\n\nThe analysis reveals additional decision files with consistent naming conventions, including decision numbers, dates, and summaries. The files are categorized as either \"Decision Cards\" (actual decisions) or \"Templates/Examples.\" The \"Decision Cards\" employ a YAML frontmatter with fields for decision type, status, summary, date, related project/goal, and responsible individual. Templates/Examples lack the detailed YAML frontmatter.\n\n\nThe analysis reveals variations in section structure across decision files. Initial decisions lack \"Execution Guidelines\" and \"Unresolved Issues\" sections present in the template. Later decisions incorporate detailed execution guidelines with \"Do,\" \"Don't,\" and \"Definition of Done\" criteria. Observed that the \"Unresolved Issues\" section is consistently missing from actual decision cards, even though it appears in the template.\n\n\nThe analysis highlights that decision files have a consistent structure, including a YAML frontmatter and key sections detailing the decision and rationale. Observed improvements in later decisions, incorporating execution guidelines with \"Do,\" \"Don't,\" and \"Definition of Done\" criteria. However, there are discrepancies between the template and practice regarding the inclusion of all template elements and the management of decision numbering across different weeks.\n\n\n읽은 대상: 7개 (목록)\n\nProposed standard for decision cards includes standardized frontmatter with required attributes, and unified title/filename standards with unique identifiers. The body should follow a four-step structure combining the template with practical elements: \"What,\" \"Why\" (linked to evidence documents), \"Boundary & Criteria,\" and \"Open Questions,\" which specifies review conditions.\n\n\n",
+  "notices": [
+   {
+    "type": "workspace_coverage",
+    "files": 12,
+    "fullyRead": 8,
+    "partiallyRead": 0,
+    "unread": 4,
+    "linesRead": 162,
+    "linesTotal": 3182,
+    "uniqueTotal": 11,
+    "uniqueFullyRead": 7
+   }
+  ]
+ },
+ {
+  "id": "S2-pricing-current",
+  "skill": "대체 관계 추적 · 현재 유효성 판단",
+  "prompt": "요금제에 대해 지금 유효한 결정이 뭐야? 근거와 함께 알려줘.",
+  "session": "asst-6f84145b8f41",
+  "seconds": 41.6,
+  "usage": {
+   "input_tokens": 38904,
+   "output_tokens": 2688,
+   "thought_tokens": 1667,
+   "cached_read_tokens": 140296,
+   "total_tokens": 181888
+  },
+  "tools": [
+   {
+    "name": "mcp_vibefs_a46a6d61_ws_grep",
+    "state": "done",
+    "params": {
+     "pattern": "요금제",
+     "toolSummary": "Grep pricing decisions"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_a46a6d61_ws_duplicates",
+    "state": "done",
+    "params": {
+     "toolSummary": "Check duplicate files"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_a46a6d61_ws_tree",
+    "state": "done",
+    "params": {
+     "depth": 3,
+     "path": "",
+     "toolSummary": "Tree view of workspace"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\projects\\alpha\\discussions\\25.01.20\\decisions\\Decision 03 — 요금제는 사용량 기반으로 바꾼다.md"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_a46a6d61_ws_links",
+    "state": "done",
+    "params": {
+     "path": "discussions/25.01.20/decisions/Decision 03 — 요금제는 사용량 기반으로 바꾼다.md",
+     "toolSummary": "Check links of Decision 03"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\projects\\alpha\\discussions\\25.01.13\\decisions\\Decision 01 — 요금제는 좌석 기반으로 간다 (v1).md"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\archive\\2025.01.20 주간회의\\2025.01.20 주간회의 — 작업 기억.md"
+    },
+    "error": null
+   }
+  ],
+  "vibefs_calls": 4,
+  "read_calls": 3,
+  "denies": [],
+  "files_read": [
+   "archive/2025.01.20 주간회의/2025.01.20 주간회의 — 작업 기억.md",
+   "projects/alpha/discussions/25.01.13/decisions/Decision 01 — 요금제는 좌석 기반으로 간다 (v1).md",
+   "projects/alpha/discussions/25.01.20/decisions/Decision 03 — 요금제는 사용량 기반으로 바꾼다.md"
+  ],
+  "checks": [
+   {
+    "ok": true,
+    "note": "사용량 기반이 현재 결정: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "좌석 기반 v1 이 대체됐음을 언급: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "Decision 03 읽음: 1/1",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "resource 링크 2개 모두 실제 id",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "4/4",
+  "answer": "읽은 대상: 3개 (discussions/25.01.20/decisions/Decision 03 — 요금제는 사용량 기반으로 바꾼다.md, discussions/25.01.13/decisions/Decision 01 — 요금제는 좌석 기반으로 간다 (v1).md, archive/2025.01.20 주간회의/2025.01.20 주간회의 — 작업 기억.md)\n\n---\n\n현재 요금제에 대해 유효한 결정은 **[Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_75d5f55476)**입니다.\n\n이전 결정이었던 **[Decision 01 — 요금제는 좌석 기반으로 간다 (v1)](vdoc:resource/file_969bb91849)**(L16-17)은 2025년 1월 20일부로 대체되어 폐기되었습니다.\n\n### 1. 결정 내용 (What)\n- 요금은 **처리한 문서 페이지 수 기준**으로 매기며, 기존의 좌석 기반 요금제는 폐기합니다 ([Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_75d5f55476) L16-17).\n\n### 2. 결정 근거 (Why)\n- **법무팀 파일럿 결과**: 좌석 수보다 처리량 편차가 10배 이상 컸기 때문입니다 ([Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_75d5f55476) L21).\n\n### 3. 실행 가이드라인\n- **집중 대상 (Do)**: 페이지 단위 과금 계측 ([Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_75d5f55476) L25)\n- **제외 대상 (Don't)**: 좌석 단위 할인 정책 ([Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_75d5f55476) L26)\n- **완료 판단 기준 (DoD)**: 2월 청구서가 사용량 기준으로 발행됨 ([Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_75d5f55476) L27)",
+  "thinking": "I'm thinking through how to approach this.\n\n\nThe files detail past decisions on pricing models. Initial focus was on a seat-based model, later shifting towards a usage-based one. The weekly meeting notes serve as a record of these discussions.\n\n\n읽은 대상: 2개 (파일 목록)\n\n좌석 기반 요금제 폐기를 결정하고, 사용량 기반 요금제로 변경하는 내용이 확인되었다. [Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_75d5f55476) (L16-17) 파일에 따르면, 요금제 변경 이유는 법무팀 파일럿에서 좌석 수 대비 처리량 편차가 컸기 때문이다. ([Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_75d5f55476) L20-21)\n\n\n",
+  "notices": [
+   {
+    "type": "workspace_coverage",
+    "files": 12,
+    "fullyRead": 4,
+    "partiallyRead": 0,
+    "unread": 8,
+    "linesRead": 79,
+    "linesTotal": 3182,
+    "uniqueTotal": 11,
+    "uniqueFullyRead": 3
+   }
+  ]
+ },
+ {
+  "id": "S3-onboarding-baseline",
+  "skill": "링크 따라가기 (다른 폴더의 근거 메모)",
+  "prompt": "온보딩 결정에서 말하는 실측 기준선 수치가 정확히 얼마야? 어디에 적혀 있는지도 알려줘.",
+  "session": "asst-0a37f2255cb4",
+  "seconds": 40.0,
+  "usage": {
+   "input_tokens": 30945,
+   "output_tokens": 1969,
+   "thought_tokens": 1279,
+   "cached_read_tokens": 75822,
+   "total_tokens": 108736
+  },
+  "tools": [
+   {
+    "name": "mcp_vibefs_c91e5015_ws_glob",
+    "state": "done",
+    "params": {
+     "pattern": "*온보딩*",
+     "toolSummary": "Search onboarding files"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 30,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\projects\\alpha\\discussions\\25.01.20\\decisions\\Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\archive\\2025.01.20 주간회의\\A3.working memory\\근거_온보딩 실측 기준선.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\projects\\alpha\\discussions\\25.01.20\\new todo\\value_온보딩 실측 계획.md",
+     "StartLine": 1
+    },
+    "error": null
+   }
+  ],
+  "vibefs_calls": 1,
+  "read_calls": 3,
+  "denies": [],
+  "files_read": [
+   "archive/2025.01.20 주간회의/A3.working memory/근거_온보딩 실측 기준선.md",
+   "projects/alpha/discussions/25.01.20/decisions/Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md",
+   "projects/alpha/discussions/25.01.20/new todo/value_온보딩 실측 계획.md"
+  ],
+  "checks": [
+   {
+    "ok": true,
+    "note": "기준선 47분: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "근거 메모 읽음: 1/1",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "resource 링크 3개 모두 실제 id",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "3/3",
+  "answer": "읽은 대상: 3개\n- [Decision 04 — 온보딩은 템플릿 3종으로 시작한다](vdoc:resource/file_4926aa33c3) (L1-27)\n- [근거_온보딩 실측 기준선](vdoc:resource/file_c4dcd048c0) (L1-9)\n- [value_온보딩 실측 계획](vdoc:resource/file_3d9eaa9301) (L1-7)\n\n---\n\n### 1. 실측 기준선 수치\n- **기준선**: 첫 문서 완성까지 **평균 47분**\n- **측정 대상**: 신규 고객 12명 ($n=12$)\n- **범위**: 최솟값 21분 · 최댓값 95분\n\n### 2. 기재 위치\n- **상세 수치 기록**: [근거_온보딩 실측 기준선](vdoc:resource/file_c4dcd048c0) (L7-9)\n  (`archive/2025.01.20 주간회의/A3.working memory/근거_온보딩 실측 기준선.md`)\n- **결정문 내 인용**: [Decision 04 — 온보딩은 템플릿 3종으로 시작한다](vdoc:resource/file_4926aa33c3) (L21, L27)\n  - 결정 사유 및 완료 판단 기준(DoD)에서 해당 기준선의 절반 이하(약 23.5분 이하)로 단축하는 것을 목표로 참조하고 있습니다.",
+  "thinking": "I'm thinking through how to approach this.\n\n\nInitial assessment indicates two relevant files: one related to onboarding benchmarks and another detailing an onboarding decision. The hypothesis is these files contain the necessary information to address the prompt's focus on onboarding. Further investigation is required to determine the specific relevance of each file's content.\n\n\n읽은 대상: 3개 (목록)\n확인된 규칙은 다음과 같다: 1. 답변의 맨 앞에 \"읽은 대상: N개 (목록)\" 명시. 2. 링크는 \"[제목](vdoc:resource/<resourceId>) (L시작-끝)\" 형식으로 표기. resourceId는 각 파일에 대해 추출했다.\n\n\n",
+  "notices": [
+   {
+    "type": "workspace_coverage",
+    "files": 12,
+    "fullyRead": 3,
+    "partiallyRead": 0,
+    "unread": 9,
+    "linesRead": 43,
+    "linesTotal": 3182,
+    "uniqueTotal": 11,
+    "uniqueFullyRead": 3
+   }
+  ]
+ },
+ {
+  "id": "S4-retention-needle",
+  "skill": "대용량 파일 속 바늘 · 미끼 회피",
+  "prompt": "데이터 보존 기간은 최종적으로 며칠로 합의됐어? 어디에 기록돼 있는지도.",
+  "session": "asst-b9358264c31d",
+  "seconds": 25.1,
+  "usage": {
+   "input_tokens": 31120,
+   "output_tokens": 1413,
+   "thought_tokens": 989,
+   "cached_read_tokens": 75436,
+   "total_tokens": 107969
+  },
+  "tools": [
+   {
+    "name": "mcp_vibefs_a9878f89_ws_grep",
+    "state": "done",
+    "params": {
+     "context": 2,
+     "pattern": "보존",
+     "toolSummary": "Search for retention keyword"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_a9878f89_ws_grep",
+    "state": "done",
+    "params": {
+     "context": 2,
+     "pattern": "90일",
+     "toolSummary": "Search for 90 days keyword"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 305,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\archive\\logs\\세션 기록_대용량.md",
+     "StartLine": 295
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 2425,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\archive\\logs\\세션 기록_대용량.md",
+     "StartLine": 2410
+    },
+    "error": null
+   }
+  ],
+  "vibefs_calls": 2,
+  "read_calls": 2,
+  "denies": [],
+  "files_read": [
+   "archive/logs/세션 기록_대용량.md"
+  ],
+  "checks": [
+   {
+    "ok": true,
+    "note": "최종 합의 90일: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "30일을 최종으로 착각 안 함: 통과",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "2417번째 줄을 읽음 (L2410-2425)",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "resource 링크 1개 모두 실제 id",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "4/4",
+  "answer": "읽은 대상: 1개 (`archive/logs/세션 기록_대용량.md`)\n\n데이터 보존 기간은 최종적으로 **90일**로 합의되었습니다.\n\n### 세부 기록 및 경과\n1. **초기 검토**: 30일 안을 검토했으나 결론을 내지 못하고 다음 회의로 넘김\n   - 기록: [세션 기록_대용량.md](vdoc:resource/file_4371d87a60) (L300)\n2. **최종 합의**: 법무팀 요청을 반영하여 이견 없이 **90일**로 합의\n   - 기록: [세션 기록_대용량.md](vdoc:resource/file_4371d87a60) (L2417)",
+  "thinking": "I'm thinking through how to approach this.\n\n\nI'm thinking through how to approach this.\n\n\n",
+  "notices": [
+   {
+    "type": "workspace_coverage",
+    "files": 12,
+    "fullyRead": 0,
+    "partiallyRead": 1,
+    "unread": 11,
+    "linesRead": 27,
+    "linesTotal": 3182,
+    "uniqueTotal": 11,
+    "uniqueFullyRead": 0
+   }
+  ]
+ },
+ {
+  "id": "S5-not-found",
+  "skill": "없는 것을 없다고 말하기 · 지어내지 않기",
+  "prompt": "결정 카드 중에 '가격 할인 정책'을 정한 결정이 있어?",
+  "session": "asst-e8ac4e49af93",
+  "seconds": 59.6,
+  "usage": {
+   "input_tokens": 49113,
+   "output_tokens": 3033,
+   "thought_tokens": 1764,
+   "cached_read_tokens": 233903,
+   "total_tokens": 286049
+  },
+  "tools": [
+   {
+    "name": "mcp_vibefs_29be63f7_ws_collect",
+    "state": "done",
+    "params": {
+     "query": "결정 카드",
+     "toolSummary": "Collect decision card files"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_29be63f7_ws_tree",
+    "state": "done",
+    "params": {
+     "depth": 4,
+     "path": "",
+     "toolSummary": "Inspect resource tree"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\archive\\2025.01.20 주간회의\\A4.meta\\examples\\sample_decision_output.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\archive\\2025.01.20 주간회의\\A4.meta\\templates\\decision_card_template.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\archive\\2025.01.20 주간회의\\A5.outputs\\D3_요금제는_사용량_기반으로_바꾼다.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\projects\\alpha\\discussions\\25.01.13\\decisions\\Decision 01 — 요금제는 좌석 기반으로 간다 (v1).md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\projects\\alpha\\discussions\\25.01.06\\decisions\\Decision 01 — 검색은 로컬 색인으로 시작한다.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\projects\\alpha\\discussions\\25.01.06\\decisions\\Decision 02 — 첫 고객은 법무팀으로 좁힌다.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\vault\\projects\\alpha\\discussions\\25.01.20\\decisions\\Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_29be63f7_ws_duplicates",
+    "state": "done",
+    "params": {
+     "toolSummary": "Check duplicate files"
+    },
+    "error": null
+   },
+   {
+    "name": "mcp_vibefs_29be63f7_ws_grep",
+    "state": "done",
+    "params": {
+     "pattern": "할인",
+     "toolSummary": "Grep discount keyword"
+    },
+    "error": null
+   }
+  ],
+  "vibefs_calls": 4,
+  "read_calls": 7,
+  "denies": [],
+  "files_read": [
+   "archive/2025.01.20 주간회의/A4.meta/examples/sample_decision_output.md",
+   "archive/2025.01.20 주간회의/A4.meta/templates/decision_card_template.md",
+   "archive/2025.01.20 주간회의/A5.outputs/D3_요금제는_사용량_기반으로_바꾼다.md",
+   "projects/alpha/discussions/25.01.06/decisions/Decision 01 — 검색은 로컬 색인으로 시작한다.md",
+   "projects/alpha/discussions/25.01.06/decisions/Decision 02 — 첫 고객은 법무팀으로 좁힌다.md",
+   "projects/alpha/discussions/25.01.13/decisions/Decision 01 — 요금제는 좌석 기반으로 간다 (v1).md",
+   "projects/alpha/discussions/25.01.20/decisions/Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md"
+  ],
+  "checks": [
+   {
+    "ok": true,
+    "note": "없다고 답함: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "D03 의 '좌석 단위 할인 정책' 제외 항목을 짚음 (가점): 있음",
+    "bonus": true
+   },
+   {
+    "ok": false,
+    "note": "지어낸 id: ['archive']",
+    "bonus": false
+   }
+  ],
+  "passed": false,
+  "score": "2/3",
+  "answer": "읽은 대상: 7개 (동일본 1개 제외)\n- [sample_decision_output.md](vdoc:resource/archive/2025.01.20%20주간회의/A4.meta/examples/sample_decision_output.md) (L1-9)\n- [decision_card_template.md](vdoc:resource/archive/2025.01.20%20주간회의/A4.meta/templates/decision_card_template.md) (L1-9)\n- [Decision 01 — 검색은 로컬 색인으로 시작한다](vdoc:resource/file_7a92f1593b) (L1-21)\n- [Decision 02 — 첫 고객은 법무팀으로 좁힌다](vdoc:resource/file_be75b165d0) (L1-21)\n- [Decision 01 — 요금제는 좌석 기반으로 간다 (v1)](vdoc:resource/file_969bb91849) (L1-21)\n- [D3_요금제는_사용량_기반으로_바꾼다](vdoc:resource/file_8db3356039) (L1-27, [Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_75d5f55476)와 동일본)\n- [Decision 04 — 온보딩은 템플릿 3종으로 시작한다](vdoc:resource/file_4926aa33c3) (L1-27)\n\n---\n\n현재 결정 카드 중 **'가격 할인 정책'을 정한 결정은 없습니다.**\n\n오히려 [Decision 03 — 요금제는 사용량 기반으로 바꾼다](vdoc:resource/file_8db3356039) (L23-27)의 실행 가이드라인에서 **'좌석 단위 할인 정책'을 제외 대상(Don't)으로 명시**하여 배제하고 있습니다.",
+  "thinking": "Initial hypothesis: The request seeks a specific decision card related to \"price discount policy.\" The workspace overview might provide a starting point or alternative search space through the collection utility.\n\nFirst step: Determine the workspace containing the decision cards using the collection utility on the general decision card topic. Then, review the collected documents for relevant content.\n\n\nExamining the first file, `sample_decision_output.md`, followed by the template file `decision_card_template.md`. Now proceeding to read the decision file `D3_요금제는_사용량_기반으로_바꾼다.md`.\n\n\nAnalyzing recent decision records. Noted that the initial plan to shift the pricing model to usage-based has been superseded. There's a new decision to adopt a seat-based pricing model for the first version. Also, the search functionality will initially utilize a local index. Additionally, the first customer focus will be narrowed to the legal team.\n\n\nSuccessfully read seven decision card files, excluding one duplicate from the initial eight. These include a sample output, a template, and five specific decision documents. The files provide the source material for the knowledge base.\n\n\n",
+  "notices": [
+   {
+    "type": "workspace_coverage",
+    "files": 12,
+    "fullyRead": 8,
+    "partiallyRead": 0,
+    "unread": 4,
+    "linesRead": 162,
+    "linesTotal": 3182,
+    "uniqueTotal": 11,
+    "uniqueFullyRead": 7
+   }
+  ]
+ }
+]

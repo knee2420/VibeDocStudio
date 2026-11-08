@@ -1,27 +1,31 @@
 import React from "react";
-import { BookOpen, Check, ChevronDown, ChevronRight, ChevronUp, Crosshair, FileText, Pin, RefreshCw, Settings2, X } from "lucide-react";
+import { BookOpen, Check, ChevronDown, ChevronRight, ChevronUp, Crosshair, FileText, FolderTree, Pin, RefreshCw, Settings2, X } from "lucide-react";
 
 import { getCheckedResourceItems, type ResourceItem } from "@vibe/vdoc-schema";
 
 import { DEFAULT_SCOPE, pageTitle, resolveScope, useAiScopeStore, type ScopeMode } from "@/entities/ai-scope";
 import { deckStageLabel, isDeckBusy, isDeckUsable, useKnowledgeDeckStore, type KnowledgeDeck } from "@/entities/knowledge-deck";
+import { useReferencePinStore } from "@/entities/reference-manager";
 import { useResourceStore } from "@/entities/resource";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { referenceDocs } from "@/features/ai-workspace";
 
 /**
  * Composer 설정바 — 입력창 위, 오래 걸어 두는 세팅. 줄마다 [행 스위치] [요약 버튼 ▴ → 펼침 메뉴].
  *
- *   📚 자료  RM 원본 · 지식 덱(섹션) 을 여러 개 골라 켜고 끈다 (RM 과 같은 상태)
- *   🎯 범위  선택만 · 이 페이지 · 문서 전체 + 페이지 고르기/빼기 + 📌 고정
+ *   📖 레퍼런스  좌측 패널 참조 문서(규정·서식) 및 지정 핀을 켜고 끈다 (규범/표준 가이드)
+ *   📦 리소스    RM 원본 · 지식 덱(섹션) 을 여러 개 골라 켜고 끈다 (원천 팩트·내용 데이터)
+ *   🎯 범위      선택만 · 이 페이지 · 문서 전체 + 페이지 고르기/빼기 + 📌 고정
  *
  * 메뉴 항목은 ✓ 로 켜고 끄며, 메뉴를 닫지 않고 여러 개를 연달아 고른다. 꺼진 항목도 회색으로 남아 바로 다시 켤 수 있다.
  * 한 단계 더 들어가는 항목(덱 섹션)은 메뉴 안 아코디언으로 펼친다.
  * 입력창(@멘션 · /스킬 · 이번 메시지의 선택)은 보내면 비워지는 일회용 칸이다.
  */
 export const ComposerSettingsBar: React.FC = () => (
-  <div data-testid="composer-settings-bar" className="mb-1.5 flex items-center gap-1.5 text-[11px]">
+  <div data-testid="composer-settings-bar" className="mb-1.5 grid grid-cols-3 gap-1.5 text-[11px]">
+    <ReferencesRow />
     <SourcesRow />
     <ScopeRow />
   </div>
@@ -30,7 +34,7 @@ export const ComposerSettingsBar: React.FC = () => (
 // --- 공통 부품 ------------------------------------------------------------------------
 
 /** 행 스위치 — 그 줄(자료 · 범위)을 통째로 켜고 끈다. 끄더라도 안의 설정은 그대로 남는다. */
-const RowSwitch: React.FC<{ icon: React.ReactNode; label: string; on: boolean; onToggle: () => void; title: string; tone: "violet" | "amber"; testId: string }> = ({
+const RowSwitch: React.FC<{ icon: React.ReactNode; label: string; on: boolean; onToggle: () => void; title: string; tone: "violet" | "amber" | "emerald"; testId: string }> = ({
   icon,
   label,
   on,
@@ -50,6 +54,8 @@ const RowSwitch: React.FC<{ icon: React.ReactNode; label: string; on: boolean; o
       on
         ? tone === "violet"
           ? "bg-violet-50 text-violet-700 border-violet-300 hover:bg-violet-100"
+          : tone === "emerald"
+          ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
           : "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
         : "bg-slate-50 text-slate-400 border-slate-200 line-through hover:text-slate-600"
     }`}
@@ -79,7 +85,7 @@ function usePopover() {
 }
 
 /** 줄의 요약 버튼 (모델 선택 버튼처럼) — 누르면 위로 메뉴가 열린다. */
-const SummaryButton: React.FC<{ open: boolean; onClick: () => void; testId: string; on: boolean; tone: "violet" | "amber"; children: React.ReactNode; title: string }> = ({
+const SummaryButton: React.FC<{ open: boolean; onClick: () => void; testId: string; on: boolean; tone: "violet" | "amber" | "emerald"; children: React.ReactNode; title: string }> = ({
   open,
   onClick,
   testId,
@@ -98,6 +104,8 @@ const SummaryButton: React.FC<{ open: boolean; onClick: () => void; testId: stri
       on
         ? tone === "violet"
           ? "bg-violet-600 text-white border-violet-600 hover:bg-violet-700"
+          : tone === "emerald"
+          ? "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700"
           : "bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100"
         : "bg-white text-slate-400 border-slate-200 hover:text-slate-600"
     }`}
@@ -120,7 +128,7 @@ const UnifiedSettingButton: React.FC<{
   onToggle: () => void;
   open: boolean;
   onOpenMenu: () => void;
-  tone: "violet" | "amber";
+  tone: "violet" | "amber" | "emerald";
   switchTestId: string;
   buttonTestId: string;
   switchTitle: string;
@@ -144,6 +152,8 @@ const UnifiedSettingButton: React.FC<{
       on
         ? tone === "violet"
           ? "bg-violet-50/80 border-violet-200 text-violet-950 hover:bg-violet-50"
+          : tone === "emerald"
+          ? "bg-emerald-50/80 border-emerald-200 text-emerald-950 hover:bg-emerald-50"
           : "bg-amber-50/80 border-amber-200 text-amber-950 hover:bg-amber-50"
         : "bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100"
     }`}
@@ -163,6 +173,8 @@ const UnifiedSettingButton: React.FC<{
         on
           ? tone === "violet"
             ? "text-violet-700 hover:text-violet-900 hover:bg-violet-100/60"
+            : tone === "emerald"
+            ? "text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100/60"
             : "text-amber-700 hover:text-amber-900 hover:bg-amber-100/60"
           : "text-slate-400 line-through hover:text-slate-600"
       }`}
@@ -177,6 +189,8 @@ const UnifiedSettingButton: React.FC<{
         on
           ? tone === "violet"
             ? "bg-violet-200"
+            : tone === "emerald"
+            ? "bg-emerald-200"
             : "bg-amber-200"
           : "bg-slate-200"
       }`}
@@ -267,7 +281,191 @@ const MenuItem: React.FC<{
   </div>
 );
 
-// --- 📚 자료 -----------------------------------------------------------------------
+// --- 📖 레퍼런스 (규정 · 서식) --------------------------------------------------
+
+const ReferencesRow: React.FC = () => {
+  const referencesOn = useAiScopeStore((s) => s.referencesOn);
+  const setReferencesOn = useAiScopeStore((s) => s.setReferencesOn);
+  const excludedRefDocIds = useAiScopeStore((s) => s.excludedRefDocIds ?? []);
+  const toggleRefDocExcluded = useAiScopeStore((s) => s.toggleRefDocExcluded);
+  const setAllRefDocsExcluded = useAiScopeStore((s) => s.setAllRefDocsExcluded);
+
+  const snippetsByDoc = useReferencePinStore((s) => s.snippetsByDoc);
+  const checkedSnippetIds = useReferencePinStore((s) => s.checkedSnippetIds);
+
+  const setLeftPanelTab = useWorkspaceLayoutStore((s) => s.setLeftPanelTab);
+  const openReferenceSplit = useWorkspaceLayoutStore((s) => s.openReferenceSplit);
+
+  const [open, setOpen, menuRef] = usePopover();
+
+  // 바인딩된 참조 문서 목록
+  const refDocs = React.useMemo(() => referenceDocs(), []);
+  const activeDocs = React.useMemo(
+    () => refDocs.filter((d) => !excludedRefDocIds.includes(d.docId)),
+    [refDocs, excludedRefDocIds]
+  );
+
+  // 등록된 총 핀 및 체크된 핀 수
+  const totalPinCount = React.useMemo(() => {
+    return refDocs.reduce((acc, d) => acc + (snippetsByDoc[d.docId]?.length ?? 0), 0);
+  }, [refDocs, snippetsByDoc]);
+
+  const activePinCount = React.useMemo(() => {
+    const checkedSet = new Set(checkedSnippetIds ?? []);
+    return activeDocs.reduce((acc, d) => {
+      const snippets = snippetsByDoc[d.docId] ?? [];
+      const active = snippets.filter((s) => checkedSet.size === 0 || checkedSet.has(s.id));
+      return acc + active.length;
+    }, 0);
+  }, [activeDocs, snippetsByDoc, checkedSnippetIds]);
+
+  const referencesSummary = React.useMemo(() => {
+    if (!referencesOn) return "꺼짐";
+    if (refDocs.length === 0) return "없음";
+    if (activeDocs.length === 0) return "전체 제외됨";
+    if (activeDocs.length === 1 && totalPinCount === 0) {
+      return activeDocs[0].title;
+    }
+    if (activePinCount > 0) {
+      return `참조 ${activeDocs.length}건 · 핀 ${activePinCount}개`;
+    }
+    return `참조 ${activeDocs.length}건`;
+  }, [referencesOn, refDocs.length, activeDocs, totalPinCount, activePinCount]);
+
+  const referencesTooltip = React.useMemo(() => {
+    if (!referencesOn) return "레퍼런스 꺼짐 — AI가 규정·서식을 참고하지 않습니다 (클릭하여 켜기)";
+    if (refDocs.length === 0) return "바인딩된 참조 문서 없음";
+    return `참조 문서 ${activeDocs.length}건 활성 (총 ${refDocs.length}건, 핀 ${activePinCount}개)`;
+  }, [referencesOn, refDocs.length, activeDocs.length, activePinCount]);
+
+  return (
+    <div ref={menuRef} className="relative flex-1 min-w-0 flex">
+      <UnifiedSettingButton
+        icon={<BookOpen className="w-3 h-3 text-emerald-600" />}
+        label="레퍼런스"
+        summary={referencesSummary}
+        on={referencesOn}
+        onToggle={() => setReferencesOn(!referencesOn)}
+        open={open}
+        onOpenMenu={() => setOpen(!open)}
+        tone="emerald"
+        switchTestId="row-switch-references"
+        buttonTestId="references-setting-button"
+        switchTitle={referencesTooltip}
+        buttonTitle="참조 문서(규정 · 서식) 선택 메뉴 열기"
+      />
+      {open && (
+        <div
+          data-testid="references-menu"
+          className="absolute bottom-full left-0 mb-1 w-80 max-h-96 flex flex-col rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 text-[11px] overflow-hidden"
+        >
+          {/* 상단 헤더 */}
+          <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
+            <span className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+              참조 문서 (규정 · 서식)
+            </span>
+            <div className="flex items-center gap-1 text-[10px]">
+              <button
+                type="button"
+                onClick={() => setAllRefDocsExcluded(refDocs.map((d) => d.docId), false)}
+                className="px-1.5 py-0.5 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer font-medium"
+              >
+                모두 켜기
+              </button>
+              <span className="text-slate-300 dark:text-slate-600">|</span>
+              <button
+                type="button"
+                onClick={() => setAllRefDocsExcluded(refDocs.map((d) => d.docId), true)}
+                className="px-1.5 py-0.5 rounded text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                모두 끄기
+              </button>
+            </div>
+          </div>
+
+          {/* 목록 영역 */}
+          <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
+            {refDocs.length === 0 ? (
+              <div className="py-6 text-center text-slate-400">
+                바인딩된 참조 문서가 없습니다.
+              </div>
+            ) : (
+              refDocs.map((d) => {
+                const isExcluded = excludedRefDocIds.includes(d.docId);
+                const isChecked = !isExcluded;
+                const docSnippets = snippetsByDoc[d.docId] ?? [];
+                return (
+                  <div
+                    key={d.docId}
+                    className={`flex items-start gap-2 p-2 rounded-md transition ${
+                      isChecked
+                        ? "bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100/80 dark:hover:bg-slate-800/70"
+                        : "opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggleRefDocExcluded(d.docId)}
+                      className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                      id={`ref-doc-check-${d.docId}`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <label
+                        htmlFor={`ref-doc-check-${d.docId}`}
+                        className="font-medium text-slate-800 dark:text-slate-200 truncate block cursor-pointer"
+                      >
+                        {d.title}
+                      </label>
+                      <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                        <span>{d.projectTitle}</span>
+                        {d.pageCount && <span>· {d.pageCount}p</span>}
+                        {docSnippets.length > 0 && (
+                          <span className="text-emerald-600 font-medium">
+                            · 핀 {docSnippets.length}개
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      title="스플릿 뷰에서 열기"
+                      onClick={() => {
+                        openReferenceSplit(d.docId);
+                        setOpen(false);
+                      }}
+                      className="p-1 rounded text-slate-400 hover:text-emerald-600 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* 하단 푸터 바로가기 */}
+          <div className="p-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center text-[10px]">
+            <span className="text-slate-400">규범·서식 가이드로 AI 주입</span>
+            <button
+              type="button"
+              onClick={() => {
+                setLeftPanelTab("reference-manager");
+                setOpen(false);
+              }}
+              className="px-2 py-1 rounded bg-slate-200/70 dark:bg-slate-800 hover:bg-slate-300/70 text-slate-700 dark:text-slate-300 cursor-pointer font-medium"
+            >
+              좌측 Reference Manager 열기 →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- 📦 리소스 -----------------------------------------------------------------------
 
 const leafChecked = (items: ResourceItem[]) => getCheckedResourceItems(items).filter((it) => !it.children?.length);
 
@@ -346,23 +544,23 @@ const SourcesRow: React.FC = () => {
     // 복수 선택
     if (checked.length === 0) return `덱 ${usable.length}건`;
     if (usable.length === 0) return `소스 ${checked.length}건`;
-    return `자료 ${totalCount}건`;
+    return `리소스 ${totalCount}건`;
   }, [sourcesOn, totalCount, checked, usable]);
 
   const sourcesTooltip = React.useMemo(() => {
-    if (!sourcesOn) return "자료 꺼짐 — AI가 자료를 참고하지 않습니다 (클릭하여 켜기)";
-    if (totalCount === 0) return "선택된 자료 없음 — 눌러서 원본/지식 덱 선택";
+    if (!sourcesOn) return "리소스 꺼짐 — AI가 리소스를 참고하지 않습니다 (클릭하여 켜기)";
+    if (totalCount === 0) return "선택된 리소스 없음 — 눌러서 원본/지식 덱 선택";
     const parts: string[] = [];
     if (checked.length > 0) parts.push(`소스 ${checked.length}개 (${checked.map((c) => c.title).join(", ")})`);
     if (usable.length > 0) parts.push(`덱 ${usable.length}개 (${usable.map((d) => d.title).join(", ")})`);
-    return `AI 참고 자료: ${parts.join(" · ")}\n눌러서 변경`;
+    return `AI 참고 리소스: ${parts.join(" · ")}\n눌러서 변경`;
   }, [sourcesOn, totalCount, checked, usable]);
 
   return (
     <div ref={menuRef} className="relative flex-1 min-w-0 flex">
       <UnifiedSettingButton
-        icon={<BookOpen className="w-3 h-3" />}
-        label="자료"
+        icon={<FolderTree className="w-3 h-3 text-purple-600" />}
+        label="리소스"
         summary={sourcesSummary}
         on={sourcesOn}
         onToggle={() => setSourcesOn(!sourcesOn)}
@@ -374,13 +572,13 @@ const SourcesRow: React.FC = () => {
         tone="violet"
         switchTestId="settings-sources-switch"
         buttonTestId="settings-sources"
-        switchTitle={sourcesOn ? "자료 켜짐 — 누르면 끕니다" : "자료 꺼짐 — 누르면 켭니다"}
+        switchTitle={sourcesOn ? "리소스 켜짐 — 누르면 끕니다" : "리소스 꺼짐 — 누르면 켭니다"}
         buttonTitle={sourcesTooltip}
       />
       {open && (
         <Menu testId="settings-sources-menu" align="left">
             <MenuHeader
-              label="원본 (RM)"
+              label="원본 리소스 (RM)"
               action={
                 listed.length > 0 && (
                   <button
@@ -543,9 +741,26 @@ const ScopeRow: React.FC = () => {
         icon={<Crosshair className="w-3 h-3" />}
         label="범위"
         summary={
-          <span className="inline-flex items-center gap-1 truncate" data-testid="scope-current">
-            {setting.fixed && <Pin className="w-2.5 h-2.5 shrink-0 text-amber-600" />}
-            <span className="truncate">{scopeSummary}</span>
+          <span className="inline-flex items-center justify-between gap-1 w-full min-w-0" data-testid="scope-current">
+            <span className="inline-flex items-center gap-1 min-w-0 truncate">
+              {setting.fixed && <Pin className="w-2.5 h-2.5 shrink-0 text-amber-600" />}
+              <span className="truncate">{scopeSummary}</span>
+            </span>
+            {suggestion && scopeOn && (
+              <span
+                role="button"
+                data-testid="scope-suggestion"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  suggestion.apply();
+                }}
+                className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded border border-dashed border-amber-400 bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-bold shrink-0 cursor-pointer transition"
+                title={`캔버스 초점이 바뀌었습니다 (${suggestion.label}) — 누르면 범위를 이것으로 바꿉니다`}
+              >
+                <RefreshCw className="w-2.5 h-2.5 shrink-0" />
+                <span className="truncate max-w-[48px]">{suggestion.label.split(" ")[0]}</span>
+              </span>
+            )}
           </span>
         }
         on={scopeOn}
@@ -560,7 +775,25 @@ const ScopeRow: React.FC = () => {
       />
       {open && (
         <Menu testId="settings-scope-menu" align="right">
-            <MenuHeader label="범위" />
+          {suggestion && (
+            <div className="px-2.5 py-1.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800">
+              <button
+                type="button"
+                onClick={() => {
+                  suggestion.apply();
+                  setOpen(false);
+                }}
+                className="w-full flex items-center justify-between gap-1 text-[11px] font-semibold text-amber-900 dark:text-amber-200 hover:underline cursor-pointer"
+              >
+                <span className="flex items-center gap-1.5 truncate">
+                  <RefreshCw className="w-3 h-3 text-amber-600 shrink-0" />
+                  <span className="truncate">새 초점 적용: {suggestion.label}</span>
+                </span>
+                <span className="text-[10px] text-amber-700 dark:text-amber-400 shrink-0 font-bold">적용 →</span>
+              </button>
+            </div>
+          )}
+          <MenuHeader label="범위" />
             {MODES.map((m) => (
               <MenuItem
                 key={m.id}
@@ -655,18 +888,6 @@ const ScopeRow: React.FC = () => {
               </>
             )}
           </Menu>
-        )}
-        {suggestion && scopeOn && (
-          <button
-            type="button"
-            data-testid="scope-suggestion"
-            onClick={suggestion.apply}
-            className="inline-flex items-center gap-1 max-w-[140px] shrink-0 px-1.5 py-0.5 rounded-md border border-dashed border-slate-300 bg-white text-slate-500 font-semibold hover:text-amber-700 hover:border-amber-300 cursor-pointer"
-            title="캔버스 초점이 바뀌었습니다 — 누르면 범위를 이것으로 바꿉니다 (고정은 유지)"
-          >
-            <RefreshCw className="w-3 h-3 shrink-0" />
-            <span className="truncate">초점: {suggestion.label}</span>
-          </button>
         )}
       </div>
   );

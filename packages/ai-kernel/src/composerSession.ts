@@ -5,14 +5,19 @@ import type { AssistantEvent, ContextRef, PermissionMode, RiskLevel, TurnUsage }
 export type ComposerItem =
   | { kind: "user"; id: string; text: string; contexts: ContextRef[] }
   | { kind: "assistant"; id: string; text: string; streaming: boolean }
-  | { kind: "thinking"; id: string; text: string }
+  | { kind: "thinking"; id: string; text: string; collapsed?: boolean; durationSeconds?: number }
   | {
       kind: "agent_tool";
       id: string;
+      callId?: string;
       name: string;
-      state: "running" | "done";
+      state: "running" | "done" | "error";
       params: Record<string, unknown>;
+      toolKind?: string;
+      title?: string;
+      locations?: { path: string }[];
       output?: string;
+      error?: string;
     }
   | {
       kind: "tool_call";
@@ -417,6 +422,7 @@ export class ComposerSessionController {
   ) {
     let assistantId: string | null = null;
     let thinkingId: string | null = null;
+    let thinkingStartTime: number | null = null;
     let draftId: string | null = null;
     const sessionId = this.state.sessionId;
     let model = this.state.engine?.model ?? "";
@@ -430,6 +436,13 @@ export class ComposerSessionController {
           this.set({ status: "streaming", engine: { provider: event.provider, model: event.model } });
           break;
         case "text_delta": {
+          if (thinkingId) {
+            const tItem = this.state.items.find((i) => i.id === thinkingId);
+            if (tItem && tItem.kind === "thinking" && tItem.collapsed === false) {
+              const dur = thinkingStartTime ? Math.max(1, Math.round((Date.now() - thinkingStartTime) / 1000)) : undefined;
+              this.update(thinkingId, { collapsed: true, durationSeconds: dur });
+            }
+          }
           if (!assistantId) {
             assistantId = nid("a");
             this.push({ kind: "assistant", id: assistantId, text: event.text, streaming: true });
@@ -442,7 +455,8 @@ export class ComposerSessionController {
         case "thinking_delta": {
           if (!thinkingId) {
             thinkingId = nid("t");
-            this.push({ kind: "thinking", id: thinkingId, text: event.text });
+            thinkingStartTime = Date.now();
+            this.push({ kind: "thinking", id: thinkingId, text: event.text, collapsed: false });
           } else {
             const item = this.state.items.find((i) => i.id === thinkingId);
             if (item && item.kind === "thinking") this.update(thinkingId, { text: item.text + event.text });
@@ -450,13 +464,43 @@ export class ComposerSessionController {
           break;
         }
         case "agent_tool": {
-          const key = `${event.stepIndex ?? event.name}`;
+          if (thinkingId) {
+            const tItem = this.state.items.find((i) => i.id === thinkingId);
+            if (tItem && tItem.kind === "thinking" && tItem.collapsed === false) {
+              const dur = thinkingStartTime ? Math.max(1, Math.round((Date.now() - thinkingStartTime) / 1000)) : undefined;
+              this.update(thinkingId, { collapsed: true, durationSeconds: dur });
+            }
+            thinkingId = null;
+            thinkingStartTime = null;
+          }
+          const key = event.callId ?? `${event.stepIndex ?? event.name}`;
           const existing = agentTools.get(key);
-          if (existing) this.update(existing, { state: event.state, output: event.output });
-          else {
+          if (existing) {
+            const prev = this.state.items.find((i) => i.id === existing);
+            this.update(existing, {
+              state: event.state,
+              output: event.output,
+              error: event.error,
+              // 실패 갱신에는 인자가 비어 올 수 있다 — 처음 받은 인자 · 위치를 지킨다
+              ...(event.locations?.length ? { locations: event.locations } : {}),
+              ...(prev && prev.kind === "agent_tool" && Object.keys(prev.params ?? {}).length ? {} : { params: event.params }),
+            });
+          } else {
             const id = nid("at");
             agentTools.set(key, id);
-            this.push({ kind: "agent_tool", id, name: event.name, state: event.state, params: event.params, output: event.output });
+            this.push({
+              kind: "agent_tool",
+              id,
+              callId: event.callId,
+              name: event.name,
+              state: event.state,
+              params: event.params,
+              toolKind: event.kind,
+              title: event.title,
+              locations: event.locations,
+              output: event.output,
+              error: event.error,
+            });
           }
           assistantId = null; // 도구 뒤의 텍스트는 새 말풍선
           break;
@@ -535,6 +579,29 @@ export class ComposerSessionController {
               /* 잘린 미리보기 — 문자열 그대로 */
             }
             this.update(item.id, event.ok ? { status: "done", output } : { status: "error", error: String(event.output ?? "") });
+          }
+          break;
+        }
+        case "workspace_coverage": {
+          const pct = event.linesTotal ? Math.round((100 * event.linesRead) / event.linesTotal) : 0;
+          this.push({
+            kind: "notice",
+            id: nid("n"),
+            level: "info",
+            text:
+              `리소스 작업 공간 · 읽은 범위: 텍스트 ${event.files}개 중 전부 ${event.fullyRead} · 일부 ${event.partiallyRead} · ` +
+              `안 읽음 ${event.unread} (줄 ${event.linesRead.toLocaleString()}/${event.linesTotal.toLocaleString()} · ${pct}%)`,
+          });
+          break;
+        }
+        case "citation_check": {
+          if (event.warnings && event.warnings.length > 0) {
+            this.push({
+              kind: "notice",
+              id: nid("n"),
+              level: "warning",
+              text: `인용 검증 경고 (${event.warnings.length}건):\n` + event.warnings.map((w) => `• ${w}`).join("\n"),
+            });
           }
           break;
         }

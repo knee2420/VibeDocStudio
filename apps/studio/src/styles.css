@@ -69,11 +69,15 @@
 }
 
 .vdoc-slot-editor,
-.vdoc-tiptap-slot {
+.vdoc-tiptap-slot,
+.vdoc-tiptap-slot.ProseMirror {
   font-size: inherit;
   line-height: inherit;
   color: inherit;
   font-weight: inherit;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
 }
 
 .vdoc-tiptap-slot p {
@@ -81,6 +85,7 @@
   line-height: inherit;
   color: inherit;
   font-weight: inherit;
+  margin-top: 0 !important;
   margin-bottom: 0.2rem;
 }
 
@@ -89,7 +94,7 @@
 }
 
 .vdoc-tiptap-slot p:last-child {
-  margin-bottom: 0;
+  margin-bottom: 0 !important;
 }
 
 .vdoc-tiptap-slot ul {

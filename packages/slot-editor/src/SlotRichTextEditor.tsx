@@ -204,10 +204,10 @@ const LiveSlotEditor: React.FC<LiveSlotEditorProps> = ({
     focusedFor.current = editor;
     const pos =
       initialFocus === "end" ? null : editor.view.posAtCoords({ left: initialFocus.x, top: initialFocus.y })?.pos;
-    editor.commands.focus(pos ?? "end");
+    editor.commands.focus(pos ?? "end", { scrollIntoView: false });
     // Tiptap 의 focus 는 다음 프레임(rAF)에 DOM 포커스를 준다. 정적 화면이 막 바뀐 지금 바로 줘야
     // Tab 이동 · 클릭 직후의 키 입력이 새 편집기로 들어간다 (rAF 가 멈춘 백그라운드 창에서도).
-    editor.view.focus();
+    try { editor.view.dom.focus({ preventScroll: true }); } catch { editor.view.focus(); }
   }, [editor, initialFocus]);
 
   // 활성 편집기로 등록돼 있던 채로 내려가면 툴바가 죽은 편집기를 잡지 않게 비운다.
@@ -424,27 +424,25 @@ const StaticSlotView: React.FC<StaticSlotViewProps> = ({ slotId, content, editab
       }}
       className={`vdoc-slot-editor max-w-none focus:outline-none ${className}`}
     >
-      <div>
-        <div
-          className={`tiptap ProseMirror ${EDITOR_CLASS}`}
-          data-lazy-slot-editor=""
-          spellCheck={false}
-          translate="no"
-          tabIndex={editable ? 0 : undefined}
-          onMouseDown={(e) => {
-            // 기본 동작(이 요소로 포커스)은 곧 사라질 정적 요소로 간다 — 캐럿은 편집기가 직접 둔다.
-            if (editable && e.button === 0 && !e.shiftKey && !e.ctrlKey && !e.metaKey) e.preventDefault();
-          }}
-          onPointerDown={(e) => {
-            if (!editable || e.button !== 0 || e.shiftKey || e.ctrlKey || e.metaKey) return;
-            onActivate({ x: e.clientX, y: e.clientY });
-          }}
-          onFocus={() => {
-            if (editable) onActivate("end");
-          }}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      </div>
+      <div
+        className={`tiptap ProseMirror ${EDITOR_CLASS}`}
+        data-lazy-slot-editor=""
+        spellCheck={false}
+        translate="no"
+        tabIndex={editable ? 0 : undefined}
+        onMouseDown={(e) => {
+          // 기본 동작(이 요소로 포커스)은 곧 사라질 정적 요소로 간다 — 캐럿은 편집기가 직접 둔다.
+          if (editable && e.button === 0 && !e.shiftKey && !e.ctrlKey && !e.metaKey) e.preventDefault();
+        }}
+        onPointerDown={(e) => {
+          if (!editable || e.button !== 0 || e.shiftKey || e.ctrlKey || e.metaKey) return;
+          onActivate({ x: e.clientX, y: e.clientY });
+        }}
+        onFocus={() => {
+          if (editable) onActivate("end");
+        }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
     </div>
   );
 };

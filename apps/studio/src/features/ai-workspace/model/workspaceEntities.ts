@@ -11,6 +11,8 @@ import {
   type VDocPage,
 } from "@vibe/vdoc-schema";
 
+import { useReferencePinStore } from "@/entities/reference-manager";
+import { flattenResourceItems, type ResourceItem, type ResourceSector, useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, selectBoundReferenceProjects, useProjectStore } from "@/entities/vdoc-project";
@@ -288,6 +290,108 @@ const regionResolver: EntityResolver = {
   },
 };
 
+const resourceResolver: EntityResolver = {
+  id: "resource",
+  resolve(id, kind) {
+    if (kind && kind !== "resource" && kind !== "sector") return null;
+    const store = useResourceStore.getState();
+    const all = flattenResourceItems(store.items);
+
+    // 1. 리소스 아이템 ID 직접 매칭 (file_xxx, dir_xxx 등)
+    let matchedItem = all.find((it) => it.id === id);
+    let matchedSector: ResourceSector | null = null;
+
+    // 2. 섹터 ID 매칭 (sec_xxx 등)
+    if (!matchedItem) {
+      for (const it of all) {
+        const sec = it.sectors?.find((s) => s.sectorId === id);
+        if (sec) {
+          matchedItem = it;
+          matchedSector = sec;
+          break;
+        }
+      }
+    }
+
+    // 3. 파일명/타이틀/Decision 번호 매칭 (예: "Decision 03" 이 id로 들어온 경우)
+    if (!matchedItem && id.length >= 3) {
+      const lower = id.toLowerCase();
+      matchedItem = all.find(
+        (it) => it.title.toLowerCase().includes(lower) || (it.pathOrUrl && it.pathOrUrl.toLowerCase().includes(lower))
+      );
+    }
+
+    if (!matchedItem) return null;
+
+    const label = matchedSector ? matchedSector.title || `${matchedItem.title} (발췌)` : matchedItem.title;
+
+    return {
+      kind: matchedSector ? "sector" : "resource",
+      id,
+      label,
+      detail: matchedSector ? "리소스 발췌" : "원천 리소스",
+      reveal: () => {
+        store.openPreview(
+          matchedItem!,
+          matchedSector
+            ? {
+                page: matchedSector.page,
+                bbox: matchedSector.bbox,
+                label: matchedSector.label,
+              }
+            : null
+        );
+      },
+      highlight: (on) => highlight(matchedItem!.id, on),
+      toContext: () => ({
+        kind: "resource",
+        id: matchedItem!.id,
+        label: matchedItem!.title,
+        content: matchedSector ? matchedSector.textSnippet : matchedItem!.pathOrUrl || "",
+        access: "read",
+      }),
+    };
+  },
+};
+
+const refPinResolver: EntityResolver = {
+  id: "ref-pin",
+  resolve(id, kind) {
+    if (kind && kind !== "ref-pin" && kind !== "pin") return null;
+    const snippetsByDoc = useReferencePinStore.getState().snippetsByDoc;
+    let foundSnippet: import("@/entities/reference-manager").ReferenceSnippet | null = null;
+    for (const docId of Object.keys(snippetsByDoc)) {
+      const match = snippetsByDoc[docId]?.find((s) => s.id === id);
+      if (match) {
+        foundSnippet = match;
+        break;
+      }
+    }
+    if (!foundSnippet) return null;
+    const snippet = foundSnippet;
+    const deck = referenceDeck().find((r) => r.docId === snippet.docId);
+    return {
+      kind: "ref-pin",
+      id,
+      label: snippet.label || `참조 핀 (${snippet.id})`,
+      detail: `${deck ? `참조${deck.number}` : "참조"} 핀`,
+      reveal: () => {
+        if (deck) useProjectStore.getState().setSelectedReferenceProjectId(deck.projectId);
+        useWorkspaceSessionStore.getState().openReferenceDoc(snippet.docId);
+        useReferencePinStore.getState().setFocusedSnippet(snippet);
+      },
+      highlight: (on) => highlight(snippet.docId, on),
+      toContext: () => ({
+        kind: "ref-pin",
+        id: snippet.id,
+        label: snippet.label,
+        content: snippet.kind === "text" ? snippet.text : snippet.kind === "region" ? snippet.excerpt || "" : "",
+        access: "read",
+      }),
+    };
+  },
+};
+
 /** 등록 순서 = 맨 id 가 겹칠 때의 우선순위. */
 export const WORKSPACE_ENTITY_RESOLVERS: EntityResolver[] = [
   blockResolver,
@@ -297,6 +401,8 @@ export const WORKSPACE_ENTITY_RESOLVERS: EntityResolver[] = [
   backdataResolver,
   nodeResolver,
   regionResolver,
+  refPinResolver,
+  resourceResolver,
 ];
 
 export type { EntityInfo };

@@ -84,6 +84,8 @@ class EngineProvider(Protocol):
         *,
         lane: Lane,
         resume: Optional[dict[str, Any]] = None,
+        session_id: Optional[str] = None,
+        system_prompt: Optional[str] = None,
     ) -> ConversationEngine: ...
 
     def warmup(self, targets: dict[EngineChoice, int]) -> None:

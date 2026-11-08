@@ -71,7 +71,7 @@ const GROUP_CONFIG: Record<
   },
   // 2. 레퍼런스: 앰버 (Amber)
   reference: {
-    label: "레퍼런스 (참조 규정 · PDF)",
+    label: "레퍼런스 (참조 규정 · PDF · 핀)",
     icon: BookOpen,
     border: "border-amber-200/80",
     bg: "bg-amber-50/40",
@@ -293,8 +293,8 @@ function parseBlocks(text: string, entities: EntityRegistry | null): React.React
 
 /** 위치 링크 `vdoc:종류/id` (종류 생략 가능). */
 const VDOC_LINK = /^vdoc:(?:([a-z-]+)\/)?(.+)$/;
-/** 맨 id 후보: 밑줄이 들어간 영숫자 토큰 (`mm_page_1`, `blk_bs_composite_frame`). */
-const BARE_ID = /\b[A-Za-z][A-Za-z0-9]*(?:[_-][A-Za-z0-9]+)*_[A-Za-z0-9]+\b/g;
+/** 맨 id 후보: 밑줄이 들어간 영숫자 토큰 (`mm_page_1`, `blk_bs_composite_frame`) 및 의사결정/카드 키워드 (`Decision 03`, `C-03-05`). */
+const BARE_ID = /\b[A-Za-z][A-Za-z0-9]*(?:[_-][A-Za-z0-9]+)*_[A-Za-z0-9]+\b|\bDecision\s+\d+\b|\bC-\d{2}-\d{2}\b/gi;
 
 function inlineNodes(text: string, entities: EntityRegistry | null): React.ReactNode[] {
   const parts: React.ReactNode[] = [];

@@ -13,11 +13,18 @@ export interface AiScopeState {
   settings: Record<string, DocScopeSetting>;
   live: { docId: string | null; target: ScopeTarget | null; pageId: string | null };
   turn: ResolvedScope | null;
-  /** 설정바 행 스위치 — 자료(덱 · RM 원본) / 범위(문서) 를 통째로 켜고 끈다. RM 체크 · 범위 설정은 그대로 둔다 */
+  /** 설정바 행 스위치 — 레퍼런스(규정·서식) / 자료(덱 · RM 원본) / 범위(문서) 를 통째로 켜고 끈다. */
+  referencesOn: boolean;
   sourcesOn: boolean;
   scopeOn: boolean;
+  setReferencesOn: (on: boolean) => void;
   setSourcesOn: (on: boolean) => void;
   setScopeOn: (on: boolean) => void;
+
+  /** 특정 참조 문서(규정/서식) 제외 관리 — 제외되지 않은 참조 문서는 Composer 컨텍스트에 자동 주입된다 */
+  excludedRefDocIds: string[];
+  toggleRefDocExcluded: (docId: string) => void;
+  setAllRefDocsExcluded: (docIds: string[], excluded: boolean) => void;
 
   settingFor: (docId: string) => DocScopeSetting;
   setMode: (docId: string, mode: ScopeMode) => void;
@@ -40,12 +47,16 @@ export interface AiScopeState {
 const KEY = "vdoc.aiScope.v1";
 const SWITCH_KEY = "vdoc.aiScope.switches";
 
-function loadSwitches(): { sourcesOn: boolean; scopeOn: boolean } {
+function loadSwitches(): { referencesOn: boolean; sourcesOn: boolean; scopeOn: boolean } {
   try {
     const raw = JSON.parse(localStorage.getItem(SWITCH_KEY) ?? "{}");
-    return { sourcesOn: raw.sourcesOn !== false, scopeOn: raw.scopeOn !== false };
+    return {
+      referencesOn: raw.referencesOn !== false,
+      sourcesOn: raw.sourcesOn !== false,
+      scopeOn: raw.scopeOn !== false,
+    };
   } catch {
-    return { sourcesOn: true, scopeOn: true };
+    return { referencesOn: true, sourcesOn: true, scopeOn: true };
   }
 }
 
@@ -78,10 +89,33 @@ export const useAiScopeStore = create<AiScopeState>((set, get) => {
     live: { docId: null, target: null, pageId: null },
     turn: null,
     ...loadSwitches(),
+    excludedRefDocIds: [],
+    setReferencesOn: (on) => {
+      set({ referencesOn: on });
+      try {
+        localStorage.setItem(
+          SWITCH_KEY,
+          JSON.stringify({
+            referencesOn: on,
+            sourcesOn: get().sourcesOn,
+            scopeOn: get().scopeOn,
+          })
+        );
+      } catch {
+        /* 이번 세션만 */
+      }
+    },
     setSourcesOn: (on) => {
       set({ sourcesOn: on });
       try {
-        localStorage.setItem(SWITCH_KEY, JSON.stringify({ sourcesOn: on, scopeOn: get().scopeOn }));
+        localStorage.setItem(
+          SWITCH_KEY,
+          JSON.stringify({
+            referencesOn: get().referencesOn,
+            sourcesOn: on,
+            scopeOn: get().scopeOn,
+          })
+        );
       } catch {
         /* 이번 세션만 */
       }
@@ -89,9 +123,30 @@ export const useAiScopeStore = create<AiScopeState>((set, get) => {
     setScopeOn: (on) => {
       set({ scopeOn: on });
       try {
-        localStorage.setItem(SWITCH_KEY, JSON.stringify({ sourcesOn: get().sourcesOn, scopeOn: on }));
+        localStorage.setItem(
+          SWITCH_KEY,
+          JSON.stringify({
+            referencesOn: get().referencesOn,
+            sourcesOn: get().sourcesOn,
+            scopeOn: on,
+          })
+        );
       } catch {
         /* 이번 세션만 */
+      }
+    },
+    toggleRefDocExcluded: (docId) => {
+      const cur = get().excludedRefDocIds;
+      const next = cur.includes(docId) ? cur.filter((id) => id !== docId) : [...cur, docId];
+      set({ excludedRefDocIds: next });
+    },
+    setAllRefDocsExcluded: (docIds, excluded) => {
+      if (excluded) {
+        const setIds = new Set([...get().excludedRefDocIds, ...docIds]);
+        set({ excludedRefDocIds: Array.from(setIds) });
+      } else {
+        const removeSet = new Set(docIds);
+        set({ excludedRefDocIds: get().excludedRefDocIds.filter((id) => !removeSet.has(id)) });
       }
     },
 

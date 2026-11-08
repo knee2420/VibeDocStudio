@@ -7,10 +7,12 @@ import {
   CircleDashed,
   Cpu,
   Eye,
+  FileText,
   Hand,
   Loader2,
   MessageSquarePlus,
   Paperclip,
+  Search,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
@@ -346,6 +348,48 @@ const ComposerHeader: React.FC<{
 
 // --- 스레드 -----------------------------------------------------------------------
 
+const UserBubble: React.FC<{ item: Extract<ComposerItem, { kind: "user" }> }> = ({ item }) => {
+  const [expanded, setExpanded] = React.useState(false);
+  const contexts = item.contexts;
+  const COLLAPSE_THRESHOLD = 5; // 5개 초과 시 접기 적용
+  const VISIBLE_COUNT = 4; // 접혀있을 때 상위 노출 개수 (3~5개 중 4개)
+
+  const shouldCollapse = contexts.length > COLLAPSE_THRESHOLD;
+  const visibleContexts = shouldCollapse && !expanded ? contexts.slice(0, VISIBLE_COUNT) : contexts;
+  const hiddenCount = contexts.length - VISIBLE_COUNT;
+
+  return (
+    <div className="flex justify-end">
+      <div className="max-w-[88%] rounded-2xl rounded-br-md bg-indigo-600 text-white px-3 py-2 text-[13px] whitespace-pre-wrap break-words">
+        {contexts.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1 mb-1.5">
+            {visibleContexts.map((c) => (
+              <span
+                key={`${c.kind}:${c.id}`}
+                title={c.hint ?? c.label}
+                className={`px-1.5 py-px rounded text-[10.5px] ${c.handle && c.role === "target" ? "bg-amber-300/30 ring-1 ring-amber-200/60" : "bg-white/15"}`}
+              >
+                {c.handle ? `${c.handle} ${c.label}` : `@${c.label}`}
+                {c.handle && <span className="ml-1 opacity-75">{c.role === "target" ? "대상" : "참조"}</span>}
+              </span>
+            ))}
+            {shouldCollapse && (
+              <button
+                type="button"
+                onClick={() => setExpanded((prev) => !prev)}
+                className="inline-flex items-center gap-0.5 px-1.5 py-px rounded text-[10.5px] font-medium bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer select-none"
+              >
+                {expanded ? "접기 ▴" : `+외 ${hiddenCount}개 ▾`}
+              </button>
+            )}
+          </div>
+        )}
+        {item.text}
+      </div>
+    </div>
+  );
+};
+
 const ThreadItem: React.FC<{ item: ComposerItem; onApprove(callId: string): void; onDeny(callId: string): void }> = ({
   item,
   onApprove,
@@ -353,27 +397,7 @@ const ThreadItem: React.FC<{ item: ComposerItem; onApprove(callId: string): void
 }) => {
   switch (item.kind) {
     case "user":
-      return (
-        <div className="flex justify-end">
-          <div className="max-w-[88%] rounded-2xl rounded-br-md bg-indigo-600 text-white px-3 py-2 text-[13px] whitespace-pre-wrap break-words">
-            {item.contexts.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-1.5">
-                {item.contexts.map((c) => (
-                  <span
-                    key={`${c.kind}:${c.id}`}
-                    title={c.hint ?? c.label}
-                    className={`px-1.5 py-px rounded text-[10.5px] ${c.handle && c.role === "target" ? "bg-amber-300/30 ring-1 ring-amber-200/60" : "bg-white/15"}`}
-                  >
-                    {c.handle ? `${c.handle} ${c.label}` : `@${c.label}`}
-                    {c.handle && <span className="ml-1 opacity-75">{c.role === "target" ? "대상" : "참조"}</span>}
-                  </span>
-                ))}
-              </div>
-            )}
-            {item.text}
-          </div>
-        </div>
-      );
+      return <UserBubble item={item} />;
     case "assistant":
       if (!item.streaming && !item.text.trim()) return null; // 도구 호출 앞뒤의 줄바꿈 조각
       return (
@@ -385,16 +409,43 @@ const ThreadItem: React.FC<{ item: ComposerItem; onApprove(callId: string): void
           </div>
         </div>
       );
-    case "thinking":
-      return <Collapsible title="생각" body={item.text} />;
-    case "agent_tool":
+    case "thinking": {
+      const durText = item.durationSeconds ? `${item.durationSeconds}초` : undefined;
+      const title = durText ? `생각 (${durText})` : "생각 중…";
+      return <Collapsible title={title} body={item.text} defaultOpen={item.collapsed === false} />;
+    }
+    case "agent_tool": {
+      const label = agentToolLabel(item.name, item.params);
+      const Icon = label.icon === "read" ? FileText : label.icon === "find" ? Search : Terminal;
+      const locPath = item.locations?.[0]?.path;
+      const failed = item.state === "error";
       return (
-        <div className="ml-6 flex items-center gap-1.5 text-[11px] text-slate-500">
-          <Terminal className="w-3 h-3" />
-          <span className="font-mono">{item.name}</span>
-          {item.state === "running" ? <Loader2 className="w-3 h-3 animate-spin" /> : <span className="text-slate-400 truncate">{item.output}</span>}
+        <div className="ml-6 min-w-0" title={label.title}>
+          <div className={`flex items-center gap-1.5 text-[11px] min-w-0 ${failed ? "text-rose-600" : "text-slate-500"}`}>
+            {failed ? <XCircle className="w-3 h-3 shrink-0" /> : <Icon className="w-3 h-3 shrink-0" />}
+            <span className="font-mono shrink-0">{label.name}</span>
+            {label.detail && <span className={`truncate ${failed ? "text-rose-500" : "text-slate-600"}`}>{label.detail}</span>}
+            {locPath && !label.detail && (
+              <span className="text-slate-500 font-mono text-[10px] truncate" title={locPath}>
+                {locPath.split(/[\\/]/).pop()}
+              </span>
+            )}
+            {item.state === "running" ? (
+              <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+            ) : failed ? (
+              <span className="shrink-0 rounded px-1 bg-rose-50 border border-rose-200 text-[10px]">실패</span>
+            ) : (
+              item.output && <span className="text-slate-400 truncate shrink-[2]">{item.output}</span>
+            )}
+          </div>
+          {failed && item.error && (
+            <div className="mt-0.5 ml-[18px] text-[10.5px] text-rose-500/90 leading-snug line-clamp-2" title={item.error}>
+              {item.error}
+            </div>
+          )}
         </div>
       );
+    }
     case "tool_call":
       return <ToolCallCard item={item} onApprove={onApprove} onDeny={onDeny} />;
     case "notice":
@@ -560,14 +611,17 @@ const JsonBlock: React.FC<{ label: string; value: unknown }> = ({ label, value }
   </div>
 );
 
-const Collapsible: React.FC<{ title: string; body: string }> = ({ title, body }) => {
-  const [open, setOpen] = React.useState(false);
+const Collapsible: React.FC<{ title: string; body: string; defaultOpen?: boolean }> = ({ title, body, defaultOpen = false }) => {
+  const [open, setOpen] = React.useState(defaultOpen);
+  React.useEffect(() => {
+    if (defaultOpen !== undefined) setOpen(defaultOpen);
+  }, [defaultOpen]);
   return (
     <div className="ml-6 text-[11px] text-slate-500">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="inline-flex items-center gap-1 cursor-pointer hover:text-slate-700">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="inline-flex items-center gap-1 cursor-pointer hover:text-slate-700 font-medium">
         {open ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />} {title}
       </button>
-      {open && <div className="mt-1 whitespace-pre-wrap border-l-2 border-slate-200 pl-2">{body}</div>}
+      {open && <div className="mt-1 whitespace-pre-wrap border-l-2 border-slate-200 pl-2 text-slate-600">{body}</div>}
     </div>
   );
 };
@@ -597,5 +651,52 @@ const EmptyState: React.FC<{ suggestions: ComposerSuggestion[]; onPick(prompt: s
     </div>
   </div>
 );
+
+/** agy 내장 도구 카드 한 줄: read_file 은 파일 이름 · 줄 범위, vibefs MCP 는 도구 이름 · 핵심 인자. */
+function agentToolLabel(
+  name: string,
+  params: Record<string, unknown>
+): { name: string; detail: string; title: string; icon: "read" | "find" | "other" } {
+  const str = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : JSON.stringify(v));
+  if (name === "read_file") {
+    const path = str(params.Path);
+    const file = path.split(/[\\/]/).pop() || path;
+    const s = params.StartLine as number | undefined;
+    const e = params.EndLine as number | undefined;
+    const range = s || e ? ` L${s ?? 1}–${e ?? (s ?? 1) + 799}` : " L1–800";
+    return { name: "read_file", detail: `${file}${range}`, title: path, icon: "read" };
+  }
+  if (name === "call_mcp_tool") {
+    const tool = str(params.ToolName) || "mcp";
+    const args = (params.Arguments ?? {}) as Record<string, unknown>;
+    const key = args.pattern ?? args.path ?? args.field ?? args.a ?? args.folder ?? args.query ?? "";
+    const value = str(args.value);
+    return {
+      name: tool,
+      detail: [str(key), value].filter(Boolean).join(" = "),
+      title: `${str(params.ServerName)} · ${tool} ${JSON.stringify(args)}`,
+      icon: "find",
+    };
+  }
+  if (name === "invoke_subagent") {
+    const prompt = str(params.Prompt);
+    return { name: "subagent", detail: prompt.slice(0, 80), title: prompt, icon: "other" };
+  }
+  // ACP 모드의 MCP 도구는 `mcp_<서버>_<도구>` 이름에 인자가 그대로 온다 (예: mcp_vibefs_ws_glob {pattern})
+  const mcp = /^mcp_([^_]+)_(.+)$/.exec(name);
+  if (mcp) {
+    const [, server, tool] = mcp;
+    const { toolSummary: _summary, ...args } = params as Record<string, unknown>;
+    const key = args.pattern ?? args.query ?? args.path ?? args.field ?? args.a ?? args.folder ?? "";
+    const value = str(args.value);
+    return {
+      name: tool,
+      detail: [str(key), value].filter(Boolean).join(" = "),
+      title: `${server} · ${tool} ${JSON.stringify(args)}`,
+      icon: "find",
+    };
+  }
+  return { name, detail: "", title: JSON.stringify(params), icon: "other" };
+}
 
 export { ContextChip };

@@ -15,6 +15,7 @@ from dependency_injector import containers, providers
 
 from app.assistant.adapters import AssistantEngineProvider, JsonlUsageLedger
 from app.assistant.use_cases import AssistantService, HarnessJobRunner, HarnessService
+from app.assistant.workspace import ResourceWorkspace
 from app.backdata.adapters import LocalBackdataRepository
 from app.backdata.use_cases import (
     ImportRawBackdataUseCase,
@@ -101,10 +102,12 @@ _REPO_ROOT = Path(__file__).resolve().parents[4]
 def _model_options(settings: Settings) -> tuple[ModelOption, ...]:
     """AI 설정 모달의 모델 목록. agy 는 실제 `agy models` 식별자여야 CLI 가 받아들인다."""
     return (
-        ModelOption("gemini-3.8-flash-low", "agy_cli", "고속 응답 — Composer · 인라인 기본값", recommended=True),
+        ModelOption("gemini-3.8-flash", "agy_cli", "고속 응답 — Composer · 인라인 기본값", recommended=True),
+        ModelOption("gemini-3.8-flash-low", "agy_cli", "저부하 생각 — 빠른 초안 작성"),
         ModelOption("gemini-3.8-flash-medium", "agy_cli", "균형 잡힌 주력 작성"),
         ModelOption("gemini-3.8-flash-high", "agy_cli", "깊은 추론이 필요한 작성"),
-        ModelOption("gemini-4-argon-medium", "agy_cli", "고난도 복합 조항 심층 분석"),
+        ModelOption("gemini-4-argon", "agy_cli", "고난도 복합 조항 심층 분석"),
+        ModelOption("gemini-4-argon-medium", "agy_cli", "복합 조항 분석 (Medium)"),
         ModelOption("claude-sonnet-5-5-medium", "agy_cli", "장문 서술 · 판단 품질"),
         ModelOption("gemini-3.5-flash-lite", "google_api", "Google Direct REST API 고속", recommended=True),
         ModelOption("gemini-3.5-flash", "google_api", "Google Direct REST API 주력"),
@@ -296,12 +299,25 @@ class Container(containers.DeclarativeContainer):
     )
 
     # --- 8. assistant 도메인 (AI Composer · 인라인 AI 공용 실행 계층) ---
+    # 리소스 작업 공간: RM 에서 체크한 자료를 agy 에 읽기 전용으로 마운트한다 (훅 · vibefs MCP 는 샌드박스 `.agents/`)
+    resource_workspace = providers.Singleton(
+        ResourceWorkspace,
+        state_dir=providers.Callable(lambda st: st.state / "assistant" / "workspace", storage),
+        sandbox_dir=providers.Callable(lambda st: st.state / "assistant" / "sandbox", storage),
+        agy_executable=providers.Callable(lambda p: p.agent_cli_bin, runtime_policy),
+        transport=providers.Callable(lambda s: s.agy_transport, settings),
+    )
     assistant_engines = providers.Singleton(
         AssistantEngineProvider,
         agy_executable=providers.Callable(lambda p: p.agent_cli_bin, runtime_policy),
         sandbox_dir=providers.Callable(lambda st: st.state / "assistant" / "sandbox", storage),
         external_llm_enabled=providers.Callable(lambda s: s.external_llm_enabled, settings),
         google_api_key=providers.Callable(lambda c: c.get_google_api_key, credentials),
+        prepare_sandbox=providers.Callable(lambda ws: ws.prepare, resource_workspace),
+        transport=providers.Callable(lambda s: s.agy_transport, settings),
+        default_thought_level=providers.Callable(lambda s: s.assistant_thought_level, settings),
+        mcp_server_spec_provider=providers.Callable(lambda ws: ws.mcp_server_spec, resource_workspace),
+        roots_provider=providers.Callable(lambda ws: ws.roots_for, resource_workspace),
     )
     assistant_service = providers.Singleton(
         AssistantService,
@@ -309,6 +325,7 @@ class Container(containers.DeclarativeContainer):
         policy=runtime_policy,
         inline_model=providers.Callable(lambda s: s.assistant_inline_model, settings),
         server_tools=knowledge_toolbox,
+        workspace=resource_workspace,
     )
     usage_ledger = providers.Singleton(
         JsonlUsageLedger, path=providers.Callable(lambda st: st.state / "assistant" / "ledger.jsonl", storage)

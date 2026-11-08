@@ -20,7 +20,7 @@ import {
 } from "@vibe/vdoc-schema";
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { htmlToPlain } from "@/shared/lib";
+import { clipText, htmlToPlain } from "@/shared/lib";
 
 import { referenceDocs } from "./referenceDocs";
 
@@ -171,7 +171,7 @@ export function backdataRef(doc: VDocDocument, chunkId: string): ContextRef | nu
     kind: "backdata",
     id: chunkId,
     label: chunk.sourceTitle,
-    hint: chunk.excerpt.slice(0, 60),
+    hint: clipText(chunk.excerpt, 60),
     access: "read",
     content: `[${chunk.sourceTitle}] (${chunk.sourceType})\n${chunk.excerpt}`,
   };
@@ -190,7 +190,7 @@ export function stagedRef(change: StagedAiChange): ContextRef {
       `before: ${change.beforeSummary}`,
       `after: ${change.afterSummary}`,
       "payload:",
-      JSON.stringify(change.payload).slice(0, 4000),
+      clipText(JSON.stringify(change.payload), 4000),
     ].join("\n"),
     meta: { entityId: change.targetId },
   };
@@ -212,7 +212,7 @@ export function textRangeRef(doc: VDocDocument, slot: VDocSlot, range: { from: n
   return {
     kind: "text-range",
     id: `${slot.slotId}:${range.from}-${range.to}`,
-    label: `"${range.text.slice(0, 18)}${range.text.length > 18 ? "…" : ""}"`,
+    label: `"${clipText(range.text, 18)}${range.text.length > 18 ? "…" : ""}"`,
     hint: `${slot.label} 안의 선택 영역`,
     access: isEditableSlot(slot) ? "write" : "read",
     content: [
@@ -232,10 +232,10 @@ export function referenceTextRef(docId: string, text: string): ContextRef {
   return {
     kind: "ref-text",
     id: `${docId}:t${hash(clean)}`,
-    label: `${title.slice(0, 12)} 발췌`,
-    hint: clean.slice(0, 80),
+    label: `${clipText(title, 12)} 발췌`,
+    hint: clipText(clean, 80),
     access: "read",
-    content: `참조 문서 "${title}" 에서 사용자가 고른 부분:\n${clean.slice(0, 8000)}`,
+    content: `참조 문서 "${title}" 에서 사용자가 고른 부분:\n${clipText(clean, 8000)}`,
     meta: { entityId: docId, entityKind: "doc" },
   };
 }
@@ -246,12 +246,12 @@ export function referenceRegionRef(
   region: { page: number; box: [number, number, number, number]; text: string; deckNumber?: number }
 ): ContextRef {
   const title = referenceRef(docId).label;
-  const prefix = region.deckNumber ? `참조${region.deckNumber}` : title.slice(0, 10);
+  const prefix = region.deckNumber ? `참조${region.deckNumber}` : clipText(title, 10);
   return {
     kind: "ref-region",
     id: `${docId}:p${region.page}:${region.box.map((v) => Math.round(v)).join(",")}`,
     label: `${prefix} p${region.page} 영역`,
-    hint: region.text ? region.text.slice(0, 80) : "(텍스트를 찾지 못한 영역 — 스캔 이미지일 수 있음)",
+    hint: region.text ? clipText(region.text, 80) : "(텍스트를 찾지 못한 영역 — 스캔 이미지일 수 있음)",
     access: "read",
     content: [
       `참조 문서 "${title}" ${region.page}페이지에서 사용자가 사각형으로 고른 영역`,
@@ -329,12 +329,12 @@ export function slotRangeContent(doc: VDocDocument, slotIds: string[], unitIds: 
         const slot = doc.slots[unit.slotId ?? unit.unitId];
         if (!slot) continue;
         const flags = [slot.role === "boilerplate" ? "boilerplate" : "", slot.constraints?.locked || block.locked ? "locked" : ""].filter(Boolean).join(",");
-        const html = slot.content.length > 1200 ? `${slot.content.slice(0, 1200)}…` : slot.content;
+        const html = slot.content.length > 1200 ? `${clipText(slot.content, 1200)}…` : slot.content;
         lines.push(`- ${pos.get(slot.slotId) ? `[${pos.get(slot.slotId)}] ` : ""}${slot.slotId}${flags ? ` [${flags}]` : ""} "${slot.label}": ${html || "(비어 있음)"}`);
       }
     }
   }
-  return lines.join("\n").slice(0, 20000);
+  return clipText(lines.join("\n"), 20000);
 }
 
 /** 범위 중 실제로 바꿀 수 있는 슬롯. */
@@ -354,7 +354,7 @@ function slotLine(slot: VDocSlot, maxHtml = 1500): string {
   const flags = [slot.role !== "editable-slot" ? slot.role : "", slot.constraints?.locked ? "locked" : "", slot.constraints?.maxLines ? `maxLines=${slot.constraints.maxLines}` : ""]
     .filter(Boolean)
     .join(",");
-  const html = slot.content.length > maxHtml ? `${slot.content.slice(0, maxHtml)}…` : slot.content;
+  const html = slot.content.length > maxHtml ? `${clipText(slot.content, maxHtml)}…` : slot.content;
   return `- ${slot.slotId}${flags ? ` [${flags}]` : ""} "${slot.label}": ${html || "(비어 있음)"}`;
 }
 
@@ -390,7 +390,7 @@ export function blockContent(doc: VDocDocument, page: VDocPage, block: LayoutBlo
 export function pageContent(doc: VDocDocument, page: VDocPage): string {
   const parts = [`pageId: ${page.pageId} "${page.pageLabel}" (문서 ${doc.title})`];
   for (const block of page.blocks) parts.push(blockContent(doc, page, block));
-  return parts.join("\n\n").slice(0, 16000);
+  return clipText(parts.join("\n\n"), 16000);
 }
 
 function slotContent(doc: VDocDocument, slot: VDocSlot): string {
@@ -412,7 +412,7 @@ function referenceDocContent(docId: string): string | null {
     .map((s) => `[${s.label}] ${htmlToPlain(s.content)}`)
     .filter((line) => line.length > 4)
     .join("\n");
-  return `참조 문서: ${d.title}\n${text.slice(0, 12000)}`;
+  return `참조 문서: ${d.title}\n${clipText(text, 12000)}`;
 }
 
 /** 칩 → 모델에 보낼 본문. 모르는 종류는 null (다른 제공자가 채운다). */

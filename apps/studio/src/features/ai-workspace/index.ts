@@ -41,6 +41,7 @@ export {
   withPicked,
   type AttachOptions,
 } from "./model/attach";
+export { referenceDocs, type ReferenceDocView } from "./model/referenceDocs";
 export {
   backdataRef,
   blockRef,

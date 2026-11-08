@@ -138,6 +138,8 @@ export function resolveActionInstruction(action: AiAction, input: AiActionInput 
 export interface TurnUsage {
   input_tokens?: number;
   output_tokens?: number;
+  thought_tokens?: number;
+  cached_read_tokens?: number;
   total_tokens?: number;
   [key: string]: unknown;
 }
@@ -146,7 +148,20 @@ export type AssistantEvent =
   | { type: "turn_start"; provider: string; model: string }
   | { type: "text_delta"; text: string }
   | { type: "thinking_delta"; text: string }
-  | { type: "agent_tool"; stepIndex?: number; name: string; state: "running" | "done"; params: Record<string, unknown>; output?: string }
+  | {
+      type: "agent_tool";
+      stepIndex?: number;
+      callId?: string;
+      name: string;
+      /** error: 에이전트 내장 도구가 실패했다 (작업 공간 가드 차단 · 없는 파일 등). 사유는 `error`. */
+      state: "running" | "done" | "error";
+      params: Record<string, unknown>;
+      kind?: string;
+      title?: string;
+      locations?: { path: string }[];
+      output?: string;
+      error?: string;
+    }
   | {
       type: "tool_call";
       id: string;
@@ -162,6 +177,30 @@ export type AssistantEvent =
   | { type: "tool_result"; id: string; name: string; ok: boolean; output?: string; durationMs?: number; chars?: number }
   | { type: "tool_call_progress"; name: string | null; chars: number }
   | { type: "status"; state: string; message: string }
+  /** 리소스 작업 공간: 이 대화에서 agy 가 read_file 로 읽은 범위 (턴 끝마다). */
+  | {
+      type: "workspace_coverage";
+      files: number;
+      fullyRead: number;
+      partiallyRead: number;
+      unread: number;
+      linesRead: number;
+      linesTotal: number;
+    }
+  | {
+      type: "citation_check";
+      citations: {
+        target: string;
+        start_line: number;
+        end_line: number;
+        label?: string;
+        is_verified: boolean;
+        warning?: string | null;
+        suggested_link?: string | null;
+        is_broken_syntax?: boolean;
+      }[];
+      warnings: string[];
+    }
   | { type: "error"; message: string; code?: string }
   | {
       type: "result";

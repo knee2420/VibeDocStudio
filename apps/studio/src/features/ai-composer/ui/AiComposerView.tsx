@@ -16,6 +16,7 @@ import {
   type ScopeTarget,
 } from "@/entities/ai-scope";
 import { useKnowledgeDeckStore } from "@/entities/knowledge-deck";
+import { useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { aiRuntime, composerController } from "@/shared/ai";
@@ -52,8 +53,10 @@ function scopeForSend(_text: string, contexts: ContextRef[]): ContextRef[] {
   const docState = useStudioDocumentStore.getState();
   const doc = selectActiveDocument(docState);
   const { sourcesOn, scopeOn } = useAiScopeStore.getState();
-  // 자료 OFF: 자동으로 붙는 덱을 뺀다 (프롬프트에서 직접 @멘션한 덱은 사용자의 뜻이므로 둔다)
-  const kept = sourcesOn ? contexts : contexts.filter((c) => !(c.kind === DECK_KIND && !c.handle));
+  // 리소스 OFF: 자동으로 붙는 덱/원천 리소스를 뺀다 (프롬프트에서 직접 @멘션한 것은 사용자의 뜻이므로 둔다)
+  const kept = sourcesOn
+    ? contexts
+    : contexts.filter((c) => !(c.kind === DECK_KIND && !c.handle) && !(c.kind === "resource" && !c.handle));
   if (!doc) {
     useAiScopeStore.getState().setTurn(null);
     return kept;
@@ -155,6 +158,8 @@ function useAutoContexts(): { auto: ContextRef[]; suggested: ContextRef[] } {
       useStudioDocumentStore.subscribe(schedule),
       // 체크된 지식 덱도 자동 첨부된다 — 덱 목록이 늦게 오거나 체크가 바뀌면 다시 계산한다
       useKnowledgeDeckStore.subscribe(schedule),
+      // 체크된 원천 리소스도 자동 첨부된다 — 리소스 매니저 선택이 바뀌면 다시 계산한다
+      useResourceStore.subscribe(schedule),
       // 설정바 범위가 바뀌면 범위 첨부도 다시
       useAiScopeStore.subscribe(schedule),
     ];

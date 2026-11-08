@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any, Iterator, Optional
 
 from app.core.process_tree import popen_tree
+from .acp_client import scrub_surrogates
 
 from ..models import EngineChoice
 
@@ -141,7 +142,7 @@ class AgyStreamProcess:
         payload = {"event": "user", "message": {"role": "user", "content": text}}
         try:
             assert self._proc.stdin is not None
-            self._proc.stdin.write(json.dumps(payload, ensure_ascii=False) + "\n")
+            self._proc.stdin.write(scrub_surrogates(json.dumps(payload, ensure_ascii=False)) + "\n")
             self._proc.stdin.flush()
         except (OSError, ValueError) as exc:
             yield {"type": "error", "message": f"agy 입력 전송 실패: {exc}"}

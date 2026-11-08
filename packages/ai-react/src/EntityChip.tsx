@@ -39,6 +39,8 @@ export function getEntityCategory(kind?: string): EntityCategory {
     case "reference":
     case "ref-region":
     case "ref-text":
+    case "ref-pin":
+    case "pin":
       return "reference";
 
     // 3. 아웃라이너: 스카이 블루 (Sky Blue) (좌측 Outliner - 문서 구조, 트리 노드, 목차, 상위 문서)
@@ -117,6 +119,8 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   reference: BookOpen,
   "ref-region": SquareDashedMousePointer,
   "ref-text": FileText,
+  "ref-pin": MapPin,
+  pin: MapPin,
 
   // 리소스 (지식 덱 / 카드 / 백데이터)
   kcard: Bookmark,

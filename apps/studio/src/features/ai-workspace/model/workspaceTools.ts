@@ -26,8 +26,7 @@ import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-do
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceLayoutStore, type RightPanelTab } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
-import { env } from "@/shared/config";
-import { htmlToPlain, newId, revealCanvasElement, scrollToCanvasPage } from "@/shared/lib";
+import { clipText, htmlToPlain, newId, revealCanvasElement, scrollToCanvasPage } from "@/shared/lib";
 
 
 import { referenceDocs } from "./referenceDocs";
@@ -368,7 +367,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     run: (args: { slotId?: string }) => {
       const doc = activeDoc();
       const chunks = args.slotId ? getSlotBackdata(doc, requireSlot(doc, args.slotId)) : Object.values(doc.backdata);
-      return chunks.map((c) => ({ chunkId: c.chunkId, sourceTitle: c.sourceTitle, sourceType: c.sourceType, excerpt: c.excerpt.slice(0, 400) }));
+      return chunks.map((c) => ({ chunkId: c.chunkId, sourceTitle: c.sourceTitle, sourceType: c.sourceType, excerpt: clipText(c.excerpt, 400) }));
     },
   },
   {
@@ -397,7 +396,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
         .filter((line) => line.length > 4)
         .join("\n");
       const limit = Math.max(500, Math.min(args.maxChars ?? 8000, 30000));
-      return { docId: d.docId, title: d.title, text: text.slice(0, limit), truncated: text.length > limit };
+      return { docId: d.docId, title: d.title, text: clipText(text, limit), truncated: text.length > limit };
     },
   },
   {
@@ -467,55 +466,33 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
         refId: c.locator.refId,
         label: c.locator.label,
         source: c.locator.sourcePath,
-        excerpt: (c.locator.excerpt ?? "").slice(0, 300),
+        excerpt: clipText(c.locator.excerpt ?? "", 300),
       }));
     },
   },
   {
-    name: "resources.list",
-    description: "Resource Manager 의 고정(체크)된 원본 자료와 발췌 섹터 목록 (id · 제목 · 경로 · 섹터)",
-    risk: "read",
-    inputSchema: { type: "object", properties: {} },
-    describe: () => "RM 자료 목록",
-    run: () =>
-      getCheckedResourceItems(useResourceStore.getState().items)
-        .slice(0, 80)
-        .map((it) => ({
-          resourceId: it.id,
-          title: it.title,
-          path: it.pathOrUrl,
-          type: it.type,
-          sectors: (it.sectors ?? []).map((s) => ({ sectorId: s.sectorId, title: s.title || s.label, page: s.page, chars: s.textSnippet?.length ?? 0 })),
-        })),
-  },
-  {
+    // 텍스트 원본은 리소스 작업 공간(agy read_file · vibefs)이 직접 읽는다. 이 도구는 사람이 RM 에서 만든
+    // 발췌 섹터(PDF 쪽 영역 등 — 원본 파일로는 못 읽는 것)만 돌려준다.
     name: "resources.read",
-    description: "RM 자료 본문 읽기 — sectorId 면 그 발췌, resourceId 면 텍스트 원본(마크다운 · 텍스트)을 maxChars 까지",
+    description: "RM 발췌 섹터 읽기 (sectorId). 텍스트 파일 원문은 이 도구가 아니라 read_file 로 읽는다",
     risk: "read",
     inputSchema: {
       type: "object",
-      properties: { resourceId: { type: "string" }, sectorId: { type: "string" }, maxChars: { type: "number", description: "기본 6000" } },
+      properties: { sectorId: { type: "string" }, maxChars: { type: "number", description: "기본 6000" } },
+      required: ["sectorId"],
     },
-    describe: (args: { resourceId?: string; sectorId?: string }) => `RM 자료 읽기 ${args.sectorId ?? args.resourceId ?? ""}`,
-    run: async (args: { resourceId?: string; sectorId?: string; maxChars?: number }) => {
+    describe: (args: { sectorId?: string }) => `RM 발췌 읽기 ${args.sectorId ?? ""}`,
+    run: async (args: { sectorId?: string; maxChars?: number; resourceId?: string }) => {
+      if (!args.sectorId) {
+        throw new Error("sectorId 가 필요합니다. 텍스트 파일 원문은 read_file(Path, StartLine, EndLine) 로 읽으세요.");
+      }
       const items = flattenResourceItems(useResourceStore.getState().items);
       const limit = Math.max(500, Math.min(args.maxChars ?? 6000, 20000));
-      if (args.sectorId) {
-        for (const it of items) {
-          const sector = (it.sectors ?? []).find((s) => s.sectorId === args.sectorId);
-          if (sector) return { resourceId: it.id, sectorId: sector.sectorId, page: sector.page, text: sector.textSnippet.slice(0, limit) };
-        }
-        throw new Error(`섹터를 찾을 수 없습니다: ${args.sectorId}`);
+      for (const it of items) {
+        const sector = (it.sectors ?? []).find((s) => s.sectorId === args.sectorId);
+        if (sector) return { resourceId: it.id, sectorId: sector.sectorId, page: sector.page, text: clipText(sector.textSnippet, limit) };
       }
-      const item = items.find((it) => it.id === args.resourceId);
-      if (!item?.pathOrUrl) throw new Error(`자료를 찾을 수 없습니다: ${args.resourceId}`);
-      if (!/\.(md|markdown|txt|mdx|csv|json|ya?ml)$/i.test(item.pathOrUrl)) {
-        throw new Error("텍스트 원본만 읽을 수 있습니다 (PDF · 이미지는 섹터를 만들어 읽거나 지식 덱으로 색인하세요).");
-      }
-      const res = await fetch(`${env.apiBaseUrl}/api/resources/raw-file?path=${encodeURIComponent(item.pathOrUrl)}`);
-      if (!res.ok) throw new Error(`원본을 읽지 못했습니다 (${res.status})`);
-      const text = await res.text();
-      return { resourceId: item.id, title: item.title, text: text.slice(0, limit), truncated: text.length > limit };
+      throw new Error(`섹터를 찾을 수 없습니다: ${args.sectorId}`);
     },
   },
   {

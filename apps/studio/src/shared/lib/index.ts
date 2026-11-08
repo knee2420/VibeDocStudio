@@ -9,3 +9,4 @@ export { revealCanvasElement, scrollToCanvasPage } from "./canvasDom";
 export { downloadJsonFile, readTextFile } from "./download";
 export { errorMessage } from "./errors";
 export { htmlToPlain } from "./plainText";
+export { clipText } from "./text";
