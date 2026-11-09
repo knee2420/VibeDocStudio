@@ -23,7 +23,7 @@ from app.assistant.workspace import (
 from app.assistant.workspace.citations import extract_citations, verify_citations
 from app.assistant.workspace.hook import Mounted, decide
 from app.assistant.workspace.index import MountItem, WorkspaceIndex, read_range
-from app.assistant.workspace.sandbox import build_files, prepare_sandbox
+from app.assistant.workspace.sandbox import build_files, hook_command, prepare_sandbox
 from app.assistant.workspace.store import WorkspaceStore, coverage
 from app.assistant.workspace.tools import WorkspaceTools
 
@@ -229,11 +229,26 @@ def test_prepare_sandbox_writes_agy_config(tmp_path: Path) -> None:
     changed = prepare_sandbox(sandbox, state, sys.executable)
     assert set(changed) == set(build_files(sys.executable, state))
     hooks = json.loads((sandbox / ".agents" / "hooks.json").read_text(encoding="utf-8"))["vibedoc-workspace"]
-    assert hooks["PreToolUse"][0]["matcher"] == "*" and "hook.py pre" in hooks["PreToolUse"][0]["hooks"][0]["command"]
+    # 경로에 공백이 있으면 `hook.py" pre` 처럼 따옴표가 끼므로 따옴표를 빼고 본다
+    assert hooks["PreToolUse"][0]["matcher"] == "*" and "hook.py pre" in hooks["PreToolUse"][0]["hooks"][0]["command"].replace('"', "")
     assert hooks["PostToolUse"][0]["matcher"] == "read_file"
     mcp = json.loads((sandbox / ".agents" / "plugins" / "vibefs" / "mcp_config.json").read_text(encoding="utf-8"))
     assert mcp["mcpServers"]["vibefs"]["args"][1].endswith("vibefs_server.py")
     assert prepare_sandbox(sandbox, state, sys.executable) == []  # 같으면 건드리지 않는다
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="agy 는 Windows 에서 훅을 `cmd /c` 로 실행한다")
+def test_hook_command_survives_cmd_quote_stripping_with_spaced_paths(tmp_path: Path) -> None:
+    # 회귀: 경로에 공백이 있으면 훅 명령에 따옴표가 들어가고, agy 가 그걸 `cmd /c "...\"...\"..."` 로 띄워
+    # 훅이 exit 1 로 죽었다 → agy 가 모든 도구를 사유 없이 막았다.
+    state = tmp_path / "공백 있는 상태"
+    state.mkdir()
+    command = hook_command(sys.executable, "pre", state)
+    payload = json.dumps({"toolCall": {"name": "mcp_vibefs_ws_collect", "args": {"query": "x"}}, "conversationId": "t"})
+    # 목록으로 넘기면 Python 도 agy(Go) 와 똑같이 `cmd /c "<명령>"` 으로 감싸고 안쪽 따옴표를 `\"` 로 바꾼다.
+    result = subprocess.run(["cmd", "/c", command], input=payload.encode(), capture_output=True, timeout=30)
+    assert result.returncode == 0, result.stderr.decode("mbcs", "replace")
+    assert json.loads(result.stdout.decode("utf-8"))["decision"] == "allow"
 
 
 # --- Composer 연결 ------------------------------------------------------------------------------
