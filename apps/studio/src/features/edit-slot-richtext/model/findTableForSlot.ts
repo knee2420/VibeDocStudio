@@ -1,4 +1,5 @@
 import {
+  getBlockKind,
   getTableCellPlacements,
   type TableCellRange,
   type TableModel,
@@ -15,12 +16,8 @@ export interface TableLocation {
 function eachTable(doc: VDocDocument, visit: (loc: TableLocation) => boolean): TableLocation | null {
   for (const page of doc.pages) {
     for (const block of page.blocks) {
-      const tables: { sectionId: string | null; table: TableModel }[] =
-        block.kind === "structured-table" || block.kind === "table"
-          ? [{ sectionId: null, table: block }]
-          : block.kind === "composite-form-frame"
-            ? block.sections.map((s) => ({ sectionId: s.sectionId, table: s }))
-            : [];
+      // 블록 안의 표(단일 표 · 서식 구역)는 블록 정의가 알려 준다.
+      const tables = getBlockKind(block.kind).tables?.(block) ?? [];
       for (const t of tables) {
         const loc = { pageId: page.pageId, blockId: block.blockId, ...t };
         if (visit(loc)) return loc;

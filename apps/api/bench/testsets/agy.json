@@ -1,0 +1,92 @@
+{
+  "corpus": "agy",
+  "notes": "Antigravity CLI 문서 39개 (영문). 질문은 한국어 · 대충 묻는 말투 포함. facts 는 정답에 들어가야 할 사실 — 각 항목은 대안 정규식 목록(대소문자 무시). 기준(criterion)은 사용자 정의 7개 기준 번호.",
+  "questions": [
+    {
+      "id": "agy-t1", "type": "table", "criterion": 1,
+      "question": "settings.json 의 altScreenMode 기본값이 뭐고, 그 밖에 넣을 수 있는 값은 뭐야?",
+      "facts": [["\"?default\"?"], ["always"], ["never"]],
+      "sources": ["18-reference"]
+    },
+    {
+      "id": "agy-t2", "type": "table", "criterion": 1,
+      "question": "프롬프트 입력 중에 Ctrl+O 누르면 무슨 동작이야? 내부 명령 이름도.",
+      "facts": [["toggle_trajectory"], ["expand|collapse|펼치|접|토글"], ["reason|추론|tool|도구"]],
+      "sources": ["18-reference"]
+    },
+    {
+      "id": "agy-t3", "type": "table", "criterion": 1,
+      "question": "리눅스랑 맥에서 터미널 샌드박스는 각각 어떤 OS 기술로 격리해?",
+      "facts": [["namespace|네임스페이스"], ["sandbox-exec"], ["seatbelt|SBPL"]],
+      "sources": ["04-sandbox"]
+    },
+    {
+      "id": "agy-s1", "type": "toc", "criterion": 2,
+      "question": "명령어(Commands) 섹션에 개별 명령어 문서가 몇 개 있어? 전부 나열해줘.",
+      "facts": [["\\b12\\b|열두|twelve"], ["/?agents"], ["/?boost"], ["codesearch"], ["/?credits"], ["/?diff"], ["/?permissions"], ["/?resume"], ["statusline"], ["teamwork"], ["/?title"], ["/?usage"], ["/?voice"]],
+      "sources": ["15-commands"]
+    },
+    {
+      "id": "agy-s2", "type": "toc", "criterion": 2,
+      "question": "Agent Capabilities 묶음에서 Sandbox 문서 바로 앞과 바로 뒤에 있는 문서는 각각 뭐야?",
+      "facts": [["subagent|서브\\s*에이전트|background task|백그라운드"], ["permission|권한"]],
+      "sources": ["10-agent-capabilities"]
+    },
+    {
+      "id": "agy-s3", "type": "toc", "criterion": 2,
+      "question": "전체 문서 목차에서 Troubleshooting 은 몇 번 장이고, 그 다음 장은 뭐야?",
+      "facts": [["\\b17\\b|열일곱"], ["reference|레퍼런스|참조"]],
+      "sources": ["17-troubleshooting", "18-reference"]
+    },
+    {
+      "id": "agy-v1", "type": "vague", "criterion": 3,
+      "question": "그 뭐냐, 에이전트가 파일 고칠 때마다 안 물어보게 하는 모드 있잖아. 그거 켜는 법 다 알려줘",
+      "facts": [["accept-edits"], ["shift\\s*\\+\\s*tab"], ["--mode"], ["agentMode"]],
+      "sources": ["01-modes"]
+    },
+    {
+      "id": "agy-v2", "type": "vague", "criterion": 3,
+      "question": "자꾸 혼자 업데이트하는데 이거 끄는 방법?",
+      "facts": [["AGY_CLI_DISABLE_AUTO_UPDATE"], ["true"]],
+      "sources": ["17-troubleshooting"]
+    },
+    {
+      "id": "agy-v3", "type": "vague", "criterion": 3,
+      "question": ".env 에 API 키 넣었는데 안 먹어요 왜죠",
+      "facts": [["GEMINI_API_KEY"], ["\\.env"], ["environment|환경\\s*변수|export"]],
+      "sources": ["03-install"]
+    },
+    {
+      "id": "agy-a1", "type": "analysis", "criterion": 4,
+      "question": "permissions 규칙이랑 터미널 샌드박스가 어떻게 맞물려 동작하는지, 규칙 우선순위까지 포함해서 체계적으로 정리해줘",
+      "facts": [["deny\\s*>\\s*ask\\s*>\\s*allow|deny.{0,20}ask.{0,20}allow"], ["unsandboxed"], ["write_file"], ["read_url"], ["network|네트워크"], ["proceed-in-sandbox"]],
+      "sources": ["04-sandbox", "05-permissions"]
+    },
+    {
+      "id": "agy-a2", "type": "analysis", "criterion": 4,
+      "question": "기본 에이전트, /boost, /teamwork-preview 를 작업 기간 · 요금제 · 워크스페이스 방식으로 비교해줘",
+      "facts": [["seconds to minutes|초.{0,6}분"], ["hours to days|시간.{0,6}일"], ["paid|유료"], ["ephemeral|임시"], ["persistent|영구|지속"], ["shared working tree|공유"]],
+      "sources": ["02-boost"]
+    },
+    {
+      "id": "agy-w1", "type": "write", "criterion": 6,
+      "question": "CI 스크립트에서 agy 를 헤드리스로 돌리는 법을 팀 위키에 올릴 단락으로 써줘(6~10문장). 출력 형식들과 JSON 결과 필드, 스키마 강제까지 근거와 함께.",
+      "facts": [["-p\\b|--print"], ["--output-format"], ["stream-json"], ["conversation_id"], ["usage|토큰"], ["--json-schema"], ["structured_output"], ["num_turns|duration_seconds"], ["NDJSON|ndjson|newline"]],
+      "sources": ["02-headless"]
+    },
+    {
+      "id": "agy-o1", "type": "outline", "criterion": 7,
+      "question": "'agy 보안 · 권한 설정 가이드' 문서를 쓰려고 해. 전문가가 쓴 것처럼 장 · 절 아웃라인을 잡아줘. 항목마다 근거 출처도.",
+      "facts": [["allow"], ["deny"], ["ask"], ["sandbox|샌드박스"], ["toolPermission"], ["accept-edits|execution mode|실행 모드"], ["dangerously-skip-permissions"], ["allowNonWorkspaceAccess|workspace|워크스페이스"], ["unsandboxed"], ["keyring|logout|로그아웃|인증"]],
+      "sources": ["05-permissions", "04-sandbox", "01-modes", "18-reference"]
+    },
+    {
+      "id": "agy-n1", "type": "negative", "criterion": 3,
+      "question": "샌드박스를 특정 Docker 이미지로 돌리고 싶은데, 이미지 지정하는 옵션 이름이 뭐야?",
+      "negative": true,
+      "facts": [["없|찾지 못|not (found|supported|available|mention)|no (such|option)|docker.{0,40}(필요|사용하지|없|not)|(가상 ?머신|virtual machine)"]],
+      "forbid": ["--docker[-_\\w]*", "--image\\b", "sandboxImage", "dockerImage"],
+      "sources": ["04-sandbox"]
+    }
+  ]
+}

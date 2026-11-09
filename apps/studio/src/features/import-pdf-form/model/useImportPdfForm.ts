@@ -2,32 +2,16 @@ import { useState } from "react";
 
 import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { httpClient } from "@/shared/api";
-import type { VDocDocument } from "@vibe/vdoc-schema";
+import { errorMessage } from "@/shared/lib";
 
-export type FidelityMode = "fast" | "balanced" | "strict";
+import { importPdfApi, type FidelityMode } from "../api/importPdfApi";
 
-export interface ScaffoldDocumentResponse {
-  docId: string;
-  title: string;
-  totalPages: number;
-  checkedBlocks: number;
-  checkedSlots: number;
-  document: VDocDocument;
-  fidelityMode?: string;
-  agentRun?: Record<string, unknown>;
-}
-
-export interface IngestPdfResponse {
-  catalogId: string;
-  title: string;
-  checkedTables: number;
-  checkedSlots: number;
-  document: VDocDocument;
-}
-
+export type { FidelityMode } from "../api/importPdfApi";
 export type ImportMode = "canvas" | "catalog";
 
+const stripPdfExtension = (name: string) => name.replace(/\.pdf$/i, "");
+
+/** PDF 가져오기 모달의 상태와 실행. 결과 문서는 서버에 저장되는 새 작업 문서가 된다. */
 export function useImportPdfForm() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -36,85 +20,55 @@ export function useImportPdfForm() {
   const [fidelityMode, setFidelityMode] = useState<FidelityMode>("balanced");
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const upsertDocument = useStudioDocumentStore((s) => s.upsertDocument);
+  const addDocument = useStudioDocumentStore((s) => s.addDocument);
+
+  const reset = () => {
+    setSelectedFile(null);
+    setDocTitle("");
+    setError(null);
+    setCurrentStep(1);
+  };
 
   const openModal = () => {
-    useSlotSelectionStore.getState().setSelectedBlockId(null);
-    useSlotSelectionStore.getState().setSelectedSlotId(null);
+    useSlotSelectionStore.getState().clearSelection();
+    setError(null);
     setIsModalOpen(true);
-    setErrorMessage(null);
   };
 
   const closeModal = () => {
     if (isLoading) return;
     setIsModalOpen(false);
-    setSelectedFile(null);
-    setDocTitle("");
-    setErrorMessage(null);
-    setCurrentStep(1);
+    reset();
   };
 
   const handleFileChange = (file: File | null) => {
     setSelectedFile(file);
-    setErrorMessage(null);
-    if (file && !docTitle) {
-      const cleanName = file.name.replace(/\.pdf$/i, "");
-      setDocTitle(cleanName);
-    }
+    setError(null);
+    if (file && !docTitle) setDocTitle(stripPdfExtension(file.name));
   };
 
   const executeImport = async () => {
     if (!selectedFile) {
-      setErrorMessage("PDF 파일을 먼저 선택해 주세요.");
+      setError("PDF 파일을 먼저 선택해 주세요.");
       return;
     }
-
     setIsLoading(true);
-    setErrorMessage(null);
-    setCurrentStep(1);
-
+    setError(null);
     try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-      const titleToUse = docTitle.trim() || selectedFile.name.replace(/\.pdf$/i, "");
-      formData.append("title", titleToUse);
-
-      if (importMode === "canvas") {
-        formData.append("fidelity_mode", fidelityMode);
-        setCurrentStep(2);
-        const res = await httpClient.post<ScaffoldDocumentResponse>(
-          "/api/catalog/scaffold",
-          formData
-        );
-
-        setCurrentStep(3);
-        if (res && res.document) {
-          upsertDocument(res.document);
-        }
-      } else {
-        formData.append("category", "PDF 임포트 양식");
-        setCurrentStep(2);
-        const res = await httpClient.post<IngestPdfResponse>(
-          "/api/catalog/ingest-pdf",
-          formData
-        );
-
-        setCurrentStep(3);
-        if (res && res.document) {
-          upsertDocument(res.document);
-        }
-      }
-
-      // 완료 후 모달 닫기
+      const title = docTitle.trim() || stripPdfExtension(selectedFile.name);
+      setCurrentStep(2);
+      const { document } =
+        importMode === "canvas"
+          ? await importPdfApi.scaffoldCanvas(selectedFile, title, fidelityMode)
+          : await importPdfApi.ingestCatalog(selectedFile, title);
+      setCurrentStep(3);
+      await addDocument(document);
       setIsModalOpen(false);
-      setSelectedFile(null);
-      setDocTitle("");
-      setCurrentStep(1);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "PDF 양식 가져오기에 실패했습니다.";
-      setErrorMessage(msg);
+      reset();
+    } catch (err) {
+      setError(errorMessage(err, "PDF 양식 가져오기에 실패했습니다."));
       setCurrentStep(1);
     } finally {
       setIsLoading(false);
@@ -129,7 +83,7 @@ export function useImportPdfForm() {
     fidelityMode,
     isLoading,
     currentStep,
-    errorMessage,
+    errorMessage: error,
     openModal,
     closeModal,
     handleFileChange,

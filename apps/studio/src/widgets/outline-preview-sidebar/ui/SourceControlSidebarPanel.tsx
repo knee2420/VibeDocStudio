@@ -1,0 +1,183 @@
+import React from "react";
+import {
+  CheckCheck,
+  ChevronLeft,
+  FileCode,
+  GitBranch,
+  GitCommit,
+  RotateCcw,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+
+import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { RevisionTimeline } from "@/features/document-revisions";
+import { attachable, stagedRef } from "@/features/ai-workspace";
+import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { useHistoryStore } from "@/shared/lib";
+import { EmptyStateCard } from "@/shared/ui";
+
+export const SourceControlSidebarPanel: React.FC = () => {
+  const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
+  const {
+    stagingQueue,
+    acceptAllStagedChanges,
+    rejectAllStagedChanges,
+    acceptStagedChange,
+    rejectStagedChange,
+  } = useStageAiChanges();
+
+  const projPastCount = useHistoryStore((s) => s.past.filter((e) => e.scope === "project").length);
+  const docPastCount = useHistoryStore((s) => s.past.filter((e) => e.scope === "document").length);
+  const totalCommits = docPastCount + projPastCount;
+  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
+
+  return (
+    <div
+      data-testid="source-control-panel"
+      className="flex-1 flex flex-col h-full overflow-hidden bg-white"
+    >
+      {/* Header */}
+      <div className="px-3.5 py-2.5 border-b border-slate-200 flex items-center justify-between gap-2 shrink-0">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <GitBranch className="w-4 h-4 text-violet-600 shrink-0" />
+            <h3 className="text-xs font-bold text-slate-900 truncate">
+              Staged 변경안 & 되돌리기 이력
+            </h3>
+          </div>
+          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5 font-mono">
+            <span>· 변경 {stagingQueue.length}건</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          data-testid="collapse-left-sidebar-btn"
+          onClick={() => setLeftSidebarOpen(false)}
+          className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer"
+          title="좌측 패널 접기"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-4">
+        {/* Staged Changes Section */}
+        <div>
+          <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+            <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              스테이징된 변경사항 ({stagingQueue.length})
+            </span>
+            {stagingQueue.length > 0 && (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  data-testid="accept-all-staged-btn"
+                  onClick={acceptAllStagedChanges}
+                  title="모든 변경안을 승인해 문서 · 프로젝트에 반영"
+                  className="px-1.5 py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-semibold flex items-center gap-0.5 cursor-pointer"
+                >
+                  <CheckCheck className="w-2.5 h-2.5" />
+                  전체 승인
+                </button>
+                <button
+                  type="button"
+                  data-testid="reject-all-staged-btn"
+                  onClick={rejectAllStagedChanges}
+                  title="모든 변경사항 반려 및 폐기"
+                  className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-[10px] font-semibold flex items-center gap-0.5 cursor-pointer"
+                >
+                  <Trash2 className="w-2.5 h-2.5" />
+                  전체 반려
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-2 space-y-1.5">
+            {stagingQueue.length === 0 ? (
+              <EmptyStateCard
+                testId="source-control-empty-state"
+                icon={<GitCommit className="w-4 h-4 text-slate-400" />}
+                title="스테이징된 변경사항이 없습니다"
+                description="AI 컴포저나 슬롯 수정을 실행하면 이곳에 인메모리 Diff가 격리 스테이징됩니다."
+              />
+            ) : (
+              stagingQueue.map((diff) => (
+                <div
+                  key={diff.diffId}
+                  {...attachable(() => [stagedRef(diff)])}
+                  className="rounded-lg border border-amber-200 bg-amber-50/40 p-2 text-xs space-y-1.5"
+                >
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-semibold text-amber-950 flex items-center gap-1 text-[11px] truncate">
+                      <FileCode className="w-3 h-3 text-amber-600 shrink-0" />
+                      {diff.title || diff.afterSummary}
+                    </span>
+                    <span className="px-1 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-mono shrink-0">
+                      {diff.targetKind}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-amber-200/60">
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      Phase: {diff.phase}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => acceptStagedChange(diff)}
+                        className="px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-medium hover:bg-emerald-700 cursor-pointer"
+                      >
+                        승인
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => rejectStagedChange(diff.diffId)}
+                        className="px-1.5 py-0.5 rounded bg-white text-slate-600 text-[10px] font-medium hover:bg-rose-50 hover:text-rose-600 border border-slate-200 cursor-pointer"
+                      >
+                        반려
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* 문서 개정 이력 (서버 · 작성자별 · 복원) */}
+        <div className="pt-2 border-t border-slate-100">
+          <RevisionTimeline docId={activeDocId} limit={60} />
+        </div>
+
+        {/* Local Git & Project Undo History */}
+        <div data-testid="commit-history-info" className="pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-between pb-1 text-slate-700">
+            <span className="text-[11px] font-bold flex items-center gap-1">
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              되돌리기 이력 ({totalCommits})
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 mb-2">
+            실행 취소(Ctrl+Z) · 다시 실행(Ctrl+Y)으로 되돌릴 수 있는 이 세션의 변경 수입니다. 문서는 자동 저장됩니다.
+          </p>
+
+          <div className="space-y-1 text-slate-600 text-[11px] font-mono">
+            <div className="px-2 py-1 rounded bg-slate-50 border border-slate-200 flex items-center justify-between">
+              <span>아웃라인 · 프로젝트 변경</span>
+              <span className="font-bold text-slate-900">{projPastCount}</span>
+            </div>
+            <div className="px-2 py-1 rounded bg-slate-50 border border-slate-200 flex items-center justify-between">
+              <span>문서 구조 변경</span>
+              <span className="font-bold text-slate-900">{docPastCount}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

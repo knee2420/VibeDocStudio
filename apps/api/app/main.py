@@ -1,49 +1,56 @@
-"""VibeDocStudio FastAPI 애플리케이션 엔트리 (`app.main`)."""
+"""VibeDocStudio FastAPI 애플리케이션 엔트리 (`app.main`).
+
+조립 순서: 설정 → 컨테이너 → 라우터 wiring → 오류 번역기 → 작업 공간 시드.
+도메인 라우트는 각 도메인의 `router.py` 에만 있다.
+"""
 from __future__ import annotations
 
 import logging
-import shutil
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
-from typing import Any, Optional
+from typing import Any
 
 from agent_core.react import RunLogContextFilter
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
+from app.assistant import router as assistant_router_module
 from app.backdata import router as backdata_router_module
 from app.bootstrap.container import Container
+from app.bootstrap.error_handlers import register_error_handlers
+from app.bootstrap.workspace_seed import (
+    migrate_legacy_references,
+    seed_documents,
+    seed_projects,
+)
 from app.catalog import router as catalog_router_module
 from app.composer import router as composer_router_module
-from app.core.config import settings
-from app.core.llm.credentials import OsCredentialStore
-from app.core.llm.execution_policy import (
-    RuntimeExecutionPolicy,
-    normalize_provider,
-)
+from app.core.config import Settings, get_settings
 from app.documents import router as documents_router_module
+from app.knowledge import router as knowledge_router_module
+from app.projects import router as projects_router_module
+from app.reference import router as reference_router_module
+from app.resources import router as resources_router_module
+from app.runtime import router as runtime_router_module
 
-_credentials = OsCredentialStore()
-_container = Container()
-_runtime_policy: RuntimeExecutionPolicy = _container.runtime_policy()
+#: (라우터 모듈, URL 접두사, 태그). 도메인을 추가하면 여기 한 줄만 늘린다.
+_DOMAIN_ROUTERS = (
+    (catalog_router_module, "/api/catalog", "catalog"),
+    (documents_router_module, "/api/documents", "documents"),
+    (backdata_router_module, "/api/backdata", "backdata"),
+    (composer_router_module, "/api/ai", "composer"),
+    (projects_router_module, "/api/projects", "projects"),
+    (resources_router_module, "/api/resources", "resources"),
+    (knowledge_router_module, "/api/knowledge", "knowledge"),
+    (runtime_router_module, "/api", "runtime"),
+    (assistant_router_module, "/api/assistant", "assistant"),
+    (reference_router_module, "/api/reference", "reference"),
+)
 
 
-class RuntimePolicyUpdateRequest(BaseModel):
-    primaryProvider: Optional[str] = None
-    fallbackProvider: Optional[str] = None
-    primaryModel: Optional[str] = None
-    fallbackModel: Optional[str] = None
-    primaryTimeoutSeconds: Optional[int] = None
-    fallbackTimeoutSeconds: Optional[int] = None
-
-
-class GoogleApiKeyRequest(BaseModel):
-    api_key: str
-
-
-
-def _configure_logging() -> None:
+def _configure_logging(settings: Settings) -> None:
     """앱 로그를 `state/log/api.log` 와 콘솔에 남긴다.
 
     줄마다 `run_id` · `step` 이 붙는다 (에이전트 실행 밖에서는 `-`). 실행 한 건의 상세
@@ -52,7 +59,7 @@ def _configure_logging() -> None:
     root_logger = logging.getLogger()
     if any(getattr(h, "_vibe_app_handler", False) for h in root_logger.handlers):
         return  # --reload 로 create_app 이 다시 불려도 핸들러를 겹쳐 달지 않는다
-    log_dir = settings.storage.state / "log"
+    log_dir = settings.storage.log
     log_dir.mkdir(parents=True, exist_ok=True)
     formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] [run=%(run_id)s step=%(step)s] [%(name)s] %(message)s")
     context = RunLogContextFilter()
@@ -66,25 +73,39 @@ def _configure_logging() -> None:
     root_logger.setLevel(logging.INFO)
 
 
-def create_app() -> FastAPI:
-    settings.ensure_directories()
-
-    _configure_logging()
-
-    container = _container
-    container.wire(
-        modules=[
-            catalog_router_module,
-            documents_router_module,
-            backdata_router_module,
-            composer_router_module,
-        ]
+def _seed_workspace(container: Container) -> None:
+    seed_projects(container.project_repository())
+    migrate_legacy_references(container.project_repository())
+    seed_documents(
+        container.project_repository(),
+        container.document_repository(),
+        container.catalog_repository(),
     )
 
+
+def create_app(settings: Settings | None = None) -> FastAPI:
+    settings = settings or get_settings()
+    settings.ensure_directories()
+    _configure_logging(settings)
+
+    container = Container(settings=settings)
+    container.wire(modules=[module for module, _, _ in _DOMAIN_ROUTERS])
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        if settings.external_llm_enabled:
+            container.assistant_service().warmup()  # 첫 질문 전에 agy 를 예열 (백그라운드)
+        container.knowledge_jobs().start()  # 서버가 꺼지기 전에 돌던 색인 작업을 이어서 돌린다
+        yield
+        container.knowledge_jobs().shutdown()
+        # agy 상주 프로세스(Composer 세션 · 예열 풀)는 API 와 함께 내려간다.
+        container.assistant_service().shutdown()
+
     application = FastAPI(
+        lifespan=lifespan,
         title="VibeDocStudio API",
-        version="0.2.0",
-        description="Hexagonal Domain-Sliced API (catalog · documents · backdata · composer)",
+        version="0.3.0",
+        description="Hexagonal Domain-Sliced API (" + " · ".join(tag for _, _, tag in _DOMAIN_ROUTERS) + ")",
     )
     application.state.container = container
 
@@ -95,27 +116,10 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    register_error_handlers(application)
 
-    application.include_router(
-        catalog_router_module.router,
-        prefix="/api/catalog",
-        tags=["catalog"],
-    )
-    application.include_router(
-        documents_router_module.router,
-        prefix="/api/documents",
-        tags=["documents"],
-    )
-    application.include_router(
-        backdata_router_module.router,
-        prefix="/api/backdata",
-        tags=["backdata"],
-    )
-    application.include_router(
-        composer_router_module.router,
-        prefix="/api/ai",
-        tags=["composer"],
-    )
+    for module, prefix, tag in _DOMAIN_ROUTERS:
+        application.include_router(module.router, prefix=prefix, tags=[tag])
 
     @application.get("/api/health", tags=["health"])
     def health_check() -> dict[str, Any]:
@@ -123,7 +127,7 @@ def create_app() -> FastAPI:
             "status": "ok",
             "service": "vibe-doc-studio-api",
             "extension": ".vdoc",
-            "domains": ["catalog", "documents", "backdata", "composer"],
+            "domains": [tag for _, _, tag in _DOMAIN_ROUTERS],
             "models": {
                 "tagger": settings.tagger_model,
                 "composer": settings.composer_model,
@@ -133,135 +137,7 @@ def create_app() -> FastAPI:
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
-    @application.get("/api/runtime", tags=["runtime"])
-    def get_runtime_dashboard() -> dict[str, Any]:
-        return {
-            "policy": {
-                "primaryProvider": _runtime_policy.primary_provider,
-                "fallbackProvider": _runtime_policy.fallback_provider,
-                "primaryModel": _runtime_policy.primary_model,
-                "fallbackModel": (
-                    _runtime_policy.agent_cli_model
-                    if _runtime_policy.is_google_primary
-                    else _runtime_policy.google_api_model
-                ),
-                "primaryTimeoutSeconds": _runtime_policy.primary_timeout_seconds,
-                "fallbackTimeoutSeconds": (
-                    _runtime_policy.agent_cli_timeout_seconds
-                    if _runtime_policy.is_google_primary
-                    else _runtime_policy.google_api_timeout_seconds
-                ),
-                "agentCliBin": _runtime_policy.agent_cli_bin,
-            },
-            "googleConfigured": bool(_credentials.get_google_api_key()),
-            "cliAvailable": bool(
-                shutil.which(_runtime_policy.agent_cli_bin) or shutil.which("agy")
-            ),
-            "models": [
-                {
-                    "id": settings.tagger_model,
-                    "name": settings.tagger_model,
-                    "provider": "agy_cli",
-                    "description": "초경량 로컬/고속 서식 태깅",
-                },
-                {
-                    "id": settings.composer_model,
-                    "name": settings.composer_model,
-                    "provider": "agy_cli",
-                    "description": "균형 잡힌 주력 서식 스캐폴더",
-                    "recommended": True,
-                },
-                {
-                    "id": settings.pro_model,
-                    "name": settings.pro_model,
-                    "provider": "agy_cli",
-                    "description": "고난도 복합 조항 심층 분석",
-                },
-                {
-                    "id": settings.lite_model,
-                    "name": settings.lite_model,
-                    "provider": "agy_cli",
-                    "description": "초저비용 고속 분류",
-                },
-                {
-                    "id": settings.composer_model,
-                    "name": settings.composer_model,
-                    "provider": "google_api",
-                    "description": "Google Direct REST API 주력",
-                    "recommended": True,
-                },
-                {
-                    "id": settings.lite_model,
-                    "name": settings.lite_model,
-                    "provider": "google_api",
-                    "description": "Google Direct REST API Fallback",
-                },
-            ],
-        }
-
-    @application.put("/api/runtime/policy", tags=["runtime"])
-    def update_runtime_policy(req: RuntimePolicyUpdateRequest) -> dict[str, Any]:
-        if req.primaryProvider:
-            norm = normalize_provider(req.primaryProvider)
-            if norm:
-                _runtime_policy.primary_provider = norm
-        if req.fallbackProvider:
-            norm = normalize_provider(req.fallbackProvider)
-            if norm:
-                _runtime_policy.fallback_provider = norm
-        if req.primaryModel:
-            if _runtime_policy.is_google_primary:
-                _runtime_policy.google_api_model = req.primaryModel
-            else:
-                _runtime_policy.agent_cli_model = req.primaryModel
-        if req.fallbackModel:
-            if _runtime_policy.is_google_primary:
-                _runtime_policy.agent_cli_model = req.fallbackModel
-            else:
-                _runtime_policy.google_api_model = req.fallbackModel
-        if req.primaryTimeoutSeconds:
-            if _runtime_policy.is_google_primary:
-                _runtime_policy.google_api_timeout_seconds = req.primaryTimeoutSeconds
-            else:
-                _runtime_policy.agent_cli_timeout_seconds = req.primaryTimeoutSeconds
-        if req.fallbackTimeoutSeconds:
-            if _runtime_policy.is_google_primary:
-                _runtime_policy.agent_cli_timeout_seconds = req.fallbackTimeoutSeconds
-            else:
-                _runtime_policy.google_api_timeout_seconds = req.fallbackTimeoutSeconds
-
-        return {
-            "primaryProvider": _runtime_policy.primary_provider,
-            "fallbackProvider": _runtime_policy.fallback_provider,
-            "primaryModel": _runtime_policy.primary_model,
-            "fallbackModel": (
-                _runtime_policy.agent_cli_model
-                if _runtime_policy.is_google_primary
-                else _runtime_policy.google_api_model
-            ),
-            "primaryTimeoutSeconds": _runtime_policy.primary_timeout_seconds,
-            "fallbackTimeoutSeconds": (
-                _runtime_policy.agent_cli_timeout_seconds
-                if _runtime_policy.is_google_primary
-                else _runtime_policy.google_api_timeout_seconds
-            ),
-            "agentCliBin": _runtime_policy.agent_cli_bin,
-        }
-
-    @application.put("/api/providers/google-api", tags=["providers"])
-    def configure_google_api(req: GoogleApiKeyRequest) -> dict[str, Any]:
-        try:
-            _credentials.set_google_api_key(req.api_key)
-            return {"status": "ok", "configured": True}
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    @application.delete("/api/providers/google-api", tags=["providers"])
-    def delete_google_api() -> Response:
-        _credentials.delete_google_api_key()
-        return Response(status_code=204)
-
-
+    _seed_workspace(container)
     return application
 
 

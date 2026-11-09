@@ -1,0 +1,465 @@
+import React from "react";
+import { ArrowUp, AtSign, Pin, Plus, Slash, Square } from "lucide-react";
+
+import {
+  assignHandle,
+  contextRole,
+  resolveActionInstruction,
+  sameContext,
+  type AiAction,
+  type AiRuntime,
+  type ComposerAttachInbox,
+  type ContextRef,
+} from "@vibe/ai-kernel";
+
+import { ContextChip } from "./ContextChip";
+
+type Popover =
+  | { kind: "mention"; query: string; start: number; items: ContextRef[] }
+  | { kind: "slash"; query: string; start: number; items: AiAction[] };
+
+export interface PromptInputProps {
+  runtime: AiRuntime;
+  /** `/` 명령 후보를 고를 표면 id (액션 레지스트리 필터). */
+  slashSurface: string;
+  /** 자동 첨부 후보 (현재 선택 등). 사용자가 끌 수 있다. */
+  autoContexts?: ContextRef[];
+  /** 첨부 제안 — 칩으로만 보이고, 누르면 첨부된다 (현재 선택 등). */
+  suggestedContexts?: ContextRef[];
+  busy?: boolean;
+  placeholder?: string;
+  /** 외부 초안 (인라인 → Composer 이어하기). revision 이 바뀌면 받아들인다. */
+  draft?: { text: string; contexts: ContextRef[]; revision: number };
+  /** 다른 위젯이 보낸 첨부 (끌어 놓기 · 우클릭 · Ctrl+L). revision 이 바뀌면 칩을 만들고 `@이름` 을 커서에 넣는다. */
+  inbox?: ComposerAttachInbox;
+  onSubmit(text: string, contexts: ContextRef[]): void;
+  onStop?(): void;
+  /** 자동 첨부 칩을 입력창에 그리지 않는다 (설정바가 대신 보여 주고 켜고 끈다). 보내기에는 그대로 들어간다. */
+  hideAutoChips?: boolean;
+  /** 📌 고정할 수 있는 첨부인가 (선택 · 칸 · 블록 등) */
+  pinnable?(ref: ContextRef): boolean;
+  /** 📌 — 첨부를 설정바 범위로 고정 (이미 고정된 것이면 해제) */
+  onPinContext?(ref: ContextRef): void;
+  /** 이미 고정된 첨부인가 */
+  isPinned?(ref: ContextRef): boolean;
+}
+
+/** Composer 입력창 — `@` 멘션(컨텍스트 레지스트리) · `/` 명령(액션 레지스트리) · 첨부 칩. */
+export const PromptInput: React.FC<PromptInputProps> = ({
+  runtime,
+  slashSurface,
+  autoContexts = [],
+  suggestedContexts = [],
+  busy,
+  placeholder,
+  draft,
+  inbox,
+  onSubmit,
+  onStop,
+  hideAutoChips,
+  pinnable,
+  onPinContext,
+  isPinned,
+}) => {
+  const [text, setText] = React.useState("");
+  const [attached, setAttached] = React.useState<ContextRef[]>([]);
+  const [disabledAuto, setDisabledAuto] = React.useState<Set<string>>(new Set());
+  const [popover, setPopover] = React.useState<Popover | null>(null);
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const areaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  React.useEffect(() => {
+    if (!draft || draft.revision === 0) return;
+    setText(draft.text);
+    setAttached((prev) => mergeContexts(prev, draft.contexts));
+    // 패널 전환 · 인라인 카드 언마운트가 끝난 뒤에 포커스를 가져온다.
+    window.setTimeout(() => {
+      const el = areaRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    }, 60);
+  }, [draft?.revision]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** 첨부를 칩으로 만들고(이름 부여) 그 이름들을 돌려준다. 이미 있는 요소면 기존 이름. */
+  const addAttachments = (refs: ContextRef[]): { next: ContextRef[]; handles: string[] } => {
+    const next = [...attachedRef.current];
+    const handles: string[] = [];
+    for (const ref of refs) {
+      const existing = next.find((p) => sameContext(p, ref));
+      if (existing) {
+        if (existing.handle) handles.push(existing.handle);
+        continue;
+      }
+      const handle = assignHandle(ref, next);
+      next.push({ ...ref, handle, role: ref.role ?? contextRole(ref) });
+      handles.push(handle);
+    }
+    return { next, handles };
+  };
+  const attachedRef = React.useRef(attached);
+  attachedRef.current = attached;
+
+  /** 커서 자리에 글자를 넣고 커서를 그 뒤로 옮긴다. */
+  const insertAtCaret = (value: string, insert: string, from: number, to: number) => {
+    const before = value.slice(0, from);
+    const after = value.slice(to);
+    const pad = before && !/\s$/.test(before) ? " " : "";
+    const tail = after.startsWith(" ") ? "" : " ";
+    const next = `${before}${pad}${insert}${tail}${after}`;
+    const caret = before.length + pad.length + insert.length + tail.length;
+    setText(next);
+    window.setTimeout(() => {
+      const el = areaRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(caret, caret);
+    }, 30);
+  };
+
+  React.useEffect(() => {
+    if (!inbox || inbox.revision === 0) return;
+    const { next, handles } = addAttachments(inbox.refs);
+    setAttached(next);
+    const el = areaRef.current;
+    const value = el?.value ?? text;
+    // 이미 입력창에 적힌 이름(같은 요소를 다시 끈 경우)은 또 넣지 않는다.
+    const joined = handles.filter((h) => !new RegExp(`${escapeRegExp(h)}(?![0-9])`).test(value)).join(" ");
+    if (inbox.prompt && !value.trim()) {
+      const body = inbox.prompt.includes("{handles}") ? inbox.prompt.replace("{handles}", joined) : `${joined} ${inbox.prompt}`;
+      insertAtCaret("", body.trim(), 0, 0);
+    } else if (joined) {
+      const from = el && document.activeElement === el ? el.selectionStart : value.length;
+      const to = el && document.activeElement === el ? el.selectionEnd : value.length;
+      insertAtCaret(value, joined, from, to);
+    } else {
+      window.setTimeout(() => areaRef.current?.focus(), 30);
+    }
+  }, [inbox?.revision]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  React.useLayoutEffect(() => {
+    const el = areaRef.current;
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = `${Math.min(el.scrollHeight, 220)}px`;
+  }, [text]);
+
+  const autoKey = (c: ContextRef) => `${c.kind}:${c.id}`;
+  // 같은 대상(id)을 직접 첨부했다면 자동 칩은 숨긴다 (선택 슬롯 = @슬롯).
+  const shadowed = (c: ContextRef) => attached.some((a) => a.id === c.id);
+  // 설정바가 켜고 끄는 경우(hideAutoChips)엔 입력창에서 끈 상태를 쓰지 않는다
+  const activeAuto = autoContexts.filter((c) => (hideAutoChips || !disabledAuto.has(autoKey(c))) && !shadowed(c));
+  const canPin = (c: ContextRef) => Boolean(onPinContext && pinnable?.(c));
+  // 첨부 제안(현재 캔버스 선택 등): 보내기에는 들어가지 않고, 눌렀을 때만 첨부된다.
+  const openSuggestions = suggestedContexts.filter((c) => !attached.some((a) => sameContext(a, c)));
+  const attachSuggestion = (ref: ContextRef) => {
+    const { next, handles } = addAttachments([ref]);
+    setAttached(next);
+    const el = areaRef.current;
+    const value = el?.value ?? text;
+    const at = el && document.activeElement === el ? el.selectionStart : value.length;
+    insertAtCaret(value, handles[0] ?? "", at, el && document.activeElement === el ? el.selectionEnd : value.length);
+  };
+
+  const refreshPopover = (value: string, caret: number) => {
+    const before = value.slice(0, caret);
+    const mention = /(^|\s)@([^\s@]*)$/.exec(before);
+    if (mention) {
+      const query = mention[2];
+      setPopover({ kind: "mention", query, start: caret - query.length - 1, items: runtime.contexts.search(query) });
+      setActiveIndex(0);
+      return;
+    }
+    const slash = /^\/([^\s]*)$/.exec(before);
+    if (slash) {
+      const q = slash[1].toLowerCase();
+      const items = runtime.actions
+        .forSurface(slashSurface)
+        .filter((a) => !q || a.id.toLowerCase().includes(q) || a.label.toLowerCase().includes(q));
+      setPopover({ kind: "slash", query: slash[1], start: 0, items });
+      setActiveIndex(0);
+      return;
+    }
+    setPopover(null);
+  };
+
+  const pick = (index: number) => {
+    if (!popover) return;
+    const caret = areaRef.current?.selectionStart ?? text.length;
+    if (popover.kind === "mention") {
+      const ref = popover.items[index];
+      if (!ref) return;
+      const { next, handles } = addAttachments([ref]);
+      setAttached(next);
+      setPopover(null);
+      insertAtCaret(text, handles[0] ?? "", popover.start, caret);
+      return;
+    } else {
+      const action = popover.items[index];
+      if (!action) return;
+      setText(resolveActionInstruction(action) + " ");
+    }
+    setPopover(null);
+    requestAnimationFrame(() => areaRef.current?.focus());
+  };
+
+  const submit = () => {
+    const body = text.trim();
+    if (!body) return;
+    onSubmit(body, [...activeAuto, ...attached]);
+    setText("");
+    setAttached([]);
+    setPopover(null);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.nativeEvent.isComposing) return; // 한글 조합 중 Enter 는 조합 확정
+    if (popover && popover.items.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setActiveIndex((i) => (i + 1) % popover.items.length);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setActiveIndex((i) => (i - 1 + popover.items.length) % popover.items.length);
+        return;
+      }
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        pick(activeIndex);
+        return;
+      }
+    }
+    if (e.key === "Escape") {
+      if (popover) {
+        e.preventDefault();
+        setPopover(null);
+      } else if (busy) {
+        onStop?.();
+      }
+      return;
+    }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
+  };
+
+  return (
+    <div className="relative">
+      {popover && (
+        <div
+          data-testid={`prompt-popover-${popover.kind}`}
+          className="absolute bottom-full left-0 right-0 mb-1.5 max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl z-30 py-1"
+        >
+          <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+            {popover.kind === "mention" ? "컨텍스트 첨부 (@)" : "명령 (/)"}
+          </div>
+          {popover.items.length === 0 && <div className="px-3 py-2 text-[11px] text-slate-400">일치하는 항목이 없습니다</div>}
+          {popover.kind === "mention"
+            ? popover.items.map((ref, idx) => (
+                <button
+                  type="button"
+                  key={`${ref.kind}:${ref.id}`}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    pick(idx);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 flex items-center gap-2 text-xs cursor-pointer ${
+                    idx === activeIndex ? "bg-indigo-50" : "hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="px-1.5 py-px rounded bg-slate-100 text-[10px] text-slate-500 font-mono shrink-0">{ref.kind}</span>
+                  <span className="truncate text-slate-800">{ref.label}</span>
+                  {ref.hint && <span className="ml-auto truncate max-w-[45%] text-[10px] text-slate-400">{ref.hint}</span>}
+                </button>
+              ))
+            : popover.items.map((action, idx) => (
+                <button
+                  type="button"
+                  key={action.id}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    pick(idx);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 flex items-center gap-2 text-xs cursor-pointer ${
+                    idx === activeIndex ? "bg-indigo-50" : "hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="font-mono text-[11px] text-indigo-700 shrink-0">/{action.id}</span>
+                  <span className="truncate text-slate-700">{action.label}</span>
+                </button>
+              ))}
+        </div>
+      )}
+
+      <div className="rounded-xl border border-slate-300 bg-white shadow-xs focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition">
+        {(attached.length > 0 || openSuggestions.length > 0 || (!hideAutoChips && autoContexts.length > 0)) && (
+          <div className="flex flex-wrap items-center gap-1 px-2 pt-2">
+            {openSuggestions.map((c) => (
+              <button
+                key={`sug-${autoKey(c)}`}
+                type="button"
+                data-testid="ai-context-suggestion"
+                title={`${c.hint ?? c.label}\n눌러서 첨부 (Ctrl+L 과 같음)`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => attachSuggestion(c)}
+                className="inline-flex items-center gap-1 max-w-[240px] px-1.5 py-0.5 rounded-md border border-dashed border-slate-300 bg-white text-[11px] text-slate-500 hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50/50 cursor-pointer"
+              >
+                <Plus className="w-3 h-3 shrink-0" />
+                <span className="shrink-0 text-slate-400">선택</span>
+                <span className="truncate">{c.label}</span>
+                {canPin(c) && (
+                  <span
+                    role="button"
+                    data-testid="ai-context-suggestion-pin"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPinContext?.(c);
+                    }}
+                    className={`shrink-0 rounded p-px ${isPinned?.(c) ? "bg-amber-500 text-white hover:bg-amber-600" : "hover:bg-indigo-100"}`}
+                    title={isPinned?.(c) ? "범위로 고정됨 — 누르면 고정 해제" : "범위로 고정 — 첨부하지 않고 설정바 범위로 걸어 둡니다"}
+                  >
+                    <Pin className="w-2.5 h-2.5" />
+                  </span>
+                )}
+              </button>
+            ))}
+            {!hideAutoChips && autoContexts.map((c) => {
+              const off = disabledAuto.has(autoKey(c));
+              if (shadowed(c)) return null;
+              return (
+                <ContextChip
+                  key={`auto-${autoKey(c)}`}
+                  context={c}
+                  auto
+                  muted={off}
+                  onClick={() =>
+                    setDisabledAuto((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(autoKey(c))) next.delete(autoKey(c));
+                      else next.add(autoKey(c));
+                      return next;
+                    })
+                  }
+                />
+              );
+            })}
+            {attached.map((c) => (
+              <ContextChip
+                key={`att-${autoKey(c)}`}
+                context={c}
+                onPin={canPin(c) ? () => onPinContext?.(c) : undefined}
+                pinned={isPinned?.(c)}
+                onToggleRole={
+                  c.access === "write"
+                    ? () =>
+                        setAttached((prev) =>
+                          prev.map((p) =>
+                            autoKey(p) === autoKey(c) ? { ...p, role: contextRole(p) === "target" ? "reference" : "target" } : p
+                          )
+                        )
+                    : undefined
+                }
+                onRemove={() => {
+                  setAttached((prev) => prev.filter((p) => autoKey(p) !== autoKey(c)));
+                  // 입력창에 남은 `@이름` 도 함께 지운다.
+                  if (c.handle) setText((t) => t.replace(new RegExp(`\\s?${escapeRegExp(c.handle!)}(?![0-9])`, "g"), ""));
+                }}
+              />
+            ))}
+          </div>
+        )}
+        <textarea
+          ref={areaRef}
+          data-testid="composer-input"
+          value={text}
+          rows={1}
+          placeholder={placeholder ?? "무엇을 할까요?  @ 로 컨텍스트 첨부, / 로 명령"}
+          onChange={(e) => {
+            setText(e.target.value);
+            refreshPopover(e.target.value, e.target.selectionStart ?? e.target.value.length);
+          }}
+          onKeyDown={onKeyDown}
+          onBlur={() => window.setTimeout(() => setPopover(null), 120)}
+          className="block w-full resize-none bg-transparent px-3 py-2 text-[13px] text-slate-900 placeholder-slate-400 focus:outline-none select-text"
+        />
+        <div className="flex items-center justify-between px-2 pb-1.5">
+          <div className="flex items-center gap-0.5 text-slate-400">
+            <button
+              type="button"
+              title="컨텍스트 첨부 (@)"
+              onClick={() => {
+                const next = `${text}${text && !text.endsWith(" ") ? " " : ""}@`;
+                setText(next);
+                refreshPopover(next, next.length);
+                areaRef.current?.focus();
+              }}
+              className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+            >
+              <AtSign className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              title="명령 (/)"
+              onClick={() => {
+                setText("/");
+                refreshPopover("/", 1);
+                areaRef.current?.focus();
+              }}
+              className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+            >
+              <Slash className="w-3.5 h-3.5" />
+            </button>
+            <span className="ml-1 text-[10px]">Enter 보내기 · Shift+Enter 줄바꿈{busy ? " · 실행 중 보내면 대기열" : ""}</span>
+          </div>
+          {busy ? (
+            <div className="flex items-center gap-1">
+              {text.trim() && (
+                <button
+                  type="button"
+                  onClick={submit}
+                  className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold cursor-pointer"
+                  title="대기열에 추가"
+                >
+                  대기열
+                </button>
+              )}
+              <button
+                type="button"
+                data-testid="composer-stop"
+                onClick={onStop}
+                className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-700 text-white cursor-pointer"
+                title="중단 (Esc)"
+              >
+                <Square className="w-3 h-3 fill-current" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              data-testid="composer-send"
+              onClick={submit}
+              disabled={!text.trim()}
+              className="p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white cursor-pointer disabled:cursor-default"
+              title="보내기 (Enter)"
+            >
+              <ArrowUp className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function mergeContexts(prev: ContextRef[], next: ContextRef[]): ContextRef[] {
+  const out = [...prev];
+  for (const ref of next) if (!out.some((p) => p.kind === ref.kind && p.id === ref.id)) out.push(ref);
+  return out;
+}

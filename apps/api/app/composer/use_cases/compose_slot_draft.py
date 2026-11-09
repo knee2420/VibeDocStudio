@@ -1,8 +1,7 @@
 """유스케이스: 단일 슬롯 초안을 작성하고 provenance 동반 아티팩트로 기록한다."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
+from app.core.clock import utc_now_iso
 from app.core.storage import RUN_PREFIX, new_id, safe_segment
 
 from ..agents import SlotComposerAgent
@@ -38,7 +37,8 @@ class ComposeSlotDraftUseCase:
             prompt=request.prompt.strip(),
             preset_id=request.preset_id,
             source_chunk_ids=tuple(c.chunk_id for c in request.backdata),
-            created_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            created_at=utc_now_iso(),
+            reference_node_ids=request.reference_node_ids,
         )
         result = SlotCompositionResultModel(
             slot_id=normalized_slot_id,

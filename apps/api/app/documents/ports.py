@@ -1,7 +1,8 @@
 """documents 도메인 외부 의존 계약 (Protocol)."""
 from __future__ import annotations
 
-from typing import Protocol
+from collections.abc import Callable
+from typing import Any, Protocol
 
 from .models import VDocAggregateRecord, VDocSummaryRecord
 
@@ -9,11 +10,30 @@ from .models import VDocAggregateRecord, VDocSummaryRecord
 class VDocDocumentRepositoryPort(Protocol):
     """`data/knowledge/documents/` 아래의 `.vdoc` 작업 문서를 관리하는 포트."""
 
+    def exists(self, doc_id: str) -> bool: ...
+
     def list_summaries(self) -> list[VDocSummaryRecord]: ...
 
     def get(self, doc_id: str) -> VDocAggregateRecord: ...
 
     def save(self, record: VDocAggregateRecord) -> VDocAggregateRecord: ...
 
+    def update(
+        self,
+        doc_id: str,
+        mutate: Callable[[VDocAggregateRecord], VDocAggregateRecord],
+    ) -> VDocAggregateRecord:
+        """읽기 → 변경 → 쓰기를 원자적으로 수행한다."""
+        ...
+
     def delete(self, doc_id: str) -> None: ...
 
+    # --- 개정 이력 (`revisions.jsonl`) ---
+
+    def append_revision(self, doc_id: str, entry: dict[str, Any]) -> None: ...
+
+    def replace_last_revision(self, doc_id: str, entry: dict[str, Any]) -> None: ...
+
+    def list_revisions(self, doc_id: str, limit: int = 200) -> list[dict[str, Any]]:
+        """최신이 앞."""
+        ...

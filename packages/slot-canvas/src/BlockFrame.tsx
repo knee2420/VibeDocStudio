@@ -3,28 +3,26 @@ import {
   ArrowDown,
   ArrowUp,
   Copy,
-  Columns2,
-  FileText,
   Lock,
   Plus,
   Settings,
-  Table,
   Trash2,
   Unlock,
-  UserRoundPen,
 } from "lucide-react";
 
+import { listInsertableBlocks, type InsertableBlockKind } from "@vibe/vdoc-schema";
+
+import { blockIcon } from "./block-views";
 import { MenuItem, GripIcon } from "./InteractiveTable";
 import { AFFORDANCE_BORDER, DROP_LINE, GRIP_COLOR, MENU_SHADOW } from "./tokens";
 
-export type QuickAddKind = "section-block" | "structured-table" | "columns-grid" | "fillable-group";
+export type QuickAddKind = InsertableBlockKind;
 
-export const QUICK_ADD_ITEMS: { kind: QuickAddKind; label: string; icon: React.ReactNode }[] = [
-  { kind: "section-block", label: "텍스트 섹션", icon: <FileText className="w-4 h-4" /> },
-  { kind: "structured-table", label: "표", icon: <Table className="w-4 h-4" /> },
-  { kind: "columns-grid", label: "2단 그리드", icon: <Columns2 className="w-4 h-4" /> },
-  { kind: "fillable-group", label: "할당형 입력 필드", icon: <UserRoundPen className="w-4 h-4" /> },
-];
+/** 블록 사이 `+` 바로 추가 메뉴 — 블록 정의에 `insertable` 이 있는 종류 (레지스트리 순서). */
+export const QUICK_ADD_ITEMS: { kind: QuickAddKind; label: string; icon: React.ReactNode }[] = listInsertableBlocks().map((item) => {
+  const Icon = blockIcon(item.icon);
+  return { kind: item.kind as QuickAddKind, label: item.label, icon: <Icon className="w-4 h-4" /> };
+});
 
 export type DropEdge = "before" | "after";
 

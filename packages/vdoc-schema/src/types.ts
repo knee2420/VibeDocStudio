@@ -4,6 +4,8 @@
  * Combines PandaDoc Kolas Editor 4-Layer Page Anatomy + Puck Layout Tree + Maily.to Section/Column Attributes + Slot-Scoped Backdata
  */
 
+import type { EvidenceLink, EvidenceLocator } from "./evidence";
+
 export type SlotRole = "boilerplate" | "editable-slot" | "fillable-field";
 
 export interface SlotConstraints {
@@ -42,6 +44,20 @@ export interface VDocSlot {
   rect?: VDocSlotRect;
   /** Whether the slot content has been edited / customized */
   isEdited?: boolean;
+  /** Content before the first edit; `restoreSlotOriginal()` puts it back. */
+  originalContent?: string;
+  /** 누가 · 어떻게 채웠는가 (Phase 3 채움 상태 · 이력 · 검증 표시). `slotFillState()` 가 읽는다. */
+  fill?: SlotFillMeta;
+}
+
+export interface SlotFillMeta {
+  author: "human" | "ai";
+  /** AI 가 채웠다면 그 하네스 · 실행 */
+  harnessId?: string;
+  runId?: string;
+  at: string;
+  /** 사람이 내용을 확인한 시각 — 있으면 "검증됨" */
+  verifiedAt?: string;
 }
 
 export interface BackdataChunk {
@@ -51,6 +67,8 @@ export interface BackdataChunk {
   excerpt: string;
   updatedAt: string;
   tags: string[];
+  /** 백데이터가 온 원본 위치 (있으면 인용을 눌렀을 때 원본으로 이동한다) */
+  locator?: Omit<EvidenceLocator, "kind" | "refId" | "label">;
 }
 
 export interface TableBorderRules {
@@ -202,6 +220,19 @@ export interface VDocCatalogManifest {
   description: string;
 }
 
+/**
+ * Static preview assets captured from the document's source (served from the studio `public/`).
+ * Documents without captures omit it; the studio then shows a page placeholder instead.
+ */
+export interface VDocPreviewAssets {
+  /** Page captures in page order. A page past the end reuses the last capture. */
+  pageThumbnails?: string[];
+  /** Original PDF the document was imported from. */
+  sourcePdfUrl?: string;
+  /** Original web page the document was transcribed from. */
+  sourceWebUrl?: string;
+}
+
 export interface VDocDocument {
   version: "1.0.0";
   docId: string;
@@ -213,4 +244,9 @@ export interface VDocDocument {
   pages: VDocPage[];
   slots: Record<string, VDocSlot>;
   backdata: Record<string, BackdataChunk>;
+  preview?: VDocPreviewAssets;
+  /** 슬롯 ↔ 근거 연결 (`evidence.ts`) */
+  evidenceLinks?: EvidenceLink[];
+  /** 서버 저장 버전 — 저장할 때 보낸 버전이 서버와 다르면 충돌(409)이다 (다른 탭 · 다른 사람). */
+  revision?: number;
 }

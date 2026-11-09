@@ -12,19 +12,27 @@ export interface BlockFrameRect {
   zIndex?: number;
 }
 
-export type LayoutBlockKind =
-  | "image"
-  | "text"
-  | "section-block"
-  | "structured-table"
-  | "table"
-  | "columns-grid"
-  | "fillable-group"
-  | "heading"
-  | "form-title"
-  | "composite-form-frame"
-  | "summary-list"
-  | "cover-banner";
+/**
+ * 모든 블록 종류 — 이 목록 하나가 기준이다. 종류마다 block-kit 정의 · slot-canvas 뷰가 있어야 하고
+ * (규격 검사가 확인), API 테스트도 시드 문서 · PDF 엔진 출력의 종류가 여기 있는지 본다.
+ */
+export const LAYOUT_BLOCK_KINDS = [
+  "image",
+  "text",
+  "section-block",
+  "structured-table",
+  "table",
+  "columns-grid",
+  "fillable-group",
+  "heading",
+  "form-title",
+  "composite-form-frame",
+  "summary-list",
+  "cover-banner",
+  "callout-box",
+] as const;
+
+export type LayoutBlockKind = (typeof LAYOUT_BLOCK_KINDS)[number];
 
 export interface BaseLayoutBlock {
   blockId: string;

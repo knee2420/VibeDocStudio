@@ -1,2 +1,1 @@
-export * from "./ComponentAttachedComposer";
-
+export * from "./ComposerPanel";

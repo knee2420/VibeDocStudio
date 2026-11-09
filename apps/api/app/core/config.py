@@ -53,6 +53,19 @@ class Settings:
         self.composer_model: str = os.getenv("VIBE_COMPOSER_MODEL", DEFAULT_COMPOSER_MODEL)
         self.pro_model: str = os.getenv("VIBE_PRO_MODEL", DEFAULT_PRO_MODEL)
         self.lite_model: str = os.getenv("VIBE_LITE_MODEL", DEFAULT_LITE_MODEL)
+        # AI Composer · 인라인 AI 의 기본 agy 모델 (속도 우선). AI 설정 화면에서 바꿀 수 있다.
+        self.assistant_inline_model: str = os.getenv("VIBE_ASSISTANT_INLINE_MODEL", "gemini-3.8-flash")
+        # agy 전송 프로토콜 ("acp" | "stream", 기본값 acp)
+        self.agy_transport: str = os.getenv("VIBE_AGY_TRANSPORT", "acp").lower()
+        # 기본 생각 강도 ("low" | "medium" | "high")
+        self.assistant_thought_level: str = os.getenv("VIBE_AGY_THOUGHT_LEVEL", "medium").lower()
+        # 외부 LLM(agy CLI · Google API) 호출 허용. 테스트 · 오프라인 환경은 0 으로 끈다.
+        self.external_llm_enabled: bool = os.getenv("VIBE_EXTERNAL_LLM", "1") != "0"
+        self.scaffold_agent_loop_enabled: bool = os.getenv("VIBE_SCAFFOLD_AGENT_LOOP", "1") != "0"
+        # Auto-Index: 카드 보강 모델(비우면 실행 정책의 agy 모델) · 동시 작업 수 · 작업당 LLM 동시 호출 수
+        self.knowledge_index_model: str = os.getenv("VIBE_KNOWLEDGE_INDEX_MODEL", "")
+        self.knowledge_parallel_jobs: int = int(os.getenv("VIBE_KNOWLEDGE_PARALLEL_JOBS", "1"))
+        self.knowledge_llm_concurrency: int = int(os.getenv("VIBE_KNOWLEDGE_LLM_CONCURRENCY", "3"))
 
     @staticmethod
     def _read_cors_origins() -> list[str]:

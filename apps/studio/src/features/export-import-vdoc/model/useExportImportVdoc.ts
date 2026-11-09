@@ -1,53 +1,31 @@
-import React from "react";
-
 import type { VDocDocument } from "@vibe/vdoc-schema";
 
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { downloadJsonFile, readTextFile } from "@/shared/lib";
 
-export function useExportImportVdoc(options?: {
-  onImportError?: (message: string) => void;
-}) {
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
-  const upsertDocument = useStudioDocumentStore((s) => s.upsertDocument);
-
-  const activeDoc = docs.find((d) => d.docId === activeDocId) || docs[0];
-
-  const exportCurrentVDoc = () => {
-    if (!activeDoc) return;
-    const blob = new Blob([JSON.stringify(activeDoc, null, 2)], {
-      type: "application/json;charset=utf-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${activeDoc.title.replace(/\s+/g, "_")}.vdoc`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importVDocFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const parsed = JSON.parse(String(reader.result)) as VDocDocument;
-        if (parsed.docId && parsed.pages && parsed.slots) {
-          upsertDocument(parsed);
-        } else {
-          options?.onImportError?.("유효한 .vdoc (JSON) 문서 구조가 아닙니다.");
-        }
-      } catch {
-        options?.onImportError?.("유효한 .vdoc (JSON) 문서 파일이 아닙니다.");
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  return {
-    exportCurrentVDoc,
-    importVDocFile,
-  };
+function parseVDoc(text: string): VDocDocument {
+  let parsed: Partial<VDocDocument>;
+  try {
+    parsed = JSON.parse(text) as Partial<VDocDocument>;
+  } catch {
+    throw new Error("유효한 .vdoc (JSON) 문서 파일이 아닙니다.");
+  }
+  if (!parsed.docId || !Array.isArray(parsed.pages) || !parsed.slots) {
+    throw new Error("유효한 .vdoc (JSON) 문서 구조가 아닙니다.");
+  }
+  return parsed as VDocDocument;
 }
 
+/** 활성 문서를 `.vdoc` 로 내보내고, `.vdoc` 파일을 새 작업 문서로 연다. */
+export function useExportImportVdoc() {
+  const activeDoc = useStudioDocumentStore(selectActiveDocument);
+  const addDocument = useStudioDocumentStore((s) => s.addDocument);
+
+  return {
+    exportCurrentVDoc: () => {
+      if (activeDoc) downloadJsonFile(`${activeDoc.title.replace(/\s+/g, "_")}.vdoc`, activeDoc);
+    },
+    /** 실패하면 사용자에게 보여줄 문장을 담은 오류를 던진다. */
+    importVDocFile: async (file: File) => addDocument(parseVDoc(await readTextFile(file))),
+  };
+}

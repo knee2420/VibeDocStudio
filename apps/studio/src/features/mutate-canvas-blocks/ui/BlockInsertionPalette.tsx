@@ -1,29 +1,40 @@
 import React from "react";
-import { Columns2, Table as TableIcon, FileText, UserCheck, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 
-import { NEW_BLOCK_DRAG_MIME } from "@vibe/slot-canvas";
+import { blockIcon, NEW_BLOCK_DRAG_MIME } from "@vibe/slot-canvas";
+import { listInsertableBlocks } from "@vibe/vdoc-schema";
 
 import { useMutateCanvasBlocks, type InsertableBlockKind } from "../model/useMutateCanvasBlocks";
 
 export interface BlockInsertionPaletteProps {
   targetPageId: string;
+  className?: string;
+  showHeader?: boolean;
 }
 
-const ITEMS: { kind: InsertableBlockKind; label: string; icon: React.ReactNode }[] = [
-  { kind: "section-block", label: "텍스트 섹션", icon: <FileText className="w-3.5 h-3.5 text-[#248567]" /> },
-  { kind: "structured-table", label: "표", icon: <TableIcon className="w-3.5 h-3.5 text-[#248567]" /> },
-  { kind: "columns-grid", label: "2단 그리드", icon: <Columns2 className="w-3.5 h-3.5 text-[#248567]" /> },
-  { kind: "fillable-group", label: "할당형 필드", icon: <UserCheck className="w-3.5 h-3.5 text-[#248567]" /> },
-];
+/** 블록 정의에 `insertable` 이 있는 종류 (레지스트리 순서 — 새 블록은 정의만 등록하면 여기 나온다). */
+const ITEMS = listInsertableBlocks().map((item) => {
+  const Icon = blockIcon(item.icon);
+  return { kind: item.kind as InsertableBlockKind, label: item.label, desc: item.description, icon: <Icon className="w-4 h-4 text-emerald-600" /> };
+});
 
 /** Block palette: drag an item onto the page (drop line shows where), or click to append. */
-export const BlockInsertionPalette: React.FC<BlockInsertionPaletteProps> = ({ targetPageId }) => {
+export const BlockInsertionPalette: React.FC<BlockInsertionPaletteProps> = ({
+  targetPageId,
+  className = "",
+  showHeader = true,
+}) => {
   const { addBlockToPage } = useMutateCanvasBlocks();
 
   return (
-    <div className="p-3 border-t border-slate-200 bg-slate-50/70 space-y-1.5">
-      <div className="text-[11px] font-bold text-slate-700 mb-1">블록 추가 · 페이지로 끌어다 놓기</div>
-      <div className="grid grid-cols-2 gap-1.5">
+    <div className={`space-y-2 ${className}`}>
+      {showHeader && (
+        <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 px-0.5">
+          <span>블록 팔레트</span>
+          <span className="text-[10px] text-slate-400 font-normal">끌어다 놓거나 클릭</span>
+        </div>
+      )}
+      <div className="grid grid-cols-2 gap-2">
         {ITEMS.map((item) => (
           <button
             key={item.kind}
@@ -34,12 +45,21 @@ export const BlockInsertionPalette: React.FC<BlockInsertionPaletteProps> = ({ ta
               e.dataTransfer.setData(NEW_BLOCK_DRAG_MIME, item.kind);
             }}
             onClick={() => addBlockToPage(targetPageId, item.kind)}
-            title="클릭하면 페이지 끝에 추가, 끌면 원하는 위치에 추가"
-            className="group flex items-center gap-1.5 p-2 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 hover:border-[#248567] text-[11px] font-medium text-slate-700 transition cursor-grab active:cursor-grabbing"
+            title="클릭하면 현재 페이지 끝에 추가, 캔버스로 끌면 원하는 위치에 삽입"
+            className="group flex flex-col items-start gap-1 p-2.5 rounded-xl bg-white hover:bg-emerald-50/70 border border-slate-200 hover:border-emerald-500 text-left transition-all cursor-grab active:cursor-grabbing shadow-2xs hover:shadow-xs"
           >
-            <GripVertical className="w-3 h-3 text-slate-300 group-hover:text-slate-400" />
-            {item.icon}
-            {item.label}
+            <div className="flex items-center justify-between w-full">
+              <span className="p-1 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-white transition-colors">
+                {item.icon}
+              </span>
+              <GripVertical className="w-3.5 h-3.5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+            </div>
+            <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-900 mt-1">
+              {item.label}
+            </span>
+            <span className="text-[10px] text-slate-400 group-hover:text-emerald-700 line-clamp-1">
+              {item.desc}
+            </span>
           </button>
         ))}
       </div>

@@ -187,7 +187,7 @@ def _extract_tables_from_page(
                         ibox = img_info.get("bbox")
                         if ibox:
                             icx = (ibox[0] + ibox[2]) / 2.0
-                            icy = (ibox[1] + ibox[3]) / 2.0
+                            (ibox[1] + ibox[3]) / 2.0
                             if x_left - 2.0 <= icx <= x_right + 2.0 and y_top - 2.0 <= cell_y_bottom + 2.0:
                                 for img_tuple in page.get_images():
                                     xref = img_tuple[0]

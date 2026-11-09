@@ -4,7 +4,7 @@
   "private": true,
   "description": "FastAPI 헥사고날 도메인 슬라이스 백엔드",
   "scripts": {
-    "dev": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -m uvicorn main:app --reload --port 8090",
+    "dev": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe dev_server.py --port 8090",
     "build": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -m compileall -q app main.py ../../packages/pdf-vdoc-engine/pdf_vdoc_engine",
     "typecheck": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -c \"import main\"",
     "lint": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -m compileall -q app main.py tests && ..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\ruff.exe check app main.py tests ../../packages/pdf-vdoc-engine/pdf_vdoc_engine && ..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -c \"import sys; sys.path[:0]=['.', '../../packages/pdf-vdoc-engine']; from importlinter.cli import lint_imports; raise SystemExit(lint_imports())\"",

@@ -11,7 +11,7 @@
     "lint": "pnpm -r lint",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm --filter @vibe/api test"
+    "test": "pnpm --filter @vibe/vdoc-schema --filter @vibe/slot-canvas --filter @vibe/api test"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

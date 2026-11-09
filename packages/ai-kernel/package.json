@@ -1,0 +1,11 @@
+{
+  "name": "@vibe/ai-kernel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI Composer · 인라인 AI 공용 커널 (React 비의존): 엔진 클라이언트 · 이벤트 · 컨텍스트 · 도구 · 액션 레지스트리 · 세션 루프",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc --noEmit", "build": "tsc --noEmit" }
+}

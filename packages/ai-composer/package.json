@@ -1,22 +1,18 @@
 {
   "name": "@vibe/ai-composer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
+  "description": "AI Composer 패널 (다중 턴 에이전트 · 도구 호출 카드 · 권한 모드)",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit"
-  },
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc --noEmit", "build": "tsc --noEmit" },
   "dependencies": {
-    "@vibe/vdoc-schema": "workspace:*",
+    "@vibe/ai-kernel": "workspace:*",
+    "@vibe/ai-react": "workspace:*",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   }
 }
-

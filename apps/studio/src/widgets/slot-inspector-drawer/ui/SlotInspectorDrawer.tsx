@@ -1,500 +1,280 @@
-import React, { useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Paperclip,
-  Edit3,
-  RotateCcw,
-  Sparkles,
-  Type,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-} from "lucide-react";
+import React from "react";
+import { Boxes, ChevronRight, FolderTree, Settings, Sliders, Sparkles, Wrench } from "lucide-react";
 
-import type { BackdataChunk, SlotConstraints, VDocSlot } from "@vibe/vdoc-schema";
+import { findBlock, type ImageBlockDef } from "@vibe/vdoc-schema";
 
-import { BackdataChunkCard } from "@/entities/backdata-chunk";
 import { SlotMetadataCard, useSlotSelectionStore } from "@/entities/slot";
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import {
-  AddBackdataChunkForm,
-  useBindSlotBackdata,
-} from "@/features/bind-slot-backdata";
-import { useSlotContentActions } from "@/features/edit-slot-richtext";
-import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
-import type { ImageBlockDef } from "@vibe/vdoc-schema";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { RIGHT_SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { StudioAgentSettingsButton } from "@/features/agent-settings";
+import { AiComposerView } from "@/features/ai-composer";
+import { SlotBackdataSection } from "@/features/bind-slot-backdata";
+import { RevisionTimeline } from "@/features/document-revisions";
+import { runFillSlot } from "@/features/fill-slots";
+import { SlotPlainTextEditorCard, SlotTypographyCard, useSlotContentActions } from "@/features/edit-slot-richtext";
+import { BlockInsertionPalette, useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
+import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { useDragResize } from "@/shared/lib";
+import { CollapsedPanelRail } from "@/shared/ui";
+import { ResourceManagerWidget } from "@/widgets/resource-manager";
+
 import { ImageInspectorCard } from "./ImageInspectorCard";
 
-interface SlotTypographyCardProps {
-  slot: VDocSlot;
-  onUpdateConstraints: (
-    slotId: string,
-    constraints: Partial<SlotConstraints>
-  ) => void;
-}
+const BLOCK_GUIDE = [
+  ["텍스트 섹션", "제목과 본문 슬롯이 결합된 기본 문서 블록"],
+  ["구조화 표", "다단 헤더와 데이터 행을 자유롭게 추가하는 표"],
+  ["2단 그리드", "5:5 비율로 좌우 정보를 나란히 배치하는 그리드"],
+  ["할당형 필드", "서명, 날인, 결재, 상태 체크를 위한 전용 슬롯"],
+] as const;
 
-const SlotTypographyCard: React.FC<SlotTypographyCardProps> = ({
-  slot,
-  onUpdateConstraints,
-}) => {
-  const currentFontSize = slot.constraints?.fontSize || "13px";
-  const currentLineHeight = slot.constraints?.lineHeight || "1.35";
-  const currentAlign = slot.constraints?.align || "left";
-  const currentColor = slot.constraints?.color || "#383838";
-  const currentWeight = slot.constraints?.fontWeight || "normal";
+const tabClass = (active: boolean, activeTone: string) =>
+  `px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+    active ? `bg-white ${activeTone} shadow-2xs font-bold` : "text-slate-500 hover:text-slate-700"
+  }`;
 
-  return (
-    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-3">
-      <div className="flex items-center justify-between">
-        <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-          <Type className="w-3.5 h-3.5 text-blue-600" />
-          타이포그래피 및 스타일 제약
-        </h4>
-        <span className="text-[10px] text-slate-400 font-mono">
-          {currentFontSize} / {currentLineHeight}
-        </span>
-      </div>
-
-      {/* Font Size */}
-      <div className="space-y-1">
-        <label className="text-[11px] font-medium text-slate-600 flex items-center justify-between">
-          <span>글자 크기 (Font Size)</span>
-          <span className="text-slate-400 font-mono text-[10px]">
-            {currentFontSize}
-          </span>
-        </label>
-        <div className="flex flex-wrap gap-1">
-          {["9pt", "10pt", "12.5px", "14px", "18px", "22px", "26px"].map(
-            (sz) => (
-              <button
-                key={sz}
-                type="button"
-                onClick={() =>
-                  onUpdateConstraints(slot.slotId, { fontSize: sz })
-                }
-                className={`px-2 py-0.5 rounded text-[11px] font-medium border cursor-pointer transition ${
-                  currentFontSize === sz
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-                }`}
-              >
-                {sz}
-              </button>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* Line Height */}
-      <div className="space-y-1">
-        <label className="text-[11px] font-medium text-slate-600 flex items-center justify-between">
-          <span>줄간격 / 행간 (Line Height)</span>
-          <span className="text-slate-400 font-mono text-[10px]">
-            {currentLineHeight}
-          </span>
-        </label>
-        <div className="flex gap-1">
-          {[
-            { label: "1.0", val: "1.0" },
-            { label: "1.2", val: "1.2" },
-            { label: "1.35", val: "1.35" },
-            { label: "1.5", val: "1.5" },
-            { label: "1.75", val: "1.75" },
-          ].map((lh) => (
-            <button
-              key={lh.val}
-              type="button"
-              onClick={() =>
-                onUpdateConstraints(slot.slotId, { lineHeight: lh.val })
-              }
-              className={`flex-1 py-0.5 rounded text-[11px] font-medium border text-center cursor-pointer transition ${
-                currentLineHeight === lh.val
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-              }`}
-            >
-              {lh.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Align & Font Weight */}
-      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/80">
-        <div>
-          <label className="text-[11px] font-medium text-slate-600 block mb-1">
-            정렬
-          </label>
-          <div className="flex rounded border border-slate-200 bg-white overflow-hidden">
-            {[
-              { id: "left", icon: AlignLeft },
-              { id: "center", icon: AlignCenter },
-              { id: "right", icon: AlignRight },
-            ].map(({ id, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() =>
-                  onUpdateConstraints(slot.slotId, {
-                    align: id as "left" | "center" | "right",
-                  })
-                }
-                className={`flex-1 p-1 flex items-center justify-center cursor-pointer transition ${
-                  currentAlign === id
-                    ? "bg-blue-50 text-blue-700 font-bold"
-                    : "text-slate-500 hover:bg-slate-50"
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="text-[11px] font-medium text-slate-600 block mb-1">
-            굵기 (Weight)
-          </label>
-          <select
-            value={currentWeight}
-            onChange={(e) =>
-              onUpdateConstraints(slot.slotId, { fontWeight: e.target.value })
-            }
-            className="w-full text-xs bg-white border border-slate-200 rounded p-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="normal">Normal (400)</option>
-            <option value="500">Medium (500)</option>
-            <option value="600">Semibold (600)</option>
-            <option value="700">Bold (700)</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Color Presets */}
-      <div className="pt-1 border-t border-slate-200/80">
-        <label className="text-[11px] font-medium text-slate-600 block mb-1">
-          텍스트 색상 (Color)
-        </label>
-        <div className="flex items-center gap-1.5">
-          {[
-            { label: "블랙", val: "#0f172a", bg: "bg-slate-900" },
-            { label: "다크그레이", val: "#383838", bg: "bg-neutral-700" },
-            { label: "인보이스 블루", val: "#336699", bg: "bg-[#336699]" },
-            { label: "뮤트", val: "#64748b", bg: "bg-slate-500" },
-            { label: "에메랄드", val: "#047857", bg: "bg-emerald-700" },
-          ].map((c) => (
-            <button
-              key={c.val}
-              type="button"
-              onClick={() => onUpdateConstraints(slot.slotId, { color: c.val })}
-              title={`${c.label} (${c.val})`}
-              className={`w-4 h-4 rounded-full ${c.bg} cursor-pointer transition hover:scale-125 ${
-                currentColor === c.val ? "ring-2 ring-blue-500 ring-offset-1" : ""
-              }`}
-            />
-          ))}
-          <input
-            type="text"
-            value={currentColor}
-            onChange={(e) =>
-              onUpdateConstraints(slot.slotId, { color: e.target.value })
-            }
-            className="ml-auto w-20 text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-200 bg-white text-slate-700 focus:outline-none"
-            placeholder="#000000"
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-interface SlotLiveEditorCardProps {
-  slot: VDocSlot;
-  onUpdateContent: (slotId: string, html: string) => void;
-  onResetEdit: (slotId: string) => void;
-  onOpenComposer: (slotId: string) => void;
-}
-
-const SlotLiveEditorCard: React.FC<SlotLiveEditorCardProps> = ({
-  slot,
-  onUpdateContent,
-  onResetEdit,
-  onOpenComposer,
-}) => {
-  const [prevSlotId, setPrevSlotId] = useState(slot.slotId);
-  const [localText, setLocalText] = useState(() =>
-    slot.content.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim()
-  );
-
-  if (slot.slotId !== prevSlotId) {
-    setPrevSlotId(slot.slotId);
-    setLocalText(
-      slot.content.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim()
-    );
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const nextVal = e.target.value;
-    setLocalText(nextVal);
-    onUpdateContent(slot.slotId, `<p>${nextVal.replace(/\n/g, "<br/>")}</p>`);
-  };
-
-  const isLocked = Boolean(slot.constraints?.locked);
-
-  return (
-    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-3">
-      <div className="flex items-center justify-between">
-        <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-          <Edit3 className="w-3.5 h-3.5 text-emerald-600" />
-          슬롯 본문 실시간 편집
-        </h4>
-        <div className="flex items-center gap-1.5">
-          {slot.isEdited && (
-            <button
-              type="button"
-              onClick={() => onResetEdit(slot.slotId)}
-              className="inline-flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-800 bg-white border border-slate-200 px-1.5 py-0.5 rounded cursor-pointer"
-              title="원천 조판 서식으로 복원"
-            >
-              <RotateCcw className="w-2.5 h-2.5" />
-              원문 복원
-            </button>
-          )}
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-100 text-emerald-800">
-            🟢 실시간 동기화
-          </span>
-        </div>
-      </div>
-
-      <textarea
-        rows={5}
-        value={localText}
-        onChange={handleChange}
-        disabled={isLocked}
-        placeholder="슬롯 내용을 입력하세요..."
-        className="w-full text-xs font-mono bg-white border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y leading-relaxed"
-      />
-
-      <div className="flex items-center justify-between text-[11px] text-slate-500">
-        <span>
-          글자 수: <strong className="text-slate-700">{localText.length}</strong>자
-        </span>
-        <button
-          type="button"
-          onClick={() => onOpenComposer(slot.slotId)}
-          className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 cursor-pointer"
-        >
-          <Sparkles className="w-3 h-3 text-amber-500" />
-          AI 컴포저 호출 (Ctrl+K)
-        </button>
-      </div>
-    </div>
-  );
-};
-
+/** 우측 작업 패널: AI Composer(기본) · 블록 박스 · 인스펙터 · 리소스 매니저. */
 export const SlotInspectorDrawer: React.FC = () => {
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
-
+  const doc = useStudioDocumentStore(selectActiveDocument);
+  const activePageId = useStudioDocumentStore((s) => s.activePageId);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
   const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
-  const rightSidebarOpen = useSlotSelectionStore((s) => s.rightSidebarOpen);
-  const setRightSidebarOpen = useSlotSelectionStore(
-    (s) => s.setRightSidebarOpen
-  );
-  const showAddBackdataForm = useSlotSelectionStore(
-    (s) => s.showAddBackdataForm
-  );
-  const setShowAddBackdataForm = useSlotSelectionStore(
-    (s) => s.setShowAddBackdataForm
-  );
-  const toggleComposerForSlot = useSlotSelectionStore(
-    (s) => s.toggleComposerForSlot
-  );
+  const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
+  const rightSidebarOpen = useWorkspaceLayoutStore((s) => s.rightSidebarOpen);
+  const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
+  const rightSidebarWidth = useWorkspaceLayoutStore((s) => s.rightSidebarWidth);
+  const setRightSidebarWidth = useWorkspaceLayoutStore((s) => s.setRightSidebarWidth);
+  const resetRightSidebarWidth = useWorkspaceLayoutStore((s) => s.resetRightSidebarWidth);
+  const viewMode = useWorkspaceLayoutStore((s) => s.rightPanelTab);
+  const setViewMode = useWorkspaceLayoutStore((s) => s.openRightPanel);
+  const rmPlacement = useWorkspaceLayoutStore((s) => s.rmPlacement);
 
-  const {
-    toggleSlotLock,
-    updateSlotContent,
-    resetSlotEdit,
-    updateSlotConstraints,
-  } = useSlotContentActions();
-  const { toggleBackdataRef } = useBindSlotBackdata();
+  const { isResizing, onResizeStart } = useDragResize({
+    axis: "x-left",
+    size: rightSidebarWidth,
+    onResize: setRightSidebarWidth,
+  });
+
+  const { toggleSlotLock } = useSlotContentActions();
   const { updateBlock, deleteBlock } = useMutateCanvasBlocks();
-
-  const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
-
-  const selectedBlockInfo = React.useMemo(() => {
-    if (!doc || !selectedBlockId) return null;
-    for (const page of doc.pages) {
-      const blk = page.blocks.find((b) => b.blockId === selectedBlockId);
-      if (blk) return { pageId: page.pageId, block: blk };
-    }
-    return null;
-  }, [doc, selectedBlockId]);
+  const { isAiStreaming } = useStageAiChanges();
 
   if (!doc) return null;
 
-  const selectedSlot: VDocSlot | undefined = selectedSlotId
-    ? doc.slots[selectedSlotId]
-    : undefined;
-  const selectedSlotChunks: BackdataChunk[] = (
-    selectedSlot?.backDataRefs || []
-  )
-    .map((id) => doc.backdata[id])
-    .filter(Boolean);
+  const selectedSlot = selectedSlotId ? doc.slots[selectedSlotId] : undefined;
+  const selectedBlock = selectedBlockId ? findBlock(doc, selectedBlockId) : null;
 
   if (!rightSidebarOpen) {
     return (
-      <button
-        type="button"
-        onClick={() => setRightSidebarOpen(true)}
-        className="absolute right-3 top-3 z-20 w-8 h-8 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-slate-900 cursor-pointer"
-        title="우측 Slot Inspector & 백데이터 서랍 열기"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
+      <CollapsedPanelRail
+        side="right"
+        label="AI Composer · 작업 도구"
+        badgeCount={Object.keys(doc.backdata).length}
+        tone="purple"
+        onExpand={() => setRightSidebarOpen(true)}
+        testId="right-sidebar-collapsed-rail"
+      />
     );
   }
 
   return (
-    <aside className="w-[360px] bg-white border-l border-slate-200 flex flex-col shrink-0 select-none">
-      <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-        <div>
-          <h3 className="text-xs font-bold text-slate-900">
-            Slot Inspector & 백데이터 서랍
-          </h3>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            선택한 슬롯의 제약 조건 및 근거 원문(Grounding)
-          </p>
+    <aside
+      data-testid="slot-inspector-drawer"
+      style={{ width: `${rightSidebarWidth}px` }}
+      className={`bg-white border-l border-slate-200 flex flex-col shrink-0 select-none relative z-10 min-h-0 ${
+        isResizing ? "transition-none" : "transition-[width] duration-75"
+      }`}
+    >
+      <div
+        data-testid="right-sidebar-resize-handle"
+        onMouseDown={onResizeStart}
+        onDoubleClick={resetRightSidebarWidth}
+        title={`드래그하여 너비 조절 · 더블클릭 시 기본 너비(${RIGHT_SIDEBAR_WIDTH.default}px) 복원`}
+        className="absolute -left-1 top-0 bottom-0 w-2 hover:w-2.5 cursor-col-resize hover:bg-slate-400/40 active:bg-slate-500/60 transition-all z-30"
+      />
+
+      <div className="px-2.5 py-2 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
+        <div className="flex items-center p-0.5 bg-slate-100 rounded-lg text-xs font-semibold">
+          <button
+            type="button"
+            data-testid="tab-view-composer"
+            onClick={() => setViewMode("composer")}
+            className={tabClass(viewMode === "composer", "text-violet-900")}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+            <span>AI Composer</span>
+          </button>
+          {rmPlacement !== "between-split" && (
+            <button
+              type="button"
+              data-testid="tab-view-resource-manager"
+              onClick={() => setViewMode("resource-manager")}
+              className={tabClass(viewMode === "resource-manager", "text-purple-900")}
+            >
+              <FolderTree className="w-3.5 h-3.5 text-purple-600" />
+              <span>리소스</span>
+            </button>
+          )}
+          <button
+            type="button"
+            data-testid="tab-view-blockbox"
+            onClick={() => setViewMode("blockbox")}
+            className={tabClass(viewMode === "blockbox", "text-emerald-900")}
+          >
+            <Boxes className="w-3.5 h-3.5 text-emerald-600" />
+            <span>블록</span>
+          </button>
+          <button
+            type="button"
+            data-testid="tab-view-inspector"
+            onClick={() => setViewMode("inspector")}
+            className={tabClass(viewMode === "inspector", "text-blue-900")}
+          >
+            <Sliders className="w-3.5 h-3.5 text-blue-600" />
+            <span>인스펙터</span>
+            {selectedSlot && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 ml-0.5" />}
+          </button>
         </div>
+
         <button
           type="button"
+          data-testid="collapse-right-sidebar-btn"
           onClick={() => setRightSidebarOpen(false)}
-          className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer"
+          className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer ml-1"
           title="우측 패널 접기"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
-      {(selectedSlot || selectedBlockInfo) ? (
-        <div className="flex-1 overflow-y-auto p-4 space-y-5">
-          {selectedBlockInfo && selectedBlockInfo.block.kind === "image" && (
-            <ImageInspectorCard
-              key={selectedBlockInfo.block.blockId}
-              pageId={selectedBlockInfo.pageId}
-              block={selectedBlockInfo.block as ImageBlockDef}
-              onUpdateBlock={updateBlock}
-              onDeleteBlock={deleteBlock}
-            />
-          )}
-
-          {selectedSlot && (
-            <>
-              <SlotMetadataCard
-            slot={selectedSlot}
-            onToggleLock={toggleSlotLock}
-            onToggleComposer={toggleComposerForSlot}
+      {viewMode === "composer" && (
+        <div className="flex-1 min-h-0">
+          <AiComposerView
+            headerActions={
+              <StudioAgentSettingsButton className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer inline-flex">
+                <Settings className="w-4 h-4" />
+              </StudioAgentSettingsButton>
+            }
           />
-
-          <SlotTypographyCard
-            key={`typo-${selectedSlot.slotId}`}
-            slot={selectedSlot}
-            onUpdateConstraints={updateSlotConstraints}
-          />
-
-          <SlotLiveEditorCard
-            key={selectedSlot.slotId}
-            slot={selectedSlot}
-            onUpdateContent={updateSlotContent}
-            onResetEdit={resetSlotEdit}
-            onOpenComposer={toggleComposerForSlot}
-          />
-
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                <Paperclip className="w-3.5 h-3.5 text-indigo-600" />이 슬롯에
-                연결된 백데이터 ({selectedSlotChunks.length}건)
-              </h4>
-              <button
-                type="button"
-                onClick={() => setShowAddBackdataForm(!showAddBackdataForm)}
-                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
-              >
-                + 새 백데이터 추가
-              </button>
-            </div>
-
-            {showAddBackdataForm && <AddBackdataChunkForm />}
-
-            {selectedSlotChunks.length > 0 ? (
-              <div className="space-y-2">
-                {selectedSlotChunks.map((chunk) => (
-                  <BackdataChunkCard key={chunk.chunkId} chunk={chunk} />
-                ))}
-              </div>
-            ) : (
-              <div className="p-4 rounded-xl border border-dashed border-slate-300 text-center text-xs text-slate-400">
-                연결된 백데이터가 없습니다. 아래 전체 백데이터 보관함에서 클릭해
-                바인딩하세요.
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2 pt-3 border-t border-slate-200">
-            <h4 className="text-xs font-bold text-slate-700">
-              📚 문서 전체 백데이터 풀 (클릭하여 현재 슬롯에 연결/해제)
-            </h4>
-            <div className="space-y-1.5">
-              {Object.values(doc.backdata).map((chunk) => {
-                const isBound = selectedSlot.backDataRefs.includes(
-                  chunk.chunkId
-                );
-                return (
-                  <button
-                    key={chunk.chunkId}
-                    type="button"
-                    onClick={() =>
-                      toggleBackdataRef(selectedSlot.slotId, chunk.chunkId)
-                    }
-                    className={`w-full text-left p-2.5 rounded-lg border text-xs transition cursor-pointer ${
-                      isBound
-                        ? "border-indigo-400 bg-indigo-50/60 text-indigo-950"
-                        : "border-slate-200 hover:bg-slate-50 text-slate-600"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 font-semibold">
-                      <span className="truncate">{chunk.sourceTitle}</span>
-                      <span
-                        className={`shrink-0 whitespace-nowrap text-[10px] px-1.5 py-0.5 rounded ${
-                          isBound
-                            ? "bg-indigo-600 text-white"
-                            : "bg-slate-100 text-slate-500"
-                        }`}
-                      >
-                        {isBound ? "✓ 연결됨" : "+ 연결"}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 line-clamp-2 mt-1">
-                      {chunk.excerpt}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-            </>
-          )}
-        </div>
-      ) : (
-        <div className="p-6 text-center text-xs text-slate-400">
-          중앙 캔버스에서 슬롯을 클릭하면 해당 슬롯의 백데이터와 제약 설정이
-          즉시 표시됩니다.
         </div>
       )}
+
+      {viewMode === "resource-manager" && rmPlacement !== "between-split" && (
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <ResourceManagerWidget />
+        </div>
+      )}
+
+      {viewMode === "blockbox" && (
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+                작업 도구함 (Toolbox)
+              </span>
+              <span className="text-[11px] text-slate-400 font-mono truncate max-w-[170px]">{doc.title}</span>
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 tracking-tight">블록 박스 (BlockBox)</h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              원하는 블록을 캔버스 위로 직접 <strong>끌어다 놓거나(Drag & Drop)</strong>, 클릭하여 현재 페이지 끝에 추가하세요.
+            </p>
+          </div>
+
+          <BlockInsertionPalette targetPageId={activePageId || doc.pages[0]?.pageId || ""} showHeader={false} />
+
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-600 space-y-2">
+            <div className="font-semibold text-slate-800 flex items-center gap-1.5">
+              <Wrench className="w-3.5 h-3.5 text-slate-500" />
+              <span>블록 도구 가이드</span>
+            </div>
+            <ul className="space-y-1.5 text-[11px] text-slate-500 leading-normal">
+              {BLOCK_GUIDE.map(([name, desc]) => (
+                <li key={name}>
+                  <strong className="text-slate-700">{name}</strong>: {desc}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {viewMode === "inspector" &&
+        (selectedSlot || selectedBlock ? (
+          <div className="flex-1 overflow-y-auto p-4 space-y-5">
+            {selectedBlock?.block.kind === "image" && (
+              <ImageInspectorCard
+                key={selectedBlock.block.blockId}
+                pageId={selectedBlock.pageId}
+                block={selectedBlock.block as ImageBlockDef}
+                onUpdateBlock={updateBlock}
+                onDeleteBlock={deleteBlock}
+              />
+            )}
+
+            {selectedSlot && (
+              <>
+                <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-amber-950 flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                      근거로 채우기 (fill.slot)
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        data-testid="ground-cite-btn"
+                        disabled={isAiStreaming || !selectedSlot.content.trim()}
+                        onClick={() => void runFillSlot(selectedSlot.slotId, { harnessId: "ground.cite", docId: doc.docId })}
+                        className="px-2 py-1 rounded-lg border border-amber-300 bg-white text-amber-800 text-[11px] font-semibold cursor-pointer disabled:opacity-40"
+                        title="본문은 그대로 두고, 근거가 있는 문장에 출처 표식만 붙인다"
+                      >
+                        출처 달기
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="stage-slot-ai-draft-btn"
+                        disabled={isAiStreaming}
+                        onClick={() => void runFillSlot(selectedSlot.slotId, { docId: doc.docId })}
+                        className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-wait"
+                      >
+                        {isAiStreaming ? "AI 작성 중…" : "+ 근거로 채우기"}
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-amber-800">
+                    이 칸의 근거(연결된 자료 · 이웃 칸 근거 · RM 고정 자료 · 열린 참조 문서, 부족하면 지식 덱 추천)만으로 쓰고,
+                    문장마다 출처를 답니다. 결과는 캔버스 자리에서 diff 로 검토합니다.
+                  </p>
+                </div>
+
+                <SlotMetadataCard slot={selectedSlot} onToggleLock={toggleSlotLock} onToggleComposer={toggleComposerForSlot} />
+                <SlotTypographyCard slot={selectedSlot} />
+                <SlotPlainTextEditorCard key={selectedSlot.slotId} slot={selectedSlot} />
+                <SlotBackdataSection doc={doc} slot={selectedSlot} />
+                <div className="rounded-lg border border-slate-200 p-2">
+                  <RevisionTimeline docId={doc.docId} slotId={selectedSlot.slotId} limit={10} title="이 칸의 기록 (누가 썼나)" />
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+              <Sliders className="w-6 h-6" />
+            </div>
+            <h4 className="text-xs font-bold text-slate-800 mb-1">선택된 슬롯 또는 블록이 없습니다</h4>
+            <p className="text-[11px] text-slate-500 leading-relaxed max-w-[240px] mb-4">
+              중앙 캔버스에서 편집할 슬롯이나 블록을 클릭하면 타이포그래피 제약 및 백데이터 서랍이 표시됩니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => setViewMode("blockbox")}
+              className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-2xs"
+            >
+              <Boxes className="w-3.5 h-3.5" />
+              <span>블록 박스 (BlockBox) 열기</span>
+            </button>
+          </div>
+        ))}
     </aside>
   );
 };
-

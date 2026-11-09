@@ -13,12 +13,17 @@
   "dependencies": {
     "@vibe/agent-core": "workspace:*",
     "@vibe/ai-composer": "workspace:*",
+    "@vibe/ai-inline": "workspace:*",
+    "@vibe/ai-kernel": "workspace:*",
+    "@vibe/ai-react": "workspace:*",
+    "@vibe/document-viewer": "workspace:*",
     "@vibe/slot-canvas": "workspace:*",
     "@vibe/slot-editor": "workspace:*",
     "@vibe/vdoc-schema": "workspace:*",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-pdf": "^10.5.0",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

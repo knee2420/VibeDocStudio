@@ -1,108 +1,468 @@
-import React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+import {
+  ArrowUpLeft,
+  BookOpen,
+  ChevronLeft,
+  FolderTree,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  LayoutGrid,
+  MoreHorizontal,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
 
-import { useSlotSelectionStore } from "@/entities/slot";
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { BlockInsertionPalette } from "@/features/mutate-canvas-blocks";
+import { PROJECT_ROOT_CRUMB_ID, type OutlinerNode } from "@vibe/vdoc-schema";
 
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { attachable, outlineNodeRef, useAttachPickStore, withPicked } from "@/features/ai-workspace";
+import { isEditableOutlineNode, useOutlineNodeEditing } from "@/features/edit-outline";
+import { resolvePeekTarget, usePeekTrigger, type PeekHandlers } from "@/features/peek-page";
+import { useFractalZoomNavigation, useOutlineSelector } from "@/features/zoom-hierarchy";
+import { useDragResize } from "@/shared/lib";
+import { CollapsedPanelRail, EmptyStateCard } from "@/shared/ui";
+
+import { OutlineNodeRow, outlineNodeTargetId } from "./OutlineNodeRow";
+import { ReferenceDeckSection } from "./ReferenceDeckSection";
+import { SourceControlSidebarPanel } from "./SourceControlSidebarPanel";
+import { TemplateHubSidebarPanel } from "./TemplateHubSidebarPanel";
+import { ReferenceManagerWidget } from "@/widgets/vdoc-page-canvas";
+
+const headerButton = "p-1 rounded hover:bg-slate-200/70 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors";
+const menuItem = "w-full text-left px-2 py-1.5 rounded hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 cursor-pointer";
+
+const leftTabClass = (active: boolean, activeTone: string) =>
+  `px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1.5 text-xs ${
+    active ? `bg-white ${activeTone} shadow-2xs font-bold` : "text-slate-500 hover:text-slate-700"
+  }`;
+
+/** 좌측 사이드바: 활성 도구 탭에 따라 아웃라이너 · 변경안 검토 · 템플릿 허브를 보여준다. */
 export const OutlinePreviewSidebar: React.FC = () => {
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
-  const activePageId = useStudioDocumentStore((s) => s.activePageId);
-  const setActivePageId = useStudioDocumentStore((s) => s.setActivePageId);
-  const mode = useStudioDocumentStore((s) => s.mode);
+  // 문서 객체를 구독하면 타이핑마다 사이드바 전체가 다시 그려진다. ID 만 본다.
+  const activeDocId = useStudioDocumentStore((s) => selectActiveDocument(s)?.docId);
+  const leftSidebarOpen = useWorkspaceLayoutStore((s) => s.leftSidebarOpen);
+  const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
+  const sidebarWidth = useWorkspaceLayoutStore((s) => s.sidebarWidth);
+  const setSidebarWidth = useWorkspaceLayoutStore((s) => s.setSidebarWidth);
+  const resetSidebarWidth = useWorkspaceLayoutStore((s) => s.resetSidebarWidth);
+  const activeActivityTab = useWorkspaceLayoutStore((s) => s.activeActivityTab);
+  const leftPanelTab = useWorkspaceLayoutStore((s) => s.leftPanelTab);
+  const setLeftPanelTab = useWorkspaceLayoutStore((s) => s.setLeftPanelTab);
+  const refPlacement = useWorkspaceLayoutStore((s) => s.refPlacement);
+  const { onResizeStart } = useDragResize({ axis: "x", size: sidebarWidth, onResize: setSidebarWidth });
+  const visibleNodeCount = useOutlineSelector((p) => p.visibleNodes.length);
 
-  const leftSidebarOpen = useSlotSelectionStore((s) => s.leftSidebarOpen);
-  const setLeftSidebarOpen = useSlotSelectionStore((s) => s.setLeftSidebarOpen);
-
-  const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
-  if (!doc) return null;
+  if (!activeDocId) return null;
 
   if (!leftSidebarOpen) {
     return (
-      <button
-        type="button"
-        onClick={() => setLeftSidebarOpen(true)}
-        className="absolute left-3 top-3 z-20 w-8 h-8 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-slate-900 cursor-pointer"
-        title="좌측 Document preview 열기"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
+      <CollapsedPanelRail
+        side="left"
+        label="Outline & References"
+        badgeCount={visibleNodeCount}
+        tone="sky"
+        onExpand={() => setLeftSidebarOpen(true)}
+        testId="left-sidebar-collapsed-rail"
+      />
     );
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 select-none">
-      <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-        <div>
-          <h3 className="text-xs font-bold text-slate-900">Document preview</h3>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Document · {doc.pages.length} pages
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setLeftSidebarOpen(false)}
-          className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer"
-          title="좌측 패널 접기"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-      </div>
+    <aside
+      data-testid="project-outliner-sidebar"
+      style={{ width: `${sidebarWidth}px` }}
+      className="relative bg-[#fafafa] border-r border-slate-200/90 flex flex-col shrink-0 select-none overflow-hidden transition-[width] duration-75 text-slate-700"
+    >
+      <div
+        data-testid="sidebar-resize-handle"
+        onMouseDown={onResizeStart}
+        onDoubleClick={resetSidebarWidth}
+        title={`드래그하여 너비 조절 · 더블클릭 시 기본 너비(${SIDEBAR_WIDTH.default}px) 복원`}
+        className="absolute right-0 top-0 bottom-0 w-1.5 hover:w-2 cursor-col-resize hover:bg-slate-400/40 active:bg-slate-500/60 transition-all z-30"
+      />
 
-      <div className="p-3 space-y-2 overflow-y-auto flex-1">
-        {doc.pages.map((p) => {
-          const isActive = p.pageId === activePageId;
-          return (
-            <div
-              key={p.pageId}
-              onClick={() => {
-                setActivePageId(p.pageId);
-                document
-                  .getElementById(`vdoc-page-${p.pageId}`)
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className={`group flex items-center gap-3 p-2 rounded-lg border transition cursor-pointer ${
-                isActive
-                  ? "border-l-4 border-l-[#248567] border-slate-200 bg-emerald-50/40"
-                  : "border-slate-200 hover:bg-slate-50"
-              }`}
-            >
-              <div className="w-11 h-14 rounded bg-white border border-slate-300 shadow-2xs p-1 flex flex-col justify-between shrink-0 overflow-hidden">
-                <div className="h-1.5 w-full bg-slate-200 rounded-xs" />
-                <div className="space-y-0.5">
-                  <div className="h-1 w-4/5 bg-emerald-500/40 rounded-xs" />
-                  <div className="h-1 w-full bg-slate-200 rounded-xs" />
-                  <div className="grid grid-cols-2 gap-0.5">
-                    <div className="h-2 bg-slate-100 border border-slate-200 rounded-xs" />
-                    <div className="h-2 bg-slate-100 border border-slate-200 rounded-xs" />
-                  </div>
-                </div>
-                <div className="h-1 w-1/2 bg-slate-200 rounded-xs" />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-slate-800">
-                  {p.pageNumber} · Page
-                </div>
-                <div className="text-[11px] text-slate-500 truncate">
-                  {p.pageLabel}
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  블록 {p.blocks.length}개
-                </div>
-              </div>
+      {activeActivityTab === "source-control" ? (
+        <SourceControlSidebarPanel />
+      ) : activeActivityTab === "template-hub" ? (
+        <TemplateHubSidebarPanel />
+      ) : (
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          {/* 상단 탭 바: 아웃라이너 ↔ 레퍼런스 매니저 */}
+          <div className="px-2 py-1.5 bg-slate-100/90 border-b border-slate-200/90 flex items-center justify-between shrink-0 select-none">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                data-testid="left-tab-outliner"
+                onClick={() => setLeftPanelTab("outliner")}
+                className={leftTabClass(leftPanelTab === "outliner", "text-sky-900")}
+              >
+                <FolderTree className="w-3.5 h-3.5 text-sky-600" />
+                <span>아웃라이너</span>
+              </button>
+              {refPlacement !== "split" && (
+                <button
+                  type="button"
+                  data-testid="left-tab-reference-manager"
+                  onClick={() => setLeftPanelTab("reference-manager")}
+                  className={leftTabClass(leftPanelTab === "reference-manager", "text-amber-900")}
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+                  <span>레퍼런스</span>
+                </button>
+              )}
             </div>
-          );
-        })}
-      </div>
+            <button
+              type="button"
+              data-testid="collapse-left-sidebar-btn"
+              onClick={() => setLeftSidebarOpen(false)}
+              className="p-1 rounded hover:bg-slate-200/60 text-slate-400 hover:text-slate-700 cursor-pointer"
+              title="좌측 패널 접기"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
-      {mode === "Editing" && (
-        <BlockInsertionPalette
-          targetPageId={activePageId || doc.pages[0]?.pageId || ""}
-        />
+          {leftPanelTab === "outliner" ? (
+            <OutlineExplorer activeDocId={activeDocId} />
+          ) : (
+            <ReferenceManagerWidget isSplit={false} />
+          )}
+        </div>
       )}
     </aside>
   );
 };
 
+/** 아웃라이너 본체: 머리말 · 빠른 필터 · 줌아웃 배너 · 노드 트리. */
+const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => {
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const setActiveActivityTab = useWorkspaceLayoutStore((s) => s.setActiveActivityTab);
+  const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
+  const pagePreviewOpen = useWorkspaceLayoutStore((s) => s.pagePreviewOpen);
+  const togglePagePreview = useWorkspaceLayoutStore((s) => s.togglePagePreview);
+
+  const collapsedNodeIds = useWorkspaceSessionStore((s) => s.collapsedNodeIds);
+  const toggleNodeCollapse = useWorkspaceSessionStore((s) => s.toggleNodeCollapse);
+  const collapseAllNodes = useWorkspaceSessionStore((s) => s.collapseAllNodes);
+  const expandAllNodes = useWorkspaceSessionStore((s) => s.expandAllNodes);
+  const hoveredTargetId = useWorkspaceSessionStore((s) => s.hoveredOutlineTargetId);
+  const setHoveredTargetId = useWorkspaceSessionStore((s) => s.setHoveredOutlineTargetId);
+  const selectedOutlinerNodeId = useWorkspaceSessionStore((s) => s.selectedOutlinerNodeId);
+  const quickFilterQuery = useWorkspaceSessionStore((s) => s.quickFilterQuery);
+  const setQuickFilterQuery = useWorkspaceSessionStore((s) => s.setQuickFilterQuery);
+  const setPreviewDocId = useWorkspaceSessionStore((s) => s.setPreviewDocId);
+  const highlightedEntityId = useWorkspaceSessionStore((s) => s.highlightedEntityId);
+  const pickedOutline = useAttachPickStore((s) => s.picked.outline);
+  const pickAnchor = React.useRef<string | null>(null);
+
+  const { projection, handleBulletZoomIn, handleSelectOutlineNode, handleBreadcrumbClick, handleZoomOutOneLevel } =
+    useFractalZoomNavigation();
+  const editing = useOutlineNodeEditing(activeDocId);
+  const peekTrigger = usePeekTrigger();
+
+  const allParentIds = projection.allNodes.filter((n) => projection.hasChildrenMap[n.nodeId]).map((n) => n.nodeId);
+  const isAnyCollapsed = collapsedNodeIds.length > 0;
+  const addNode = () => void editing.addRootNode(projection.allNodes.length);
+  const closeMenuAfter = (fn: () => void) => () => {
+    fn();
+    setMoreMenuOpen(false);
+  };
+
+  const isHighlighted = (node: OutlinerNode) =>
+    (hoveredTargetId !== null &&
+      [node.targetSlotId, node.targetBlockId, node.targetPageId, node.nodeId].includes(hoveredTargetId)) ||
+    // AI 칩 호버는 정확히 그 대상을 가리키는 노드만
+    (highlightedEntityId !== null && (outlineNodeTargetId(node) === highlightedEntityId || node.nodeId === highlightedEntityId));
+
+  /** Ctrl/⌘+클릭: 첨부 묶음에 넣고 빼기 · Shift+클릭: 범위로 고르기 · 그냥 클릭: 묶음 해제 후 선택. */
+  const pickOrSelect = (e: React.MouseEvent, node: OutlinerNode) => {
+    const picks = useAttachPickStore.getState();
+    if (e.ctrlKey || e.metaKey) {
+      picks.togglePick("outline", outlineNodeRef(node));
+      pickAnchor.current = node.nodeId;
+      return true;
+    }
+    if (e.shiftKey) {
+      const nodes = projection.visibleNodes;
+      const from = nodes.findIndex((n) => n.nodeId === (pickAnchor.current ?? selectedOutlinerNodeId));
+      const to = nodes.findIndex((n) => n.nodeId === node.nodeId);
+      if (from !== -1 && to !== -1) {
+        const [a, b] = from < to ? [from, to] : [to, from];
+        picks.setPicks("outline", nodes.slice(a, b + 1).map(outlineNodeRef));
+        window.getSelection()?.removeAllRanges();
+        return true;
+      }
+    }
+    if (picks.picked.outline?.length) picks.clearPicks("outline");
+    pickAnchor.current = node.nodeId;
+    return false;
+  };
+
+  // 줄마다 새 콜백을 만들면 메모된 줄이 매번 다시 그려진다. 최신 핸들러를 읽는 고정 참조 하나를 넘긴다
+  // (최신 핸들러는 커밋 뒤에 갱신하고, 이벤트에서만 읽는다).
+  type RowHandlers = Omit<OutlineRowActions, "peek">;
+  const handlers: RowHandlers = {
+    select: (e, node) => {
+      if (pickOrSelect(e, node)) return;
+      handleSelectOutlineNode(node);
+      setPreviewDocId(null);
+    },
+    keyDown: (e, node) => editing.handleNodeKeyDown(e, node),
+    hover: (node, hovering) => setHoveredTargetId(hovering ? outlineNodeTargetId(node) : null),
+    toggleCollapse: (node) => toggleNodeCollapse(node.nodeId),
+    zoomIn: (node) => handleBulletZoomIn(node),
+    move: (node, direction) => void editing.moveNode(node.nodeId, direction),
+    remove: (node) => void editing.deleteNode(node.nodeId),
+  };
+  const latest = React.useRef(handlers);
+  React.useLayoutEffect(() => {
+    latest.current = handlers;
+  });
+  const rowActions = React.useMemo<OutlineRowActions>(
+    () => ({
+      select: (e, node) => latest.current.select(e, node),
+      keyDown: (e, node) => latest.current.keyDown(e, node),
+      hover: (node, hovering) => latest.current.hover(node, hovering),
+      toggleCollapse: (node) => latest.current.toggleCollapse(node),
+      zoomIn: (node) => latest.current.zoomIn(node),
+      move: (node, direction) => latest.current.move(node, direction),
+      remove: (node) => latest.current.remove(node),
+      // 피크 대상(문서 · 첫 페이지)은 마우스 이벤트 순간에 스토어에서 읽는다.
+      peek: (node) =>
+        peekTrigger(() => {
+          const docs = useStudioDocumentStore.getState();
+          return resolvePeekTarget(docs.docs, node.targetDocId || selectActiveDocument(docs)?.docId, node.targetPageId);
+        }),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- peekTrigger 는 고정된 스토어 동작(hover)만 쓴다
+    []
+  );
+
+  return (
+    <>
+      <div className="px-3 py-2 flex items-center justify-between gap-1.5 shrink-0 bg-white border-b border-slate-200/80">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-[13px] font-semibold text-slate-800 tracking-tight truncate">Home</span>
+          <span className="text-[11px] text-slate-400 font-mono tabular-nums">({projection.visibleNodes.length})</span>
+        </div>
+
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            data-testid="pageview-toggle-btn"
+            onClick={togglePagePreview}
+            title={pagePreviewOpen ? "페이지 프리뷰 패널 닫기" : "페이지 프리뷰 패널(Document preview) 열기"}
+            className={`p-1 rounded cursor-pointer transition-all flex items-center gap-1 text-[11px] font-semibold ${
+              pagePreviewOpen
+                ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300 font-bold px-1.5 shadow-2xs"
+                : "hover:bg-slate-200/70 text-slate-500 hover:text-slate-800 border border-transparent"
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5 text-current" />
+            {pagePreviewOpen && <span className="text-[10px]">Preview</span>}
+          </button>
+
+          <button
+            type="button"
+            data-testid="toggle-collapse-all-btn"
+            onClick={() => (isAnyCollapsed ? expandAllNodes() : collapseAllNodes(allParentIds))}
+            title={isAnyCollapsed ? "모두 펼치기" : "모두 접기"}
+            className={headerButton}
+          >
+            {isAnyCollapsed ? <ChevronsUpDown className="w-3.5 h-3.5" /> : <ChevronsDownUp className="w-3.5 h-3.5" />}
+          </button>
+
+          <div className="relative">
+            <button type="button" onClick={() => setMoreMenuOpen(!moreMenuOpen)} title="더보기" className={headerButton}>
+              <MoreHorizontal className="w-3.5 h-3.5" />
+            </button>
+            {moreMenuOpen && (
+              <div className="absolute right-0 top-6 z-40 w-44 rounded-lg bg-white border border-slate-200 shadow-lg p-1 text-xs space-y-0.5">
+                <button type="button" onClick={closeMenuAfter(() => setActiveActivityTab("template-hub"))} className={menuItem}>
+                  <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+                  서식·템플릿 허브 열기
+                </button>
+                <button type="button" onClick={closeMenuAfter(expandAllNodes)} className={menuItem}>
+                  <ChevronsUpDown className="w-3.5 h-3.5 text-slate-500" />
+                  모든 노드 펼치기
+                </button>
+                <button type="button" onClick={closeMenuAfter(() => collapseAllNodes(allParentIds))} className={menuItem}>
+                  <ChevronsDownUp className="w-3.5 h-3.5 text-slate-500" />
+                  모든 노드 접기
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            data-testid="collapse-left-sidebar-btn"
+            onClick={() => setLeftSidebarOpen(false)}
+            className={headerButton}
+            title="사이드바 접기"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="px-2.5 py-1.5 bg-white/40 border-b border-slate-200/40 shrink-0">
+        <div className="relative flex items-center">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 pointer-events-none" />
+          <input
+            type="text"
+            data-testid="outliner-quick-filter-input"
+            value={quickFilterQuery}
+            onChange={(e) => setQuickFilterQuery(e.target.value)}
+            placeholder="Search nodes..."
+            className="w-full pl-7 pr-6 py-1 rounded-md bg-slate-100/70 hover:bg-slate-100 focus:bg-white text-xs text-slate-800 placeholder:text-slate-400 border border-transparent focus:border-slate-300 focus:outline-none transition-colors"
+          />
+          {quickFilterQuery && (
+            <button
+              type="button"
+              data-testid="clear-quick-filter-btn"
+              onClick={() => setQuickFilterQuery("")}
+              title="검색 지우기"
+              className="absolute right-1.5 text-slate-400 hover:text-slate-700 cursor-pointer"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {projection.rootNodeId !== PROJECT_ROOT_CRUMB_ID && projection.activeZoomLevel !== "project" && (
+        <div className="px-2 py-1 bg-slate-100/80 border-b border-slate-200/60 flex items-center justify-between text-xs text-slate-700 shrink-0">
+          <button
+            type="button"
+            data-testid="outliner-zoom-out-btn"
+            onClick={handleZoomOutOneLevel}
+            className="flex items-center gap-1 font-medium hover:text-slate-900 cursor-pointer truncate max-w-[80%]"
+            title="상위로 Zoom-Out (Alt+Up)"
+          >
+            <ArrowUpLeft className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <span className="truncate">{projection.parentZoomTitle || "Home"} (Zoom Out)</span>
+          </button>
+          <button
+            type="button"
+            data-testid="outliner-zoom-root-btn"
+            onClick={() => handleBreadcrumbClick(PROJECT_ROOT_CRUMB_ID)}
+            className="text-[11px] text-slate-500 hover:text-slate-800 font-medium cursor-pointer shrink-0 ml-1"
+            title="최상위 Home 복귀"
+          >
+            Home
+          </button>
+        </div>
+      )}
+
+      <div
+        role="tree"
+        aria-label="Workflowy Outliner Tree"
+        className="p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden flex-1 min-h-0"
+      >
+        {projection.visibleNodes.length === 0 ? (
+          <EmptyStateCard
+            testId="outliner-empty-filter-state"
+            title="검색된 노드가 없습니다"
+            description={`"${quickFilterQuery}"에 일치하는 항목이 없습니다.`}
+            actionLabel="필터 초기화"
+            onAction={() => setQuickFilterQuery("")}
+            secondaryActionLabel="+ 새 노드 추가"
+            onSecondaryAction={addNode}
+          />
+        ) : (
+          projection.visibleNodes.map((node) => (
+            <OutlineTreeRow
+              key={node.nodeId}
+              node={node}
+              isSelected={selectedOutlinerNodeId === node.nodeId || projection.rootNodeId === node.nodeId}
+              isHighlighted={isHighlighted(node)}
+              isPicked={Boolean(pickedOutline?.some((r) => r.id === outlineNodeTargetId(node) || r.id === node.nodeId))}
+              hasChildren={Boolean(projection.hasChildrenMap[node.nodeId])}
+              isCollapsed={collapsedNodeIds.includes(node.nodeId)}
+              actions={rowActions}
+            />
+          ))
+        )}
+
+        <div className="p-2 pt-3 shrink-0 flex items-center justify-center">
+          <button
+            type="button"
+            data-testid="add-outline-node-btn"
+            onClick={addNode}
+            className="w-full py-1.5 px-4 rounded-full bg-slate-200/60 hover:bg-slate-200 active:bg-slate-300/70 text-slate-600 hover:text-slate-800 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>+ New node</span>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+interface OutlineRowActions {
+  select: (e: React.MouseEvent, node: OutlinerNode) => void;
+  keyDown: (e: React.KeyboardEvent, node: OutlinerNode) => void;
+  hover: (node: OutlinerNode, hovering: boolean) => void;
+  toggleCollapse: (node: OutlinerNode) => void;
+  zoomIn: (node: OutlinerNode) => void;
+  move: (node: OutlinerNode, direction: -1 | 1) => void;
+  remove: (node: OutlinerNode) => void;
+  /** 피크 핸들러 — 문서 목록은 호버 순간에 읽는다 (문서 구독으로 트리 전체가 다시 그려지지 않게). */
+  peek: (node: OutlinerNode) => PeekHandlers;
+}
+
+interface OutlineTreeRowProps {
+  node: OutlinerNode;
+  isSelected: boolean;
+  isHighlighted: boolean;
+  isPicked: boolean;
+  hasChildren: boolean;
+  isCollapsed: boolean;
+  actions: OutlineRowActions;
+}
+
+/**
+ * 메모된 아웃라인 줄. `node` 는 투영이 구조 공유로 유지하므로(`useOutlineProjection`) 타이핑 중에는
+ * 내용이 바뀐 줄만 다시 그린다. 핸들러는 마우스가 올라올 때 만들어지는 피크 핸들러를 빼고 모두 고정이다.
+ */
+const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
+  node,
+  isSelected,
+  isHighlighted,
+  isPicked,
+  hasChildren,
+  isCollapsed,
+  actions,
+}) {
+  const handlers = React.useMemo(
+    () => ({
+      attachProps: attachable(() => withPicked("outline", outlineNodeRef(node))),
+      peekHandlers: actions.peek(node),
+      onSelect: (e: React.MouseEvent) => actions.select(e, node),
+      onKeyDown: (e: React.KeyboardEvent) => actions.keyDown(e, node),
+      onHoverChange: (hovering: boolean) => actions.hover(node, hovering),
+      onToggleCollapse: () => actions.toggleCollapse(node),
+      onZoomIn: () => actions.zoomIn(node),
+      onMove: (direction: -1 | 1) => actions.move(node, direction),
+      onDelete: () => actions.remove(node),
+    }),
+    [node, actions]
+  );
+  return (
+    <OutlineNodeRow
+      node={node}
+      isSelected={isSelected}
+      isHighlighted={isHighlighted}
+      isPicked={isPicked}
+      hasChildren={hasChildren}
+      isCollapsed={isCollapsed}
+      editable={isEditableOutlineNode(node)}
+      {...handlers}
+    />
+  );
+});

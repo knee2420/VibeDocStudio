@@ -304,7 +304,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
           const cells = [...(tableRef.current?.querySelectorAll("td[data-cell-id]") ?? [])];
           const next = cells[cells.indexOf(td as Element) + (e.shiftKey ? -1 : 1)];
           e.preventDefault();
-          const editor = next?.querySelector<HTMLElement>("[contenteditable=true]");
+          const editor = next?.querySelector<HTMLElement>("[contenteditable=true], [data-lazy-slot-editor]");
           if (!editor) return;
           editor.focus();
           const sel = window.getSelection();
@@ -366,6 +366,9 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                         <td
                           key={cell.cellId}
                           data-cell-id={cell.cellId}
+                          data-slot-id={cell.slotId}
+                          data-vdoc-unit={cell.slotId}
+                          data-unit-kind="slot"
                           colSpan={cell.colSpan}
                           rowSpan={cell.rowSpan}
                           onPointerDown={(e) => {

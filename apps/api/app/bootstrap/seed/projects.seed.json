@@ -1,0 +1,132 @@
+{
+  "projects": [
+    {
+      "projectId": "vproj-enterprise-architecture-suite",
+      "title": "2026 엔터프라이즈 문서 거버넌스 & 제안 패키지",
+      "description": "다중 문서(.vdoc) 아키텍처 회의록·투자 제안서·정산 명세서 통합 작업 프로젝트",
+      "activePhase": "drafting",
+      "docIds": [
+        "vdoc_meeting_minutes_1028",
+        "vdoc_pandadoc_vc_proposal",
+        "vdoc_yesform_07_bansanghoe",
+        "atticus-invoice-000081709"
+      ],
+      "storylineNodes": [
+        {
+          "nodeId": "node-proj-root",
+          "parentId": null,
+          "depth": 0,
+          "zoomLevel": "project",
+          "title": "2026 엔터프라이즈 문서 거버넌스 & 제안 패키지 (통합 스토리라인)",
+          "summary": "4종 핵심 비즈니스 문서 패키지 아웃라인 루트",
+          "targetDocId": null,
+          "targetPageId": null,
+          "targetBlockId": null,
+          "targetSlotId": null,
+          "recommendedTemplateId": null,
+          "provenanceSourceProjectId": null,
+          "provenanceSourceNodeId": null,
+          "aiStatus": "idle"
+        },
+        {
+          "nodeId": "node-doc-minutes",
+          "parentId": "node-proj-root",
+          "depth": 1,
+          "zoomLevel": "document",
+          "title": "01. 아키텍처 위원회 의사결정 회의록",
+          "summary": "표준 서식 카탈로그 및 하이브리드 슬롯 엔진 채택 결의",
+          "targetDocId": "vdoc_meeting_minutes_1028",
+          "targetPageId": null,
+          "targetBlockId": null,
+          "targetSlotId": null,
+          "recommendedTemplateId": "composite-form-frame",
+          "provenanceSourceProjectId": null,
+          "provenanceSourceNodeId": null,
+          "aiStatus": "idle"
+        },
+        {
+          "nodeId": "node-page-minutes-p1",
+          "parentId": "node-doc-minutes",
+          "depth": 2,
+          "zoomLevel": "page",
+          "title": "Page 1 · 회의 개요 및 핵심 의결사항 매트릭스",
+          "summary": "참석자 명단, 상정 안건 3건, 액션 아이템 테이블",
+          "targetDocId": "vdoc_meeting_minutes_1028",
+          "targetPageId": "mm_page_1",
+          "targetBlockId": null,
+          "targetSlotId": null,
+          "recommendedTemplateId": "structured-table",
+          "provenanceSourceProjectId": null,
+          "provenanceSourceNodeId": null,
+          "aiStatus": "idle"
+        },
+        {
+          "nodeId": "node-slot-minutes-agenda",
+          "parentId": "node-page-minutes-p1",
+          "depth": 3,
+          "zoomLevel": "slot",
+          "title": "핵심 협의 및 결의사항 본문 슬롯",
+          "summary": "WYSIWYM × WYSIWYG 하이브리드 조판 엔진 아키텍처 확정",
+          "targetDocId": "vdoc_meeting_minutes_1028",
+          "targetPageId": "mm_page_1",
+          "targetBlockId": null,
+          "targetSlotId": "mm_slot_exec_summary",
+          "recommendedTemplateId": "section-block",
+          "provenanceSourceProjectId": null,
+          "provenanceSourceNodeId": null,
+          "aiStatus": "idle"
+        },
+        {
+          "nodeId": "node-doc-proposal",
+          "parentId": "node-proj-root",
+          "depth": 1,
+          "zoomLevel": "document",
+          "title": "02. 엔터프라이즈 도입 및 투자 제안서 (PandaDoc VC)",
+          "summary": "도입 배경, ROI 산정 테이블, 마일스톤 로드맵",
+          "targetDocId": "vdoc_pandadoc_vc_proposal",
+          "targetPageId": null,
+          "targetBlockId": null,
+          "targetSlotId": null,
+          "recommendedTemplateId": "cover-banner",
+          "provenanceSourceProjectId": null,
+          "provenanceSourceNodeId": null,
+          "aiStatus": "idle"
+        },
+        {
+          "nodeId": "node-page-proposal-p1",
+          "parentId": "node-doc-proposal",
+          "depth": 2,
+          "zoomLevel": "page",
+          "title": "Page 1 · 표지 배너 및 총괄 요약 (Executive Summary)",
+          "summary": "제안사/수신사 메타데이터 및 핵심 가치 제안",
+          "targetDocId": "vdoc_pandadoc_vc_proposal",
+          "targetPageId": "page_1",
+          "targetBlockId": null,
+          "targetSlotId": null,
+          "recommendedTemplateId": "cover-banner",
+          "provenanceSourceProjectId": null,
+          "provenanceSourceNodeId": null,
+          "aiStatus": "idle"
+        },
+        {
+          "nodeId": "node-doc-invoice",
+          "parentId": "node-proj-root",
+          "depth": 1,
+          "zoomLevel": "document",
+          "title": "03. 라이선스 및 기술지원 정산 인보이스 (Atticus)",
+          "summary": "품목별 단가, 수량, 공급가액 및 세액 정산 표",
+          "targetDocId": "atticus-invoice-000081709",
+          "targetPageId": null,
+          "targetBlockId": null,
+          "targetSlotId": null,
+          "recommendedTemplateId": "structured-table",
+          "provenanceSourceProjectId": null,
+          "provenanceSourceNodeId": null,
+          "aiStatus": "idle"
+        }
+      ],
+      "provenanceLineage": [],
+      "updatedAt": "2026-11-01T00:00:00Z"
+    }
+  ]
+}

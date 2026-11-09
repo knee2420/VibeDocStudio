@@ -1,43 +1,15 @@
-import type { LayoutBlock, VDocSlot } from "./types";
+import { getBlockKind } from "./block-kit";
+import type { LayoutBlock, VDocPage, VDocSlot } from "./types";
 
-/** Every slotId a layout block renders, in reading order. */
+/** Every slotId a layout block renders, in reading order (각 블록 종류의 정의가 정한다 — `block-kit`). */
 export function getBlockSlotIds(block: LayoutBlock): string[] {
-  switch (block.kind) {
-    case "heading":
-    case "form-title":
-    case "fillable-group":
-    case "text":
-      return [block.slotId];
-    case "section-block":
-      return [block.headingSlotId, block.bodySlotId];
-    case "cover-banner":
-      return [block.headlineSlotId, block.preparedBySlotId, block.preparedForSlotId];
-    case "columns-grid":
-      return block.columns
-        ? block.columns.flatMap((c) => (c.slotId ? [c.slotId] : []))
-        : block.slotIds ?? [];
-    case "structured-table":
-    case "table":
-      return [
-        ...block.rows.flatMap((r) => r.cells.map((c) => c.slotId)),
-        ...(block.footerSummary?.items.flatMap((i) =>
-          [i.slotId, i.labelSlotId, i.valueSlotId].filter((s): s is string => Boolean(s))
-        ) ?? []),
-      ];
-    case "composite-form-frame":
-      return block.sections.flatMap((s) => s.rows.flatMap((r) => r.cells.map((c) => c.slotId)));
-    case "summary-list":
-      return block.items.flatMap((i) =>
-        [i.slotId, i.labelSlotId, i.valueSlotId].filter((s): s is string => Boolean(s))
-      );
-    case "image":
-      return [];
-  }
+  if (!block) return [];
+  return getBlockKind(block.kind).slotIds(block);
 }
 
 /** A block is locked when it has slots and every one of them is locked. */
 export function isBlockLocked(block: LayoutBlock, slots: Record<string, VDocSlot>): boolean {
-  const ids = getBlockSlotIds(block);
+  const ids = getBlockSlotIds(block) ?? [];
   return ids.length > 0 && ids.every((id) => Boolean(slots[id]?.constraints?.locked));
 }
 
@@ -72,4 +44,26 @@ export function cloneBlockWithSlots(
     key === "slotIds" && Array.isArray(value) ? value.map((v: string) => slotMap.get(v) ?? v) : value
   ) as LayoutBlock;
   return { block: cloned, slots: nextSlots };
+}
+
+/**
+ * Every slot a page references (header/footer + all blocks), found by walking `*SlotId` / `slotIds`
+ * keys so new block kinds are covered without changes. Mirrors the API's `iter_slot_refs`.
+ */
+export function* iterPageSlotIds(page: VDocPage): Generator<string> {
+  const stack: unknown[] = [page];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (Array.isArray(node)) {
+      stack.push(...node);
+    } else if (node && typeof node === "object") {
+      for (const [key, value] of Object.entries(node)) {
+        const lowered = key.toLowerCase();
+        if (typeof value === "string" && lowered.endsWith("slotid")) yield value;
+        else if (lowered === "slotids" && Array.isArray(value)) {
+          for (const id of value) if (typeof id === "string") yield id;
+        } else if (value && typeof value === "object") stack.push(value);
+      }
+    }
+  }
 }

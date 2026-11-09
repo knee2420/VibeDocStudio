@@ -1,0 +1,1902 @@
+{
+ "arms": {
+  "indexed": {
+   "n": 25,
+   "accuracy": 0.96,
+   "factRecall": 0.981,
+   "sourceHit": 1.0,
+   "citations": 9.4,
+   "distinctSources": 2.72,
+   "secondsMedian": 27.11,
+   "secondsMean": 28.722,
+   "tokensMean": 38399.24,
+   "inputTokensMean": 37407.04,
+   "toolCallsMean": 3.92,
+   "readCharsMean": 11980.96,
+   "errors": 0
+  },
+  "raw": {
+   "n": 25,
+   "accuracy": 0.96,
+   "factRecall": 0.982,
+   "sourceHit": 1.0,
+   "citations": 9.12,
+   "distinctSources": 5.04,
+   "secondsMedian": 60.17,
+   "secondsMean": 59.48,
+   "tokensMean": 78778.0,
+   "inputTokensMean": 77425.08,
+   "toolCallsMean": 7.6,
+   "readCharsMean": 21123.16,
+   "errors": 0
+  },
+  "files": {
+   "n": 25,
+   "accuracy": 0.96,
+   "factRecall": 0.981,
+   "sourceHit": 1.0,
+   "citations": 21.16,
+   "distinctSources": 7.88,
+   "secondsMedian": 43.08,
+   "secondsMean": 53.33,
+   "tokensMean": 50519.44,
+   "inputTokensMean": 49058.32,
+   "toolCallsMean": 6.72,
+   "readCharsMean": 2104.0,
+   "errors": 0
+  }
+ },
+ "byType": {
+  "analysis": {
+   "indexed": {
+    "n": 3,
+    "accuracy": 1.0,
+    "factRecall": 0.944,
+    "sourceHit": 1.0,
+    "citations": 11.667,
+    "distinctSources": 1.667,
+    "secondsMedian": 49.11,
+    "secondsMean": 44.103,
+    "tokensMean": 42471.333,
+    "inputTokensMean": 40845.667,
+    "toolCallsMean": 5.667,
+    "readCharsMean": 20200.333,
+    "errors": 0
+   },
+   "raw": {
+    "n": 3,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 24.0,
+    "distinctSources": 5.667,
+    "secondsMedian": 81.38,
+    "secondsMean": 70.297,
+    "tokensMean": 71716.333,
+    "inputTokensMean": 69311.667,
+    "toolCallsMean": 7.0,
+    "readCharsMean": 16784.0,
+    "errors": 0
+   },
+   "files": {
+    "n": 3,
+    "accuracy": 1.0,
+    "factRecall": 0.944,
+    "sourceHit": 1.0,
+    "citations": 35.333,
+    "distinctSources": 6.667,
+    "secondsMedian": 74.33,
+    "secondsMean": 60.397,
+    "tokensMean": 47866.333,
+    "inputTokensMean": 45475.0,
+    "toolCallsMean": 7.667,
+    "readCharsMean": 155.0,
+    "errors": 0
+   }
+  },
+  "figure": {
+   "indexed": {
+    "n": 1,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 2.0,
+    "distinctSources": 1.0,
+    "secondsMedian": 19.7,
+    "secondsMean": 19.7,
+    "tokensMean": 38008.0,
+    "inputTokensMean": 37515.0,
+    "toolCallsMean": 4.0,
+    "readCharsMean": 7742.0,
+    "errors": 0
+   },
+   "raw": {
+    "n": 1,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 6.0,
+    "distinctSources": 5.0,
+    "secondsMedian": 44.55,
+    "secondsMean": 44.55,
+    "tokensMean": 60577.0,
+    "inputTokensMean": 59703.0,
+    "toolCallsMean": 6.0,
+    "readCharsMean": 45619.0,
+    "errors": 0
+   },
+   "files": {
+    "n": 1,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 3.0,
+    "distinctSources": 2.0,
+    "secondsMedian": 34.44,
+    "secondsMean": 34.44,
+    "tokensMean": 41866.0,
+    "inputTokensMean": 41193.0,
+    "toolCallsMean": 4.0,
+    "readCharsMean": 84.0,
+    "errors": 0
+   }
+  },
+  "lookup": {
+   "indexed": {
+    "n": 1,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 6.0,
+    "distinctSources": 1.0,
+    "secondsMedian": 19.47,
+    "secondsMean": 19.47,
+    "tokensMean": 37194.0,
+    "inputTokensMean": 36581.0,
+    "toolCallsMean": 3.0,
+    "readCharsMean": 5132.0,
+    "errors": 0
+   },
+   "raw": {
+    "n": 1,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 4.0,
+    "distinctSources": 3.0,
+    "secondsMedian": 64.75,
+    "secondsMean": 64.75,
+    "tokensMean": 78008.0,
+    "inputTokensMean": 77000.0,
+    "toolCallsMean": 10.0,
+    "readCharsMean": 32247.0,
+    "errors": 0
+   },
+   "files": {
+    "n": 1,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 5.0,
+    "distinctSources": 4.0,
+    "secondsMedian": 35.23,
+    "secondsMean": 35.23,
+    "tokensMean": 40656.0,
+    "inputTokensMean": 39910.0,
+    "toolCallsMean": 4.0,
+    "readCharsMean": 82.0,
+    "errors": 0
+   }
+  },
+  "negative": {
+   "indexed": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 3.5,
+    "distinctSources": 2.0,
+    "secondsMedian": 34.4,
+    "secondsMean": 34.4,
+    "tokensMean": 39871.0,
+    "inputTokensMean": 39360.5,
+    "toolCallsMean": 5.0,
+    "readCharsMean": 13371.0,
+    "errors": 0
+   },
+   "raw": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 4.0,
+    "distinctSources": 4.0,
+    "secondsMedian": 92.42,
+    "secondsMean": 92.42,
+    "tokensMean": 102648.5,
+    "inputTokensMean": 101399.0,
+    "toolCallsMean": 11.0,
+    "readCharsMean": 33737.5,
+    "errors": 0
+   },
+   "files": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 18.5,
+    "distinctSources": 12.0,
+    "secondsMedian": 73.41,
+    "secondsMean": 73.415,
+    "tokensMean": 60677.5,
+    "inputTokensMean": 59231.5,
+    "toolCallsMean": 10.0,
+    "readCharsMean": 20058.5,
+    "errors": 0
+   }
+  },
+  "outline": {
+   "indexed": {
+    "n": 2,
+    "accuracy": 0.5,
+    "factRecall": 0.85,
+    "sourceHit": 1.0,
+    "citations": 27.0,
+    "distinctSources": 5.0,
+    "secondsMedian": 37.64,
+    "secondsMean": 37.64,
+    "tokensMean": 43538.5,
+    "inputTokensMean": 41008.5,
+    "toolCallsMean": 6.0,
+    "readCharsMean": 22908.5,
+    "errors": 0
+   },
+   "raw": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 0.9,
+    "sourceHit": 1.0,
+    "citations": 15.5,
+    "distinctSources": 3.5,
+    "secondsMedian": 86.15,
+    "secondsMean": 86.15,
+    "tokensMean": 96121.0,
+    "inputTokensMean": 93102.5,
+    "toolCallsMean": 12.5,
+    "readCharsMean": 25773.0,
+    "errors": 0
+   },
+   "files": {
+    "n": 2,
+    "accuracy": 0.5,
+    "factRecall": 0.85,
+    "sourceHit": 1.0,
+    "citations": 64.0,
+    "distinctSources": 15.5,
+    "secondsMedian": 94.69,
+    "secondsMean": 94.695,
+    "tokensMean": 70998.5,
+    "inputTokensMean": 67527.5,
+    "toolCallsMean": 14.0,
+    "readCharsMean": 285.0,
+    "errors": 0
+   }
+  },
+  "table": {
+   "indexed": {
+    "n": 3,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 2.0,
+    "distinctSources": 1.0,
+    "secondsMedian": 20.75,
+    "secondsMean": 19.843,
+    "tokensMean": 34775.667,
+    "inputTokensMean": 34457.333,
+    "toolCallsMean": 2.333,
+    "readCharsMean": 2490.667,
+    "errors": 0
+   },
+   "raw": {
+    "n": 3,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 3.333,
+    "distinctSources": 3.333,
+    "secondsMedian": 25.73,
+    "secondsMean": 27.573,
+    "tokensMean": 52562.333,
+    "inputTokensMean": 52024.333,
+    "toolCallsMean": 3.333,
+    "readCharsMean": 7265.333,
+    "errors": 0
+   },
+   "files": {
+    "n": 3,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 4.333,
+    "distinctSources": 3.0,
+    "secondsMedian": 30.23,
+    "secondsMean": 31.253,
+    "tokensMean": 47516.667,
+    "inputTokensMean": 46944.667,
+    "toolCallsMean": 4.333,
+    "readCharsMean": 89.333,
+    "errors": 0
+   }
+  },
+  "toc": {
+   "indexed": {
+    "n": 6,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 13.0,
+    "distinctSources": 5.333,
+    "secondsMedian": 19.75,
+    "secondsMean": 23.083,
+    "tokensMean": 35397.0,
+    "inputTokensMean": 34606.667,
+    "toolCallsMean": 2.667,
+    "readCharsMean": 9536.833,
+    "errors": 0
+   },
+   "raw": {
+    "n": 6,
+    "accuracy": 0.833,
+    "factRecall": 0.958,
+    "sourceHit": 1.0,
+    "citations": 9.833,
+    "distinctSources": 9.167,
+    "secondsMedian": 37.48,
+    "secondsMean": 45.987,
+    "tokensMean": 78519.667,
+    "inputTokensMean": 77622.167,
+    "toolCallsMean": 6.0,
+    "readCharsMean": 11915.0,
+    "errors": 0
+   },
+   "files": {
+    "n": 6,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 25.167,
+    "distinctSources": 11.833,
+    "secondsMedian": 54.2,
+    "secondsMean": 55.11,
+    "tokensMean": 48113.167,
+    "inputTokensMean": 46828.333,
+    "toolCallsMean": 5.833,
+    "readCharsMean": 400.833,
+    "errors": 0
+   }
+  },
+  "vague": {
+   "indexed": {
+    "n": 5,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 5.2,
+    "distinctSources": 1.4,
+    "secondsMedian": 27.11,
+    "secondsMean": 27.88,
+    "tokensMean": 38972.0,
+    "inputTokensMean": 38071.4,
+    "toolCallsMean": 4.0,
+    "readCharsMean": 11801.6,
+    "errors": 0
+   },
+   "raw": {
+    "n": 5,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 3.8,
+    "distinctSources": 3.0,
+    "secondsMedian": 70.06,
+    "secondsMean": 70.254,
+    "tokensMean": 82231.0,
+    "inputTokensMean": 81018.2,
+    "toolCallsMean": 8.8,
+    "readCharsMean": 26899.8,
+    "errors": 0
+   },
+   "files": {
+    "n": 5,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 10.8,
+    "distinctSources": 5.4,
+    "secondsMedian": 41.56,
+    "secondsMean": 45.718,
+    "tokensMean": 48497.0,
+    "inputTokensMean": 47460.6,
+    "toolCallsMean": 5.4,
+    "readCharsMean": 1665.2,
+    "errors": 0
+   }
+  },
+  "write": {
+   "indexed": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 10.5,
+    "distinctSources": 2.5,
+    "secondsMedian": 32.53,
+    "secondsMean": 32.53,
+    "tokensMean": 39488.5,
+    "inputTokensMean": 38218.0,
+    "toolCallsMean": 4.5,
+    "readCharsMean": 14894.5,
+    "errors": 0
+   },
+   "raw": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 9.5,
+    "distinctSources": 3.0,
+    "secondsMedian": 49.88,
+    "secondsMean": 49.875,
+    "tokensMean": 89108.5,
+    "inputTokensMean": 87544.5,
+    "toolCallsMean": 8.0,
+    "readCharsMean": 26527.5,
+    "errors": 0
+   },
+   "files": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 16.0,
+    "distinctSources": 4.5,
+    "secondsMedian": 46.58,
+    "secondsMean": 46.58,
+    "tokensMean": 49899.5,
+    "inputTokensMean": 48152.5,
+    "toolCallsMean": 7.0,
+    "readCharsMean": 141.5,
+    "errors": 0
+   }
+  }
+ },
+ "byCriterion": {
+  "1": {
+   "indexed": {
+    "n": 4,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 2.0,
+    "distinctSources": 1.0,
+    "secondsMedian": 20.23,
+    "secondsMean": 19.808,
+    "tokensMean": 35583.75,
+    "inputTokensMean": 35221.75,
+    "toolCallsMean": 2.75,
+    "readCharsMean": 3803.5,
+    "errors": 0
+   },
+   "raw": {
+    "n": 4,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 4.0,
+    "distinctSources": 3.75,
+    "secondsMedian": 28.64,
+    "secondsMean": 31.817,
+    "tokensMean": 54566.0,
+    "inputTokensMean": 53944.0,
+    "toolCallsMean": 4.0,
+    "readCharsMean": 16853.75,
+    "errors": 0
+   },
+   "files": {
+    "n": 4,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 4.0,
+    "distinctSources": 2.75,
+    "secondsMedian": 31.95,
+    "secondsMean": 32.05,
+    "tokensMean": 46104.0,
+    "inputTokensMean": 45506.75,
+    "toolCallsMean": 4.25,
+    "readCharsMean": 88.0,
+    "errors": 0
+   }
+  },
+  "2": {
+   "indexed": {
+    "n": 6,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 13.0,
+    "distinctSources": 5.333,
+    "secondsMedian": 19.75,
+    "secondsMean": 23.083,
+    "tokensMean": 35397.0,
+    "inputTokensMean": 34606.667,
+    "toolCallsMean": 2.667,
+    "readCharsMean": 9536.833,
+    "errors": 0
+   },
+   "raw": {
+    "n": 6,
+    "accuracy": 0.833,
+    "factRecall": 0.958,
+    "sourceHit": 1.0,
+    "citations": 9.833,
+    "distinctSources": 9.167,
+    "secondsMedian": 37.48,
+    "secondsMean": 45.987,
+    "tokensMean": 78519.667,
+    "inputTokensMean": 77622.167,
+    "toolCallsMean": 6.0,
+    "readCharsMean": 11915.0,
+    "errors": 0
+   },
+   "files": {
+    "n": 6,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 25.167,
+    "distinctSources": 11.833,
+    "secondsMedian": 54.2,
+    "secondsMean": 55.11,
+    "tokensMean": 48113.167,
+    "inputTokensMean": 46828.333,
+    "toolCallsMean": 5.833,
+    "readCharsMean": 400.833,
+    "errors": 0
+   }
+  },
+  "3": {
+   "indexed": {
+    "n": 8,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 4.875,
+    "distinctSources": 1.5,
+    "secondsMedian": 28.13,
+    "secondsMean": 28.459,
+    "tokensMean": 38974.5,
+    "inputTokensMean": 38207.375,
+    "toolCallsMean": 4.125,
+    "readCharsMean": 11360.25,
+    "errors": 0
+   },
+   "raw": {
+    "n": 8,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 3.875,
+    "distinctSources": 3.25,
+    "secondsMedian": 67.41,
+    "secondsMean": 75.108,
+    "tokensMean": 86807.5,
+    "inputTokensMean": 85611.125,
+    "toolCallsMean": 9.5,
+    "readCharsMean": 29277.625,
+    "errors": 0
+   },
+   "files": {
+    "n": 8,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 12.0,
+    "distinctSources": 6.875,
+    "secondsMedian": 44.77,
+    "secondsMean": 51.331,
+    "tokensMean": 50562.0,
+    "inputTokensMean": 49459.5,
+    "toolCallsMean": 6.375,
+    "readCharsMean": 6065.625,
+    "errors": 0
+   }
+  },
+  "4": {
+   "indexed": {
+    "n": 3,
+    "accuracy": 1.0,
+    "factRecall": 0.944,
+    "sourceHit": 1.0,
+    "citations": 11.667,
+    "distinctSources": 1.667,
+    "secondsMedian": 49.11,
+    "secondsMean": 44.103,
+    "tokensMean": 42471.333,
+    "inputTokensMean": 40845.667,
+    "toolCallsMean": 5.667,
+    "readCharsMean": 20200.333,
+    "errors": 0
+   },
+   "raw": {
+    "n": 3,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 24.0,
+    "distinctSources": 5.667,
+    "secondsMedian": 81.38,
+    "secondsMean": 70.297,
+    "tokensMean": 71716.333,
+    "inputTokensMean": 69311.667,
+    "toolCallsMean": 7.0,
+    "readCharsMean": 16784.0,
+    "errors": 0
+   },
+   "files": {
+    "n": 3,
+    "accuracy": 1.0,
+    "factRecall": 0.944,
+    "sourceHit": 1.0,
+    "citations": 35.333,
+    "distinctSources": 6.667,
+    "secondsMedian": 74.33,
+    "secondsMean": 60.397,
+    "tokensMean": 47866.333,
+    "inputTokensMean": 45475.0,
+    "toolCallsMean": 7.667,
+    "readCharsMean": 155.0,
+    "errors": 0
+   }
+  },
+  "6": {
+   "indexed": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 10.5,
+    "distinctSources": 2.5,
+    "secondsMedian": 32.53,
+    "secondsMean": 32.53,
+    "tokensMean": 39488.5,
+    "inputTokensMean": 38218.0,
+    "toolCallsMean": 4.5,
+    "readCharsMean": 14894.5,
+    "errors": 0
+   },
+   "raw": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 9.5,
+    "distinctSources": 3.0,
+    "secondsMedian": 49.88,
+    "secondsMean": 49.875,
+    "tokensMean": 89108.5,
+    "inputTokensMean": 87544.5,
+    "toolCallsMean": 8.0,
+    "readCharsMean": 26527.5,
+    "errors": 0
+   },
+   "files": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 16.0,
+    "distinctSources": 4.5,
+    "secondsMedian": 46.58,
+    "secondsMean": 46.58,
+    "tokensMean": 49899.5,
+    "inputTokensMean": 48152.5,
+    "toolCallsMean": 7.0,
+    "readCharsMean": 141.5,
+    "errors": 0
+   }
+  },
+  "7": {
+   "indexed": {
+    "n": 2,
+    "accuracy": 0.5,
+    "factRecall": 0.85,
+    "sourceHit": 1.0,
+    "citations": 27.0,
+    "distinctSources": 5.0,
+    "secondsMedian": 37.64,
+    "secondsMean": 37.64,
+    "tokensMean": 43538.5,
+    "inputTokensMean": 41008.5,
+    "toolCallsMean": 6.0,
+    "readCharsMean": 22908.5,
+    "errors": 0
+   },
+   "raw": {
+    "n": 2,
+    "accuracy": 1.0,
+    "factRecall": 0.9,
+    "sourceHit": 1.0,
+    "citations": 15.5,
+    "distinctSources": 3.5,
+    "secondsMedian": 86.15,
+    "secondsMean": 86.15,
+    "tokensMean": 96121.0,
+    "inputTokensMean": 93102.5,
+    "toolCallsMean": 12.5,
+    "readCharsMean": 25773.0,
+    "errors": 0
+   },
+   "files": {
+    "n": 2,
+    "accuracy": 0.5,
+    "factRecall": 0.85,
+    "sourceHit": 1.0,
+    "citations": 64.0,
+    "distinctSources": 15.5,
+    "secondsMedian": 94.69,
+    "secondsMean": 94.695,
+    "tokensMean": 70998.5,
+    "inputTokensMean": 67527.5,
+    "toolCallsMean": 14.0,
+    "readCharsMean": 285.0,
+    "errors": 0
+   }
+  }
+ },
+ "byCorpus": {
+  "agy": {
+   "indexed": {
+    "n": 14,
+    "accuracy": 0.929,
+    "factRecall": 0.967,
+    "sourceHit": 1.0,
+    "citations": 9.571,
+    "distinctSources": 3.071,
+    "secondsMedian": 23.77,
+    "secondsMean": 26.752,
+    "tokensMean": 38091.714,
+    "inputTokensMean": 37211.357,
+    "toolCallsMean": 3.357,
+    "readCharsMean": 11426.786,
+    "errors": 0
+   },
+   "raw": {
+    "n": 14,
+    "accuracy": 1.0,
+    "factRecall": 0.986,
+    "sourceHit": 1.0,
+    "citations": 10.929,
+    "distinctSources": 5.714,
+    "secondsMedian": 38.64,
+    "secondsMean": 49.979,
+    "tokensMean": 78192.0,
+    "inputTokensMean": 76889.643,
+    "toolCallsMean": 6.429,
+    "readCharsMean": 13339.714,
+    "errors": 0
+   },
+   "files": {
+    "n": 14,
+    "accuracy": 0.929,
+    "factRecall": 0.967,
+    "sourceHit": 1.0,
+    "citations": 24.286,
+    "distinctSources": 7.5,
+    "secondsMedian": 42.04,
+    "secondsMean": 49.765,
+    "tokensMean": 48959.857,
+    "inputTokensMean": 47576.929,
+    "toolCallsMean": 6.357,
+    "readCharsMean": 730.214,
+    "errors": 0
+   }
+  },
+  "fsd": {
+   "indexed": {
+    "n": 11,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 9.182,
+    "distinctSources": 2.273,
+    "secondsMedian": 29.31,
+    "secondsMean": 31.229,
+    "tokensMean": 38790.636,
+    "inputTokensMean": 37656.091,
+    "toolCallsMean": 4.636,
+    "readCharsMean": 12686.273,
+    "errors": 0
+   },
+   "raw": {
+    "n": 11,
+    "accuracy": 0.909,
+    "factRecall": 0.977,
+    "sourceHit": 1.0,
+    "citations": 6.818,
+    "distinctSources": 4.182,
+    "secondsMedian": 70.06,
+    "secondsMean": 71.571,
+    "tokensMean": 79523.818,
+    "inputTokensMean": 78106.545,
+    "toolCallsMean": 9.091,
+    "readCharsMean": 31029.364,
+    "errors": 0
+   },
+   "files": {
+    "n": 11,
+    "accuracy": 1.0,
+    "factRecall": 1.0,
+    "sourceHit": 1.0,
+    "citations": 17.182,
+    "distinctSources": 8.364,
+    "secondsMedian": 43.08,
+    "secondsMean": 57.867,
+    "tokensMean": 52504.364,
+    "inputTokensMean": 50943.727,
+    "toolCallsMean": 7.182,
+    "readCharsMean": 3852.455,
+    "errors": 0
+   }
+  }
+ },
+ "questions": {
+  "agy-t1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 24.19,
+    "tokens": 35494,
+    "tools": 2,
+    "readChars": 2918,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 4,
+    "seconds": 25.73,
+    "tokens": 52367,
+    "tools": 3,
+    "readChars": 561,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 6,
+    "seconds": 30.23,
+    "tokens": 51646,
+    "tools": 5,
+    "readChars": 104,
+    "error": ""
+   }
+  },
+  "agy-t2": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 14.59,
+    "tokens": 32398,
+    "tools": 1,
+    "readChars": 467,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 25.44,
+    "tokens": 55612,
+    "tools": 3,
+    "readChars": 5230,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 4,
+    "seconds": 29.86,
+    "tokens": 50979,
+    "tools": 4,
+    "readChars": 82,
+    "error": ""
+   }
+  },
+  "agy-t3": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 20.75,
+    "tokens": 36435,
+    "tools": 4,
+    "readChars": 4087,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 4,
+    "seconds": 31.55,
+    "tokens": 49708,
+    "tools": 4,
+    "readChars": 16005,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 3,
+    "seconds": 33.67,
+    "tokens": 39925,
+    "tools": 4,
+    "readChars": 82,
+    "error": ""
+   }
+  },
+  "agy-s1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 24,
+    "seconds": 22.34,
+    "tokens": 37607,
+    "tools": 1,
+    "readChars": 13388,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 14,
+    "seconds": 25.89,
+    "tokens": 74159,
+    "tools": 4,
+    "readChars": 5371,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 38,
+    "seconds": 65.31,
+    "tokens": 44457,
+    "tools": 5,
+    "readChars": 110,
+    "error": ""
+   }
+  },
+  "agy-s2": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 14,
+    "seconds": 17.16,
+    "tokens": 37108,
+    "tools": 1,
+    "readChars": 13388,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 21,
+    "seconds": 36.73,
+    "tokens": 78583,
+    "tools": 5,
+    "readChars": 5258,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 20,
+    "seconds": 23.56,
+    "tokens": 43336,
+    "tools": 1,
+    "readChars": 22,
+    "error": ""
+   }
+  },
+  "agy-s3": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 4,
+    "seconds": 15.06,
+    "tokens": 34247,
+    "tools": 1,
+    "readChars": 5085,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 6,
+    "seconds": 34.28,
+    "tokens": 56511,
+    "tools": 3,
+    "readChars": 8145,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 15,
+    "seconds": 67.48,
+    "tokens": 48534,
+    "tools": 7,
+    "readChars": 152,
+    "error": ""
+   }
+  },
+  "agy-v1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 6,
+    "seconds": 33.69,
+    "tokens": 37825,
+    "tools": 4,
+    "readChars": 12147,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 9,
+    "seconds": 83.51,
+    "tokens": 110172,
+    "tools": 12,
+    "readChars": 29283,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 16,
+    "seconds": 52.16,
+    "tokens": 47657,
+    "tools": 6,
+    "readChars": 122,
+    "error": ""
+   }
+  },
+  "agy-v2": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 23.36,
+    "tokens": 38193,
+    "tools": 3,
+    "readChars": 9756,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 38.94,
+    "tokens": 64304,
+    "tools": 6,
+    "readChars": 18486,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 3,
+    "seconds": 31.88,
+    "tokens": 44403,
+    "tools": 5,
+    "readChars": 7876,
+    "error": ""
+   }
+  },
+  "agy-v3": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 5,
+    "seconds": 27.11,
+    "tokens": 38954,
+    "tools": 6,
+    "readChars": 9596,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 49.09,
+    "tokens": 84546,
+    "tools": 5,
+    "readChars": 9169,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 8,
+    "seconds": 36.11,
+    "tokens": 43420,
+    "tools": 5,
+    "readChars": 102,
+    "error": ""
+   }
+  },
+  "agy-a1": {
+   "indexed": {
+    "correct": true,
+    "recall": 0.833,
+    "citations": 19,
+    "seconds": 50.67,
+    "tokens": 42718,
+    "tools": 6,
+    "readChars": 22309,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 36,
+    "seconds": 81.38,
+    "tokens": 72803,
+    "tools": 7,
+    "readChars": 11610,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 0.833,
+    "citations": 48,
+    "seconds": 74.33,
+    "tokens": 56488,
+    "tools": 10,
+    "readChars": 202,
+    "error": ""
+   }
+  },
+  "agy-a2": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 10,
+    "seconds": 32.53,
+    "tokens": 43317,
+    "tools": 7,
+    "readChars": 24251,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 14,
+    "seconds": 38.34,
+    "tokens": 73832,
+    "tools": 5,
+    "readChars": 5428,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 40,
+    "seconds": 30.3,
+    "tokens": 31839,
+    "tools": 4,
+    "readChars": 82,
+    "error": ""
+   }
+  },
+  "agy-w1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 11,
+    "seconds": 22.75,
+    "tokens": 39281,
+    "tools": 2,
+    "readChars": 14292,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 17,
+    "seconds": 70.58,
+    "tokens": 102197,
+    "tools": 11,
+    "readChars": 44853,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 16,
+    "seconds": 64.88,
+    "tokens": 59124,
+    "tools": 10,
+    "readChars": 201,
+    "error": ""
+   }
+  },
+  "agy-o1": {
+   "indexed": {
+    "correct": false,
+    "recall": 0.7,
+    "citations": 30,
+    "seconds": 36.47,
+    "tokens": 43486,
+    "tools": 6,
+    "readChars": 24190,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 0.8,
+    "citations": 20,
+    "seconds": 98.08,
+    "tokens": 100734,
+    "tools": 13,
+    "readChars": 18837,
+    "error": ""
+   },
+   "files": {
+    "correct": false,
+    "recall": 0.7,
+    "citations": 107,
+    "seconds": 108.97,
+    "tokens": 71884,
+    "tools": 15,
+    "readChars": 306,
+    "error": ""
+   }
+  },
+  "agy-n1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 3,
+    "seconds": 33.86,
+    "tokens": 36221,
+    "tools": 3,
+    "readChars": 4101,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 60.17,
+    "tokens": 119160,
+    "tools": 9,
+    "readChars": 8520,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 16,
+    "seconds": 47.97,
+    "tokens": 51746,
+    "tools": 8,
+    "readChars": 780,
+    "error": ""
+   }
+  },
+  "fsd-s1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 4,
+    "seconds": 17.05,
+    "tokens": 34690,
+    "tools": 3,
+    "readChars": 4088,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 38.24,
+    "tokens": 62928,
+    "tools": 5,
+    "readChars": 21310,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 6,
+    "seconds": 24.62,
+    "tokens": 40540,
+    "tools": 4,
+    "readChars": 82,
+    "error": ""
+   }
+  },
+  "fsd-f1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 19.7,
+    "tokens": 38008,
+    "tools": 4,
+    "readChars": 7742,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 6,
+    "seconds": 44.55,
+    "tokens": 60577,
+    "tools": 6,
+    "readChars": 45619,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 3,
+    "seconds": 34.44,
+    "tokens": 41866,
+    "tools": 4,
+    "readChars": 84,
+    "error": ""
+   }
+  },
+  "fsd-s2": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 16,
+    "seconds": 29.31,
+    "tokens": 38504,
+    "tools": 4,
+    "readChars": 7016,
+    "error": ""
+   },
+   "raw": {
+    "correct": false,
+    "recall": 0.75,
+    "citations": 4,
+    "seconds": 72.09,
+    "tokens": 56314,
+    "tools": 7,
+    "readChars": 14437,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 40,
+    "seconds": 106.61,
+    "tokens": 64763,
+    "tools": 12,
+    "readChars": 1907,
+    "error": ""
+   }
+  },
+  "fsd-s3": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 16,
+    "seconds": 37.58,
+    "tokens": 30226,
+    "tools": 6,
+    "readChars": 14256,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 12,
+    "seconds": 68.69,
+    "tokens": 142623,
+    "tools": 12,
+    "readChars": 16969,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 32,
+    "seconds": 43.08,
+    "tokens": 47049,
+    "tools": 6,
+    "readChars": 132,
+    "error": ""
+   }
+  },
+  "fsd-l1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 6,
+    "seconds": 19.47,
+    "tokens": 37194,
+    "tools": 3,
+    "readChars": 5132,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 4,
+    "seconds": 64.75,
+    "tokens": 78008,
+    "tools": 10,
+    "readChars": 32247,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 5,
+    "seconds": 35.23,
+    "tokens": 40656,
+    "tools": 4,
+    "readChars": 82,
+    "error": ""
+   }
+  },
+  "fsd-v1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 8,
+    "seconds": 29.16,
+    "tokens": 39918,
+    "tools": 3,
+    "readChars": 14698,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 70.06,
+    "tokens": 69514,
+    "tools": 10,
+    "readChars": 30788,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 22,
+    "seconds": 41.56,
+    "tokens": 48817,
+    "tools": 6,
+    "readChars": 122,
+    "error": ""
+   }
+  },
+  "fsd-v2": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 5,
+    "seconds": 26.08,
+    "tokens": 39970,
+    "tools": 4,
+    "readChars": 12811,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 4,
+    "seconds": 109.67,
+    "tokens": 82619,
+    "tools": 11,
+    "readChars": 46773,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 5,
+    "seconds": 66.88,
+    "tokens": 58188,
+    "tools": 5,
+    "readChars": 104,
+    "error": ""
+   }
+  },
+  "fsd-a1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 6,
+    "seconds": 49.11,
+    "tokens": 41379,
+    "tools": 4,
+    "readChars": 14041,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 22,
+    "seconds": 91.17,
+    "tokens": 68514,
+    "tools": 9,
+    "readChars": 33314,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 18,
+    "seconds": 76.56,
+    "tokens": 55272,
+    "tools": 9,
+    "readChars": 181,
+    "error": ""
+   }
+  },
+  "fsd-w1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 10,
+    "seconds": 42.31,
+    "tokens": 39696,
+    "tools": 7,
+    "readChars": 15497,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 2,
+    "seconds": 29.17,
+    "tokens": 76020,
+    "tools": 5,
+    "readChars": 8202,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 16,
+    "seconds": 28.28,
+    "tokens": 40675,
+    "tools": 4,
+    "readChars": 82,
+    "error": ""
+   }
+  },
+  "fsd-o1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 24,
+    "seconds": 38.81,
+    "tokens": 43591,
+    "tools": 6,
+    "readChars": 21627,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 11,
+    "seconds": 74.22,
+    "tokens": 91508,
+    "tools": 12,
+    "readChars": 32709,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 21,
+    "seconds": 80.42,
+    "tokens": 70113,
+    "tools": 13,
+    "readChars": 264,
+    "error": ""
+   }
+  },
+  "fsd-n1": {
+   "indexed": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 4,
+    "seconds": 34.94,
+    "tokens": 43521,
+    "tools": 7,
+    "readChars": 22641,
+    "error": ""
+   },
+   "raw": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 6,
+    "seconds": 124.67,
+    "tokens": 86137,
+    "tools": 13,
+    "readChars": 58955,
+    "error": ""
+   },
+   "files": {
+    "correct": true,
+    "recall": 1.0,
+    "citations": 21,
+    "seconds": 98.86,
+    "tokens": 69609,
+    "tools": 12,
+    "readChars": 39337,
+    "error": ""
+   }
+  }
+ },
+ "build": {
+  "agy-structural": {
+   "wallSeconds": 0.9,
+   "stats": {
+    "files": 39,
+    "skipped": 0,
+    "segments": 282,
+    "sections": 39,
+    "cards": 282,
+    "enrichedCards": 0,
+    "tables": 60,
+    "figures": 0,
+    "codeBlocks": 186,
+    "chars": 255577
+   },
+   "usage": {
+    "llmCalls": 0,
+    "cacheHits": 0,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "totalTokens": 0,
+    "llmSeconds": 0.0,
+    "failedBatches": 0
+   },
+   "quality": {
+    "coverage": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.97"
+    },
+    "segmentSize": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.95"
+    },
+    "anchors": {
+     "pass": true,
+     "value": "0",
+     "threshold": "0"
+    },
+    "brokenLinks": {
+     "pass": true,
+     "value": "0",
+     "threshold": "0"
+    },
+    "elementDensity": {
+     "pass": true,
+     "value": "4.06",
+     "threshold": "1.50"
+    },
+    "tableLabels": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.90"
+    }
+   }
+  },
+  "fsd-structural": {
+   "wallSeconds": 2.6,
+   "stats": {
+    "files": 39,
+    "skipped": 0,
+    "segments": 266,
+    "sections": 40,
+    "cards": 266,
+    "enrichedCards": 0,
+    "tables": 2,
+    "figures": 20,
+    "codeBlocks": 171,
+    "chars": 291045
+   },
+   "usage": {
+    "llmCalls": 0,
+    "cacheHits": 0,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "totalTokens": 0,
+    "llmSeconds": 0.0,
+    "failedBatches": 0
+   },
+   "quality": {
+    "coverage": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.97"
+    },
+    "segmentSize": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.95"
+    },
+    "anchors": {
+     "pass": true,
+     "value": "0",
+     "threshold": "0"
+    },
+    "brokenLinks": {
+     "pass": true,
+     "value": "0",
+     "threshold": "0"
+    },
+    "elementDensity": {
+     "pass": true,
+     "value": "3.26",
+     "threshold": "1.50"
+    },
+    "tableLabels": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.90"
+    },
+    "figureLabels": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.80"
+    }
+   }
+  },
+  "agy-enriched": {
+   "wallSeconds": 81.3,
+   "stats": {
+    "files": 39,
+    "skipped": 0,
+    "segments": 282,
+    "sections": 39,
+    "cards": 282,
+    "enrichedCards": 282,
+    "tables": 60,
+    "figures": 0,
+    "codeBlocks": 186,
+    "chars": 255577
+   },
+   "usage": {
+    "llmCalls": 4,
+    "cacheHits": 264,
+    "inputTokens": 104219,
+    "outputTokens": 17456,
+    "totalTokens": 121675,
+    "llmSeconds": 175.01,
+    "failedBatches": 0
+   },
+   "quality": {
+    "coverage": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.97"
+    },
+    "segmentSize": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.95"
+    },
+    "anchors": {
+     "pass": true,
+     "value": "0",
+     "threshold": "0"
+    },
+    "brokenLinks": {
+     "pass": true,
+     "value": "0",
+     "threshold": "0"
+    },
+    "elementDensity": {
+     "pass": true,
+     "value": "7.78",
+     "threshold": "1.50"
+    },
+    "tableLabels": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.90"
+    },
+    "grounding": {
+     "pass": true,
+     "value": "0.99",
+     "threshold": "0.85"
+    }
+   }
+  },
+  "fsd-enriched": {
+   "wallSeconds": 185.1,
+   "stats": {
+    "files": 39,
+    "skipped": 0,
+    "segments": 266,
+    "sections": 40,
+    "cards": 266,
+    "enrichedCards": 266,
+    "tables": 2,
+    "figures": 20,
+    "codeBlocks": 171,
+    "chars": 291045
+   },
+   "usage": {
+    "llmCalls": 7,
+    "cacheHits": 234,
+    "inputTokens": 224291,
+    "outputTokens": 54140,
+    "totalTokens": 278431,
+    "llmSeconds": 581.01,
+    "failedBatches": 0
+   },
+   "quality": {
+    "coverage": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.97"
+    },
+    "segmentSize": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.95"
+    },
+    "anchors": {
+     "pass": true,
+     "value": "0",
+     "threshold": "0"
+    },
+    "brokenLinks": {
+     "pass": true,
+     "value": "0",
+     "threshold": "0"
+    },
+    "elementDensity": {
+     "pass": true,
+     "value": "8.06",
+     "threshold": "1.50"
+    },
+    "tableLabels": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.90"
+    },
+    "figureLabels": {
+     "pass": true,
+     "value": "1.00",
+     "threshold": "0.80"
+    },
+    "grounding": {
+     "pass": true,
+     "value": "0.98",
+     "threshold": "0.85"
+    }
+   }
+  }
+ }
+}

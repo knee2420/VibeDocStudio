@@ -1,13 +1,15 @@
-"""catalog 도메인 HTTP 라우터."""
+"""catalog 도메인 HTTP 라우터.
+
+도메인 오류는 `app.bootstrap.error_handlers` 가 HTTP 응답으로 번역하므로 여기서는 잡지 않는다.
+PDF 처리는 CPU · 외부 프로세스를 오래 쓰는 동기 작업이라 반드시 스레드풀에서 돌려
+이벤트 루프(=다른 모든 요청)를 막지 않는다.
+"""
 from typing import Annotated
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
-from app.bootstrap.container import Container
-
-from .errors import CatalogEntryNotFoundError, PdfFormExtractionError
 from .models import CatalogManifestRecord
 from .schemas import (
     CatalogBundleResponse,
@@ -15,14 +17,19 @@ from .schemas import (
     PdfIngestResponse,
     ScaffoldDocumentResponse,
 )
-from .service import CatalogService
+from .use_cases import (
+    GetCatalogBundleUseCase,
+    IngestPdfToCatalogUseCase,
+    ListCatalogFormsUseCase,
+    ScaffoldPdfToDocumentUseCase,
+)
 
 router = APIRouter()
 
-CatalogServiceDep = Annotated[
-    CatalogService,
-    Depends(Provide[Container.catalog_service]),
-]
+ListDep = Annotated[ListCatalogFormsUseCase, Depends(Provide["list_catalog_forms"])]
+GetBundleDep = Annotated[GetCatalogBundleUseCase, Depends(Provide["get_catalog_bundle"])]
+IngestDep = Annotated[IngestPdfToCatalogUseCase, Depends(Provide["ingest_pdf_to_catalog"])]
+ScaffoldDep = Annotated[ScaffoldPdfToDocumentUseCase, Depends(Provide["scaffold_pdf_to_document"])]
 
 
 def _to_manifest_response(record: CatalogManifestRecord) -> CatalogManifestResponse:
@@ -37,31 +44,19 @@ def _to_manifest_response(record: CatalogManifestRecord) -> CatalogManifestRespo
     )
 
 
-def _translate_error(exc: Exception) -> HTTPException:
-    if isinstance(exc, CatalogEntryNotFoundError):
-        return HTTPException(status_code=404, detail=str(exc))
-    if isinstance(exc, (PdfFormExtractionError, ValueError)):
-        return HTTPException(status_code=400, detail=str(exc))
-    return HTTPException(status_code=500, detail="Catalog operation failed")
-
-
 @router.get("", response_model=list[CatalogManifestResponse])
 @inject
-def list_catalog(service: CatalogServiceDep) -> list[CatalogManifestResponse]:
-    return [_to_manifest_response(item) for item in service.list_manifests()]
+def list_catalog(use_case: ListDep) -> list[CatalogManifestResponse]:
+    return [_to_manifest_response(item) for item in use_case.execute()]
 
 
 @router.get("/{catalog_id}", response_model=CatalogBundleResponse)
 @inject
 def get_catalog_bundle(
     catalog_id: str,
-    service: CatalogServiceDep,
+    use_case: GetBundleDep,
 ) -> CatalogBundleResponse:
-    try:
-        bundle = service.get_bundle(catalog_id)
-    except Exception as exc:
-        raise _translate_error(exc) from exc
-
+    bundle = use_case.execute(catalog_id)
     return CatalogBundleResponse(
         manifest=_to_manifest_response(bundle.manifest),
         document=bundle.document,
@@ -71,21 +66,19 @@ def get_catalog_bundle(
 @router.post("/ingest-pdf", response_model=PdfIngestResponse)
 @inject
 async def ingest_pdf_to_catalog(
-    service: CatalogServiceDep,
+    use_case: IngestDep,
     file: UploadFile = File(...),
     title: str = Form(default=""),
     category: str = Form(default="자동추출 서식"),
 ) -> PdfIngestResponse:
-    try:
-        pdf_bytes = await file.read()
-        resolved_title = title.strip() or (file.filename or "추출된 양식")
-        bundle, checked_tables, checked_slots = service.ingest_pdf_form(
-            pdf_bytes=pdf_bytes,
-            title=resolved_title,
-            category=category,
-        )
-    except Exception as exc:
-        raise _translate_error(exc) from exc
+    pdf_bytes = await file.read()
+    resolved_title = title.strip() or (file.filename or "추출된 양식")
+    bundle, checked_tables, checked_slots = await run_in_threadpool(
+        use_case.execute,
+        pdf_bytes=pdf_bytes,
+        title=resolved_title,
+        category=category,
+    )
 
     return PdfIngestResponse(
         catalogId=bundle.manifest.catalog_id,
@@ -99,29 +92,21 @@ async def ingest_pdf_to_catalog(
 @router.post("/scaffold", response_model=ScaffoldDocumentResponse)
 @inject
 async def scaffold_pdf_form(
-    service: CatalogServiceDep,
+    use_case: ScaffoldDep,
     file: UploadFile = File(...),
     title: str = Form(default=""),
     fidelity_mode: str = Form(default="balanced"),
 ) -> ScaffoldDocumentResponse:
-    try:
-        pdf_bytes = await file.read()
-        raw_name = file.filename or "추출된 양식 문서"
-        # 파일명에서 .pdf 확장자 제거
-        if raw_name.lower().endswith(".pdf"):
-            fallback_title = raw_name[:-4]
-        else:
-            fallback_title = raw_name
-        resolved_title = title.strip() or fallback_title
-        # 에이전트 루프는 수 분 걸리는 동기 작업이므로 이벤트 루프를 막지 않게 스레드에서 돌린다.
-        vdoc, total_pages, checked_blocks, checked_slots, agent_run = await run_in_threadpool(
-            service.scaffold_pdf_document,
-            pdf_bytes=pdf_bytes,
-            title=resolved_title,
-            fidelity_mode=fidelity_mode,
-        )
-    except Exception as exc:
-        raise _translate_error(exc) from exc
+    pdf_bytes = await file.read()
+    raw_name = file.filename or "추출된 양식 문서"
+    fallback_title = raw_name[:-4] if raw_name.lower().endswith(".pdf") else raw_name
+    resolved_title = title.strip() or fallback_title
+    vdoc, total_pages, checked_blocks, checked_slots, agent_run = await run_in_threadpool(
+        use_case.execute,
+        pdf_bytes=pdf_bytes,
+        title=resolved_title,
+        fidelity_mode=fidelity_mode,
+    )
 
     return ScaffoldDocumentResponse(
         docId=vdoc.get("docId", ""),

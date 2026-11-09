@@ -2,7 +2,10 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./app";
+import { installAutomationBridge } from "./app/automationBridge";
 import "./styles.css";
+
+installAutomationBridge();
 
 const rootEl = document.getElementById("root");
 if (rootEl) {

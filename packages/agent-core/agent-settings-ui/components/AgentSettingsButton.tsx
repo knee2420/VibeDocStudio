@@ -10,6 +10,8 @@ export interface AgentSettingsButtonProps {
   className?: string;
   onOpen?: () => void;
   onClose?: () => void;
+  /** 버튼 안쪽 내용 (기본: 톱니 아이콘 + "AI 설정"). */
+  children?: React.ReactNode;
 }
 
 export const AgentSettingsButton: React.FC<AgentSettingsButtonProps> = ({
@@ -17,6 +19,7 @@ export const AgentSettingsButton: React.FC<AgentSettingsButtonProps> = ({
   className,
   onOpen,
   onClose,
+  children,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const activeTransport = React.useMemo(
@@ -45,8 +48,12 @@ export const AgentSettingsButton: React.FC<AgentSettingsButtonProps> = ({
           "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-medium text-slate-700 cursor-pointer transition"
         }
       >
-        <Settings className="w-3.5 h-3.5 text-slate-500" />
-        <span>AI 설정</span>
+        {children ?? (
+          <>
+            <Settings className="w-3.5 h-3.5 text-slate-500" />
+            <span>AI 설정</span>
+          </>
+        )}
       </button>
 
       <AgentSettingsModal

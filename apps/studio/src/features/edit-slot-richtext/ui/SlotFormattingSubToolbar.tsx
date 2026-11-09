@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   AlignCenter,
   AlignLeft,
@@ -40,9 +40,12 @@ import {
 import { TABLE_LINE_STYLES, type TableCommand } from "@vibe/vdoc-schema";
 
 import { useSlotSelectionStore } from "@/entities/slot";
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { useHistoryStore } from "@/shared/lib";
 
-import { findTable, findTableForSlot, wholeTableRange } from "../model/findTableForSlot";
+import { useTableEditTarget } from "../model/useTableEditTarget";
+import { BlockControlsGroup } from "./BlockControlsGroup";
 import {
   BORDER_MODES,
   BorderModeIcon,
@@ -91,19 +94,17 @@ function currentFontSizePt(editor: Editor | null): number {
  * 표 편집 (borders, line colour, line style) and 칸 배경색, like editor.yesform.com.
  */
 export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> = ({ onTableCommand }) => {
-  const docs = useStudioDocumentStore((s) => s.docs);
-  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
+  const doc = useStudioDocumentStore(selectActiveDocument);
   const mode = useStudioDocumentStore((s) => s.mode);
   const toggleMode = useStudioDocumentStore((s) => s.toggleMode);
-  const undoDoc = useStudioDocumentStore((s) => s.undoDoc);
-  const redoDoc = useStudioDocumentStore((s) => s.redoDoc);
-  const canUndoDoc = useStudioDocumentStore((s) => s.past.length > 0);
-  const canRedoDoc = useStudioDocumentStore((s) => s.future.length > 0);
+  const undoHistory = useHistoryStore((s) => s.undo);
+  const redoHistory = useHistoryStore((s) => s.redo);
+  const canUndoDoc = useHistoryStore((s) => s.past.length > 0);
+  const canRedoDoc = useHistoryStore((s) => s.future.length > 0);
   const activeEditor = useActiveSlotEditorStore((s) => s.activeEditor);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
-  const tableSelection = useSlotSelectionStore((s) => s.tableSelection);
   const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
-  const setRightSidebarOpen = useSlotSelectionStore((s) => s.setRightSidebarOpen);
+  const openRightPanel = useWorkspaceLayoutStore((s) => s.openRightPanel);
 
   useEditorTick(activeEditor);
 
@@ -112,21 +113,12 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
   const [sizeDraft, setSizeDraft] = useState<string | null>(null);
   const [linkDraft, setLinkDraft] = useState("");
 
-  const doc = docs.find((d) => d.docId === activeDocId) || docs[0];
   const currentSlot = selectedSlotId ? doc?.slots[selectedSlotId] : undefined;
+  const firstVariable = Object.keys(doc?.variables ?? {})[0] ?? null;
   const editor = activeEditor && !activeEditor.isDestroyed ? activeEditor : null;
   const editable = mode === "Editing" && Boolean(editor?.isEditable);
 
-  // Table context: an explicit range/table selection wins, else the cell holding the caret.
-  const tableTarget = (() => {
-    if (!doc) return null;
-    if (tableSelection) {
-      const loc = findTable(doc, tableSelection.blockId, tableSelection.sectionId);
-      if (loc) return { ...loc, range: tableSelection.range ?? wholeTableRange(loc.table) };
-    }
-    const cell = selectedSlotId ? findTableForSlot(doc, selectedSlotId) : null;
-    return cell ? { ...cell, range: cell.cellRange } : null;
-  })();
+  const tableTarget = useTableEditTarget();
   const runTable = (cmd: TableCommand) =>
     tableTarget && onTableCommand?.(tableTarget.pageId, tableTarget.blockId, tableTarget.sectionId, cmd);
   const lineCss = () => {
@@ -134,26 +126,10 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
     return style.css === "hidden" ? "hidden" : `${style.css} ${lineColor}`;
   };
 
-  // Document-level undo when no slot editor can undo (block moves, table edits, locks).
-  const undo = () => (editor?.can().undo() ? editor.chain().focus().undo().run() : undoDoc());
-  const redo = () => (editor?.can().redo() ? editor.chain().focus().redo().run() : redoDoc());
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest("input, textarea, [contenteditable=true]")) return;
-      if (!(e.ctrlKey || e.metaKey)) return;
-      const k = e.key.toLowerCase();
-      if (k === "z" && !e.shiftKey) {
-        e.preventDefault();
-        undoDoc();
-      } else if (k === "y" || (k === "z" && e.shiftKey)) {
-        e.preventDefault();
-        redoDoc();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [undoDoc, redoDoc]);
+  // 슬롯 편집기가 되돌릴 것이 없으면 공용 이력(블록 이동 · 표 편집 · 잠금 등)을 되돌린다.
+  // Ctrl+Z 단축키는 command-bus 의 전역 처리기 하나만 담당한다.
+  const undo = () => (editor?.can().undo() ? editor.chain().focus().undo().run() : void undoHistory());
+  const redo = () => (editor?.can().redo() ? editor.chain().focus().redo().run() : void redoHistory());
 
   const sizePt = currentFontSizePt(editor);
   const setSize = (pt: number) => {
@@ -205,6 +181,7 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
         </ToolButton>
         <ToolDivider />
 
+        <BlockControlsGroup />
         {tableTarget && mode === "Editing" && (
           <>
             <ToolPopover title="표 편집" trigger={<Table className="w-4 h-4" />} width={300}>
@@ -455,11 +432,11 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
 
         <ToolDivider />
         <ToolButton
-          title="변수 칩 삽입"
-          disabled={!editable}
+          title={firstVariable ? `변수 칩 삽입 (${firstVariable})` : "이 문서에 정의된 변수가 없습니다"}
+          disabled={!editable || !firstVariable}
           onClick={() => {
-            const firstVar = Object.keys(doc?.variables || {})[0] || "Sender.Company";
-            editor?.chain().focus().insertContent({ type: "variableChip", attrs: { variableName: firstVar } }).run();
+            if (!firstVariable) return;
+            editor?.chain().focus().insertContent({ type: "variableChip", attrs: { variableName: firstVariable } }).run();
           }}
           className="gap-1 px-2 text-[12px] text-amber-900"
         >
@@ -476,7 +453,7 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
           {currentSlot.backDataRefs.length > 0 && (
             <button
               type="button"
-              onClick={() => setRightSidebarOpen(true)}
+              onClick={() => openRightPanel("inspector")}
               title="연결된 백데이터 원문 보기"
               className="inline-flex items-center gap-0.5 rounded bg-slate-100 px-1.5 py-0.5 font-semibold hover:bg-slate-200 cursor-pointer"
             >
