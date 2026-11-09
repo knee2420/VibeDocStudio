@@ -276,7 +276,7 @@ def test_composer_mounts_resources_and_reports_coverage(tmp_path: Path, vault: P
     service, ws = _service(tmp_path, engine)
     events = list(service.send_message("s1", text="결정 05 를 요약해", contexts=[_mount_ctx(vault)], tools=[]))
     prompt = engine.turns[0]
-    assert "리소스 작업 공간 규칙" in prompt and "파일 4개" in prompt and "ws_grep" in prompt
+    assert "작업대 규칙" in prompt and "파일 4개" in prompt and "ws_grep" in prompt
     assert "핵심 규칙 ORCA-42" not in prompt  # 본문은 미리 넣지 않는다
     mount = ws.store.mount_for("conv-1")
     assert mount is not None and mount.session_id == "s1" and "conv-1" in mount.conversation_ids
@@ -598,3 +598,23 @@ def test_decision_cluster_separates_cards_drafts_and_scaffolds(tmp_path: Path) -
     listing = mapper.collect(ix, "결정 카드")
     assert "본 대상 2개" in listing and "초안 · 검토 중 1개" in listing
     assert "decision_card_template" not in listing  # 서식은 결정 카드 군집에 끼지 않는다
+
+
+def test_composer_sends_workbench_map_once_then_short_status(tmp_path: Path) -> None:
+    """workbench 첨부 → 세션 작업대 저장(vibefs 의 wb_* 가 읽는다) + 첫 턴엔 지도, 다음 턴엔 짧은 현황."""
+    docs = tmp_path / "documents"
+    (docs / "d1").mkdir(parents=True)
+    (docs / "d1" / "document.vdoc.json").write_text(json.dumps({
+        "docId": "d1", "title": "보고서", "pages": [{"pageId": "p1", "blocks": [{"blockId": "b", "kind": "text", "slotId": "s"}]}],
+        "slots": {"s": {"slotId": "s", "label": "요약", "content": "<p></p>"}}}, ensure_ascii=False), encoding="utf-8")
+    engine = _FakeEngine(["봤다.", "또 봤다."])
+    ws = ResourceWorkspace(state_dir=tmp_path / "ws", sandbox_dir=tmp_path / "sandbox", documents_root=docs)
+    service = AssistantService(engines=SimpleNamespace(), policy=SimpleNamespace(), inline_model="m", workspace=ws)  # type: ignore[arg-type]
+    service._sessions["s1"] = _Session(session_id="s1", engine=engine)  # type: ignore[arg-type]
+    ctx = ContextItem(kind="workbench", ref_id="wb:state", label="작업대",
+                      content=json.dumps({"docId": "d1", "scope": {"mode": "document"}, "selection": ["s"], "references": []}))
+    list(service.send_message("s1", text="빈 칸 알려줘", contexts=[ctx], tools=[]))
+    list(service.send_message("s1", text="다시", contexts=[ctx], tools=[]))
+    assert "작업대 지도" in engine.turns[0] and "빈칸 1" in engine.turns[0]
+    assert "작업대 지도" not in engine.turns[1] and "[작업대] 문서: 보고서" in engine.turns[1]
+    assert ws.store.workbench_for("s1")["docId"] == "d1"

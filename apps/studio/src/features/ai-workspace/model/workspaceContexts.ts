@@ -2,7 +2,7 @@ import type { ContextProvider, ContextRef } from "@vibe/ai-kernel";
 import type { VDocDocument } from "@vibe/vdoc-schema";
 
 import { useAiScopeStore } from "@/entities/ai-scope";
-import { useReferencePinStore } from "@/entities/reference-manager";
+import { activePinsOf, useReferenceStore } from "@/entities/reference-manager";
 import { flattenResourceItems, getCheckedResourceItems, type ResourceItem, useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
@@ -19,8 +19,8 @@ import {
   slotRef,
   variableRef,
 } from "./contextBuilders";
-import { referenceDocs } from "./referenceDocs";
-import { SCOPE_CONTEXT_PROVIDER } from "./scopeAi";
+import { activeReferences, boundReferences } from "./boundReferences";
+import { SCOPE_CONTEXT_PROVIDER, scopeNow } from "./scopeAi";
 
 const doc = (): VDocDocument | undefined => selectActiveDocument(useStudioDocumentStore.getState());
 
@@ -146,63 +146,48 @@ function resourceMountRef(treeOrChecked: ResourceItem[]): ContextRef {
 
 export const REFERENCES_CONTEXT_PROVIDER: ContextProvider = {
   id: "references",
-  label: "참조 문서",
+  label: "레퍼런스",
   auto: true,
   current: () => {
-    const { referencesOn, excludedRefDocIds = [] } = useAiScopeStore.getState();
-    if (!referencesOn) return [];
-
-    const allDocs = referenceDocs();
-    const activeDocs = allDocs.filter((d) => !excludedRefDocIds.includes(d.docId));
-    if (activeDocs.length === 0) return [];
-
-    const { snippetsByDoc, checkedSnippetIds } = useReferencePinStore.getState();
-    const checkedSet = new Set(checkedSnippetIds ?? []);
-
-    return activeDocs.map((d) => {
-      const docSnippets = snippetsByDoc[d.docId] ?? [];
-      const activeSnippets = docSnippets.filter(
-        (s) => checkedSet.size === 0 || checkedSet.has(s.id)
-      );
-
-      const snippetLines = activeSnippets.map((s) => {
-        if (s.kind === "region") {
-          const detail = s.excerpt ? ` - "${s.excerpt}"` : "";
-          return `- [영역 핀 p.${s.page}] ${s.label}${detail}`;
-        }
-        if (s.kind === "text") {
-          return `- [텍스트 p.${s.page ?? 1}] ${s.label}: "${s.text}"`;
-        }
-        return `- [메모] ${s.label}: "${s.comment}"`;
+    const refs = activeReferences(useAiScopeStore.getState().referencesOn);
+    const { layers } = useReferenceStore.getState();
+    return refs.map((r) => {
+      const pins = activePinsOf(r.refId);
+      const pinLines = pins.map((p) => {
+        const where = p.page ? `p.${p.page}` : "";
+        const layer = p.layer ? ` [${p.layer}]` : "";
+        const note = p.note ? ` (메모: ${p.note})` : "";
+        return `- ${p.anchor}${layer} ${p.label} ${where}${p.text ? ` — "${p.text}"` : ""}${note}`;
       });
-
-      const hint = activeSnippets.length > 0
-        ? `${d.pageCount ?? "?"}p · 핀 ${activeSnippets.length}건`
-        : `${d.pageCount ?? "?"}페이지 · 규정/서식`;
-
-      const contentSections = [
-        `[참조 문서 표준·서식 가이드] ${d.title} (${d.projectTitle})`,
-        `이 참조 문서는 본문 작성 시 준수해야 할 서식 템플릿 및 규범적 제약(Normative Standard)입니다.`,
+      const report = layers[r.refId];
+      const layerLines = (report?.layers ?? [])
+        .filter((l) => !r.layersOff.includes(l.id))
+        .map((l) => `- ${l.id} ${l.name}: ${Object.entries(l.values).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(", ") || "(정성 판단)"}`);
+      const sections = [
+        `[레퍼런스 ${r.number}] ${r.title} — ref:${r.refId} (${r.kind}${r.pageCount ? ` · ${r.pageCount}쪽` : ""})`,
+        "남이 비슷한 문제를 풀며 내린 결정의 궤적이다. 층위별 패턴만 옮기고, 문장 · 고유명사 · 수치는 내 문서로 가져오지 않는다. 원문은 wb_read(ref:" +
+          r.refId +
+          "…) 로 읽는다.",
       ];
-      if (snippetLines.length > 0) {
-        contentSections.push(`[지정 핀 및 핵심 조항·영역 발췌]:\n${snippetLines.join("\n")}`);
-      }
-
+      if (r.layersOff.length) sections.push(`따르지 않을 층위: ${r.layersOff.join(", ")}`);
+      if (layerLines.length) sections.push(`[층위 측정]\n${layerLines.join("\n")}`);
+      if (pinLines.length) sections.push(`[사용자가 꽂은 핀]\n${pinLines.join("\n")}`);
       return {
         kind: "reference",
-        id: `ref_doc_${d.docId}`,
-        label: d.title,
-        content: contentSections.join("\n"),
-        hint,
+        id: `ref:${r.refId}`,
+        label: `참조${r.number}: ${r.title}`,
+        content: sections.join("\n"),
+        hint: pins.length > 0 ? `핀 ${pins.length}건${r.layersOff.length ? ` · 층위 ${r.layersOff.length}개 끔` : ""}` : "패턴 참고",
         access: "read",
         role: "reference",
-      };
+        meta: { entityId: r.refId, entityKind: "reference" },
+      } satisfies ContextRef;
     });
   },
   search: (q) =>
-    referenceDocs()
+    boundReferences()
       .filter((r) => matches(q, r.title))
-      .map((r) => ({ ...referenceRef(r.docId, r.title), hint: `${r.pageCount ?? "?"}페이지${r.openInSplit ? " · 분할보기" : ""}` })),
+      .map((r) => ({ ...referenceRef(r.refId, r.title), hint: `${r.kind}${r.pageCount ? ` · ${r.pageCount}쪽` : ""}${r.openInSplit ? " · 분할보기" : ""}` })),
 };
 
 export const RESOURCE_CONTEXT_PROVIDER: ContextProvider = {
@@ -227,7 +212,61 @@ export const RESOURCE_CONTEXT_PROVIDER: ContextProvider = {
   },
 };
 
+/**
+ * 작업대 상태 — 서버가 agy 의 wb_* 도구(문서 · 레퍼런스 · 이력 읽기, 후보 제안)에 넘긴다.
+ * 본문은 싣지 않는다 (서버가 저장된 문서를 직접 읽는다). 열린 문서 · 범위 · 선택 칸 · 켠 레퍼런스와 핀만.
+ */
+export const WORKBENCH_CONTEXT_PROVIDER: ContextProvider = {
+  id: "workbench",
+  label: "작업대",
+  auto: true,
+  current: () => {
+    const d = doc();
+    const store = useAiScopeStore.getState();
+    const scope = d && store.scopeOn ? scopeNow() : null;
+    const sel = useSlotSelectionStore.getState();
+    const selection = [
+      ...(sel.selectedSlotId ? [sel.selectedSlotId] : []),
+      ...(sel.slotRange?.unitIds ?? []),
+    ];
+    // 레퍼런스는 라이브러리 refId 로 보낸다 (서버가 extraction · 핀을 직접 읽는다).
+    const references = activeReferences(store.referencesOn).map((r) => ({
+      refId: r.refId,
+      title: r.title,
+      // null = 그 레퍼런스의 핀 전부 · 배열 = 고른 핀만 (빈 배열이면 핀 없음)
+      pinIds: useReferenceStore.getState().checkedPinIds.length ? activePinsOf(r.refId).map((p) => p.pinId) : null,
+      layers: Object.fromEntries(r.layersOff.map((id) => [id, false])),
+    }));
+    if (!d && references.length === 0) return [];
+    const payload = {
+      docId: d?.docId ?? null,
+      scope: scope
+        ? {
+            mode: scope.mode,
+            label: scope.label,
+            pageIds: scope.pageIds ? [...scope.pageIds] : undefined,
+            slotIds: scope.slotIds ? [...scope.slotIds] : undefined,
+          }
+        : { mode: "off" },
+      selection: [...new Set(selection)],
+      references,
+    };
+    return [
+      {
+        kind: "workbench",
+        id: "wb:state",
+        label: "작업대",
+        content: JSON.stringify(payload),
+        hint: `${d?.title ?? "문서 없음"} · 레퍼런스 ${references.length}`,
+        access: "read",
+        role: "reference",
+      },
+    ];
+  },
+};
+
 export const WORKSPACE_CONTEXT_PROVIDERS: ContextProvider[] = [
+  WORKBENCH_CONTEXT_PROVIDER,
   REFERENCES_CONTEXT_PROVIDER,
   RESOURCE_CONTEXT_PROVIDER,
   {

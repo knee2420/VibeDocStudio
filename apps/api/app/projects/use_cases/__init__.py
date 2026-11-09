@@ -10,8 +10,6 @@ from .apply_outline_command import (
     SetPhaseCommand,
     UpdateNodeCommand,
 )
-from .bind_reference_projects import BindReferenceProjectsUseCase
-from .clone_node_with_provenance import CloneNodeWithProvenanceUseCase
 from .create_and_list_projects import (
     GetProjectUseCase,
     ListProjectsUseCase,
@@ -30,8 +28,6 @@ __all__ = [
     "SaveProjectUseCase",
     "GetProjectOutlineTreeUseCase",
     "ProjectOutlineProjection",
-    "BindReferenceProjectsUseCase",
-    "CloneNodeWithProvenanceUseCase",
     "ApplyOutlineCommandUseCase",
     "OutlineCommand",
     "OutlineCommandResult",

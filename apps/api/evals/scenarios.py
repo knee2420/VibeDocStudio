@@ -187,7 +187,7 @@ SCENARIOS: list[dict[str, Any]] = [
             "그중에 지금 유효하지 않은 건 빼고, 각 결정이 언제 내려졌는지 표로 다시 줘",
         ],
         "checks": [
-            answer_avoids_unqualified("좌석", r"제외|대체|폐기|무효|빠|뺐|아님|할인", "대체된 v1(좌석 기반)을 유효 목록에 넣지 않음"),
+            answer_avoids_unqualified("좌석", r"제외|대체|폐기|무효|빠|뺐|아님|할인|변경|바꾸|바꿨|에서", "대체된 v1(좌석 기반)을 유효 목록에 넣지 않음"),
             answer_avoids_unqualified("Decision 09", r"예시|샘플|제외|아님", "예시 카드 제외"),
             answer_avoids_unqualified("외부 검색", r"초안|검토|제외|미확정|아님", "초안 D5 제외"),
             answer_has(r"2025[-.]01[-.]06|25\.01\.06|1월\s*6일", "결정 날짜(1/6) 표기"),

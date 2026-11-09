@@ -80,9 +80,9 @@ export function attachToComposer(refs: ContextRef[], options: AttachOptions = {}
 export const useReferenceRegionStore = create<{
   current: ContextRef | null;
   setCurrent(ref: ContextRef | null): void;
-  /** AI 칩이 가리킨 참조 PDF 영역 — 참조 작업창이 그 자리에 강조 상자를 그리고 스크롤한다. */
-  focus: { docId: string; page: number; box: [number, number, number, number]; at: number } | null;
-  setFocus(focus: { docId: string; page: number; box: [number, number, number, number] } | null): void;
+  /** AI 칩이 가리킨 레퍼런스 PDF 영역 — 레퍼런스 작업창이 그 자리에 강조 상자를 그리고 스크롤한다. */
+  focus: { refId: string; page: number; box: [number, number, number, number]; at: number } | null;
+  setFocus(focus: { refId: string; page: number; box: [number, number, number, number] } | null): void;
 }>((set) => ({
   current: null,
   setCurrent: (ref) => set({ current: ref }),
@@ -112,9 +112,9 @@ export function currentAttachables(): ContextRef[] {
   const domSel = window.getSelection();
   const card = domSel && !domSel.isCollapsed ? (domSel.anchorNode?.parentElement?.closest("[data-testid^='reference-card-']") as HTMLElement | null) : null;
   if (card && domSel) {
-    const docId = card.dataset.testid!.replace("reference-card-", "");
+    const refId = card.dataset.testid!.replace("reference-card-", "");
     const text = domSel.toString();
-    if (text.trim()) return [referenceTextRef(docId, text)];
+    if (text.trim()) return [referenceTextRef(refId, text)];
   }
 
   const picks = useAttachPickStore.getState();

@@ -22,7 +22,18 @@ def test_health_endpoint_reports_all_domains_and_flagship_models() -> None:
     assert res.status_code == 200
     body = res.json()
     assert body["status"] == "ok"
-    assert set(body["domains"]) == {"catalog", "documents", "backdata", "composer", "projects", "resources", "knowledge", "runtime", "assistant"}
+    assert set(body["domains"]) == {
+        "catalog",
+        "documents",
+        "backdata",
+        "composer",
+        "projects",
+        "resources",
+        "knowledge",
+        "runtime",
+        "assistant",
+        "reference",
+    }
     assert body["models"]["composer"] == "Gemini-3.8-flash"
     assert body["models"]["tagger"] == "Gemma4 31b"
 

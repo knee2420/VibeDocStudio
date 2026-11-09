@@ -18,6 +18,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from index import WorkspaceIndex  # noqa: E402
 from store import WorkspaceStore  # noqa: E402
 from tools import TOOL_SPECS, WorkspaceTools  # noqa: E402
+from proposals import ProposalStore  # noqa: E402
+from wb_tools import WB_TOOL_SPECS, WorkbenchTools  # noqa: E402
+from workbench import Workbench  # noqa: E402
 
 PROTOCOL_VERSION = "2025-06-18"
 CONV_META_KEYS = ("antigravity.google/root_conversation_id", "antigravity.google/conversation_id")
@@ -29,6 +32,7 @@ class Server:
         #: ACP 는 세션마다 이 서버를 따로 띄운다 — 띄울 때 받은 세션 id 로 마운트를 고정한다 (다른 세션 자료가 섞이지 않게)
         self.session_id = session_id
         self._cache: dict[str, tuple[float, WorkspaceIndex]] = {}
+        self.proposals = ProposalStore(state_dir)
 
     def index_for(self, conversation_id: str) -> tuple[WorkspaceIndex, list[str]]:
         if self.session_id and conversation_id:
@@ -49,7 +53,19 @@ class Server:
         conv = next((str(meta[k]) for k in CONV_META_KEYS if meta.get(k)), "")
         index, conv_ids = self.index_for(conv)
         ids = set(conv_ids) | ({conv} if conv else set())
-        tools = WorkspaceTools(index, reads=lambda: self.store.reads(conversation_ids=ids))
+        reads = lambda: self.store.reads(conversation_ids=ids)  # noqa: E731
+        if WorkbenchTools.handles(name):
+            session = self.session_id
+            if not session:
+                mount = self.store.mount_for(conv or None)
+                session = mount.session_id if mount else ""
+            wb = Workbench.from_state(self.store.workbench_for(session))
+            line = (f"파일 {len(index.files)}개 · 루트 {len(index.roots)}개 (ws_overview · ws_collect · read_file)"
+                    if index.files else "")
+            tools = WorkbenchTools(wb, resource_line=line, reads=reads, proposals=self.proposals,
+                                   session_id=session, conversation_id=conv)
+        else:
+            tools = WorkspaceTools(index, reads=reads)
         started = time.time()
         try:
             return tools.call(name, args)
@@ -77,9 +93,9 @@ def main() -> int:
         if method == "initialize":
             result = {"protocolVersion": params.get("protocolVersion") or PROTOCOL_VERSION,
                       "capabilities": {"tools": {}}, "serverInfo": {"name": "vibefs", "version": "1.0"},
-                      "instructions": "VibeDocStudio 리소스 작업 공간 탐색 도구. 원문은 read_file 로 읽는다."}
+                      "instructions": "VibeDocStudio 작업대 도구. ws_* = 리소스(원천) 탐색 · 원문은 read_file. wb_* = 에디터 문서 · 레퍼런스 · 이력 읽기와 후보 제안."}
         elif method == "tools/list":
-            result = {"tools": TOOL_SPECS}
+            result = {"tools": [*TOOL_SPECS, *WB_TOOL_SPECS]}
         elif method == "tools/call":
             try:
                 text = server.call(str(params.get("name") or ""), dict(params.get("arguments") or {}), dict(params.get("_meta") or {}))

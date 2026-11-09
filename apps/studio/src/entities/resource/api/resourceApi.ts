@@ -22,6 +22,13 @@ export const resourceApi = {
       directoryPath,
     }),
 
+  /** 브라우저 파일 탐색기에서 선택한 파일 업로드 및 인입 */
+  uploadFile: (projectId: string, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return httpClient.post<ResourceSessionState>(`/api/resources/${projectId}/upload-file`, formData);
+  },
+
   /** 웹 URL 아티클 추가 */
   ingestWebUrl: (projectId: string, url: string, title?: string) =>
     httpClient.post<ResourceSessionState>(`/api/resources/${projectId}/ingest-url`, {

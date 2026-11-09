@@ -31,6 +31,7 @@ from app.core.config import Settings, get_settings
 from app.documents import router as documents_router_module
 from app.knowledge import router as knowledge_router_module
 from app.projects import router as projects_router_module
+from app.reference import router as reference_router_module
 from app.resources import router as resources_router_module
 from app.runtime import router as runtime_router_module
 
@@ -45,6 +46,7 @@ _DOMAIN_ROUTERS = (
     (knowledge_router_module, "/api/knowledge", "knowledge"),
     (runtime_router_module, "/api", "runtime"),
     (assistant_router_module, "/api/assistant", "assistant"),
+    (reference_router_module, "/api/reference", "reference"),
 )
 
 

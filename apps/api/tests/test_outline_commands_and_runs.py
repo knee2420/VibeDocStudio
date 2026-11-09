@@ -8,7 +8,6 @@ from main import app
 client = TestClient(app)
 
 PROJECT = "vproj-enterprise-architecture-suite"
-REFERENCE = "vproj-ref-cloud-migration-rfp"
 
 
 def _command(body: dict, project_id: str = PROJECT):
@@ -63,13 +62,10 @@ def test_assign_template_and_phase_commands() -> None:
     assert _command({"kind": "set_phase", "phase": "templating"}).json()["project"]["activePhase"] == "templating"
 
 
-def test_commands_reject_invalid_input_and_read_only_targets() -> None:
+def test_commands_reject_invalid_input() -> None:
     assert _command({"kind": "delete_node", "nodeId": "node-proj-root"}).status_code == 400
     assert _command({"kind": "delete_node", "nodeId": "missing-node"}).status_code == 404
     assert _command({"kind": "unknown_kind"}).status_code == 422
-    readonly = _command({"kind": "insert_node", "title": "x"}, project_id=REFERENCE)
-    assert readonly.status_code == 403
-    assert "read-only" in readonly.json()["detail"]
 
 
 def test_run_cancelled_before_completion_discards_result() -> None:

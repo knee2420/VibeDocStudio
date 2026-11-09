@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useShallow } from "zustand/react/shallow";
+import React, { useEffect, useState } from "react";
 import {
   ArrowRight,
   CopyPlus,
@@ -11,12 +10,11 @@ import {
 } from "lucide-react";
 
 import {
-  ProvenanceBadge,
-  selectActiveProject,
-  selectBoundReferenceProjects,
-  selectCurrentReferenceProject,
-  useProjectStore,
-} from "@/entities/vdoc-project";
+  findReferenceItem,
+  selectCurrentReferenceId,
+  useReferenceStore,
+} from "@/entities/reference-manager";
+import { ProvenanceBadge, selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { useSwitchWorkbenchPhase } from "@/features/switch-workbench-phase";
 import { TruncatedLabel } from "@/shared/ui";
@@ -25,18 +23,32 @@ export const Phase1StorylineWorkbench: React.FC = () => {
   const [aiPrompt, setAiPrompt] = useState("");
 
   const activeProject = useProjectStore(selectActiveProject);
-  // AI 가 참조로 쓰는 것과 같은 목록: 이 프로젝트에 연결된 참조 프로젝트.
-  const refProjects = useProjectStore(useShallow(selectBoundReferenceProjects));
-  const currentRef = useProjectStore(selectCurrentReferenceProject);
-  const setSelectedReferenceProjectId = useProjectStore((s) => s.setSelectedReferenceProjectId);
-  const cloneNodeFromReference = useProjectStore((s) => s.cloneNodeFromReference);
+  // AI 가 쓰는 것과 같은 목록: 이 프로젝트에 연결된 레퍼런스. 목차는 레퍼런스 구조 추출에서 온다.
+  const bound = useReferenceStore((s) => s.bound);
+  const currentRefId = useReferenceStore(selectCurrentReferenceId);
+  const setActiveRefId = useReferenceStore((s) => s.setActiveRefId);
+  const ensureDetail = useReferenceStore((s) => s.ensureDetail);
+  const outline = useReferenceStore((s) => (currentRefId ? s.extraction[currentRefId]?.outline : undefined));
+  const currentRef = bound.find((b) => b.refId === currentRefId);
   const insertStorylineNode = useProjectStore((s) => s.insertStorylineNode);
   const updateStorylineNode = useProjectStore((s) => s.updateStorylineNode);
 
   const { switchPhase } = useSwitchWorkbenchPhase();
   const { isAiStreaming, runPhase1StorylineAi, abortActiveAiRun } = useStageAiChanges();
 
+  useEffect(() => {
+    if (currentRefId) void ensureDetail(currentRefId);
+  }, [currentRefId, ensureDetail]);
+
   if (!activeProject) return null;
+
+  /** 레퍼런스 목차 한 줄을 내 스토리라인 노드로 가져온다 — 출처는 레퍼런스 앵커(ref:<refId> · 블록)로 남는다. */
+  const borrowHeading = (refId: string, blockId: string, title: string, page: number) =>
+    insertStorylineNode(
+      null,
+      { title, summary: `레퍼런스 "${findReferenceItem(refId)?.title ?? refId}" ${page}쪽의 구성을 따른 섹션`, zoomLevel: "page" },
+      { sourceProjectId: `ref:${refId}`, sourceNodeId: blockId }
+    );
 
   return (
     <div
@@ -49,10 +61,10 @@ export const Phase1StorylineWorkbench: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#248567] border border-emerald-200 text-xs font-bold">
               <GitBranch className="w-3.5 h-3.5" />
-              Phase 1 · 스토리라인 기획 & 참조 프로젝트 대조 워크벤치
+              Phase 1 · 스토리라인 기획 & 레퍼런스 목차 대조
             </div>
             <h2 className="text-lg font-bold text-slate-900 mt-1.5">
-              참조 레퍼런스(2~3종)를 좌측에 띄워두고 내 프로젝트의 전체 목차 트리를 설계합니다
+              레퍼런스의 목차 구성을 좌측에 띄워두고 내 프로젝트의 전체 목차 트리를 설계합니다
             </h2>
           </div>
 
@@ -111,17 +123,17 @@ export const Phase1StorylineWorkbench: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <Lock className="w-4 h-4 text-violet-600" />
               <h3 className="text-sm font-bold text-slate-900">
-                참조 레퍼런스 아웃라인 (Read-Only)
+                레퍼런스 목차 (읽기 전용)
               </h3>
             </div>
             <div className="flex gap-1">
-              {refProjects.map((rp, idx) => (
+              {bound.map((b, idx) => (
                 <button
-                  key={rp.projectId}
+                  key={b.refId}
                   type="button"
-                  onClick={() => setSelectedReferenceProjectId(rp.projectId)}
+                  onClick={() => setActiveRefId(b.refId)}
                   className={`px-2 py-1 rounded text-[11px] font-semibold border cursor-pointer ${
-                    rp.projectId === currentRef?.projectId
+                    b.refId === currentRefId
                       ? "bg-violet-600 text-white border-violet-600"
                       : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
                   }`}
@@ -132,49 +144,50 @@ export const Phase1StorylineWorkbench: React.FC = () => {
             </div>
           </div>
 
-          {currentRef && (
+          {currentRef ? (
             <div className="space-y-2.5">
               <div className="p-2.5 rounded-lg bg-violet-50/70 border border-violet-200 text-xs text-violet-950">
-                <div className="font-bold">{currentRef.title}</div>
+                <div className="font-bold">{currentRef.item.title}</div>
                 <div className="text-[11px] text-violet-700 mt-0.5">
-                  🔒 읽기 전용 보호됨 · 직접 수정 불가 · 우측 내 작업본으로 복제 시 Provenance 출처가 자동 기록됩니다.
+                  🔒 레퍼런스의 목차 구성(어떻게 짰나)만 가져옵니다 · 가져온 노드에는 레퍼런스 출처가 남습니다.
                 </div>
               </div>
 
-              {currentRef.storylineNodes
-                .filter((n) => n.parentId !== null)
-                .map((node) => (
-                  <div
-                    key={node.nodeId}
-                    className="p-3 rounded-xl border border-slate-200 hover:border-violet-300 bg-slate-50/50 space-y-1.5 transition"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <TruncatedLabel
-                        text={node.title}
-                        className="text-xs font-bold text-slate-900 flex-1"
-                      />
-                      <button
-                        type="button"
-                        data-testid={`phase1-clone-btn-${node.nodeId}`}
-                        onClick={() =>
-                          cloneNodeFromReference(
-                            currentRef.projectId,
-                            node.nodeId
-                          )
-                        }
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-semibold cursor-pointer shrink-0 shadow-2xs"
-                      >
-                        <CopyPlus className="w-3 h-3" />
-                        내 스토리라인으로 복제
-                      </button>
+              {(outline ?? []).length === 0 ? (
+                <div className="p-3 text-[11px] text-slate-400">
+                  {outline ? "이 레퍼런스에서 찾은 제목이 없습니다." : "목차를 불러오는 중…"}
+                </div>
+              ) : (
+                (outline ?? []).map((o, i) => {
+                  const blockId = o.blockId || `p${o.page}-${i + 1}`;
+                  return (
+                    <div
+                      key={`${blockId}-${i}`}
+                      className="p-3 rounded-xl border border-slate-200 hover:border-violet-300 bg-slate-50/50 space-y-1.5 transition"
+                      style={{ marginLeft: `${Math.max(0, o.level - 1) * 12}px` }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <TruncatedLabel text={o.title} className="text-xs font-bold text-slate-900 flex-1" />
+                        <button
+                          type="button"
+                          data-testid={`phase1-clone-btn-${blockId}`}
+                          onClick={() => void borrowHeading(currentRef.refId, blockId, o.title, o.page)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-semibold cursor-pointer shrink-0 shadow-2xs"
+                        >
+                          <CopyPlus className="w-3 h-3" />
+                          내 스토리라인으로 가져오기
+                        </button>
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        ref:{currentRef.refId}#blk:{blockId} · {o.page}쪽 · H{o.level}
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-600">{node.summary}</p>
-                    <div className="text-[10px] text-slate-400 font-mono">
-                      권장 서식 블록: {node.recommendedTemplateId || "section-block"}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })
+              )}
             </div>
+          ) : (
+            <div className="p-3 text-[11px] text-slate-400">연결된 레퍼런스가 없습니다. Reference Manager 에서 추가하세요.</div>
           )}
         </div>
 
@@ -186,7 +199,7 @@ export const Phase1StorylineWorkbench: React.FC = () => {
                 ✍️ 내 프로젝트 스토리라인 목차 ({activeProject.storylineNodes.length}개 노드)
               </h3>
               <p className="text-[11px] text-slate-500">
-                제목을 직접 수정하거나 참조 노드를 복제해 구성을 완성하세요
+                제목을 직접 수정하거나 레퍼런스 목차를 가져와 구성을 완성하세요
               </p>
             </div>
             <button
@@ -228,6 +241,11 @@ export const Phase1StorylineWorkbench: React.FC = () => {
                     <ProvenanceBadge
                       sourceProjectId={node.provenanceSourceProjectId}
                       sourceNodeId={node.provenanceSourceNodeId}
+                      sourceTitle={
+                        node.provenanceSourceProjectId?.startsWith("ref:")
+                          ? findReferenceItem(node.provenanceSourceProjectId.slice(4))?.title
+                          : undefined
+                      }
                     />
                   </div>
                   <p className="text-[11px] text-slate-500 px-1.5">

@@ -14,7 +14,7 @@ export const ProvenanceBadge: React.FC<ProvenanceBadgeProps> = ({
 }) => {
   if (!sourceProjectId) return null;
 
-  const label = sourceTitle || sourceProjectId.replace("vproj-ref-", "참조:");
+  const label = sourceTitle || (sourceProjectId.startsWith("ref:") ? "레퍼런스" : sourceProjectId.replace("vproj-ref-", "참조:"));
   return (
     <span
       data-testid="provenance-badge"

@@ -31,6 +31,7 @@ from ..prompts import (
 from ..tool_protocol import ToolCallExtractor, render_tool_results
 from ..workspace import (
     MOUNT_KIND,
+    WORKBENCH_KIND,
     MountState,
     ResourceWorkspace,
     detect_full_read_intent,
@@ -76,6 +77,8 @@ class _Session:
     #: 리소스 작업 공간 (RM 에서 체크한 자료를 agy 가 직접 읽는다)
     mount: Optional[MountState] = None
     mount_briefed: str = ""
+    #: 작업대(열린 문서 · 레퍼런스 · 이력) — 지도를 보낸 상태의 지문
+    workbench_sig: str = ""
     #: 이번 메시지가 "전체를 확인" 하라는 요청인가 · 이어 읽게 한 횟수
     coverage_goal: bool = False
     coverage_nudges: int = 0
@@ -222,6 +225,7 @@ class AssistantService:
         session = self._get(session_id)
         self._maybe_switch_engine(session, provider, model)
         contexts, workspace_rules = self._mount_context(session, contexts)
+        contexts = self._workbench_context(session, contexts)
         contexts, scope, server_specs = self._server_context(contexts, session.briefed)
         all_tools = [*tools, *server_specs]
         digest = _tools_hash(all_tools)
@@ -397,6 +401,46 @@ class AssistantService:
         item = ContextItem(kind=MOUNT_KIND, ref_id="rm:workspace", label=f"리소스 작업 공간 ({len(state.index.files)}개 파일)",
                            content=content, role="reference")
         return [item, *rest], first
+
+    def _workbench_context(self, session: _Session, contexts: list[ContextItem]) -> list[ContextItem]:
+        """`workbench` 첨부 → 세션 작업대 저장(vibefs 의 wb_* 가 읽는다) + 본문을 작업대 지도로 바꾼다.
+
+        지도는 문서 · 레퍼런스 · 핀 구성이 바뀐 턴에만 통째로 보내고, 그 밖의 턴엔 범위 · 선택만 짧게 보낸다.
+        """
+        items = [c for c in contexts if c.kind == WORKBENCH_KIND]
+        rest = [c for c in contexts if c.kind != WORKBENCH_KIND]
+        if self._workspace is None:
+            return rest
+        if not items:
+            if session.workbench_sig:
+                self._workspace.clear_workbench(session.session_id)
+                session.workbench_sig = ""
+            return rest
+        raw = items[-1].content
+        try:
+            wb = self._workspace.set_workbench(session.session_id, raw)
+        except Exception as exc:  # 작업대가 실패해도 대화는 이어간다
+            logger.warning("[assistant] 작업대 설정 실패: %s", exc)
+            return rest
+        if wb is None:
+            return rest
+        try:
+            meta = json.loads(raw)
+        except ValueError:
+            meta = {}
+        sig = json.dumps({"doc": meta.get("docId"), "refs": [(r.get("refId"), sorted(r.get("pinIds") or []), r.get("layers") or {})
+                                                           for r in meta.get("references") or []]}, sort_keys=True)
+        line = (f"파일 {len(session.mount.index.files)}개 (ws_overview · ws_collect · read_file)"
+                if session.mount is not None else "")
+        if sig != session.workbench_sig:
+            content = wb.overview(line)
+            session.workbench_sig = sig
+        else:
+            sel = f" · 선택 칸: {', '.join(wb.selection[:6])}" if wb.selection else ""
+            content = (f"[작업대] 문서: {wb.doc.title if wb.doc else '없음'} · 범위: {wb.scope_label()}{sel} · "
+                       f"레퍼런스 {len(wb.refs)}개 (전체 지도는 앞부분 · 다시 보려면 wb_overview)")
+        item = ContextItem(kind=WORKBENCH_KIND, ref_id="wb:workbench", label="작업대", content=content, role="reference")
+        return [item, *rest]
 
     def _mount_snapshot(self, session: _Session, state: MountState) -> str:
         """지도를 이미 보낸 뒤의 턴마다 붙는 짧은 현황판 (~600B): 루트 · 군집 · 지금까지 읽은 범위.

@@ -20,6 +20,7 @@ import {
 import { scopeAllowsPage, scopeAllowsSlot, toolScope } from "@/entities/ai-scope";
 import { buildSlotHtmlChange, stagedSlotIds, useAiStagingStore } from "@/entities/ai-staging";
 import { resolveSlotEvidence } from "@/entities/evidence";
+import { referenceApi, useReferenceStore } from "@/entities/reference-manager";
 import { useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
@@ -29,7 +30,8 @@ import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { clipText, htmlToPlain, newId, revealCanvasElement, scrollToCanvasPage } from "@/shared/lib";
 
 
-import { referenceDocs } from "./referenceDocs";
+import { boundReferences } from "./boundReferences";
+import { revealReferenceViewer } from "./workspaceEntities";
 
 /** RM 에서 체크한 자료의 발췌 섹터 → 근거 위치 (inherited). */
 function rmPinnedSectors(limit = 6): EvidenceLocator[] {
@@ -137,7 +139,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
           ? { slotId: selection.selectedSlotId, label: doc?.slots[selection.selectedSlotId]?.label ?? null }
           : null,
         selectedBlockId: selection.selectedBlockId,
-        openReferenceDocIds: session.openReferenceDocIds,
+        openReferenceIds: session.openReferenceIds,
         stagedCount: useAiStagingStore.getState().queue.length,
       };
     },
@@ -372,43 +374,43 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
   },
   {
     name: "references.list",
-    description: "참조 레이어의 참조 문서들 (docId, 제목, 페이지 수, 분할보기로 열려 있는지)",
+    description: "이 프로젝트에 연결된 레퍼런스들 (refId, 참조 번호, 제목, 종류, 쪽 수, 사용 여부, 꺼 둔 층위, 핀 수)",
     risk: "read",
     inputSchema: { type: "object", properties: {} },
-    describe: () => "참조 문서 목록",
-    run: () => referenceDocs(),
+    describe: () => "레퍼런스 목록",
+    run: () => boundReferences(),
   },
   {
     name: "references.read",
-    description: "참조 문서의 본문 텍스트 (슬롯별 '[라벨] 내용'). 긴 문서는 maxChars 까지만",
+    description:
+      "레퍼런스의 추출된 글 (제목 · 문단 · 목록 · 표, 블록 앵커 ref:<refId>#blk:<id> 포함). 결정 방식을 보려는 것이지 내용을 옮기려는 게 아니다. 긴 글은 maxChars 까지만",
     risk: "read",
     inputSchema: {
       type: "object",
-      properties: { docId: { type: "string" }, maxChars: { type: "number", description: "기본 8000" } },
-      required: ["docId"],
+      properties: { refId: { type: "string" }, maxChars: { type: "number", description: "기본 8000" } },
+      required: ["refId"],
     },
-    describe: (args: { docId?: string }) => `참조 문서 ${args.docId} 읽기`,
-    run: (args: { docId: string; maxChars?: number }) => {
-      const d = useStudioDocumentStore.getState().docs.find((x) => x.docId === args.docId);
-      if (!d) throw new Error(`불러온 참조 문서가 아닙니다: ${args.docId}`);
-      const text = Object.values(d.slots)
-        .map((slot) => `[${slot.label}] ${htmlToPlain(slot.content)}`)
-        .filter((line) => line.length > 4)
+    describe: (args: { refId?: string }) => `레퍼런스 ${args.refId} 읽기`,
+    run: async (args: { refId: string; maxChars?: number }) => {
+      if (!boundReferences().some((r) => r.refId === args.refId)) throw new Error(`이 프로젝트에 연결된 레퍼런스가 아닙니다: ${args.refId}`);
+      const extraction = useReferenceStore.getState().extraction[args.refId] ?? (await referenceApi.extraction(args.refId));
+      const text = extraction.blocks
+        .map((b) => `[ref:${args.refId}#blk:${b.id} · ${b.kind} · p${b.page}] ${b.text}`)
         .join("\n");
       const limit = Math.max(500, Math.min(args.maxChars ?? 8000, 30000));
-      return { docId: d.docId, title: d.title, text: clipText(text, limit), truncated: text.length > limit };
+      return { refId: args.refId, text: clipText(text, limit), truncated: text.length > limit };
     },
   },
   {
     name: "references.open",
-    description: "참조 문서를 캔버스 옆 분할보기(Split View)로 연다 — 사용자에게 근거 문서를 나란히 보여줄 때",
+    description: "레퍼런스를 캔버스 옆 분할보기로 연다 — 사용자에게 레퍼런스의 해당 결정을 나란히 보여줄 때",
     risk: "ui",
-    inputSchema: { type: "object", properties: { docId: { type: "string" } }, required: ["docId"] },
-    describe: (args: { docId?: string }) => `참조 ${args.docId} 분할보기로 열기`,
-    run: (args: { docId: string }) => {
-      if (!referenceDocs().some((r) => r.docId === args.docId)) throw new Error(`참조 레이어에 없는 문서입니다: ${args.docId}`);
-      useWorkspaceSessionStore.getState().openReferenceDoc(args.docId);
-      return { opened: args.docId };
+    inputSchema: { type: "object", properties: { refId: { type: "string" } }, required: ["refId"] },
+    describe: (args: { refId?: string }) => `레퍼런스 ${args.refId} 분할보기로 열기`,
+    run: (args: { refId: string }) => {
+      if (!boundReferences().some((r) => r.refId === args.refId)) throw new Error(`이 프로젝트에 연결된 레퍼런스가 아닙니다: ${args.refId}`);
+      revealReferenceViewer(args.refId);
+      return { opened: args.refId };
     },
   },
   {
@@ -453,7 +455,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
   },
   {
     name: "evidence.forSlot",
-    description: "칸 하나의 근거 후보 (direct: 이미 연결 · inherited: 이웃 칸 근거 · RM 고정 자료 · 열린 참조 문서). 채우기 전에 무엇을 근거로 쓸지 확인한다",
+    description: "칸 하나의 근거 후보 (direct: 이미 연결 · inherited: 이웃 칸 근거 · RM 고정 자료). 레퍼런스는 근거가 아니다(패턴 출처). 채우기 전에 무엇을 근거로 쓸지 확인한다",
     risk: "read",
     inputSchema: { type: "object", properties: { slotId: { type: "string" } }, required: ["slotId"] },
     describe: (args: { slotId?: string }) => `칸 ${args.slotId} 근거 후보`,

@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, Database, FolderTree, GitPullRequestDraft, Layers } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronUp, Database, FolderTree, GitPullRequestDraft, Layers } from "lucide-react";
 
 import type { EntityInfo, EntityRegistry } from "@vibe/ai-kernel";
 
@@ -106,6 +106,8 @@ const GROUP_CONFIG: Record<
 const ORDERED_CATEGORIES: EntityCategory[] = ["resource", "reference", "outliner", "editor", "staged"];
 
 export const CitationGroupByFooter: React.FC<{ entities: EntityInfo[] }> = ({ entities }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+
   if (entities.length === 0) return null;
 
   const grouped: Record<EntityCategory, EntityInfo[]> = {
@@ -130,41 +132,53 @@ export const CitationGroupByFooter: React.FC<{ entities: EntityInfo[] }> = ({ en
   return (
     <div
       data-testid="citation-group-by-footer"
-      className="mt-3.5 pt-2.5 border-t border-slate-200 select-none text-[11px]"
+      className="mt-3.5 pt-2 border-t border-slate-200 select-none text-[11px]"
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5 font-bold text-slate-600">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="w-full flex items-center justify-between py-1 px-1 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 cursor-pointer transition text-left"
+        title={isOpen ? "인용 및 참조 목록 접기" : "인용 및 참조 목록 펼치기"}
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center gap-1.5 font-bold">
           <span>📌 인용 및 참조 목록 (Group by)</span>
           <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-500 font-mono">
             {seenIds.size}
           </span>
         </div>
-      </div>
+        <div className="flex items-center gap-1 text-[10.5px] text-slate-400 font-normal">
+          <span>{isOpen ? "접기" : "펼치기"}</span>
+          {isOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        </div>
+      </button>
 
-      <div className="space-y-1.5">
-        {activeCategories.map((cat) => {
-          const items = grouped[cat];
-          const cfg = GROUP_CONFIG[cat];
-          const Icon = cfg.icon;
-          return (
-            <div
-              key={cat}
-              className={`p-1.5 rounded-lg border ${cfg.border} ${cfg.bg} flex flex-col gap-1`}
-            >
-              <div className="flex items-center gap-1 font-bold text-[10.5px]">
-                <Icon className={`w-3 h-3 shrink-0 ${cfg.titleColor}`} />
-                <span className={cfg.titleColor}>{cfg.label}</span>
-                <span className="text-[9.5px] opacity-60 font-mono">({items.length})</span>
+      {isOpen && (
+        <div className="space-y-1.5 mt-2">
+          {activeCategories.map((cat) => {
+            const items = grouped[cat];
+            const cfg = GROUP_CONFIG[cat];
+            const Icon = cfg.icon;
+            return (
+              <div
+                key={cat}
+                className={`p-1.5 rounded-lg border ${cfg.border} ${cfg.bg} flex flex-col gap-1`}
+              >
+                <div className="flex items-center gap-1 font-bold text-[10.5px]">
+                  <Icon className={`w-3 h-3 shrink-0 ${cfg.titleColor}`} />
+                  <span className={cfg.titleColor}>{cfg.label}</span>
+                  <span className="text-[9.5px] opacity-60 font-mono">({items.length})</span>
+                </div>
+                <div className="flex flex-wrap gap-1 items-center pl-4">
+                  {items.map((item) => (
+                    <EntityChip key={item.id} id={item.id} kind={item.kind} label={item.label} />
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-1 items-center pl-4">
-                {items.map((item) => (
-                  <EntityChip key={item.id} id={item.id} kind={item.kind} label={item.label} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

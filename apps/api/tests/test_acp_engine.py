@@ -276,3 +276,4 @@ def test_acp_client_send_raw_with_surrogates():
     assert "Content-Length:" in decoded
     assert "\ufffd" in decoded
 
+

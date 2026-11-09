@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { useAiStagingStore } from "@/entities/ai-staging";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { isWorkbenchPhase, parseReferenceDocIds, useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { isWorkbenchPhase, parseReferenceIds, useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { writeStoredJson } from "@/shared/lib";
 
 const STORAGE_KEY = "vdoc-studio-session-v1";
@@ -15,7 +15,7 @@ const STORAGE_KEY = "vdoc-studio-session-v1";
 export function useWorkspaceUrlSync(): void {
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const zoomRootNodeId = useWorkspaceSessionStore((s) => s.zoomRootNodeId);
-  const openReferenceDocIds = useWorkspaceSessionStore((s) => s.openReferenceDocIds);
+  const openReferenceIds = useWorkspaceSessionStore((s) => s.openReferenceIds);
   const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
   const stagingCount = useAiStagingStore((s) => s.queue.length);
 
@@ -24,7 +24,7 @@ export function useWorkspaceUrlSync(): void {
     params.set("phase", currentPhase);
     params.set("zoom", zoomRootNodeId);
     if (activeDocId) params.set("doc", activeDocId);
-    if (openReferenceDocIds.length > 0) params.set("splitRef", openReferenceDocIds.join(","));
+    if (openReferenceIds.length > 0) params.set("splitRef", openReferenceIds.join(","));
     else params.delete("splitRef");
     window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
 
@@ -32,9 +32,9 @@ export function useWorkspaceUrlSync(): void {
       phase: currentPhase,
       zoom: zoomRootNodeId,
       doc: activeDocId,
-      splitRef: openReferenceDocIds,
+      splitRef: openReferenceIds,
     });
-  }, [currentPhase, zoomRootNodeId, activeDocId, openReferenceDocIds]);
+  }, [currentPhase, zoomRootNodeId, activeDocId, openReferenceIds]);
 
   useEffect(() => {
     const onPopState = () => {
@@ -46,7 +46,7 @@ export function useWorkspaceUrlSync(): void {
       if (zoom) session.zoomIntoNode(zoom);
       const doc = params.get("doc");
       if (doc) useStudioDocumentStore.getState().setActiveDocId(doc);
-      session.setOpenReferenceDocIds(parseReferenceDocIds(params.get("splitRef")));
+      session.setOpenReferenceIds(parseReferenceIds(params.get("splitRef")));
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);

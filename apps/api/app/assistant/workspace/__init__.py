@@ -7,6 +7,7 @@ from .citations import Citation, extract_citations, verify_citations
 from .mapper import build_map, collect, match_cluster_query
 from .service import (
     MOUNT_KIND,
+    WORKBENCH_KIND,
     MountState,
     ResourceWorkspace,
     detect_full_read_intent,
@@ -18,6 +19,7 @@ from .service import (
 __all__ = [
     "Citation",
     "MOUNT_KIND",
+    "WORKBENCH_KIND",
     "MountState",
     "ResourceWorkspace",
     "build_map",

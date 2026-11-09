@@ -14,8 +14,7 @@ import { projectApi } from "../api/projectApi";
 /**
  * 프로젝트 매니페스트의 클라이언트 캐시.
  *
- * 원장은 서버(`/api/projects`)다. 트리를 바꾸는 규칙(깊이 · 형제 이동 · 연쇄 삭제 · 읽기 전용 보호 ·
- * 참조 복제 출처 기록)은 서버 애그리거트가 지키고, 이 저장소는 명령을 보낸 뒤 돌아온 매니페스트로
+ * 원장은 서버(`/api/projects`)다. 트리를 바꾸는 규칙(깊이 · 형제 이동 · 연쇄 삭제 · 출처 기록)은 서버 애그리거트가 지키고, 이 저장소는 명령을 보낸 뒤 돌아온 매니페스트로
  * 상태를 교체한다. 되돌리기는 변경 전 매니페스트를 서버에 다시 써서(`replace`) 구현한다.
  *
  * 예외: 제목처럼 타이핑마다 바뀌는 필드는 화면에 먼저 반영하고(낙관적 갱신) 잠시 뒤 한 번만 보낸다.
@@ -25,14 +24,12 @@ export type ProjectLoadStatus = "idle" | "loading" | "ready" | "error";
 export interface ProjectStoreState {
   projects: VProjectManifest[];
   activeProjectId: string;
-  selectedReferenceProjectId: string;
   status: ProjectLoadStatus;
   /** 마지막 서버 오류 (사용자에게 보여줄 문장). */
   lastError: string | null;
 
   hydrate: () => Promise<void>;
   setActiveProjectId: (projectId: string) => void;
-  setSelectedReferenceProjectId: (refProjectId: string) => void;
   dismissError: () => void;
 
   /** 프로젝트에 마지막 작업 단계를 기록한다 (화면 이동이라 되돌리기 이력에는 남기지 않는다). */
@@ -48,12 +45,6 @@ export interface ProjectStoreState {
   moveStorylineNode: (nodeId: string, direction: -1 | 1) => Promise<void>;
   indentOutlinerNode: (nodeId: string, delta: -1 | 1) => Promise<void>;
   assignTemplateToNode: (nodeId: string, templateId: string) => Promise<void>;
-  cloneNodeFromReference: (
-    sourceProjectId: string,
-    sourceNodeId: string,
-    targetParentId?: string | null
-  ) => Promise<void>;
-  bindReferenceProjects: (referenceIds: string[]) => Promise<void>;
 }
 
 const NODE_PATCH_DEBOUNCE_MS = 600;
@@ -90,7 +81,7 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
     run: (project: VProjectManifest) => Promise<VProjectManifest>
   ) => {
     const before = activeProject();
-    if (!before || before.isReferenceOnly) return;
+    if (!before) return;
     await flushNodePatches();
     try {
       const after = await run(before);
@@ -124,7 +115,6 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
   return {
     projects: [],
     activeProjectId: "",
-    selectedReferenceProjectId: "",
     status: "idle",
     lastError: null,
 
@@ -133,18 +123,10 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
       try {
         const projects = await projectApi.list();
         const current = get();
-        const active =
-          projects.find((p) => p.projectId === current.activeProjectId) ??
-          projects.find((p) => !p.isReferenceOnly) ??
-          projects[0];
-        const reference =
-          projects.find((p) => p.projectId === current.selectedReferenceProjectId) ??
-          projects.find((p) => p.isReferenceOnly && active?.referenceProjectIds.includes(p.projectId)) ??
-          projects.find((p) => p.isReferenceOnly);
+        const active = projects.find((p) => p.projectId === current.activeProjectId) ?? projects[0];
         set({
           projects,
           activeProjectId: active?.projectId ?? "",
-          selectedReferenceProjectId: reference?.projectId ?? "",
           status: "ready",
         });
       } catch (err) {
@@ -157,13 +139,11 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
       set({ activeProjectId: projectId });
     },
 
-    setSelectedReferenceProjectId: (refProjectId) => set({ selectedReferenceProjectId: refProjectId }),
-
     dismissError: () => set({ lastError: null }),
 
     setActiveProjectPhase: async (phase) => {
       const project = activeProject();
-      if (!project || project.isReferenceOnly || project.activePhase === phase) return;
+      if (!project || project.activePhase === phase) return;
       try {
         replaceProject((await projectApi.command(project.projectId, { kind: "set_phase", phase })).project);
       } catch (err) {
@@ -185,7 +165,7 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
 
     updateStorylineNode: (nodeId, patch) => {
       const project = activeProject();
-      if (!project || project.isReferenceOnly) return;
+      if (!project) return;
       // 낙관적 갱신: 화면은 바로 바꾸고 서버에는 잠시 뒤 합쳐서 보낸다.
       replaceProject({
         ...project,
@@ -210,72 +190,9 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
     assignTemplateToNode: (nodeId, templateId) =>
       command(`서식 템플릿(${templateId}) 매핑 완료`, { kind: "assign_template", nodeId, templateId }),
 
-    cloneNodeFromReference: (sourceProjectId, sourceNodeId, targetParentId) =>
-      mutate("참조 복제 완료 (Provenance 기록됨)", async (project) => {
-        const res = await projectApi.cloneNode(project.projectId, {
-          sourceProjectId,
-          sourceNodeId,
-          targetParentId: targetParentId ?? null,
-        });
-        return res.project;
-      }),
-
-    bindReferenceProjects: (referenceIds) =>
-      mutate(`참조 프로젝트 덱 구성 변경 (${referenceIds.length}개 연결)`, (project) =>
-        projectApi.bindReferences(project.projectId, referenceIds)
-      ),
   };
 });
 
 /** 활성 프로젝트 (없으면 `undefined`). 셀렉터로 쓰면 다른 프로젝트 변경에는 다시 그리지 않는다. */
 export const selectActiveProject = (s: ProjectStoreState): VProjectManifest | undefined =>
   s.projects.find((p) => p.projectId === s.activeProjectId);
-
-/** 활성 프로젝트에 연결된 참조 프로젝트들. */
-export const selectBoundReferenceProjects = (s: ProjectStoreState): VProjectManifest[] => {
-  const active = selectActiveProject(s);
-  return active ? s.projects.filter((p) => p.isReferenceOnly && active.referenceProjectIds.includes(p.projectId)) : [];
-};
-
-/** 특정 docId 가 참조 레이어 덱에서 몇 번째인지 (0-based 인덱스, 없으면 -1). 원시 숫자(number)를 반환하여 getSnapshot 무한 루프를 방지합니다. */
-export const selectReferenceProjectIndex =
-  (docId: string | null | undefined) =>
-  (s: ProjectStoreState): number => {
-    if (!docId) return -1;
-    const active = selectActiveProject(s);
-    if (!active) return -1;
-    let idx = 0;
-    for (const p of s.projects) {
-      if (p.isReferenceOnly && active.referenceProjectIds.includes(p.projectId)) {
-        if (p.docIds.includes(docId)) return idx;
-        idx++;
-      }
-    }
-    return -1;
-  };
-
-/** 지금 고른 참조 프로젝트 (연결된 것 중에서, 없으면 첫 번째). */
-export const selectCurrentReferenceProject = (s: ProjectStoreState): VProjectManifest | undefined => {
-  const bound = selectBoundReferenceProjects(s);
-  return bound.find((p) => p.projectId === s.selectedReferenceProjectId) ?? bound[0];
-};
-
-/** 참조 스플릿 뷰에 띄울 문서 = 지금 고른 참조 프로젝트의 첫 문서. */
-export const selectReferenceDocId = (s: ProjectStoreState): string | null =>
-  selectCurrentReferenceProject(s)?.docIds[0] ?? null;
-
-/** 이 문서가 읽기 전용 참조 프로젝트의 문서인지. */
-export const selectIsReferenceDocument =
-  (docId: string | null | undefined) =>
-  (s: ProjectStoreState): boolean =>
-    Boolean(docId) && s.projects.some((p) => p.isReferenceOnly && p.docIds.includes(docId!));
-
-/** 문서가 속한 프로젝트 (참조 카드 제목 등). */
-export const selectProjectOfDocument =
-  (docId: string | null | undefined) =>
-  (s: ProjectStoreState): VProjectManifest | undefined =>
-    docId ? s.projects.find((p) => p.docIds.includes(docId)) : undefined;
-
-/** 연결 가능한 모든 참조 프로젝트 ID (참조 덱 기본 구성). */
-export const selectAllReferenceProjectIds = (s: ProjectStoreState): string[] =>
-  s.projects.filter((p) => p.isReferenceOnly).map((p) => p.projectId);

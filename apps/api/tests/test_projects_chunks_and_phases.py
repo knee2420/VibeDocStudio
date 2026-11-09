@@ -1,4 +1,4 @@
-"""projects 도메인, 4단계 Zoom 아웃라인, 참조 복제 Provenance, 10~20p 슬라이딩 윈도우 청크, 3-Phase AI Staging & 취소 통합 테스트."""
+"""projects 도메인, 4단계 Zoom 아웃라인, 레퍼런스 출처 기록, 10~20p 슬라이딩 윈도우 청크, 3-Phase AI Staging & 취소 통합 테스트."""
 from __future__ import annotations
 
 from fastapi.testclient import TestClient
@@ -8,33 +8,15 @@ from main import app
 client = TestClient(app)
 
 
-def test_projects_list_and_readonly_reference_enforcement() -> None:
+def test_projects_are_plain_work_projects_without_reference_fields() -> None:
+    """레퍼런스는 프로젝트가 아니다 — 매니페스트에 참조 전용 · 참조 바인딩 필드가 없다."""
     res = client.get("/api/projects")
     assert res.status_code == 200
     projects = res.json()
-    assert len(projects) >= 4
-
-    active_proj = next(p for p in projects if not p["isReferenceOnly"])
-    ref_proj = next(p for p in projects if p["isReferenceOnly"])
-
-    assert active_proj["projectId"] == "vproj-enterprise-architecture-suite"
-    assert len(active_proj["referenceProjectIds"]) == 3
-
-    # Attempting to mutate a read-only reference project directly must be rejected with 403
-    forbidden_res = client.put(
-        f"/api/projects/{ref_proj['projectId']}",
-        json={
-            "title": "불법 수정 시도",
-            "description": "읽기 전용 위반",
-            "isReferenceOnly": True,
-            "activePhase": "storylining",
-            "docIds": ref_proj["docIds"],
-            "referenceProjectIds": [],
-            "storylineNodes": ref_proj["storylineNodes"],
-            "provenanceLineage": [],
-        },
-    )
-    assert forbidden_res.status_code == 403
+    active_proj = next(p for p in projects if p["projectId"] == "vproj-enterprise-architecture-suite")
+    assert "isReferenceOnly" not in active_proj
+    assert "referenceProjectIds" not in active_proj
+    assert client.put("/api/projects/vproj-enterprise-architecture-suite/references", json={}).status_code in (404, 405)
 
 
 def test_project_outline_four_level_zoom_and_breadcrumbs() -> None:
@@ -64,24 +46,22 @@ def test_project_outline_four_level_zoom_and_breadcrumbs() -> None:
     assert "node-doc-proposal" not in node_ids
 
 
-def test_clone_reference_node_records_provenance_lineage() -> None:
-    clone_res = client.post(
-        "/api/projects/vproj-enterprise-architecture-suite/clone-node",
+def test_insert_node_from_reference_anchor_keeps_provenance() -> None:
+    """Phase 1 에서 레퍼런스 목차를 가져오면 출처가 레퍼런스 앵커로 남는다."""
+    res = client.post(
+        "/api/projects/vproj-enterprise-architecture-suite/commands",
         json={
-            "sourceProjectId": "vproj-ref-cloud-migration-rfp",
-            "sourceNodeId": "ref1-sec-sla",
-            "targetParentId": "node-doc-proposal",
+            "kind": "insert_node",
+            "title": "가용성 SLA 명세",
+            "parentId": "node-doc-proposal",
+            "provenanceSourceProjectId": "ref:ref-test",
+            "provenanceSourceNodeId": "b3",
         },
     )
-    assert clone_res.status_code == 200
-    data = clone_res.json()
-    cloned = data["clonedNode"]
-    prov = data["provenance"]
-
-    assert cloned["provenanceSourceProjectId"] == "vproj-ref-cloud-migration-rfp"
-    assert cloned["provenanceSourceNodeId"] == "ref1-sec-sla"
-    assert prov["sourceProjectId"] == "vproj-ref-cloud-migration-rfp"
-    assert prov["targetNodeId"] == cloned["nodeId"]
+    assert res.status_code == 200
+    node = next(n for n in res.json()["project"]["storylineNodes"] if n["title"] == "가용성 SLA 명세")
+    assert node["provenanceSourceProjectId"] == "ref:ref-test"
+    assert node["provenanceSourceNodeId"] == "b3"
 
 
 def test_document_windowed_chunking_and_structural_patch() -> None:
@@ -156,7 +136,7 @@ def test_three_phase_ai_staging_and_run_cancellation() -> None:
                     "nodeId": "ref1-sec-sla",
                     "title": "가용성 99.99% SLA 보장 명세",
                     "summary": "15분 이내 자동 페일오버",
-                    "sourceProjectId": "vproj-ref-cloud-migration-rfp",
+                    "sourceProjectId": "ref:ref-test",
                     "recommendedTemplateId": "structured-table",
                 }
             ],

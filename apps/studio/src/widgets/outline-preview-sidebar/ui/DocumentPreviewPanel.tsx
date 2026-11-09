@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   ArrowLeft,
-  CopyPlus,
   ExternalLink,
   FileText,
   Globe,
@@ -18,7 +17,6 @@ import {
   useStudioDocumentStore,
   type DocumentSourceView,
 } from "@/entities/vdoc-document";
-import { selectCurrentReferenceProject, selectIsReferenceDocument, useProjectStore } from "@/entities/vdoc-project";
 import { attachable, pageRef } from "@/features/ai-workspace";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
@@ -56,9 +54,6 @@ export const DocumentPreviewPanel: React.FC = () => {
 
   const targetDocId = previewDocId || activeDocId;
   const targetDoc = useStudioDocumentStore(selectDocument(targetDocId));
-  const isReferenceDoc = useProjectStore(selectIsReferenceDocument(targetDocId));
-  const refProject = useProjectStore(selectCurrentReferenceProject);
-  const cloneNodeFromReference = useProjectStore((s) => s.cloneNodeFromReference);
   const peekTrigger = usePeekTrigger();
 
   const [viewerPageNumber, setViewerPageNumber] = useState(1);
@@ -86,11 +81,6 @@ export const DocumentPreviewPanel: React.FC = () => {
     if (isViewingOtherDoc) return;
     setActivePageId(pageId);
     scrollToCanvasPage(pageId);
-  };
-
-  const cloneFirstReferenceSection = () => {
-    const firstNode = refProject?.storylineNodes.find((n) => n.parentId !== null);
-    if (refProject && firstNode) void cloneNodeFromReference(refProject.projectId, firstNode.nodeId);
   };
 
   return (
@@ -168,24 +158,12 @@ export const DocumentPreviewPanel: React.FC = () => {
             {targetDoc.title}
           </p>
           <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
-            <span>{isReferenceDoc ? "Reference" : "Document"}</span>
+            <span>Document</span>
             <span className="w-0.5 h-0.5 rounded-full bg-slate-400" />
             <span className="font-mono tabular-nums">{targetDoc.pages.length} pages</span>
           </p>
         </div>
 
-        {isReferenceDoc && (
-          <div className="mt-1.5 pt-1.5 border-t border-slate-200/60 flex items-center justify-end">
-            <button
-              type="button"
-              onClick={cloneFirstReferenceSection}
-              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold cursor-pointer hover:bg-emerald-500 shadow-2xs"
-            >
-              <CopyPlus className="w-2.5 h-2.5" />
-              내 작업본으로 복제
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="flex-1 overflow-y-auto divide-y divide-slate-100 min-h-0 select-none">

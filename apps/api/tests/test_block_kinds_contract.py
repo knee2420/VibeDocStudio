@@ -50,6 +50,8 @@ def test_server_code_only_emits_registered_block_kinds() -> None:
     unknown = set()
     for base in PY_SOURCES:
         for path in base.rglob("*.py"):
+            if "reference" in path.relative_to(base).parts[:1]:
+                continue  # 레퍼런스의 kind(pdf · web · heading …)는 vdoc 블록이 아니다
             for kind in pattern.findall(path.read_text(encoding="utf-8")):
                 if kind not in kinds:
                     unknown.add((path.relative_to(ROOT).as_posix(), kind))

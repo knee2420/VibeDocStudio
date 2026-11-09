@@ -11,11 +11,12 @@ import {
   type VDocPage,
 } from "@vibe/vdoc-schema";
 
-import { useReferencePinStore } from "@/entities/reference-manager";
+import { findReferenceItem, findReferencePin, referenceNumber, useReferenceStore } from "@/entities/reference-manager";
 import { flattenResourceItems, type ResourceItem, type ResourceSector, useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { selectActiveProject, selectBoundReferenceProjects, useProjectStore } from "@/entities/vdoc-project";
+import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { revealCanvasElement, scrollToCanvasPage } from "@/shared/lib";
 
@@ -49,6 +50,19 @@ function highlight(id: string, on: boolean): void {
     }, 60);
 }
 
+/** 레퍼런스 · 핀 · 영역 클릭 시 레퍼런스 뷰어를 활성화하고 화면에 띄운다 (에디터 문서는 바꾸지 않는다). */
+export function revealReferenceViewer(refId: string): void {
+  useReferenceStore.getState().setActiveRefId(refId);
+  useWorkspaceSessionStore.getState().openReference(refId);
+  const layout = useWorkspaceLayoutStore.getState();
+  layout.setRefViewerOpen(true);
+  layout.setLeftSidebarOpen(true);
+  layout.setLeftPanelTab("reference-manager");
+  if (layout.refPlacement === "split" && layout.refSplitCollapsed) {
+    layout.setRefSplitCollapsed(false);
+  }
+}
+
 function ensureDrafting(): void {
   const session = useWorkspaceSessionStore.getState();
   if (session.currentPhase !== "drafting") session.setPhase("drafting");
@@ -56,11 +70,6 @@ function ensureDrafting(): void {
 
 function openDoc(doc: VDocDocument): boolean {
   const docs = useStudioDocumentStore.getState();
-  if (isReferenceDoc(doc.docId)) {
-    // 참조 문서는 열린 문서를 바꾸지 않고 분할보기로 보여준다.
-    useWorkspaceSessionStore.getState().openReferenceDoc(doc.docId);
-    return false;
-  }
   if (docs.activeDocId !== doc.docId) docs.setActiveDocId(doc.docId);
   return true;
 }
@@ -104,16 +113,6 @@ function revealSlot(doc: VDocDocument, slotId: string): void {
 }
 
 // --- 참조 문서 · 아웃라인 ------------------------------------------------------------------
-
-function referenceDeck(): { docId: string; projectId: string; number: number; title: string }[] {
-  return selectBoundReferenceProjects(useProjectStore.getState()).flatMap((project, idx) =>
-    project.docIds.map((docId) => ({ docId, projectId: project.projectId, number: idx + 1, title: project.title }))
-  );
-}
-
-function isReferenceDoc(docId: string): boolean {
-  return referenceDeck().some((r) => r.docId === docId);
-}
 
 let outlineCache: { key: unknown[]; nodes: OutlinerNode[] } | null = null;
 
@@ -192,25 +191,38 @@ const slotResolver: EntityResolver = {
 const docResolver: EntityResolver = {
   id: "doc",
   resolve(id, kind) {
-    if (kind && kind !== "doc" && kind !== "reference" && kind !== "document") return null;
+    if (kind && kind !== "doc" && kind !== "document") return null;
     const doc = findDoc(id);
-    const deck = referenceDeck().find((r) => r.docId === id);
-    if (!doc && !deck) return null;
+    if (!doc) return null;
     return {
-      kind: deck ? "reference" : "document",
+      kind: "document",
       id,
-      label: deck ? `참조${deck.number}: ${(doc?.title ?? deck.title).replace(/^(\[참조\s*\d+\]|참조\s*\d+:?)\s*/, "")}` : doc!.title,
-      detail: deck ? "참조 문서" : `${doc!.pages.length}p`,
-      reveal: () => {
-        if (deck) {
-          useProjectStore.getState().setSelectedReferenceProjectId(deck.projectId);
-          useWorkspaceSessionStore.getState().openReferenceDoc(id);
-        } else if (doc) {
-          useStudioDocumentStore.getState().setActiveDocId(id);
-        }
-      },
+      label: doc.title,
+      detail: `${doc.pages.length}p`,
+      reveal: () => useStudioDocumentStore.getState().setActiveDocId(id),
       highlight: (on) => highlight(id, on),
-      toContext: () => (deck ? referenceRef(id) : { kind: "document", id, label: doc!.title, access: "read" }),
+      toContext: () => ({ kind: "document", id, label: doc.title, access: "read" }),
+    };
+  },
+};
+
+/** 레퍼런스 (라이브러리 refId 또는 `ref:<refId>`) — 작업 문서가 아니므로 뷰어로만 연다. */
+const referenceResolver: EntityResolver = {
+  id: "reference",
+  resolve(id, kind) {
+    if (kind && kind !== "reference" && kind !== "ref") return null;
+    const refId = id.startsWith("ref:") ? id.slice(4).split("#")[0] : id;
+    const item = findReferenceItem(refId);
+    if (!item) return null;
+    const number = referenceNumber(refId);
+    return {
+      kind: "reference",
+      id: refId,
+      label: `${number ? `참조${number}: ` : ""}${item.title}`,
+      detail: "레퍼런스",
+      reveal: () => revealReferenceViewer(refId),
+      highlight: (on) => highlight(refId, on),
+      toContext: () => referenceRef(refId),
     };
   },
 };
@@ -260,7 +272,7 @@ const nodeResolver: EntityResolver = {
   },
 };
 
-/** 참조 PDF 영역 `docId:p{page}:{ymin,xmin,ymax,xmax}` — 클릭하면 참조 작업창을 열고 그 자리에 상자를 그린다. */
+/** 레퍼런스 PDF 영역 `refId:p{page}:{ymin,xmin,ymax,xmax}` — 클릭하면 레퍼런스 작업창을 열고 그 자리에 상자를 그린다. */
 const REGION_ID = /^(.+):p(\d+):(\d+),(\d+),(\d+),(\d+)$/;
 
 const regionResolver: EntityResolver = {
@@ -269,23 +281,22 @@ const regionResolver: EntityResolver = {
     if (kind && kind !== "ref-region") return null;
     const m = REGION_ID.exec(id);
     if (!m) return null;
-    const docId = m[1];
-    const deck = referenceDeck().find((r) => r.docId === docId);
-    if (!deck && !findDoc(docId)) return null;
+    const refId = m[1];
+    if (!findReferenceItem(refId)) return null;
+    const number = referenceNumber(refId);
     const page = Number(m[2]);
     const box = [m[3], m[4], m[5], m[6]].map(Number) as [number, number, number, number];
     return {
       kind: "ref-region",
       id,
-      label: `${deck ? `참조${deck.number}` : "참조"} p${page} 영역`,
+      label: `${number ? `참조${number}` : "레퍼런스"} p${page} 영역`,
       detail: "PDF 영역",
       reveal: () => {
-        if (deck) useProjectStore.getState().setSelectedReferenceProjectId(deck.projectId);
-        useWorkspaceSessionStore.getState().openReferenceDoc(docId);
-        useReferenceRegionStore.getState().setFocus({ docId, page, box });
+        revealReferenceViewer(refId);
+        useReferenceRegionStore.getState().setFocus({ refId, page, box });
       },
-      highlight: (on) => highlight(docId, on),
-      toContext: () => referenceRegionRef(docId, { page, box, text: "", deckNumber: deck?.number }),
+      highlight: (on) => highlight(refId, on),
+      toContext: () => referenceRegionRef(refId, { page, box, text: "" }),
     };
   },
 };
@@ -358,34 +369,28 @@ const refPinResolver: EntityResolver = {
   id: "ref-pin",
   resolve(id, kind) {
     if (kind && kind !== "ref-pin" && kind !== "pin") return null;
-    const snippetsByDoc = useReferencePinStore.getState().snippetsByDoc;
-    let foundSnippet: import("@/entities/reference-manager").ReferenceSnippet | null = null;
-    for (const docId of Object.keys(snippetsByDoc)) {
-      const match = snippetsByDoc[docId]?.find((s) => s.id === id);
-      if (match) {
-        foundSnippet = match;
-        break;
-      }
-    }
-    if (!foundSnippet) return null;
-    const snippet = foundSnippet;
-    const deck = referenceDeck().find((r) => r.docId === snippet.docId);
+    const pinId = id.includes("#pin:") ? id.split("#pin:")[1] : id;
+    const pin = findReferencePin(pinId);
+    if (!pin) return null;
+    const number = referenceNumber(pin.refId);
     return {
       kind: "ref-pin",
-      id,
-      label: snippet.label || `참조 핀 (${snippet.id})`,
-      detail: `${deck ? `참조${deck.number}` : "참조"} 핀`,
+      id: pin.pinId,
+      label: pin.label || `핀 (${pin.pinId})`,
+      detail: `${number ? `참조${number}` : "레퍼런스"} 핀${pin.layer ? ` · ${pin.layer}` : ""}`,
       reveal: () => {
-        if (deck) useProjectStore.getState().setSelectedReferenceProjectId(deck.projectId);
-        useWorkspaceSessionStore.getState().openReferenceDoc(snippet.docId);
-        useReferencePinStore.getState().setFocusedSnippet(snippet);
+        revealReferenceViewer(pin.refId);
+        useReferenceStore.getState().setFocusedPin(pin);
+        if (pin.kind === "region" && pin.bbox && pin.page) {
+          useReferenceRegionStore.getState().setFocus({ refId: pin.refId, page: pin.page, box: pin.bbox });
+        }
       },
-      highlight: (on) => highlight(snippet.docId, on),
+      highlight: (on) => highlight(pin.refId, on),
       toContext: () => ({
         kind: "ref-pin",
-        id: snippet.id,
-        label: snippet.label,
-        content: snippet.kind === "text" ? snippet.text : snippet.kind === "region" ? snippet.excerpt || "" : "",
+        id: pin.pinId,
+        label: pin.label,
+        content: `${pin.anchor}${pin.layer ? ` [${pin.layer}]` : ""} — ${pin.text || pin.note || pin.label}`,
         access: "read",
       }),
     };
@@ -398,6 +403,7 @@ export const WORKSPACE_ENTITY_RESOLVERS: EntityResolver[] = [
   slotResolver,
   pageResolver,
   docResolver,
+  referenceResolver,
   backdataResolver,
   nodeResolver,
   regionResolver,

@@ -58,6 +58,7 @@ interface ResourceState {
   decoupleItem: (projectId: string, itemId: string) => Promise<void>;
   batchDecouple: (projectId: string, itemIds: string[]) => Promise<void>;
   ingestDirectory: (projectId: string, directoryPath: string) => Promise<void>;
+  uploadFile: (projectId: string, file: File) => Promise<void>;
   ingestWebUrl: (projectId: string, url: string, title?: string) => Promise<void>;
   toggleItemChoice: (projectId: string, itemId: string, isChecked: boolean) => Promise<void>;
   toggleAllChoice: (projectId: string, isChecked: boolean) => Promise<void>;
@@ -173,6 +174,22 @@ export const useResourceStore = create<ResourceState>((set, get) => ({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "디렉토리 덤핑에 실패했습니다.";
       set({ error: msg, isLoading: false });
+    }
+  },
+
+  uploadFile: async (projectId: string, file: File) => {
+    set({ isLoading: true, error: null });
+    try {
+      const session = await resourceApi.uploadFile(projectId, file);
+      set({
+        items: session.items,
+        activeResourceId: session.items[0]?.id || null,
+        isLoading: false,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "파일 업로드에 실패했습니다.";
+      set({ error: msg, isLoading: false });
+      throw err;
     }
   },
 

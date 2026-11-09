@@ -43,7 +43,7 @@ export function pinnedEvidence(limit = 6): EvidenceLocator[] {
 
 /** 열어 둔 참조 문서(분할보기)의 본문 — inherited 근거. */
 function openReferences(): { docId: string; label: string; text: string }[] {
-  const ids = useWorkspaceSessionStore.getState().openReferenceDocIds;
+  const ids = useWorkspaceSessionStore.getState().openReferenceIds;
   const docs = useStudioDocumentStore.getState().docs;
   return ids.flatMap((id) => {
     const d = docs.find((x) => x.docId === id);

@@ -103,10 +103,8 @@ def manifest_to_dict(record: VProjectManifestRecord) -> dict[str, Any]:
         "projectId": record.project_id,
         "title": record.title,
         "description": record.description,
-        "isReferenceOnly": record.is_reference_only,
         "activePhase": str(record.active_phase),
         "docIds": list(record.doc_ids),
-        "referenceProjectIds": list(record.reference_project_ids),
         "storylineNodes": [node_to_dict(n) for n in record.storyline_nodes],
         "provenanceLineage": [provenance_to_dict(p) for p in record.provenance_lineage],
         "updatedAt": record.updated_at,
@@ -118,10 +116,8 @@ def manifest_from_dict(raw: dict[str, Any]) -> VProjectManifestRecord:
         project_id=str(raw.get("projectId", "")),
         title=str(raw.get("title", "")),
         description=str(raw.get("description", "")),
-        is_reference_only=bool(raw.get("isReferenceOnly", False)),
         active_phase=WorkbenchPhase.parse(raw.get("activePhase"), WorkbenchPhase.STORYLINING),
         doc_ids=tuple(str(x) for x in raw.get("docIds", [])),
-        reference_project_ids=tuple(str(x) for x in raw.get("referenceProjectIds", [])),
         storyline_nodes=tuple(
             node_from_dict(n) for n in raw.get("storylineNodes", []) if isinstance(n, dict)
         ),

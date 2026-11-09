@@ -9,11 +9,8 @@ import {
 import { buildSlotHtmlChange, isStagedChangeStale, useAiStagingStore } from "@/entities/ai-staging";
 import { slotComposerApi } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import {
-  selectActiveProject,
-  selectCurrentReferenceProject,
-  useProjectStore,
-} from "@/entities/vdoc-project";
+import { currentReferenceId, referenceOutlineNodes, useReferenceStore } from "@/entities/reference-manager";
+import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { isAbortError } from "@/shared/api";
 import { errorMessage, historyTransaction, newId } from "@/shared/lib";
 
@@ -68,21 +65,21 @@ export function useStageAiChanges() {
   const remove = useAiStagingStore((s) => s.remove);
   const clear = useAiStagingStore((s) => s.clear);
 
-  const runPhase1StorylineAi = (prompt: string) => {
+  const runPhase1StorylineAi = async (prompt: string) => {
     const { getState } = useProjectStore;
     const project = selectActiveProject(getState());
-    if (!project) return Promise.resolve();
-    const reference = selectCurrentReferenceProject(getState());
-    const referenceNodes = reference
-      ? reference.storylineNodes
-          .filter((n) => n.parentId !== null)
-          .map((n) => ({
-            nodeId: n.nodeId,
-            title: n.title,
-            summary: n.summary,
-            recommendedTemplateId: n.recommendedTemplateId,
-            sourceProjectId: reference.projectId,
-          }))
+    if (!project) return;
+    // 지금 보고 있는 레퍼런스의 목차(구조 추출)를 근거로 쓴다 — 출처는 레퍼런스 앵커로 남는다
+    const refId = currentReferenceId();
+    if (refId) await useReferenceStore.getState().ensureDetail(refId);
+    const referenceNodes = refId
+      ? referenceOutlineNodes(refId).map((o) => ({
+          nodeId: o.blockId,
+          title: o.title,
+          summary: "",
+          recommendedTemplateId: null,
+          sourceProjectId: `ref:${refId}`,
+        }))
       : [];
     return runCancellable(
       async (runId, signal) =>

@@ -46,7 +46,6 @@ class SaveProjectUseCase:
         )
 
         def _replace(existing: VProjectManifestRecord) -> VProjectManifestRecord:
-            existing.ensure_writable()
             return candidate
 
         try:

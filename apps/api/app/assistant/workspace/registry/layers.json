@@ -1,0 +1,29 @@
+{
+  "_doc": "레퍼런스 층위 레지스트리 — 코드가 아니라 데이터. 세트를 더하거나 층위를 고치면 wb_patterns · wb_compare · 검증이 그대로 따라온다. metrics 는 patterns.py 가 재는 값의 이름이고, 비어 있으면 정성 판단 층위다.",
+  "default": "document",
+  "sets": {
+    "document": [
+      {"id": "D1", "name": "스캐너빌리티·정보 밀도", "question": "정독하지 않고 훑는 사람에게 핵심을 어떻게 꽂는가?",
+       "metrics": ["paragraphs", "avg_para_chars", "max_para_chars", "long_para_ratio", "bold_per_para", "bullet_ratio", "callouts", "avg_sentence_chars"]},
+      {"id": "D2", "name": "근거·데이터 증명 방식", "question": "주장을 어떤 형태의 데이터로 입증하는가?",
+       "metrics": ["numbers_per_100", "tables", "source_marks", "quote_marks"]},
+      {"id": "D3", "name": "격식·메타 규격", "question": "형식 자체에서 전문성과 공신력을 어떻게 풍기는가?",
+       "metrics": ["meta_doc_no", "meta_approval", "meta_summary", "meta_footnote", "meta_version"]},
+      {"id": "D4", "name": "서술 프레임워크", "question": "독자의 반론을 잠재우는 논증의 틀은? (SCQA · 피라미드 · PREP · 결론-근거-실행)",
+       "metrics": ["heading_sequence", "conclusion_first"]},
+      {"id": "D5", "name": "타이포그래피·조판", "question": "제목 계층 · 여백 · 다단 · 그리드 · 표 스타일의 규칙은?",
+       "metrics": ["headings", "heading_levels", "tables", "block_kinds"]},
+      {"id": "D6", "name": "장르 규약", "question": "이 장르 독자가 결함으로 느끼지 않을 암묵적 기준은? (어조 · 종결어미 · 필수 구성)",
+       "metrics": ["ending_style", "emoji", "questions", "exclamations"]}
+    ],
+    "uiux": [
+      {"id": "U1", "name": "설득의 논리와 정보의 위계", "question": "어떤 순서로 말을 꺼내고 무엇을 강조했는가?", "metrics": ["heading_sequence", "conclusion_first", "bold_per_para"]},
+      {"id": "U2", "name": "문제 해결 패턴", "question": "복잡한 상황을 어떻게 우회하거나 단순화했는가?", "metrics": []},
+      {"id": "U3", "name": "인터랙션과 반응의 문법", "question": "사용자의 입력에 시스템이 어떻게 호흡하는가?", "metrics": []},
+      {"id": "U4", "name": "톤앤매너와 정서적 질감", "question": "어떤 사람(브랜드)처럼 말하고 느껴지는가?", "metrics": ["ending_style", "emoji", "exclamations"]},
+      {"id": "U5", "name": "조형적 토큰과 비례 감각", "question": "요소들이 어떤 규칙과 비례로 배치되는가?", "metrics": ["block_kinds", "heading_levels"]},
+      {"id": "U6", "name": "시장의 기대치와 기준선", "question": "결함으로 느끼지 않을 최소한의 상식선은?", "metrics": []},
+      {"id": "U7", "name": "협업의 언어를 일치시키는 닻", "question": "애매한 기준을 어떤 시각적 증거로 고정하는가?", "metrics": []}
+    ]
+  }
+}

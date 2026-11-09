@@ -1,6 +1,13 @@
+/**
+ * Reference Manager — 레퍼런스(남이 만든 완성물) 라이브러리를 프로젝트에 연결하고, 원본을 보며 핀을 꽂고,
+ * 층위별로 무엇을 따를지 켜고 끈다.
+ *
+ * 레퍼런스는 작업 문서가 아니다. 에디터 문서 스토어 · 템플릿 허브 · 활성 문서에 절대 손대지 않고,
+ * `@/entities/reference-manager` (서버 `/api/reference`)만 쓴다. 폴더 · 대량 자료 인입은 Resource Manager 의 일이다.
+ */
 import React, { useEffect, useMemo, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 import {
+  AlertTriangle,
   BookOpen,
   Check,
   ChevronDown,
@@ -8,14 +15,19 @@ import {
   ChevronRight,
   ChevronUp,
   Copy,
-  Layers,
+  FileUp,
+  Globe,
+  Library,
   Loader2,
   Lock,
   MapPin,
   MousePointerClick,
   PanelLeftClose,
+  Plus,
+  RefreshCw,
   Sparkles,
   SquareSplitHorizontal,
+  Trash2,
   Type,
   X,
 } from "lucide-react";
@@ -23,24 +35,20 @@ import {
 import {
   PdfViewer,
   WebViewer,
+  type ViewerHighlight,
   type ViewerSegment,
   type WebArticlePayload,
 } from "@vibe/document-viewer";
-import { htmlToPlainText, type VDocDocument } from "@vibe/vdoc-schema";
 
 import {
-  useReferencePinStore,
-  type ReferenceSnippet,
-  type RegionPinSnippet,
-  type TextHighlightSnippet,
+  isLayerOn,
+  referenceApi,
+  useReferenceStore,
+  type BoundReference,
+  type ReferenceItem,
+  type ReferencePin,
 } from "@/entities/reference-manager";
-import { selectDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import {
-  selectBoundReferenceProjects,
-  selectProjectOfDocument,
-  selectReferenceProjectIndex,
-  useProjectStore,
-} from "@/entities/vdoc-project";
+import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { REFERENCE_SPLIT_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import {
@@ -55,234 +63,194 @@ import { useDragResize } from "@/shared/lib";
 import { CollapsedPanelRail } from "@/shared/ui";
 
 const FEEDBACK_MS = 2000;
-const EMPTY_SNIPPETS: ReferenceSnippet[] = [];
+const EMPTY_PINS: ReferencePin[] = [];
+const ACCEPT_FILES = ".pdf,.html,.htm,.png,.jpg,.jpeg,.webp,.gif";
+const LAYER_IDS = ["D1", "D2", "D3", "D4", "D5", "D6"];
 
-/** 문서의 슬롯들을 순서대로 추출하여 웹 리더 아티클 페이로드로 합성합니다. */
-function synthesizeArticleFromDoc(doc: VDocDocument, cleanTitle: string, hasWeb: boolean): WebArticlePayload {
-  const htmlParts: string[] = [];
-  const textParts: string[] = [];
+const kindBadge = (item: ReferenceItem) =>
+  item.kind === "pdf"
+    ? { label: "PDF", tone: "bg-rose-50 text-rose-700 border-rose-200" }
+    : item.kind === "web"
+      ? { label: "Web", tone: "bg-blue-50 text-blue-700 border-blue-200" }
+      : { label: "IMG", tone: "bg-slate-100 text-slate-600 border-slate-200" };
 
-  for (const page of doc.pages) {
-    for (const block of page.blocks) {
-      const b = block as unknown as { slotId?: string; slotIds?: string[] };
-      const ids = b.slotId ? [b.slotId] : b.slotIds ?? [];
-      for (const slotId of ids) {
-        const slot = doc.slots[slotId];
-        if (slot?.content) {
-          htmlParts.push(slot.content);
-          const plain = htmlToPlainText(slot.content);
-          if (plain) textParts.push(plain);
-        }
-      }
-    }
-  }
+// --- 층위 스트립 ------------------------------------------------------------------------------
 
-  if (htmlParts.length === 0) {
-    for (const slot of Object.values(doc.slots)) {
-      if (slot?.content) {
-        htmlParts.push(slot.content);
-        const plain = htmlToPlainText(slot.content);
-        if (plain) textParts.push(plain);
-      }
-    }
-  }
+/** 층위별 켜고 끄기 (D1–D6 …). 꺼 둔 층위는 AI 가 따르지 않는다. 측정값은 툴팁으로 보여 준다. */
+const LayerStrip: React.FC<{ entry: BoundReference }> = ({ entry }) => {
+  const report = useReferenceStore((s) => s.layers[entry.refId]);
+  const toggleLayer = useReferenceStore((s) => s.toggleLayer);
+  if (!report || report.layers.length === 0) return null;
+  return (
+    <div data-testid="reference-layer-strip" className="px-2.5 py-1 border-b border-slate-200 bg-white flex items-center gap-1 flex-wrap shrink-0">
+      <span className="text-[10px] text-slate-500 mr-0.5" title="이 레퍼런스에서 따를 결정의 층위 (끄면 AI 가 그 층위는 따르지 않는다)">
+        층위
+      </span>
+      {report.layers.map((layer) => {
+        const on = isLayerOn(entry, layer.id);
+        const values = Object.entries(layer.values)
+          .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
+          .join("\n");
+        return (
+          <button
+            key={layer.id}
+            type="button"
+            data-testid={`reference-layer-${layer.id}`}
+            onClick={() => void toggleLayer(entry.refId, layer.id)}
+            title={`${layer.id} ${layer.name}\n${layer.question}\n${values || "(정성 판단 층위)"}\n\n클릭: ${on ? "끄기" : "켜기"}`}
+            className={`px-1.5 py-0.5 rounded-sm text-[10px] font-mono border transition cursor-pointer ${
+              on
+                ? "bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100"
+                : "bg-slate-50 text-slate-400 border-slate-200 line-through hover:text-slate-600"
+            }`}
+          >
+            {layer.id}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
-  return {
-    title: cleanTitle,
-    siteName: doc.variables?.["Article.Platform"] || (hasWeb ? "웹 아티클" : undefined),
-    byline: [doc.variables?.["Article.Series"], doc.variables?.["Article.Partner"]].filter(Boolean).join(" · "),
-    contentHtml: htmlParts.join("\n"),
-    textContent: textParts.join("\n\n"),
-  };
-}
+// --- 원본 카드 ---------------------------------------------------------------------------------
 
 /**
- * 참조 문서 벤또 카드.
- * - 오직 '원본'(PDF 원본 또는 웹 원본)만을 전담하여 렌더링합니다.
- * - PDF 인터랙션:
- *   - [텍스트]: 마우스로 글자나 문장을 직접 긁어서 드래그 선택 및 복사
- *   - [영역 선택]: 마우스로 원하는 범위를 사각 드래그하여 핸들이 잡히는 선택 영역 지정
- * - Web 인터랙션:
- *   - [리더]: 본문 텍스트 드래그 및 복사/발췌
- *   - [라이브]: 외부 실시간 웹사이트 탐색 (동일 출처 정책으로 인해 읽기/조회 전용)
+ * 레퍼런스 원본 카드 — 원본(PDF · 웹 · 이미지)을 그대로 보여 주고 핀을 꽂는다.
+ * PDF: [텍스트] 글자 드래그 · [영역 선택] 사각 드래그 / 웹: 리더(추출 본문) · 스냅샷 · 라이브
  */
-const ReferenceCard: React.FC<{
-  docId: string;
-  index: number;
-  totalCount?: number;
-  onClose: (docId: string) => void;
-}> = ({
-  docId,
-  index,
-  totalCount = 1,
+const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: () => void }> = ({
+  entry,
+  number,
   onClose,
 }) => {
-  const refDoc = useStudioDocumentStore(selectDocument(docId));
-  const project = useProjectStore(selectProjectOfDocument(docId));
-  const refDeckIndex = useProjectStore(selectReferenceProjectIndex(docId));
+  const { refId, item } = entry;
+  const sourceUrl = referenceApi.sourceUrl(refId);
+  const extraction = useReferenceStore((s) => s.extraction[refId]);
+  const pins = useReferenceStore((s) => s.pins[refId] ?? EMPTY_PINS);
+  const focusedPin = useReferenceStore((s) => s.focusedPin);
+  const ensureDetail = useReferenceStore((s) => s.ensureDetail);
+  const reanalyze = useReferenceStore((s) => s.reanalyze);
 
-  // 참조 레이어 덱에서의 1-based 인덱스와 제목 정리
-  const refNumber = refDeckIndex !== -1 ? refDeckIndex + 1 : index + 1;
-  const rawTitle = project?.title || refDoc?.title || "참조 문서";
-  const cleanTitle = rawTitle.replace(/^(\[참조\s*\d+\]|참조\s*\d+:?)\s*/, "");
-
-  const hasWeb = Boolean(refDoc?.preview?.sourceWebUrl);
-  const hasPdf = Boolean(refDoc?.preview?.sourcePdfUrl);
-
-  // PDF 인터랙션 모드: 'text' (글자 드래그 선택) vs 'box' (사각 범위 드래그 선택)
-  const [pdfInteractionMode, setPdfInteractionMode] = useState<"text" | "box">("text");
-
-  // 사용자가 직접 마우스 드래그로 그린 영역만 담습니다.
-  const [customSegments, setCustomSegments] = useState<ViewerSegment[]>([]);
+  const [pdfMode, setPdfMode] = useState<"text" | "box">("text");
+  const [segments, setSegments] = useState<ViewerSegment[]>([]);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
-
-  // 텍스트 드래그 선택 상태 (텍스트 핀 및 복사용)
-  const [selectedTextInfo, setSelectedTextInfo] = useState<{ text: string; page: number } | null>(null);
-
-  const [feedback, setFeedback] = useState<string | null>(null);
-  // 고른 영역의 글자 (AI 첨부용). 끌기 시작 순간에는 비동기로 읽을 수 없어서 미리 뽑아 둔다.
+  const [selectedText, setSelectedText] = useState<{ text: string; page: number } | null>(null);
   const [regionText, setRegionText] = useState<{ segmentId: string; text: string } | null>(null);
-  const selectedSegment = customSegments.find((s) => s.id === selectedSegmentId) ?? customSegments[0] ?? null;
-  const pdfUrl = refDoc?.preview?.sourcePdfUrl;
-
-  // ⭐️ 핀 스토어 연동: 현재 문서에 꽂힌 핀 목록 (getSnapshot 캐싱을 위해 undefined fallback 유지)
-  const rawSnippets = useReferencePinStore((s) => s.snippetsByDoc[docId]);
-  const docSnippets = rawSnippets ?? EMPTY_SNIPPETS;
-  const docPins = useMemo(
-    () =>
-      docSnippets.filter(
-        (s): s is RegionPinSnippet | TextHighlightSnippet => s.kind === "region" || s.kind === "text"
-      ),
-    [docSnippets]
-  );
-  const totalPages = Math.max(1, refDoc?.pages?.length || 1);
-
-  const handleCreatePin = () => {
-    if (!selectedSegment) return;
-    const pin = useReferencePinStore.getState().addRegionPin(
-      docId,
-      selectedSegment.page,
-      selectedSegment.box,
-      regionText?.text
-    );
-    showFeedback("📌 참조 핀이 저장되었습니다!");
-    useReferencePinStore.getState().setFocusedSnippet(pin);
-  };
-
-  const handleCreateTextPin = () => {
-    if (!selectedTextInfo) return;
-    const pin = useReferencePinStore.getState().addTextPin(
-      docId,
-      selectedTextInfo.page,
-      selectedTextInfo.text
-    );
-    showFeedback("📌 텍스트 핀이 저장되었습니다!");
-    useReferencePinStore.getState().setFocusedSnippet(pin);
-    setSelectedTextInfo(null);
-    window.getSelection()?.removeAllRanges();
-  };
-
-  const handleScrollToPin = (pin: ReferenceSnippet) => {
-    const page = "page" in pin && typeof pin.page === "number" ? pin.page : 1;
-    if (pin.kind === "region") {
-      useReferenceRegionStore.getState().setFocus({ docId, page: pin.page, box: pin.bbox });
-    } else {
-      const root = articleRef.current;
-      const pageEl = root?.querySelector<HTMLElement>(`[data-page-number="${page}"]`);
-      if (pageEl) {
-        pageEl.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-    useReferencePinStore.getState().setFocusedSnippet(pin);
-  };
-
-  useEffect(() => {
-    if (!selectedSegment || !pdfUrl) return; // 지난 글자는 segmentId 가 달라 쓰이지 않는다
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      extractPdfRegionText(pdfUrl, selectedSegment.page, selectedSegment.box)
-        .then((text) => !cancelled && setRegionText({ segmentId: selectedSegment.id, text }))
-        .catch(() => !cancelled && setRegionText({ segmentId: selectedSegment.id, text: "" }));
-    }, 250); // 모서리 핸들을 끄는 동안은 기다린다
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [pdfUrl, selectedSegment?.id, selectedSegment?.page, selectedSegment?.box.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const regionReady = Boolean(selectedSegment && regionText?.segmentId === selectedSegment.id);
-  const regionRef = useMemo(
-    () =>
-      selectedSegment && regionReady
-        ? referenceRegionRef(docId, { page: selectedSegment.page, box: selectedSegment.box, text: regionText!.text, deckNumber: refNumber })
-        : null,
-    [docId, selectedSegment, regionReady, regionText, refNumber]
-  );
-
-  // AI 답변의 영역 칩을 누르면 그 자리에 강조 상자를 그리고 스크롤한다 (8초 뒤 사라짐).
-  const focus = useReferenceRegionStore((s) => (s.focus?.docId === docId ? s.focus : null));
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const articleRef = React.useRef<HTMLElement>(null);
-  useEffect(() => {
-    if (!focus) return;
-    const timer = window.setTimeout(() => {
-      const root = articleRef.current;
-      const pageEl = root?.querySelector<HTMLElement>(`[data-page-number="${focus.page}"]`);
-      if (!pageEl) return;
-      pageEl.scrollIntoView({ block: "start" });
-      const scroller = pageEl.closest<HTMLElement>(".overflow-y-auto, .overflow-auto");
-      if (scroller) scroller.scrollTop += (focus.box[0] / 1000) * pageEl.offsetHeight - 24;
-    }, 400); // 작업창이 막 열렸으면 PDF 가 그려질 때까지 기다린다
-    const clear = window.setTimeout(() => {
-      const store = useReferenceRegionStore.getState();
-      if (store.focus?.at === focus.at) store.setFocus(null);
-    }, 8000);
-    return () => {
-      window.clearTimeout(timer);
-      window.clearTimeout(clear);
-    };
-  }, [focus]);
-  const focusHighlights = useMemo(
-    () => (focus ? [{ id: `ai-focus-${focus.at}`, page: focus.page, box: focus.box, label: "AI", variant: "primary" as const }] : undefined),
-    [focus]
-  );
 
-  // Ctrl+L 이 "지금 고른 영역"을 알 수 있게 알린다.
   useEffect(() => {
-    const store = useReferenceRegionStore.getState();
-    if (regionRef) store.setCurrent(regionRef);
-    else if (store.current?.meta?.entityId === docId) store.setCurrent(null);
-  }, [regionRef, docId]);
-  useEffect(
-    () => () => {
-      const store = useReferenceRegionStore.getState();
-      if (store.current?.meta?.entityId === docId) store.setCurrent(null);
-    },
-    [docId]
-  );
+    void ensureDetail(refId);
+  }, [refId, ensureDetail]);
+
+  const selectedSegment = segments.find((s) => s.id === selectedSegmentId) ?? segments[0] ?? null;
+  const isPdf = item.kind === "pdf" && item.status === "ready";
 
   const showFeedback = (msg: string) => {
     setFeedback(msg);
     window.setTimeout(() => setFeedback(null), FEEDBACK_MS);
   };
 
-  const articlePayload = useMemo<WebArticlePayload>(() => {
-    if (!refDoc) return { title: cleanTitle };
-    return synthesizeArticleFromDoc(refDoc, cleanTitle, hasWeb);
-  }, [refDoc, cleanTitle, hasWeb]);
+  // 고른 영역의 글자 (핀 · AI 첨부용). 끄는 동안은 기다렸다 읽는다.
+  useEffect(() => {
+    if (!selectedSegment || !isPdf) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      extractPdfRegionText(sourceUrl, selectedSegment.page, selectedSegment.box)
+        .then((text) => !cancelled && setRegionText({ segmentId: selectedSegment.id, text }))
+        .catch(() => !cancelled && setRegionText({ segmentId: selectedSegment.id, text: "" }));
+    }, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [sourceUrl, isPdf, selectedSegment?.id, selectedSegment?.page, selectedSegment?.box.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!refDoc) {
-    return (
-      <div className="w-full h-full bg-white rounded border border-slate-300 shadow-sm flex items-center justify-center p-6 text-slate-400 text-xs shrink-0">
-        참조 문서를 불러오는 중입니다...
-      </div>
-    );
-  }
+  const regionReady = Boolean(selectedSegment && regionText?.segmentId === selectedSegment.id);
+  const regionRef = useMemo(
+    () =>
+      selectedSegment && regionReady
+        ? referenceRegionRef(refId, { page: selectedSegment.page, box: selectedSegment.box, text: regionText!.text })
+        : null,
+    [refId, selectedSegment, regionReady, regionText]
+  );
 
-  const handleCopyExtractedText = async (text: string) => {
-    if (!text || !navigator.clipboard) {
-      showFeedback("복사할 텍스트가 없습니다.");
-      return;
+  // Ctrl+L 이 "지금 고른 영역" 을 알 수 있게 알린다.
+  useEffect(() => {
+    const store = useReferenceRegionStore.getState();
+    if (regionRef) store.setCurrent(regionRef);
+    else if (store.current?.meta?.entityId === refId) store.setCurrent(null);
+  }, [regionRef, refId]);
+  useEffect(
+    () => () => {
+      const store = useReferenceRegionStore.getState();
+      if (store.current?.meta?.entityId === refId) store.setCurrent(null);
+    },
+    [refId]
+  );
+
+  // AI 칩 · 핀 클릭으로 들어온 초점 → 그 쪽으로 스크롤
+  const focus = useReferenceRegionStore((s) => (s.focus?.refId === refId ? s.focus : null));
+  useEffect(() => {
+    if (!focus) return;
+    let attempts = 0;
+    let lastHeight = 0;
+    const tryScroll = () => {
+      attempts++;
+      const pageEl = articleRef.current?.querySelector<HTMLElement>(`[data-page-number="${focus.page}"]`);
+      if (pageEl) {
+        const scroller = pageEl.closest<HTMLElement>(".overflow-y-auto, .overflow-auto");
+        const height = pageEl.offsetHeight;
+        if (scroller && height > 50 && Math.abs(height - lastHeight) > 10) {
+          lastHeight = height;
+          const offset = pageEl.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+          scroller.scrollTo({ top: Math.max(0, offset + (focus.box[0] / 1000) * height - 24), behavior: attempts === 1 ? "auto" : "smooth" });
+        } else if (!scroller) {
+          pageEl.scrollIntoView({ block: "start", behavior: "smooth" });
+          window.clearInterval(poll);
+        }
+      }
+      if (attempts >= 20) window.clearInterval(poll);
+    };
+    const first = window.setTimeout(tryScroll, 50);
+    const poll = window.setInterval(tryScroll, 100);
+    return () => {
+      window.clearTimeout(first);
+      window.clearInterval(poll);
+    };
+  }, [focus]);
+
+  // 영역 핀은 상시 상자로, 초점은 강조 상자로
+  const highlights = useMemo<ViewerHighlight[]>(() => {
+    const list: ViewerHighlight[] = pins
+      .filter((p) => p.kind === "region" && p.bbox && p.page)
+      .map((p) => ({
+        id: `pin-${p.pinId}`,
+        page: p.page!,
+        box: p.bbox!,
+        label: p.layer || "핀",
+        variant: focusedPin?.pinId === p.pinId ? ("primary" as const) : ("context" as const),
+      }));
+    if (focus && !list.some((h) => h.page === focus.page && h.box[0] === focus.box[0] && h.box[1] === focus.box[1])) {
+      list.push({ id: `ai-focus-${focus.at}`, page: focus.page, box: focus.box, label: "AI", variant: "primary" });
     }
+    return list;
+  }, [pins, focusedPin, focus]);
+
+  const article = useMemo<WebArticlePayload>(
+    () => ({
+      title: extraction?.article?.title || item.title,
+      siteName: extraction?.article?.siteName,
+      byline: extraction?.article?.byline,
+      contentHtml: extraction?.article?.html ?? extraction?.blocks.map((b) => b.html).join("\n"),
+      textContent: extraction?.article?.text ?? extraction?.blocks.map((b) => b.text).join("\n\n"),
+    }),
+    [extraction, item.title]
+  );
+
+  const copyText = async (text: string) => {
+    if (!text || !navigator.clipboard) return showFeedback("복사할 텍스트가 없습니다.");
     try {
       await navigator.clipboard.writeText(text);
       showFeedback("텍스트를 클립보드에 복사했습니다!");
@@ -291,190 +259,184 @@ const ReferenceCard: React.FC<{
     }
   };
 
-  const handleCopyAllText = async () => {
-    const text = articlePayload.textContent || "";
-    await handleCopyExtractedText(text);
+  const createRegionPin = async () => {
+    if (!selectedSegment) return;
+    setBusy(true);
+    try {
+      const pin = await useReferenceStore.getState().addPin(refId, {
+        kind: "region",
+        page: selectedSegment.page,
+        bbox: selectedSegment.box,
+        text: regionText?.segmentId === selectedSegment.id ? regionText.text : "",
+      });
+      useReferenceStore.getState().setFocusedPin(pin);
+      setSegments([]);
+      setSelectedSegmentId(null);
+      showFeedback("📌 핀을 꽂았습니다");
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const createTextPin = async () => {
+    if (!selectedText) return;
+    setBusy(true);
+    try {
+      const pin = await useReferenceStore.getState().addPin(refId, { kind: "text", page: selectedText.page, text: selectedText.text });
+      useReferenceStore.getState().setFocusedPin(pin);
+      setSelectedText(null);
+      window.getSelection()?.removeAllRanges();
+      showFeedback("📌 텍스트 핀을 꽂았습니다");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const totalPages = Math.max(1, item.pageCount || 1);
+  const selecting = segments.length > 0 || Boolean(selectedText);
 
   return (
     <article
       ref={articleRef}
-      data-testid={`reference-card-${docId}`}
-      data-ai-entity={docId}
-      className={`w-full ${
-        totalCount > 1 ? "h-[620px] min-h-[460px] shrink-0" : "h-full"
-      } bg-white rounded border border-slate-300 shadow-sm ring-1 ring-slate-900/5 flex flex-col overflow-hidden transition-all`}
+      data-testid={`reference-card-${refId}`}
+      data-ai-entity={refId}
+      className="w-full h-full bg-white rounded border border-slate-300 shadow-sm ring-1 ring-slate-900/5 flex flex-col overflow-hidden"
     >
-      {/* 헤더 바: 참조 순번, 제목, PDF 인터랙션 모드 토글 */}
       <header className="px-3 py-2 bg-slate-300 text-slate-800 border-b border-slate-300 flex items-center justify-between gap-2 shrink-0 rounded-t select-none">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-white/90 text-slate-700 border border-slate-300/90 text-[10px] font-bold shrink-0 shadow-2xs">
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-white/90 text-slate-700 border border-slate-300/90 text-[10px] font-bold shrink-0">
             <Lock className="w-2.5 h-2.5 text-slate-500" />
-            참조 {refNumber}
+            참조 {number}
           </span>
-          <h4 className="text-xs font-bold truncate text-slate-800" title={cleanTitle}>
-            {cleanTitle}
+          <h4 className="text-xs font-bold truncate text-slate-800" title={item.title}>
+            {item.title}
           </h4>
         </div>
-
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* PDF 원본 뷰 모드일 때: [텍스트] vs [영역 선택] 인터랙션 토글 */}
-          {hasPdf && (
+          {isPdf && (
             <div className="inline-flex items-center p-0.5 rounded-sm bg-slate-200 border border-slate-300 text-[10px]">
-              <button
-                type="button"
-                onClick={() => {
-                  setPdfInteractionMode("text");
-                  setSelectedTextInfo(null);
-                  window.getSelection()?.removeAllRanges();
-                }}
-                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-xs transition cursor-pointer ${
-                  pdfInteractionMode === "text"
-                    ? "bg-amber-600 text-white font-bold shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="일반 텍스트처럼 글자나 문장을 마우스로 드래그하여 선택하고 복사하는 모드"
-              >
-                <Type className="w-2.5 h-2.5" />
-                <span>텍스트</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPdfInteractionMode("box");
-                  setSelectedTextInfo(null);
-                  window.getSelection()?.removeAllRanges();
-                }}
-                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-xs transition cursor-pointer ${
-                  pdfInteractionMode === "box"
-                    ? "bg-amber-600 text-white font-bold shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="마우스 드래그로 사각 영역을 선택하고 모서리 핸들로 범위를 조절하는 모드"
-              >
-                <MousePointerClick className="w-2.5 h-2.5" />
-                <span>영역 선택</span>
-              </button>
+              {(["text", "box"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => {
+                    setPdfMode(mode);
+                    setSelectedText(null);
+                    window.getSelection()?.removeAllRanges();
+                  }}
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-xs transition cursor-pointer ${
+                    pdfMode === mode ? "bg-amber-600 text-white font-bold" : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  title={mode === "text" ? "글자나 문장을 드래그해 고르는 모드" : "사각 영역을 드래그해 고르는 모드"}
+                >
+                  {mode === "text" ? <Type className="w-2.5 h-2.5" /> : <MousePointerClick className="w-2.5 h-2.5" />}
+                  <span>{mode === "text" ? "텍스트" : "영역 선택"}</span>
+                </button>
+              ))}
             </div>
           )}
-
           <div className="w-px h-3 bg-slate-400 mx-0.5" />
-
           <button
             type="button"
-            onClick={() => onClose(docId)}
+            onClick={onClose}
             className="p-1 rounded-sm hover:bg-rose-100 hover:text-rose-700 text-slate-500 cursor-pointer transition-colors"
-            title="참조 작업창 닫기"
+            title="뷰어 닫기"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </header>
 
-      {/* 바디 영역: 오직 원본(PDF 또는 웹뷰어)만 렌더링 */}
+      <LayerStrip entry={entry} />
+
       <div
         className="flex-1 w-full h-full overflow-hidden flex flex-col relative min-h-0 select-text"
         onMouseUp={() => {
-          if (pdfInteractionMode === "box") return;
+          if (pdfMode === "box") return;
           const sel = window.getSelection();
           const text = sel?.toString().trim();
-          if (!text) {
-            setSelectedTextInfo(null);
-            return;
-          }
-          let page = 1;
-          const anchorNode = sel?.anchorNode;
-          if (anchorNode) {
-            const el = anchorNode instanceof HTMLElement ? anchorNode : anchorNode.parentElement;
-            const pageEl = el?.closest<HTMLElement>("[data-page-number]");
-            if (pageEl) {
-              const p = parseInt(pageEl.getAttribute("data-page-number") || "1", 10);
-              if (!isNaN(p) && p > 0) page = p;
-            }
-          }
-          setSelectedTextInfo({ text, page });
+          if (!text) return setSelectedText(null);
+          const anchor = sel?.anchorNode;
+          const el = anchor instanceof HTMLElement ? anchor : anchor?.parentElement;
+          const page = Number(el?.closest<HTMLElement>("[data-page-number]")?.getAttribute("data-page-number") || "1");
+          setSelectedText({ text, page: Number.isFinite(page) && page > 0 ? page : 1 });
         }}
         onContextMenu={
-          // 긁어 둔 글자 위에서 우클릭하면 AI 첨부 메뉴 (선택이 없으면 브라우저 기본 메뉴)
           attachable(() => {
             const text = window.getSelection()?.toString() ?? "";
-            return text.trim() ? [referenceTextRef(docId, text)] : [];
+            return text.trim() ? [referenceTextRef(refId, text)] : [];
           }).onContextMenu
         }
       >
-        {hasWeb && refDoc.preview?.sourceWebUrl ? (
+        {item.status === "failed" ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 p-6 text-xs text-slate-500 bg-slate-50 text-center">
+            <AlertTriangle className="w-5 h-5 text-amber-500" />
+            <span>원본을 가져오거나 해체하지 못했습니다.</span>
+            <span className="text-[10px] text-slate-400 max-w-[320px] break-all">{item.error}</span>
+            <button
+              type="button"
+              onClick={() => void reanalyze(refId)}
+              className="mt-1 inline-flex items-center gap-1 px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-semibold cursor-pointer"
+            >
+              <RefreshCw className="w-3 h-3" /> 다시 시도
+            </button>
+          </div>
+        ) : item.kind === "web" ? (
           <WebViewer
-            url={refDoc.preview.sourceWebUrl}
-            title={cleanTitle}
+            url={item.sourceUrl || sourceUrl}
+            title={item.title}
             initialMode="reader"
-            article={articlePayload}
-            onExtractText={(text) => void handleCopyExtractedText(text)}
+            snapshotUrl={sourceUrl}
+            article={article}
+            onExtractText={(text) => void copyText(text)}
           />
-        ) : hasPdf && refDoc.preview?.sourcePdfUrl ? (
+        ) : item.kind === "image" ? (
+          <div className="flex-1 overflow-auto bg-slate-100 flex items-start justify-center p-3">
+            <img src={sourceUrl} alt={item.title} className="max-w-full shadow border border-slate-200 bg-white" />
+          </div>
+        ) : (
           <PdfViewer
-            url={refDoc.preview.sourcePdfUrl}
-            title={cleanTitle}
+            url={sourceUrl}
+            title={item.title}
             isSpread={false}
-            isEditMode={pdfInteractionMode === "box"}
-            highlights={focusHighlights}
+            isEditMode={pdfMode === "box"}
+            highlights={highlights}
             enableSmartSnap={true}
-            segments={customSegments}
+            segments={segments}
             selectedSegmentId={selectedSegmentId}
-            onSelectSegment={(segment) => {
-              setSelectedSegmentId(segment.id);
-            }}
+            onSelectSegment={(segment) => setSelectedSegmentId(segment.id)}
             onCreateSegment={(created) => {
-              setCustomSegments([created]);
+              setSegments([created]);
               setSelectedSegmentId(created.id);
-              setSelectedTextInfo(null);
-              showFeedback("선택 영역이 지정되었습니다!");
+              setSelectedText(null);
             }}
-            onUpdateSegment={(updated) => {
-              setCustomSegments((prev) =>
-                prev.some((s) => s.id === updated.id)
-                  ? prev.map((s) => (s.id === updated.id ? updated : s))
-                  : [updated]
-              );
-            }}
+            onUpdateSegment={(updated) =>
+              setSegments((prev) => (prev.some((s) => s.id === updated.id) ? prev.map((s) => (s.id === updated.id ? updated : s)) : [updated]))
+            }
             onDeleteSegment={(id) => {
-              setCustomSegments((prev) => prev.filter((s) => s.id !== id));
+              setSegments((prev) => prev.filter((s) => s.id !== id));
               if (selectedSegmentId === id) setSelectedSegmentId(null);
             }}
           />
-        ) : (
-          <div className="flex-1 flex items-center justify-center p-6 text-xs text-slate-400 bg-slate-50">
-            표시할 원본 문서(PDF 또는 웹 URL)가 없습니다.
-          </div>
         )}
 
-        {/* ⭐️ VSCode Diff 스타일 오버뷰 룰러 (우측 핀 마킹 레일) */}
-        {hasPdf && docPins.length > 0 && (
-          <div
-            className="absolute top-2 bottom-2 right-1.5 w-3 z-30 pointer-events-none flex flex-col"
-            title="참조 핀 위치 마킹 (클릭하여 해당 핀으로 스크롤)"
-          >
-            {docPins.map((pin) => {
-              const p = pin.page ?? 1;
-              const yOffset = pin.kind === "region" ? pin.bbox[0] / 1000 : 0.35;
-              const topPct = Math.min(
-                97,
-                Math.max(3, (((p - 1) + yOffset) / totalPages) * 100)
-              );
+        {isPdf && pins.length > 0 && (
+          <div className="absolute top-2 bottom-2 right-1.5 w-3 z-30 pointer-events-none flex flex-col" title="핀 위치">
+            {pins.map((pin) => {
+              const yOffset = pin.bbox ? pin.bbox[0] / 1000 : 0.35;
+              const topPct = Math.min(97, Math.max(3, (((pin.page ?? 1) - 1 + yOffset) / totalPages) * 100));
               return (
                 <button
-                  key={pin.id}
+                  key={pin.pinId}
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleScrollToPin(pin);
+                    useReferenceStore.getState().setFocusedPin(pin);
+                    useReferenceRegionStore.getState().setFocus({ refId, page: pin.page ?? 1, box: pin.bbox ?? [0, 0, 60, 1000] });
                   }}
                   style={{ top: `${topPct}%` }}
-                  className={`absolute right-0 ${
-                    pin.kind === "text"
-                      ? "w-2 h-1 bg-amber-400 hover:w-3.5 hover:h-2"
-                      : "w-2.5 h-1.5 bg-amber-500 hover:w-4 hover:h-2.5"
-                  } -translate-y-1/2 rounded-xs hover:bg-amber-600 transition-all cursor-pointer pointer-events-auto shadow-xs border border-amber-600/60`}
-                  title={`${pin.kind === "text" ? "🔤" : "📍"} ${pin.label} (클릭 시 이동)`}
+                  className="absolute right-0 w-2.5 h-1.5 bg-amber-500 hover:w-4 hover:h-2.5 -translate-y-1/2 rounded-xs hover:bg-amber-600 transition-all cursor-pointer pointer-events-auto border border-amber-600/60"
+                  title={`${pin.label} (클릭 시 이동)`}
                 />
               );
             })}
@@ -482,7 +444,6 @@ const ReferenceCard: React.FC<{
         )}
       </div>
 
-      {/* 푸터 영역: 원본 텍스트 복사 및 인터랙션 상태 안내 (도구 상자 재편) */}
       <footer className="p-2.5 bg-slate-50 border-t border-slate-200/90 flex flex-col gap-1.5 shrink-0 rounded-b select-none">
         <div className="flex items-center justify-between text-[11px] px-1 text-slate-600">
           <span className="truncate max-w-[340px]">
@@ -490,139 +451,66 @@ const ReferenceCard: React.FC<{
               <span className="text-amber-800 font-bold flex items-center gap-1">
                 <Check className="w-3 h-3 text-emerald-600" /> {feedback}
               </span>
-            ) : customSegments.length > 0 ? (
+            ) : segments.length > 0 ? (
+              <span className="text-amber-800 font-bold">영역을 골랐습니다. [핀 꽂기] 로 남기세요</span>
+            ) : selectedText ? (
               <span className="text-amber-800 font-bold">
-                선택 영역이 지정되었습니다. [📌 핀 꽂기] 로 보관하세요
-              </span>
-            ) : selectedTextInfo && selectedTextInfo.text.length > 0 ? (
-              <span className="text-amber-800 font-bold">
-                선택된 텍스트 ({selectedTextInfo.page}p, {selectedTextInfo.text.length}자) [📌 핀 꽂기] 로 보관하세요
-              </span>
-            ) : hasPdf ? (
-              <span className="text-slate-500 font-medium">
-                {pdfInteractionMode === "box"
-                  ? "💡 마우스로 원하는 범위를 드래그하여 사각 영역을 선택하세요"
-                  : "💡 마우스로 글자나 문장을 드래그하여 핀을 꽂거나 복사하세요"}
-              </span>
-            ) : hasWeb ? (
-              <span className="text-slate-500 font-medium">
-                💡 [리더] 탭에서 마우스로 텍스트를 드래그하여 핀을 꽂거나 복사하세요
+                선택한 글 ({selectedText.page}p, {selectedText.text.length}자) — [핀 꽂기] 로 남기세요
               </span>
             ) : (
-              <span className="text-slate-400">참조 문서 원본</span>
+              <span className="text-slate-500">💡 따라 하고 싶은 부분에 핀을 꽂으세요 (내용이 아니라 결정 방식을 가져옵니다)</span>
             )}
           </span>
           <span className="text-[10px] text-slate-400 font-mono">
-            {hasWeb
-              ? "Web"
-              : `${refDoc.pages.length}p PDF (${pdfInteractionMode === "box" ? "영역 선택" : "텍스트"})`}
+            {item.kind.toUpperCase()} · {item.pageCount || 1}p
           </span>
         </div>
-
         <div className="flex items-center gap-1.5 pt-0.5">
-          {customSegments.length > 0 ? (
+          {selecting ? (
             <>
-              {/* 1. 📌 사각 영역 핀 꽂기 (Primary 앰버 액션) */}
               <button
                 type="button"
-                data-testid="reference-pin-create-btn"
-                onClick={handleCreatePin}
-                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-sm text-xs font-bold cursor-pointer shadow-2xs transition active:scale-[0.98]"
-                title="이 사각 영역을 참조 핀으로 목록에 저장"
+                data-testid={segments.length > 0 ? "reference-pin-create-btn" : "reference-text-pin-create-btn"}
+                disabled={busy}
+                onClick={() => void (segments.length > 0 ? createRegionPin() : createTextPin())}
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-sm text-xs font-bold cursor-pointer disabled:opacity-50"
               >
-                <MapPin className="w-3.5 h-3.5" />
-                <span>핀 꽂기</span>
+                {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MapPin className="w-3.5 h-3.5" />}
+                핀 꽂기
               </button>
-
-              {/* 2. 📋 텍스트 복사 */}
               <button
                 type="button"
-                onClick={() => void handleCopyExtractedText(regionText?.text || "")}
-                disabled={!regionText?.text}
-                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-sm text-xs font-medium cursor-pointer shadow-2xs transition disabled:opacity-50"
-                title="선택 영역 안의 텍스트 복사"
+                onClick={() => void copyText(segments.length > 0 ? regionText?.text || "" : selectedText?.text || "")}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-sm text-xs cursor-pointer"
               >
-                <Copy className="w-3 h-3 text-slate-500" />
-                <span>텍스트 복사</span>
+                <Copy className="w-3 h-3 text-slate-500" /> 복사
               </button>
-
-              {/* 3. ✦ AI 첨부 */}
               <button
                 type="button"
                 data-testid="reference-region-attach"
-                disabled={!regionRef}
-                {...(regionRef ? attachable(() => [regionRef]) : {})}
-                onClick={() => regionRef && attachToComposer([regionRef])}
-                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-white hover:bg-amber-50 text-amber-800 border border-amber-300 rounded-sm text-xs font-semibold cursor-grab active:cursor-grabbing shadow-2xs transition disabled:opacity-50"
-                title="AI Composer 에 1회성 첨부"
+                disabled={segments.length > 0 && !regionRef}
+                {...(regionRef && segments.length > 0 ? attachable(() => [regionRef]) : {})}
+                onClick={() => {
+                  if (segments.length > 0) {
+                    if (regionRef) attachToComposer([regionRef]);
+                  } else if (selectedText) {
+                    attachToComposer([referenceTextRef(refId, selectedText.text)]);
+                  }
+                  showFeedback("✦ AI Composer 에 첨부했습니다");
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-amber-50 text-amber-800 border border-amber-300 rounded-sm text-xs font-semibold cursor-pointer disabled:opacity-50"
               >
-                {regionRef ? <Sparkles className="w-3 h-3 text-amber-600" /> : <Loader2 className="w-3 h-3 animate-spin text-amber-600" />}
-                <span>AI 첨부</span>
+                <Sparkles className="w-3 h-3 text-amber-600" /> AI 첨부
               </button>
-
-              {/* 4. ✕ 취소 */}
               <button
                 type="button"
                 onClick={() => {
-                  setCustomSegments([]);
+                  setSegments([]);
                   setSelectedSegmentId(null);
-                }}
-                className="inline-flex items-center justify-center px-2 py-1.5 bg-white hover:bg-rose-50 text-rose-600 border border-slate-300 rounded-sm text-xs font-medium cursor-pointer shadow-2xs transition active:scale-[0.98] ml-auto"
-                title="선택 영역 해제"
-              >
-                취소
-              </button>
-            </>
-          ) : selectedTextInfo && selectedTextInfo.text.length > 0 ? (
-            <>
-              {/* 1. 📌 텍스트 핀 꽂기 (Primary 앰버 액션) */}
-              <button
-                type="button"
-                data-testid="reference-text-pin-create-btn"
-                onClick={handleCreateTextPin}
-                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-sm text-xs font-bold cursor-pointer shadow-2xs transition active:scale-[0.98]"
-                title="선택한 텍스트를 참조 핀으로 목록에 저장"
-              >
-                <Type className="w-3.5 h-3.5" />
-                <span>핀 꽂기</span>
-              </button>
-
-              {/* 2. 📋 텍스트 복사 */}
-              <button
-                type="button"
-                onClick={() => void handleCopyExtractedText(selectedTextInfo.text)}
-                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-sm text-xs font-medium cursor-pointer shadow-2xs transition"
-                title="선택한 텍스트 복사"
-              >
-                <Copy className="w-3 h-3 text-slate-500" />
-                <span>텍스트 복사</span>
-              </button>
-
-              {/* 3. ✦ AI 첨부 */}
-              <button
-                type="button"
-                data-testid="reference-text-attach"
-                onClick={() => {
-                  const ref = referenceTextRef(docId, selectedTextInfo.text);
-                  attachToComposer([ref]);
-                  showFeedback("✦ AI Composer 에 첨부되었습니다!");
-                }}
-                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-white hover:bg-amber-50 text-amber-800 border border-amber-300 rounded-sm text-xs font-semibold cursor-pointer shadow-2xs transition"
-                title="AI Composer 에 1회성 첨부"
-              >
-                <Sparkles className="w-3 h-3 text-amber-600" />
-                <span>AI 첨부</span>
-              </button>
-
-              {/* 4. ✕ 취소 */}
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedTextInfo(null);
+                  setSelectedText(null);
                   window.getSelection()?.removeAllRanges();
                 }}
-                className="inline-flex items-center justify-center px-2 py-1.5 bg-white hover:bg-rose-50 text-rose-600 border border-slate-300 rounded-sm text-xs font-medium cursor-pointer shadow-2xs transition active:scale-[0.98] ml-auto"
-                title="선택 해제"
+                className="inline-flex items-center px-2 py-1.5 bg-white hover:bg-rose-50 text-rose-600 border border-slate-300 rounded-sm text-xs cursor-pointer ml-auto"
               >
                 취소
               </button>
@@ -630,12 +518,10 @@ const ReferenceCard: React.FC<{
           ) : (
             <button
               type="button"
-              onClick={() => void handleCopyAllText()}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-300 hover:bg-slate-400/80 text-slate-800 border border-slate-400/70 rounded-sm text-xs font-semibold cursor-pointer shadow-2xs transition active:scale-[0.98]"
-              title="원문의 전체 텍스트를 클립보드로 복사"
+              onClick={() => void copyText(article.textContent || "")}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-300 hover:bg-slate-400/80 text-slate-800 border border-slate-400/70 rounded-sm text-xs font-semibold cursor-pointer"
             >
-              <Copy className="w-3.5 h-3.5 text-slate-600" />
-              원문 텍스트 복사
+              <Copy className="w-3.5 h-3.5 text-slate-600" /> 추출 텍스트 복사
             </button>
           )}
         </div>
@@ -644,108 +530,222 @@ const ReferenceCard: React.FC<{
   );
 };
 
+// --- 추가 팝오버 ------------------------------------------------------------------------------
+
+const AddReferencePopover: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const library = useReferenceStore((s) => s.library);
+  const bound = useReferenceStore((s) => s.bound);
+  const addFile = useReferenceStore((s) => s.addFile);
+  const addUrl = useReferenceStore((s) => s.addUrl);
+  const bind = useReferenceStore((s) => s.bind);
+  const setViewerOpen = useWorkspaceLayoutStore((s) => s.setRefViewerOpen);
+  const [tab, setTab] = useState<"file" | "url" | "library">("file");
+  const [url, setUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+  const boxRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) onClose();
+    };
+    window.addEventListener("mousedown", onDown);
+    return () => window.removeEventListener("mousedown", onDown);
+  }, [onClose]);
+
+  const unbound = library.filter((it) => !bound.some((b) => b.refId === it.refId));
+
+  const run = async (work: () => Promise<unknown>) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await work();
+      setViewerOpen(true);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "추가하지 못했습니다.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const tabs = [
+    { id: "file" as const, icon: <FileUp className="w-3.5 h-3.5 text-amber-700" />, title: "파일 하나 (PDF · HTML · 이미지)" },
+    { id: "url" as const, icon: <Globe className="w-3.5 h-3.5 text-blue-600" />, title: "웹 주소 하나" },
+    { id: "library" as const, icon: <Library className="w-3.5 h-3.5 text-slate-600" />, title: "라이브러리에서 연결" },
+  ];
+
+  return (
+    <div
+      ref={boxRef}
+      data-testid="reference-add-popover"
+      className="absolute right-2 top-9 w-80 bg-white/95 backdrop-blur-md rounded-lg shadow-xl border border-slate-200 z-50 overflow-hidden flex flex-col text-xs"
+    >
+      <div className="px-2 py-1.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="flex items-center gap-1">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              data-testid={`reference-add-tab-${t.id}`}
+              onClick={() => setTab(t.id)}
+              title={t.title}
+              className={`p-1 rounded transition cursor-pointer ${tab === t.id ? "bg-amber-100 shadow-2xs" : "hover:bg-slate-200"}`}
+            >
+              {t.icon}
+            </button>
+          ))}
+        </div>
+        <button type="button" onClick={onClose} className="p-1 rounded hover:bg-slate-200 text-slate-400 cursor-pointer" title="닫기">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      <div className="p-2 space-y-2">
+        <p className="text-[10px] text-slate-500 leading-snug">
+          남이 만든 완성물을 <b>하나씩</b> 추가합니다. 폴더 · 대량 자료(사실 근거)는 Resource Manager 에 넣으세요.
+        </p>
+        {tab === "file" && (
+          <>
+            <input
+              ref={fileRef}
+              type="file"
+              accept={ACCEPT_FILES}
+              className="hidden"
+              data-testid="reference-file-input"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void run(() => addFile(file));
+                e.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => fileRef.current?.click()}
+              className="w-full inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded border border-dashed border-amber-300 bg-amber-50/60 hover:bg-amber-50 text-amber-800 font-semibold cursor-pointer disabled:opacity-50"
+            >
+              {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileUp className="w-3.5 h-3.5" />}
+              파일 고르기 (PDF · HTML · 이미지)
+            </button>
+          </>
+        )}
+        {tab === "url" && (
+          <form
+            className="space-y-1.5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (url.trim()) void run(() => addUrl(url.trim(), title.trim() || undefined));
+            }}
+          >
+            <div className="flex items-center gap-1 border border-slate-200 rounded px-2 py-1 bg-white focus-within:border-blue-400">
+              <Globe className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com/article"
+                className="w-full text-xs bg-transparent focus:outline-none font-mono"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={busy || !url.trim()}
+                className="p-1 rounded bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-40 cursor-pointer shrink-0"
+              >
+                {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="제목 (선택)"
+              className="w-full px-2 py-1 text-xs border border-slate-200 rounded bg-white focus:outline-none focus:border-blue-400"
+            />
+          </form>
+        )}
+        {tab === "library" && (
+          <div className="max-h-48 overflow-y-auto space-y-0.5">
+            {unbound.length === 0 ? (
+              <div className="py-4 text-center text-slate-400">이 프로젝트에 연결하지 않은 레퍼런스가 없습니다.</div>
+            ) : (
+              unbound.map((it) => (
+                <button
+                  key={it.refId}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void run(() => bind(it.refId))}
+                  className="w-full flex items-center gap-1.5 px-1.5 py-1 rounded hover:bg-amber-50 text-left cursor-pointer"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span className="truncate flex-1">{it.title}</span>
+                  <span className={`text-[9px] font-mono px-1 rounded border ${kindBadge(it).tone}`}>{kindBadge(it).label}</span>
+                </button>
+              ))
+            )}
+          </div>
+        )}
+        {error && <div className="text-[10px] text-rose-600 break-all">{error}</div>}
+      </div>
+    </div>
+  );
+};
+
+// --- Reference Manager 위젯 -------------------------------------------------------------------
 
 /**
- * [ReferenceManagerWidget: 통합 레퍼런스 매니저 위젯]
- * 
- * - 상단: 위계 목록 (4종 참조 프로젝트 및 상태)
- * - 중단: 퀵 스위처 가로 탭 바
- * - 하단: 단일 풀사이즈 통합 뷰어
- * - 좌측 탭 모드 및 독립 스플릿 모드 양쪽에서 공통으로 재사용됩니다.
+ * 통합 레퍼런스 매니저 위젯 (좌측 탭 · 독립 스플릿 공용).
+ * 위: 연결된 레퍼런스와 핀 / 가운데: 빠른 전환 탭 / 아래: 원본 뷰어
  */
 export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSplit = false }) => {
-  const boundRefProjects = useProjectStore(useShallow(selectBoundReferenceProjects));
-  const setSelectedReferenceProjectId = useProjectStore((s) => s.setSelectedReferenceProjectId);
+  const activeProject = useProjectStore(selectActiveProject);
+  const bound = useReferenceStore((s) => s.bound);
+  const pins = useReferenceStore((s) => s.pins);
+  const checkedPinIds = useReferenceStore((s) => s.checkedPinIds);
+  const focusedPin = useReferenceStore((s) => s.focusedPin);
+  const activeRefId = useReferenceStore((s) => s.activeRefId);
+  const loading = useReferenceStore((s) => s.loading);
+  const storeError = useReferenceStore((s) => s.error);
+  const store = useReferenceStore.getState;
 
   const setRefPlacement = useWorkspaceLayoutStore((s) => s.setRefPlacement);
   const setRefSplitCollapsed = useWorkspaceLayoutStore((s) => s.setRefSplitCollapsed);
   const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
-  const activeReferenceDocId = useWorkspaceLayoutStore((s) => s.activeReferenceDocId);
-  const setActiveReferenceDocId = useWorkspaceLayoutStore((s) => s.setActiveReferenceDocId);
-  const closeAllReferenceDocs = useWorkspaceSessionStore((s) => s.closeAllReferenceDocs);
+  const viewerOpen = useWorkspaceLayoutStore((s) => s.refViewerOpen);
+  const setViewerOpen = useWorkspaceLayoutStore((s) => s.setRefViewerOpen);
+  const closeAllReferences = useWorkspaceSessionStore((s) => s.closeAllReferences);
 
-  // 상단 위계 목록 접기/펼치기 상태
-  const [hierarchyExpanded, setHierarchyExpanded] = useState(true);
+  const [listExpanded, setListExpanded] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  // 문서별 하위 핀 트리 접기/펼치기 상태
-  const [expandedDocs, setExpandedDocs] = useState<Record<string, boolean>>({});
+  const current = bound.find((b) => b.refId === activeRefId) ?? bound[0] ?? null;
+  const currentNumber = current ? bound.indexOf(current) + 1 : 0;
+  const totalPins = useMemo(() => bound.reduce((acc, b) => acc + (pins[b.refId]?.length ?? 0), 0), [bound, pins]);
 
-  // ⭐️ 핀 스토어 상태 연동
-  const snippetsByDoc = useReferencePinStore((s) => s.snippetsByDoc);
-  const checkedSnippetIds = useReferencePinStore((s) => s.checkedSnippetIds);
-  const focusedSnippet = useReferencePinStore((s) => s.focusedSnippet);
-  const toggleSnippetChecked = useReferencePinStore((s) => s.toggleSnippetChecked);
-  const toggleAllDocSnippets = useReferencePinStore((s) => s.toggleAllDocSnippets);
-  const clearChecked = useReferencePinStore((s) => s.clearChecked);
-  const removeSnippet = useReferencePinStore((s) => s.removeSnippet);
-  const setFocusedSnippet = useReferencePinStore((s) => s.setFocusedSnippet);
-
-  const totalPinsCount = useMemo(
-    () =>
-      Object.values(snippetsByDoc)
-        .flat()
-        .filter((s) => s.kind === "region" || s.kind === "text").length,
-    [snippetsByDoc]
-  );
-
-  const toggleDocExpand = (docId: string, defaultExpanded: boolean) => {
-    setExpandedDocs((prev) => ({
-      ...prev,
-      [docId]: !(prev[docId] ?? defaultExpanded),
-    }));
-  };
-
-  // 체크된 핀들을 모아 AI Composer 에 일괄 첨부 (영역 핀 및 텍스트 핀 모두 지원)
-  const handleAttachCheckedPins = () => {
-    const allSnippets = Object.values(snippetsByDoc).flat();
-    const checked = allSnippets.filter(
-      (s): s is RegionPinSnippet | TextHighlightSnippet =>
-        checkedSnippetIds.includes(s.id) && (s.kind === "region" || s.kind === "text")
-    );
-    if (checked.length === 0) return;
-    const refs = checked.map((p) => {
-      if (p.kind === "region") {
-        return referenceRegionRef(p.docId, {
-          page: p.page,
-          box: p.bbox,
-          text: p.excerpt || p.label,
-        });
-      } else {
-        return referenceTextRef(p.docId, p.text);
-      }
-    });
-    attachToComposer(refs);
-  };
-
-  // 하단 뷰어 패널 열림/닫힘 상태 (닫기 시 이 뷰어만 닫힘)
-  const [viewerOpen, setViewerOpen] = useState(true);
-
-  // 현재 열려있는 뷰어의 대상 docId
-  const currentDocId = useMemo(() => {
-    if (activeReferenceDocId && boundRefProjects.some((p) => p.docIds.includes(activeReferenceDocId))) {
-      return activeReferenceDocId;
-    }
-    return boundRefProjects[0]?.docIds[0] ?? null;
-  }, [activeReferenceDocId, boundRefProjects]);
-
-  // 목록 항목 또는 [Doc/PDF] 버튼 클릭 시: 뷰어를 열고 해당 문서 표시
-  const handleOpenViewer = (docId: string, projectId?: string) => {
-    setActiveReferenceDocId(docId);
-    if (projectId) setSelectedReferenceProjectId(projectId);
+  const openViewer = (refId: string) => {
+    store().setActiveRefId(refId);
     setViewerOpen(true);
   };
 
-  // 뷰어 헤더의 [X] 클릭 시: 오직 하단 뷰어 영역만 닫음
-  const handleCloseViewer = () => {
-    setViewerOpen(false);
+  const attachChecked = () => {
+    const checked = new Set(checkedPinIds);
+    const refs = bound.flatMap((b) =>
+      (pins[b.refId] ?? [])
+        .filter((p) => checked.has(p.pinId))
+        .map((p) =>
+          p.kind === "region" && p.bbox && p.page
+            ? referenceRegionRef(b.refId, { page: p.page, box: p.bbox, text: p.text || p.label })
+            : referenceTextRef(b.refId, p.text || p.label)
+        )
+    );
+    if (refs.length) attachToComposer(refs);
   };
 
   return (
-    <div
-      data-testid="reference-manager-widget"
-      className="flex-1 flex flex-col h-full bg-white select-none overflow-hidden min-h-0 relative"
-    >
-      {/* 1. 최상단 헤더 바 (도킹/스플릿 컨트롤러 및 문서 수) */}
+    <div data-testid="reference-manager-widget" className="flex-1 flex flex-col h-full bg-white select-none overflow-hidden min-h-0 relative">
       <header className="px-3 py-2 border-b border-slate-200 bg-slate-50/90 flex items-center justify-between shrink-0 select-none">
         <div className="flex items-center gap-1.5 min-w-0">
           {!isSplit ? (
@@ -754,7 +754,7 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
               data-testid="ref-popout-btn"
               onClick={() => setRefPlacement("split")}
               className="p-1 rounded hover:bg-amber-100 text-slate-500 hover:text-amber-800 transition cursor-pointer"
-              title="에디터 좌측 독립 스플릿 뷰로 꺼내기 (Pop-out to Split View)"
+              title="에디터 옆 독립 스플릿 뷰로 꺼내기"
             >
               <SquareSplitHorizontal className="w-3.5 h-3.5" />
             </button>
@@ -765,7 +765,7 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
                 data-testid="ref-dockin-btn"
                 onClick={() => setRefPlacement("left-tab")}
                 className="p-1 rounded hover:bg-amber-100 text-slate-500 hover:text-amber-800 transition cursor-pointer"
-                title="좌측 패널 탭으로 다시 집어넣기 (Dock to Left Tab)"
+                title="좌측 패널 탭으로 다시 넣기"
               >
                 <PanelLeftClose className="w-3.5 h-3.5" />
               </button>
@@ -774,335 +774,281 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
                 data-testid="ref-collapse-rail-btn"
                 onClick={() => setRefSplitCollapsed(true)}
                 className="p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition cursor-pointer"
-                title="참조 작업창 접기 (세로 레일로 접기)"
+                title="세로 레일로 접기"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
             </>
           )}
-
           <span className="font-bold text-xs text-slate-800 tracking-tight flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
             Reference Manager
           </span>
           <span
+            data-testid="reference-count-badge"
             className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold font-mono"
-            title="연결된 참조 문서 및 꽂아둔 핀 수"
+            title="이 프로젝트에 연결된 레퍼런스 및 핀 수"
           >
-            {boundRefProjects.length}종 참조{totalPinsCount > 0 ? ` · 핀 ${totalPinsCount}개` : ""}
+            {bound.length}종 참조{totalPins > 0 ? ` · 핀 ${totalPins}개` : ""}
           </span>
+          {loading && <Loader2 className="w-3 h-3 animate-spin text-slate-400" />}
         </div>
-
-        <div className="flex items-center gap-1 text-slate-500">
+        <div className="flex items-center gap-0.5 text-slate-500">
           <button
             type="button"
-            onClick={() => setHierarchyExpanded(!hierarchyExpanded)}
-            className="p-1 rounded hover:bg-slate-200 text-slate-600 transition cursor-pointer flex items-center gap-0.5 text-[11px]"
-            title={hierarchyExpanded ? "위계 목록 접기" : "위계 목록 펼치기"}
+            data-testid="reference-add-btn"
+            disabled={!activeProject}
+            onClick={() => setAddOpen(!addOpen)}
+            className={`p-1 rounded transition cursor-pointer ${addOpen ? "bg-amber-100 text-amber-900" : "hover:bg-slate-200 text-slate-600"}`}
+            title="레퍼런스 추가 (파일 · 웹 주소 · 라이브러리)"
           >
-            <Layers className="w-3.5 h-3.5 text-amber-600" />
-            <span className="text-[10px] font-medium">{hierarchyExpanded ? "목록 접기" : "목록 보기"}</span>
-            {hierarchyExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            <Plus className="w-3.5 h-3.5" />
           </button>
-
+          <button
+            type="button"
+            onClick={() => setListExpanded(!listExpanded)}
+            className="p-1 rounded hover:bg-slate-200 text-slate-500 cursor-pointer"
+            title={listExpanded ? "목록 접기" : "목록 펼치기"}
+          >
+            {listExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
           <button
             type="button"
             onClick={() => {
               if (isSplit) {
                 setRefPlacement("closed");
-                closeAllReferenceDocs();
+                closeAllReferences();
               } else {
                 setLeftSidebarOpen(false);
               }
             }}
-            className="p-1 rounded hover:bg-rose-100 hover:text-rose-600 transition cursor-pointer"
-            title={isSplit ? "스플릿 작업창 닫기" : "좌측 사이드바 패널 닫기"}
+            className="p-1 rounded hover:bg-rose-100 hover:text-rose-600 text-slate-500 cursor-pointer"
+            title={isSplit ? "스플릿 작업창 닫기" : "좌측 패널 닫기"}
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </header>
 
-      {/* ⭐️ 체크된 핀 액션 툴바 (리소스 매니저 다중 선택 스타일) */}
-      {checkedSnippetIds.length > 0 && (
+      {addOpen && <AddReferencePopover onClose={() => setAddOpen(false)} />}
+
+      {storeError && (
+        <div className="px-2.5 py-1 bg-rose-50 border-b border-rose-200 text-[10px] text-rose-700 truncate" title={storeError}>
+          {storeError}
+        </div>
+      )}
+
+      {checkedPinIds.length > 0 && (
         <div className="px-2.5 py-1 bg-amber-50 border-b border-amber-200 flex items-center justify-between text-xs font-semibold text-amber-950 shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-600" />
-            <span>선택된 핀 {checkedSnippetIds.length}개</span>
-          </div>
+          <span className="text-[11px] font-mono text-amber-900">핀 {checkedPinIds.length}개 선택 (AI 는 이 핀만 본다)</span>
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={handleAttachCheckedPins}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-600 hover:bg-amber-500 text-white rounded text-[10.5px] font-bold shadow-2xs transition cursor-pointer"
-              title="선택된 모든 핀을 AI Composer 에 첨부"
-            >
-              <Sparkles className="w-3 h-3" />
-              <span>AI 첨부</span>
+            <button type="button" onClick={attachChecked} className="p-1 bg-amber-600 hover:bg-amber-500 text-white rounded-xs cursor-pointer" title="선택한 핀을 AI Composer 에 첨부">
+              <Sparkles className="w-3.5 h-3.5" />
             </button>
-            <button
-              type="button"
-              onClick={clearChecked}
-              className="px-1.5 py-0.5 text-slate-500 hover:text-slate-800 text-[10.5px] cursor-pointer"
-            >
-              선택 해제
+            <button type="button" onClick={() => store().clearChecked()} className="p-1 hover:bg-amber-100 text-amber-700 rounded-xs cursor-pointer" title="선택 해제">
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       )}
 
-      {/* 2. 상단: 참조 문서 및 하위 핀 트리 목록 (Explorer) - 리소스 매니저 스타일 */}
-      {hierarchyExpanded && (
-        <div
-          className={`border-b border-slate-200 bg-slate-50/50 p-1.5 overflow-y-auto space-y-1 shrink-0 transition-all ${
-            viewerOpen ? "max-h-[190px]" : "flex-1 min-h-0"
-          }`}
-        >
-          {boundRefProjects.map((rp, idx) => {
-            const docId = rp.docIds[0];
-            const isSelected = viewerOpen && docId === currentDocId;
-            const cleanTitle = rp.title.replace(/^(\[참조\s*\d+\]|참조\s*\d+:?)\s*/, "");
-            const isPdf = rp.docIds[0]?.includes(".pdf");
-
-            // 이 문서에 소속된 핀 목록 (영역 핀 및 텍스트 핀)
-            const docPins = (snippetsByDoc[docId] ?? EMPTY_SNIPPETS).filter(
-              (s): s is RegionPinSnippet | TextHighlightSnippet => s.kind === "region" || s.kind === "text"
-            );
-            const defaultExpanded = docPins.length > 0;
-            const isExpanded = expandedDocs[docId] ?? defaultExpanded;
-
-            // 체크박스 상태
-            const isAllChecked =
-              docPins.length > 0 && docPins.every((p) => checkedSnippetIds.includes(p.id));
-            const isPartialChecked =
-              docPins.some((p) => checkedSnippetIds.includes(p.id)) && !isAllChecked;
-
-            return (
-              <div key={rp.projectId} className="flex flex-col">
-                {/* 부모 문서 행 */}
-                <div
-                  onClick={() => {
-                    if (docId) handleOpenViewer(docId, rp.projectId);
-                  }}
-                  className={`flex items-center justify-between px-1.5 py-1.5 rounded text-xs transition cursor-pointer border ${
-                    isSelected
-                      ? "bg-amber-100/80 text-amber-950 border-amber-400 font-bold shadow-2xs"
-                      : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
-                  }`}
-                  title="클릭하여 하단 뷰어에서 열기"
-                >
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-1">
-                    {/* 하위 핀 트리 접기/펼치기 화살표 */}
-                    {docPins.length > 0 ? (
+      {listExpanded && (
+        <div className={`border-b border-slate-200 bg-white p-1 overflow-y-auto shrink-0 text-xs ${viewerOpen ? "max-h-[190px]" : "flex-1 min-h-0"}`}>
+          {bound.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center text-slate-400 select-none">
+              <BookOpen className="w-6 h-6 text-slate-300 stroke-[1.2] mb-1.5" />
+              <span className="text-[11px] mb-2">연결된 레퍼런스가 없습니다</span>
+              <button
+                type="button"
+                disabled={!activeProject}
+                onClick={() => setAddOpen(true)}
+                className="p-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white cursor-pointer disabled:opacity-40"
+                title="레퍼런스 추가"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            bound.map((entry, idx) => {
+              const { refId, item } = entry;
+              const refPins = pins[refId] ?? EMPTY_PINS;
+              const isSelected = viewerOpen && current?.refId === refId;
+              const isOpen = expanded[refId] ?? refPins.length > 0;
+              const badge = kindBadge(item);
+              return (
+                <div key={refId} className="flex flex-col group/node" data-testid={`reference-row-${idx + 1}`}>
+                  <div
+                    onClick={() => openViewer(refId)}
+                    className={`py-1 px-1.5 flex items-center justify-between rounded hover:bg-slate-100 transition cursor-pointer ${
+                      isSelected ? "bg-amber-100/60 font-semibold text-amber-950" : "text-slate-700"
+                    } ${entry.enabled ? "" : "opacity-50"}`}
+                    title="클릭하여 아래 뷰어에서 열기"
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-1">
+                      {refPins.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpanded((prev) => ({ ...prev, [refId]: !isOpen }));
+                          }}
+                          className="p-0.5 rounded hover:bg-slate-200 text-slate-500 cursor-pointer shrink-0"
+                        >
+                          {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                        </button>
+                      ) : (
+                        <span className="w-4 shrink-0" />
+                      )}
+                      <input
+                        type="checkbox"
+                        checked={entry.enabled}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => void store().setEnabled(refId, !entry.enabled)}
+                        className="rounded-xs border-slate-300 text-amber-600 focus:ring-0 cursor-pointer w-3 h-3 shrink-0"
+                        title={entry.enabled ? "AI 에 사용 중 (끄기)" : "AI 에 쓰지 않음 (켜기)"}
+                      />
+                      <BookOpen className={`w-3.5 h-3.5 shrink-0 ${isSelected ? "text-amber-600" : "text-amber-500/80"}`} />
+                      <span className="text-[11px] font-mono shrink-0 text-amber-800">참조 {idx + 1}</span>
+                      <span className="text-xs truncate" title={item.title}>
+                        {item.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {item.status === "failed" && <AlertTriangle className="w-3 h-3 text-amber-500" aria-label="가져오기 실패" />}
+                      {refPins.length > 0 && (
+                        <span className="text-[10px] font-mono px-1 rounded bg-amber-50 text-amber-800 font-bold">{refPins.length}</span>
+                      )}
+                      <span className={`text-[9px] font-mono px-1 rounded border uppercase font-medium ${badge.tone}`}>{badge.label}</span>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleDocExpand(docId, defaultExpanded);
+                          void store().unbind(refId);
                         }}
-                        className="p-0.5 rounded hover:bg-slate-200/70 text-slate-400 hover:text-slate-700 cursor-pointer transition shrink-0"
-                        title={isExpanded ? "핀 목록 접기" : "핀 목록 펼치기"}
+                        className="p-0.5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50 cursor-pointer opacity-0 group-hover/node:opacity-100"
+                        title="이 프로젝트에서 연결 해제 (라이브러리에는 남는다)"
                       >
-                        <ChevronRight
-                          className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                        />
+                        <Trash2 className="w-3 h-3" />
                       </button>
-                    ) : (
-                      <span className="w-4 shrink-0" />
-                    )}
-
-                    {/* 문서 전체 체크박스 (리소스 매니저 다중 선택 스타일) */}
-                    {docPins.length > 0 && (
-                      <input
-                        type="checkbox"
-                        checked={isAllChecked}
-                        ref={(el) => {
-                          if (el) el.indeterminate = isPartialChecked;
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => toggleAllDocSnippets(docId, e.target.checked)}
-                        className="rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer w-3.5 h-3.5 shrink-0"
-                        title={isAllChecked ? "문서 내 핀 전체 선택 해제" : "문서 내 핀 전체 선택"}
-                      />
-                    )}
-
-                    <Lock
-                      className={`w-3 h-3 shrink-0 ${isSelected ? "text-amber-600" : "text-slate-400"}`}
-                    />
-                    <span className="text-[11px] font-mono shrink-0 text-amber-800">참조 {idx + 1}</span>
-                    <span className="text-xs truncate">{cleanTitle}</span>
+                    </div>
                   </div>
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    {/* 꽂아둔 핀 개수 뱃지 */}
-                    {docPins.length > 0 && (
-                      <span
-                        className="px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-800 border border-amber-300 text-[9.5px] font-mono font-bold flex items-center gap-0.5"
-                        title={`이 문서에 꽂힌 핀 ${docPins.length}개`}
-                      >
-                        <MapPin className="w-2.5 h-2.5 text-amber-600" />
-                        <span>{docPins.length}</span>
-                      </span>
-                    )}
-
-                    <button
-                      type="button"
-                      data-testid={`ref-open-viewer-btn-${idx + 1}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (docId) handleOpenViewer(docId, rp.projectId);
-                      }}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border shrink-0 transition cursor-pointer flex items-center gap-1 ${
-                        isSelected
-                          ? "bg-amber-600 text-white border-amber-700 shadow-2xs"
-                          : "bg-slate-100 hover:bg-amber-100 hover:text-amber-800 hover:border-amber-300 text-slate-600 border-slate-200"
-                      }`}
-                      title="하단 뷰어 열기"
-                    >
-                      <span>{isPdf ? "PDF" : "Doc"}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* ⭐️ 자식 핀 목록 (리소스 매니저 하위 트리 스타일: 영역 핀 + 텍스트 핀) */}
-                {isExpanded && docPins.length > 0 && (
-                  <div className="space-y-0.5 ml-4 pl-2 border-l-2 border-amber-300/80 my-1">
-                    {docPins.map((pin) => {
-                      const isChecked = checkedSnippetIds.includes(pin.id);
-                      const isFocused = focusedSnippet?.snippetId === pin.id;
-                      const pageNum = "page" in pin && typeof pin.page === "number" ? pin.page : 1;
-
-                      return (
-                        <div
-                          key={pin.id}
-                          onClick={() => {
-                            if (currentDocId !== docId) handleOpenViewer(docId, rp.projectId);
-                            if (pin.kind === "region") {
-                              useReferenceRegionStore.getState().setFocus({
-                                docId,
-                                page: pin.page,
-                                box: pin.bbox,
-                              });
-                            } else {
-                              const root = document.querySelector<HTMLElement>(`[data-testid="reference-card-${docId}"]`);
-                              const pageEl = root?.querySelector<HTMLElement>(`[data-page-number="${pageNum}"]`);
-                              if (pageEl) {
-                                pageEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                  {isOpen && refPins.length > 0 && (
+                    <div className="ml-6 pl-2.5 border-l border-slate-200 my-0.5 space-y-0.5">
+                      {refPins.map((pin) => {
+                        const checked = checkedPinIds.includes(pin.pinId);
+                        const focused = focusedPin?.pinId === pin.pinId;
+                        return (
+                          <div
+                            key={pin.pinId}
+                            data-testid={`reference-pin-${pin.pinId}`}
+                            onClick={() => {
+                              openViewer(refId);
+                              store().setFocusedPin(pin);
+                              if (pin.kind === "region" && pin.bbox && pin.page) {
+                                useReferenceRegionStore.getState().setFocus({ refId, page: pin.page, box: pin.bbox });
                               }
-                            }
-                            setFocusedSnippet(pin);
-                          }}
-                          className={`group/pin flex items-center justify-between px-2 py-1 rounded text-[11px] transition cursor-pointer border ${
-                            isFocused
-                              ? "bg-amber-100 text-amber-950 border-amber-400 font-bold shadow-2xs"
-                              : isChecked
-                              ? "bg-amber-50/70 text-slate-800 border-amber-200"
-                              : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200/70"
-                          }`}
-                          title="클릭하여 하단 뷰어에서 해당 핀 위치로 스크롤 & 포커스"
-                        >
-                          <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-1">
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onClick={(e) => e.stopPropagation()}
-                              onChange={() => toggleSnippetChecked(pin.id)}
-                              className="rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer w-3 h-3 shrink-0"
-                              title="체크하여 AI 일괄 첨부 대상으로 선택"
-                            />
-                            {pin.kind === "text" ? (
-                              <Type className="w-3 h-3 text-amber-600 shrink-0" />
-                            ) : (
-                              <MapPin className="w-3 h-3 text-amber-600 shrink-0" />
-                            )}
-                            <span className="truncate">{pin.label}</span>
+                            }}
+                            className={`py-0.5 px-1.5 flex items-center justify-between rounded hover:bg-slate-100 transition cursor-pointer group/pin ${
+                              focused ? "bg-amber-100 text-amber-950 font-semibold" : checked ? "bg-amber-50/60 text-slate-800" : "text-slate-600"
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-1">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={() => store().toggleChecked(pin.pinId)}
+                                className="rounded-xs border-slate-300 text-amber-600 focus:ring-0 cursor-pointer w-3 h-3 shrink-0"
+                                title="체크한 핀만 AI 에 보낸다 (아무것도 체크하지 않으면 전부)"
+                              />
+                              {pin.kind === "text" ? (
+                                <Type className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                              ) : (
+                                <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                              )}
+                              <span className="truncate text-xs">{pin.label}</span>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <select
+                                value={pin.layer}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => void store().updatePin(refId, pin.pinId, { layer: e.target.value })}
+                                className="text-[10px] font-mono bg-transparent border border-slate-200 rounded px-0.5 cursor-pointer"
+                                title="이 핀이 보여 주는 결정의 층위"
+                              >
+                                <option value="">층위</option>
+                                {LAYER_IDS.map((id) => (
+                                  <option key={id} value={id}>
+                                    {id}
+                                  </option>
+                                ))}
+                              </select>
+                              <span className="text-[10px] font-mono text-slate-400">{pin.page ?? 1}p</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void store().removePin(refId, pin.pinId);
+                                }}
+                                className="p-0.5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50 cursor-pointer opacity-0 group-hover/pin:opacity-100"
+                                title="핀 삭제"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
-
-                          <div className="flex items-center gap-1 shrink-0">
-                            <span className="text-[9.5px] font-mono text-slate-400">{pageNum}p</span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeSnippet(docId, pin.id);
-                              }}
-                              className="p-0.5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer opacity-0 group-hover/pin:opacity-100"
-                              title="핀 삭제"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       )}
 
-      {/* 3. 뷰어가 닫혀 있을 때의 바닥 안내 바 */}
       {!viewerOpen && (
-        <div className="p-3 bg-slate-50 border-t border-slate-200 text-center text-xs text-slate-400 flex items-center justify-between shrink-0">
-          <span className="text-[11px] text-slate-500">뷰어가 닫혀 있습니다 (위 목록을 클릭하면 열립니다)</span>
-          {currentDocId && (
-            <button
-              type="button"
-              onClick={() => setViewerOpen(true)}
-              className="px-2 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold cursor-pointer transition shadow-2xs"
-            >
+        <div className="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-400 flex items-center justify-between shrink-0">
+          <span className="text-[11px] text-slate-500">뷰어가 닫혀 있습니다 (목록을 클릭하면 열립니다)</span>
+          {current && (
+            <button type="button" onClick={() => setViewerOpen(true)} className="px-2 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold cursor-pointer">
               뷰어 열기
             </button>
           )}
         </div>
       )}
 
-      {/* 4. 중단: 퀵 스위처 가로 탭 바 (뷰어가 열려있을 때만 표시) */}
-      {viewerOpen && (
-        <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 border-b border-slate-200 overflow-x-auto shrink-0 select-none">
-          {boundRefProjects.map((rp, idx) => {
-            const docId = rp.docIds[0];
-            const isSelected = docId === currentDocId;
-            const cleanTitle = rp.title.replace(/^(\[참조\s*\d+\]|참조\s*\d+:?)\s*/, "");
-
-            return (
-              <button
-                key={rp.projectId}
-                type="button"
-                onClick={() => {
-                  if (docId) handleOpenViewer(docId, rp.projectId);
-                }}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-[11px] whitespace-nowrap transition cursor-pointer ${
-                  isSelected
-                    ? "bg-amber-600 text-white font-bold shadow-2xs"
-                    : "bg-white text-slate-700 hover:bg-amber-50 hover:text-amber-800 border border-slate-200"
-                }`}
-              >
-                <BookOpen className="w-3 h-3" />
-                <span>참조{idx + 1}: {cleanTitle.slice(0, 14)}…</span>
-              </button>
-            );
-          })}
+      {viewerOpen && bound.length > 1 && (
+        <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 border-b border-slate-200 overflow-x-auto shrink-0">
+          {bound.map((b, idx) => (
+            <button
+              key={b.refId}
+              type="button"
+              onClick={() => openViewer(b.refId)}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-[11px] whitespace-nowrap cursor-pointer ${
+                b.refId === current?.refId
+                  ? "bg-amber-600 text-white font-bold"
+                  : "bg-white text-slate-700 hover:bg-amber-50 hover:text-amber-800 border border-slate-200"
+              }`}
+            >
+              <BookOpen className="w-3 h-3" />
+              참조{idx + 1}: {b.item.title.slice(0, 14)}
+              {b.item.title.length > 14 ? "…" : ""}
+            </button>
+          ))}
         </div>
       )}
 
-      {/* 5. 하단: 통합 단일 풀사이즈 뷰어 (남은 공간 100% 활용, onClose 시 뷰어만 닫힘) */}
       {viewerOpen && (
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col p-1.5 bg-slate-100/60">
-          {currentDocId ? (
-            <ReferenceCard
-              docId={currentDocId}
-              index={Math.max(0, boundRefProjects.findIndex((p) => p.docIds.includes(currentDocId)))}
-              totalCount={1}
-              onClose={handleCloseViewer}
-            />
+          {current ? (
+            <ReferenceCard key={current.refId} entry={current} number={currentNumber} onClose={() => setViewerOpen(false)} />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400">
               <BookOpen className="w-8 h-8 mb-2 text-slate-300" />
-              <p className="font-semibold text-slate-600">선택된 참조 문서가 없습니다.</p>
-              <p className="text-xs text-slate-400 mt-1">상단 목록에서 열람할 참조 문서를 선택하세요.</p>
+              <p className="font-semibold text-slate-600">연결된 레퍼런스가 없습니다.</p>
+              <p className="text-xs text-slate-400 mt-1">+ 버튼으로 남이 만든 완성물을 하나씩 추가하세요.</p>
             </div>
           )}
         </div>
@@ -1113,17 +1059,17 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
 
 export const ReferenceSplitViewport: React.FC = () => {
   const refPlacement = useWorkspaceLayoutStore((s) => s.refPlacement);
-  const openReferenceDocIds = useWorkspaceSessionStore((s) => s.openReferenceDocIds);
+  const openReferenceIds = useWorkspaceSessionStore((s) => s.openReferenceIds);
   const splitWidth = useWorkspaceLayoutStore((s) => s.referenceSplitWidth);
   const setSplitWidth = useWorkspaceLayoutStore((s) => s.setReferenceSplitWidth);
   const resetSplitWidth = useWorkspaceLayoutStore((s) => s.resetReferenceSplitWidth);
   const refSplitCollapsed = useWorkspaceLayoutStore((s) => s.refSplitCollapsed);
   const setRefSplitCollapsed = useWorkspaceLayoutStore((s) => s.setRefSplitCollapsed);
-  const boundRefProjects = useProjectStore(useShallow(selectBoundReferenceProjects));
+  const boundCount = useReferenceStore((s) => s.bound.length);
 
   const { onResizeStart } = useDragResize({ axis: "x", size: splitWidth, onResize: setSplitWidth });
 
-  const isOpen = refPlacement === "split" || openReferenceDocIds.length > 0;
+  const isOpen = refPlacement === "split" || openReferenceIds.length > 0;
   if (!isOpen) return null;
 
   if (refSplitCollapsed) {
@@ -1131,7 +1077,7 @@ export const ReferenceSplitViewport: React.FC = () => {
       <CollapsedPanelRail
         side="left"
         label="Reference Manager"
-        badgeCount={boundRefProjects.length}
+        badgeCount={boundCount}
         tone="amber"
         onExpand={() => setRefSplitCollapsed(false)}
         testId="reference-split-collapsed-rail"
@@ -1145,12 +1091,11 @@ export const ReferenceSplitViewport: React.FC = () => {
       style={{ width: `${splitWidth}px` }}
       className="relative h-full bg-slate-100/90 border-r border-slate-300 flex flex-col overflow-hidden shrink-0 shadow-xs z-10 transition-[width] duration-75 select-text"
     >
-      {/* 우측 리사이즈 드래그 핸들 (에디터 캔버스와의 경계) */}
       <div
         data-testid="reference-split-resize-handle"
         onMouseDown={onResizeStart}
         onDoubleClick={resetSplitWidth}
-        title={`드래그하여 참조 작업창 너비 조절 · 더블클릭 시 기본 너비(${REFERENCE_SPLIT_WIDTH.default}px) 복원`}
+        title={`드래그하여 너비 조절 · 더블클릭 시 기본 너비(${REFERENCE_SPLIT_WIDTH.default}px)`}
         className="absolute -right-1 top-0 bottom-0 w-2 hover:w-3 cursor-col-resize hover:bg-amber-400/40 active:bg-amber-600/60 transition-all z-30"
       />
       <ReferenceManagerWidget isSplit={true} />

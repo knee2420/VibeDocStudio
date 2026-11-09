@@ -5,9 +5,11 @@ import mimetypes
 import uuid
 from pathlib import Path
 from typing import Any
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
+from app.core.config import get_settings
+from app.core.storage import safe_segment
 from app.resources.adapters.file_provider import FileDirectoryProvider
 from app.resources.adapters.local_resource_repository import LocalResourceRepository
 from app.resources.adapters.web_provider import WebArticleProvider
@@ -75,6 +77,37 @@ def ingest_directory(project_id: str, req: IngestDirectoryRequest) -> dict:
 
     session = _repo.get_session(project_id)
     # 기존 목록에 추가 (동일 경로면 대체)
+    existing_paths = {it.path_or_url for it in session.items if it.path_or_url}
+    for item in new_items:
+        if item.path_or_url and item.path_or_url in existing_paths:
+            session.items = [it for it in session.items if it.path_or_url != item.path_or_url]
+        session.items.insert(0, item)
+
+    _repo.save_session(session)
+    return session.to_dict()
+
+
+@router.post("/{project_id}/upload-file", response_model=ResourceSessionResponse)
+async def upload_resource_file(
+    project_id: str,
+    file: UploadFile = File(...),
+) -> dict:
+    """브라우저 파일 탐색기에서 선택한 파일을 서버에 업로드하고 리소스 세션에 추가합니다."""
+    settings = get_settings()
+    upload_dir = settings.storage.knowledge_of("resources") / safe_segment(project_id)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = file.filename or f"upload_{uuid.uuid4().hex[:8]}"
+    file_path = upload_dir / filename
+    content = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    new_items = _file_provider.ingest(str(file_path))
+    if not new_items:
+        raise HTTPException(status_code=400, detail="파일을 파싱하거나 추가할 수 없습니다.")
+
+    session = _repo.get_session(project_id)
     existing_paths = {it.path_or_url for it in session.items if it.path_or_url}
     for item in new_items:
         if item.path_or_url and item.path_or_url in existing_paths:

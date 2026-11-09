@@ -7,8 +7,8 @@ import type { BackdataChunk, VDocSlot } from "@vibe/vdoc-schema";
 
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import { selectReferenceDocId, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { selectCurrentReferenceId, useReferenceStore } from "@/entities/reference-manager";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachToComposer, referenceTextRef } from "@/features/ai-workspace";
 import { buildSlotAiActionPrompt, SlotInlineComposerHost } from "@/features/compose-slot-ai";
@@ -52,10 +52,10 @@ const OutlineHoverHighlight: React.FC = () => {
 
 /** 캔버스 위 도구 줄: 개발용 시뮬레이션 · 참조 작업창 열기. */
 const CanvasUtilityBar: React.FC = () => {
-  const referenceDocId = useProjectStore(selectReferenceDocId);
-  const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceDocIds.length);
-  const openReferenceDoc = useWorkspaceSessionStore((s) => s.openReferenceDoc);
-  const closeAllReferenceDocs = useWorkspaceSessionStore((s) => s.closeAllReferenceDocs);
+  const referenceId = useReferenceStore(selectCurrentReferenceId);
+  const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceIds.length);
+  const openReference = useWorkspaceSessionStore((s) => s.openReference);
+  const closeAllReferences = useWorkspaceSessionStore((s) => s.closeAllReferences);
   const isOpen = openReferenceCount > 0;
 
   return (
@@ -66,8 +66,8 @@ const CanvasUtilityBar: React.FC = () => {
       <button
         type="button"
         data-testid="canvas-split-ref-btn"
-        disabled={!isOpen && !referenceDocId}
-        onClick={() => (isOpen ? closeAllReferenceDocs() : referenceDocId && openReferenceDoc(referenceDocId))}
+        disabled={!isOpen && !referenceId}
+        onClick={() => (isOpen ? closeAllReferences() : referenceId && openReference(referenceId))}
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition disabled:opacity-40 ${
           isOpen ? "bg-slate-800 text-white border-slate-800 shadow-2xs" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50 shadow-2xs"
         }`}
@@ -103,7 +103,7 @@ const DraftingCanvas: React.FC = () => {
   // 캔버스는 줌 상태만 구독한다 (투영 전체를 구독하면 아웃라인 요약이 바뀔 때마다 캔버스가 다시 그려진다).
   const zoomLevel = useOutlineSelector((p) => p.activeZoomLevel);
   const zoomedNode = useOutlineSelector((p) => p.allNodes.find((n) => n.nodeId === p.rootNodeId));
-  const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceDocIds.length);
+  const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceIds.length);
   const currentPhaseIsDrafting = useWorkspaceSessionStore((s) => s.currentPhase === "drafting");
 
   // 표 구역 · 블록 · 페이지를 넘는 슬롯 범위 선택 (드래그 · 브라우저 선택)

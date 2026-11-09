@@ -31,6 +31,26 @@ const DECK_HEIGHT_KEY = "vdoc-ref-deck-height";
 const REFERENCE_SPLIT_WIDTH_KEY = "vdoc-ref-split-width";
 const RIGHT_SIDEBAR_WIDTH_KEY = "vdoc-right-sidebar-width";
 const RM_SPLIT_WIDTH_KEY = "vdoc-rm-split-width";
+const REF_VIEWER_OPEN_KEY = "vdoc:ref_viewer_open";
+
+const loadRefViewerOpenFromSession = (): boolean => {
+  if (typeof window === "undefined" || !window.sessionStorage) return true;
+  try {
+    const val = window.sessionStorage.getItem(REF_VIEWER_OPEN_KEY);
+    return val !== null ? val === "true" : true;
+  } catch {
+    return true;
+  }
+};
+
+const saveRefViewerOpenToSession = (open: boolean) => {
+  if (typeof window === "undefined" || !window.sessionStorage) return;
+  try {
+    window.sessionStorage.setItem(REF_VIEWER_OPEN_KEY, String(open));
+  } catch {
+    // ignore
+  }
+};
 
 function maxDeckHeight(): number {
   return typeof window === "undefined" ? 500 : Math.max(300, Math.floor(window.innerHeight * 0.75));
@@ -54,8 +74,8 @@ export interface WorkspaceLayoutState {
   leftPanelTab: LeftPanelTab;
   /** Reference Manager 도킹 위치 */
   refPlacement: RefPlacement;
-  /** 활성 선택된 참조 문서 ID */
-  activeReferenceDocId: string | null;
+  /** 참조 매니저 하단 뷰어 패널 열림 여부 (세션 보관) */
+  refViewerOpen: boolean;
   /** 참조 스플릿 패널 접힘 여부 (CollapsedPanelRail 로 접힘) */
   refSplitCollapsed: boolean;
   /** 아웃라이너 왼쪽의 페이지 미리보기 패널. */
@@ -76,8 +96,9 @@ export interface WorkspaceLayoutState {
   resetRmSplitWidth: () => void;
   setLeftPanelTab: (tab: LeftPanelTab) => void;
   setRefPlacement: (placement: RefPlacement) => void;
-  setActiveReferenceDocId: (docId: string | null) => void;
-  openReferenceSplit: (docId?: string) => void;
+  setRefViewerOpen: (open: boolean) => void;
+  /** 레퍼런스 작업창을 스플릿으로 연다 (어느 레퍼런스를 볼지는 reference 스토어의 activeRefId). */
+  openReferenceSplit: () => void;
   setRefSplitCollapsed: (collapsed: boolean) => void;
   setSidebarWidth: (width: number) => void;
   resetSidebarWidth: () => void;
@@ -104,7 +125,7 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   rmSplitWidth: clamp(readStoredNumber(RM_SPLIT_WIDTH_KEY, RM_SPLIT_WIDTH.default), RM_SPLIT_WIDTH.min, RM_SPLIT_WIDTH.max),
   leftPanelTab: "outliner",
   refPlacement: "closed",
-  activeReferenceDocId: null,
+  refViewerOpen: loadRefViewerOpenFromSession(),
   refSplitCollapsed: false,
   sidebarWidth: clamp(readStoredNumber(SIDEBAR_WIDTH_KEY, SIDEBAR_WIDTH.default), SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max),
   rightSidebarWidth: clamp(
@@ -169,14 +190,16 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
       set({ refPlacement: placement });
     }
   },
-  setActiveReferenceDocId: (docId) => set({ activeReferenceDocId: docId }),
-  openReferenceSplit: (docId) => {
-    const { leftPanelTab, activeReferenceDocId } = get();
+  setRefViewerOpen: (open) => {
+    saveRefViewerOpenToSession(open);
+    set({ refViewerOpen: open });
+  },
+  openReferenceSplit: () => {
+    const { leftPanelTab } = get();
     set({
       refPlacement: "split",
       refSplitCollapsed: false,
       leftPanelTab: leftPanelTab === "reference-manager" ? "outliner" : leftPanelTab,
-      activeReferenceDocId: docId ?? activeReferenceDocId,
     });
   },
   setRefSplitCollapsed: (collapsed) => set({ refSplitCollapsed: collapsed }),

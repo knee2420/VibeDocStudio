@@ -4,6 +4,7 @@ import { evidenceForSlot, type EvidenceLink, type EvidenceLocator, type Resource
 import { useKnowledgeDeckStore } from "@/entities/knowledge-deck";
 import { flattenResourceItems, useResourceStore } from "@/entities/resource";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { aiRuntime } from "@/shared/ai";
 
@@ -37,9 +38,10 @@ export function openEvidence(locator: EvidenceLocator): boolean {
         entity.reveal();
         return true;
       }
-      const docId = locator.docId ?? locator.refId;
-      if (!useStudioDocumentStore.getState().docs.some((d) => d.docId === docId)) return false;
-      useWorkspaceSessionStore.getState().openReferenceDoc(docId);
+      // 영역 id 를 못 풀면 레퍼런스 자체라도 연다 (레퍼런스는 작업 문서가 아니다)
+      const refEntity = aiRuntime.entities.lookup(locator.docId ?? locator.refId.split(":")[0], "reference");
+      if (!refEntity?.reveal) return false;
+      refEntity.reveal();
       return true;
     }
     case "backdata": {

@@ -5,6 +5,7 @@ import { aiRuntime } from "@/shared/ai";
 import { SLOT_RANGE_ACTIONS } from "./model/rangeAi";
 import { WORKSPACE_CONTEXT_PROVIDERS } from "./model/workspaceContexts";
 import { WORKSPACE_ENTITY_RESOLVERS } from "./model/workspaceEntities";
+export { revealReferenceViewer } from "./model/workspaceEntities";
 import { withScopeGuards } from "./model/scopeAi";
 import { WORKSPACE_TOOLS } from "./model/workspaceTools";
 
@@ -41,7 +42,7 @@ export {
   withPicked,
   type AttachOptions,
 } from "./model/attach";
-export { referenceDocs, type ReferenceDocView } from "./model/referenceDocs";
+export { activeReferences, boundReferences, type ReferenceView } from "./model/boundReferences";
 export {
   backdataRef,
   blockRef,

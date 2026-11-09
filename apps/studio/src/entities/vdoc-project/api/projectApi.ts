@@ -1,7 +1,5 @@
 import type {
   OutlineCommand,
-  OutlinerNode,
-  ProvenanceRecord,
   VProjectManifest,
 } from "@vibe/vdoc-schema";
 
@@ -10,12 +8,6 @@ import { httpClient } from "@/shared/api";
 export interface OutlineCommandResponse {
   project: VProjectManifest;
   affectedNodeId: string | null;
-}
-
-export interface CloneNodeResponse {
-  project: VProjectManifest;
-  clonedNode: OutlinerNode;
-  provenance: ProvenanceRecord;
 }
 
 const path = (projectId: string) => `/api/projects/${encodeURIComponent(projectId)}`;
@@ -30,12 +22,4 @@ export const projectApi = {
 
   command: (projectId: string, command: OutlineCommand) =>
     httpClient.post<OutlineCommandResponse>(`${path(projectId)}/commands`, command),
-
-  cloneNode: (
-    projectId: string,
-    body: { sourceProjectId: string; sourceNodeId: string; targetParentId?: string | null }
-  ) => httpClient.post<CloneNodeResponse>(`${path(projectId)}/clone-node`, body),
-
-  bindReferences: (projectId: string, referenceProjectIds: string[]) =>
-    httpClient.put<VProjectManifest>(`${path(projectId)}/references`, { referenceProjectIds }),
 };

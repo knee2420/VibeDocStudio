@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { findFirstEditableSlotId } from "@vibe/vdoc-schema";
 
 import { useAiStagingStore } from "@/entities/ai-staging";
+import { useReferenceStore } from "@/entities/reference-manager";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
@@ -14,8 +15,9 @@ export type WorkspaceBootStatus = "loading" | "ready" | "error";
  * 작업 공간 기동 순서 (서버가 원장):
  * 1) URL 의 위치(단계 · 줌 · 참조 작업창)를 세션에 복원
  * 2) 프로젝트 매니페스트를 불러오고, URL 에 단계가 없으면 프로젝트에 기록된 단계로 시작
- * 3) 모든 프로젝트가 참조하는 문서를 불러와 URL 의 `doc` 을 활성 문서로
+ * 3) 모든 프로젝트의 작업 문서를 불러와 URL 의 `doc` 을 활성 문서로
  * 4) 활성 문서의 첫 편집 슬롯을 선택
+ * 레퍼런스(라이브러리 · 프로젝트 연결)는 작업 문서와 따로 불러오고, 활성 프로젝트가 바뀌면 다시 불러온다.
  */
 export function useWorkspaceBootstrap(): {
   status: WorkspaceBootStatus;
@@ -50,6 +52,7 @@ export function useWorkspaceBootstrap(): {
       const activeProjectId = selectActiveProject(projectState)?.projectId;
       // 승인 전 변경안 대기열은 프로젝트별로 서버에 있다 (새로고침 뒤에도 이어서 검토)
       if (activeProjectId) void useAiStagingStore.getState().hydrate(activeProjectId);
+      void useReferenceStore.getState().loadProject(activeProjectId ?? null);
       const recordedPhase = selectActiveProject(projectState)?.activePhase;
       if (!params.get("phase") && recordedPhase) session.setPhase(recordedPhase);
 
@@ -63,8 +66,16 @@ export function useWorkspaceBootstrap(): {
       setStatus("ready");
     })();
 
+    // 프로젝트를 바꾸면 그 프로젝트에 연결된 레퍼런스를 다시 불러온다
+    const unsubscribe = useProjectStore.subscribe((state, prev) => {
+      if (state.activeProjectId !== prev.activeProjectId) {
+        void useReferenceStore.getState().loadProject(state.activeProjectId || null);
+      }
+    });
+
     return () => {
       cancelled = true;
+      unsubscribe();
     };
   }, [attempt]);
 

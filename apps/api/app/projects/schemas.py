@@ -69,10 +69,8 @@ class VProjectManifestResponse(BaseModel):
     projectId: str
     title: str
     description: str = ""
-    isReferenceOnly: bool = False
     activePhase: str = "storylining"
     docIds: list[str] = Field(default_factory=list)
-    referenceProjectIds: list[str] = Field(default_factory=list)
     storylineNodes: list[StorylineNodeSchema] = Field(default_factory=list)
     provenanceLineage: list[ProvenanceLineageSchema] = Field(default_factory=list)
     updatedAt: str = ""
@@ -85,28 +83,10 @@ class VProjectManifestResponse(BaseModel):
 class SaveVProjectRequest(BaseModel):
     title: str
     description: str = ""
-    isReferenceOnly: bool = False
     activePhase: str = "storylining"
     docIds: list[str] = Field(default_factory=list)
-    referenceProjectIds: list[str] = Field(default_factory=list)
     storylineNodes: list[dict[str, Any]] = Field(default_factory=list)
     provenanceLineage: list[dict[str, Any]] = Field(default_factory=list)
-
-
-class BindReferenceProjectsRequest(BaseModel):
-    referenceProjectIds: list[str] = Field(default_factory=list)
-
-
-class CloneReferenceNodeRequest(BaseModel):
-    sourceProjectId: str
-    sourceNodeId: str
-    targetParentId: str | None = None
-
-
-class CloneReferenceNodeResponse(BaseModel):
-    project: VProjectManifestResponse
-    clonedNode: StorylineNodeSchema
-    provenance: ProvenanceLineageSchema
 
 
 class OutlineBreadcrumbSchema(BaseModel):
@@ -118,7 +98,6 @@ class OutlineBreadcrumbSchema(BaseModel):
 class ProjectOutlineTreeResponse(BaseModel):
     projectId: str
     title: str
-    isReferenceOnly: bool
     activePhase: str
     activeZoomLevel: str
     rootNodeId: str

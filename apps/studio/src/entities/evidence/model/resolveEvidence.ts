@@ -46,7 +46,7 @@ export interface EvidenceExtras {
 /**
  * 칸 하나의 근거 후보 — 등급 순서로:
  *   direct     그 칸에 이미 연결된 근거 (사람이 붙였거나 AI 가 인용해 승인된 것) · 사용자가 집은 1순위 자료
- *   inherited  같은 블록 이웃 칸들의 근거 · RM 고정 자료 · 열어 둔 참조 문서
+ *   inherited  같은 블록 이웃 칸들의 근거 · RM 고정 자료 (레퍼런스는 근거가 아니라 패턴 출처라 넣지 않는다)
  * suggested(지식 덱 추천)는 서버 하네스가 근거가 약할 때 스스로 더한다.
  */
 export function resolveSlotEvidence(doc: VDocDocument, slotId: string, extras: EvidenceExtras = {}): EvidenceCandidate[] {
@@ -63,9 +63,8 @@ export function resolveSlotEvidence(doc: VDocDocument, slotId: string, extras: E
   const place = locateSlot(doc, slotId);
   for (const sib of place?.siblings ?? []) for (const link of evidenceForSlot(doc, sib)) add(link.locator, "inherited");
   for (const loc of extras.pinned ?? []) add(loc, "inherited");
-  for (const ref of extras.references ?? []) {
-    add({ kind: "ref-region", refId: ref.docId, docId: ref.docId, label: ref.label, excerpt: ref.text.slice(0, 2400) }, "inherited");
-  }
+  // 열어 둔 참조 문서(레퍼런스)는 근거가 아니다 — 층위별 패턴을 옮기는 출처이지, 칸 내용의 사실 출처가 아니다.
+  // (extras.references 는 호출 호환을 위해 받기만 한다)
   return out;
 }
 

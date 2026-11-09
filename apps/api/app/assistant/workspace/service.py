@@ -23,11 +23,14 @@ from typing import Any, Iterable, Optional
 from .index import MountItem, WorkspaceIndex
 from .mapper import build_map
 from .sandbox import prepare_sandbox
+from .workbench import Workbench
 from .store import Coverage, WorkspaceStore, coverage
 
 logger = logging.getLogger(__name__)
 
 MOUNT_KIND = "resource-mount"
+#: 프론트가 매 메시지 보내는 작업대 상태 (열린 문서 · 범위 · 활성 레퍼런스와 핀 · 선택 칸)
+WORKBENCH_KIND = "workbench"
 #: 이 버전보다 낮은 agy 는 작업 폴더 훅 · 플러그인 MCP 동작을 확인하지 않았다
 MIN_AGY_VERSION = (1, 5, 0)
 _CASUAL_EXCLUSIONS = re.compile(r"전체적|전반적|모든\s*면|모든\s*각도|모든\s*관점")
@@ -91,8 +94,13 @@ class MountState:
 
 class ResourceWorkspace:
     def __init__(self, *, state_dir: Path, sandbox_dir: Path, python_exe: str = sys.executable,
-                 agy_executable: Optional[str] = None, transport: str = "acp") -> None:
+                 agy_executable: Optional[str] = None, transport: str = "acp",
+                 documents_root: Optional[Path] = None, references_root: Optional[Path] = None) -> None:
         self.state_dir = Path(state_dir)
+        #: 작업 문서 저장소 (`data/knowledge/documents/<docId>/document.vdoc.json`)
+        self.documents_root = Path(documents_root) if documents_root else None
+        #: 레퍼런스 라이브러리 항목 폴더 (`data/knowledge/references/items/<refId>/`)
+        self.references_root = Path(references_root) if references_root else None
         self.sandbox_dir = Path(sandbox_dir)
         self.python_exe = python_exe
         self.agy_executable = agy_executable
@@ -242,6 +250,64 @@ class ResourceWorkspace:
         sig = mount.signature
         ix = self.index(sig, mount.items, id_map=mount.id_map)
         return list(ix.roots)
+
+    # --- 작업대 (에디터 · 레퍼런스 · 이력) ----------------------------------------------------
+
+    def _doc_path(self, doc_id: str, root: Optional[Path]) -> Optional[str]:
+        if not doc_id or root is None:
+            return None
+        safe = re.sub(r"[^\w.-]", "_", doc_id)
+        path = root / safe / "document.vdoc.json"
+        return str(path) if path.is_file() else None
+
+    def _ref_dir(self, ref_id: str, root: Optional[Path]) -> Optional[str]:
+        if not ref_id or root is None:
+            return None
+        safe = re.sub(r"[^\w.-]", "_", ref_id)
+        path = root / safe
+        return str(path) if (path / "ref.json").is_file() else None
+
+    def _fixture_root(self, value: Any, label: str) -> Optional[Path]:
+        if not value:
+            return None
+        try:
+            path = Path(str(value)).resolve()
+            path.relative_to(self.state_dir.resolve().parent.parent)
+            return path
+        except (OSError, ValueError):
+            logger.warning("[workspace] 작업대 %s 거부: %s", label, value)
+            return None
+
+    def set_workbench(self, session_id: str, content: str) -> Optional[Workbench]:
+        """프론트의 작업대 첨부 → 문서 · 레퍼런스 경로를 풀어 세션 작업대로 저장한다 (vibefs 가 읽는다)."""
+        try:
+            raw = json.loads(content or "{}")
+        except ValueError:
+            return None
+        if not isinstance(raw, dict):
+            return None
+        # 평가 픽스처는 state 아래 자기 폴더를 쓴다 (그 밖의 경로는 받지 않는다)
+        root = self._fixture_root(raw.get("documentsRoot"), "documentsRoot") or self.documents_root
+        ref_root = self._fixture_root(raw.get("referencesRoot"), "referencesRoot") or self.references_root
+        scope = raw.get("scope") or {}
+        state = {
+            "docId": raw.get("docId"),
+            "docPath": None if scope.get("mode") == "off" else self._doc_path(str(raw.get("docId") or ""), root),
+            "scope": scope,
+            "selection": list(raw.get("selection") or []),
+            # 레퍼런스는 라이브러리 폴더를 가리킨다 (vdoc 이 아니다). pinIds 가 없으면(None) 핀 전부, 목록이면 그 핀만.
+            "references": [
+                {"refId": r.get("refId"), "title": r.get("title"), "dir": self._ref_dir(str(r.get("refId") or ""), ref_root),
+                 "pinIds": None if r.get("pinIds") is None else [str(x) for x in r.get("pinIds") or []],
+                 "layers": {str(k): bool(v) for k, v in (r.get("layers") or {}).items()}}
+                for r in (raw.get("references") or []) if isinstance(r, dict) and r.get("refId")
+            ],
+        }
+        self.store.set_workbench(session_id, state)
+        return Workbench.from_state(state)
+
+    def clear_workbench(self, session_id: str) -> None:
+        self.store.set_workbench(session_id, None)
 
     def brief(self, state: MountState) -> str:
         ix = state.index

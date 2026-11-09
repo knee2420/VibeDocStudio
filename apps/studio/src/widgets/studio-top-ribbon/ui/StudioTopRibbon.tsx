@@ -17,10 +17,10 @@ import {
 } from "@/entities/vdoc-document";
 import {
   selectActiveProject,
-  selectReferenceDocId,
   useProjectStore,
 } from "@/entities/vdoc-project";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { selectCurrentReferenceId, useReferenceStore } from "@/entities/reference-manager";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
@@ -48,15 +48,15 @@ export const StudioTopRibbon: React.FC = () => {
   const redoHistory = useHistoryStore((s) => s.redo);
 
   const activeProject = useProjectStore(selectActiveProject);
-  const referenceDocId = useProjectStore(selectReferenceDocId);
+  const referenceId = useReferenceStore(selectCurrentReferenceId);
 
   const stagingCount = useAiStagingStore((s) => s.queue.length);
   const isAiRunning = useAiStagingStore((s) => s.isRunning);
   const abortAiRun = useAiStagingStore((s) => s.abortRun);
 
-  const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceDocIds.length);
-  const openReferenceDoc = useWorkspaceSessionStore((s) => s.openReferenceDoc);
-  const closeAllReferenceDocs = useWorkspaceSessionStore((s) => s.closeAllReferenceDocs);
+  const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceIds.length);
+  const openReference = useWorkspaceSessionStore((s) => s.openReference);
+  const closeAllReferences = useWorkspaceSessionStore((s) => s.closeAllReferences);
 
   const setActiveActivityTab = useWorkspaceLayoutStore((s) => s.setActiveActivityTab);
   const leftSidebarOpen = useWorkspaceLayoutStore((s) => s.leftSidebarOpen);
@@ -297,16 +297,16 @@ export const StudioTopRibbon: React.FC = () => {
           <button
             type="button"
             data-testid="canvas-toggle-split-ref-btn"
-            disabled={openReferenceCount === 0 && !referenceDocId}
+            disabled={openReferenceCount === 0 && !referenceId}
             onClick={() =>
-              openReferenceCount > 0 ? closeAllReferenceDocs() : referenceDocId && openReferenceDoc(referenceDocId)
+              openReferenceCount > 0 ? closeAllReferences() : referenceId && openReference(referenceId)
             }
             className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold border cursor-pointer transition disabled:opacity-40 ${
               openReferenceCount > 0
                 ? "bg-violet-100 text-violet-900 border-violet-300"
                 : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
             }`}
-            title={openReferenceCount > 0 ? "참조 작업창 모두 닫기" : "선택한 참조 문서를 캔버스 옆에 띄우기"}
+            title={openReferenceCount > 0 ? "참조 작업창 모두 닫기" : "지금 고른 레퍼런스를 캔버스 옆에 띄우기"}
           >
             <Columns className="w-3 h-3" />
             <span>스플릿 뷰</span>

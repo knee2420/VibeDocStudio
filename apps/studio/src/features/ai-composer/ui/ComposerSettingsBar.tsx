@@ -5,12 +5,12 @@ import { getCheckedResourceItems, type ResourceItem } from "@vibe/vdoc-schema";
 
 import { DEFAULT_SCOPE, pageTitle, resolveScope, useAiScopeStore, type ScopeMode } from "@/entities/ai-scope";
 import { deckStageLabel, isDeckBusy, isDeckUsable, useKnowledgeDeckStore, type KnowledgeDeck } from "@/entities/knowledge-deck";
-import { useReferencePinStore } from "@/entities/reference-manager";
+import { useReferenceStore } from "@/entities/reference-manager";
 import { useResourceStore } from "@/entities/resource";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
-import { referenceDocs } from "@/features/ai-workspace";
+import { revealReferenceViewer } from "@/features/ai-workspace";
 
 /**
  * Composer 설정바 — 입력창 위, 오래 걸어 두는 세팅. 줄마다 [행 스위치] [요약 버튼 ▴ → 펼침 메뉴].
@@ -281,62 +281,45 @@ const MenuItem: React.FC<{
   </div>
 );
 
-// --- 📖 레퍼런스 (규정 · 서식) --------------------------------------------------
+// --- 📖 레퍼런스 (남의 완성물에서 '어떻게 썼나') -------------------------------------------
 
 const ReferencesRow: React.FC = () => {
   const referencesOn = useAiScopeStore((s) => s.referencesOn);
   const setReferencesOn = useAiScopeStore((s) => s.setReferencesOn);
-  const excludedRefDocIds = useAiScopeStore((s) => s.excludedRefDocIds ?? []);
-  const toggleRefDocExcluded = useAiScopeStore((s) => s.toggleRefDocExcluded);
-  const setAllRefDocsExcluded = useAiScopeStore((s) => s.setAllRefDocsExcluded);
 
-  const snippetsByDoc = useReferencePinStore((s) => s.snippetsByDoc);
-  const checkedSnippetIds = useReferencePinStore((s) => s.checkedSnippetIds);
+  const bound = useReferenceStore((s) => s.bound);
+  const pins = useReferenceStore((s) => s.pins);
+  const checkedPinIds = useReferenceStore((s) => s.checkedPinIds);
+  const setEnabled = useReferenceStore((s) => s.setEnabled);
+  const setAllEnabled = useReferenceStore((s) => s.setAllEnabled);
 
   const setLeftPanelTab = useWorkspaceLayoutStore((s) => s.setLeftPanelTab);
-  const openReferenceSplit = useWorkspaceLayoutStore((s) => s.openReferenceSplit);
+  const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
 
   const [open, setOpen, menuRef] = usePopover();
 
-  // 바인딩된 참조 문서 목록
-  const refDocs = React.useMemo(() => referenceDocs(), []);
-  const activeDocs = React.useMemo(
-    () => refDocs.filter((d) => !excludedRefDocIds.includes(d.docId)),
-    [refDocs, excludedRefDocIds]
-  );
-
-  // 등록된 총 핀 및 체크된 핀 수
-  const totalPinCount = React.useMemo(() => {
-    return refDocs.reduce((acc, d) => acc + (snippetsByDoc[d.docId]?.length ?? 0), 0);
-  }, [refDocs, snippetsByDoc]);
-
+  const active = React.useMemo(() => bound.filter((b) => b.enabled), [bound]);
   const activePinCount = React.useMemo(() => {
-    const checkedSet = new Set(checkedSnippetIds ?? []);
-    return activeDocs.reduce((acc, d) => {
-      const snippets = snippetsByDoc[d.docId] ?? [];
-      const active = snippets.filter((s) => checkedSet.size === 0 || checkedSet.has(s.id));
-      return acc + active.length;
+    const checked = new Set(checkedPinIds);
+    return active.reduce((acc, b) => {
+      const list = pins[b.refId] ?? [];
+      return acc + (checked.size === 0 ? list.length : list.filter((p) => checked.has(p.pinId)).length);
     }, 0);
-  }, [activeDocs, snippetsByDoc, checkedSnippetIds]);
+  }, [active, pins, checkedPinIds]);
 
   const referencesSummary = React.useMemo(() => {
     if (!referencesOn) return "꺼짐";
-    if (refDocs.length === 0) return "없음";
-    if (activeDocs.length === 0) return "전체 제외됨";
-    if (activeDocs.length === 1 && totalPinCount === 0) {
-      return activeDocs[0].title;
-    }
-    if (activePinCount > 0) {
-      return `참조 ${activeDocs.length}건 · 핀 ${activePinCount}개`;
-    }
-    return `참조 ${activeDocs.length}건`;
-  }, [referencesOn, refDocs.length, activeDocs, totalPinCount, activePinCount]);
+    if (bound.length === 0) return "없음";
+    if (active.length === 0) return "모두 끔";
+    if (active.length === 1 && activePinCount === 0) return active[0].item.title;
+    return activePinCount > 0 ? `참조 ${active.length}건 · 핀 ${activePinCount}개` : `참조 ${active.length}건`;
+  }, [referencesOn, bound.length, active, activePinCount]);
 
-  const referencesTooltip = React.useMemo(() => {
-    if (!referencesOn) return "레퍼런스 꺼짐 — AI가 규정·서식을 참고하지 않습니다 (클릭하여 켜기)";
-    if (refDocs.length === 0) return "바인딩된 참조 문서 없음";
-    return `참조 문서 ${activeDocs.length}건 활성 (총 ${refDocs.length}건, 핀 ${activePinCount}개)`;
-  }, [referencesOn, refDocs.length, activeDocs.length, activePinCount]);
+  const referencesTooltip = !referencesOn
+    ? "레퍼런스 꺼짐 — AI 가 레퍼런스의 결정 방식을 참고하지 않습니다 (클릭하여 켜기)"
+    : bound.length === 0
+      ? "연결된 레퍼런스 없음"
+      : `레퍼런스 ${active.length}건 사용 (연결 ${bound.length}건, 핀 ${activePinCount}개)`;
 
   return (
     <div ref={menuRef} className="relative flex-1 min-w-0 flex">
@@ -352,23 +335,22 @@ const ReferencesRow: React.FC = () => {
         switchTestId="row-switch-references"
         buttonTestId="references-setting-button"
         switchTitle={referencesTooltip}
-        buttonTitle="참조 문서(규정 · 서식) 선택 메뉴 열기"
+        buttonTitle="AI 에 쓸 레퍼런스 고르기"
       />
       {open && (
         <div
           data-testid="references-menu"
           className="absolute bottom-full left-0 mb-1 w-80 max-h-96 flex flex-col rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 text-[11px] overflow-hidden"
         >
-          {/* 상단 헤더 */}
           <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
             <span className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
               <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
-              참조 문서 (규정 · 서식)
+              레퍼런스 (결정 패턴)
             </span>
             <div className="flex items-center gap-1 text-[10px]">
               <button
                 type="button"
-                onClick={() => setAllRefDocsExcluded(refDocs.map((d) => d.docId), false)}
+                onClick={() => void setAllEnabled(true)}
                 className="px-1.5 py-0.5 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer font-medium"
               >
                 모두 켜기
@@ -376,7 +358,7 @@ const ReferencesRow: React.FC = () => {
               <span className="text-slate-300 dark:text-slate-600">|</span>
               <button
                 type="button"
-                onClick={() => setAllRefDocsExcluded(refDocs.map((d) => d.docId), true)}
+                onClick={() => void setAllEnabled(false)}
                 className="px-1.5 py-0.5 rounded text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 모두 끄기
@@ -384,55 +366,48 @@ const ReferencesRow: React.FC = () => {
             </div>
           </div>
 
-          {/* 목록 영역 */}
           <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
-            {refDocs.length === 0 ? (
-              <div className="py-6 text-center text-slate-400">
-                바인딩된 참조 문서가 없습니다.
-              </div>
+            {bound.length === 0 ? (
+              <div className="py-6 text-center text-slate-400">연결된 레퍼런스가 없습니다.</div>
             ) : (
-              refDocs.map((d) => {
-                const isExcluded = excludedRefDocIds.includes(d.docId);
-                const isChecked = !isExcluded;
-                const docSnippets = snippetsByDoc[d.docId] ?? [];
+              bound.map((b, idx) => {
+                const pinCount = pins[b.refId]?.length ?? 0;
+                const layersOff = Object.values(b.layers).filter((on) => !on).length;
                 return (
                   <div
-                    key={d.docId}
+                    key={b.refId}
                     className={`flex items-start gap-2 p-2 rounded-md transition ${
-                      isChecked
+                      b.enabled
                         ? "bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100/80 dark:hover:bg-slate-800/70"
                         : "opacity-60 hover:opacity-100"
                     }`}
                   >
                     <input
                       type="checkbox"
-                      checked={isChecked}
-                      onChange={() => toggleRefDocExcluded(d.docId)}
+                      checked={b.enabled}
+                      onChange={() => void setEnabled(b.refId, !b.enabled)}
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                      id={`ref-doc-check-${d.docId}`}
+                      id={`ref-check-${b.refId}`}
                     />
                     <div className="flex-1 min-w-0">
                       <label
-                        htmlFor={`ref-doc-check-${d.docId}`}
+                        htmlFor={`ref-check-${b.refId}`}
                         className="font-medium text-slate-800 dark:text-slate-200 truncate block cursor-pointer"
                       >
-                        {d.title}
+                        참조{idx + 1}: {b.item.title}
                       </label>
                       <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-                        <span>{d.projectTitle}</span>
-                        {d.pageCount && <span>· {d.pageCount}p</span>}
-                        {docSnippets.length > 0 && (
-                          <span className="text-emerald-600 font-medium">
-                            · 핀 {docSnippets.length}개
-                          </span>
-                        )}
+                        <span className="uppercase">{b.item.kind}</span>
+                        {b.item.pageCount > 0 && <span>· {b.item.pageCount}쪽</span>}
+                        {pinCount > 0 && <span className="text-emerald-600 font-medium">· 핀 {pinCount}개</span>}
+                        {layersOff > 0 && <span>· 층위 {layersOff}개 끔</span>}
                       </div>
                     </div>
                     <button
                       type="button"
-                      title="스플릿 뷰에서 열기"
+                      title="레퍼런스 뷰어에서 열기"
                       onClick={() => {
-                        openReferenceSplit(d.docId);
+                        revealReferenceViewer(b.refId);
                         setOpen(false);
                       }}
                       className="p-1 rounded text-slate-400 hover:text-emerald-600 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 cursor-pointer"
@@ -445,18 +420,18 @@ const ReferencesRow: React.FC = () => {
             )}
           </div>
 
-          {/* 하단 푸터 바로가기 */}
           <div className="p-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center text-[10px]">
-            <span className="text-slate-400">규범·서식 가이드로 AI 주입</span>
+            <span className="text-slate-400">문장이 아니라 결정 방식만 참고</span>
             <button
               type="button"
               onClick={() => {
+                setLeftSidebarOpen(true);
                 setLeftPanelTab("reference-manager");
                 setOpen(false);
               }}
               className="px-2 py-1 rounded bg-slate-200/70 dark:bg-slate-800 hover:bg-slate-300/70 text-slate-700 dark:text-slate-300 cursor-pointer font-medium"
             >
-              좌측 Reference Manager 열기 →
+              Reference Manager 열기 →
             </button>
           </div>
         </div>

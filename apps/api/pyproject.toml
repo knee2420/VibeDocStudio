@@ -92,6 +92,7 @@ forbidden_modules = [
     "app.documents",
     "app.knowledge",
     "app.projects",
+    "app.reference",
     "app.resources",
     "app.runtime",
 ]
@@ -112,6 +113,7 @@ forbidden_modules = [
     "app.documents",
     "app.knowledge",
     "app.projects",
+    "app.reference",
     "app.resources",
     "app.runtime",
 ]
@@ -132,6 +134,7 @@ forbidden_modules = [
     "app.documents",
     "app.knowledge",
     "app.projects",
+    "app.reference",
     "app.resources",
     "app.runtime",
 ]
@@ -151,6 +154,7 @@ forbidden_modules = [
     "app.composer",
     "app.knowledge",
     "app.projects",
+    "app.reference",
     "app.resources",
     "app.runtime",
 ]
@@ -170,6 +174,7 @@ forbidden_modules = [
     "app.composer",
     "app.documents",
     "app.knowledge",
+    "app.reference",
     "app.resources",
     "app.runtime",
 ]
@@ -188,6 +193,7 @@ forbidden_modules = [
     "app.documents",
     "app.knowledge",
     "app.projects",
+    "app.reference",
     "app.resources",
 ]
 
@@ -206,6 +212,7 @@ forbidden_modules = [
     "app.documents",
     "app.knowledge",
     "app.projects",
+    "app.reference",
     "app.resources",
     "app.runtime",
 ]
@@ -225,6 +232,7 @@ forbidden_modules = [
     "app.composer",
     "app.documents",
     "app.projects",
+    "app.reference",
     "app.resources",
     "app.runtime",
 ]
@@ -244,5 +252,33 @@ forbidden_modules = [
     "app.documents",
     "app.knowledge",
     "app.projects",
+    "app.reference",
     "app.runtime",
 ]
+
+
+[[tool.importlinter.contracts]]
+name = "reference must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.reference.use_cases",
+    "app.reference.adapters",
+    "app.reference.ports",
+]
+forbidden_modules = [
+    "app.assistant",
+    "app.backdata",
+    "app.catalog",
+    "app.composer",
+    "app.documents",
+    "app.knowledge",
+    "app.projects",
+    "app.resources",
+    "app.runtime",
+]
+
+[[tool.importlinter.contracts]]
+name = "Reference is not a vdoc document"
+type = "forbidden"
+source_modules = ["app.reference"]
+forbidden_modules = ["pdf_vdoc_engine", "app.documents", "app.catalog"]

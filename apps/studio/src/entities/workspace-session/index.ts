@@ -1,7 +1,7 @@
 export {
   WORKBENCH_PHASES,
   isWorkbenchPhase,
-  parseReferenceDocIds,
+  parseReferenceIds,
   useWorkspaceSessionStore,
 } from "./model/useWorkspaceSessionStore";
 export type { WorkspaceLocation, WorkspaceSessionState } from "./model/useWorkspaceSessionStore";

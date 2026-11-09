@@ -22,9 +22,6 @@ export interface AiScopeState {
   setScopeOn: (on: boolean) => void;
 
   /** 특정 참조 문서(규정/서식) 제외 관리 — 제외되지 않은 참조 문서는 Composer 컨텍스트에 자동 주입된다 */
-  excludedRefDocIds: string[];
-  toggleRefDocExcluded: (docId: string) => void;
-  setAllRefDocsExcluded: (docIds: string[], excluded: boolean) => void;
 
   settingFor: (docId: string) => DocScopeSetting;
   setMode: (docId: string, mode: ScopeMode) => void;
@@ -89,7 +86,6 @@ export const useAiScopeStore = create<AiScopeState>((set, get) => {
     live: { docId: null, target: null, pageId: null },
     turn: null,
     ...loadSwitches(),
-    excludedRefDocIds: [],
     setReferencesOn: (on) => {
       set({ referencesOn: on });
       try {
@@ -133,20 +129,6 @@ export const useAiScopeStore = create<AiScopeState>((set, get) => {
         );
       } catch {
         /* 이번 세션만 */
-      }
-    },
-    toggleRefDocExcluded: (docId) => {
-      const cur = get().excludedRefDocIds;
-      const next = cur.includes(docId) ? cur.filter((id) => id !== docId) : [...cur, docId];
-      set({ excludedRefDocIds: next });
-    },
-    setAllRefDocsExcluded: (docIds, excluded) => {
-      if (excluded) {
-        const setIds = new Set([...get().excludedRefDocIds, ...docIds]);
-        set({ excludedRefDocIds: Array.from(setIds) });
-      } else {
-        const removeSet = new Set(docIds);
-        set({ excludedRefDocIds: get().excludedRefDocIds.filter((id) => !removeSet.has(id)) });
       }
     },
 

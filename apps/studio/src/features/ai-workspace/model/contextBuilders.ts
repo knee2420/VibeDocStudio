@@ -22,7 +22,7 @@ import {
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { clipText, htmlToPlain } from "@/shared/lib";
 
-import { referenceDocs } from "./referenceDocs";
+import { findReferenceItem, referenceNumber, useReferenceStore } from "@/entities/reference-manager";
 
 /** 블록 종류의 사람 이름 — 블록 정의(`block-kit`)가 정한다. */
 export const blockKindLabel = (kind: string) => getBlockKind(kind).label;
@@ -152,15 +152,16 @@ function outlineNodeOnlyRef(node: OutlinerNode): ContextRef {
   };
 }
 
-export function referenceRef(docId: string, label?: string): ContextRef {
-  const view = referenceDocs().find((r) => r.docId === docId);
+export function referenceRef(refId: string, label?: string): ContextRef {
+  const item = findReferenceItem(refId);
+  const number = referenceNumber(refId);
   return {
     kind: "reference",
-    id: docId,
-    label: label ?? view?.title ?? findDoc(docId)?.title ?? docId,
-    hint: view ? `${view.pageCount ?? "?"}페이지 참조 문서` : "참조 문서",
+    id: refId,
+    label: label ?? (item ? `${number ? `참조${number}: ` : ""}${item.title}` : refId),
+    hint: item ? `레퍼런스 · ${item.kind}${item.pageCount ? ` · ${item.pageCount}쪽` : ""}` : "레퍼런스",
     access: "read",
-    meta: { entityId: docId, entityKind: "doc" },
+    meta: { entityId: refId, entityKind: "reference" },
   };
 }
 
@@ -225,40 +226,41 @@ export function textRangeRef(doc: VDocDocument, slot: VDocSlot, range: { from: n
   };
 }
 
-/** 참조 문서 안에서 긁은 텍스트 (PDF 텍스트 모드 · 웹 리더). */
-export function referenceTextRef(docId: string, text: string): ContextRef {
-  const title = referenceRef(docId).label;
+/** 레퍼런스 원본에서 긁은 텍스트 (PDF 텍스트 모드 · 웹 리더). */
+export function referenceTextRef(refId: string, text: string): ContextRef {
+  const title = referenceRef(refId).label;
   const clean = text.replace(/\s+\n/g, "\n").trim();
   return {
     kind: "ref-text",
-    id: `${docId}:t${hash(clean)}`,
+    id: `${refId}:t${hash(clean)}`,
     label: `${clipText(title, 12)} 발췌`,
     hint: clipText(clean, 80),
     access: "read",
-    content: `참조 문서 "${title}" 에서 사용자가 고른 부분:\n${clipText(clean, 8000)}`,
-    meta: { entityId: docId, entityKind: "doc" },
+    content: `레퍼런스 "${title}" (ref:${refId}) 에서 사용자가 고른 부분 — 결정 방식만 참고하고 문장은 옮기지 않는다:\n${clipText(clean, 8000)}`,
+    meta: { entityId: refId, entityKind: "reference" },
   };
 }
 
-/** 참조 PDF 에서 사각형으로 고른 영역 (텍스트는 미리 뽑아 담는다). */
+/** 레퍼런스 PDF 에서 사각형으로 고른 영역 (텍스트는 미리 뽑아 담는다). */
 export function referenceRegionRef(
-  docId: string,
-  region: { page: number; box: [number, number, number, number]; text: string; deckNumber?: number }
+  refId: string,
+  region: { page: number; box: [number, number, number, number]; text: string }
 ): ContextRef {
-  const title = referenceRef(docId).label;
-  const prefix = region.deckNumber ? `참조${region.deckNumber}` : clipText(title, 10);
+  const title = referenceRef(refId).label;
+  const number = referenceNumber(refId);
+  const prefix = number ? `참조${number}` : clipText(title, 10);
   return {
     kind: "ref-region",
-    id: `${docId}:p${region.page}:${region.box.map((v) => Math.round(v)).join(",")}`,
+    id: `${refId}:p${region.page}:${region.box.map((v) => Math.round(v)).join(",")}`,
     label: `${prefix} p${region.page} 영역`,
     hint: region.text ? clipText(region.text, 80) : "(텍스트를 찾지 못한 영역 — 스캔 이미지일 수 있음)",
     access: "read",
     content: [
-      `참조 문서 "${title}" ${region.page}페이지에서 사용자가 사각형으로 고른 영역`,
+      `레퍼런스 "${title}" (ref:${refId}) ${region.page}쪽에서 사용자가 사각형으로 고른 영역`,
       `(좌표 [ymin,xmin,ymax,xmax] 0~1000: ${region.box.map((v) => Math.round(v)).join(", ")})`,
       region.text ? region.text : "(이 영역에서 텍스트 레이어를 찾지 못했다. 스캔 이미지일 가능성이 높다.)",
     ].join("\n"),
-    meta: { entityId: docId, entityKind: "doc", page: region.page, box: region.box },
+    meta: { entityId: refId, entityKind: "reference", page: region.page, box: region.box },
   };
 }
 
@@ -405,14 +407,18 @@ function slotContent(doc: VDocDocument, slot: VDocSlot): string {
   return lines.join("\n");
 }
 
-function referenceDocContent(docId: string): string | null {
-  const d = findDoc(docId);
-  if (!d) return null;
-  const text = Object.values(d.slots)
-    .map((s) => `[${s.label}] ${htmlToPlain(s.content)}`)
-    .filter((line) => line.length > 4)
+function referenceContent(refId: string): string | null {
+  const item = findReferenceItem(refId);
+  if (!item) return null;
+  const extraction = useReferenceStore.getState().extraction[refId];
+  const outline = extraction?.outline.map((o) => `${"#".repeat(Math.max(1, o.level))} ${o.title} (p${o.page})`).join("\n");
+  return [
+    `레퍼런스: ${item.title} (ref:${refId}) — 결정 방식만 참고하고 문장 · 고유명사 · 수치는 옮기지 않는다.`,
+    outline ? `목차:\n${clipText(outline, 4000)}` : "",
+    "원문은 wb_read(ref:" + refId + "…) 로 읽는다.",
+  ]
+    .filter(Boolean)
     .join("\n");
-  return `참조 문서: ${d.title}\n${clipText(text, 12000)}`;
 }
 
 /** 칩 → 모델에 보낼 본문. 모르는 종류는 null (다른 제공자가 채운다). */
@@ -464,7 +470,7 @@ export function resolveContextContent(ref: ContextRef): string | null {
       return head;
     }
     case "reference":
-      return referenceDocContent(ref.id);
+      return referenceContent(ref.id);
     case "slot-range": {
       const ids = Array.isArray(meta.slotIds) ? (meta.slotIds as string[]) : [];
       const units = Array.isArray(meta.unitIds) ? (meta.unitIds as string[]) : ids;

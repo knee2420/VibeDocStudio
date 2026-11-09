@@ -11,13 +11,14 @@ from app.assistant.prompts import COMPOSER_RULES, render_contexts
 
 
 def test_base_system_prompt_distinguishes_reference_and_resource():
-    """COMPOSER_RULES must define Reference as Normative/Form standard and Resource as Raw Fact/Content."""
-    assert "레퍼런스(Reference)" in COMPOSER_RULES
-    assert "리소스(Resource)" in COMPOSER_RULES
-    # Reference should mention normative standard or form/template constraints
-    assert "규범" in COMPOSER_RULES or "서식" in COMPOSER_RULES or "표준" in COMPOSER_RULES
-    # Resource should mention factual content or raw source data
-    assert "원천 소스" in COMPOSER_RULES or "사실" in COMPOSER_RULES or "회의록" in COMPOSER_RULES
+    """출처 넷의 역할: 레퍼런스 = 층위별 결정 패턴(사실 근거 아님), 리소스 = 사실, 이력 = 되돌리기 근거, 에디터 = 대상."""
+    assert "레퍼런스" in COMPOSER_RULES and "리소스" in COMPOSER_RULES
+    assert "이력" in COMPOSER_RULES and "에디터" in COMPOSER_RULES
+    # 레퍼런스는 패턴을 옮기는 것이지, 규범을 그대로 따르거나 내용을 가져오는 게 아니다
+    assert "패턴" in COMPOSER_RULES and "옮기지 않는다" in COMPOSER_RULES
+    assert "엄격히 준수" not in COMPOSER_RULES
+    # 리소스는 사실 · 내용의 근거
+    assert "사실" in COMPOSER_RULES
 
 
 def test_build_context_xml_with_reference_items():

@@ -6,7 +6,7 @@ import { PROJECT_ROOT_CRUMB_ID, type WorkbenchPhase } from "@vibe/vdoc-schema";
  * 작업 공간 안에서 "지금 어디를 보고 있는가" (URL 로 공유되는 위치 상태).
  *
  * - 단계 · 줌 루트 · 아웃라인 선택/필터/접힘/호버
- * - 캔버스 옆에 띄운 참조 문서 작업창 (`openReferenceDocIds`, URL `splitRef`)
+ * - 캔버스 옆에 띄운 참조 문서 작업창 (`openReferenceIds`, URL `splitRef`)
  * - 페이지 미리보기 패널이 보여주는 문서 (`previewDocId`, 없으면 활성 문서)
  *
  * 화면 배치(패널 크기 · 열림)는 `workspace-layout`, AI 실행과 변경안은 `ai-staging` 이 맡는다.
@@ -35,8 +35,8 @@ export interface WorkspaceSessionState {
   hoveredOutlineTargetId: string | null;
   /** AI 답변 · 첨부 칩이 가리키는 화면 요소 (페이지 · 블록 · 슬롯 · 참조 문서 id). 호버 동안만. */
   highlightedEntityId: string | null;
-  /** 캔버스 왼쪽에 나란히 띄운 참조 문서 작업창 (띄운 순서). */
-  openReferenceDocIds: string[];
+  /** 캔버스 왼쪽에 나란히 띄운 레퍼런스 작업창 (refId, 띄운 순서). */
+  openReferenceIds: string[];
   previewDocId: string | null;
 
   restoreLocation: (location: WorkspaceLocation) => void;
@@ -49,15 +49,15 @@ export interface WorkspaceSessionState {
   expandAllNodes: () => void;
   setHoveredOutlineTargetId: (id: string | null) => void;
   setHighlightedEntityId: (id: string | null) => void;
-  toggleReferenceDoc: (docId: string) => void;
-  openReferenceDoc: (docId: string) => void;
-  closeReferenceDoc: (docId: string) => void;
-  closeAllReferenceDocs: () => void;
-  setOpenReferenceDocIds: (docIds: string[]) => void;
+  toggleReference: (refId: string) => void;
+  openReference: (refId: string) => void;
+  closeReference: (refId: string) => void;
+  closeAllReferences: () => void;
+  setOpenReferenceIds: (refIds: string[]) => void;
   setPreviewDocId: (docId: string | null) => void;
 }
 
-export function parseReferenceDocIds(raw: string | null | undefined): string[] {
+export function parseReferenceIds(raw: string | null | undefined): string[] {
   return [...new Set((raw ?? "").split(",").map((s) => s.trim()).filter(Boolean))];
 }
 
@@ -92,14 +92,14 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
   collapsedNodeIds: loadOutlinerCollapsedFromSession(),
   hoveredOutlineTargetId: null,
   highlightedEntityId: null,
-  openReferenceDocIds: [],
+  openReferenceIds: [],
   previewDocId: null,
 
   restoreLocation: ({ phase, zoom, splitRef }) =>
     set({
       currentPhase: isWorkbenchPhase(phase) ? phase : "drafting",
       zoomRootNodeId: zoom || PROJECT_ROOT_CRUMB_ID,
-      openReferenceDocIds: parseReferenceDocIds(splitRef),
+      openReferenceIds: parseReferenceIds(splitRef),
     }),
 
   setPhase: (phase) => set({ currentPhase: phase }),
@@ -133,18 +133,18 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
   setHoveredOutlineTargetId: (id) => set({ hoveredOutlineTargetId: id }),
   setHighlightedEntityId: (id) => set({ highlightedEntityId: id }),
 
-  toggleReferenceDoc: (docId) =>
+  toggleReference: (docId) =>
     set((s) => ({
-      openReferenceDocIds: s.openReferenceDocIds.includes(docId)
-        ? s.openReferenceDocIds.filter((id) => id !== docId)
-        : [...s.openReferenceDocIds, docId],
+      openReferenceIds: s.openReferenceIds.includes(docId)
+        ? s.openReferenceIds.filter((id) => id !== docId)
+        : [...s.openReferenceIds, docId],
     })),
-  openReferenceDoc: (docId) =>
-    set((s) => (s.openReferenceDocIds.includes(docId) ? s : { openReferenceDocIds: [...s.openReferenceDocIds, docId] })),
-  closeReferenceDoc: (docId) =>
-    set((s) => ({ openReferenceDocIds: s.openReferenceDocIds.filter((id) => id !== docId) })),
-  closeAllReferenceDocs: () => set({ openReferenceDocIds: [] }),
-  setOpenReferenceDocIds: (docIds) => set({ openReferenceDocIds: parseReferenceDocIds(docIds.join(",")) }),
+  openReference: (docId) =>
+    set((s) => (s.openReferenceIds.includes(docId) ? s : { openReferenceIds: [...s.openReferenceIds, docId] })),
+  closeReference: (docId) =>
+    set((s) => ({ openReferenceIds: s.openReferenceIds.filter((id) => id !== docId) })),
+  closeAllReferences: () => set({ openReferenceIds: [] }),
+  setOpenReferenceIds: (docIds) => set({ openReferenceIds: parseReferenceIds(docIds.join(",")) }),
 
   setPreviewDocId: (docId) => set({ previewDocId: docId }),
 }));

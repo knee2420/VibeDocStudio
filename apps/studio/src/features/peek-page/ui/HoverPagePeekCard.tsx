@@ -1,20 +1,17 @@
 import React from "react";
-import { Lock } from "lucide-react";
 
 import { getPageNumber, PageThumbnail, selectDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import { selectIsReferenceDocument, useProjectStore } from "@/entities/vdoc-project";
 
 import { usePagePeekStore, usePeekKeyboard } from "../model/usePagePeek";
 
 const CARD_WIDTH = 280;
 const CARD_HEIGHT = 440;
 
-/** Ctrl + 호버 시 커서 옆에 뜨는 페이지 썸네일. 문서 제목 · 참조 여부는 실제 데이터에서 읽는다. */
+/** Ctrl + 호버 시 커서 옆에 뜨는 작업 문서 페이지 썸네일 (레퍼런스는 작업 문서가 아니라서 여기 오지 않는다). */
 export const HoverPagePeekCard: React.FC = () => {
   usePeekKeyboard();
   const peek = usePagePeekStore((s) => s.open);
   const doc = useStudioDocumentStore(selectDocument(peek?.docId));
-  const isReference = useProjectStore(selectIsReferenceDocument(peek?.docId));
 
   if (!peek) return null;
 
@@ -30,12 +27,6 @@ export const HoverPagePeekCard: React.FC = () => {
     >
       <div className="px-2.5 py-1.5 bg-slate-900 text-white flex items-center justify-between shrink-0 shadow-xs">
         <div className="flex items-center gap-1.5 min-w-0">
-          {isReference && (
-            <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[9px] font-bold bg-violet-600 text-violet-100 shrink-0">
-              <Lock className="w-2.5 h-2.5" />
-              참조
-            </span>
-          )}
           <span title={doc?.title} className="text-[11px] font-semibold text-slate-100 truncate">
             {doc?.title ?? "문서를 불러오는 중…"}
           </span>

@@ -25,6 +25,7 @@ except ImportError:  # 훅 · MCP 서버가 독립 스크립트로 돌 때
     )
 
 MOUNTS_FILE = "mounts.json"
+WORKBENCH_FILE = "workbench.json"
 READS_FILE = "reads.jsonl"
 HOOK_LOG_FILE = "hook.jsonl"
 #: 이 시간보다 오래 갱신되지 않은 마운트는 무시한다 (API 가 비정상 종료돼 남은 것)
@@ -140,6 +141,33 @@ class WorkspaceStore:
         if session_id in (data.get("sessions") or {}):
             del data["sessions"][session_id]
             _atomic_write(self.path(MOUNTS_FILE), data)
+
+    # --- 작업대 (에디터 문서 · 범위 · 레퍼런스 · 이력 위치) --------------------------------------
+
+    def set_workbench(self, session_id: str, state: Optional[dict[str, Any]]) -> None:
+        """세션이 보고 있는 작업대. vibefs 서버(별도 프로세스)가 호출마다 다시 읽는다."""
+        path = self.path(WORKBENCH_FILE)
+        try:
+            with open(path, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except (OSError, ValueError):
+            data = {}
+        if state is None:
+            if session_id not in data:
+                return
+            data.pop(session_id, None)
+        else:
+            data[session_id] = {**state, "updatedAt": time.time()}
+        _atomic_write(path, data)
+
+    def workbench_for(self, session_id: Optional[str]) -> Optional[dict[str, Any]]:
+        if not session_id:
+            return None
+        try:
+            with open(self.path(WORKBENCH_FILE), encoding="utf-8") as fh:
+                return (json.load(fh) or {}).get(session_id)
+        except (OSError, ValueError):
+            return None
 
     def mount_for(self, conversation_id: Optional[str], session_id: Optional[str] = None) -> Optional[Mount]:
         """agy 대화 id(또는 세션 id) → 그 세션의 마운트.

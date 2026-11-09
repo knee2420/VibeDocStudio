@@ -1,7 +1,7 @@
 import type { EvidenceLocator } from "./evidence";
 /**
  * @vibe/vdoc-schema — Multi-Document Project Manifest (`.vproj`), 4-Level Zoom Hierarchy,
- * Read-Only Reference Projects Deck, Provenance Lineage, and 3-Phase AI Staging Contracts.
+ * Provenance Lineage, and 3-Phase AI Staging Contracts. (References are not projects — see `/api/reference`.)
  */
 
 export type ZoomLevel = "project" | "document" | "page" | "slot";
@@ -125,10 +125,8 @@ export interface VProjectManifest {
   projectId: string;
   title: string;
   description: string;
-  isReferenceOnly: boolean;
   activePhase: WorkbenchPhase;
   docIds: string[];
-  referenceProjectIds: string[];
   storylineNodes: OutlinerNode[];
   provenanceLineage: ProvenanceRecord[];
   updatedAt: string;

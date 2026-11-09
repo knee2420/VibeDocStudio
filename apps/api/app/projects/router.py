@@ -10,22 +10,16 @@ from fastapi import APIRouter, Body, Depends, Query
 from .mappers import manifest_from_dict
 from .models import ZoomLevel
 from .schemas import (
-    BindReferenceProjectsRequest,
-    CloneReferenceNodeRequest,
-    CloneReferenceNodeResponse,
     OutlineBreadcrumbSchema,
     OutlineCommandRequest,
     OutlineCommandResponse,
     ProjectOutlineTreeResponse,
-    ProvenanceLineageSchema,
     SaveVProjectRequest,
     StorylineNodeSchema,
     VProjectManifestResponse,
 )
 from .use_cases import (
     ApplyOutlineCommandUseCase,
-    BindReferenceProjectsUseCase,
-    CloneNodeWithProvenanceUseCase,
     GetProjectOutlineTreeUseCase,
     GetProjectUseCase,
     ListProjectsUseCase,
@@ -41,8 +35,6 @@ ListDep = Annotated[ListProjectsUseCase, Depends(Provide["list_projects"])]
 GetDep = Annotated[GetProjectUseCase, Depends(Provide["get_project"])]
 SaveDep = Annotated[SaveProjectUseCase, Depends(Provide["save_project"])]
 OutlineDep = Annotated[GetProjectOutlineTreeUseCase, Depends(Provide["get_project_outline_tree"])]
-BindDep = Annotated[BindReferenceProjectsUseCase, Depends(Provide["bind_reference_projects"])]
-CloneDep = Annotated[CloneNodeWithProvenanceUseCase, Depends(Provide["clone_node_with_provenance"])]
 CommandDep = Annotated[ApplyOutlineCommandUseCase, Depends(Provide["apply_outline_command"])]
 StagingDep = Annotated[StagingQueueUseCase, Depends(Provide["staging_queue"])]
 
@@ -89,43 +81,12 @@ def get_project_outline(
     return ProjectOutlineTreeResponse(
         projectId=project.project_id,
         title=project.title,
-        isReferenceOnly=project.is_reference_only,
         activePhase=project.active_phase,
         activeZoomLevel=subtree.active_zoom_level,
         rootNodeId=subtree.root.node_id if subtree.root else PROJECT_ROOT_CRUMB_ID,
         breadcrumbs=breadcrumbs,
         nodes=[StorylineNodeSchema.from_record(n) for n in subtree.nodes],
         totalNodeCount=len(project.storyline_nodes),
-    )
-
-
-@router.put("/{project_id}/references", response_model=VProjectManifestResponse)
-@inject
-def bind_reference_projects(
-    project_id: str,
-    body: BindReferenceProjectsRequest,
-    use_case: BindDep,
-) -> VProjectManifestResponse:
-    return VProjectManifestResponse.from_record(use_case.execute(project_id, body.referenceProjectIds))
-
-
-@router.post("/{project_id}/clone-node", response_model=CloneReferenceNodeResponse)
-@inject
-def clone_reference_node(
-    project_id: str,
-    body: CloneReferenceNodeRequest,
-    use_case: CloneDep,
-) -> CloneReferenceNodeResponse:
-    clone = use_case.execute(
-        target_project_id=project_id,
-        source_project_id=body.sourceProjectId,
-        source_node_id=body.sourceNodeId,
-        target_parent_id=body.targetParentId,
-    )
-    return CloneReferenceNodeResponse(
-        project=VProjectManifestResponse.from_record(clone.project),
-        clonedNode=StorylineNodeSchema.from_record(clone.node),
-        provenance=ProvenanceLineageSchema.from_record(clone.provenance),
     )
 
 

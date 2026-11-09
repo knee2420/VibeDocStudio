@@ -79,14 +79,21 @@ from app.knowledge.use_cases import (
 from app.projects.adapters import LocalStagingStore, LocalVProjectRepository
 from app.projects.use_cases import (
     ApplyOutlineCommandUseCase,
-    BindReferenceProjectsUseCase,
-    CloneNodeWithProvenanceUseCase,
     GetProjectOutlineTreeUseCase,
     GetProjectUseCase,
     ListProjectsUseCase,
     SaveProjectUseCase,
     StagingQueueUseCase,
 )
+from app.assistant.workspace import patterns as layer_patterns
+from app.reference.adapters import (
+    HtmlStructureExtractor,
+    LocalReferenceLibrary,
+    MeasuredLayerAnalyzer,
+    PyMuPdfExtractor,
+    UrllibWebFetcher,
+)
+from app.reference.use_cases import ReferenceLibraryService
 from app.runtime.models import ModelOption
 from app.runtime.use_cases import (
     DeleteGoogleApiKeyUseCase,
@@ -256,11 +263,6 @@ class Container(containers.DeclarativeContainer):
     get_project = providers.Factory(GetProjectUseCase, repository=project_repository)
     save_project = providers.Factory(SaveProjectUseCase, repository=project_repository)
     get_project_outline_tree = providers.Factory(GetProjectOutlineTreeUseCase, repository=project_repository)
-    bind_reference_projects = providers.Factory(BindReferenceProjectsUseCase, repository=project_repository)
-    clone_node_with_provenance = providers.Factory(
-        CloneNodeWithProvenanceUseCase,
-        repository=project_repository,
-    )
     apply_outline_command = providers.Factory(ApplyOutlineCommandUseCase, repository=project_repository)
     staging_store = providers.Singleton(
         LocalStagingStore, root_dir=providers.Callable(lambda st: st.knowledge_of("projects"), storage)
@@ -306,6 +308,8 @@ class Container(containers.DeclarativeContainer):
         sandbox_dir=providers.Callable(lambda st: st.state / "assistant" / "sandbox", storage),
         agy_executable=providers.Callable(lambda p: p.agent_cli_bin, runtime_policy),
         transport=providers.Callable(lambda s: s.agy_transport, settings),
+        documents_root=providers.Callable(lambda st: st.knowledge_of("documents"), storage),
+        references_root=providers.Callable(lambda st: st.knowledge_of("references") / "items", storage),
     )
     assistant_engines = providers.Singleton(
         AssistantEngineProvider,
@@ -343,4 +347,19 @@ class Container(containers.DeclarativeContainer):
         harness=harness_service,
         # 일괄 채우기 결과는 프로젝트 대기열(projects 도메인)로 — assistant 는 projects 를 모르므로 함수로 꽂는다
         staging_sink=providers.Callable(lambda store: store.append, staging_store),
+    )
+
+    # --- 9. reference 도메인 (`data/knowledge/references`) ---
+    # 층위 측정 자는 assistant 작업대와 같은 것을 꽂는다 (레퍼런스와 내 글을 같은 자로 재야 비교가 된다)
+    reference_library = providers.Singleton(
+        ReferenceLibraryService,
+        library=providers.Singleton(
+            LocalReferenceLibrary, root_dir=providers.Callable(lambda st: st.knowledge_of("references"), storage)
+        ),
+        pdf_extractor=providers.Singleton(PyMuPdfExtractor),
+        html_extractor=providers.Singleton(HtmlStructureExtractor),
+        fetcher=providers.Singleton(UrllibWebFetcher),
+        analyzer=providers.Singleton(
+            MeasuredLayerAnalyzer, measure=layer_patterns.measure, by_layer=layer_patterns.by_layer
+        ),
     )

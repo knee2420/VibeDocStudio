@@ -14,7 +14,6 @@ from enum import StrEnum
 
 from .errors import (
     VProjectNotFoundError,
-    VProjectReadOnlyViolationError,
     VProjectValidationError,
 )
 
@@ -141,34 +140,19 @@ class OutlineSubtree:
 
 
 @dataclass(frozen=True)
-class NodeClone:
-    project: VProjectManifestRecord
-    node: StorylineNodeRecord
-    provenance: ProvenanceLineageRecord
-
-
-@dataclass(frozen=True)
 class VProjectManifestRecord:
-    """단일 `.vproj` 프로젝트 매니페스트 (활성 작업 프로젝트 또는 읽기 전용 참조 프로젝트)."""
+    """단일 `.vproj` 프로젝트 매니페스트. 레퍼런스는 프로젝트가 아니다 (reference 도메인이 따로 관리한다)."""
 
     project_id: str
     title: str
     description: str
-    is_reference_only: bool
     active_phase: WorkbenchPhase
     doc_ids: tuple[str, ...]
-    reference_project_ids: tuple[str, ...]
     storyline_nodes: tuple[StorylineNodeRecord, ...] = field(default_factory=tuple)
     provenance_lineage: tuple[ProvenanceLineageRecord, ...] = field(default_factory=tuple)
     updated_at: str = ""
 
     # --- 조회 ---------------------------------------------------------------
-
-    def ensure_writable(self) -> None:
-        if self.is_reference_only:
-            raise VProjectReadOnlyViolationError(
-                f"Reference project '{self.project_id}' is read-only and cannot be mutated."
-            )
 
     def find_node(self, node_id: str | None) -> StorylineNodeRecord | None:
         if not node_id:
@@ -234,23 +218,7 @@ class VProjectManifestRecord:
         return replace(self, updated_at=now, **changes)
 
     def with_phase(self, phase: WorkbenchPhase, *, now: str) -> VProjectManifestRecord:
-        self.ensure_writable()
         return self._touched(now, active_phase=phase)
-
-    def with_references(
-        self,
-        reference_ids: Iterable[str],
-        *,
-        now: str,
-    ) -> VProjectManifestRecord:
-        self.ensure_writable()
-        normalized: list[str] = []
-        for ref_id in reference_ids:
-            if ref_id == self.project_id:
-                raise VProjectValidationError("A project cannot reference itself")
-            if ref_id not in normalized:
-                normalized.append(ref_id)
-        return self._touched(now, reference_project_ids=tuple(normalized))
 
     def _with_nodes(
         self,
@@ -281,7 +249,6 @@ class VProjectManifestRecord:
         fields: dict[str, object] | None = None,
         provenance_source: tuple[str, str] | None = None,
     ) -> tuple[VProjectManifestRecord, StorylineNodeRecord]:
-        self.ensure_writable()
         if not title.strip():
             raise VProjectValidationError("Node title must not be empty")
         if self.find_node(node_id) is not None:
@@ -312,7 +279,6 @@ class VProjectManifestRecord:
         *,
         now: str,
     ) -> VProjectManifestRecord:
-        self.ensure_writable()
         target = self.require_node(node_id)
         changes = _editable_fields(patch)
         if "zoom_level" in changes:
@@ -334,7 +300,6 @@ class VProjectManifestRecord:
 
     def delete_node(self, node_id: str, *, now: str) -> VProjectManifestRecord:
         """노드와 그 자손을 함께 지운다. 루트는 지울 수 없다."""
-        self.ensure_writable()
         target = self.require_node(node_id)
         if target.is_root:
             raise VProjectValidationError("The outline root node cannot be deleted")
@@ -346,7 +311,6 @@ class VProjectManifestRecord:
 
     def move_node(self, node_id: str, direction: int, *, now: str) -> VProjectManifestRecord:
         """같은 부모 아래 형제와 순서를 바꾼다 (`direction`: -1 위, +1 아래)."""
-        self.ensure_writable()
         if direction not in (-1, 1):
             raise VProjectValidationError("direction must be -1 or 1")
         target = self.require_node(node_id)
@@ -363,7 +327,6 @@ class VProjectManifestRecord:
 
     def indent_node(self, node_id: str, delta: int, *, now: str) -> VProjectManifestRecord:
         """들여쓰기(+1)는 바로 위 형제의 자식으로, 내어쓰기(-1)는 부모의 형제로 옮긴다."""
-        self.ensure_writable()
         if delta not in (-1, 1):
             raise VProjectValidationError("delta must be -1 or 1")
         target = self.require_node(node_id)
@@ -397,55 +360,6 @@ class VProjectManifestRecord:
             now=now,
         )
 
-    def clone_node_from(
-        self,
-        source: VProjectManifestRecord,
-        source_node_id: str,
-        *,
-        target_parent_id: str | None,
-        node_id: str,
-        record_id: str,
-        now: str,
-    ) -> NodeClone:
-        """참조 프로젝트의 노드를 복제하고 출처 원장에 남긴다."""
-        self.ensure_writable()
-        source_node = source.require_node(source_node_id)
-        parent = self._resolve_parent(target_parent_id)
-        depth = parent.depth + 1 if parent else 0
-        cloned = StorylineNodeRecord(
-            node_id=node_id,
-            parent_id=parent.node_id if parent else None,
-            depth=depth,
-            zoom_level=(
-                ZoomLevel.PAGE if source_node.zoom_level == ZoomLevel.PROJECT else source_node.zoom_level
-            ),
-            title=source_node.title,
-            summary=source_node.summary,
-            target_doc_id=source_node.target_doc_id or (self.doc_ids[0] if self.doc_ids else None),
-            target_page_id=source_node.target_page_id,
-            target_block_id=source_node.target_block_id,
-            target_slot_id=source_node.target_slot_id,
-            recommended_template_id=source_node.recommended_template_id,
-            provenance_source_project_id=source.project_id,
-            provenance_source_node_id=source_node.node_id,
-            ai_status=AiStatus.APPLIED,
-        )
-        provenance = ProvenanceLineageRecord(
-            record_id=record_id,
-            target_project_id=self.project_id,
-            target_node_id=node_id,
-            source_project_id=source.project_id,
-            source_project_title=source.title,
-            source_node_id=source_node.node_id,
-            source_node_title=source_node.title,
-            cloned_at=now,
-        )
-        project = self._with_nodes(
-            (*self.storyline_nodes, cloned),
-            now=now,
-            provenance_lineage=(*self.provenance_lineage, provenance),
-        )
-        return NodeClone(project=project, node=project.require_node(node_id), provenance=provenance)
 
 
 def _editable_fields(raw: dict[str, object]) -> dict[str, object]:

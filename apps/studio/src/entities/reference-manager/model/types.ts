@@ -1,54 +1,117 @@
 /**
- * Reference Manager - Reference Snippet & Document Item Data Model
- * 
- * '참조(Reference)'의 본질: 작업 내내 곁에 펼쳐두고 눈을 돌려 바로 확인하는 실시간 참조 데스크 & 핀(Pin) 보드.
- * 향후 텍스트 형광펜, 포스트잇 메모, 북마크 등으로 확장이 가능한 Discriminated Union 구조.
+ * Reference(레퍼런스) 모델 — 남이 만든 완성물에서 "어떻게 썼나"를 꺼내기 위한 읽기 전용 원료.
+ *
+ * 레퍼런스는 작업 문서(VDoc)가 아니다. 에디터 문서 스토어 · 템플릿 허브 · 자동 저장과 무관하고,
+ * 서버의 `/api/reference` 라이브러리(원본 · 구조 추출 · 층위 측정 · 핀)만 쓴다.
+ * 앵커: `ref:<refId>[#p<쪽>][#pin:<pinId>][#blk:<blockId>]`
  */
 
-export interface BaseReferenceSnippet {
-  id: string;               // 고유 식별자 (예: "ref_pin_173087234")
-  docId: string;            // 소속 참조 문서 ID
-  label: string;            // 목록에 표시될 핀 이름 (예: "1p: 제3조 [구성]")
-  createdAt: string;        // 생성 일시 (ISO String)
-  color?: string;           // 개별 하이라이트 색상 (선택사항)
+export type ReferenceKind = "pdf" | "web" | "image";
+export type ReferenceStatus = "ready" | "failed";
+export type ReferencePinKind = "region" | "text" | "memo";
+
+/** 라이브러리 항목 (프로젝트에 묶이지 않는다). */
+export interface ReferenceItem {
+  refId: string;
+  kind: ReferenceKind;
+  title: string;
+  sourceName: string;
+  sourceUrl: string;
+  mimeType: string;
+  sizeBytes: number;
+  pageCount: number;
+  layerSet: string;
+  status: ReferenceStatus;
+  error: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
-/** 1. 사각 영역 핀 (BBox Region Pin - 현재 핵심 구현체) */
-export interface RegionPinSnippet extends BaseReferenceSnippet {
-  kind: "region";
-  page: number;             // PDF 페이지 번호 (1-based)
-  bbox: [number, number, number, number]; // [ymin, xmin, ymax, xmax] 1000분율 좌표
-  excerpt?: string;         // 영역 내부 발췌 텍스트
-}
-
-/** 2. 텍스트 형광펜 (차후 확장 대비) */
-export interface TextHighlightSnippet extends BaseReferenceSnippet {
-  kind: "text";
-  page?: number;
+/** 원본 위의 한 곳 — "이 부분의 결정을 가져오고 싶다" 는 표시. 서버에 저장된다. */
+export interface ReferencePin {
+  pinId: string;
+  refId: string;
+  kind: ReferencePinKind;
+  page: number | null;
+  /** [ymin, xmin, ymax, xmax] 0~1000 */
+  bbox: [number, number, number, number] | null;
   text: string;
-  charRange?: [number, number];
+  label: string;
+  note: string;
+  /** 층위 태그 (D1 …) — 비우면 층위를 정하지 않은 핀 */
+  layer: string;
+  anchor: string;
+  createdAt: number;
 }
 
-/** 3. 포스트잇 메모 (차후 확장 대비) */
-export interface MemoNoteSnippet extends BaseReferenceSnippet {
-  kind: "memo";
-  page?: number;
-  comment: string;
+/** 프로젝트에 연결된 레퍼런스 (순서 = 화면의 참조 번호). `layers` 에 없는 층위는 켜진 것으로 본다. */
+export interface BoundReference {
+  refId: string;
+  enabled: boolean;
+  layers: Record<string, boolean>;
+  item: ReferenceItem;
 }
 
-/** ⭐️ 향후 확장이 열려 있는 참조 스니펫 유니온 타입 */
-export type ReferenceSnippet =
-  | RegionPinSnippet
-  | TextHighlightSnippet
-  | MemoNoteSnippet;
-
-/** 상단 목록에 나열되는 참조 문서 단위 */
-export interface ReferenceDocumentItem {
-  id: string;                // 참조 문서 식별자 (docId)
-  projectId?: string;        // 소속 원본 프로젝트 ID
-  title: string;             // 문서명 (예: "예스폼_상벌위원회규정")
-  sourceType: "pdf" | "doc" | "web";
-  pageCount?: number;
-  snippets: ReferenceSnippet[];
+export interface ProjectReferenceBinding {
+  projectId: string;
+  entries: BoundReference[];
+  updatedAt: number;
 }
 
+export interface ReferenceBlock {
+  id: string;
+  page: number;
+  kind: "heading" | "paragraph" | "list" | "table";
+  level: number;
+  text: string;
+  html: string;
+  bbox: [number, number, number, number] | null;
+}
+
+export interface ReferenceOutlineEntry {
+  blockId: string;
+  title: string;
+  level: number;
+  page: number;
+}
+
+/** 구조 추출 결과 (읽기 전용 분석 재료). */
+export interface ReferenceExtraction {
+  version: number;
+  refId: string;
+  kind: ReferenceKind;
+  pages: { page: number; width: number; height: number }[];
+  blocks: ReferenceBlock[];
+  outline: ReferenceOutlineEntry[];
+  article?: { title: string; siteName?: string; byline?: string; url?: string; html: string; text: string };
+}
+
+export interface ReferenceLayer {
+  id: string;
+  name: string;
+  question: string;
+  values: Record<string, unknown>;
+  qualitative: boolean;
+}
+
+/** 층위 측정 (D1–D6 …). */
+export interface ReferenceLayers {
+  version: number;
+  set: string;
+  metrics: Record<string, unknown>;
+  layers: ReferenceLayer[];
+}
+
+/** 뷰어에서 지금 초점을 받은 핀 · 영역. */
+export interface FocusedReferencePin {
+  refId: string;
+  pinId: string;
+  page: number;
+  kind?: ReferencePinKind;
+  bbox?: [number, number, number, number];
+  text?: string;
+  at: number;
+}
+
+export const isLayerOn = (ref: Pick<BoundReference, "layers">, layerId: string): boolean =>
+  ref.layers[layerId] ?? true;
