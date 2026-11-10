@@ -198,24 +198,37 @@ function extractEntities(text: string, entities: EntityRegistry | null): EntityI
   };
 
   const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|\[(?:\[[^\]]*\]|[^\]])+\]\([^)]+\))/g;
+  let last = 0;
   for (const match of text.matchAll(pattern)) {
+    if (match.index! < last) continue;
     const token = match[0];
+    const tail = text.slice(match.index! + token.length);
     if (token.startsWith("`")) {
       const body = token.slice(1, -1).trim();
-      add(entities.lookup(body));
+      const attached = attachTrailingLines(body, tail);
+      add(entities.lookup(attached.id) ?? entities.lookup(body));
+      last = match.index! + token.length + (entities.lookup(body) ? attached.consumed : 0);
+      continue;
     } else if (token.startsWith("[")) {
       const sepIdx = token.lastIndexOf("](");
       const href = sepIdx !== -1 ? token.slice(sepIdx + 2, -1).trim() : "";
       const link = VDOC_LINK.exec(href);
       if (link) {
-        add(entities.lookup(decodeURIComponent(link[2]), link[1]));
+        const rawTarget = decodeURIComponent(link[2]);
+        const attached = attachTrailingLines(rawTarget, tail);
+        add(entities.lookup(attached.id, link[1]));
+        last = match.index! + token.length + attached.consumed;
+        continue;
       }
     }
+    last = match.index! + token.length;
   }
 
   // Bare ID 스캔
   for (const m of text.matchAll(BARE_ID)) {
-    add(entities.lookup(m[0]));
+    const tail = text.slice(m.index! + m[0].length);
+    const attached = attachTrailingLines(m[0], tail);
+    add(entities.lookup(attached.id) ?? entities.lookup(m[0]));
   }
 
   return result;
@@ -307,8 +320,19 @@ function parseBlocks(text: string, entities: EntityRegistry | null): React.React
 
 /** 위치 링크 `vdoc:종류/id` (종류 생략 가능). */
 const VDOC_LINK = /^vdoc:(?:([a-z-]+)\/)?(.+)$/;
-/** 맨 id 후보: 밑줄이 들어간 영숫자 토큰 (`mm_page_1`, `blk_bs_composite_frame`) 및 의사결정/카드 키워드 (`Decision 03`, `C-03-05`). */
-const BARE_ID = /\b[A-Za-z][A-Za-z0-9]*(?:[_-][A-Za-z0-9]+)*_[A-Za-z0-9]+\b|\bDecision\s+\d+\b|\bC-\d{2}-\d{2}\b/gi;
+/** 맨 id 후보: 밑줄이 들어간 영숫자/한글 토큰 (`mm_page_1`, `1.1_수렴을_...`), 의사결정/카드 키워드 (`Decision 03`, `C-03-05`). */
+const BARE_ID = /\b[A-Za-z0-9가-힣.]+(?:[_-][A-Za-z0-9가-힣.]+)+|\bDecision\s+\d+\b|\bC-\d{2}-\d{2}\b/gi;
+/** 뒤따르는 `(L32-47)` 또는 `(L32)` 줄 번호 괄호 표기 */
+const TRAILING_LINES = /^\s*\(L(\d+)(?:\s*[-–~]\s*L?(\d+))?\)/i;
+
+export function attachTrailingLines(baseId: string, tail: string): { id: string; consumed: number } {
+  if (baseId.includes("#L")) return { id: baseId, consumed: 0 };
+  const m = TRAILING_LINES.exec(tail);
+  if (!m) return { id: baseId, consumed: 0 };
+  const start = m[1];
+  const end = m[2] || start;
+  return { id: `${baseId}#L${start}-L${end}`, consumed: m[0].length };
+}
 
 function inlineNodes(text: string, entities: EntityRegistry | null): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
@@ -323,15 +347,23 @@ function inlineNodes(text: string, entities: EntityRegistry | null): React.React
     }
     let cursor = 0;
     for (const m of value.matchAll(BARE_ID)) {
-      if (!entities.lookup(m[0])) continue;
+      if (m.index! < cursor) continue;
+      const tail = value.slice(m.index! + m[0].length);
+      const attached = attachTrailingLines(m[0], tail);
+      const resolved = entities.lookup(attached.id) ?? entities.lookup(m[0]);
+      if (!resolved) continue;
+
       if (m.index! > cursor) parts.push(value.slice(cursor, m.index));
-      parts.push(<EntityChip key={`e${key++}`} id={m[0]} />);
-      cursor = m.index! + m[0].length;
+      parts.push(<EntityChip key={`e${key++}`} id={attached.consumed > 0 ? attached.id : m[0]} />);
+      cursor = m.index! + m[0].length + attached.consumed;
     }
     if (cursor < value.length) parts.push(value.slice(cursor));
   };
   for (const match of text.matchAll(pattern)) {
+    if (match.index! < last) continue;
     const token = match[0];
+    const tail = text.slice(match.index! + token.length);
+
     if (match.index! > last) pushText(text.slice(last, match.index));
     if (token.startsWith("`")) {
       const body = token.slice(1, -1);
@@ -340,35 +372,49 @@ function inlineNodes(text: string, entities: EntityRegistry | null): React.React
           {body}
         </code>
       );
-      parts.push(entities && entities.lookup(body.trim()) ? <EntityChip key={key++} id={body.trim()} fallback={code} /> : code);
+      const attached = attachTrailingLines(body.trim(), tail);
+      const resolved = entities && (entities.lookup(attached.id) ?? entities.lookup(body.trim()));
+      if (resolved) {
+        parts.push(<EntityChip key={key++} id={attached.consumed > 0 ? attached.id : body.trim()} fallback={code} />);
+        last = match.index! + token.length + attached.consumed;
+      } else {
+        parts.push(code);
+        last = match.index! + token.length;
+      }
     } else if (token.startsWith("**")) {
       parts.push(<strong key={key++}>{inlineNodes(token.slice(2, -2), entities)}</strong>);
+      last = match.index! + token.length;
     } else if (token.startsWith("[")) {
       const sepIdx = token.lastIndexOf("](");
       const label = sepIdx !== -1 ? token.slice(1, sepIdx) : token.slice(1, -1);
       const href = sepIdx !== -1 ? token.slice(sepIdx + 2, -1).trim() : "";
       const link = VDOC_LINK.exec(href);
       if (link) {
+        const rawTarget = decodeURIComponent(link[2]);
+        const attached = attachTrailingLines(rawTarget, tail);
+        const finalId = attached.consumed > 0 ? attached.id : rawTarget;
         parts.push(
           <EntityChip
             key={key++}
-            id={decodeURIComponent(link[2])}
+            id={finalId}
             kind={link[1]}
             label={label}
             fallback={<span className="text-slate-500">{label}</span>}
           />
         );
+        last = match.index! + token.length + attached.consumed;
       } else {
         parts.push(
           <span key={key++} className="text-blue-700 underline decoration-dotted" title={href}>
             {label}
           </span>
         );
+        last = match.index! + token.length;
       }
     } else {
       parts.push(<em key={key++}>{token.slice(1, -1)}</em>);
+      last = match.index! + token.length;
     }
-    last = match.index! + token.length;
   }
   if (last < text.length) pushText(text.slice(last));
   return parts;

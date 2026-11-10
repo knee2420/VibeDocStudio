@@ -1,3 +1,4 @@
+import { useAiScopeStore } from "@/entities/ai-scope";
 import { useReferenceStore, type ReferenceKind } from "@/entities/reference-manager";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 
@@ -35,7 +36,11 @@ export function boundReferences(): ReferenceView[] {
   }));
 }
 
-/** AI 에 실제로 보내는 레퍼런스 (레퍼런스 스위치가 켜져 있고, 연결에서 사용 중인 것). */
-export function activeReferences(referencesOn: boolean): ReferenceView[] {
-  return referencesOn ? boundReferences().filter((r) => r.enabled) : [];
+/** AI 에 실제로 보내는 레퍼런스 (레퍼런스 스위치가 켜져 있고, 연결에서 사용 중이며 작업 패널에서 제외되지 않은 것). */
+export function activeReferences(referencesOn: boolean, projectId?: string): ReferenceView[] {
+  if (!referencesOn) return [];
+  const excluded = new Set(
+    projectId ? useAiScopeStore.getState().excludedReferenceIds[projectId] ?? [] : []
+  );
+  return boundReferences().filter((r) => r.enabled && !excluded.has(r.refId));
 }

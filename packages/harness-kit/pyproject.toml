@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "harness-kit"
+version = "1.0.0"
+description = "Host-independent agent harness primitives (pack loader, prompt composition, measure, proposal gates) for VibeDocStudio"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["harness_kit*"]

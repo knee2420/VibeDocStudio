@@ -1,0 +1,30 @@
+{
+ "composer": {
+  "skillHeader": "[지식 덱 탐색 절차 — 지식 덱 첨부가 있을 때 따른다]\n{skill}",
+  "planMode": "[모드: plan] 문서를 바꾸는 도구는 호출하지 말고, 실행 계획만 제시하라.",
+  "toolsHeader": "[워크스페이스 도구]  (* = 필수 인자)",
+  "toolsEmpty": "- (현재 사용 가능한 도구 없음)"
+ },
+ "sources": {
+  "nudgeHead": "[출처 확인] 켜져 있는데 이번 답에서 열어 보지 않은 출처가 있다:\n",
+  "nudgeTail": "\n요청과 관련이 있으면 그 출처를 확인해 앞의 답을 보완하라 (역할은 그대로: 레퍼런스=패턴, 리소스=사실, 에디터=대상). 관련이 없으면 더 읽지 말고, 답 끝에 '확인하지 않은 출처: <출처> — <이유>' 한 줄만 덧붙여라.",
+  "nudgeReferences": "- 레퍼런스 {total}개: {items}",
+  "nudgeResources": "- 리소스: 마운트된 텍스트 파일 {total}개 (ws_overview · ws_collect · ws_grep)",
+  "nudgeEditor": "- 에디터: 지금 문서 (wb_outline · wb_read)",
+  "rosterHead": "[켜진 출처 — 관련 있는 것은 모두 확인한다]",
+  "rosterEditor": "- 에디터: {title} (docId={doc_id}) · 고칠 범위: {scope} · 읽기는 문서 전체",
+  "rosterEditorWholeScope": "문서 전체",
+  "rosterReferences": "- 레퍼런스 {count}개 (패턴만): {items}",
+  "rosterResources": "- 리소스 (사실 근거): {line}",
+  "declaredSkip": "확인하지 않은 출처"
+ },
+ "recap": {
+  "open": "[이전 대화 요약 — 서버 세션이 새로 열려 앞 대화를 기억하지 못한다. 아래를 맥락으로 이어라]",
+  "close": "[/이전 대화 요약]",
+  "user": "사용자",
+  "assistant": "AI"
+ },
+ "sandbox": {
+  "serverInstructions": "VibeDocStudio 작업대 도구. ws_* = 리소스(사실 원천) 탐색 · 원문은 read_file. wb_* = 에디터 문서 · 이력 읽기와 후보 제안. rf_* = 레퍼런스(남의 결정) 읽기 · 해석 제안 · 합의."
+ }
+}

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import logging
 from pathlib import Path
 from typing import Any, Optional
@@ -14,9 +13,6 @@ EXTERNALIZE_OVER_BYTES = 2048
 PREVIEW_CHARS = 280
 REF_MARKER = "__payload_ref__"
 
-
-def is_payload_ref(value: Any) -> bool:
-    return isinstance(value, dict) and REF_MARKER in value
 
 
 def make_ref(digest: str, *, byte_length: int, preview: str, media_type: str) -> dict[str, Any]:
@@ -86,15 +82,3 @@ def externalize_span_dict(span: dict[str, Any], run_dir: Path) -> dict[str, Any]
         if isinstance(value, (dict, list)):
             span[bucket] = externalize(value, run_dir)
     return span
-
-
-def payload_dir_size(run_dir: Path) -> int:
-    directory = run_dir / PAYLOAD_DIR
-    if not directory.is_dir():
-        return 0
-    return sum(f.stat().st_size for f in directory.glob("*.txt") if f.is_file())
-
-
-def dumps_line(entry: dict[str, Any]) -> str:
-    return json.dumps(entry, ensure_ascii=False)
-

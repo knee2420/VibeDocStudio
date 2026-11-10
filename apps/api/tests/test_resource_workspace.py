@@ -12,7 +12,7 @@ from typing import Any, Iterator
 
 import pytest
 
-from app.assistant.models import ContextItem, EngineChoice
+from app.assistant.models import ContextItem
 from app.assistant.use_cases.assistant_service import AssistantService, _Session
 from app.assistant.workspace import (
     ResourceWorkspace,
@@ -21,13 +21,13 @@ from app.assistant.workspace import (
     wants_full_read,
 )
 from app.assistant.workspace.citations import extract_citations, verify_citations
-from app.assistant.workspace.hook import Mounted, decide
-from app.assistant.workspace.index import MountItem, WorkspaceIndex, read_range
-from app.assistant.workspace.sandbox import build_files, prepare_sandbox
-from app.assistant.workspace.store import WorkspaceStore, coverage
-from app.assistant.workspace.tools import WorkspaceTools
-
-WS_DIR = Path(__file__).resolve().parents[1] / "app" / "assistant" / "workspace"
+from app.llm.models import EngineChoice
+from vibefs.hook import Mounted, decide
+from vibefs.index import MountItem, WorkspaceIndex, read_range
+from vibefs.sandbox import ENTRY as VIBEFS_ENTRY
+from vibefs.sandbox import build_files, prepare_sandbox
+from vibefs.store import WorkspaceStore, coverage
+from vibefs.tools import WorkspaceTools
 
 
 @pytest.fixture()
@@ -164,7 +164,7 @@ def test_guard_without_mount_denies_reads(tmp_path: Path, vault: Path) -> None:
 
 def _run_hook(mode: str, state: Path, payload: dict) -> str:
     raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-    proc = subprocess.run([sys.executable, "-I", str(WS_DIR / "hook.py"), mode, "--state", str(state)],
+    proc = subprocess.run([sys.executable, "-I", str(VIBEFS_ENTRY), "hook", mode, "--state", str(state)],
                           input=raw, capture_output=True, timeout=30)
     assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
     return proc.stdout.decode("ascii")
@@ -199,7 +199,7 @@ def test_reads_attribute_unknown_conversations_by_window(tmp_path: Path, vault: 
 
 def test_vibefs_mcp_server_speaks_json_rpc(tmp_path: Path, vault: Path) -> None:
     store = _store(tmp_path, vault)
-    proc = subprocess.Popen([sys.executable, "-I", str(WS_DIR / "vibefs_server.py"), "--state", store.dir],
+    proc = subprocess.Popen([sys.executable, "-I", str(VIBEFS_ENTRY), "mcp", "--state", store.dir],
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def rpc(mid: int, method: str, params: dict) -> dict:
@@ -229,10 +229,10 @@ def test_prepare_sandbox_writes_agy_config(tmp_path: Path) -> None:
     changed = prepare_sandbox(sandbox, state, sys.executable)
     assert set(changed) == set(build_files(sys.executable, state))
     hooks = json.loads((sandbox / ".agents" / "hooks.json").read_text(encoding="utf-8"))["vibedoc-workspace"]
-    assert hooks["PreToolUse"][0]["matcher"] == "*" and "hook.py pre" in hooks["PreToolUse"][0]["hooks"][0]["command"]
+    assert hooks["PreToolUse"][0]["matcher"] == "*" and "__main__.py hook pre" in hooks["PreToolUse"][0]["hooks"][0]["command"]
     assert hooks["PostToolUse"][0]["matcher"] == "read_file"
     mcp = json.loads((sandbox / ".agents" / "plugins" / "vibefs" / "mcp_config.json").read_text(encoding="utf-8"))
-    assert mcp["mcpServers"]["vibefs"]["args"][1].endswith("vibefs_server.py")
+    assert mcp["mcpServers"]["vibefs"]["args"][1].endswith("vibefs/__main__.py") and mcp["mcpServers"]["vibefs"]["args"][2] == "mcp"
     assert prepare_sandbox(sandbox, state, sys.executable) == []  # 같으면 건드리지 않는다
 
 
@@ -485,7 +485,7 @@ def test_vibefs_server_results_carry_resource_ids_for_folder_mounts(tmp_path: Pa
     guide = str(vault / "회의 B" / "템플릿 가이드.md")
     store.set_mount("asst-1", [MountItem(str(vault / "회의 B"), "dir_b", "회의 B", kind="dir")], "conv-1",
                     id_map={guide: "file_guide_01"})
-    proc = subprocess.Popen([sys.executable, "-I", str(WS_DIR / "vibefs_server.py"), "--state", store.dir],
+    proc = subprocess.Popen([sys.executable, "-I", str(VIBEFS_ENTRY), "mcp", "--state", store.dir],
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
         assert proc.stdin and proc.stdout
@@ -544,7 +544,7 @@ def test_mounts_never_mix_across_sessions(tmp_path: Path, vault: Path) -> None:
 def test_vibefs_server_binds_conversation_to_its_session(tmp_path: Path, vault: Path) -> None:
     store = WorkspaceStore(str(tmp_path / "ws"))
     store.set_mount("asst-1", _items(vault), None)
-    proc = subprocess.Popen([sys.executable, "-I", str(WS_DIR / "vibefs_server.py"), "--state", store.dir, "--session", "asst-1"],
+    proc = subprocess.Popen([sys.executable, "-I", str(VIBEFS_ENTRY), "mcp", "--state", store.dir, "--session", "asst-1"],
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
         assert proc.stdin and proc.stdout
@@ -576,7 +576,7 @@ def test_non_set_requests_are_not_detected(text: str) -> None:
 
 
 def test_decision_cluster_separates_cards_drafts_and_scaffolds(tmp_path: Path) -> None:
-    from app.assistant.workspace import mapper
+    from vibefs import mapper
 
     root = tmp_path / "v"
     files = {
@@ -616,5 +616,6 @@ def test_composer_sends_workbench_map_once_then_short_status(tmp_path: Path) -> 
     list(service.send_message("s1", text="빈 칸 알려줘", contexts=[ctx], tools=[]))
     list(service.send_message("s1", text="다시", contexts=[ctx], tools=[]))
     assert "작업대 지도" in engine.turns[0] and "빈칸 1" in engine.turns[0]
-    assert "작업대 지도" not in engine.turns[1] and "[작업대] 문서: 보고서" in engine.turns[1]
+    # 다음 턴엔 지도 대신 켜진 출처 목록 (긴 대화에서도 다른 출처를 잊지 않게)
+    assert "작업대 지도" not in engine.turns[1] and "[켜진 출처" in engine.turns[1] and "에디터: 보고서" in engine.turns[1]
     assert ws.store.workbench_for("s1")["docId"] == "d1"

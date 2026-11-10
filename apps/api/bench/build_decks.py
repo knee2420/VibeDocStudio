@@ -13,8 +13,8 @@ import time
 
 from common import AGY, CACHE, CORPORA, MODEL, RESULTS, SANDBOX, deck_dir, deck_id, dump
 
-from app.knowledge.adapters import AgyCardEnricher, FileEnrichmentCache
-from app.knowledge.pipeline import IndexSpec, ScopeProfile, run_index
+from app.resource.index.adapters import AgyCardEnricher, FileEnrichmentCache
+from app.resource.index.pipeline import IndexSpec, ScopeProfile, run_index
 
 
 def main() -> None:

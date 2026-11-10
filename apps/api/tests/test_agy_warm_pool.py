@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from app.assistant.adapters.agy_stream import AgyConversation, WarmPool
-from app.assistant.models import EngineChoice
+from app.llm.adapters.agy_stream import AgyConversation, WarmPool
+from app.llm.models import EngineChoice
 
 FAKE_AGY = """
 import json, sys

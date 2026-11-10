@@ -8,9 +8,9 @@ from pathlib import Path
 
 import pytest
 
-from app.assistant.adapters.acp_client import AcpClient
-from app.assistant.adapters.agy_acp import AcpConversation
-from app.assistant.models import EngineChoice
+from app.llm.adapters.acp_client import AcpClient
+from app.llm.adapters.agy_acp import AcpConversation
+from app.llm.models import EngineChoice
 
 LIVE_AGY = os.environ.get("VIBE_LIVE_AGY") == "1"
 AGY_BIN = shutil.which("agy")

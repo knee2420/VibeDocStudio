@@ -1,0 +1,20 @@
+{
+ "name": "resource",
+ "version": "1.0.0",
+ "description": "리소스(사실 근거) — ws_* 탐색 도구 · 자료 지도 군집 · 전체 읽기 의도 · 읽은 범위 재확인 · 지식 덱 색인",
+ "dependsOn": [
+  "core"
+ ],
+ "tools": [
+  {
+   "file": "tools.json",
+   "source": "resources"
+  },
+  {
+   "file": "index/tools.json",
+   "source": "resources"
+  }
+ ],
+ "clientTools": "tools.client.json",
+ "messages": "messages.json"
+}

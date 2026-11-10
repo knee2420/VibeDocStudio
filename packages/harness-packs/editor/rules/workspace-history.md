@@ -1,0 +1,1 @@
+   - 이력: wb_history → wb_read(rev:N#slot:… · orig:…).

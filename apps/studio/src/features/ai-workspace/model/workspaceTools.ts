@@ -17,7 +17,7 @@ import {
   validateBlockProps,
 } from "@vibe/vdoc-schema";
 
-import { scopeAllowsPage, scopeAllowsSlot, toolScope } from "@/entities/ai-scope";
+import { scopeAllowsPage, scopeAllowsSlot, scopeHidesPage, scopeHidesSlot, toolScope } from "@/entities/ai-scope";
 import { buildSlotHtmlChange, stagedSlotIds, useAiStagingStore } from "@/entities/ai-staging";
 import { resolveSlotEvidence } from "@/entities/evidence";
 import { referenceApi, useReferenceStore } from "@/entities/reference-manager";
@@ -31,6 +31,7 @@ import { clipText, htmlToPlain, newId, revealCanvasElement, scrollToCanvasPage }
 
 
 import { boundReferences } from "./boundReferences";
+import { clientTool } from "./clientToolSpecs";
 import { revealReferenceViewer } from "./workspaceEntities";
 
 /** RM 에서 체크한 자료의 발췌 섹터 → 근거 위치 (inherited). */
@@ -82,11 +83,6 @@ function evidenceArg(raw: unknown): StagedEvidence[] | undefined {
   return out.length ? out : undefined;
 }
 
-const EVIDENCE_SCHEMA = {
-  type: "array",
-  description:
-    "이 내용의 근거 [{citationId, kind: kcard|backdata|resource|sector|ref-region, deckId, cardId, chunkId, label, lines}] — 본문 인용 표식 <sup data-cite=\"citationId\"></sup> 과 짝을 맞춘다",
-};
 
 function activeDoc(): VDocDocument {
   const doc = selectActiveDocument(useStudioDocumentStore.getState());
@@ -101,11 +97,6 @@ function requireSlot(doc: VDocDocument, slotId: unknown) {
   return slot;
 }
 
-const slotIdSchema = {
-  type: "object",
-  properties: { slotId: { type: "string", description: "슬롯 id (document.getOutline 에서 확인)" } },
-  required: ["slotId"],
-};
 
 /**
  * 워크스페이스 기본 도구 묶음. 새 위젯 · 기능은 같은 모양의 도구를 자기 feature 에서 등록하면 된다.
@@ -113,10 +104,7 @@ const slotIdSchema = {
  */
 export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
   {
-    name: "workspace.getState",
-    description: "현재 워크스페이스 상태: 프로젝트, 열린 문서/페이지, 작업 단계(phase), 선택한 슬롯/블록, 열린 참조 문서, Staged 대기 건수",
-    risk: "read",
-    inputSchema: { type: "object", properties: {} },
+    ...clientTool("workspace.getState"),
     describe: () => "워크스페이스 상태 읽기",
     run: (_args: unknown, ctx?: ToolRunContext) => {
       const docState = useStudioDocumentStore.getState();
@@ -145,42 +133,36 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "document.getOutline",
-    description:
-      "열린 문서의 구조를 한 줄씩: `pageId > blockId(kind) > slotId [역할/잠금] 라벨 — 본문 앞부분`. 기본은 편집 가능한 슬롯만 (고정 문구 제외). 슬롯 id 를 찾을 때 먼저 부른다",
-    risk: "read",
-    inputSchema: {
-      type: "object",
-      properties: {
-        pageId: { type: "string", description: "특정 페이지만 (생략 시 전체)" },
-        includeBoilerplate: { type: "boolean", description: "고정 문구 · 잠긴 슬롯도 포함" },
-      },
-    },
+    ...clientTool("document.getOutline"),
     describe: (args: { pageId?: string }) => (args.pageId ? `페이지 ${args.pageId} 구조 읽기` : "문서 구조 읽기"),
     run: (args: { pageId?: string; includeBoilerplate?: boolean }, ctx?: ToolRunContext) => {
       const doc = activeDoc();
       const scope = toolScope(doc, ctx);
-      if (scope && args.pageId && !scopeAllowsPage(doc, scope, args.pageId)) {
-        throw new Error(`범위 밖 페이지입니다: ${args.pageId} — 지금 범위는 "${scope.label}"`);
+      if (scope && args.pageId && scopeHidesPage(doc, scope, args.pageId)) {
+        throw new Error(`사용자가 뺀 페이지입니다: ${args.pageId} — 읽지도 고치지도 않는다`);
       }
-      const pages = (args.pageId ? doc.pages.filter((p) => p.pageId === args.pageId) : doc.pages).filter((p) => scopeAllowsPage(doc, scope, p.pageId));
+      // 고칠 범위 밖도 읽을 수 있게 보여 주고 [범위밖] 으로 표시한다 (사용자가 뺀 페이지만 숨김)
+      const pages = (args.pageId ? doc.pages.filter((p) => p.pageId === args.pageId) : doc.pages).filter((p) => !scopeHidesPage(doc, scope, p.pageId));
       const lines: string[] = [
-        scope ? `범위: ${scope.label} (docId=${doc.docId}) — 범위 밖 페이지 · 칸은 보이지 않는다` : `${doc.title} (docId=${doc.docId}, ${doc.pages.length}p)`,
+        scope
+          ? `${doc.title} (docId=${doc.docId}) · 고칠 범위: ${scope.label} — 범위 밖은 [범위밖] (읽기만)`
+          : `${doc.title} (docId=${doc.docId}, ${doc.pages.length}p)`,
       ];
       let hidden = 0;
       for (const page of pages) {
-        lines.push(`# ${page.pageId} ${page.pageLabel}`);
+        lines.push(`# ${page.pageId} ${page.pageLabel}${scope && !scopeAllowsPage(doc, scope, page.pageId) ? " [범위밖]" : ""}`);
         for (const block of page.blocks) {
           const slots = getBlockSlotIds(block)
             .map((id) => doc.slots[id])
-            .filter((slot) => Boolean(slot) && scopeAllowsSlot(doc, scope, slot.slotId));
+            .filter((slot) => Boolean(slot) && !scopeHidesSlot(doc, scope, slot.slotId));
           const shown = slots.filter((slot) => args.includeBoilerplate || (slot.role !== "boilerplate" && !slot.constraints?.locked));
           hidden += slots.length - shown.length;
           if (shown.length === 0) continue;
           lines.push(`- ${block.blockId} (${block.kind})`);
           for (const slot of shown) {
             const flags = [slot.role !== "editable-slot" ? slot.role : "", slot.constraints?.locked ? "locked" : ""].filter(Boolean).join(",");
-            lines.push(`  - ${slot.slotId}${flags ? ` [${flags}]` : ""} ${slot.label} — ${htmlToPlain(slot.content, 50)}`);
+            const outside = scope && !scopeAllowsSlot(doc, scope, slot.slotId) ? " [범위밖]" : "";
+            lines.push(`  - ${slot.slotId}${flags ? ` [${flags}]` : ""}${outside} ${slot.label} — ${htmlToPlain(slot.content, 50)}`);
           }
         }
       }
@@ -189,10 +171,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "slot.read",
-    description: "슬롯 하나의 전체 본문(HTML · 평문), 제약(줄 수 · 톤 · 잠금), 연결된 백데이터 원문",
-    risk: "read",
-    inputSchema: slotIdSchema,
+    ...clientTool("slot.read"),
     describe: (args: { slotId?: string }) => {
       const label = selectActiveDocument(useStudioDocumentStore.getState())?.slots[args.slotId ?? ""]?.label;
       return `슬롯 '${label ?? args.slotId}' 읽기`;
@@ -212,20 +191,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "slot.proposeContent",
-    description:
-      "슬롯의 새 본문을 변경안으로 제출한다 (바로 반영되지 않고 Staged 대기열에 올라가 사용자가 승인). html 은 <p>, <ul>, <li>, <strong>, <em> 만 사용",
-    risk: "stage",
-    inputSchema: {
-      type: "object",
-      properties: {
-        slotId: { type: "string" },
-        html: { type: "string", description: "새 본문 HTML 조각 (근거가 있는 문장 끝에 <sup data-cite=\"1\"></sup>)" },
-        reason: { type: "string", description: "변경 이유 한 줄" },
-        evidence: EVIDENCE_SCHEMA,
-      },
-      required: ["slotId", "html"],
-    },
+    ...clientTool("slot.proposeContent"),
     describe: (args: { slotId?: string; reason?: string }) => {
       const label = selectActiveDocument(useStudioDocumentStore.getState())?.slots[args.slotId ?? ""]?.label;
       return `슬롯 '${label ?? args.slotId}' 변경안 제출${args.reason ? ` — ${args.reason}` : ""}`;
@@ -248,18 +214,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "slots.proposeBatch",
-    description:
-      "여러 슬롯(표 셀 · 그리드 칸 · 섹션)의 새 본문을 한 번에 변경안으로 제출한다. 블록 하나를 채우거나 고칠 때 slot.proposeContent 를 여러 번 부르지 말고 이것을 쓴다. 잠긴 · 고정 문구 슬롯은 건너뛴다",
-    risk: "stage",
-    inputSchema: {
-      type: "object",
-      properties: {
-        changes: { type: "array", description: "[{slotId, html, evidence?}] — html 은 <p>, <ul>, <li>, <strong>, <em>, 인용 <sup data-cite> 만" },
-        reason: { type: "string", description: "변경 이유 한 줄" },
-      },
-      required: ["changes"],
-    },
+    ...clientTool("slots.proposeBatch"),
     describe: (args: { changes?: unknown[]; reason?: string }) =>
       `슬롯 ${Array.isArray(args.changes) ? args.changes.length : 0}개 변경안 제출${args.reason ? ` — ${args.reason}` : ""}`,
     run: (args: { changes: { slotId: string; html: string; evidence?: unknown }[]; reason?: string }) => {
@@ -295,19 +250,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "blocks.proposeProps",
-    description:
-      "슬롯 밖 블록 속성(이미지 대체 텍스트 · 정렬 · 너비, 담당자 등)의 변경안을 제출한다. 바꿀 수 있는 속성은 블록 종류마다 다르며 블록 첨부 내용의 '바꿀 수 있는 블록 속성' 에 나온다",
-    risk: "stage",
-    inputSchema: {
-      type: "object",
-      properties: {
-        blockId: { type: "string" },
-        props: { type: "object", description: "{속성: 새 값}" },
-        reason: { type: "string", description: "변경 이유 한 줄" },
-      },
-      required: ["blockId", "props"],
-    },
+    ...clientTool("blocks.proposeProps"),
     describe: (args: { blockId?: string; props?: Record<string, unknown> }) =>
       `블록 ${args.blockId} 속성 변경안 (${Object.keys(args.props ?? {}).join(", ")})`,
     run: (args: { blockId: string; props: Record<string, unknown>; reason?: string }) => {
@@ -342,10 +285,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "canvas.selectSlot",
-    description: "캔버스에서 슬롯을 선택하고 화면을 그 위치로 스크롤해 강조한다 (사용자에게 위치를 보여줄 때)",
-    risk: "ui",
-    inputSchema: slotIdSchema,
+    ...clientTool("canvas.selectSlot"),
     describe: (args: { slotId?: string }) => `슬롯 ${args.slotId} 로 이동`,
     run: (args: { slotId: string }) => {
       const doc = activeDoc();
@@ -361,10 +301,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "backdata.list",
-    description: "문서에 등록된 백데이터 조각 목록 (chunkId, 출처, 요약). slotId 를 주면 그 슬롯에 연결된 것만",
-    risk: "read",
-    inputSchema: { type: "object", properties: { slotId: { type: "string" } } },
+    ...clientTool("backdata.list"),
     describe: () => "백데이터 목록",
     run: (args: { slotId?: string }) => {
       const doc = activeDoc();
@@ -373,23 +310,12 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "references.list",
-    description: "이 프로젝트에 연결된 레퍼런스들 (refId, 참조 번호, 제목, 종류, 쪽 수, 사용 여부, 꺼 둔 층위, 핀 수)",
-    risk: "read",
-    inputSchema: { type: "object", properties: {} },
+    ...clientTool("references.list"),
     describe: () => "레퍼런스 목록",
     run: () => boundReferences(),
   },
   {
-    name: "references.read",
-    description:
-      "레퍼런스의 추출된 글 (제목 · 문단 · 목록 · 표, 블록 앵커 ref:<refId>#blk:<id> 포함). 결정 방식을 보려는 것이지 내용을 옮기려는 게 아니다. 긴 글은 maxChars 까지만",
-    risk: "read",
-    inputSchema: {
-      type: "object",
-      properties: { refId: { type: "string" }, maxChars: { type: "number", description: "기본 8000" } },
-      required: ["refId"],
-    },
+    ...clientTool("references.read"),
     describe: (args: { refId?: string }) => `레퍼런스 ${args.refId} 읽기`,
     run: async (args: { refId: string; maxChars?: number }) => {
       if (!boundReferences().some((r) => r.refId === args.refId)) throw new Error(`이 프로젝트에 연결된 레퍼런스가 아닙니다: ${args.refId}`);
@@ -402,10 +328,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "references.open",
-    description: "레퍼런스를 캔버스 옆 분할보기로 연다 — 사용자에게 레퍼런스의 해당 결정을 나란히 보여줄 때",
-    risk: "ui",
-    inputSchema: { type: "object", properties: { refId: { type: "string" } }, required: ["refId"] },
+    ...clientTool("references.open"),
     describe: (args: { refId?: string }) => `레퍼런스 ${args.refId} 분할보기로 열기`,
     run: (args: { refId: string }) => {
       if (!boundReferences().some((r) => r.refId === args.refId)) throw new Error(`이 프로젝트에 연결된 레퍼런스가 아닙니다: ${args.refId}`);
@@ -414,18 +337,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "slots.listByState",
-    description:
-      "범위 안 칸들의 채움 상태 목록 (빈 칸 지도). scope: slot|block|page|document, state: empty|ai-draft|staged|filled|verified (생략하면 채울 대상 전부). 일괄 채우기 · 진행 확인에 쓴다",
-    risk: "read",
-    inputSchema: {
-      type: "object",
-      properties: {
-        scope: { type: "string", enum: ["block", "page", "document"] },
-        id: { type: "string", description: "scope 가 block · page 일 때 그 id (생략하면 현재 선택 · 현재 페이지)" },
-        state: { type: "string", enum: ["empty", "ai-draft", "staged", "filled", "verified"] },
-      },
-    },
+    ...clientTool("slots.listByState"),
     describe: (args: { scope?: string; state?: string }) => `칸 상태 목록 (${args.scope ?? "page"}${args.state ? ` · ${args.state}` : ""})`,
     run: (args: { scope?: "block" | "page" | "document"; id?: string; state?: SlotFillState }, ctx?: ToolRunContext) => {
       const doc = activeDoc();
@@ -454,10 +366,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "evidence.forSlot",
-    description: "칸 하나의 근거 후보 (direct: 이미 연결 · inherited: 이웃 칸 근거 · RM 고정 자료). 레퍼런스는 근거가 아니다(패턴 출처). 채우기 전에 무엇을 근거로 쓸지 확인한다",
-    risk: "read",
-    inputSchema: { type: "object", properties: { slotId: { type: "string" } }, required: ["slotId"] },
+    ...clientTool("evidence.forSlot"),
     describe: (args: { slotId?: string }) => `칸 ${args.slotId} 근거 후보`,
     run: (args: { slotId: string }) => {
       const doc = activeDoc();
@@ -475,14 +384,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
   {
     // 텍스트 원본은 리소스 작업 공간(agy read_file · vibefs)이 직접 읽는다. 이 도구는 사람이 RM 에서 만든
     // 발췌 섹터(PDF 쪽 영역 등 — 원본 파일로는 못 읽는 것)만 돌려준다.
-    name: "resources.read",
-    description: "RM 발췌 섹터 읽기 (sectorId). 텍스트 파일 원문은 이 도구가 아니라 read_file 로 읽는다",
-    risk: "read",
-    inputSchema: {
-      type: "object",
-      properties: { sectorId: { type: "string" }, maxChars: { type: "number", description: "기본 6000" } },
-      required: ["sectorId"],
-    },
+    ...clientTool("resources.read"),
     describe: (args: { sectorId?: string }) => `RM 발췌 읽기 ${args.sectorId ?? ""}`,
     run: async (args: { sectorId?: string; maxChars?: number; resourceId?: string }) => {
       if (!args.sectorId) {
@@ -498,10 +400,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
     },
   },
   {
-    name: "staging.list",
-    description: "Staged 대기열에 쌓인 AI 변경안 목록 (아직 승인 전)",
-    risk: "read",
-    inputSchema: { type: "object", properties: {} },
+    ...clientTool("staging.list"),
     describe: () => "Staged 변경안 목록",
     run: () =>
       useAiStagingStore.getState().queue.map((c) => ({
@@ -513,14 +412,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
       })),
   },
   {
-    name: "layout.openPanel",
-    description: "화면 패널을 연다: explorer(아웃라이너), source-control(Staged 검토), inspector(슬롯 속성), blockbox(블록 추가)",
-    risk: "ui",
-    inputSchema: {
-      type: "object",
-      properties: { panel: { type: "string", enum: ["explorer", "source-control", "inspector", "blockbox"] } },
-      required: ["panel"],
-    },
+    ...clientTool("layout.openPanel"),
     describe: (args: { panel?: string }) => `${args.panel} 패널 열기`,
     run: (args: { panel: string }) => {
       const layout = useWorkspaceLayoutStore.getState();
@@ -530,6 +422,45 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
         return { opened: false, note: `오른쪽 '${args.panel as RightPanelTab}' 탭은 Composer 와 같은 자리라 사용자에게 안내만 한다.` };
       } else throw new Error(`알 수 없는 패널: ${args.panel}`);
       return { opened: args.panel };
+    },
+  },
+  {
+    ...clientTool("resource.cite"),
+    describe: (args: { citations?: Array<{ label?: string; resourceId?: string; lines?: [number, number] }> }) =>
+      `원천 근거 ${args?.citations?.length ?? 0}건 인용 (화면 하이라이트)`,
+    run: (args: {
+      citations?: Array<{
+        resourceId: string;
+        label?: string;
+        lines: [number, number];
+        snippet?: string;
+      }>;
+    }) => {
+      const list = args.citations ?? [];
+      const resourceStore = useResourceStore.getState();
+      const allItems = flattenResourceItems(resourceStore.items);
+
+      const resolved = list.map((c) => {
+        const item = allItems.find(
+          (it) =>
+            it.id === c.resourceId ||
+            it.title === c.resourceId ||
+            (it.pathOrUrl && it.pathOrUrl.toLowerCase().includes(c.resourceId.toLowerCase()))
+        );
+        return {
+          resourceId: item?.id ?? c.resourceId,
+          title: c.label || item?.title || c.resourceId,
+          pathOrUrl: item?.pathOrUrl ?? "",
+          lines: c.lines,
+          snippet: c.snippet ?? "",
+        };
+      });
+
+      return {
+        ok: true,
+        count: resolved.length,
+        citations: resolved,
+      };
     },
   },
 ];

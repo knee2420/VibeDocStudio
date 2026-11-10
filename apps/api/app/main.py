@@ -17,7 +17,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.assistant import router as assistant_router_module
-from app.backdata import router as backdata_router_module
+from app.authoring import harness_router as harness_router_module
+from app.authoring import router as authoring_router_module
+from app.authoring import staging_router as staging_router_module
 from app.bootstrap.container import Container
 from app.bootstrap.error_handlers import register_error_handlers
 from app.bootstrap.workspace_seed import (
@@ -26,26 +28,30 @@ from app.bootstrap.workspace_seed import (
     seed_projects,
 )
 from app.catalog import router as catalog_router_module
-from app.composer import router as composer_router_module
 from app.core.config import Settings, get_settings
 from app.documents import router as documents_router_module
-from app.knowledge import router as knowledge_router_module
+from app.form_scaffold import router as form_scaffold_router_module
+from app.llm import router as llm_router_module
 from app.projects import router as projects_router_module
 from app.reference import router as reference_router_module
-from app.resources import router as resources_router_module
-from app.runtime import router as runtime_router_module
+from app.resource.backdata import router as backdata_router_module
+from app.resource.index import router as knowledge_router_module
+from app.resource.ledger import router as resource_ledger_router_module
 
 #: (라우터 모듈, URL 접두사, 태그). 도메인을 추가하면 여기 한 줄만 늘린다.
 _DOMAIN_ROUTERS = (
     (catalog_router_module, "/api/catalog", "catalog"),
+    (form_scaffold_router_module, "/api/catalog", "form_scaffold"),
     (documents_router_module, "/api/documents", "documents"),
-    (backdata_router_module, "/api/backdata", "backdata"),
-    (composer_router_module, "/api/ai", "composer"),
+    (backdata_router_module, "/api/backdata", "resource.backdata"),
+    (authoring_router_module, "/api/ai", "authoring"),
     (projects_router_module, "/api/projects", "projects"),
-    (resources_router_module, "/api/resources", "resources"),
-    (knowledge_router_module, "/api/knowledge", "knowledge"),
-    (runtime_router_module, "/api", "runtime"),
+    (staging_router_module, "/api/projects", "authoring.staging"),
+    (resource_ledger_router_module, "/api/resources", "resource.ledger"),
+    (knowledge_router_module, "/api/knowledge", "resource.index"),
+    (llm_router_module, "/api", "llm"),
     (assistant_router_module, "/api/assistant", "assistant"),
+    (harness_router_module, "/api/assistant", "authoring.harness"),
     (reference_router_module, "/api/reference", "reference"),
 )
 
@@ -139,6 +145,3 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     _seed_workspace(container)
     return application
-
-
-app = create_app()

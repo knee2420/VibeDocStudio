@@ -4,6 +4,7 @@
     원본·해체   GET  /items/{refId}/source · /extraction · /layers · POST /items/{refId}/reanalyze
     핀          GET|POST /items/{refId}/pins · PATCH|DELETE /items/{refId}/pins/{pinId}
     연결        GET /projects/{projectId} · PUT|PATCH|DELETE /projects/{projectId}/items/{refId}
+    합의        GET|POST /projects/{projectId}/items/{refId}/consensus · PATCH|DELETE …/consensus/{cardId}
     앵커        GET /resolve?anchor=ref:<refId>#pin:<id>
 
 도메인 오류는 `app.bootstrap.error_handlers` 가 HTTP 응답으로 번역한다.
@@ -17,7 +18,15 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import Response
 
 from .models import ProjectBinding
-from .schemas import AddUrlRequest, CreatePinRequest, RenameRequest, UpdateBindingRequest, UpdatePinRequest
+from .schemas import (
+    AddUrlRequest,
+    ConsensusCardRequest,
+    CreatePinRequest,
+    RenameRequest,
+    UpdateBindingRequest,
+    UpdateConsensusCardRequest,
+    UpdatePinRequest,
+)
 from .use_cases import ReferenceLibraryService
 
 router = APIRouter()
@@ -155,6 +164,34 @@ def update_binding(project_id: str, ref_id: str, body: UpdateBindingRequest, ser
 @inject
 def unbind_item(project_id: str, ref_id: str, service: ServiceDep) -> dict[str, Any]:
     return _binding_view(service, service.unbind(project_id, ref_id))
+
+
+# --- 합의된 해석 (사용자가 AI 해석을 확정 · 수정) ------------------------------------------------------
+
+@router.get("/projects/{project_id}/items/{ref_id}/consensus")
+@inject
+def list_consensus(project_id: str, ref_id: str, service: ServiceDep) -> dict[str, Any]:
+    return {"cards": [c.to_dict() for c in service.consensus(project_id, ref_id)]}
+
+
+@router.post("/projects/{project_id}/items/{ref_id}/consensus")
+@inject
+def confirm_consensus_card(project_id: str, ref_id: str, body: ConsensusCardRequest, service: ServiceDep) -> dict[str, Any]:
+    return service.confirm_card(project_id, ref_id, body.model_dump(exclude_none=True)).to_dict()
+
+
+@router.patch("/projects/{project_id}/items/{ref_id}/consensus/{card_id}")
+@inject
+def update_consensus_card(project_id: str, ref_id: str, card_id: str, body: UpdateConsensusCardRequest,
+                          service: ServiceDep) -> dict[str, Any]:
+    return service.update_card(project_id, ref_id, card_id, body.model_dump(exclude_none=True)).to_dict()
+
+
+@router.delete("/projects/{project_id}/items/{ref_id}/consensus/{card_id}")
+@inject
+def delete_consensus_card(project_id: str, ref_id: str, card_id: str, service: ServiceDep) -> dict[str, bool]:
+    service.delete_card(project_id, ref_id, card_id)
+    return {"deleted": True}
 
 
 @router.get("/resolve")

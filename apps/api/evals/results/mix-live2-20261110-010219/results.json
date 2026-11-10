@@ -1,0 +1,401 @@
+[
+ {
+  "id": "MIX3-narrow",
+  "area": "MIX",
+  "holdout": false,
+  "prompt": "이 문서 지금 몇 쪽이야?",
+  "session": "asst-5560b0a8f49d",
+  "seconds": 12.2,
+  "usage": {
+   "input_tokens": 19798,
+   "output_tokens": 498,
+   "thought_tokens": 366,
+   "cached_read_tokens": 0,
+   "total_tokens": 20296
+  },
+  "tools": [],
+  "denies": [],
+  "reads": [],
+  "proposals": [],
+  "checks": [
+   {
+    "ok": false,
+    "note": "에디터 확인: 에디터✗, 레퍼런스✗, 리소스✗",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "안 연 출처 에디터, 레퍼런스, 리소스 — 이유 밝힘",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "(가점) 답이 짧다 — 후보는 화면에 (답 217자)",
+    "bonus": true
+   }
+  ],
+  "passed": false,
+  "score": "2/3",
+  "answer": "현재 문서는 총 **4쪽**으로 구성되어 있습니다.\n\n- [p1 요약](vdoc:page/rp1) (칸 3개)\n- [p2 주요 결정](vdoc:page/rp2) (칸 8개)\n- [p3 지표](vdoc:page/rp3) (칸 3개)\n- [p4 다음 단계](vdoc:page/rp4) (칸 2개)\n\n확인하지 않은 출처: 레퍼런스·리소스·이력 — 현재 문서의 쪽수 확인 요청이므로 참조하지 않음",
+  "thinking": "The document's current page count is 4, according to the editor's information. The identified document is \"2025 Q1 Onboarding Improvement Operation Report (Draft)\". The document has a document ID of vdoc_eval_report and revision 3.\n\n\n",
+  "errors": []
+ },
+ {
+  "id": "MIX4h-metrics",
+  "area": "MIX",
+  "holdout": true,
+  "prompt": "다음 주 경영진 보고용으로 지표 부분 보강해줘.",
+  "session": "asst-15f025641afd",
+  "seconds": 98.0,
+  "usage": {
+   "input_tokens": 51012,
+   "output_tokens": 8300,
+   "thought_tokens": 5261,
+   "cached_read_tokens": 278418,
+   "total_tokens": 337730
+  },
+  "tools": [
+   {
+    "name": "wb_outline",
+    "state": "done",
+    "params": {
+     "page": "rp3",
+     "target": "doc",
+     "toolSummary": "Outline page 3 metrics"
+    },
+    "error": null
+   },
+   {
+    "name": "ws_tree",
+    "state": "done",
+    "params": {
+     "depth": 3,
+     "path": "",
+     "toolSummary": "Tree of research resources"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_overview",
+    "state": "done",
+    "params": {
+     "toolSummary": "Overview of workbench"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_read",
+    "state": "done",
+    "params": {
+     "anchor": "page:rp3",
+     "toolSummary": "Read page 3 content"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\metrics\\2025-03_지표_요약.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "wb_outline",
+    "state": "done",
+    "params": {
+     "target": "ref:ref_eval_invest",
+     "toolSummary": "Outline ref invest"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\archive\\보고서_요약_원래본.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\interviews\\2025-02-03_인터뷰_A사.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\interviews\\2025-03-10_인터뷰_B사.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "wb_outline",
+    "state": "done",
+    "params": {
+     "target": "ref:ref_eval_public",
+     "toolSummary": "Outline ref public"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\README.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\notes\\경쟁사_비교.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "ws_coverage",
+    "state": "done",
+    "params": {
+     "toolSummary": "Check resource coverage"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_history",
+    "state": "done",
+    "params": {
+     "toolSummary": "Check history of workbench"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "slot:r_metric_table",
+     "toolSummary": "Measure r_metric_table patterns"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "slot:r_metric_body",
+     "toolSummary": "Measure r_metric_body patterns"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "slot:r_metric_note",
+     "toolSummary": "Measure r_metric_note patterns"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_invest#blk:b16",
+     "toolSummary": "Patterns of ref_eval_invest table"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_invest#blk:b17",
+     "toolSummary": "Patterns of ref_eval_invest source note"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_read",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_public#p1",
+     "toolSummary": "Read ref_eval_public p1"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_propose",
+    "state": "done",
+    "params": {
+     "candidates": [
+      {
+       "layers": [
+        "ref_eval_invest:D1",
+        "ref_eval_invest:D2",
+        "ref_eval_invest:D6"
+       ],
+       "rationale": "시리즈A 투자제안서(ref_eval_invest)의 지표 테이블 및 출처 표기 패턴을 적용하여, WAU·템플릿 사용률·첫 문서 완성 시간 3대 핵심 지표를 전면에 배치하고 주석 글자수를 80자 이내로 정제함.",
+       "slots": {
+        "r_metric_body": "첫 문서 완성 평균 31분 달성 및 WAU 1,450명을 기록하여 온보딩 개선 효과를 입증함.",
+        "r_metric_note": "※ WAU는 3월 3주 제품 로그 기준임 (2월 인터뷰 구두 추정치 1,200명).",
+        "r_metric_table": "지표 | 값\nWAU | 1,450명\n템플릿 사용률 | 68%\n첫 문서 완성 평균 | 31분"
+       },
+       "sources": [
+        "res:metrics/2025-03_지표_요약.md#L7-13"
+       ],
+       "title": "제1안: 핵심 지표 중심 투자·경영 보고형"
+      },
+      {
+       "layers": [
+        "ref_eval_public:D1",
+        "ref_eval_public:D3",
+        "ref_eval_public:D6"
+       ],
+       "rationale": "공공 내부 보고서(ref_eval_public)의 개조식 격식 및 측정 기준 명시 패턴을 적용하여 보고 신뢰도를 강화하고 분량 초과(80자 제한)를 해소함.",
+       "slots": {
+        "r_metric_body": "3월 3주 차 제품 로그 분석 결과, 첫 문서 완성 시간 31분 및 템플릿 사용률 68%를 달성함.",
+        "r_metric_note": "※ 제품 로그(3월 3주) 기준이며, 2월 인터뷰 구두 추정치(1,200명)를 공식 검증함.",
+        "r_metric_table": "지표 | 값\n첫 문서 완성 평균 | 31분\n템플릿 사용률 | 68%\nWAU | 1,450명"
+       },
+       "sources": [
+        "res:metrics/2025-03_지표_요약.md#L7-13"
+       ],
+       "title": "제2안: 표준 개조식 운영 보고형"
+      }
+     ],
+     "mode": "compose",
+     "summary": "경영진 보고용 지표 보강: 잘못된 수치(47분, 45분)를 원천 로그(31분, WAU 1,450명)로 바로잡고 분량초과 주석을 80자 이내로 압축 제안",
+     "target": "page:rp3",
+     "toolSummary": "Propose metric page candidates"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_outline",
+    "state": "done",
+    "params": {
+     "target": "doc",
+     "toolSummary": "Outline full document"
+    },
+    "error": null
+   }
+  ],
+  "denies": [],
+  "reads": [
+   "2025-02-03_인터뷰_A사.md",
+   "2025-03-10_인터뷰_B사.md",
+   "2025-03_지표_요약.md",
+   "README.md",
+   "경쟁사_비교.md",
+   "보고서_요약_원래본.md"
+  ],
+  "proposals": [
+   {
+    "id": "prop_2efdb2a7d6",
+    "status": "needs_fix",
+    "mode": "compose",
+    "n": 2,
+    "report": {
+     "ok": false,
+     "errors": [
+      "후보 1 '제1안: 핵심 지표 중심 투자·경영 보고형': 칸 r_metric_body 는 사용자가 정한 범위(페이지) 밖이다.",
+      "후보 1 '제1안: 핵심 지표 중심 투자·경영 보고형': 칸 r_metric_note 는 사용자가 정한 범위(페이지) 밖이다.",
+      "후보 1 '제1안: 핵심 지표 중심 투자·경영 보고형': 칸 r_metric_table 는 사용자가 정한 범위(페이지) 밖이다.",
+      "후보 2 '제2안: 표준 개조식 운영 보고형': 칸 r_metric_body 는 사용자가 정한 범위(페이지) 밖이다.",
+      "후보 2 '제2안: 표준 개조식 운영 보고형': 칸 r_metric_note 는 사용자가 정한 범위(페이지) 밖이다.",
+      "후보 2 '제2안: 표준 개조식 운영 보고형': 칸 r_metric_table 는 사용자가 정한 범위(페이지) 밖이다."
+     ],
+     "warnings": [],
+     "notes": [
+      "후보 1 '제1안: 핵심 지표 중심 투자·경영 보고형': ref_eval_invest:D1 거리 0.51 → 0.50",
+      "후보 1 '제1안: 핵심 지표 중심 투자·경영 보고형': ref_eval_invest:D2 거리 0.51 → 0.58",
+      "후보 1 '제1안: 핵심 지표 중심 투자·경영 보고형': ref_eval_invest:D6 거리 0.25 → 0.50",
+      "후보 2 '제2안: 표준 개조식 운영 보고형': ref_eval_public:D1 거리 0.49 → 0.24",
+      "후보 2 '제2안: 표준 개조식 운영 보고형': ref_eval_public:D3 거리 0.80 → 0.60",
+      "후보 2 '제2안: 표준 개조식 운영 보고형': ref_eval_public:D6 거리 0.25 → 0.25"
+     ]
+    },
+    "candidates": [
+     {
+      "layers": [
+       "ref_eval_invest:D1",
+       "ref_eval_invest:D2",
+       "ref_eval_invest:D6"
+      ],
+      "rationale": "시리즈A 투자제안서(ref_eval_invest)의 지표 테이블 및 출처 표기 패턴을 적용하여, WAU·템플릿 사용률·첫 문서 완성 시간 3대 핵심 지표를 전면에 배치하고 주석 글자수를 80자 이내로 정제함.",
+      "slots": {
+       "r_metric_body": "첫 문서 완성 평균 31분 달성 및 WAU 1,450명을 기록하여 온보딩 개선 효과를 입증함.",
+       "r_metric_note": "※ WAU는 3월 3주 제품 로그 기준임 (2월 인터뷰 구두 추정치 1,200명).",
+       "r_metric_table": "지표 | 값\nWAU | 1,450명\n템플릿 사용률 | 68%\n첫 문서 완성 평균 | 31분"
+      },
+      "sources": [
+       "res:metrics/2025-03_지표_요약.md#L7-13"
+      ],
+      "title": "제1안: 핵심 지표 중심 투자·경영 보고형"
+     },
+     {
+      "layers": [
+       "ref_eval_public:D1",
+       "ref_eval_public:D3",
+       "ref_eval_public:D6"
+      ],
+      "rationale": "공공 내부 보고서(ref_eval_public)의 개조식 격식 및 측정 기준 명시 패턴을 적용하여 보고 신뢰도를 강화하고 분량 초과(80자 제한)를 해소함.",
+      "slots": {
+       "r_metric_body": "3월 3주 차 제품 로그 분석 결과, 첫 문서 완성 시간 31분 및 템플릿 사용률 68%를 달성함.",
+       "r_metric_note": "※ 제품 로그(3월 3주) 기준이며, 2월 인터뷰 구두 추정치(1,200명)를 공식 검증함.",
+       "r_metric_table": "지표 | 값\n첫 문서 완성 평균 | 31분\n템플릿 사용률 | 68%\nWAU | 1,450명"
+      },
+      "sources": [
+       "res:metrics/2025-03_지표_요약.md#L7-13"
+      ],
+      "title": "제2안: 표준 개조식 운영 보고형"
+     }
+    ]
+   }
+  ],
+  "checks": [
+   {
+    "ok": true,
+    "note": "세 출처 모두 확인: 에디터✓, 레퍼런스✓, 리소스✓",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "레퍼런스 누출 0: 없음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "안 연 출처 없음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "지표 원천 읽음: 1건",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "4/4",
+  "answer": "현재 에디터의 작업 범위가 **[1쪽 요약](vdoc:page/rp1)**으로 설정되어 있어, 시스템 검증 규칙상 범위 밖인 **[3쪽 지표](vdoc:page/rp3)** 슬롯에 대한 변경 제안(`wb_propose`)이 차단되었습니다. \n\n화면에서 작업 범위를 **[3쪽 지표](vdoc:page/rp3)**로 전환해주시면 즉시 제안을 올려드릴 수 있습니다. 전환 전 검토하실 수 있도록 원천 리소스 팩트 체크와 보강안을 정리해 드립니다.\n\n---\n\n### 1. [3쪽 지표](vdoc:page/rp3) 현황 진단\n\n* **[지표 표](vdoc:slot/r_metric_table)** `⟨근거없음⟩`\n  * 현재 기재된 `첫 문서 완성 평균 | 47분`은 원천 근거가 없는 잘못된 수치입니다. 리소스인 [2025-03_지표_요약.md](vdoc:resource/file_ca01d6d352) (L7-11) 기준 **31분**이며, 핵심 성장 지표인 `WAU | 1,450명`이 누락되어 있습니다.\n* **[지표 해설](vdoc:slot/r_metric_body)** `⟨근거없음⟩`\n  * 현재 본문의 `평균 45분`, `측정 인원 10명`은 원천 데이터 어디에도 없는 수치입니다.\n* **[지표 주석](vdoc:slot/r_metric_note)** `⟨분량초과 134/80 · 근거없음⟩`\n  * 슬롯 제한(80자)을 초과한 134자이며, 신규 가입자의 서식 선택 관련 서술은 리소스에 근거가 없습니다. 리소스 [2025-03_지표_요약.md](vdoc:resource/file_ca01d6d352) (L13)의 실제 검증 내용(제품 로그 기준 및 2월 구두 추정치 검증)으로 압축이 필요합니다.\n\n---\n\n### 2. 준비된 경영진 보고용 보강안 (2가지)\n\n#### 제1안: 핵심 지표 중심 투자·경영 보고형\n> **참고 패턴:** [(주)루미나랩스 시리즈A 투자 제안서](vdoc:doc/ref_eval_invest)의 지표 테이블·각주 구조(D1, D2, D6)\n> **원천 근거:** [2025-03_지표_요약.md](vdoc:resource/file_ca01d6d352) (L7-13)\n\n* **[지표 표](vdoc:slot/r_metric_table)**\n  ```text\n  지표 | 값\n  WAU | 1,450명\n  템플릿 사용률 | 68%\n  첫 문서 완성 평균 | 31분\n  ```\n* **[지표 해설](vdoc:slot/r_metric_body)**\n  > 첫 문서 완성 평균 31분 달성 및 WAU 1,450명을 기록하여 온보딩 개선 효과를 입증함.\n* **[지표 주석](vdoc:slot/r_metric_note)** (38자 / 80자 제한 준수)\n  > ※ WAU는 3월 3주 제품 로그 기준임 (2월 인터뷰 구두 추정치 1,200명 대비 검증).\n\n---\n\n#### 제2안: 표준 개조식 운영 보고형\n> **참고 패턴:** [한국데이터진흥원 내부 보고](vdoc:doc/ref_eval_public)의 표준 개조식 문체 및 측정 출처 명시(D1, D3, D6)\n> **원천 근거:** [2025-03_지표_요약.md](vdoc:resource/file_ca01d6d352) (L7-13)\n\n* **[지표 표](vdoc:slot/r_metric_table)**\n  ```text\n  지표 | 값\n  첫 문서 완성 평균 | 31분\n  템플릿 사용률 | 68%\n  WAU | 1,450명\n  ```\n* **[지표 해설](vdoc:slot/r_metric_body)**\n  > 3월 3주 차 제품 로그 분석 결과, 첫 문서 완성 시간 31분 및 템플릿 사용률 68%를 달성함.\n* **[지표 주석](vdoc:slot/r_metric_note)** (49자 / 80자 제한 준수)\n  > ※ 제품 로그(3월 3주) 기준이며, 2월 인터뷰 구두 추정치(1,200명)를 공식 검증함.\n\n---\n\n에디터에서 작업 범위를 **[3쪽 지표](vdoc:page/rp3)**(또는 해당 슬롯들)로 선택해 주신 뒤 다시 말씀해 주시면 바로 화면에 후보 선택 UI를 띄워드리겠습니다.\n\n확인하지 않은 출처: 없음",
+  "thinking": "Initial suspicion was a discrepancy in the \"first document completion average\" metric. Examining the p3's metric table, the value is 47 minutes, however a conflicting value of 31 minutes is in the \"metrics/2025-03_지표_요약.md\" resource. Template utilization aligns at 68% in both instances. This indicates a potential data inconsistency for the key metric.\n\n\nInitial assessment: user requires enhancement of specific metrics within the editor, identified by page ID and block/slot combinations. The request focuses on improving the presentation of key performance indicators (KPIs) for the upcoming executive report. Specifically, I need to augment the content in the `r_metric_table`, `r_metric_body`, and `r_metric_note` slots within the specified page.\n\n\nThe provided metrics data for the report contain inaccuracies and unsubstantiated claims in all three specified slots. The identified values (completion time, user counts, and commentary on template usage) contradict the referenced resource and require correction. The focus is to rectify the content within the `r_metric_table`, `r_metric_body`, and `r_metric_note` slots on page `rp3`.\n\n\nThe initial understanding of the `wb_propose` schema needs refinement. The `target` field's format and the structure of `slots` are crucial for accurate candidate generation. The request implies a need for multiple candidates, implying the need for diverse combinations of layers, content and structure.  Focusing on a 'compose' mode, two distinct candidate styles are generated: \"investment/management report\" and \"public report\".\n\nThe first candidate offers three key metrics (WAU, template usage rate, completion time) with accompanying body text emphasizing onboarding improvements and a concise note with source details. A second candidate, tailored for a public report, presents the same metrics, reformatted to align with a formal style, and includes a note referencing source verification. It appears the `slots` field within the candidate descriptions expects HTML formatted text.\n\n\nThe error message indicates the range is outside the user-defined scope. This suggests an issue with how the page range is being interpreted. Reviewing the document overview confirms the report's structure and the defined page range. The focus is now on how this page range is interpreted in relation to the specific \"r_metric_body\" cell and the \"wb_outline\".\n\n\nThe editor's current focus is on p1, which lacks the \"[Out of Scope]\" tag, unlike p2, p3, and p4. The workspace indicates the selected document is \"2025 Q1 Onboarding Improvement Operation Report (Draft) (docId=vdoc_eval_report, rev 3)\" and p1 is the current page, which is the summary. The user's request continues with \"next week executive...\".\n\n\nThe current task's scope is restricted to p1, preventing direct modification of content on p3, even though the user specifically requested metric improvements which are located there. The \"wb_propose\" tool validates edits against this scope. Since the editor's current context is p1, the system rejects any edits targeting the metric data on p3. The user needs to explicitly switch the editor's focus to p3 to enable those changes.\n\n\nInitial assessment identifies several discrepancies in the metrics on p3. The first document completion time is reported as 47 minutes in the table, while the source material indicates 31 minutes, and the WAU of 1,450 is missing entirely. The commentary lacks source data for \"average 45 minutes\" and \"measured by 10 people\". The notes exceed the 80-character limit and contain content not grounded in source material. The suggested improvements involve either emphasizing key metrics with concise annotations, or a streamlined bullet-point format with clear measurement criteria based on log data. Need to check if p1 has related metrics.\n\n\nThe user's explicit request is to improve metrics, which reside on p3, but the current editor context is p1, the summary page. The \"wb_propose\" tool's error indicates that edits to slots outside the active page, rp1, are rejected; specifically, editing the metrics on rp3 triggers the scope validation error. Need to investigate if the tool's targeting can be adjusted to allow page-agnostic modifications. The rule about using sources constrains edits to within the user-defined \"scope\", which is currently p1, preventing direct manipulation of p3's metric data.\n\n\n",
+  "errors": []
+ }
+]

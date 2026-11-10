@@ -1,0 +1,1 @@
+   - 에디터: wb_outline → wb_read(slot:/block:/page:). 진단은 wb_patterns 측정값과 칸 위치로 말한다.

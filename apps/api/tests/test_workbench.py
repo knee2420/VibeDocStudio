@@ -5,12 +5,14 @@ import json
 from pathlib import Path
 
 import pytest
+from harness_kit import patterns
 
-from app.assistant.workspace import patterns
-from app.assistant.workspace.proposals import ProposalStore, leaked_fragments, propose
 from app.assistant.workspace.service import ResourceWorkspace
-from app.assistant.workspace.wb_tools import WB_TOOL_SPECS, WorkbenchTools
-from app.assistant.workspace.workbench import Workbench, html_to_text
+from vibefs.proposals import ProposalStore, leaked_fragments, propose
+from vibefs.ref_tools import RefTools, cards_for
+from vibefs.store import WorkspaceStore
+from vibefs.wb_tools import WB_TOOL_SPECS, WorkbenchTools
+from vibefs.workbench import Workbench, html_to_text
 
 ORIG = "<p>핵심은 템플릿 우선 제공이다. 첫 문서 완성 시간은 기준선 47분이었다.</p>"
 
@@ -63,6 +65,10 @@ def _tools(tmp: Path, state: dict) -> WorkbenchTools:
     return WorkbenchTools(Workbench.from_state(state), proposals=ProposalStore(str(tmp / "st")), session_id="s1")
 
 
+def _rf(tmp: Path, state: dict) -> RefTools:
+    return RefTools(Workbench.from_state(state), WorkspaceStore(str(tmp / "st")), session_id="s1", conversation_id="c1")
+
+
 def test_html_to_text_keeps_structure() -> None:
     text = html_to_text("<h2>제목</h2><ul><li><strong>문제</strong> — 크다</li></ul><table><tr><td>a</td><td>b</td></tr></table>")
     assert "## 제목" in text and "- **문제** — 크다" in text and "a | b" in text
@@ -72,13 +78,20 @@ def test_anchors_read_doc_reference_pin_and_history(bench) -> None:
     tmp, state = bench
     t = _tools(tmp, state)
     assert "s_sum" in t.call("wb_outline", {}) and "고정" in t.call("wb_outline", {})
-    assert "결론 먼저" in t.call("wb_read", {"anchor": "ref:ref1#pin:pin1"})
-    assert "옮기지 않는다" in t.call("wb_read", {"anchor": "ref:ref1"})  # 레퍼런스 읽기엔 역할 경고가 붙는다
-    assert "37곳" in t.call("wb_read", {"anchor": "ref:ref1#blk:rb1"})
-    assert "ref:ref1#blk:rb1" in t.call("wb_outline", {"target": "ref:ref1"})
-    assert "ref:ref1#blk:rb1" in t.call("wb_search", {"query": "루미나"})
-    overview = t.call("wb_overview", {})
-    assert "ref:ref1#pin:pin1 [D4]" in overview and "꺼 둔 층위: D2" in overview
+    # 레퍼런스는 rf_* 로만 본다 (wb_* 는 에디터 문서 · 이력 전용)
+    with pytest.raises(ValueError, match="rf_read"):
+        t.call("wb_read", {"anchor": "ref:ref1#pin:pin1"})
+    with pytest.raises(ValueError, match="rf_find"):
+        t.call("wb_search", {"query": "루미나", "where": "ref"})
+    rf = _rf(tmp, state)
+    assert "결론 먼저" in rf.call("rf_read", {"anchor": "ref:ref1#pin:pin1"})
+    assert "옮기지 않는다" in rf.call("rf_read", {"anchor": "ref:ref1"})  # 레퍼런스 읽기엔 역할 경고가 붙는다
+    assert "37곳" in rf.call("rf_read", {"anchor": "ref:ref1#blk:rb1"})
+    assert "ref:ref1#blk:rb1" in rf.call("rf_outline", {"ref": "ref1"})
+    assert "ref:ref1#blk:rb1" in rf.call("rf_find", {"query": "루미나"})
+    rmap = rf.call("rf_map", {})
+    assert "ref:ref1#pin:pin1 [D4]" in rmap and "끔: D2" in rmap
+    assert "ref:ref1" in t.call("wb_overview", {}) and "rf_map" in t.call("wb_overview", {})
     assert "47분" in t.call("wb_read", {"anchor": "orig:s_sum"})
     assert "rev:2" in t.call("wb_history", {"slotId": "s_sum"})
     assert "rev:2#slot:s_sum" in t.call("wb_search", {"query": "47분"})
@@ -150,3 +163,71 @@ def test_service_resolves_workbench_paths_and_rejects_outside_roots(tmp_path: Pa
 def test_wb_tool_specs_are_listed_and_named_consistently() -> None:
     names = {s["name"] for s in WB_TOOL_SPECS}
     assert names == {"wb_overview", "wb_outline", "wb_read", "wb_search", "wb_history", "wb_patterns", "wb_compare", "wb_propose"}
+
+
+# --- 레퍼런스: 읽은 범위 · 해석 카드 · 합의 준수 -------------------------------------------------------------
+
+def _long_ref(tmp: Path, state: dict) -> dict:
+    """여러 쪽 · 섹션 · 표가 있는 긴 레퍼런스 — 한 번에 다 안 보이고 이어 읽어야 한다."""
+    blocks = []
+    for page in range(1, 6):
+        blocks.append({"id": f"h{page}", "page": page, "kind": "heading", "level": 1, "text": f"{page}장 제목",
+                       "html": f"<h1>{page}장 제목</h1>"})
+        for i in range(12):
+            text = f"{page}장 문단 {i} " + "가나다라마바사 " * 40
+            blocks.append({"id": f"b{page}_{i}", "page": page, "kind": "paragraph", "text": text, "html": f"<p>{text}</p>"})
+        blocks.append({"id": f"t{page}", "page": page, "kind": "table", "text": "항목 | 값", "html": "<table><tr><td>항목</td><td>값</td></tr></table>"})
+    _ref(tmp / "references", "long1", blocks, [{"pinId": "pinL", "refId": "long1", "kind": "region", "label": "3장 표",
+                                                 "page": 3, "bbox": [0, 0, 1000, 1000], "layer": "D5"}])
+    return {**state, "references": [*state["references"], {"refId": "long1", "dir": str(tmp / "references" / "long1"),
+                                                           "pinIds": None, "layers": {}}]}
+
+
+def test_long_reference_reads_in_pages_and_records_coverage(bench) -> None:
+    tmp, state = bench
+    state = _long_ref(tmp, state)
+    rf = _rf(tmp, state)
+    first = rf.call("rf_read", {"anchor": "ref:long1"})
+    assert "offset=" in first and "남았다" in first  # 잘리지 않고 이어 읽기를 안내한다
+    cov = rf.call("rf_coverage", {"ref": "long1"})
+    assert "덩어리" in cov and "안 읽은 섹션" in cov and "안 읽은 핀: pinL" in cov
+    offset = int(first.split("offset=")[-1].split(")")[0])
+    rf.call("rf_read", {"anchor": "ref:long1", "offset": offset})
+    assert "§3" in rf.call("rf_outline", {"ref": "long1", "section": "3"})
+    assert "ref:long1#blk:t3" in rf.call("rf_find", {"kind": "table", "page": "3"})
+    rf.call("rf_read", {"anchor": "ref:long1#pin:pinL"})
+    assert "핀 1/1 읽음" in rf.call("rf_coverage", {"ref": "long1"})
+
+
+def test_interpret_requires_read_evidence_inside_scope_and_saves_proposal(bench) -> None:
+    tmp, state = bench
+    state = _long_ref(tmp, state)
+    rf = _rf(tmp, state)
+    card = {"layer": "D5", "scope": "ref:long1#pin:pinL", "adoption": "follow",
+            "reading": "3장 표는 항목 · 값 두 칸 격자로만 짠다 (설명 문장 없이)", "evidence": ["ref:long1#blk:t3"]}
+    assert "읽은 기록이 없다" in rf.call("rf_interpret", {"cards": [card]})
+    rf.call("rf_read", {"anchor": "ref:long1#pin:pinL"})
+    out_scope = dict(card, evidence=["ref:long1#blk:t1"])
+    rf.call("rf_read", {"anchor": "ref:long1#p1"})
+    assert "범위" in rf.call("rf_interpret", {"cards": [out_scope]})
+    ok = rf.call("rf_interpret", {"cards": [dict(card, alternatives=[{"reading": "표보다 장 제목 바로 아래 위치가 핵심 결정이다"}])]})
+    assert "✓ icard_" in ok and "대안 1" in ok
+    consensus = rf.call("rf_consensus", {"ref": "long1"})
+    assert "[제안]" in consensus and "D5 따름" in consensus
+    cards = cards_for(Workbench.from_state(state), WorkspaceStore(str(tmp / "st")), "s1")
+    assert any(c.get("layer") == "D5" for c in cards.values()) and "off:ref1:D2" in cards
+
+
+def test_propose_checks_follows_and_excluded_layers(bench) -> None:
+    tmp, state = bench
+    state["references"][0]["consensus"] = [{"cardId": "cardX", "layer": "D1", "scope": "ref:ref1", "adoption": "exclude",
+                                            "reading": "굵은 결론 한 줄로 시작"}]
+    wb = Workbench.from_state(state)
+    store = ProposalStore(str(tmp / "st"))
+    cards = cards_for(wb, None, "s1")
+    unknown = propose(wb, {"target": "slot:s_sum", "mode": "restyle",
+                           "candidates": [{"follows": ["nope"], "slots": {"s_sum": "<p>지금 요약 a b</p>"}}]}, [], store, "s1", cards=cards)
+    assert any("해석 카드 nope 가 없다" in e for e in unknown["report"]["errors"])
+    excluded = propose(wb, {"target": "slot:s_sum", "mode": "restyle",
+                            "candidates": [{"follows": ["cardX"], "slots": {"s_sum": "<p>지금 요약 a b</p>"}}]}, [], store, "s1", cards=cards)
+    assert any("따르지 않음" in e for e in excluded["report"]["errors"])

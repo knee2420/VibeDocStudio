@@ -17,6 +17,7 @@
     "@vibe/ai-kernel": "workspace:*",
     "@vibe/ai-react": "workspace:*",
     "@vibe/document-viewer": "workspace:*",
+    "@vibe/harness-packs": "workspace:*",
     "@vibe/slot-canvas": "workspace:*",
     "@vibe/slot-editor": "workspace:*",
     "@vibe/vdoc-schema": "workspace:*",

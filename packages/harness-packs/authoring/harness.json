@@ -1,0 +1,77 @@
+{
+ "specs": [
+  {
+   "harnessId": "fill.slot",
+   "title": "빈 칸 채우기",
+   "executor": "inline",
+   "output": "slot-html-cited",
+   "tier": "fast",
+   "suggestEvidence": true,
+   "gates": [
+    "citations",
+    "grounded",
+    "length"
+   ],
+   "defaultInstruction": "이 칸에 들어갈 본문을 근거만으로 작성하라.",
+   "extraRules": []
+  },
+  {
+   "harnessId": "fill.range",
+   "title": "범위 채우기",
+   "executor": "inline",
+   "output": "slot-map",
+   "tier": "balanced",
+   "suggestEvidence": true,
+   "gates": [
+    "length"
+   ],
+   "defaultInstruction": "고른 칸들을 근거만으로 채워라. 이미 내용이 있는 칸은 넣지 마라.",
+   "extraRules": []
+  },
+  {
+   "harnessId": "ground.cite",
+   "title": "출처 달기",
+   "executor": "inline",
+   "output": "slot-html-cited",
+   "tier": "balanced",
+   "suggestEvidence": true,
+   "gates": [
+    "citations",
+    "grounded",
+    "facts-preserved"
+   ],
+   "defaultInstruction": "본문 문장은 바꾸지 말고, 근거가 있는 문장 끝에 인용 표식만 붙여라.",
+   "extraRules": [
+    "본문의 단어 · 숫자 · 순서를 바꾸지 마라. 인용 표식만 더한다."
+   ]
+  }
+ ],
+ "rules": {
+  "base": [
+   "너는 문서 편집기의 채우기 엔진이다. 도구(파일 · 터미널 · 검색)는 쓰지 마라. 필요한 것은 모두 아래에 있다.",
+   "근거(<evidence>)에 있는 사실만 쓴다. 근거에 없는 수치 · 이름 · 날짜를 지어내지 마라.",
+   "설명 · 머리말 · 코드펜스 없이 결과만 출력한다."
+  ],
+  "output": {
+   "slot-html-cited": [
+    "출력: HTML 조각 (<p>, <ul>, <ol>, <li>, <strong>, <em>, <br>, <sup> 만).",
+    "근거가 있는 문장 끝마다 인용 표식을 붙인다: <sup data-cite=\"E1\"></sup> (여러 개면 <sup data-cite=\"E1\"></sup><sup data-cite=\"E3\"></sup>).",
+    "근거로 뒷받침되지 않는 문장은 쓰지 않는다. 근거가 아예 없으면 <p>[근거 부족]</p> 만 출력한다."
+   ],
+   "html": [
+    "출력: HTML 조각 (<p>, <ul>, <ol>, <li>, <strong>, <em>, <br>)."
+   ],
+   "slot-map": [
+    "출력: JSON 객체 하나 — 키는 slotId, 값은 그 칸의 새 HTML 조각 (인용 표식 <sup data-cite> 포함 가능)."
+   ],
+   "variables": [
+    "출력: JSON 객체 하나 — 키는 변수 이름, 값은 문자열. 근거에 없는 변수는 넣지 않는다."
+   ],
+   "default": [
+    "출력: 일반 텍스트 (짧은 목록)."
+   ]
+  },
+  "length": "길이: 이 칸은 대략 {max_chars}자 안에 들어가야 한다 (줄 수 제약). 넘치면 핵심만 남겨라.",
+  "tone": "문체: {tone}"
+ }
+}

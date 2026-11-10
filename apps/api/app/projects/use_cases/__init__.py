@@ -19,10 +19,8 @@ from .get_project_outline_tree import (
     GetProjectOutlineTreeUseCase,
     ProjectOutlineProjection,
 )
-from .staging_queue import StagingQueueUseCase
 
 __all__ = [
-    "StagingQueueUseCase",
     "ListProjectsUseCase",
     "GetProjectUseCase",
     "SaveProjectUseCase",

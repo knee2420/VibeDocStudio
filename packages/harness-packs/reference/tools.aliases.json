@@ -1,0 +1,31 @@
+{
+ "rf_read": {
+  "target": "anchor",
+  "path": "anchor",
+  "id": "anchor"
+ },
+ "rf_measure": {
+  "target": "anchor",
+  "path": "anchor"
+ },
+ "rf_find": {
+  "pattern": "query",
+  "text": "query",
+  "refId": "ref"
+ },
+ "rf_outline": {
+  "refId": "ref",
+  "target": "ref",
+  "anchor": "ref"
+ },
+ "rf_coverage": {
+  "refId": "ref"
+ },
+ "rf_consensus": {
+  "refId": "ref"
+ },
+ "rf_contrast": {
+  "left": "a",
+  "right": "b"
+ }
+}

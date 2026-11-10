@@ -3,8 +3,8 @@ import json
 import re
 from pathlib import Path
 
-from app.catalog.agents.fidelity_diagnosis import diagnose
-from app.catalog.agents.fidelity_layout import (
+from app.form_scaffold.agents.fidelity_diagnosis import diagnose
+from app.form_scaffold.agents.fidelity_layout import (
     build_page_model,
     default_plan,
     default_tune,

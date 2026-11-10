@@ -1,0 +1,11 @@
+{
+ "adoptions": {
+  "follow": "따름",
+  "consult": "참고만",
+  "exclude": "따르지 않음"
+ },
+ "readBudget": 9000,
+ "outlineRows": 80,
+ "leakNgram": 14,
+ "readHeader": "[레퍼런스 — 이 글의 '결정 방식'만 참고한다. 고유명사 · 수치 · 문장은 내 문서로 옮기지 않는다]"
+}

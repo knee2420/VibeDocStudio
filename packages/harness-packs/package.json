@@ -1,0 +1,7 @@
+{
+  "name": "@vibe/harness-packs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "하네스 영역 팩 (데이터만): core · editor · reference · resource · authoring · form-scaffold — 백엔드(Python)와 프론트(TS)가 같은 파일을 읽는다",
+  "exports": { "./*": "./*" }
+}

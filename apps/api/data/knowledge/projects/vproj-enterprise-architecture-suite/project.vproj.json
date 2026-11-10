@@ -70,38 +70,6 @@
       "provenanceSourceProjectId": null,
       "provenanceSourceNodeId": null,
       "aiStatus": "idle"
-    },
-    {
-      "nodeId": "node-1a1be453220-393bac43",
-      "parentId": "node-proj-root",
-      "depth": 1,
-      "zoomLevel": "document",
-      "title": "[추가 서식] 상벌위원회 규정 및 회의록 서식 자료모음",
-      "summary": "템플릿 허브에서 추가된 문서 양식",
-      "targetDocId": "vdoc_ref_reward_penalty_rules",
-      "targetPageId": null,
-      "targetBlockId": null,
-      "targetSlotId": null,
-      "recommendedTemplateId": "section-block",
-      "provenanceSourceProjectId": null,
-      "provenanceSourceNodeId": null,
-      "aiStatus": "idle"
-    },
-    {
-      "nodeId": "node-1a1be457ebb-ae08aea4",
-      "parentId": "node-proj-root",
-      "depth": 1,
-      "zoomLevel": "document",
-      "title": "[추가 서식] 10월 4주차 VibeDocStudio 아키텍처 정례 회의록 (+ Page 2 반상회 회의록 + Page 3 Atticus 인보이스)",
-      "summary": "템플릿 허브에서 추가된 문서 양식",
-      "targetDocId": "vdoc_meeting_minutes_1028",
-      "targetPageId": null,
-      "targetBlockId": null,
-      "targetSlotId": null,
-      "recommendedTemplateId": "section-block",
-      "provenanceSourceProjectId": null,
-      "provenanceSourceNodeId": null,
-      "aiStatus": "idle"
     }
   ],
   "provenanceLineage": [
@@ -146,5 +114,5 @@
       "clonedAt": "2026-11-03T12:25:23Z"
     }
   ],
-  "updatedAt": "2026-11-09T06:46:13Z"
+  "updatedAt": "2026-11-09T15:56:51Z"
 }

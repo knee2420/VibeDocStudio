@@ -17,11 +17,17 @@ import uuid
 from dataclasses import dataclass, field, replace
 from typing import Any, Generator, Iterator, Optional
 
-from app.core.llm.execution_policy import RuntimeExecutionPolicy
+from harness_kit import packs
+
+from app.llm.models import EngineChoice
+from app.llm.policy import RuntimeExecutionPolicy
+from app.llm.ports import ConversationEngine, EngineProvider
+from vibefs.mapper import find_clusters, partition, target_entries
+from vibefs.workbench import Workbench
 
 from ..errors import AssistantSessionNotFoundError
-from ..models import ContextItem, EngineChoice, ToolCall, ToolSpec
-from ..ports import ConversationEngine, EngineProvider, ServerToolbox
+from ..models import ContextItem, ToolCall, ToolSpec
+from ..ports import ServerToolbox
 from ..prompts import (
     clean_inline_output,
     composer_message,
@@ -34,19 +40,25 @@ from ..workspace import (
     WORKBENCH_KIND,
     MountState,
     ResourceWorkspace,
+    any_activity,
     detect_full_read_intent,
     extract_citations,
+    extract_citations_from_tool_calls,
     nudge_message,
+    roster,
+    source_nudge_message,
+    source_usage,
     strip_recap,
+    unused_sources,
     verify_citations,
 )
-from ..workspace.mapper import find_clusters, partition, target_entries
 
 logger = logging.getLogger(__name__)
 
-MAX_TOOL_ROUNDS = 16
+#: 한 메시지에서 도구 왕복 상한 · 읽은 범위 재확인 횟수 — 하네스 core · resource 팩
+MAX_TOOL_ROUNDS = int(packs.data("core:settings.json")["maxToolRounds"])
 #: "전체를 확인" 요청인데 덜 읽고 끝냈을 때, 이어 읽게 하는 횟수 상한
-MAX_COVERAGE_NUDGES = 2
+MAX_COVERAGE_NUDGES = int(packs.data("resource:coverage.json")["maxCoverageNudges"])
 SESSION_IDLE_SECONDS = 30 * 60
 #: 이 시간 동안 쓰지 않은 세션은 agy 프로세스(개당 170MB 이상)만 내린다. 대화는 다음 턴에
 #: `--conversation <id>` 로 다시 잇는다 (기동 약 5초).
@@ -85,6 +97,12 @@ class _Session:
     last_read_count: int = 0
     target_subset: Optional[set[str]] = None
     target_name: Optional[str] = None
+    #: 이번 사용자 메시지(도구 결과로 이어지는 턴 포함)의 시작 시각 · 프론트 도구 호출 · 출처 재확인 여부
+    msg_started: float = 0.0
+    msg_client_calls: list[tuple[str, dict[str, Any]]] = field(default_factory=list)
+    source_nudged: bool = False
+    #: 이번 메시지에 작업대 지도(문서 쪽 · 칸 · 레퍼런스 목록)를 통째로 첨부했는가 — 지도로 답한 것도 에디터를 본 것이다
+    map_attached: bool = False
     #: 실행 구간(벽시계) — 대화 id 를 모르는 서브에이전트의 읽기를 이 세션 몫으로 칠 때 쓴다
     turn_windows: list[tuple[float, float]] = field(default_factory=list)
     conversation_ids: list[str] = field(default_factory=list)
@@ -101,15 +119,27 @@ def _deck_marks(content: Optional[str]) -> dict[str, str]:
             marks[key.strip()] = value.strip()
     return marks
 
+#: 리소스 안내 글 (우선 카드 · 묶음 안내 · 현황판) — 하네스 resource 팩
+_RES_MSG = "resource:messages.json"
+
+
+def collection_guidance(name: str, primary: int, unique: int, target: str, drafts: int, scaffolds: int) -> str:
+    """묶음 요청 안내 — 본 대상을 다 읽고 공통점 · 차이를 찾게 한다 (서식 · 예시 · 초안은 따로 센다)."""
+    msg = packs.data(_RES_MSG)["collection"]
+    extra = []
+    if drafts:
+        extra.append(msg["drafts"].format(count=drafts))
+    if scaffolds:
+        extra.append(msg["scaffolds"].format(count=scaffolds))
+    head = msg["head"].format(name=name, primary=primary, unique=unique, target=target)
+    return head + ("\n- " + "\n- ".join(extra) if extra else "")
+
 
 def _focus_hint(focus_cards: str) -> str:
     cards = [c.strip() for c in focus_cards.split(",") if c.strip()][:12]
     if not cards:
         return ""
-    return (
-        f"\n[우선 카드] 사용자가 지금 작업 중인 칸의 근거 카드: {', '.join(cards)} "
-        "— 이 카드부터 knowledge.cards 로 확인하고, 모자랄 때만 넓혀 찾아라."
-    )
+    return packs.message(_RES_MSG, "focusHint", cards=", ".join(cards))
 
 
 def _tools_hash(tools: list[ToolSpec]) -> str:
@@ -224,6 +254,7 @@ class AssistantService:
     ) -> Iterator[dict[str, Any]]:
         session = self._get(session_id)
         self._maybe_switch_engine(session, provider, model)
+        session.map_attached = False
         contexts, workspace_rules = self._mount_context(session, contexts)
         contexts = self._workbench_context(session, contexts)
         contexts, scope, server_specs = self._server_context(contexts, session.briefed)
@@ -240,6 +271,9 @@ class AssistantService:
         has_full_intent, target_cat = detect_full_read_intent(clean_prompt)
         session.coverage_goal = session.mount is not None and has_full_intent
         session.coverage_nudges = 0
+        session.msg_started = time.time()
+        session.msg_client_calls = []
+        session.source_nudged = False
         session.last_read_count = 0
         session.target_subset = None
         session.target_name = None
@@ -251,17 +285,7 @@ class AssistantService:
                 session.target_name = name
                 session.target_subset = {e.rel for e in primary}
                 unique = len({e.md5 or e.key for e in primary})
-                extra = []
-                if drafts:
-                    extra.append(f"초안 · 검토 중 {len(drafts)}개는 확정본이 아니다 (차이 · 이력 비교용으로만)")
-                if scaffolds:
-                    extra.append(f"서식 · 예시 {len(scaffolds)}개는 틀이지 내용이 아니다")
-                guidance = (
-                    f"[작업 공간 안내] 이번 요청은 '{name}' 묶음 전체를 다룬다 — 본 대상 {len(primary)}개 (고유 {unique}개).\n"
-                    f"1) ws_collect(\"{target_cat}\")로 목록을 확정하고 2) 본 대상 고유 {unique}개를 모두 read_file 로 읽은 뒤 "
-                    f"3) 공통점 · 차이(시기 · 폴더별로 달라지는 것)를 찾아 답하라. 일부만 읽고 일반화하지 마라."
-                    + ("\n- " + "\n- ".join(extra) if extra else "")
-                )
+                guidance = collection_guidance(name, len(primary), unique, target_cat, len(drafts), len(scaffolds))
                 message = f"{guidance}\n\n{message}"
         if deferred_results:
             # 지난 답변 중 즉시 실행된 ui · stage 도구의 결과 — 모델이 실제로 일어난 일을 알게 한다.
@@ -434,13 +458,58 @@ class AssistantService:
                 if session.mount is not None else "")
         if sig != session.workbench_sig:
             content = wb.overview(line)
+            session.map_attached = True
             session.workbench_sig = sig
         else:
-            sel = f" · 선택 칸: {', '.join(wb.selection[:6])}" if wb.selection else ""
-            content = (f"[작업대] 문서: {wb.doc.title if wb.doc else '없음'} · 범위: {wb.scope_label()}{sel} · "
-                       f"레퍼런스 {len(wb.refs)}개 (전체 지도는 앞부분 · 다시 보려면 wb_overview)")
+            # 지도는 앞에서 보냈다 — 대신 켜진 출처 목록을 매 턴 짧게 다시 붙인다 (긴 대화에서 다른 출처를 잊지 않게)
+            sel = f"\n선택 칸: {', '.join(wb.selection[:6])}" if wb.selection else ""
+            content = (roster(wb, line, edit_scope=wb.scope_label()) or "[작업대] 켜진 출처 없음") + sel + \
+                "\n(전체 지도를 다시 보려면 wb_overview)"
         item = ContextItem(kind=WORKBENCH_KIND, ref_id="wb:workbench", label="작업대", content=content, role="reference")
         return [item, *rest]
+
+    def _new_interpretations(self, session: _Session) -> list[dict[str, Any]]:
+        """이번 메시지에서 AI 가 낸 레퍼런스 해석 카드 (rf_interpret)."""
+        if self._workspace is None or not session.msg_started:
+            return []
+        try:
+            keys = ("cardId", "refId", "layer", "scope", "adoption", "reading", "evidence", "alternatives", "measures")
+            return [{k: rec.get(k) for k in keys}
+                    for rec in self._workspace.store.interpretations(session_id=session.session_id, since=session.msg_started)]
+        except Exception as exc:  # 카드 집계가 실패해도 대화는 이어간다
+            logger.warning("[assistant] 해석 카드 집계 실패: %s", exc)
+            return []
+
+    def _source_usage(self, session: _Session):
+        """이번 메시지에서 켜진 출처별로 실제로 열어 봤는지 (작업대 · 리소스 마운트가 있을 때만)."""
+        if self._workspace is None or not session.msg_started:
+            return []
+        state = self._workspace.store.workbench_for(session.session_id)
+        if not state and session.mount is None:
+            return []
+        try:
+            wb = Workbench.from_state(state) if state else None
+            store = self._workspace.store
+            mounted = len(session.mount.index.text_files()) if session.mount is not None else 0
+            # 마운트가 없으면 대화 id 를 작업 공간에 묶지 않으므로 엔진에서 직접 받는다
+            conv_ids = list(session.conversation_ids)
+            conv = self._conversation_id(session)
+            if conv and conv not in conv_ids:
+                conv_ids.append(conv)
+            return source_usage(
+                wb,
+                mounted=mounted,
+                mcp_calls=store.mcp_calls(conversation_ids=conv_ids, since=session.msg_started),
+                reads=store.reads(conversation_ids=conv_ids, since=session.msg_started,
+                                  windows=session.turn_windows[-1:]),
+                client_calls=session.msg_client_calls,
+                map_attached=session.map_attached,
+                ref_reads=store.ref_reads(session_id=session.session_id, conversation_ids=conv_ids,
+                                          since=session.msg_started),
+            )
+        except Exception as exc:  # 집계가 실패해도 대화는 이어간다
+            logger.warning("[assistant] 출처 집계 실패: %s", exc)
+            return []
 
     def _mount_snapshot(self, session: _Session, state: MountState) -> str:
         """지도를 이미 보낸 뒤의 턴마다 붙는 짧은 현황판 (~600B): 루트 · 군집 · 지금까지 읽은 범위.
@@ -449,11 +518,13 @@ class AssistantService:
         """
         index = state.index
         roots = " · ".join(index.root_aliases.get(r, os.path.basename(r)) for r in index.roots) or "-"
-        rows = [f"[작업 공간 현황] 루트: {roots} · 파일 {len(index.files)}개"]
+        snap = packs.data(_RES_MSG)["snapshot"]
+        rows = [snap["head"].format(roots=roots, files=len(index.files))]
         try:
             for cluster, entries in find_clusters(index)[:5]:
                 primary, drafts, _ = partition(entries)
-                rows.append(f"- {cluster.name}: 본 대상 {len(primary)}" + (f" / 초안 {len(drafts)}" if drafts else ""))
+                rows.append(snap["cluster"].format(name=cluster.name, primary=len(primary))
+                            + (snap["clusterDrafts"].format(drafts=len(drafts)) if drafts else ""))
         except Exception as exc:  # 현황판 실패가 대화를 막지 않게
             logger.debug("[assistant] 작업 공간 현황 실패: %s", exc)
         try:  # 이번 요청 대상(subset)이 아니라 마운트 전체 기준
@@ -462,9 +533,9 @@ class AssistantService:
             cov = None
         if cov is not None:
             info = cov.summary()
-            rows.append(f"- 이 대화에서 읽은 파일: 끝까지 {info.get('uniqueFullyRead', 0)} · 일부 {len(cov.partial)} "
-                        f"(전체 고유 {info.get('uniqueTotal', 0)})")
-        rows.append("지도 전체 · 탐색 규칙은 앞부분에 있다 — 다시 보려면 ws_overview · ws_collect")
+            rows.append(snap["read"].format(full=info.get("uniqueFullyRead", 0), partial=len(cov.partial),
+                                            total=info.get("uniqueTotal", 0)))
+        rows.append(snap["tail"])
         return "\n".join(rows)
 
     def _conversation_id(self, session: _Session) -> Optional[str]:
@@ -572,6 +643,7 @@ class AssistantService:
                         yield event
                     meta = {"usage": usage, "durationMs": int((time.monotonic() - started) * 1000),
                             "firstTokenMs": first_token, "serverRounds": server_rounds}
+                    session.msg_client_calls.extend((c.name, dict(c.arguments or {})) for c in client_calls)
                     if client_calls:
                         # 프론트 도구가 섞였다: 프론트 결과를 기다리고, 서버 결과는 그때 함께 보낸다
                         for call in client_calls:
@@ -607,8 +679,37 @@ class AssistantService:
                                                   f"({session.coverage_nudges}/{MAX_COVERAGE_NUDGES})."}
                                 current = nudge_message(cov)
                                 continue
-                    if turn_accumulated_text and self._workspace is not None:
-                        citations = extract_citations(turn_accumulated_text)
+                    usage_rows = self._source_usage(session)
+                    if usage_rows:
+                        yield {"type": "workspace_sources", "sources": [u.to_dict() for u in usage_rows]}
+                        cards = self._new_interpretations(session)
+                        if cards:
+                            # 사용자가 화면에서 확정할 해석 카드 (확정 전에는 이 대화 안에서만 '제안')
+                            yield {"type": "reference_interpretations", "cards": cards}
+                        unused = unused_sources(usage_rows)
+                        # 켜진 출처를 하나도 열지 않고 끝냈다면 한 번만 재확인시킨다 (도구를 쓴 작업 요청일 때만)
+                        # 이미 '확인하지 않은 출처 — 이유' 를 밝혔으면 그 판단을 존중한다 (운영 규칙이 요구하는 문장)
+                        declared = packs.message("core:messages.json", "sources.declaredSkip") in turn_accumulated_text
+                        if (stop == "end_turn" and unused and not session.source_nudged and not declared
+                                and any_activity(usage_rows) and not session.cancel.is_set()):
+                            session.source_nudged = True
+                            names = ", ".join(u.label for u in unused)
+                            yield {"type": "status", "state": "warning",
+                                   "message": f"켜져 있는데 열어 보지 않은 출처({names})가 있어 관련 여부를 확인하게 합니다."}
+                            current = source_nudge_message(unused)
+                            continue
+                    if (turn_accumulated_text or session.msg_client_calls) and self._workspace is not None:
+                        tool_citations = extract_citations_from_tool_calls(session.msg_client_calls)
+                        text_citations = extract_citations(turn_accumulated_text) if turn_accumulated_text else []
+                        # 중복 제거 (target, start, end 기준)
+                        seen_cites = set()
+                        citations = []
+                        for c in tool_citations + text_citations:
+                            k = (c.target.lower(), c.start_line, c.end_line)
+                            if k not in seen_cites:
+                                seen_cites.add(k)
+                                citations.append(c)
+
                         if citations:
                             reads = self._workspace.store.reads(
                                 conversation_ids=session.conversation_ids,

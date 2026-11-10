@@ -1,0 +1,22 @@
+{
+ "gates": {
+  "tag": "후보 {n}",
+  "tagTitle": " '{title}'",
+  "emptySlots": "{tag}: slots 가 비었다 ({{slotId: html}} 형식).",
+  "slotMissing": "{tag}: 칸 {sid} 가 문서에 없다 (wb_outline 으로 확인).",
+  "outOfTarget": "{tag}: 칸 {sid} 는 target({target}) 밖이다.",
+  "outOfScope": "{tag}: 칸 {sid} 는 사용자가 정한 범위({scope}) 밖이다.",
+  "locked": "{tag}: 칸 {sid} 는 고정(boilerplate) 칸이다.",
+  "tooLong": "{tag}: 칸 {sid} 분량 {chars}자 > 제한 {limit}자.",
+  "restyleLostNumbers": "{tag}: restyle 인데 칸 {sid} 의 수치가 사라졌다: {nums}",
+  "restyleKept": "{tag}: restyle 인데 칸 {sid} 의 원래 낱말이 {kept:.0%} 만 남았다 (내용이 바뀐 것 아닌가).",
+  "restoreNoSource": "{tag}: restore 인데 sources 에 rev:<번호>#slot:<id> 또는 orig:<slotId> 가 없다.",
+  "restoreDiffers": "{tag}: restore 인데 이력의 글과 다르다 (유사도 {best:.0%}). 이력 글을 그대로 쓴다.",
+  "duplicate": "후보 {i}·{j} 이 {sim:.0%} 같다 — 하나만 내거나, 따른 해석(카드) · 구조 · 고른 내용이 다른 안으로 바꾼다."
+ },
+ "verdict": {
+  "head": "[후보 {id}] {count}안 · mode={mode} · ",
+  "ok": "검증 통과 — 사용자 화면에 미리보기로 뜬다. 답에는 각 안의 차이와 고를 기준만 짧게 쓴다.",
+  "fail": "검증 실패 — 아래를 고쳐 wb_propose 를 다시 부른다 (이 안은 화면에 뜨지 않는다)."
+ }
+}

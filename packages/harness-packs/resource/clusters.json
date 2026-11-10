@@ -1,0 +1,122 @@
+{
+ "_doc": "자료 지도의 주요 군집. 특정 볼트에 맞춘 이름이므로 데이터로만 둔다 — 지우거나 바꿔도 코드는 그대로다.",
+ "clusters": [
+  {
+   "name": "결정 카드",
+   "description": "의사결정 기록 및 결정 카드",
+   "patternExample": "**/decisions/*.md",
+   "excludeScaffold": true,
+   "queryKeywords": [
+    "결정",
+    "decision",
+    "카드"
+   ],
+   "any": [
+    {
+     "field": "rel",
+     "regex": "\\bD\\d+_",
+     "flags": "i"
+    },
+    {
+     "field": "relLower",
+     "contains": "/decisions/"
+    },
+    {
+     "field": "relLower",
+     "startswith": "decisions/"
+    },
+    {
+     "field": "name",
+     "contains": "결정"
+    },
+    {
+     "field": "nameLower",
+     "contains": "decision"
+    },
+    {
+     "field": "fm:유형",
+     "contains": "결정"
+    },
+    {
+     "field": "fm:상태",
+     "contains": "결정"
+    }
+   ]
+  },
+  {
+   "name": "회의록",
+   "description": "회의 안건 및 회의록",
+   "patternExample": "**/agenda.md",
+   "queryKeywords": [
+    "회의",
+    "agenda",
+    "minutes"
+   ],
+   "any": [
+    {
+     "field": "name",
+     "regex": "\\bagenda\\b|회의록|minutes",
+     "flags": "i"
+    },
+    {
+     "field": "fm:유형",
+     "contains": "회의"
+    }
+   ]
+  },
+  {
+   "name": "템플릿",
+   "description": "작성용 서식 및 템플릿",
+   "patternExample": "**/templates/*.md",
+   "queryKeywords": [
+    "템플릿",
+    "template"
+   ],
+   "any": [
+    {
+     "field": "rel",
+     "regex": "template|템플릿|!\\(Template\\)",
+     "flags": "i"
+    },
+    {
+     "field": "relLowerParts",
+     "has": "templates"
+    },
+    {
+     "field": "fm:유형",
+     "contains": "템플릿"
+    }
+   ]
+  },
+  {
+   "name": "산출물",
+   "description": "단계별 산출물 및 결과 문서",
+   "patternExample": "**/outputs/*",
+   "queryKeywords": [
+    "산출물",
+    "output"
+   ],
+   "any": [
+    {
+     "field": "rel",
+     "regex": "/outputs/|산출물",
+     "flags": "i"
+    },
+    {
+     "field": "relLower",
+     "startswith": "outputs/"
+    },
+    {
+     "field": "name",
+     "regex": "^\\d+\\.\\d+_"
+    }
+   ]
+  }
+ ],
+ "frontmatterTypeKeys": [
+  "유형",
+  "type"
+ ],
+ "frontmatterTypeMinCount": 3,
+ "frontmatterTypeTop": 3
+}

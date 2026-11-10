@@ -9,8 +9,8 @@ from pathlib import Path
 import pymupdf
 import pytest
 from fastapi.testclient import TestClient
+from harness_kit import patterns
 
-from app.assistant.workspace import patterns
 from app.core.errors import NotFoundError, ValidationError
 from app.reference.adapters import (
     HtmlStructureExtractor,
@@ -70,7 +70,7 @@ def test_pdf_reference_is_decomposed_without_vdoc(tmp_path: Path) -> None:
     assert all(len(b["bbox"]) == 4 for b in extraction["blocks"])
 
     layers = service.layers(item.ref_id)
-    assert layers["set"] == "document" and [l["id"] for l in layers["layers"]][:2] == ["D1", "D2"]
+    assert layers["set"] == "document" and [layer["id"] for layer in layers["layers"]][:2] == ["D1", "D2"]
     assert layers["metrics"]["heading_sequence"] == ["1. Background", "2. Plan"]
 
     folder = tmp_path / "references" / "items" / item.ref_id
@@ -145,6 +145,19 @@ def test_reference_api_round_trip() -> None:
     pin = client.post(f"/api/reference/items/{ref_id}/pins", json={"kind": "text", "page": 1, "text": "skim"}).json()
     assert client.get("/api/reference/resolve", params={"anchor": pin["anchor"]}).json()["text"] == "skim"
     assert client.post("/api/reference/items/file", files={"file": ("x.zip", b"PK", "application/zip")}).status_code == 400
+    # 합의: AI 제안 카드를 확정 → 대안 해석으로 바꾸기 · 채택 강도 바꾸기 → 바인딩에 남음 → 지우기
+    base = f"/api/reference/projects/vproj-enterprise-architecture-suite/items/{ref_id}/consensus"
+    card = client.post(base, json={"cardId": "icard_1", "layer": "D4", "scope": f"ref:{ref_id}#p1", "adoption": "follow",
+                                   "reading": "결론 먼저", "evidence": [f"ref:{ref_id}#p1"],
+                                   "alternatives": [{"reading": "요약 상자가 핵심"}]}).json()
+    assert card["status"] == "confirmed" and card["by"] == "user"
+    swapped = client.patch(f"{base}/icard_1", json={"chooseAlternative": 0, "adoption": "consult"}).json()
+    assert swapped["reading"] == "요약 상자가 핵심" and swapped["alternatives"][0]["reading"] == "결론 먼저"
+    assert swapped["adoption"] == "consult"
+    bound = client.get("/api/reference/projects/vproj-enterprise-architecture-suite").json()["entries"]
+    assert any(c["cardId"] == "icard_1" for e in bound for c in e.get("consensus") or [])
+    assert client.post(base, json={"layer": "D4", "scope": "ref:other#p1"}).status_code == 400  # 범위가 레퍼런스 밖
+    assert client.delete(f"{base}/icard_1").status_code == 200 and client.get(base).json()["cards"] == []
     # 레퍼런스는 작업 문서 목록 · 서식 카탈로그에 나타나지 않는다
     assert ref_id not in client.get("/api/documents").text
     assert client.delete(f"/api/reference/items/{ref_id}").status_code == 200
@@ -156,7 +169,7 @@ def test_reference_domain_imports_nothing_from_vdoc_or_other_domains() -> None:
     import ast
 
     root = Path(__file__).resolve().parents[1] / "app" / "reference"
-    banned = ("pdf_vdoc_engine", "app.documents", "app.catalog", "app.projects", "app.assistant", "app.resources")
+    banned = ("pdf_vdoc_engine", "app.documents", "app.catalog", "app.projects", "app.assistant", "app.resource.ledger")
     offenders = []
     for path in root.rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):

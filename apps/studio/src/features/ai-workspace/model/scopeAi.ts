@@ -9,6 +9,9 @@ import {
   scopeAllowsBlock,
   scopeAllowsPage,
   scopeAllowsSlot,
+  scopeHidesBlock,
+  scopeHidesPage,
+  scopeHidesSlot,
   offScope,
   scopeContextRef,
   toolScope,
@@ -24,7 +27,8 @@ import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-do
  *
  *   1) 캔버스 초점 → `live` (고정이 아니면 범위가 초점을 따른다)
  *   2) "범위" 자동 첨부 — 예전 "열린 문서" 첨부 자리. 범위가 좁으면 문서 제목 · 다른 페이지 이름도 싣지 않는다
- *   3) 문서 도구 가드 — Composer 가 처리 중인 메시지의 범위(`turn`) 밖 페이지 · 블록 · 칸은 읽기 · 고치기 모두 거부
+ *   3) 문서 도구 가드 — 범위는 '고칠 범위'다. 범위 밖을 바꾸는 도구는 거부하고, 읽기 도구는 막지 않는다
+ *      (예외: '문서 전체' 모드에서 사용자가 뺀 페이지는 읽기도 거부)
  */
 const activeDoc = (): VDocDocument | undefined => selectActiveDocument(useStudioDocumentStore.getState());
 const activePage = () => useStudioDocumentStore.getState().activePageId || null;
@@ -95,16 +99,28 @@ function guardArgs(tool: WorkspaceTool<any>): WorkspaceTool<any> {
   };
 }
 
-/** 범위 가드를 씌울 도구 (인자로 칸 · 블록 · 페이지를 받는 것들). 목록 · 구조 도구는 도구 안에서 직접 거른다. */
-const GUARDED = new Set([
-  "slot.read",
-  "slot.proposeContent",
-  "slots.proposeBatch",
-  "blocks.proposeProps",
-  "canvas.selectSlot",
-  "backdata.list",
-  "evidence.forSlot",
-]);
+/** 고칠 범위 가드를 씌울 쓰기 도구 (인자로 칸 · 블록 · 페이지를 받는 것들). */
+const GUARDED = new Set(["slot.proposeContent", "slots.proposeBatch", "blocks.proposeProps", "canvas.selectSlot"]);
+/** 읽기 도구 — 범위 밖도 읽는다. 사용자가 뺀 페이지만 거부한다. 목록 · 구조 도구는 도구 안에서 직접 거른다. */
+const READ_GUARDED = new Set(["slot.read", "backdata.list", "evidence.forSlot"]);
+
+function guardHidden(tool: WorkspaceTool<any>): WorkspaceTool<any> {
+  return {
+    ...tool,
+    run: (args: any, ctx: ToolRunContext) => {
+      const doc = activeDoc();
+      const scope = doc ? toolScope(doc, ctx) : null;
+      if (doc && scope) {
+        const hidden = (what: string) =>
+          new Error(`사용자가 뺀 페이지입니다: ${what} — 읽지도 고치지도 않는다 (Composer 설정바의 고칠 범위에서 뺐다).`);
+        if (typeof args?.slotId === "string" && scopeHidesSlot(doc, scope, args.slotId)) throw hidden(`칸 ${args.slotId}`);
+        if (typeof args?.blockId === "string" && scopeHidesBlock(doc, scope, args.blockId)) throw hidden(`블록 ${args.blockId}`);
+        if (typeof args?.pageId === "string" && scopeHidesPage(doc, scope, args.pageId)) throw hidden(`페이지 ${args.pageId}`);
+      }
+      return tool.run(args, ctx);
+    },
+  };
+}
 
 /** 자료 OFF 면 RM 원본 도구를 거부한다. */
 function guardSources(tool: WorkspaceTool<any>): WorkspaceTool<any> {
@@ -118,4 +134,6 @@ function guardSources(tool: WorkspaceTool<any>): WorkspaceTool<any> {
 }
 
 export const withScopeGuards = (tools: WorkspaceTool<any>[]): WorkspaceTool<any>[] =>
-  tools.map((t) => (GUARDED.has(t.name) ? guardArgs(t) : t.name.startsWith("resources.") ? guardSources(t) : t));
+  tools.map((t) =>
+    GUARDED.has(t.name) ? guardArgs(t) : READ_GUARDED.has(t.name) ? guardHidden(t) : t.name.startsWith("resources.") ? guardSources(t) : t
+  );

@@ -9,16 +9,16 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app.knowledge.adapters import (
+from app.resource.index.adapters import (
     FileEnrichmentCache,
     FsDeckFiles,
     LocalDeckRegistry,
     LocalJobStore,
 )
-from app.knowledge.models import IndexJob
-from app.knowledge.pipeline import IndexSpec, ScopeProfile, run_index
-from app.knowledge.pipeline.reader import DeckReader
-from app.knowledge.use_cases import IndexJobRunner
+from app.resource.index.models import IndexJob
+from app.resource.index.pipeline import IndexSpec, ScopeProfile, run_index
+from app.resource.index.pipeline.reader import DeckReader
+from app.resource.index.use_cases import IndexJobRunner
 from main import app
 
 client = TestClient(app)

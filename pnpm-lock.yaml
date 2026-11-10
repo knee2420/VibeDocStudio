@@ -68,6 +68,9 @@ importers:
       '@vibe/document-viewer':
         specifier: workspace:*
         version: link:../../../VibePatchNote/packages/document-viewer
+      '@vibe/harness-packs':
+        specifier: workspace:*
+        version: link:../../packages/harness-packs
       '@vibe/slot-canvas':
         specifier: workspace:*
         version: link:../../packages/slot-canvas
@@ -163,7 +166,11 @@ importers:
         specifier: ^19.0.0
         version: 19.3.1(react@19.3.1)
 
-  packages/ai-kernel: {}
+  packages/ai-kernel:
+    dependencies:
+      '@vibe/harness-packs':
+        specifier: workspace:*
+        version: link:../harness-packs
 
   packages/ai-react:
     dependencies:
@@ -179,6 +186,8 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.3.1(react@19.3.1)
+
+  packages/harness-packs: {}
 
   packages/slot-canvas:
     dependencies:

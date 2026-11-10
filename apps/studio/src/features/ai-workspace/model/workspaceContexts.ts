@@ -6,6 +6,7 @@ import { activePinsOf, useReferenceStore } from "@/entities/reference-manager";
 import { flattenResourceItems, getCheckedResourceItems, type ResourceItem, useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { htmlToPlain } from "@/shared/lib";
 
 import {
@@ -29,6 +30,18 @@ function matches(query: string, ...fields: string[]): boolean {
   return fields.some((f) => f.toLowerCase().includes(query));
 }
 
+/**
+ * 경로에서 부모 폴더 2단계 경로 꼬리(예: `10.14 공유회 › A5`)를 추출합니다 (P2, §7.2).
+ */
+function formatPathTail(pathOrUrl?: string): string {
+  if (!pathOrUrl) return "";
+  const parts = pathOrUrl.split(/[\\/]+/).filter(Boolean);
+  if (parts.length <= 1) return "";
+  const dirParts = parts.slice(0, -1);
+  if (dirParts.length === 0) return "";
+  return dirParts.slice(-2).join(" › ");
+}
+
 function resourceItemRef(item: ResourceItem): ContextRef {
   const sectors = item.sectors ?? [];
   let content = "";
@@ -37,12 +50,17 @@ function resourceItemRef(item: ResourceItem): ContextRef {
   } else if (item.pathOrUrl) {
     content = `[원천 소스 파일]\n제목: ${item.title}\n경로: ${item.pathOrUrl}\n유형: ${item.extension || item.type}\n(원문은 read_file(Path=위 경로) 로 읽어라 — 리소스 작업 공간에 마운트돼 있을 때)`;
   }
+  const tail = formatPathTail(item.pathOrUrl);
+  const hint = sectors.length > 0
+    ? `발췌 ${sectors.length}건${tail ? ` · ${tail}` : ""}`
+    : tail || item.extension || "리소스";
+
   return {
     kind: "resource",
     id: item.id,
     label: item.title,
     content: content || `[원천 리소스] ${item.title}`,
-    hint: sectors.length > 0 ? `발췌 ${sectors.length}건` : item.extension || "리소스",
+    hint,
     access: "read",
     role: "reference",
   };
@@ -51,19 +69,23 @@ function resourceItemRef(item: ResourceItem): ContextRef {
 /** RM 이 자동으로 만드는 개요 발췌 — 원문 앞부분과 같으므로 마운트 목록에 다시 싣지 않는다. */
 const AUTO_SECTOR_TITLES = new Set(["개요 스니펫"]);
 
-function isFullyChecked(node: ResourceItem): boolean {
-  if (!node.isChecked) return false;
+function isFullyActive(node: ResourceItem, excludedSet?: Set<string>): boolean {
+  if (!node.isChecked || (excludedSet && excludedSet.has(node.id))) return false;
   if (node.children && node.children.length > 0) {
-    return node.children.every(isFullyChecked);
+    return node.children.every((c) => isFullyActive(c, excludedSet));
   }
   return true;
 }
 
 /**
  * 체크된 자료를 루트 폴더 단위 + 개별 파일 단위로 마운트한다 (본문 · 스니펫 없이 경로만).
+ * Composer 전용 제외 플래그(excludedSet)가 주어지면 해당 항목은 마운트에서 제외된다.
  * 서버가 이것을 agy 에 읽기 전용으로 마운트하고 지도로 바꾸며, agy 가 vibefs 도구와 read_file 로 직접 돌아다닌다.
  */
-function resourceMountRef(treeOrChecked: ResourceItem[]): ContextRef {
+function resourceMountRef(
+  treeOrChecked: ResourceItem[],
+  excludedSet?: Set<string>
+): ContextRef {
   const roots: Array<{ id: string; path: string; title: string; kind: "dir" }> = [];
   const files: Array<{ id: string; path: string; title: string; kind: "file"; sectors?: any[] }> = [];
   const idMap: Record<string, string> = {};
@@ -81,6 +103,7 @@ function resourceMountRef(treeOrChecked: ResourceItem[]): ContextRef {
   function visit(node: ResourceItem, underFullRoot: boolean) {
     const isDir = Boolean(node.children && node.children.length > 0);
     const validPath = Boolean(node.pathOrUrl && !/^[a-z]+:\/\//i.test(node.pathOrUrl));
+    const isExcluded = Boolean(excludedSet?.has(node.id));
 
     if (underFullRoot) {
       if (node.children) {
@@ -90,7 +113,7 @@ function resourceMountRef(treeOrChecked: ResourceItem[]): ContextRef {
     }
 
     if (isDir) {
-      if (isFullyChecked(node) && validPath) {
+      if (!isExcluded && isFullyActive(node, excludedSet) && validPath) {
         roots.push({
           id: node.id,
           path: node.pathOrUrl!,
@@ -106,7 +129,7 @@ function resourceMountRef(treeOrChecked: ResourceItem[]): ContextRef {
         }
       }
     } else {
-      if (node.isChecked && validPath) {
+      if (node.isChecked && !isExcluded && validPath) {
         const sectors = (node.sectors ?? []).filter((s) => !AUTO_SECTOR_TITLES.has(s.title || s.label || ""));
         files.push({
           id: node.id,
@@ -123,8 +146,10 @@ function resourceMountRef(treeOrChecked: ResourceItem[]): ContextRef {
     visit(top, false);
   }
 
-  const allCheckedLeaves = getCheckedResourceItems(treeOrChecked).filter((it) => !it.children?.length);
-  const totalCount = allCheckedLeaves.length || files.length;
+  const allActiveLeaves = getCheckedResourceItems(treeOrChecked).filter(
+    (it) => !it.children?.length && !excludedSet?.has(it.id)
+  );
+  const totalCount = allActiveLeaves.length || files.length;
   const items = [...roots, ...files];
 
   const labelParts = roots.map((r) => r.title);
@@ -149,10 +174,14 @@ export const REFERENCES_CONTEXT_PROVIDER: ContextProvider = {
   label: "레퍼런스",
   auto: true,
   current: () => {
-    const refs = activeReferences(useAiScopeStore.getState().referencesOn);
+    const project = selectActiveProject(useProjectStore.getState());
+    const projectId = project?.projectId ?? "default_project";
+    const refs = activeReferences(useAiScopeStore.getState().referencesOn, projectId);
     const { layers } = useReferenceStore.getState();
+    const excludedPinSet = new Set(useAiScopeStore.getState().excludedReferencePinIds[projectId] ?? []);
+
     return refs.map((r) => {
-      const pins = activePinsOf(r.refId);
+      const pins = activePinsOf(r.refId).filter((p) => !excludedPinSet.has(p.pinId));
       const pinLines = pins.map((p) => {
         const where = p.page ? `p.${p.page}` : "";
         const layer = p.layer ? ` [${p.layer}]` : "";
@@ -195,18 +224,24 @@ export const RESOURCE_CONTEXT_PROVIDER: ContextProvider = {
   label: "리소스",
   auto: true,
   current: () => {
-    const { sourcesOn } = useAiScopeStore.getState();
+    const { sourcesOn, excludedSourceIds } = useAiScopeStore.getState();
     if (!sourcesOn) return [];
     const items = useResourceStore.getState().items;
-    const checked = getCheckedResourceItems(items).filter((it) => !it.children?.length);
-    if (checked.length === 0) return [];
-    return [resourceMountRef(items)];
+    const project = selectActiveProject(useProjectStore.getState());
+    const projectId = project?.projectId ?? "default_project";
+    const excludedSet = new Set(excludedSourceIds[projectId] ?? []);
+
+    const activeLeaves = getCheckedResourceItems(items).filter(
+      (it) => !it.children?.length && !excludedSet.has(it.id)
+    );
+    if (activeLeaves.length === 0) return [];
+    return [resourceMountRef(items, excludedSet)];
   },
   search: (q) => {
     const items = useResourceStore.getState().items;
     const all = flattenResourceItems(items).filter((it) => !it.children?.length);
     return all
-      .filter((it) => matches(q, it.title, it.pathOrUrl || ""))
+      .filter((it) => matches(q, it.title, it.pathOrUrl || "", formatPathTail(it.pathOrUrl)))
       .slice(0, 8)
       .map(resourceItemRef);
   },
@@ -229,16 +264,25 @@ export const WORKBENCH_CONTEXT_PROVIDER: ContextProvider = {
       ...(sel.selectedSlotId ? [sel.selectedSlotId] : []),
       ...(sel.slotRange?.unitIds ?? []),
     ];
+    const project = selectActiveProject(useProjectStore.getState());
+    const projectId = project?.projectId ?? "default_project";
+    const excludedPinSet = new Set(store.excludedReferencePinIds[projectId] ?? []);
+
     // 레퍼런스는 라이브러리 refId 로 보낸다 (서버가 extraction · 핀을 직접 읽는다).
-    const references = activeReferences(store.referencesOn).map((r) => ({
-      refId: r.refId,
-      title: r.title,
-      // null = 그 레퍼런스의 핀 전부 · 배열 = 고른 핀만 (빈 배열이면 핀 없음)
-      pinIds: useReferenceStore.getState().checkedPinIds.length ? activePinsOf(r.refId).map((p) => p.pinId) : null,
-      layers: Object.fromEntries(r.layersOff.map((id) => [id, false])),
-    }));
+    const references = activeReferences(store.referencesOn, projectId).map((r) => {
+      const pins = activePinsOf(r.refId).filter((p) => !excludedPinSet.has(p.pinId));
+      return {
+        refId: r.refId,
+        title: r.title,
+        // 고른 핀 목록 (핀 제외 플래그 반영)
+        pinIds: pins.map((p) => p.pinId),
+        layers: Object.fromEntries(r.layersOff.map((id) => [id, false])),
+      };
+    });
     if (!d && references.length === 0) return [];
     const payload = {
+      // 서버가 이 프로젝트의 확정 해석 카드(레퍼런스 합의)를 찾는 데 쓴다
+      projectId,
       docId: d?.docId ?? null,
       scope: scope
         ? {

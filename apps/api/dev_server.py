@@ -27,7 +27,8 @@ from watchfiles import PythonFilter, watch
 
 HERE = Path(__file__).resolve().parent
 ENGINE_SRC = HERE.parents[1] / "packages" / "pdf-vdoc-engine"
-WATCH_DIRS = [HERE / "app", HERE / "main.py", ENGINE_SRC / "pdf_vdoc_engine"]
+WATCH_DIRS = [HERE / "app", HERE / "vibefs", HERE / "main.py", ENGINE_SRC / "pdf_vdoc_engine",
+              HERE.parents[1] / "packages" / "harness-kit" / "harness_kit"]
 GRACEFUL_SECONDS = 8
 IS_WINDOWS = sys.platform == "win32"
 

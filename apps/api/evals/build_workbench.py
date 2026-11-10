@@ -15,6 +15,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent))  # app.* (레퍼런스 추출기 · 층위 측정)
+sys.path.insert(0, str(HERE.parents[2] / "packages" / "harness-kit"))  # 하네스 기본기
 
 from build_vault import build as build_alpha  # noqa: E402
 
@@ -22,6 +23,11 @@ OUT = HERE.parent / "state" / "evals" / "wb"
 DOCS = OUT / "documents"
 #: 레퍼런스 라이브러리 항목 폴더 (vdoc 이 아니다 — ref.json · source.html · extraction.json · layers.json · pins.json)
 REFS = OUT / "references" / "items"
+#: 평가 프로젝트의 레퍼런스 연결 · 합의 카드 (앱과 같은 형식: <references>/bindings/<projectId>.json)
+BINDINGS = OUT / "references" / "bindings"
+#: 앱 라이브러리의 실물 레퍼런스 (긴 PDF · 표가 많은 PDF) — 평가용 id 로 복사한다
+LIBRARY = HERE.parent / "data" / "knowledge" / "references" / "items"
+REAL_REFS = {"ref_eval_pm5": "ref-1a1befb44bb-a56be486", "ref_eval_seoul": "ref-1a1befb220a-e243c4ab"}
 ALPHA = OUT / "vault_alpha"
 BETA = OUT / "vault_beta"
 
@@ -139,7 +145,8 @@ def build_blogpost() -> None:
 
 def write_ref(ref_id: str, title: str, slots: list[dict], pins: list[dict] | None = None) -> None:
     """레퍼런스 = 원본 HTML 한 장 + 구조 추출 + 층위 측정 + 핀. 앱과 같은 추출기 · 측정 자를 쓴다."""
-    from app.assistant.workspace import patterns
+    from harness_kit import patterns
+
     from app.reference.adapters import HtmlStructureExtractor, MeasuredLayerAnalyzer
 
     folder = REFS / ref_id
@@ -226,13 +233,49 @@ def build_beta() -> None:
         path.write_text(text, encoding="utf-8")
 
 
+def copy_library_refs() -> None:
+    """실물 레퍼런스(14쪽 PDF · 표가 많은 7쪽 PDF)를 평가 id 로 복사한다. 긴 레퍼런스에는 표 하나에 핀을 단다."""
+    for dst, src in REAL_REFS.items():
+        source = LIBRARY / src
+        if not source.is_dir():
+            print(f"[build] 실물 레퍼런스 없음 — 건너뜀: {src}")
+            continue
+        target = REFS / dst
+        shutil.copytree(source, target)
+        meta = json.loads((target / "ref.json").read_text(encoding="utf-8"))
+        meta["refId"] = dst
+        (target / "ref.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+        pins = [dict(p, refId=dst, anchor=f"ref:{dst}#pin:{p.get('pinId')}")
+                for p in json.loads((target / "pins.json").read_text(encoding="utf-8") or "[]")] if (target / "pins.json").exists() else []
+        if dst == "ref_eval_pm5":
+            blocks = json.loads((target / "extraction.json").read_text(encoding="utf-8")).get("blocks") or []
+            table = next((b for b in blocks if b.get("kind") == "table" and b.get("bbox") and int(b.get("page") or 1) >= 3), None)
+            if table:
+                pins = [{"pinId": "pinP1", "refId": dst, "kind": "region", "label": f"{table.get('page')}쪽 표",
+                         "page": table.get("page"), "bbox": table.get("bbox"), "layer": "D5", "note": "",
+                         "text": "", "anchor": f"ref:{dst}#pin:pinP1"}]
+        (target / "pins.json").write_text(json.dumps(pins, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def write_binding(project_id: str, consensus: dict[str, list[dict]] | None = None, refs: list[str] | None = None) -> None:
+    """평가 프로젝트의 바인딩 — 사용자가 이미 확정한 해석 카드를 심는다."""
+    BINDINGS.mkdir(parents=True, exist_ok=True)
+    ids = list(dict.fromkeys([*(refs or []), *(consensus or {}).keys()]))
+    entries = [{"refId": rid, "enabled": True, "layers": {}, "consensus": [
+        {"status": "confirmed", "by": "user", "at": 1, "evidence": [], "alternatives": [], **card}
+        for card in (consensus or {}).get(rid, [])]} for rid in ids]
+    (BINDINGS / f"{project_id}.json").write_text(json.dumps({"projectId": project_id, "entries": entries, "updatedAt": 1},
+                                                            ensure_ascii=False, indent=1), encoding="utf-8")
+
+
 def build() -> Path:
-    for folder in (DOCS, REFS):
+    for folder in (DOCS, REFS, BINDINGS):
         if folder.exists():
             shutil.rmtree(folder)
     build_report()
     build_blogpost()
     build_refs()
+    copy_library_refs()
     build_beta()
     build_alpha(ALPHA)
     return OUT

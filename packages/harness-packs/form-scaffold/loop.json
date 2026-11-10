@@ -1,0 +1,32 @@
+{
+ "fast": {
+  "max_steps": 6,
+  "max_seconds": 300,
+  "max_consecutive_llm_failures": 3,
+  "full_history_steps": 4,
+  "observation_chars": 3500,
+  "old_observation_chars": 400,
+  "llm_timeout_seconds": 180,
+  "skill_chars": 20000
+ },
+ "balanced": {
+  "max_steps": 8,
+  "max_seconds": 480,
+  "max_consecutive_llm_failures": 3,
+  "full_history_steps": 4,
+  "observation_chars": 3500,
+  "old_observation_chars": 400,
+  "llm_timeout_seconds": 180,
+  "skill_chars": 20000
+ },
+ "strict": {
+  "max_steps": 14,
+  "max_seconds": 900,
+  "max_consecutive_llm_failures": 3,
+  "full_history_steps": 4,
+  "observation_chars": 3500,
+  "old_observation_chars": 400,
+  "llm_timeout_seconds": 180,
+  "skill_chars": 20000
+ }
+}

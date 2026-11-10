@@ -1,0 +1,27 @@
+{
+ "allowedTools": [
+  "call_mcp_tool",
+  "invoke_subagent",
+  "manage_subagents",
+  "read_file",
+  "send_message"
+ ],
+ "mcpServerMark": "vibefs",
+ "denyReasons": {
+  "run_command": "터미널은 이 작업 공간에서 쓸 수 없다. 파일 목록 · 검색은 vibefs 도구(ws_tree · ws_glob · ws_grep)를 써라.",
+  "manage_task": "터미널 작업은 이 작업 공간에서 쓸 수 없다. vibefs 도구를 써라.",
+  "write_file": "읽기 전용 작업 공간이다 (사용자 원본 보호). 문서 변경은 워크스페이스 도구(stage)로 제안하라.",
+  "edit_file": "읽기 전용 작업 공간이다 (사용자 원본 보호). 문서 변경은 워크스페이스 도구(stage)로 제안하라."
+ },
+ "messages": {
+  "otherMcpTool": "MCP 도구 '{name}' 는 이 작업 공간에서 쓸 수 없다. vibefs 도구(mcp_vibefs_ws_*)만 쓴다.",
+  "toolDefault": "'{name}' 은 이 작업 공간에서 쓸 수 없다. 자료는 read_file 과 vibefs 도구로만 읽는다.",
+  "otherMcpServer": "MCP 서버 '{server}' 는 이 작업 공간에서 쓸 수 없다. vibefs 도구만 쓴다.",
+  "noMount": "마운트된 자료가 없다. 사용자에게 Resource Manager 에서 자료를 체크해 달라고 해라.",
+  "noPath": "read_file 에 Path 가 없다. vibefs 도구로 경로를 확인한 뒤 절대 경로로 읽어라.",
+  "agentsDir": "작업 공간 설정 파일은 읽을 수 없고 읽을 필요도 없다. 사용자 자료는 vibefs 도구와 read_file 로 읽는다.",
+  "outsideHint": " 혹시 이 파일인가: {hints}.",
+  "outside": "마운트 밖 경로다: {path}.{hint} 마운트된 루트: {roots}.",
+  "guardError": "작업 공간 가드 오류로 막았다. 다시 시도하라."
+ }
+}

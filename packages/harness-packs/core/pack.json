@@ -1,0 +1,23 @@
+{
+ "name": "core",
+ "version": "1.0.0",
+ "description": "모든 영역이 공유하는 기본기: 출처 넷의 역할 · 답변 · 링크 규칙, 출력 형식, 샌드박스 정책, 언어 어휘",
+ "compose": {
+  "composer": [
+   "core:rules/composer.md"
+  ],
+  "inline": [
+   "core:rules/inline.md"
+  ],
+  "workspace": [
+   "core:rules/workspace-head.md",
+   "editor:rules/workspace.md",
+   "reference:rules/workspace.md",
+   "editor:rules/workspace-history.md",
+   "resource:rules/workspace.md",
+   "authoring:rules/workspace.md",
+   "core:rules/workspace-tail.md",
+   "reference:rules/procedure.md"
+  ]
+ }
+}

@@ -9,49 +9,42 @@
 """
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 
 from dependency_injector import containers, providers
+from harness_kit import packs
+from harness_kit import patterns as layer_patterns
 
-from app.assistant.adapters import AssistantEngineProvider, JsonlUsageLedger
-from app.assistant.use_cases import AssistantService, HarnessJobRunner, HarnessService
+from app.assistant.use_cases import AssistantService
 from app.assistant.workspace import ResourceWorkspace
-from app.backdata.adapters import LocalBackdataRepository
-from app.backdata.use_cases import (
-    ImportRawBackdataUseCase,
-    ListBackdataChunksUseCase,
-)
-from app.catalog.adapters import FilesystemCatalogRepository, PdfVDocEngineAdapter
-from app.catalog.agents import FormScaffoldAgent
-from app.catalog.use_cases import (
-    GetCatalogBundleUseCase,
-    IngestPdfToCatalogUseCase,
-    ListCatalogFormsUseCase,
-    ScaffoldPdfToDocumentUseCase,
-)
-from app.composer.adapters import (
-    GroundedSlotComposerAdapter,
+from app.authoring.adapters import (
+    JsonlUsageLedger,
     LocalCompositionArchiveAdapter,
+    LocalStagingStore,
+    RuleSlotDrafter,
 )
-from app.composer.agents import (
+from app.authoring.agents import (
     KeywordTemplateRecommender,
     ReferenceStorylineScaffolder,
     SlotComposerAgent,
 )
-from app.composer.use_cases import (
+from app.authoring.use_cases import (
     CancelCompositionRunUseCase,
     ComposeSlotDraftUseCase,
     ComposeStorylinePhase1UseCase,
+    HarnessService,
     RecommendTemplatesPhase2UseCase,
     StagedPhaseRunner,
+    StagingQueueUseCase,
+)
+from app.catalog.adapters import FilesystemCatalogRepository, PdfVDocEngineAdapter
+from app.catalog.use_cases import (
+    GetCatalogBundleUseCase,
+    IngestPdfToCatalogUseCase,
+    ListCatalogFormsUseCase,
 )
 from app.core.config import Settings
-from app.core.llm.credentials import OsCredentialStore
-from app.core.llm.execution_policy import (
-    CLI_PROVIDER,
-    GOOGLE_PROVIDER,
-    RuntimeExecutionPolicy,
-)
 from app.core.observation import CancellationRegistry
 from app.documents.adapters import LocalVDocDocumentRepository
 from app.documents.use_cases import (
@@ -64,28 +57,25 @@ from app.documents.use_cases import (
     SaveDocumentUseCase,
     UpdateSlotContentUseCase,
 )
-from app.knowledge.adapters import (
-    AgyCardEnricher,
-    FileEnrichmentCache,
-    FsDeckFiles,
-    LocalDeckRegistry,
-    LocalJobStore,
+from app.form_scaffold.agents import FormScaffoldAgent
+from app.form_scaffold.use_cases import ScaffoldPdfToDocumentUseCase
+from app.llm import catalog as llm_catalog
+from app.llm.adapters import AssistantEngineProvider, OsCredentialStore, run_agy_print
+from app.llm.policy import CLI_PROVIDER, GOOGLE_PROVIDER, RuntimeExecutionPolicy
+from app.llm.use_cases import (
+    DeleteGoogleApiKeyUseCase,
+    GetRuntimeDashboardUseCase,
+    SetGoogleApiKeyUseCase,
+    UpdateRuntimePolicyUseCase,
 )
-from app.knowledge.use_cases import (
-    IndexJobRunner,
-    KnowledgeDeckService,
-    KnowledgeToolbox,
-)
-from app.projects.adapters import LocalStagingStore, LocalVProjectRepository
+from app.projects.adapters import LocalVProjectRepository
 from app.projects.use_cases import (
     ApplyOutlineCommandUseCase,
     GetProjectOutlineTreeUseCase,
     GetProjectUseCase,
     ListProjectsUseCase,
     SaveProjectUseCase,
-    StagingQueueUseCase,
 )
-from app.assistant.workspace import patterns as layer_patterns
 from app.reference.adapters import (
     HtmlStructureExtractor,
     LocalReferenceLibrary,
@@ -94,31 +84,29 @@ from app.reference.adapters import (
     UrllibWebFetcher,
 )
 from app.reference.use_cases import ReferenceLibraryService
-from app.runtime.models import ModelOption
-from app.runtime.use_cases import (
-    DeleteGoogleApiKeyUseCase,
-    GetRuntimeDashboardUseCase,
-    SetGoogleApiKeyUseCase,
-    UpdateRuntimePolicyUseCase,
+from app.resource.backdata.adapters import LocalBackdataRepository
+from app.resource.backdata.use_cases import (
+    ImportRawBackdataUseCase,
+    ListBackdataChunksUseCase,
 )
-
-#: 저장소 루트 — 스킬(`.agents/skills`)과 판정 도구(`.agents/tools`)가 여기 산다.
-_REPO_ROOT = Path(__file__).resolve().parents[4]
-
-
-def _model_options(settings: Settings) -> tuple[ModelOption, ...]:
-    """AI 설정 모달의 모델 목록. agy 는 실제 `agy models` 식별자여야 CLI 가 받아들인다."""
-    return (
-        ModelOption("gemini-3.8-flash", "agy_cli", "고속 응답 — Composer · 인라인 기본값", recommended=True),
-        ModelOption("gemini-3.8-flash-low", "agy_cli", "저부하 생각 — 빠른 초안 작성"),
-        ModelOption("gemini-3.8-flash-medium", "agy_cli", "균형 잡힌 주력 작성"),
-        ModelOption("gemini-3.8-flash-high", "agy_cli", "깊은 추론이 필요한 작성"),
-        ModelOption("gemini-4-argon", "agy_cli", "고난도 복합 조항 심층 분석"),
-        ModelOption("gemini-4-argon-medium", "agy_cli", "복합 조항 분석 (Medium)"),
-        ModelOption("claude-sonnet-5-5-medium", "agy_cli", "장문 서술 · 판단 품질"),
-        ModelOption("gemini-3.5-flash-lite", "google_api", "Google Direct REST API 고속", recommended=True),
-        ModelOption("gemini-3.5-flash", "google_api", "Google Direct REST API 주력"),
-    )
+from app.resource.index.adapters import (
+    AgyCardEnricher,
+    FileEnrichmentCache,
+    FsDeckFiles,
+    LocalDeckRegistry,
+    LocalJobStore,
+)
+from app.resource.index.use_cases import (
+    IndexJobRunner,
+    KnowledgeDeckService,
+    KnowledgeToolbox,
+)
+from app.resource.ledger.adapters import (
+    FileDirectoryProvider,
+    LocalLedgerRepository,
+    WebArticleProvider,
+)
+from app.resource.ledger.use_cases import ResourceLedgerService
 
 
 def _card_enricher_factory(settings: Settings, policy: RuntimeExecutionPolicy, sandbox: Path):
@@ -137,26 +125,21 @@ def _card_enricher_factory(settings: Settings, policy: RuntimeExecutionPolicy, s
     return make
 
 
-def _cli_model(settings: Settings) -> str:
-    """설정의 Composer 모델이 agy 식별자(`…-low|medium|high`)가 아니면 실행 가능한 기본값을 쓴다."""
-    name = settings.composer_model
-    return name if name.endswith(("-low", "-medium", "-high")) else settings.assistant_inline_model
-
-
 class Container(containers.DeclarativeContainer):
     """VibeDocStudio API DI 컨테이너. `settings` 는 `create_app()` 이 주입한다."""
 
     settings = providers.Dependency(instance_of=Settings)
     storage = providers.Callable(lambda s: s.storage, settings)
 
-    # --- 0. 런타임 실행 정책 · 자격 증명 · 취소 토큰 (프로세스 단일 상태) ---
+    # --- 0. LLM 게이트웨이: 실행 정책 · 자격 증명 (프로세스 단일 상태) · 취소 토큰 ---
     runtime_policy = providers.Singleton(
         lambda s: RuntimeExecutionPolicy(
             primary_provider=CLI_PROVIDER,
             fallback_provider=GOOGLE_PROVIDER,
-            google_api_model="gemini-3.5-flash-lite",
+            google_api_model=llm_catalog.DEFAULT_GOOGLE_MODEL,
             google_api_timeout_seconds=180,
-            agent_cli_model=_cli_model(s),
+            # 설정의 Composer 모델이 표시용 이름이면 실행 가능한 인라인 기본 agy 모델을 쓴다
+            agent_cli_model=llm_catalog.agy_model_or(s.composer_model, s.assistant_inline_model),
             agent_cli_timeout_seconds=180,
             agent_cli_bin="agy",
         ),
@@ -165,40 +148,46 @@ class Container(containers.DeclarativeContainer):
     credentials = providers.Singleton(OsCredentialStore)
     cancellation_registry = providers.Singleton(CancellationRegistry)
 
-    # --- 1. runtime 도메인 ---
+    # --- 1. LLM 게이트웨이: AI 설정 화면 ---
     get_runtime_dashboard = providers.Factory(
         GetRuntimeDashboardUseCase,
         policy=runtime_policy,
         credentials=credentials,
-        model_options=providers.Callable(_model_options, settings),
+        model_options=providers.Object(llm_catalog.SETTINGS_OPTIONS),
     )
     update_runtime_policy = providers.Factory(UpdateRuntimePolicyUseCase, policy=runtime_policy)
     set_google_api_key = providers.Factory(SetGoogleApiKeyUseCase, credentials=credentials)
     delete_google_api_key = providers.Factory(DeleteGoogleApiKeyUseCase, credentials=credentials)
 
-    # --- 2. catalog 도메인 ---
+    # --- 2. catalog: 서식 목록 · 번들 · PDF → 카탈로그 인입 ---
     catalog_repository = providers.Singleton(
         FilesystemCatalogRepository,
         catalog_root=providers.Callable(lambda st: st.catalog, storage),
     )
     pdf_vdoc_extractor = providers.Singleton(PdfVDocEngineAdapter)
-    form_scaffold_agent = providers.Singleton(
-        FormScaffoldAgent,
-        policy=runtime_policy,
-        agent_runs_dir=providers.Callable(lambda st: st.state / "agent_runs", storage),
-        fidelity_tools_dir=providers.Object(_REPO_ROOT / ".agents" / "tools" / "visual_fidelity"),
-        fidelity_skill_dir=providers.Object(
-            _REPO_ROOT / ".agents" / "skills" / "external_pm_08_visual_fidelity_replicator"
-        ),
-        external_llm_enabled=providers.Callable(lambda s: s.external_llm_enabled, settings),
-        agentic_loop_enabled=providers.Callable(lambda s: s.scaffold_agent_loop_enabled, settings),
-    )
     list_catalog_forms = providers.Factory(ListCatalogFormsUseCase, repository=catalog_repository)
     get_catalog_bundle = providers.Factory(GetCatalogBundleUseCase, repository=catalog_repository)
     ingest_pdf_to_catalog = providers.Factory(
         IngestPdfToCatalogUseCase,
         repository=catalog_repository,
         extractor=pdf_vdoc_extractor,
+    )
+
+    # --- 2-1. form_scaffold: PDF → 편집 가능한 .vdoc (기준선 · 피델리티 루프 · 단발 구획명 정리) ---
+    form_scaffold_agent = providers.Singleton(
+        FormScaffoldAgent,
+        policy=runtime_policy,
+        agent_runs_dir=providers.Callable(lambda st: st.state / "agent_runs", storage),
+        fidelity_tools_dir=providers.Callable(lambda: packs.path("form-scaffold:tools/visual_fidelity")),
+        fidelity_skill_dir=providers.Callable(
+            lambda: packs.path("form-scaffold:skills/external_pm_08_visual_fidelity_replicator")
+        ),
+        external_llm_enabled=providers.Callable(lambda s: s.external_llm_enabled, settings),
+        agentic_loop_enabled=providers.Callable(lambda s: s.scaffold_agent_loop_enabled, settings),
+        # 단발 구획명 정리는 빈 샌드박스 폴더에서 돈다 (agy 내장 도구가 사용자 파일을 건드리지 않게)
+        one_shot=providers.Callable(
+            lambda st: partial(run_agy_print, cwd=st.state / "form_scaffold" / "sandbox"), storage
+        ),
     )
     scaffold_pdf_to_document = providers.Factory(ScaffoldPdfToDocumentUseCase, agent=form_scaffold_agent)
 
@@ -216,7 +205,20 @@ class Container(containers.DeclarativeContainer):
     patch_document_structure = providers.Factory(PatchDocumentStructureUseCase, repository=document_repository)
     delete_document = providers.Factory(DeleteDocumentUseCase, repository=document_repository)
 
-    # --- 4. backdata 도메인 (`data/knowledge/backdata`) ---
+    # --- 4. Resource (사실 근거): RM 원장 (`data/knowledge/resource_ledger`) · 업로드 (`data/knowledge/resources`) ---
+    resource_ledger = providers.Singleton(
+        ResourceLedgerService,
+        repository=providers.Singleton(
+            LocalLedgerRepository,
+            root_dir=providers.Callable(lambda st: st.knowledge_of("resource_ledger"), storage),
+            legacy_projects_dir=providers.Callable(lambda st: st.state / "projects", storage),
+        ),
+        files=providers.Singleton(FileDirectoryProvider),
+        web=providers.Singleton(WebArticleProvider),
+        uploads_root=providers.Callable(lambda st: st.knowledge_of("resources"), storage),
+    )
+
+    # --- 4-1. Resource: 백데이터 원문 단락 (`data/knowledge/backdata`) ---
     backdata_repository = providers.Singleton(
         LocalBackdataRepository,
         root_dir=providers.Callable(lambda st: st.knowledge_of("backdata"), storage),
@@ -224,11 +226,8 @@ class Container(containers.DeclarativeContainer):
     import_raw_backdata = providers.Factory(ImportRawBackdataUseCase, repository=backdata_repository)
     list_backdata_chunks = providers.Factory(ListBackdataChunksUseCase, repository=backdata_repository)
 
-    # --- 5. composer 도메인 (`data/knowledge/composer`) ---
-    slot_composer_harness = providers.Singleton(
-        GroundedSlotComposerAdapter,
-        model_name=providers.Callable(lambda s: s.composer_model, settings),
-    )
+    # --- 5. authoring: 규칙 초안기 · 스토리라인 · 서식 추천 (`data/knowledge/composer`) · Staged 대기열 ---
+    slot_composer_harness = providers.Singleton(RuleSlotDrafter)
     composition_archive = providers.Singleton(
         LocalCompositionArchiveAdapter,
         root_dir=providers.Callable(lambda st: st.knowledge_of("composer"), storage),
@@ -253,6 +252,11 @@ class Container(containers.DeclarativeContainer):
         runner=staged_phase_runner,
     )
     cancel_composition_run = providers.Factory(CancelCompositionRunUseCase, registry=cancellation_registry)
+    # 대기열은 프로젝트 매니페스트 옆 `data/knowledge/projects/<id>/staging.json` 에 둔다
+    staging_store = providers.Singleton(
+        LocalStagingStore, root_dir=providers.Callable(lambda st: st.knowledge_of("projects"), storage)
+    )
+    staging_queue = providers.Factory(StagingQueueUseCase, store=staging_store)
 
     # --- 6. projects 도메인 (`data/knowledge/projects`) ---
     project_repository = providers.Singleton(
@@ -264,12 +268,8 @@ class Container(containers.DeclarativeContainer):
     save_project = providers.Factory(SaveProjectUseCase, repository=project_repository)
     get_project_outline_tree = providers.Factory(GetProjectOutlineTreeUseCase, repository=project_repository)
     apply_outline_command = providers.Factory(ApplyOutlineCommandUseCase, repository=project_repository)
-    staging_store = providers.Singleton(
-        LocalStagingStore, root_dir=providers.Callable(lambda st: st.knowledge_of("projects"), storage)
-    )
-    staging_queue = providers.Factory(StagingQueueUseCase, store=staging_store)
 
-    # --- 7. knowledge 도메인 (Auto-Index 지식 덱: `data/knowledge/decks` · `data/knowledge/jobs`) ---
+    # --- 7. Resource: 자동 색인 지식 덱 (`data/knowledge/decks` · `data/knowledge/jobs`) ---
     knowledge_files = providers.Singleton(FsDeckFiles, root=providers.Callable(lambda st: st.knowledge_of("decks"), storage))
     knowledge_registry = providers.Singleton(
         LocalDeckRegistry,
@@ -297,7 +297,7 @@ class Container(containers.DeclarativeContainer):
     knowledge_toolbox = providers.Singleton(
         KnowledgeToolbox,
         files=knowledge_files,
-        skill_dir=providers.Object(_REPO_ROOT / ".agents" / "skills" / "knowledge_deck_reader"),
+        skill_dir=providers.Callable(lambda: packs.path("resource:index/skills/knowledge_deck_reader")),
     )
 
     # --- 8. assistant 도메인 (AI Composer · 인라인 AI 공용 실행 계층) ---
@@ -331,6 +331,8 @@ class Container(containers.DeclarativeContainer):
         server_tools=knowledge_toolbox,
         workspace=resource_workspace,
     )
+
+    # --- 8-1. authoring: 하네스 (LLM 게이트웨이 · 지식 덱 근거를 쓴다) ---
     usage_ledger = providers.Singleton(
         JsonlUsageLedger, path=providers.Callable(lambda st: st.state / "assistant" / "ledger.jsonl", storage)
     )
@@ -341,12 +343,6 @@ class Container(containers.DeclarativeContainer):
         inline_model=providers.Callable(lambda s: s.assistant_inline_model, settings),
         server_tools=knowledge_toolbox,
         ledger=usage_ledger,
-    )
-    harness_jobs = providers.Singleton(
-        HarnessJobRunner,
-        harness=harness_service,
-        # 일괄 채우기 결과는 프로젝트 대기열(projects 도메인)로 — assistant 는 projects 를 모르므로 함수로 꽂는다
-        staging_sink=providers.Callable(lambda store: store.append, staging_store),
     )
 
     # --- 9. reference 도메인 (`data/knowledge/references`) ---

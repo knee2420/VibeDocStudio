@@ -1,6 +1,6 @@
 """테스트 격리: 실제 `data/` · `cache/` · `state/` 대신 세션 임시 폴더를 쓰고 외부 LLM 호출을 끈다.
 
-`app.core.config.settings` 는 import 시점에 환경 변수를 읽으므로, 테스트 모듈이 `main` 을
+루트 `main` 은 import 시점에 앱을 조립(설정 읽기)하므로, 테스트 모듈이 `main` 을
 import 하기 전(=conftest 로드 시점)에 설정해야 한다.
 """
 from __future__ import annotations

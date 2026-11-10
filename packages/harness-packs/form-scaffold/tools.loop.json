@@ -1,0 +1,67 @@
+[
+ {
+  "name": "read_lines",
+  "description": "원본 PDF 의 줄 목록을 본다 (줄 id, 들어간 블록 · 칸, 좌표, 글꼴, 글자)",
+  "args": {
+   "from": "선택. 시작 줄 id (예: L00)",
+   "to": "선택. 끝 줄 id",
+   "where": "선택. 블록 id(B3) · 표 id(T1) · 칸 id(T1.r2c1) 로 거르기"
+  }
+ },
+ {
+  "name": "read_tables",
+  "description": "원본 PDF 선에서 잡은 표 격자를 본다 (칸 상자, 합친 칸, 테두리, 칸 안 줄)",
+  "args": {
+   "table": "선택. 표 id (예: T1)"
+  }
+ },
+ {
+  "name": "set_plan",
+  "description": "표 밖 글 줄을 블록으로 나누는 분할안 · 블록 이름 · 표 이름을 바꾼다 (평가는 하지 않음)",
+  "args": {
+   "blocks": "[{\"id\": \"B1\", \"title\": \"블록 이름\", \"lines\": [\"첫 줄 id\", \"끝 줄 id\"]}, ...] 글 줄 전체를 순서대로 빠짐없이 덮어야 함. 표가 전부면 생략",
+   "table_titles": "선택. {\"T1\": \"표 이름\"}",
+   "reason": "왜 이렇게 나누는지"
+  }
+ },
+ {
+  "name": "update_tune",
+  "description": "보정값을 바꾼다 (평가는 하지 않음). 처방의 action.args 를 그대로 넘기면 된다. 한 번에 원인 하나",
+  "args": {
+   "changes": "{보정키: 값} 객체",
+   "reason": "어떤 처방(P번호) · 숫자 때문에 바꾸는지"
+  }
+ },
+ {
+  "name": "evaluate",
+  "description": "현재 분할안 · 보정값으로 문서를 만들어 디버그 크롬에 띄우고 02 로 재고 03 으로 판정, 진단 · 처방을 받는다 (약 15~30초)",
+  "args": {}
+ },
+ {
+  "name": "inspect_spans",
+  "description": "마지막 판정에서 블록 · 칸 · 줄 하나의 글자별 원본 좌표 vs 그려진 좌표 · 글꼴을 본다",
+  "args": {
+   "block": "선택. 블록 id(B3) 또는 칸 id(T1.r2c1)",
+   "line": "선택. 줄 id(L05)"
+  }
+ },
+ {
+  "name": "revert",
+  "description": "점수가 떨어진 변경을 되돌린다 (보정값 · 분할안을 그 반복의 것으로)",
+  "args": {
+   "iter": "선택. 되돌릴 반복 번호. 생략하면 지금까지 최고 점수 반복"
+  }
+ },
+ {
+  "name": "get_state",
+  "description": "현재 보정값 · 보정 키 설명 · 분할안 · 쪽 요약 · 반복 이력을 본다",
+  "args": {}
+ },
+ {
+  "name": "finish",
+  "description": "작업을 끝낸다. 목표 점수 도달(VERDICT PASS), 또는 남은 처방이 없고 engine_issues 만 남았을 때",
+  "args": {
+   "summary": "무엇을 바꿨고 무엇이 남았는지 (숫자는 관찰에 있던 것만, 남은 engine_issues 포함)"
+  }
+ }
+]

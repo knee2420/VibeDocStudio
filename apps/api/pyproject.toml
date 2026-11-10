@@ -1,7 +1,7 @@
 [project]
 name = "vibe-doc-studio-api"
 version = "0.2.0"
-description = "VibeDocStudio Hexagonal Domain-Sliced API (catalog · documents · backdata · composer · projects)"
+description = "VibeDocStudio Hexagonal Domain-Sliced API (resource · reference · documents · authoring · assistant · llm 게이트웨이)"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = [".", "../../packages/pdf-vdoc-engine", "../../packages/agent-core"]
+pythonpath = [".", "../../packages/pdf-vdoc-engine", "../../packages/agent-core", "../../packages/harness-kit"]
 testpaths = ["tests"]
 
 [tool.ruff]
@@ -26,39 +26,85 @@ select = ["E4", "E7", "E9", "F", "I"]
 "main.py" = ["E402"]
 
 [tool.importlinter]
-root_packages = ["app", "pdf_vdoc_engine"]
+root_packages = ["app", "harness_kit", "pdf_vdoc_engine", "vibefs"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "Core must not import domains"
 type = "forbidden"
-source_modules = ["app.core"]
+source_modules = [
+    "app.core",
+]
 forbidden_modules = [
     "app.assistant",
-    "app.knowledge",
-    "app.resources",
-    "app.backdata",
+    "app.authoring",
     "app.catalog",
-    "app.composer",
     "app.documents",
+    "app.form_scaffold",
     "app.projects",
-    "app.runtime",
+    "app.reference",
+    "app.resource",
+    "app.llm",
+]
+
+[[tool.importlinter.contracts]]
+name = "LLM gateway must not import domains"
+type = "forbidden"
+source_modules = [
+    "app.llm",
+]
+forbidden_modules = [
+    "app.assistant",
+    "app.authoring",
+    "app.catalog",
+    "app.documents",
+    "app.form_scaffold",
+    "app.projects",
+    "app.reference",
+    "app.resource",
+]
+
+[[tool.importlinter.contracts]]
+name = "Domain cores know only LLM ports, not concrete runners"
+type = "forbidden"
+source_modules = [
+    "app.assistant.use_cases",
+    "app.assistant.workspace.service",
+    "app.authoring.agents",
+    "app.authoring.use_cases",
+    "app.catalog.use_cases",
+    "app.documents.use_cases",
+    "app.form_scaffold.agents",
+    "app.form_scaffold.use_cases",
+    "app.projects.use_cases",
+    "app.reference.use_cases",
+    "app.resource.backdata.use_cases",
+    "app.resource.index.use_cases",
+    "app.resource.ledger.use_cases",
+]
+forbidden_modules = [
+    "app.llm.adapters",
 ]
 
 [[tool.importlinter.contracts]]
 name = "Pdf VDoc Engine is independent"
 type = "forbidden"
-source_modules = ["pdf_vdoc_engine"]
+source_modules = [
+    "pdf_vdoc_engine",
+]
 forbidden_modules = [
     "app.assistant",
-    "app.backdata",
+    "app.authoring",
     "app.catalog",
-    "app.composer",
     "app.documents",
+    "app.form_scaffold",
     "app.projects",
-    "app.runtime",
+    "app.reference",
+    "app.resource",
     "app.core",
+    "app.llm",
     "app.bootstrap",
+    "vibefs",
 ]
 
 [[tool.importlinter.contracts]]
@@ -69,216 +115,178 @@ source_modules = [
     "app.*.use_cases",
     "app.*.agents",
 ]
-forbidden_modules = ["app.core.config"]
+forbidden_modules = [
+    "app.core.config",
+]
 
 [[tool.importlinter.contracts]]
 name = "Routers do not import the composition root"
 type = "forbidden"
-source_modules = ["app.*.router"]
-forbidden_modules = ["app.bootstrap"]
-
-[[tool.importlinter.contracts]]
-name = "backdata must not depend on other domains"
-type = "forbidden"
 source_modules = [
-    "app.backdata.use_cases",
-    "app.backdata.adapters",
-    "app.backdata.ports",
+    "app.*.router",
 ]
 forbidden_modules = [
-    "app.assistant",
-    "app.catalog",
-    "app.composer",
-    "app.documents",
-    "app.knowledge",
-    "app.projects",
-    "app.reference",
-    "app.resources",
-    "app.runtime",
-]
-
-[[tool.importlinter.contracts]]
-name = "catalog must not depend on other domains"
-type = "forbidden"
-source_modules = [
-    "app.catalog.use_cases",
-    "app.catalog.adapters",
-    "app.catalog.agents",
-    "app.catalog.ports",
-]
-forbidden_modules = [
-    "app.assistant",
-    "app.backdata",
-    "app.composer",
-    "app.documents",
-    "app.knowledge",
-    "app.projects",
-    "app.reference",
-    "app.resources",
-    "app.runtime",
-]
-
-[[tool.importlinter.contracts]]
-name = "composer must not depend on other domains"
-type = "forbidden"
-source_modules = [
-    "app.composer.use_cases",
-    "app.composer.adapters",
-    "app.composer.agents",
-    "app.composer.ports",
-]
-forbidden_modules = [
-    "app.assistant",
-    "app.backdata",
-    "app.catalog",
-    "app.documents",
-    "app.knowledge",
-    "app.projects",
-    "app.reference",
-    "app.resources",
-    "app.runtime",
-]
-
-[[tool.importlinter.contracts]]
-name = "documents must not depend on other domains"
-type = "forbidden"
-source_modules = [
-    "app.documents.use_cases",
-    "app.documents.adapters",
-    "app.documents.ports",
-]
-forbidden_modules = [
-    "app.assistant",
-    "app.backdata",
-    "app.catalog",
-    "app.composer",
-    "app.knowledge",
-    "app.projects",
-    "app.reference",
-    "app.resources",
-    "app.runtime",
-]
-
-[[tool.importlinter.contracts]]
-name = "projects must not depend on other domains"
-type = "forbidden"
-source_modules = [
-    "app.projects.use_cases",
-    "app.projects.adapters",
-    "app.projects.ports",
-]
-forbidden_modules = [
-    "app.assistant",
-    "app.backdata",
-    "app.catalog",
-    "app.composer",
-    "app.documents",
-    "app.knowledge",
-    "app.reference",
-    "app.resources",
-    "app.runtime",
-]
-
-[[tool.importlinter.contracts]]
-name = "runtime must not depend on other domains"
-type = "forbidden"
-source_modules = [
-    "app.runtime.use_cases",
-]
-forbidden_modules = [
-    "app.assistant",
-    "app.backdata",
-    "app.catalog",
-    "app.composer",
-    "app.documents",
-    "app.knowledge",
-    "app.projects",
-    "app.reference",
-    "app.resources",
+    "app.bootstrap",
 ]
 
 [[tool.importlinter.contracts]]
 name = "assistant must not depend on other domains"
 type = "forbidden"
 source_modules = [
-    "app.assistant.use_cases",
-    "app.assistant.adapters",
-    "app.assistant.ports",
+    "app.assistant",
 ]
 forbidden_modules = [
-    "app.backdata",
+    "app.authoring",
     "app.catalog",
-    "app.composer",
     "app.documents",
-    "app.knowledge",
+    "app.form_scaffold",
     "app.projects",
     "app.reference",
-    "app.resources",
-    "app.runtime",
+    "app.resource",
 ]
 
 [[tool.importlinter.contracts]]
-name = "knowledge must not depend on other domains"
+name = "authoring must not depend on other domains"
 type = "forbidden"
 source_modules = [
-    "app.knowledge.use_cases",
-    "app.knowledge.adapters",
-    "app.knowledge.ports",
+    "app.authoring",
 ]
 forbidden_modules = [
     "app.assistant",
-    "app.backdata",
     "app.catalog",
-    "app.composer",
     "app.documents",
+    "app.form_scaffold",
     "app.projects",
     "app.reference",
-    "app.resources",
-    "app.runtime",
+    "app.resource",
 ]
 
 [[tool.importlinter.contracts]]
-name = "resources must not depend on other domains"
+name = "catalog must not depend on other domains"
 type = "forbidden"
 source_modules = [
-    "app.resources.adapters",
-    "app.resources.ports",
+    "app.catalog",
 ]
 forbidden_modules = [
     "app.assistant",
-    "app.backdata",
-    "app.catalog",
-    "app.composer",
+    "app.authoring",
     "app.documents",
-    "app.knowledge",
+    "app.form_scaffold",
     "app.projects",
     "app.reference",
-    "app.runtime",
+    "app.resource",
 ]
 
+[[tool.importlinter.contracts]]
+name = "documents must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.documents",
+]
+forbidden_modules = [
+    "app.assistant",
+    "app.authoring",
+    "app.catalog",
+    "app.form_scaffold",
+    "app.projects",
+    "app.reference",
+    "app.resource",
+]
+
+[[tool.importlinter.contracts]]
+name = "form_scaffold must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.form_scaffold",
+]
+forbidden_modules = [
+    "app.assistant",
+    "app.authoring",
+    "app.catalog",
+    "app.documents",
+    "app.projects",
+    "app.reference",
+    "app.resource",
+]
+
+[[tool.importlinter.contracts]]
+name = "projects must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.projects",
+]
+forbidden_modules = [
+    "app.assistant",
+    "app.authoring",
+    "app.catalog",
+    "app.documents",
+    "app.form_scaffold",
+    "app.reference",
+    "app.resource",
+]
 
 [[tool.importlinter.contracts]]
 name = "reference must not depend on other domains"
 type = "forbidden"
 source_modules = [
-    "app.reference.use_cases",
-    "app.reference.adapters",
-    "app.reference.ports",
+    "app.reference",
 ]
 forbidden_modules = [
     "app.assistant",
-    "app.backdata",
+    "app.authoring",
     "app.catalog",
-    "app.composer",
     "app.documents",
-    "app.knowledge",
+    "app.form_scaffold",
     "app.projects",
-    "app.resources",
-    "app.runtime",
+    "app.resource",
+]
+
+[[tool.importlinter.contracts]]
+name = "resource must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.resource",
+]
+forbidden_modules = [
+    "app.assistant",
+    "app.authoring",
+    "app.catalog",
+    "app.documents",
+    "app.form_scaffold",
+    "app.projects",
+    "app.reference",
+]
+
+[[tool.importlinter.contracts]]
+name = "Agent sandbox runtime (vibefs) is independent of the app"
+type = "forbidden"
+source_modules = [
+    "vibefs",
+]
+forbidden_modules = [
+    "app",
+]
+
+[[tool.importlinter.contracts]]
+name = "Harness kit is host independent (packs are read as data)"
+type = "forbidden"
+source_modules = [
+    "harness_kit",
+]
+forbidden_modules = [
+    "app",
+    "vibefs",
+    "pdf_vdoc_engine",
 ]
 
 [[tool.importlinter.contracts]]
 name = "Reference is not a vdoc document"
 type = "forbidden"
-source_modules = ["app.reference"]
-forbidden_modules = ["pdf_vdoc_engine", "app.documents", "app.catalog"]
+source_modules = [
+    "app.reference",
+]
+forbidden_modules = [
+    "pdf_vdoc_engine",
+    "app.documents",
+    "app.catalog",
+]

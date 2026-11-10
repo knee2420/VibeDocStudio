@@ -40,19 +40,20 @@ export function scopeContextRef(doc: VDocDocument, scope: ResolvedScope, activeP
   if (scope.mode === "off") {
     lines.push("범위: 문서 끔 — 사용자가 문서를 이 대화에서 뺐다. 문서를 읽거나 고치지 말고, 문서 내용을 추측하지 마라. 문서 도구는 모두 거부된다.");
   } else if (!isRestricted(scope)) {
-    lines.push(`범위: 문서 전체`, `docId: ${doc.docId}`, `title: ${doc.title}`, `pages: ${doc.pages.length}`);
+    lines.push(`고칠 범위: 문서 전체`, `docId: ${doc.docId}`, `title: ${doc.title}`, `pages: ${doc.pages.length}`);
     if (activePageId) lines.push(`activePage: ${pageTitle(doc, activePageId)}`);
   } else {
     lines.push(
-      `범위: ${scope.label}`,
-      "이 범위 안의 페이지 · 블록 · 칸만 보고 고친다. 범위 밖은 문서 도구가 거부한다.",
-      "범위 밖 내용(다른 페이지 · 다른 문서 이름)을 추측해 끌어오지 마라. 판단 근거는 범위 안 내용과 첨부된 자료(덱 · RM)뿐이다.",
+      `고칠 범위: ${scope.label}`,
+      scope.mode === "document"
+        ? "바꾸는 것은 이 범위 안만 된다. 사용자가 뺀 페이지는 읽지도 고치지도 않는다 (문서 도구가 거부한다)."
+        : "바꾸는 것은 이 범위 안만 된다 (밖을 바꾸는 변경안은 거부된다). 읽기는 문서 전체를 볼 수 있다 — 맥락 · 일관성 확인에 쓰고, 밖의 내용을 범위 안에 지어 넣지는 마라.",
       `docId: ${doc.docId}`,
       `페이지: ${[...(scope.pageIds ?? [])].map((p) => `${pageTitle(doc, p)} (${p})`).join(", ")}`
     );
     if (scope.slotIds) lines.push(`칸: ${[...scope.slotIds].slice(0, 60).map((s) => `${s} ${doc.slots[s]?.label ?? ""}`.trim()).join(" · ")}`);
   }
-  if (scope.mode !== "off") lines.push("(구조는 document.getOutline 으로 읽는다 — 범위 안만 보인다)");
+  if (scope.mode !== "off") lines.push("(구조는 document.getOutline 으로 읽는다 — 고칠 범위 밖은 [범위밖] 으로 표시된다)");
   if (scope.sourcesOff) lines.push("자료 끔: 사용자가 이번 대화에서 참고 자료(지식 덱 · RM 원본)를 뺐다. 자료 도구를 쓰지 마라.");
   return {
     kind: SCOPE_CONTEXT_KIND,

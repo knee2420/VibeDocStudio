@@ -2,12 +2,10 @@
 from __future__ import annotations
 
 import json
-import time
-from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app.assistant.harness import SPECS, EvidenceItem, check_slot_html, estimate_chars
+from app.authoring.harness import SPECS, EvidenceItem, check_slot_html, estimate_chars
 from main import app
 
 client = TestClient(app)
@@ -60,27 +58,3 @@ def test_harness_run_streams_evidence_and_result() -> None:
 def test_unknown_harness_is_an_error() -> None:
     events = _sse(client.post("/api/assistant/harness/run", json={"harnessId": "nope", "target": {}}))
     assert events[0]["type"] == "error" and events[-1]["stopReason"] == "error"
-
-
-def test_batch_job_appends_staged_changes_to_project_queue(tmp_path: Path) -> None:
-    items = [
-        {"target": {"slotId": f"s{i}", "label": f"칸{i}", "currentHtml": ""}, "baseHash": "h0",
-         "evidence": [{"kind": "backdata", "refId": "c1", "label": "회의록", "excerpt": "예산은 3억 원이다."}]}
-        for i in range(3)
-    ]
-    job = client.post("/api/assistant/harness/batch", json={"harnessId": "fill.slot", "projectId": "proj_batch", "docId": "doc_b", "items": items}).json()
-    deadline = time.monotonic() + 15
-    while time.monotonic() < deadline:
-        state = client.get(f"/api/assistant/harness/jobs/{job['jobId']}").json()
-        if state["status"] != "running":
-            break
-        time.sleep(0.1)
-    assert state["status"] == "succeeded" and state["done"] == 3
-    queue = client.get("/api/projects/proj_batch/staging").json()["changes"]
-    assert len(queue) == state["staged"]
-    if queue:
-        c = queue[0]
-        assert c["targetKind"] == "slot-html" and c["docId"] == "doc_b" and c["baseHash"] == "h0" and c["harnessId"] == "fill.slot"
-    events = client.get(f"/api/assistant/harness/jobs/{job['jobId']}/events")
-    kinds = [json.loads(line[6:])["type"] for line in events.text.splitlines() if line.startswith("data: ")]
-    assert kinds[0] == "started" and kinds.count("item") == 3 and kinds[-1] == "succeeded"

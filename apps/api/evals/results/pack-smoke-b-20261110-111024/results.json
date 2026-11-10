@@ -1,0 +1,482 @@
+[
+ {
+  "id": "MIX1-fill",
+  "area": "MIX",
+  "holdout": false,
+  "prompt": "요약 칸 제대로 채워줘.",
+  "session": "asst-72039d1da57c",
+  "cards": [
+   {
+    "cardId": "icard_07aa48b5",
+    "refId": "ref_eval_invest",
+    "layer": "D4",
+    "scope": "ref:ref_eval_invest#p1",
+    "adoption": "follow",
+    "reading": "요약부는 한 줄의 두괄식 결론과 핵심 항목별 개조식 리스트(문제/해법/증거 또는 배경/결정/목표)로 간결하게 구성한다.",
+    "alternatives": []
+   }
+  ],
+  "refReads": [
+   {
+    "refId": "ref_eval_invest",
+    "anchor": "ref:ref_eval_invest",
+    "n": 18,
+    "pins": []
+   }
+  ],
+  "seconds": 100.2,
+  "usage": {
+   "input_tokens": 50337,
+   "output_tokens": 6591,
+   "thought_tokens": 4064,
+   "cached_read_tokens": 294088,
+   "total_tokens": 351016
+  },
+  "tools": [
+   {
+    "name": "wb_read",
+    "state": "done",
+    "params": {
+     "anchor": "slot:r_summary",
+     "toolSummary": "Read summary slot"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_history",
+    "state": "done",
+    "params": {
+     "slotId": "r_summary",
+     "toolSummary": "Check summary slot history"
+    },
+    "error": null
+   },
+   {
+    "name": "rf_map",
+    "state": "done",
+    "params": {
+     "toolSummary": "Check reference map"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "slot:r_summary",
+     "toolSummary": "Measure current slot patterns"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_outline",
+    "state": "done",
+    "params": {
+     "toolSummary": "Outline document"
+    },
+    "error": null
+   },
+   {
+    "name": "ws_grep",
+    "state": "done",
+    "params": {
+     "pattern": "온보딩",
+     "toolSummary": "Search onboarding in resources"
+    },
+    "error": null
+   },
+   {
+    "name": "rf_consensus",
+    "state": "done",
+    "params": {
+     "ref": "ref_eval_invest",
+     "toolSummary": "Check reference consensus"
+    },
+    "error": null
+   },
+   {
+    "name": "rf_read",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_invest",
+     "toolSummary": "Read reference document"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_alpha\\archive\\2025.01.20 주간회의\\A3.working memory\\근거_온보딩 실측 기준선.md"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_alpha\\projects\\alpha\\discussions\\25.01.20\\decisions\\Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_alpha\\projects\\alpha\\discussions\\25.01.20\\new todo\\value_온보딩 실측 계획.md"
+    },
+    "error": null
+   },
+   {
+    "name": "ws_grep",
+    "state": "done",
+    "params": {
+     "pattern": "완성",
+     "toolSummary": "Search completion time in resources"
+    },
+    "error": null
+   },
+   {
+    "name": "ws_grep",
+    "state": "done",
+    "params": {
+     "pattern": "템플릿 3종",
+     "toolSummary": "Search 3 templates"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_alpha\\archive\\2025.01.20 주간회의\\A1.collection\\history\\1.2_온보딩_흐름_개선.md"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_alpha\\archive\\2025.01.27 주간회의\\A1.collection\\history\\1.2_온보딩_흐름_개선.md"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_read",
+    "state": "done",
+    "params": {
+     "anchor": "orig:r_summary",
+     "toolSummary": "Read original summary slot"
+    },
+    "error": null
+   },
+   {
+    "name": "rf_measure",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_invest#blk:b3",
+     "toolSummary": "Measure reference conclusion"
+    },
+    "error": null
+   },
+   {
+    "name": "rf_interpret",
+    "state": "done",
+    "params": {
+     "cards": [
+      {
+       "adoption": "follow",
+       "evidence": [
+        "ref:ref_eval_invest#blk:b3",
+        "ref:ref_eval_invest#blk:b4",
+        "ref:ref_eval_invest#blk:b5",
+        "ref:ref_eval_invest#blk:b6"
+       ],
+       "layer": "D4",
+       "reading": "요약부는 한 줄의 두괄식 결론과 핵심 항목별 개조식 리스트(문제/해법/증거 또는 배경/결정/목표)로 간결하게 구성한다.",
+       "scope": "ref:ref_eval_invest#p1"
+      }
+     ],
+     "toolSummary": "Propose D4 interpretation card"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_propose",
+    "state": "done",
+    "params": {
+     "candidates": [
+      {
+       "follows": [
+        "icard_07aa48b5"
+       ],
+       "rationale": "레퍼런스 D4 서술 구조(두괄식 결론 + 개조식 항목 리스트)를 적용하여 온보딩 개선 결정사항과 실측 기준선 사실을 명확하게 요약함.",
+       "slots": {
+        "r_summary": "<p><strong>결론: 신규 고객 온보딩에 템플릿 3종을 우선 제공하여 첫 문서 완성 시간을 단축한다.</strong></p><ul><li><strong>배경</strong>: 기존 첫 문서 완성 실측 기준선 평균 47분(n=12)</li><li><strong>결정</strong>: 계약서·의견서·내부 메모 템플릿 3종 우선 제공</li><li><strong>목표</strong>: 첫 문서 완성 시간을 기준선의 절반 이하로 단축</li></ul>"
+       },
+       "sources": [
+        "res:projects/alpha/discussions/25.01.20/decisions/Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md#L17-21",
+        "res:archive/2025.01.20 주간회의/A3.working memory/근거_온보딩 실측 기준선.md#L7-9"
+       ],
+       "title": "1안: 두괄식 결론 + 개조식 핵심 요약 (레퍼런스 D4 구조 반영)"
+      },
+      {
+       "follows": [],
+       "rationale": "군더더기 수식어와 과도한 볼드를 제거하고, 리소스 사실에 근거하여 명료한 단락형 문장으로 정리함.",
+       "slots": {
+        "r_summary": "<p>신규 고객 온보딩 시 계약서·의견서·내부 메모 템플릿 3종을 우선 제공한다. 기존 첫 문서 완성 시간 실측 기준선인 평균 47분(n=12)을 절반 이하로 단축하는 것을 목표로 한다.</p>"
+       },
+       "sources": [
+        "res:projects/alpha/discussions/25.01.20/decisions/Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md#L17-21",
+        "res:archive/2025.01.20 주간회의/A3.working memory/근거_온보딩 실측 기준선.md#L7-9"
+       ],
+       "title": "2안: 간결한 서술 단락형"
+      },
+      {
+       "follows": [],
+       "rationale": "최초 작성 상태(orig:r_summary)로 복원하여 단순 명료한 2문장 형태로 되돌림.",
+       "slots": {
+        "r_summary": "<p>Q1 온보딩 개선의 핵심은 템플릿 우선 제공이다. 첫 문서 완성 시간은 기준선 47분에서 크게 줄었다.</p>"
+       },
+       "sources": [
+        "orig:r_summary"
+       ],
+       "title": "3안: 초안 원본 복원"
+      }
+     ],
+     "mode": "compose",
+     "summary": "요약 칸(r_summary) 개선안 제안 (구조화 개조식안 / 간결 단락안 / 초안 원본 복원안)",
+     "target": "slot:r_summary",
+     "toolSummary": "Propose candidate summaries"
+    },
+    "error": null
+   }
+  ],
+  "denies": [],
+  "reads": [
+   "1.2_온보딩_흐름_개선.md",
+   "Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md",
+   "value_온보딩 실측 계획.md",
+   "근거_온보딩 실측 기준선.md"
+  ],
+  "proposals": [
+   {
+    "id": "prop_e5734db77c",
+    "status": "ready",
+    "mode": "compose",
+    "n": 3,
+    "report": {
+     "ok": true,
+     "errors": [],
+     "warnings": [
+      "후보 2 '2안: 간결한 서술 단락형': 레퍼런스가 켜져 있는데 follows 가 비었다 — 레퍼런스를 따랐다면 해석 카드 cardId 를 적는다 (rf_consensus · rf_interpret). 따르지 않았다면 답에 그렇게 밝힌다.",
+      "후보 3 '3안: 초안 원본 복원': 레퍼런스가 켜져 있는데 follows 가 비었다 — 레퍼런스를 따랐다면 해석 카드 cardId 를 적는다 (rf_consensus · rf_interpret). 따르지 않았다면 답에 그렇게 밝힌다."
+     ],
+     "notes": [
+      "후보 1 '1안: 두괄식 결론 + 개조식 핵심 요약 (레퍼런스 D4 구조 반영)': 따름 icard_07aa48b5 D4 (ref:ref_eval_invest#p1) 거리 1.00 → 0.50"
+     ]
+    },
+    "candidates": [
+     {
+      "follows": [
+       "icard_07aa48b5"
+      ],
+      "rationale": "레퍼런스 D4 서술 구조(두괄식 결론 + 개조식 항목 리스트)를 적용하여 온보딩 개선 결정사항과 실측 기준선 사실을 명확하게 요약함.",
+      "slots": {
+       "r_summary": "<p><strong>결론: 신규 고객 온보딩에 템플릿 3종을 우선 제공하여 첫 문서 완성 시간을 단축한다.</strong></p><ul><li><strong>배경</strong>: 기존 첫 문서 완성 실측 기준선 평균 47분(n=12)</li><li><strong>결정</strong>: 계약서·의견서·내부 메모 템플릿 3종 우선 제공</li><li><strong>목표</strong>: 첫 문서 완성 시간을 기준선의 절반 이하로 단축</li></ul>"
+      },
+      "sources": [
+       "res:projects/alpha/discussions/25.01.20/decisions/Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md#L17-21",
+       "res:archive/2025.01.20 주간회의/A3.working memory/근거_온보딩 실측 기준선.md#L7-9"
+      ],
+      "title": "1안: 두괄식 결론 + 개조식 핵심 요약 (레퍼런스 D4 구조 반영)"
+     },
+     {
+      "follows": [],
+      "rationale": "군더더기 수식어와 과도한 볼드를 제거하고, 리소스 사실에 근거하여 명료한 단락형 문장으로 정리함.",
+      "slots": {
+       "r_summary": "<p>신규 고객 온보딩 시 계약서·의견서·내부 메모 템플릿 3종을 우선 제공한다. 기존 첫 문서 완성 시간 실측 기준선인 평균 47분(n=12)을 절반 이하로 단축하는 것을 목표로 한다.</p>"
+      },
+      "sources": [
+       "res:projects/alpha/discussions/25.01.20/decisions/Decision 04 — 온보딩은 템플릿 3종으로 시작한다.md#L17-21",
+       "res:archive/2025.01.20 주간회의/A3.working memory/근거_온보딩 실측 기준선.md#L7-9"
+      ],
+      "title": "2안: 간결한 서술 단락형"
+     },
+     {
+      "follows": [],
+      "rationale": "최초 작성 상태(orig:r_summary)로 복원하여 단순 명료한 2문장 형태로 되돌림.",
+      "slots": {
+       "r_summary": "<p>Q1 온보딩 개선의 핵심은 템플릿 우선 제공이다. 첫 문서 완성 시간은 기준선 47분에서 크게 줄었다.</p>"
+      },
+      "sources": [
+       "orig:r_summary"
+      ],
+      "title": "3안: 초안 원본 복원"
+     }
+    ]
+   }
+  ],
+  "checks": [
+   {
+    "ok": true,
+    "note": "세 출처 모두 확인: 에디터✓, 레퍼런스✓, 리소스✓",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "후보 제안: ready · 3안 · mode=compose · 칸=['r_summary']",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "레퍼런스 누출 0: 없음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "안 연 출처 없음",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "4/4",
+  "answer": "[요약](vdoc:slot/r_summary) 칸의 기존 내용은 253자의 단일 만연체 문장으로 구성되어 있고 강조(볼드 8회)가 남발되어 있었으며, 근거 없는 수식어가 포함되어 있었습니다.\n\n[Decision 04 — 온보딩은 템플릿 3종으로 시작한다](vdoc:resource/file_29714fca72)와 [온보딩 실측 기준선](vdoc:resource/file_32750aec7c)의 실측 사실, 그리고 [초안 원본](vdoc:slot/orig:r_summary) 이력을 바탕으로 세 가지 후보를 제안했습니다. 화면 미리보기에서 선택하실 수 있습니다.\n\n---\n\n### 제안 후보 비교 및 선택 기준\n\n1. **1안: 두괄식 결론 + 개조식 핵심 요약** *(권장)*\n   - **특징**: [투자 제안서](vdoc:ref-region/ref_eval_invest#p1) 레퍼런스의 **D4 서술 프레임워크**를 적용하여, 한 줄의 결론 제시 후 **배경(실측 기준선 47분)** · **결정(템플릿 3종)** · **목표(시간 절반 단축)**를 개조식으로 명확히 정리했습니다.\n   - **선택 기준**: 한눈에 핵심 지표와 결정 사항이 들어오는 구조적인 보고서 형식을 원할 때 적합합니다.\n2. **2안: 간결한 서술 단락형**\n   - **특징**: 레퍼런스 서식을 따르지 않고, 리소스의 핵심 사실만 2문장의 명료한 평서문 단락으로 압축했습니다.\n   - **선택 기준**: 개조식 목록 없이 부드러운 줄글 형태의 요약 단락을 선호할 때 적합합니다.\n3. **3안: 초안 원본 복원**\n   - **특징**: 인공지능 변경 이전의 [초안 원본](vdoc:slot/orig:r_summary) 상태로 복원합니다.\n   - **선택 기준**: 초기의 단순하고 직관적인 문장으로 되돌리고자 할 때 적합합니다.\n\n---\n\n### 레퍼런스 반영 및 보고 사항\n\n- **반영 층위**: [ref:ref_eval_invest](vdoc:ref-region/ref_eval_invest#p1)의 **D4(서술 프레임워크)** 층위를 채택하여 해석 카드 `icard_07aa48b5`를 제안했습니다 (레퍼런스 고유 수치와 명칭은 일절 옮기지 않고 서술 구조만 반영).\n- **미반영 후보**: 후보 2와 후보 3은 레퍼런스 구조를 따르지 않고 각각 간결 단락형 및 원본 복원 방식으로 작성되었습니다.\n- **확정 안내**: 1안의 서술 구조가 적합하다고 판단되시면 화면에서 해석 카드 `icard_07aa48b5` 및 변경안을 확정해 주시면 됩니다.",
+  "thinking": "The request focuses on ensuring the summary section is accurately populated. Investigating the `r_summary` field within the system. Checking the reference for evaluation and investigation patterns and gathering relevant facts about onboarding improvement, referencing historical data. Excluding irrelevant details.\n\n\nFound several relevant documents from the search results. These appear to outline the onboarding process and related planning documents, specifically focusing on metrics and starting with three templates. Now reviewing these to understand the current approach.\n\n\nExamining the history and editor state. Current `slot:r_summary` reveals the project focused on onboarding improvements this quarter. It was a large, collaborative effort involving multiple teams. Various approaches were attempted to fundamentally change the user experience, including comparing a template-first approach with starting from a blank document.\n\n\nThe `r_summary` appears to focus on template-first onboarding and a reduction in first-document completion time. The current summary's state indicates a lack of supporting evidence, suggesting a need for revision. The `wb_patterns` analysis shows a single paragraph with an average length of 253 characters.\n\n\nThe analysis reveals a single, overly long sentence with excessive bolding and unsubstantiated modifiers. The provided text lacks a clear structure or supporting data, and the user specifically requested a proper summary. I'll utilize the provided reference, focusing on its structure and content to improve the response. I'll follow a defined reference procedure.\n\n\nI'm thinking through how to approach this.\n\n\nThe initial assessment reveals a benchmark of 47 minutes for the first document, with a target of halving this time during onboarding. The context focuses on improving the Q1 2025 onboarding process. The plan is to propose 2-3 candidate solutions to improve the process, with each solution built around different interpretations of the facts and context.\n\n\nConsidering candidate solutions for the onboarding process improvement, focusing on reducing the initial document completion time. The \"compose\" mode necessitates structured proposals with rationales, following specific resource references and HTML formatting for slot population. The initial proposal will feature a concise summary with a bullet-pointed list of key improvements.\n\n\nThe validation passed. The next step is to summarize the differences between the options and the selection criteria concisely. The G6 report needs to specify the followed and non-followed scope (level and range), the unread scope, and the card for user confirmation. Non-compliance details should avoid repeating reference figures, proper nouns, or sentences verbatim.\n\n\n",
+  "errors": []
+ },
+ {
+  "id": "R6-conflict",
+  "area": "R",
+  "holdout": false,
+  "prompt": "리서치 자료끼리 서로 충돌하는 수치가 있어? 있으면 어느 쪽을 믿어야 해?",
+  "session": "asst-efde7a873417",
+  "cards": [],
+  "refReads": [],
+  "seconds": 60.8,
+  "usage": {
+   "input_tokens": 43005,
+   "output_tokens": 2199,
+   "thought_tokens": 1236,
+   "cached_read_tokens": 187312,
+   "total_tokens": 232516
+  },
+  "tools": [
+   {
+    "name": "ws_tree",
+    "state": "done",
+    "params": {
+     "depth": 3,
+     "path": "",
+     "toolSummary": "Check workspace tree"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\README.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\archive\\보고서_요약_원래본.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\interviews\\2025-02-03_인터뷰_A사.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\interviews\\2025-03-10_인터뷰_B사.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\metrics\\2025-03_지표_요약.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 50,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\notes\\경쟁사_비교.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "ws_coverage",
+    "state": "done",
+    "params": {
+     "toolSummary": "Check workspace coverage"
+    },
+    "error": null
+   }
+  ],
+  "denies": [],
+  "reads": [
+   "2025-02-03_인터뷰_A사.md",
+   "2025-03-10_인터뷰_B사.md",
+   "2025-03_지표_요약.md",
+   "README.md",
+   "경쟁사_비교.md",
+   "보고서_요약_원래본.md"
+  ],
+  "proposals": [],
+  "checks": [
+   {
+    "ok": true,
+    "note": "충돌값 1,200: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "충돌값 1,450: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "어느 쪽이 맞는지 근거: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "지표 파일 읽음: 1건",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "4/4",
+  "answer": "리서치 자료를 확인한 결과, **주간 활성 사용자(WAU)** 수치에서 충돌이 확인됩니다.\n\n---\n\n### 1. 충돌하는 수치 내역\n\n* **[A사 인터뷰](vdoc:resource/file_424d917afe) (L7)**: **1,200명**\n  * *\"주간 활성 사용자(WAU)는 1,200명이라고 들었다 (2월 기준, 담당자 구두).\"*\n* **[3월 지표 요약](vdoc:resource/file_ca01d6d352) (L9, L13)**: **1,450명**\n  * *\"WAU: 1,450명\"*\n  * *\"※ WAU 는 제품 로그 기준(3월 3주). 2월 인터뷰의 1,200명은 구두 추정치다.\"*\n\n---\n\n### 2. 신뢰해야 하는 데이터: **[3월 지표 요약](vdoc:resource/file_ca01d6d352)의 1,450명**\n\n**선택 근거:**\n1. **수집 방식의 객관성**: 1,200명은 담당자의 단순 '구두 추정치'인 반면, 1,450명은 실제 시스템의 **'제품 로그 기준'**으로 집계된 실측 데이터입니다.\n2. **시점의 최신성**: 2025년 2월 초 대비 더 최근 시점인 2025년 3월(3월 3주) 데이터입니다.\n3. **명시적 정정 명시**: [3월 지표 요약](vdoc:resource/file_ca01d6d352) 문서 내에서 2월 인터뷰 수치(1,200명)와의 차이 원인을 직접 설명하고 공식 지표로 정정하고 있습니다.",
+  "thinking": "The initial assessment flags the absence of open documents and references, with the resources limited to six files within the research folder. A check using a file system tool confirms the file list and structure. File content is retrieved for inspection.\n\n\nI need to compare the contents of several files. The file list includes markdown documents. I will read each file content to ensure accuracy of the information presented.\n\n\nThe discrepancy between the WAU figures requires investigation. The interview data from February reported 1,200 users, while March's product logs show 1,450 users. The logged data from March appears more reliable due to its direct source.\n\n\n",
+  "errors": []
+ }
+]

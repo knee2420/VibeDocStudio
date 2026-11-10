@@ -1,0 +1,26 @@
+{
+ "coverageNudgeHead": "[작업 공간 확인] 사용자는 빠짐없이 확인하라고 했는데, 마운트된 자료 중 아직 읽지 않은 파일이 있다.\n",
+ "coverageNudgeTail": "\n사용자 요청 범위(특정 폴더 · 종류를 말했다면 그 안)에 드는 파일 중 안 읽은 것을 read_file 로 읽고 (동일본은 하나만 · 양이 많으면 invoke_subagent 로 폴더별로 나눠도 된다) 앞의 답을 보완하라. 남은 파일이 요청 범위 밖이면 더 읽지 말고 '나머지는 요청 범위 밖' 이라고 한 줄로 밝히고 끝내라.",
+ "focusHint": "\n[우선 카드] 사용자가 지금 작업 중인 칸의 근거 카드: {cards} — 이 카드부터 knowledge.cards 로 확인하고, 모자랄 때만 넓혀 찾아라.",
+ "collection": {
+  "head": "[작업 공간 안내] 이번 요청은 '{name}' 묶음 전체를 다룬다 — 본 대상 {primary}개 (고유 {unique}개).\n1) ws_collect(\"{target}\")로 목록을 확정하고 2) 본 대상 고유 {unique}개를 모두 read_file 로 읽은 뒤 3) 공통점 · 차이(시기 · 폴더별로 달라지는 것)를 찾아 답하라. 일부만 읽고 일반화하지 마라.",
+  "drafts": "초안 · 검토 중 {count}개는 확정본이 아니다 (차이 · 이력 비교용으로만)",
+  "scaffolds": "서식 · 예시 {count}개는 틀이지 내용이 아니다"
+ },
+ "snapshot": {
+  "head": "[작업 공간 현황] 루트: {roots} · 파일 {files}개",
+  "cluster": "- {name}: 본 대상 {primary}",
+  "clusterDrafts": " / 초안 {drafts}",
+  "read": "- 이 대화에서 읽은 파일: 끝까지 {full} · 일부 {partial} (전체 고유 {total})",
+  "tail": "지도 전체 · 탐색 규칙은 앞부분에 있다 — 다시 보려면 ws_overview · ws_collect"
+ },
+ "brief": {
+  "head": "[리소스 작업 공간 — 사용자가 Resource Manager 에서 체크한 자료가 마운트됐다]\n",
+  "tail": "\n(파일 목록 전체는 ws_tree · 이름은 ws_glob · 내용은 ws_grep · 후보 목록은 ws_collect 로 찾고, 원문은 read_file 로 읽는다)"
+ },
+ "gates": {
+  "notRead": "{tag}: 출처 {path} 를 read_file 로 읽은 기록이 없다.",
+  "noSources": "{tag}: sources 가 비었다 — 내용의 출처(res:경로#L시작-끝 · slot: · rev: · orig:)를 적는다.",
+  "unsourcedNumbers": "{tag}: 출처에서 찾지 못한 수치 {nums} — 읽은 원천 · 문서에 있는 값만 쓴다."
+ }
+}

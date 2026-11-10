@@ -45,6 +45,8 @@ import {
   referenceApi,
   useReferenceStore,
   type BoundReference,
+  type ConsensusAdoption,
+  type ConsensusCard,
   type ReferenceItem,
   type ReferencePin,
 } from "@/entities/reference-manager";
@@ -108,6 +110,153 @@ const LayerStrip: React.FC<{ entry: BoundReference }> = ({ entry }) => {
           </button>
         );
       })}
+    </div>
+  );
+};
+
+// --- 해석 합의 ----------------------------------------------------------------------------------
+
+const EMPTY_CARDS: ConsensusCard[] = [];
+const ADOPTION_LABEL: Record<ConsensusAdoption, string> = { follow: "따름", consult: "참고만", exclude: "안 따름" };
+const ADOPTION_TONE: Record<ConsensusAdoption, string> = {
+  follow: "bg-emerald-600 text-white",
+  consult: "bg-sky-600 text-white",
+  exclude: "bg-slate-600 text-white",
+};
+
+const scopeLabel = (scope: string): string => {
+  const sub = scope.split("#").slice(1).join(" · ");
+  if (!sub) return "전체";
+  return sub.replace(/^p(\d+)/, "$1쪽").replace("pin:", "핀 ").replace("blk:", "덩어리 ").replace("sec:", "섹션 ");
+};
+
+const AdoptionPicker: React.FC<{ value: ConsensusAdoption; onChange: (a: ConsensusAdoption) => void; testid: string }> = ({
+  value,
+  onChange,
+  testid,
+}) => (
+  <div className="inline-flex rounded-sm border border-slate-300 overflow-hidden text-[10px]" data-testid={testid}>
+    {(Object.keys(ADOPTION_LABEL) as ConsensusAdoption[]).map((a) => (
+      <button
+        key={a}
+        type="button"
+        onClick={() => onChange(a)}
+        className={`px-1.5 py-0.5 cursor-pointer transition ${value === a ? ADOPTION_TONE[a] : "bg-white text-slate-600 hover:bg-slate-100"}`}
+      >
+        {ADOPTION_LABEL[a]}
+      </button>
+    ))}
+  </div>
+);
+
+/** AI 가 제안한 해석 카드 하나 — 채택 강도와 해석(본 해석 · 대안)을 고르고 확정한다. */
+const PendingCardRow: React.FC<{ refId: string; card: ConsensusCard }> = ({ refId, card }) => {
+  const confirmCard = useReferenceStore((s) => s.confirmCard);
+  const discardCard = useReferenceStore((s) => s.discardCard);
+  const [adoption, setAdoption] = useState<ConsensusAdoption>(card.adoption);
+  const [choice, setChoice] = useState<number>(-1); // -1 = 본 해석
+  const readings = [card.reading, ...card.alternatives.map((a) => a.reading)];
+  return (
+    <li data-testid={`consensus-pending-${card.cardId}`} className="rounded-sm border border-amber-300 bg-amber-50/60 p-1.5 space-y-1">
+      <div className="flex items-center gap-1.5">
+        <span className="font-mono text-[10px] px-1 rounded-xs bg-amber-200 text-amber-900">{card.layer}</span>
+        <span className="text-[10px] text-slate-500">{scopeLabel(card.scope)}</span>
+        <span className="ml-auto text-[9px] text-amber-700">AI 제안</span>
+      </div>
+      {readings.map((text, i) => (
+        <label key={i} className={`flex gap-1 text-[11px] leading-snug ${readings.length > 1 ? "cursor-pointer" : ""}`}>
+          {readings.length > 1 && (
+            <input
+              type="radio"
+              className="mt-0.5"
+              checked={choice === i - 1}
+              onChange={() => setChoice(i - 1)}
+              data-testid={`consensus-reading-${card.cardId}-${i}`}
+            />
+          )}
+          <span className={i > 0 ? "text-slate-600" : "text-slate-800"}>
+            {i > 0 && <span className="text-[9px] text-slate-400 mr-1">대안 {i}</span>}
+            {text}
+          </span>
+        </label>
+      ))}
+      <div className="flex items-center gap-1.5">
+        <AdoptionPicker value={adoption} onChange={setAdoption} testid={`consensus-adoption-${card.cardId}`} />
+        <button
+          type="button"
+          data-testid={`consensus-confirm-${card.cardId}`}
+          onClick={() => void confirmCard(refId, card.cardId, { adoption, alternative: choice >= 0 ? choice : undefined })}
+          className="ml-auto inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-sm bg-amber-600 text-white text-[10px] font-bold hover:bg-amber-700 cursor-pointer"
+        >
+          <Check className="w-2.5 h-2.5" /> 확정
+        </button>
+        <button
+          type="button"
+          onClick={() => discardCard(refId, card.cardId)}
+          className="px-1 py-0.5 rounded-sm text-[10px] text-slate-500 hover:text-rose-700 cursor-pointer"
+          title="이 제안 버리기"
+        >
+          버림
+        </button>
+      </div>
+    </li>
+  );
+};
+
+/**
+ * 해석 합의 — 같은 레퍼런스도 사람마다 다르게 읽고, 일부분만 따를 수 있다.
+ * AI 가 낸 해석 카드를 사용자가 채택 강도(따름 · 참고만 · 안 따름)와 해석(본 해석 · 대안)을 골라 확정하면,
+ * 이후 AI 는 다시 해석하지 않고 확정 카드를 따른다.
+ */
+const ConsensusPanel: React.FC<{ entry: BoundReference }> = ({ entry }) => {
+  const pending = useReferenceStore((s) => s.pendingCards[entry.refId] ?? EMPTY_CARDS);
+  const setCardAdoption = useReferenceStore((s) => s.setCardAdoption);
+  const removeCard = useReferenceStore((s) => s.removeCard);
+  const [open, setOpen] = useState(true);
+  const confirmed = entry.consensus ?? EMPTY_CARDS;
+  if (confirmed.length === 0 && pending.length === 0) return null;
+  return (
+    <div data-testid="reference-consensus" className="border-b border-slate-200 bg-white shrink-0 max-h-[40%] overflow-auto">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full px-2.5 py-1 flex items-center gap-1.5 text-[10px] text-slate-600 hover:bg-slate-50 cursor-pointer"
+      >
+        <Sparkles className="w-3 h-3 text-amber-600" />
+        <span className="font-bold text-slate-800">해석 합의</span>
+        <span>확정 {confirmed.length}</span>
+        {pending.length > 0 && <span className="px-1 rounded-xs bg-amber-100 text-amber-800">확정 대기 {pending.length}</span>}
+        {open ? <ChevronUp className="w-3 h-3 ml-auto" /> : <ChevronDown className="w-3 h-3 ml-auto" />}
+      </button>
+      {open && (
+        <ul className="px-2.5 pb-2 space-y-1.5">
+          {pending.map((card) => (
+            <PendingCardRow key={card.cardId} refId={entry.refId} card={card} />
+          ))}
+          {confirmed.map((card) => (
+            <li key={card.cardId} data-testid={`consensus-card-${card.cardId}`} className="rounded-sm border border-slate-200 p-1.5 space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-[10px] px-1 rounded-xs bg-slate-100 text-slate-700">{card.layer}</span>
+                <span className="text-[10px] text-slate-500">{scopeLabel(card.scope)}</span>
+                <AdoptionPicker
+                  value={card.adoption}
+                  onChange={(a) => void setCardAdoption(entry.refId, card.cardId, a)}
+                  testid={`consensus-adoption-${card.cardId}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => void removeCard(entry.refId, card.cardId)}
+                  className="ml-auto p-0.5 text-slate-400 hover:text-rose-700 cursor-pointer"
+                  title="이 합의 지우기"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+              <p className="text-[11px] leading-snug text-slate-800">{card.reading}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
@@ -191,7 +340,19 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
   );
 
   // AI 칩 · 핀 클릭으로 들어온 초점 → 그 쪽으로 스크롤
-  const focus = useReferenceRegionStore((s) => (s.focus?.refId === refId ? s.focus : null));
+  const regionFocus = useReferenceRegionStore((s) => (s.focus?.refId === refId ? s.focus : null));
+  const pinFocus = useMemo(() => {
+    if (focusedPin?.refId === refId && focusedPin.page) {
+      return {
+        refId,
+        page: focusedPin.page,
+        box: focusedPin.bbox ?? [0, 0, 60, 1000],
+        at: focusedPin.at,
+      };
+    }
+    return null;
+  }, [focusedPin, refId]);
+  const focus = regionFocus ?? pinFocus;
   useEffect(() => {
     if (!focus) return;
     let attempts = 0;
@@ -348,6 +509,7 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
       </header>
 
       <LayerStrip entry={entry} />
+      <ConsensusPanel entry={entry} />
 
       <div
         className="flex-1 w-full h-full overflow-hidden flex flex-col relative min-h-0 select-text"
@@ -1069,7 +1231,7 @@ export const ReferenceSplitViewport: React.FC = () => {
 
   const { onResizeStart } = useDragResize({ axis: "x", size: splitWidth, onResize: setSplitWidth });
 
-  const isOpen = refPlacement === "split" || openReferenceIds.length > 0;
+  const isOpen = refPlacement === "split" || (refPlacement !== "left-tab" && openReferenceIds.length > 0);
   if (!isOpen) return null;
 
   if (refSplitCollapsed) {

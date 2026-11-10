@@ -44,11 +44,35 @@ export interface ReferencePin {
   createdAt: number;
 }
 
+/** 해석 카드의 채택 강도 — 따름 · 참고만 · 따르지 않음 */
+export type ConsensusAdoption = "follow" | "consult" | "exclude";
+
+/**
+ * 해석 카드 — 이 레퍼런스의 이 범위(scope)에서 이 층위(layer)의 결정을 이렇게 읽고(reading), 이 강도로 따른다.
+ * AI 가 제안(status "proposed")하고 사용자가 확정(status "confirmed")하면 프로젝트 합의가 된다.
+ */
+export interface ConsensusCard {
+  cardId: string;
+  refId?: string;
+  layer: string;
+  scope: string;
+  adoption: ConsensusAdoption;
+  reading: string;
+  evidence: string[];
+  alternatives: { reading: string; evidence?: string[] }[];
+  measures?: Record<string, unknown>;
+  status?: "proposed" | "confirmed";
+  by?: string;
+  at?: number;
+}
+
 /** 프로젝트에 연결된 레퍼런스 (순서 = 화면의 참조 번호). `layers` 에 없는 층위는 켜진 것으로 본다. */
 export interface BoundReference {
   refId: string;
   enabled: boolean;
   layers: Record<string, boolean>;
+  /** 사용자가 확정한 해석 카드 (프로젝트 합의) */
+  consensus?: ConsensusCard[];
   item: ReferenceItem;
 }
 

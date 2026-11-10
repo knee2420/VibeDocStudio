@@ -1,0 +1,26 @@
+{
+ "_doc": "자료 지도 · 묶음 분류 어휘 — 서식/예시 · 초안 · 날짜 폴더",
+ "scaffoldDir": {
+  "pattern": "(^|/)_?(templates?|examples?|samples?|양식|템플릿|예시)/",
+  "flags": "i"
+ },
+ "scaffoldName": {
+  "pattern": "^(template|템플릿|양식|sample|example|예시)([_\\s.-]|$)|[_\\s.-](template|템플릿|양식|sample|example|예시)$|!\\(Template\\)",
+  "flags": "i"
+ },
+ "draft": {
+  "pattern": "검토\\s*중|초안|작성\\s*중|미확정|draft|wip",
+  "flags": "i"
+ },
+ "dateFolder": {
+  "pattern": "^\\d{2}\\.\\d{2}\\.\\d{2}$|^\\d{4}-\\d{2}-\\d{2}$|^\\d{4}\\.\\d{2}\\.\\d{2}$"
+ },
+ "draftName": {
+  "pattern": "초안|draft",
+  "flags": "i"
+ },
+ "scaffoldTypeWord": "템플릿",
+ "shortDateFolder": {
+  "pattern": "^\\d{2,4}[.-]\\d{2}[.-]\\d{2}\\b"
+ }
+}

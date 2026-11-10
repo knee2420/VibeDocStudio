@@ -8,6 +8,9 @@ export {
   scopeAllowsBlock,
   scopeAllowsPage,
   scopeAllowsSlot,
+  scopeHidesBlock,
+  scopeHidesPage,
+  scopeHidesSlot,
   targetFromBlock,
   targetFromSlots,
 } from "./model/scope";

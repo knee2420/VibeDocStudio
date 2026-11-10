@@ -76,14 +76,32 @@ def extract_citations(text: str) -> list[Citation]:
     return [c for _, c in found]
 
 
-def resolve_resource_id_to_path(target: str, index: Any) -> Optional[str]:
-    """색인을 참조하여 resourceId 를 파일 경로로 변환한다."""
-    if not index or not hasattr(index, "files"):
-        return None
-    for entry in index.files:
-        if getattr(entry, "resource_id", None) == target:
-            return getattr(entry, "abs_path", None)
-    return None
+def extract_citations_from_tool_calls(client_calls: list[tuple[str, dict[str, Any]]]) -> list[Citation]:
+    """에이전트가 호출한 resource.cite 도구 인자에서 인용 목록을 추출한다."""
+    out: list[Citation] = []
+    for name, args in client_calls:
+        if name != "resource.cite" or not isinstance(args, dict):
+            continue
+        raw_list = args.get("citations")
+        if not isinstance(raw_list, list):
+            continue
+        for item in raw_list:
+            if not isinstance(item, dict):
+                continue
+            rid = str(item.get("resourceId") or item.get("path") or "").strip()
+            lines = item.get("lines")
+            if not rid or not isinstance(lines, (list, tuple)) or len(lines) < 2:
+                continue
+            try:
+                s = int(lines[0])
+                e = int(lines[1])
+            except (ValueError, TypeError):
+                continue
+            lbl = str(item.get("label") or rid)
+            out.append(Citation(target=rid, start_line=s, end_line=e, label=lbl))
+    return out
+
+
 
 
 def verify_citations(

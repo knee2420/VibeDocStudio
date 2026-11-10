@@ -207,3 +207,19 @@ export function scopeAllowsPage(doc: VDocDocument, scope: ResolvedScope | null, 
 }
 
 export const isRestricted = (scope: ResolvedScope | null): boolean => !!scope && (!!scope.pageIds || !!scope.slotIds);
+
+/**
+ * 읽기에서 숨기는 페이지인가. 범위는 '고칠 범위'라서 읽기는 막지 않는다 —
+ * 예외는 '문서 전체' 모드에서 사용자가 직접 뺀 페이지 (보지도 고치지도 않게 한 것)뿐이다.
+ */
+export function scopeHidesPage(doc: VDocDocument, scope: ResolvedScope | null, pageId: string): boolean {
+  return !!scope && scope.mode === "document" && !scopeAllowsPage(doc, scope, pageId);
+}
+
+export function scopeHidesSlot(doc: VDocDocument, scope: ResolvedScope | null, slotId: string): boolean {
+  return !!scope && scope.mode === "document" && !scopeAllowsSlot(doc, scope, slotId);
+}
+
+export function scopeHidesBlock(doc: VDocDocument, scope: ResolvedScope | null, blockId: string): boolean {
+  return !!scope && scope.mode === "document" && !scopeAllowsBlock(doc, scope, blockId);
+}

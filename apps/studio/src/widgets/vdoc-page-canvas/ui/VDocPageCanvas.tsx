@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowUpLeft, Columns } from "lucide-react";
+import { ArrowUpLeft } from "lucide-react";
 
 import { MemoVDocPageSheet, WindowedPageChunker } from "@vibe/slot-canvas";
 import { useActiveSlotEditorStore, type SlotAiAction } from "@vibe/slot-editor";
@@ -8,20 +8,17 @@ import type { BackdataChunk, VDocSlot } from "@vibe/vdoc-schema";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
-import { selectCurrentReferenceId, useReferenceStore } from "@/entities/reference-manager";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachToComposer, referenceTextRef } from "@/features/ai-workspace";
 import { buildSlotAiActionPrompt, SlotInlineComposerHost } from "@/features/compose-slot-ai";
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
-import { StressPagesToggleButton } from "@/features/simulate-large-document";
 import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes";
 import { getOutlineProjection, outlineCommands, useOutlineSelector } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
 
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
 import { AiStagingDrawer } from "./AiStagingDrawer";
-import { Phase3FocusBar } from "./Phase3FocusBar";
 import { SlotFrame } from "./SlotFrame";
 import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
@@ -50,35 +47,6 @@ const OutlineHoverHighlight: React.FC = () => {
   );
 };
 
-/** 캔버스 위 도구 줄: 개발용 시뮬레이션 · 참조 작업창 열기. */
-const CanvasUtilityBar: React.FC = () => {
-  const referenceId = useReferenceStore(selectCurrentReferenceId);
-  const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceIds.length);
-  const openReference = useWorkspaceSessionStore((s) => s.openReference);
-  const closeAllReferences = useWorkspaceSessionStore((s) => s.closeAllReferences);
-  const isOpen = openReferenceCount > 0;
-
-  return (
-    <div className="w-[794px] max-w-[794px] mx-auto mb-2.5 flex items-center justify-between gap-2 text-xs">
-      <div className="flex items-center gap-2">
-        <StressPagesToggleButton />
-      </div>
-      <button
-        type="button"
-        data-testid="canvas-split-ref-btn"
-        disabled={!isOpen && !referenceId}
-        onClick={() => (isOpen ? closeAllReferences() : referenceId && openReference(referenceId))}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition disabled:opacity-40 ${
-          isOpen ? "bg-slate-800 text-white border-slate-800 shadow-2xs" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50 shadow-2xs"
-        }`}
-      >
-        <Columns className="w-3.5 h-3.5" />
-        {isOpen ? "참조 작업창 닫기" : "참조 문서 나란히 비교 (Split View)"}
-      </button>
-    </div>
-  );
-};
-
 /** Phase 3 슬롯 집필 캔버스: A4 페이지 시트를 슬라이딩 윈도우로 그린다. */
 const DraftingCanvas: React.FC = () => {
   const doc = useStudioDocumentStore(selectActiveDocument);
@@ -104,7 +72,6 @@ const DraftingCanvas: React.FC = () => {
   const zoomLevel = useOutlineSelector((p) => p.activeZoomLevel);
   const zoomedNode = useOutlineSelector((p) => p.allNodes.find((n) => n.nodeId === p.rootNodeId));
   const openReferenceCount = useWorkspaceSessionStore((s) => s.openReferenceIds.length);
-  const currentPhaseIsDrafting = useWorkspaceSessionStore((s) => s.currentPhase === "drafting");
 
   // 표 구역 · 블록 · 페이지를 넘는 슬롯 범위 선택 (드래그 · 브라우저 선택)
   const mainRef = React.useRef<HTMLElement>(null);
@@ -182,9 +149,6 @@ const DraftingCanvas: React.FC = () => {
       className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6]"
     >
       <div className={`w-fit min-w-[794px] ${openReferenceCount > 0 ? "ml-2.5 mr-auto" : "mx-auto"} flex flex-col items-center`}>
-        <CanvasUtilityBar />
-        {currentPhaseIsDrafting && <Phase3FocusBar />}
-
         {isPageZoomed && (
           <div
             data-testid="page-zoom-focus-banner"
