@@ -27,6 +27,9 @@ export const gridBlock = defineBlockKind<ColumnsGridBlockDef>({
   insertable: {
     label: "2단 그리드",
     description: "좌우 분할 2단 슬롯",
+    order: 4,
+    shortcut: 4,
+    defaultFrameHeight: 96,
     create: ({ suffix, defaultBackdataRefs = [] }) => {
       const slots = {};
       const left = makeSlot(slots, `slot_col1_${suffix}`, "좌측 컬럼 슬롯", "<p></p>", defaultBackdataRefs);

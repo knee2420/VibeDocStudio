@@ -126,16 +126,27 @@ describe("표 · 새 블록 · AI", () => {
     }
   });
 
-  it("블록 추가 메뉴의 종류는 빈 틀을 만들 수 있다 (슬롯 · 포커스 슬롯 포함)", () => {
+  it("블록 추가 메뉴의 종류는 순서·단축키가 있고 빈 틀을 만들 수 있다", () => {
     const items = listInsertableBlocks();
-    assert.ok(items.length > 0);
+    assert.deepEqual(
+      items.map((item) => item.kind),
+      ["text", "image", "structured-table", "columns-grid", "section-block", "fillable-group"]
+    );
+    assert.deepEqual(
+      items.map((item) => item.shortcut),
+      [1, 2, 3, 4, 5, 6]
+    );
     for (const item of items) {
       const draft = createInsertableBlock(item.kind, { suffix: "conf" });
       assert.equal(draft.block.kind, item.kind);
-      const ids = getBlockKind(draft.block.kind).slotIds(draft.block);
-      assert.ok(ids.length > 0, item.kind);
+      const def = getBlockKind(draft.block.kind);
+      const ids = def.slotIds(draft.block);
       for (const id of ids) assert.ok(draft.slots[id], `${item.kind}: 틀에 없는 슬롯 ${id}`);
-      assert.ok(draft.slots[draft.focusSlotId], `${item.kind}: 포커스 슬롯`);
+      if (draft.focusSlotId) {
+        assert.ok(draft.slots[draft.focusSlotId], `${item.kind}: 포커스 슬롯`);
+      } else {
+        assert.ok(getBlockUnits(draft.block).length > 0, `${item.kind}: 슬롯 없는 블록의 선택 단위`);
+      }
     }
   });
 

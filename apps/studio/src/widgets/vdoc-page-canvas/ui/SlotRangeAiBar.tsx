@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
   PencilLine,
   RotateCcw,
+  Trash2,
   Wand2,
   X,
 } from "lucide-react";
@@ -23,6 +24,8 @@ import { findBlock, getBlockUnits, type VDocDocument } from "@vibe/vdoc-schema";
 
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useKeyLayer } from "@/features/command-bus";
+import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import {
   applySlotMap,
   attachable,
@@ -172,6 +175,7 @@ export const SlotRangeAiBar: React.FC = () => {
       a.slotIds.join("|") === b.slotIds.join("|"));
   if (!sameRange(stableRange.current, computed)) stableRange.current = computed;
   const range = stableRange.current;
+  const { copyUnitRange, deleteUnitRange } = useMutateCanvasBlocks();
   const actions = useRegistryList(aiRuntime.actions).filter((a) => a.surfaces.includes(SLOT_RANGE_SURFACE));
   const run = useInlineAiRun(aiRuntime);
   const [instruction, setInstruction] = React.useState("");
@@ -232,32 +236,57 @@ export const SlotRangeAiBar: React.FC = () => {
 
   const copy = React.useCallback(() => {
     if (!range) return;
-    void navigator.clipboard?.writeText(rangeText(range.unitIds));
+    const text = rangeText(range.unitIds);
+    if (range.source !== "single") {
+      copyUnitRange(range.unitIds, text);
+    } else {
+      void navigator.clipboard?.writeText(text);
+    }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
-  }, [range]);
+  }, [range, copyUnitRange]);
 
-  // Ctrl+C: 편집기 글자 선택이 없으면 고른 칸들을 표 배치대로 복사 · Esc: 펼친 도구를 한 단계씩 접는다
-  React.useEffect(() => {
-    if (!range) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && level !== "icon") {
-        e.stopImmediatePropagation(); // 범위 해제 · 전역 Esc 보다 먼저: 펼친 도구부터 접는다
-        if (level === "ai") run.cancel();
-        setLevel("icon");
-        return;
-      }
-      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "c") return;
-      if (range.source === "single") return; // 슬롯 하나: 편집기 · 브라우저 복사를 그대로
-      if (range.source === "native" && window.getSelection()?.toString()) return; // 브라우저 복사를 그대로
+  const canDeleteRange = Boolean(range && (range.source !== "single" || selectedBlockId));
+
+  const deleteSelection = React.useCallback(() => {
+    if (!range || !canDeleteRange) return;
+    if (deleteUnitRange(range.unitIds)) {
+      document.querySelector<HTMLElement>("[data-vdoc-canvas-main]")?.focus({ preventScroll: true });
+    }
+  }, [range, canDeleteRange, deleteUnitRange]);
+
+  // 펼친 AI 바를 Esc 로 먼저 접고, 범위 선택 Ctrl+C(TSV 복사) · Delete(범위 삭제)는 범위 선택 계층에서 처리한다.
+  useKeyLayer(
+    "editor",
+    (e) => {
+      if (e.key !== "Escape" || level === "icon") return false;
+      e.preventDefault();
+      if (level === "ai") run.cancel();
+      setLevel("icon");
+      return true;
+    },
+    Boolean(range) && level !== "icon"
+  );
+
+  useKeyLayer(
+    "rangeSelection",
+    (e) => {
+      if (!range || range.source === "single") return false;
       const active = document.activeElement as HTMLElement | null;
-      if (active?.closest("input, textarea, [data-testid='ai-composer-panel']")) return;
+      if (active?.closest("input, textarea, [data-testid='ai-composer-panel']")) return false;
+      if (e.key === "Delete" && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
+        deleteSelection();
+        return true;
+      }
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "c") return false;
+      if (range.source === "native" && window.getSelection()?.toString()) return false;
       e.preventDefault();
       copy();
-    };
-    window.addEventListener("keydown", onKey, true);
-    return () => window.removeEventListener("keydown", onKey, true);
-  }, [range, level, copy, run]);
+      return true;
+    },
+    Boolean(range && range.source !== "single")
+  );
 
   // 메뉴는 바깥을 누르면 접힌다 (AI 작업창은 작업 중일 수 있어 그대로 둔다).
   React.useEffect(() => {
@@ -374,6 +403,20 @@ export const SlotRangeAiBar: React.FC = () => {
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <ClipboardCopy className="w-3.5 h-3.5 text-gray-500" />}
                 {copied ? "복사됨" : "복사"}
               </button>
+              {canDeleteRange && (
+                <>
+                  <span className="mx-0.5 h-4 w-px bg-[#eaeaea]" />
+                  <button
+                    type="button"
+                    data-testid="slot-range-delete"
+                    onClick={deleteSelection}
+                    className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] text-rose-600 hover:bg-rose-50 cursor-pointer"
+                    title="선택 영역 삭제 (Delete)"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> 삭제
+                  </button>
+                </>
+              )}
             </div>
           )}
 

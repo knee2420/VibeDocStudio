@@ -28,6 +28,9 @@ const StudioWorkspace: React.FC = () => {
     onCopySelectedBlock: blocks.copySelectedBlock,
     onPasteBlock: () => blocks.pasteBlock(),
     onDeleteSelectedBlock: blocks.deleteSelectedBlock,
+    onFocusCanvas: () => {
+      document.querySelector<HTMLElement>("[data-vdoc-canvas-main]")?.focus({ preventScroll: true });
+    },
   });
   useZoomHierarchySync();
   usePdfScaffoldSync();

@@ -58,21 +58,25 @@ export const CornerResizeMarkers: React.FC<CornerResizeMarkersProps> = ({
     <>
       {/* Top-Left */}
       <div
+        data-resize-handle=""
         style={{ ...markerStyle, top: "-4px", left: "-4px", cursor: "nwse-resize" }}
         onPointerDown={(e) => startDrag(e, "nw")}
       />
       {/* Top-Right */}
       <div
+        data-resize-handle=""
         style={{ ...markerStyle, top: "-4px", right: "-4px", cursor: "nesw-resize" }}
         onPointerDown={(e) => startDrag(e, "ne")}
       />
       {/* Bottom-Right */}
       <div
+        data-resize-handle=""
         style={{ ...markerStyle, bottom: "-4px", right: "-4px", cursor: "nwse-resize" }}
         onPointerDown={(e) => startDrag(e, "se")}
       />
       {/* Bottom-Left */}
       <div
+        data-resize-handle=""
         style={{ ...markerStyle, bottom: "-4px", left: "-4px", cursor: "nesw-resize" }}
         onPointerDown={(e) => startDrag(e, "sw")}
       />

@@ -14,6 +14,25 @@ export const imageBlock = defineBlockKind<ImageBlockDef>({
     ctx.emitStatic(ctx.blockTitle || "이미지", "이미지");
   },
   layout: { resizable: true },
+  insertable: {
+    label: "이미지",
+    description: "이미지 · 로고 추가",
+    order: 2,
+    shortcut: 2,
+    defaultFrameHeight: 180,
+    create: ({ suffix }) => ({
+      block: {
+        blockId: `blk_img_${suffix}`,
+        kind: "image",
+        title: "이미지",
+        src: "",
+        alt: "이미지",
+        align: "center",
+        width: "320px",
+      },
+      slots: {},
+    }),
+  },
   ai: {
     describe: (b) => [
       `이미지 주소: ${b.src.startsWith("data:") ? "(내장 이미지)" : b.src.slice(0, 200)}`,

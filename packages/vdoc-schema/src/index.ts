@@ -5,6 +5,7 @@ export * from "./evidence";
 export * from "./layout-constants";
 export * from "./table-ops";
 export * from "./block-ops";
+export * from "./block-placement";
 export * from "./page-factory";
 export * from "./project-manifest";
 export * from "./outline-naming";

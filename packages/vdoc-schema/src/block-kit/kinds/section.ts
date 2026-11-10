@@ -26,6 +26,9 @@ export const sectionBlock = defineBlockKind<SectionBlockDef>({
   insertable: {
     label: "텍스트 섹션",
     description: "제목 + 본문 단락",
+    order: 5,
+    shortcut: 5,
+    defaultFrameHeight: 120,
     create: ({ suffix, defaultBackdataRefs = [] }) => {
       const slots = {};
       const heading = makeSlot(slots, `slot_sec_h_${suffix}`, "섹션 제목", "<h2>새 섹션</h2>", []);

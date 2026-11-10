@@ -13,6 +13,10 @@ import { getBlockUnits, LAYOUT_BLOCK_KINDS, listBlockKinds, type LayoutBlock } f
 
 import { seedDocuments } from "../../vdoc-schema/tests/fixtures";
 import { getBlockView, hasBlockView, type BlockRenderContext } from "../src/block-views";
+import { AlignmentGuides } from "../src/AlignmentGuides";
+import { InsertCursorButton } from "../src/InsertCursorButton";
+import { InsertMenu } from "../src/InsertMenu";
+import { ImageBlockView } from "../src/blocks/ImageBlockView";
 
 /** 페이지 시트 대신 쓰는 최소 연결: 슬롯은 표시만 붙인 빈 상자로 그린다. */
 function stubContext(page: BlockRenderContext["page"], slots: BlockRenderContext["slots"]): BlockRenderContext {
@@ -88,5 +92,38 @@ describe("블록 뷰", () => {
         }
       }
     }
+  });
+
+  it("정렬 가이드 · 삽입 메뉴(1~6) · 빈 이미지 플레이스홀더를 오류 없이 그린다", () => {
+    const guidesHtml = renderToStaticMarkup(
+      React.createElement(AlignmentGuides, {
+        guides: [
+          { axis: "vertical", pos: 100, start: 0, end: 500 },
+          { axis: "horizontal", pos: 240, start: 50, end: 700 },
+        ],
+      })
+    );
+    assert.ok(guidesHtml.includes('data-guide-axis="vertical"'));
+    assert.ok(guidesHtml.includes('data-guide-axis="horizontal"'));
+
+    const menuHtml = renderToStaticMarkup(
+      React.createElement(InsertMenu, { y: 120, onSelect: () => undefined, onClose: () => undefined })
+    );
+    for (const label of ["텍스트", "이미지", "표", "2단 그리드", "텍스트 섹션", "할당형 입력 필드"]) {
+      assert.ok(menuHtml.includes(label), `삽입 메뉴 항목 누락: ${label}`);
+    }
+
+    const cursorBtnHtml = renderToStaticMarkup(
+      React.createElement(InsertCursorButton, { y: 120, menuOpen: false, onToggleMenu: () => undefined })
+    );
+    assert.ok(cursorBtnHtml.includes("data-insert-gutter"));
+    assert.ok(cursorBtnHtml.includes("data-insert-cursor-btn"));
+
+    const emptyImgHtml = renderToStaticMarkup(
+      React.createElement(ImageBlockView, {
+        block: { blockId: "img_1", kind: "image", title: "이미지", src: "" },
+      })
+    );
+    assert.ok(emptyImgHtml.includes("이미지를 추가하세요"));
   });
 });

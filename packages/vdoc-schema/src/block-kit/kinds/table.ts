@@ -17,6 +17,9 @@ export const tableBlock = defineBlockKind<StructuredTableBlockDef>({
   insertable: {
     label: "표",
     description: "행/열 데이터 테이블",
+    order: 3,
+    shortcut: 3,
+    defaultFrameHeight: 140,
     create: ({ suffix, defaultBackdataRefs = [] }) => {
       const slots = {};
       const h1 = makeSlot(slots, `slot_th1_${suffix}`, "표 헤더 1", "<p>항목</p>", []);

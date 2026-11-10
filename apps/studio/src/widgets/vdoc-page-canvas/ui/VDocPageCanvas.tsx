@@ -11,6 +11,7 @@ import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-do
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachToComposer, referenceTextRef } from "@/features/ai-workspace";
+import { studioKeyLayers } from "@/features/command-bus";
 import { buildSlotAiActionPrompt, SlotInlineComposerHost } from "@/features/compose-slot-ai";
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
@@ -81,6 +82,16 @@ const DraftingCanvas: React.FC = () => {
   const getMain = React.useCallback(() => mainRef.current, []);
   useCanvasRangeSelection(getMain);
 
+  // 블록 선택 상태가 되면 캔버스 루트에 포커스를 주어 Ctrl+C / Ctrl+V / Delete 가 바로 동작하게 한다.
+  React.useEffect(() => {
+    if (!selectedBlockId || composerOpenSlotId) return;
+    const activeEl = document.activeElement as HTMLElement | null;
+    if (activeEl?.isContentEditable) activeEl.blur();
+    if (activeEl !== mainRef.current) {
+      mainRef.current?.focus({ preventScroll: true });
+    }
+  }, [selectedBlockId, composerOpenSlotId]);
+
   // 페이지 시트에 넘기는 콜백은 모두 고정 참조여야 MemoVDocPageSheet 의 메모가 유지된다.
   const onSelectSlot = useStableCallback((slotId: string) => {
     setSelectedSlotId(slotId);
@@ -127,7 +138,12 @@ const DraftingCanvas: React.FC = () => {
   const onMoveBlockTo = useStableCallback(blocks.moveBlockTo);
   const onDeleteBlock = useStableCallback(blocks.deleteBlock);
   const onInsertBlock = useStableCallback(blocks.addBlockToPage);
+  const onInsertBlockAtY = useStableCallback(blocks.insertFromMenu);
   const onCopyBlock = useStableCallback(blocks.copyBlock);
+  const isExternalRangeActive = React.useCallback(() => {
+    const r = useSlotSelectionStore.getState().slotRange;
+    return Boolean(r && !r.withinTable);
+  }, []);
   const onDuplicateBlock = useStableCallback(blocks.duplicateBlock);
   const onToggleBlockLock = useStableCallback(blocks.toggleBlockLock);
   const onMoveBlockFrame = useStableCallback(blocks.moveBlockFrame);
@@ -159,8 +175,10 @@ const DraftingCanvas: React.FC = () => {
   return (
     <main
       ref={mainRef}
+      tabIndex={-1}
+      data-vdoc-canvas-main=""
       onClick={() => clearSelection()}
-      className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6]"
+      className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6] focus:outline-none"
     >
       <div className={`w-fit min-w-[794px] ${openReferenceCount > 0 ? "ml-2.5 mr-auto" : "mx-auto"} flex flex-col items-center`}>
         {isPageZoomed && (
@@ -206,6 +224,8 @@ const DraftingCanvas: React.FC = () => {
                 onSelectPage={setActivePageId}
                 onSelectBlock={onSelectBlock}
                 onSelectSlot={onSelectSlot}
+                registerKeyLayer={studioKeyLayers.register}
+                isExternalRangeActive={isExternalRangeActive}
                 onToggleComposerForSlot={toggleComposerForSlot}
                 onOpenBackdataDrawer={onOpenBackdataDrawer}
                 onUpdateSlotContent={onUpdateSlotContent}
@@ -213,6 +233,7 @@ const DraftingCanvas: React.FC = () => {
                 onDeleteBlock={onDeleteBlock}
                 onMoveBlockTo={onMoveBlockTo}
                 onInsertBlock={onInsertBlock}
+                onInsertBlockAtY={onInsertBlockAtY}
                 onCopyBlock={onCopyBlock}
                 onDuplicateBlock={onDuplicateBlock}
                 onToggleBlockLock={onToggleBlockLock}

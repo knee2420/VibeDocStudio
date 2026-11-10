@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import type { TableCellRange } from "@vibe/vdoc-schema";
+import { findBlockBySlotId, type TableCellRange, type VDocDocument } from "@vibe/vdoc-schema";
 
 /** Multi-cell range or whole-table selection on the canvas, for the table-edit toolbar. */
 export interface TableSelection {
@@ -53,6 +53,8 @@ export interface SlotSelectionState {
   setSlotRange: (range: SlotRangeSelection | null) => void;
   setSelectedBlockId: (blockId: string | null) => void;
   setSelectedSlotId: (slotId: string | null) => void;
+  /** 편집 중인 슬롯이 속한 블록을 선택 상태로 승격한다 (`Esc` 1단계). 소유 블록이 없으면 선택을 비운다. */
+  selectOwnerBlockFromSlot: (doc: VDocDocument | undefined) => string | null;
   clearSelection: () => void;
   setComposerOpenSlotId: (slotId: string | null) => void;
   toggleComposerForSlot: (slotId: string) => void;
@@ -60,7 +62,7 @@ export interface SlotSelectionState {
   setTableSelection: (selection: TableSelection | null) => void;
 }
 
-export const useSlotSelectionStore = create<SlotSelectionState>((set) => ({
+export const useSlotSelectionStore = create<SlotSelectionState>((set, get) => ({
   selectedBlockId: null,
   selectedSlotId: null,
   composerOpenSlotId: null,
@@ -69,7 +71,13 @@ export const useSlotSelectionStore = create<SlotSelectionState>((set) => ({
   tableSelection: null,
   slotRange: null,
   setSlotRange: (range) => set({ slotRange: range && range.unitIds.length > 1 ? range : null }),
-  setSelectedBlockId: (blockId) => set({ selectedBlockId: blockId, selectedSlotId: null, slotRange: null }),
+  setSelectedBlockId: (blockId) =>
+    set((s) => ({
+      selectedBlockId: blockId,
+      selectedSlotId: null,
+      slotRange: null,
+      tableSelection: s.tableSelection && s.tableSelection.blockId === blockId ? s.tableSelection : null,
+    })),
   setSelectedSlotId: (slotId) =>
     set((s) => ({
       selectedSlotId: slotId,
@@ -77,8 +85,32 @@ export const useSlotSelectionStore = create<SlotSelectionState>((set) => ({
       // 범위 안의 슬롯을 누른 것(드래그 끝의 클릭)은 범위를 유지한다.
       slotRange: slotId && s.slotRange?.slotIds.includes(slotId) ? s.slotRange : null,
     })),
+  selectOwnerBlockFromSlot: (doc) => {
+    const slotId = get().selectedSlotId;
+    if (!doc || !slotId) return null;
+    const loc = findBlockBySlotId(doc, slotId);
+    if (!loc) {
+      get().clearSelection();
+      return null;
+    }
+    set((s) => ({
+      selectedBlockId: loc.block.blockId,
+      selectedSlotId: null,
+      slotRange: null,
+      tableSelection: s.tableSelection && s.tableSelection.blockId === loc.block.blockId ? s.tableSelection : null,
+    }));
+    return loc.block.blockId;
+  },
   clearSelection: () =>
-    set({ selectedBlockId: null, selectedSlotId: null, composerOpenSlotId: null, composerPrompt: null, composerRange: null, slotRange: null }),
+    set({
+      selectedBlockId: null,
+      selectedSlotId: null,
+      composerOpenSlotId: null,
+      composerPrompt: null,
+      composerRange: null,
+      tableSelection: null,
+      slotRange: null,
+    }),
   setComposerOpenSlotId: (slotId) => set({ composerOpenSlotId: slotId, composerPrompt: null, composerRange: null }),
   toggleComposerForSlot: (slotId) =>
     set((state) => ({

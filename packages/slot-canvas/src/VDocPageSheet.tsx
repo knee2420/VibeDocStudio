@@ -2,21 +2,38 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, Clock, Loader2 } from "lucide-react";
 
 import {
+  A4_PAGE_HEIGHT_PX,
+  A4_PAGE_WIDTH_PX,
+  DEFAULT_SNAP_THRESHOLD_PX,
+  findNearestFlowGap,
   getBlockKind,
   getBlockSlotIds,
+  getDefaultBlockFrameHeight,
+  getPageContentWidth,
   isBlockLocked,
+  isFramedPage,
+  resolvePageMargins,
+  snapFrame,
+  type AlignmentGuideLine,
   type BackdataChunk,
+  type FlowGap,
+  type InsertableBlockKind,
   type LayoutBlock,
+  type SnapRect,
   type TableCommand,
   type VDocPage,
   type VDocSlot,
 } from "@vibe/vdoc-schema";
 import { SlotRichTextEditor, type SlotAiAction } from "@vibe/slot-editor";
 
-import { BlockFrame, type DropEdge, type QuickAddKind } from "./BlockFrame";
+import { AlignmentGuides } from "./AlignmentGuides";
+import type { DropEdge, QuickAddKind } from "./BlockFrame";
+import { InsertCursorButton } from "./InsertCursorButton";
+import { InsertMenu } from "./InsertMenu";
 import { BaseBlockWrapper } from "./base/BaseBlockWrapper";
 import { getBlockView, type BlockRenderContext, type SlotBoxOptions, type TableCellLike } from "./block-views";
 import type { TableSelectionInfo } from "./InteractiveTable";
+import { CanvasKeyLayerContext, type CanvasKeyRegistrar } from "./keyLayer";
 import { ACCENT, BLOCK_DRAG_MIME, DROP_LINE, NEW_BLOCK_DRAG_MIME } from "./tokens";
 
 export interface TableSelectionTarget extends TableSelectionInfo {
@@ -50,6 +67,8 @@ export interface VDocPageSheetProps {
   selectedBlockId?: string | null;
   selectedSlotId: string | null;
   composerOpenSlotId: string | null;
+  registerKeyLayer?: CanvasKeyRegistrar;
+  isExternalRangeActive?: () => boolean;
   onSelectPage: (pageId: string) => void;
   onSelectBlock?: (blockId: string) => void;
   onSelectSlot: (slotId: string) => void;
@@ -60,6 +79,7 @@ export interface VDocPageSheetProps {
   onDeleteBlock: (pageId: string, blockId: string) => void;
   onMoveBlockTo?: (fromPageId: string, blockId: string, toPageId: string, toIndex: number) => void;
   onInsertBlock?: (pageId: string, kind: QuickAddKind, index: number) => void;
+  onInsertBlockAtY?: (pageId: string, y: number, kind: InsertableBlockKind | string, flowGaps?: readonly FlowGap[]) => void;
   onCopyBlock?: (pageId: string, blockId: string) => void;
   onDuplicateBlock?: (pageId: string, blockId: string) => void;
   onToggleBlockLock?: (pageId: string, blockId: string) => void;
@@ -144,6 +164,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   selectedBlockId,
   selectedSlotId,
   composerOpenSlotId,
+  registerKeyLayer,
+  isExternalRangeActive,
   onSelectPage,
   onSelectBlock,
   onSelectSlot,
@@ -152,6 +174,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   onDeleteBlock,
   onMoveBlockTo,
   onInsertBlock,
+  onInsertBlockAtY,
   onCopyBlock,
   onDuplicateBlock,
   onToggleBlockLock,
@@ -174,6 +197,36 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   const inheritsTypography = Boolean(layout);
   const [dropTarget, setDropTarget] = useState<{ blockId: string; edge: DropEdge } | null>(null);
   const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef(page);
+  pageRef.current = page;
+  const [activeGuides, setActiveGuides] = useState<readonly AlignmentGuideLine[]>([]);
+  const activeGuideKeyRef = useRef("");
+  const [cursorTarget, setCursorTarget] = useState<{ y: number; gaps?: FlowGap[] } | null>(null);
+  const [insertMenuState, setInsertMenuState] = useState<{ y: number; gaps?: FlowGap[] } | null>(null);
+  const hoveringInsertBtnRef = useRef(false);
+  const insertMenuOpenRef = useRef(false);
+  insertMenuOpenRef.current = insertMenuState !== null;
+  const hideInsertTimerRef = useRef<number | null>(null);
+
+  const cancelHideInsertCursor = useCallback(() => {
+    if (hideInsertTimerRef.current !== null) {
+      window.clearTimeout(hideInsertTimerRef.current);
+      hideInsertTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleHideInsertCursor = useCallback(() => {
+    cancelHideInsertCursor();
+    hideInsertTimerRef.current = window.setTimeout(() => {
+      hideInsertTimerRef.current = null;
+      if (!hoveringInsertBtnRef.current && !insertMenuOpenRef.current) {
+        setCursorTarget(null);
+      }
+    }, 150);
+  }, [cancelHideInsertCursor]);
+
+  useEffect(() => () => cancelHideInsertCursor(), [cancelHideInsertCursor]);
 
   useEffect(() => {
     const clear = () => {
@@ -315,6 +368,9 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     tableBindings: (sectionId) => ({
       editable,
       selectedSlotId,
+      blockSelected: selectedBlockId === block.blockId,
+      onSelectBlock: () => onSelectBlock?.(block.blockId),
+      isExternalRangeActive,
       onSelectSlot,
       onCommand: (cmd) => onTableCommand?.(page.pageId, block.blockId, sectionId, cmd),
       onDeleteTable: () => onDeleteBlock(page.pageId, block.blockId),
@@ -406,6 +462,94 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     return null;
   }, [selectedBlockId, selectedSlotId, page.blocks]);
 
+  const snapBlockMove = useCallback((movingBlock: LayoutBlock, dx: number, dy: number, altKey: boolean) => {
+    if (!movingBlock.frame) return { dx, dy };
+    const sheetEl = sheetRef.current;
+    const scale = sheetEl ? sheetEl.getBoundingClientRect().width / A4_PAGE_WIDTH_PX || 1 : 1;
+    const measureHeight = (id: string, kind: string) => {
+      const el = sheetEl?.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
+      if (el) return el.getBoundingClientRect().height / scale;
+      return getDefaultBlockFrameHeight(kind);
+    };
+    const movingRect: SnapRect = {
+      x: movingBlock.frame.x + dx,
+      y: movingBlock.frame.y + dy,
+      w: movingBlock.frame.w,
+      h: movingBlock.frame.h ?? measureHeight(movingBlock.blockId, movingBlock.kind),
+    };
+    const currentPage = pageRef.current;
+    const others: SnapRect[] = [];
+    for (const b of currentPage.blocks) {
+      if (!b.frame || b.blockId === movingBlock.blockId) continue;
+      others.push({
+        x: b.frame.x,
+        y: b.frame.y,
+        w: b.frame.w,
+        h: b.frame.h ?? measureHeight(b.blockId, b.kind),
+      });
+    }
+    const pageBox = {
+      width: A4_PAGE_WIDTH_PX,
+      height: A4_PAGE_HEIGHT_PX,
+      margin: resolvePageMargins(currentPage),
+    };
+    const snapped = snapFrame(movingRect, others, pageBox, DEFAULT_SNAP_THRESHOLD_PX, altKey);
+    const guideKey = snapped.guides.map((g) => `${g.axis}:${g.pos}:${g.start}:${g.end}`).join("|");
+    if (guideKey !== activeGuideKeyRef.current) {
+      activeGuideKeyRef.current = guideKey;
+      setActiveGuides(snapped.guides);
+    }
+    return { dx: snapped.x - movingBlock.frame.x, dy: snapped.y - movingBlock.frame.y };
+  }, []);
+
+  const endSnapMove = useCallback(() => {
+    if (activeGuideKeyRef.current) {
+      activeGuideKeyRef.current = "";
+      setActiveGuides([]);
+    }
+  }, []);
+
+  const collectFlowGaps = useCallback((): FlowGap[] => {
+    const sheetEl = sheetRef.current;
+    const currentPage = pageRef.current;
+    const margins = resolvePageMargins(currentPage);
+    if (!sheetEl) return [{ index: 0, y: margins.top + 16 }];
+    const sheetRect = sheetEl.getBoundingClientRect();
+    const scale = sheetRect.width / A4_PAGE_WIDTH_PX || 1;
+    const gapPx = currentPage.layout?.blockGap ?? (currentPage.hideHeaderFooter ? 20 : 24);
+    const flowEls = [...sheetEl.querySelectorAll<HTMLElement>("[data-flow-block-index]")];
+    if (flowEls.length === 0) return [{ index: 0, y: margins.top + 16 }];
+
+    const boxes = flowEls.map((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        index: Number(el.dataset.flowBlockIndex ?? 0),
+        top: (r.top - sheetRect.top) / scale,
+        bottom: (r.bottom - sheetRect.top) / scale,
+      };
+    });
+    const gaps: FlowGap[] = [];
+    gaps.push({
+      index: boxes[0].index,
+      y: Math.max(Math.max(8, margins.top - 12), Math.round(boxes[0].top - gapPx / 2)),
+    });
+    for (let i = 0; i < boxes.length - 1; i++) {
+      gaps.push({
+        index: boxes[i + 1].index,
+        y: Math.round((boxes[i].bottom + boxes[i + 1].top) / 2),
+      });
+    }
+    gaps.push({
+      index: currentPage.blocks.length,
+      y: Math.min(A4_PAGE_HEIGHT_PX - 16, Math.round(boxes[boxes.length - 1].bottom + gapPx / 2)),
+    });
+    return gaps;
+  }, []);
+
+  const pageFramed = isFramedPage(page);
+  const pageMargins = resolvePageMargins(page);
+  const pageContentWidth = getPageContentWidth(page);
+
   const renderFramedOrFlowBlock = (block: LayoutBlock, bIdx: number) => {
     const model = getBlockKind(block.kind);
     const frame = block.frame;
@@ -414,6 +558,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         block={block}
         editable={editable}
         selected={selectedBlockId === block.blockId}
+        editing={Boolean(selectedSlotId && activeBlockId === block.blockId && selectedBlockId !== block.blockId)}
         resizable={Boolean(model.layout?.resizable) || Boolean(frame)}
         hasOwnGrip={Boolean(model.layout?.ownGrip) && !frame}
         locked={isBlockLocked(block, slots)}
@@ -427,7 +572,6 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
           if (dropTarget?.blockId !== block.blockId || dropTarget.edge !== edge) setDropTarget({ blockId: block.blockId, edge });
         }}
         onDropEdge={(e, edge) => !frame && handleDrop(e, edge === "before" ? bIdx : bIdx + 1)}
-        onQuickAdd={(kind) => onInsertBlock?.(page.pageId, kind, bIdx + 1)}
         onMoveUp={() => onMoveBlock(page.pageId, bIdx, -1)}
         onMoveDown={() => onMoveBlock(page.pageId, bIdx, 1)}
         onCopy={onCopyBlock ? () => onCopyBlock(page.pageId, block.blockId) : undefined}
@@ -435,6 +579,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         onToggleLock={() => onToggleBlockLock?.(page.pageId, block.blockId)}
         onDelete={() => onDeleteBlock(page.pageId, block.blockId)}
         onFreeMove={frame ? (dx, dy) => onMoveBlockFrame?.(page.pageId, block.blockId, frame.x + dx, frame.y + dy) : undefined}
+        onSnapMove={frame ? (dx, dy, altKey) => snapBlockMove(block, dx, dy, altKey) : undefined}
+        onEndSnapMove={frame ? endSnapMove : undefined}
         onResizeFrame={(dw, dh) => onResizeBlockFrame?.(page.pageId, block.blockId, dw, dh)}
       >
         {renderBlockBody(block)}
@@ -472,13 +618,96 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   };
 
   return (
-    <section id={`vdoc-page-${page.pageId}`} onClick={() => onSelectPage(page.pageId)} className="w-[794px] min-w-[794px] mx-auto">
+    <CanvasKeyLayerContext.Provider value={registerKeyLayer ?? null}>
+      <section id={`vdoc-page-${page.pageId}`} onClick={() => onSelectPage(page.pageId)} className="w-[794px] min-w-[794px] mx-auto">
       {/* A4 sheet: 794 × 1123 px at 96 dpi. The ring does not take layout space, so frames map 1:1. */}
       <div
+        ref={sheetRef}
+        onPointerMove={(e) => {
+          if (!editable || draggingBlockId || insertMenuState !== null) return;
+          if (hoveringInsertBtnRef.current) return;
+          if (typeof document !== "undefined" && document.body.classList.contains("vdoc-range-dragging")) return;
+          cancelHideInsertCursor();
+          const sheetEl = sheetRef.current;
+          if (!sheetEl) return;
+          const rect = sheetEl.getBoundingClientRect();
+          const scale = rect.width / A4_PAGE_WIDTH_PX || 1;
+          const rawY = Math.round((e.clientY - rect.top) / scale);
+          if (rawY < 0 || rawY > rect.height / scale) return;
+          if (pageFramed) {
+            const clampedY = Math.max(pageMargins.top, Math.min(A4_PAGE_HEIGHT_PX - Math.max(24, pageMargins.bottom), rawY));
+            setCursorTarget((prev) => (prev && Math.abs(prev.y - clampedY) < 1 ? prev : { y: clampedY }));
+          } else {
+            const gaps = collectFlowGaps();
+            const nearest = findNearestFlowGap(gaps, rawY);
+            if (nearest) {
+              setCursorTarget((prev) => (prev && prev.y === nearest.y ? prev : { y: nearest.y, gaps }));
+            }
+          }
+        }}
+        onPointerLeave={() => {
+          scheduleHideInsertCursor();
+        }}
         className="relative bg-white rounded-xs shadow-[0_4px_28px_rgba(15,23,42,0.08),0_1px_4px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/5 w-[794px] min-w-[794px] max-w-[794px] min-h-[1123px] mx-auto flex flex-col justify-between"
         style={sheetStyle}
         data-exact-layout={layout?.exactText ? "" : undefined}
       >
+        <AlignmentGuides guides={activeGuides} />
+
+        {editable && (cursorTarget || insertMenuState) && !draggingBlockId && (
+          <>
+            {!pageFramed && (
+              <div
+                data-testid="vdoc-insert-flow-line"
+                className="pointer-events-none absolute z-[35] h-[2px]"
+                style={{
+                  left: pageMargins.left,
+                  width: pageContentWidth,
+                  top: (insertMenuState ?? cursorTarget)!.y,
+                  backgroundColor: DROP_LINE,
+                }}
+              />
+            )}
+            <InsertCursorButton
+              y={(insertMenuState ?? cursorTarget)!.y}
+              menuOpen={insertMenuState !== null}
+              onHoverChange={(hovering) => {
+                hoveringInsertBtnRef.current = hovering;
+                if (hovering) {
+                  cancelHideInsertCursor();
+                } else if (!insertMenuOpenRef.current && !sheetRef.current?.matches(":hover")) {
+                  scheduleHideInsertCursor();
+                }
+              }}
+              onToggleMenu={() => {
+                if (insertMenuState) {
+                  setInsertMenuState(null);
+                  return;
+                }
+                const target = cursorTarget ?? { y: pageMargins.top + 16, gaps: pageFramed ? undefined : collectFlowGaps() };
+                setInsertMenuState({ y: target.y, gaps: target.gaps });
+              }}
+            />
+            {insertMenuState && (
+              <InsertMenu
+                y={insertMenuState.y}
+                onSelect={(kind) => {
+                  if (onInsertBlockAtY) {
+                    onInsertBlockAtY(page.pageId, insertMenuState.y, kind, insertMenuState.gaps);
+                  } else if (onInsertBlock) {
+                    const nearest = insertMenuState.gaps ? findNearestFlowGap(insertMenuState.gaps, insertMenuState.y) : null;
+                    onInsertBlock(page.pageId, kind as QuickAddKind, nearest ? nearest.index : page.blocks.length);
+                  }
+                }}
+                onClose={() => {
+                  setInsertMenuState(null);
+                  hoveringInsertBtnRef.current = false;
+                }}
+              />
+            )}
+          </>
+        )}
+
         {!page.hideHeaderFooter && (
           <div className="group/hf px-10 pt-6 pb-3 border-b border-transparent hover:border-dashed hover:border-slate-200">
             {renderSlotBox(page.headerSlotId, { className: "text-xs text-slate-500" })}
@@ -513,6 +742,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
             return (
               <div
                 key={block.blockId}
+                data-flow-block-index={bIdx}
                 className={`transition-all duration-200 ease-out ${
                   isCurrentBlockActive ? "my-4 relative z-20" : "my-0"
                 } ${draggingBlockId === block.blockId ? "opacity-40" : "opacity-100"}`}
@@ -540,6 +770,62 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
             </div>
           );
         })}
+
+        <AlignmentGuides guides={activeGuides} />
+
+        {editable && (cursorTarget || insertMenuState) && !draggingBlockId && (
+          <>
+            {!pageFramed && (
+              <div
+                data-testid="vdoc-insert-flow-line"
+                className="pointer-events-none absolute z-[35] h-[2px]"
+                style={{
+                  left: pageMargins.left,
+                  width: pageContentWidth,
+                  top: (insertMenuState ?? cursorTarget)!.y,
+                  backgroundColor: DROP_LINE,
+                }}
+              />
+            )}
+            <InsertCursorButton
+              y={(insertMenuState ?? cursorTarget)!.y}
+              menuOpen={insertMenuState !== null}
+              onHoverChange={(hovering) => {
+                hoveringInsertBtnRef.current = hovering;
+                if (hovering) {
+                  cancelHideInsertCursor();
+                } else if (!insertMenuOpenRef.current && !sheetRef.current?.matches(":hover")) {
+                  scheduleHideInsertCursor();
+                }
+              }}
+              onToggleMenu={() => {
+                if (insertMenuState) {
+                  setInsertMenuState(null);
+                  return;
+                }
+                const target = cursorTarget ?? { y: pageMargins.top + 16, gaps: pageFramed ? undefined : collectFlowGaps() };
+                setInsertMenuState({ y: target.y, gaps: target.gaps });
+              }}
+            />
+            {insertMenuState && (
+              <InsertMenu
+                y={insertMenuState.y}
+                onSelect={(kind) => {
+                  if (onInsertBlockAtY) {
+                    onInsertBlockAtY(page.pageId, insertMenuState.y, kind, insertMenuState.gaps);
+                  } else if (onInsertBlock) {
+                    const nearest = insertMenuState.gaps ? findNearestFlowGap(insertMenuState.gaps, insertMenuState.y) : null;
+                    onInsertBlock(page.pageId, kind as QuickAddKind, nearest ? nearest.index : page.blocks.length);
+                  }
+                }}
+                onClose={() => {
+                  setInsertMenuState(null);
+                  hoveringInsertBtnRef.current = false;
+                }}
+              />
+            )}
+          </>
+        )}
 
         {!page.hideHeaderFooter && (
           <div className="px-10 py-3 border-t border-transparent hover:border-dashed hover:border-slate-200">
@@ -667,5 +953,6 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
       {/* Page gap; the PDF page break falls here. */}
       <div className="h-6" />
     </section>
+    </CanvasKeyLayerContext.Provider>
   );
 };

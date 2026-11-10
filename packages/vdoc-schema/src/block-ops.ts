@@ -13,6 +13,11 @@ export function isBlockLocked(block: LayoutBlock, slots: Record<string, VDocSlot
   return ids.length > 0 && ids.every((id) => Boolean(slots[id]?.constraints?.locked));
 }
 
+export interface CloneBlockOptions {
+  /** 복제된 슬롯 라벨 뒤에 `" (복제)"` 접미사를 붙일지 여부 (기본 `true`). 붙여넣기에서는 `false`. */
+  copySuffix?: boolean;
+}
+
 /**
  * Deep-copies a block with fresh block/row/cell/slot ids so the copy edits independently.
  * Returns the cloned block and the slot map with the cloned slots added.
@@ -20,8 +25,10 @@ export function isBlockLocked(block: LayoutBlock, slots: Record<string, VDocSlot
 export function cloneBlockWithSlots(
   block: LayoutBlock,
   slots: Record<string, VDocSlot>,
-  newId: () => string
+  newId: () => string,
+  options: CloneBlockOptions = {}
 ): { block: LayoutBlock; slots: Record<string, VDocSlot> } {
+  const copySuffix = options.copySuffix ?? true;
   const nextSlots = { ...slots };
   const slotMap = new Map<string, string>();
   for (const id of getBlockSlotIds(block)) {
@@ -29,7 +36,12 @@ export function cloneBlockWithSlots(
     if (!source) continue;
     const copyId = `${id}_copy_${newId()}`;
     slotMap.set(id, copyId);
-    nextSlots[copyId] = { ...source, slotId: copyId, label: `${source.label} (복제)`, backDataRefs: [...source.backDataRefs] };
+    nextSlots[copyId] = {
+      ...source,
+      slotId: copyId,
+      label: copySuffix ? `${source.label} (복제)` : source.label,
+      backDataRefs: [...source.backDataRefs],
+    };
   }
   const json = JSON.stringify(block, (key, value) => {
     if (typeof value !== "string") return value;
