@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from .loop import (
+    CANCELLED,
     FINISHED,
     LLM_FAILED,
     MAX_STEPS,
@@ -19,6 +20,7 @@ from .tools import Tool, ToolRegistry, ToolResult, compact_json
 from .trace import RunLogContextFilter, RunTrace
 
 __all__ = [
+    "CANCELLED",
     "FINISHED",
     "LLM_FAILED",
     "MAX_STEPS",

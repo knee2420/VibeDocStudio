@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
+  ClipboardCopy,
   Copy,
   Lock,
   Plus,
@@ -34,6 +35,7 @@ export interface BaseBlockWrapperProps {
   onQuickAdd?: (kind: QuickAddKind) => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  onCopy?: () => void;
   onDuplicate?: () => void;
   onToggleLock?: () => void;
   onDelete?: () => void;
@@ -69,6 +71,7 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
   onQuickAdd,
   onMoveUp,
   onMoveDown,
+  onCopy,
   onDuplicate,
   onToggleLock,
   onDelete,
@@ -258,6 +261,14 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
             }}
           />
           <MenuItem
+            label="복사"
+            icon={<ClipboardCopy className="w-4 h-4" />}
+            onSelect={() => {
+              setMenu(null);
+              onCopy?.();
+            }}
+          />
+          <MenuItem
             label="복제"
             icon={<Copy className="w-4 h-4" />}
             onSelect={() => {
@@ -277,8 +288,10 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
           <MenuItem
             label="삭제"
             icon={<Trash2 className="w-4 h-4" />}
+            disabled={locked}
             danger
             onSelect={() => {
+              if (locked) return;
               setMenu(null);
               onDelete?.();
             }}

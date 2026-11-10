@@ -12,6 +12,7 @@ export * from "./outliner-adapter";
 export * from "./command-contracts";
 export * from "./slot-ops";
 export * from "./document-ops";
+export * from "./page-ops";
 export * from "./block-templates";
 export * from "./block-kit";
 export * from "./resource";

@@ -1,0 +1,129 @@
+{
+  "version": "1.0.0",
+  "docId": "blog-sector-sample",
+  "title": "기술·프로덕트 블로그 섹터 템플릿 (인트로 / 본문·CTA)",
+  "status": "Final",
+  "updatedAt": "2026-11-10T15:20:00+09:00",
+  "variables": {
+    "Blog.Topic": "핵심 주제",
+    "Blog.CTA": "무료 체험 신청하기"
+  },
+  "pages": [
+    {
+      "pageId": "blog_sec_intro",
+      "pageNumber": 1,
+      "pageLabel": "섹터 1 · 인트로 & 핵심 문제 정의",
+      "headerSlotId": "blog_hdr_1",
+      "footerSlotId": "blog_ftr_1",
+      "blocks": [
+        {
+          "blockId": "blk_blog_intro_callout",
+          "kind": "callout-box",
+          "title": "도입 후킹 (핵심 문제 요약)",
+          "slotId": "blog_slot_hook",
+          "tone": "info"
+        },
+        {
+          "blockId": "blk_blog_intro_section",
+          "kind": "section-block",
+          "title": "문제 제기 및 글의 목적",
+          "headingSlotId": "blog_slot_intro_h",
+          "bodySlotId": "blog_slot_intro_b"
+        }
+      ]
+    },
+    {
+      "pageId": "blog_sec_body_cta",
+      "pageNumber": 2,
+      "pageLabel": "섹터 2 · 본문 비교 & CTA 마무리",
+      "headerSlotId": "blog_hdr_1",
+      "footerSlotId": "blog_ftr_1",
+      "blocks": [
+        {
+          "blockId": "blk_blog_cols",
+          "kind": "columns-grid",
+          "title": "전후 비교 / 핵심 포인트 2단 요약",
+          "columns": [
+            { "slotId": "blog_slot_col1" },
+            { "slotId": "blog_slot_col2" }
+          ]
+        },
+        {
+          "blockId": "blk_blog_cta_section",
+          "kind": "section-block",
+          "title": "결론 및 행동 유도 (CTA)",
+          "headingSlotId": "blog_slot_cta_h",
+          "bodySlotId": "blog_slot_cta_b"
+        }
+      ]
+    }
+  ],
+  "slots": {
+    "blog_hdr_1": {
+      "slotId": "blog_hdr_1",
+      "label": "머리말",
+      "role": "boilerplate",
+      "content": "<p></p>",
+      "backDataRefs": []
+    },
+    "blog_ftr_1": {
+      "slotId": "blog_ftr_1",
+      "label": "바닥글",
+      "role": "boilerplate",
+      "content": "<p></p>",
+      "backDataRefs": []
+    },
+    "blog_slot_hook": {
+      "slotId": "blog_slot_hook",
+      "label": "핵심 후킹 문장",
+      "role": "editable-slot",
+      "content": "<p><span data-variable=\"Blog.Topic\">[Blog.Topic]</span> 에서 팀이 가장 자주 겪는 병목을 한 문장으로 요약하세요.</p>",
+      "backDataRefs": [],
+      "constraints": { "placeholder": "독자의 관심을 끄는 문제 제기 문장을 입력하세요" }
+    },
+    "blog_slot_intro_h": {
+      "slotId": "blog_slot_intro_h",
+      "label": "인트로 소제목",
+      "role": "editable-slot",
+      "content": "<p>왜 지금 이 문제를 해결해야 하는가</p>",
+      "backDataRefs": []
+    },
+    "blog_slot_intro_b": {
+      "slotId": "blog_slot_intro_b",
+      "label": "인트로 본문",
+      "role": "editable-slot",
+      "content": "<p>독자의 현재 상황과 기존 방식의 한계를 구체적인 수치나 근거로 짚어줍니다.</p>",
+      "backDataRefs": []
+    },
+    "blog_slot_col1": {
+      "slotId": "blog_slot_col1",
+      "label": "기존 방식 (AS-IS)",
+      "role": "editable-slot",
+      "content": "<p><strong>기존 방식</strong></p><p>수작업과 파편화된 문서 관리로 인한 병목</p>",
+      "backDataRefs": []
+    },
+    "blog_slot_col2": {
+      "slotId": "blog_slot_col2",
+      "label": "개선 방식 (TO-BE)",
+      "role": "editable-slot",
+      "content": "<p><strong>개선 방식</strong></p><p>표준화된 구조와 실시간 근거 연동</p>",
+      "backDataRefs": []
+    },
+    "blog_slot_cta_h": {
+      "slotId": "blog_slot_cta_h",
+      "label": "CTA 소제목",
+      "role": "editable-slot",
+      "content": "<p>지금 바로 시작해 보세요</p>",
+      "backDataRefs": []
+    },
+    "blog_slot_cta_b": {
+      "slotId": "blog_slot_cta_b",
+      "label": "CTA 본문",
+      "role": "editable-slot",
+      "content": "<p>핵심 요약 후 <span data-variable=\"Blog.CTA\">[Blog.CTA]</span> 링크나 다음 단계 행동을 안내합니다.</p>",
+      "backDataRefs": []
+    }
+  },
+  "backdata": {}
+}
+

@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from ..llm.base import BaseLlmHarness
 from .skill import Skill
@@ -21,6 +21,7 @@ from .trace import RunTrace
 
 logger = logging.getLogger("agent_core.react")
 
+CANCELLED = "cancelled"
 FINISHED = "finished"
 MAX_STEPS = "max_steps"
 TIMED_OUT = "timeout"
@@ -129,7 +130,13 @@ class ReActLoop:
 
     # --- 실행 --------------------------------------------------------------
 
-    def run(self, task: str) -> LoopResult:
+    def run(
+        self,
+        task: str,
+        *,
+        cancel_event: Any = None,
+        on_step: Optional[Callable[[dict[str, Any]], None]] = None,
+    ) -> LoopResult:
         cfg = self._cfg
         trace = self._trace
         t0 = time.monotonic()
@@ -148,6 +155,9 @@ class ReActLoop:
         logger.info("[react] loop start harness=%s model=%s tools=%s", self._harness.name, self._harness.model, self._tools.names)
 
         while step <= cfg.max_steps:
+            if cancel_event is not None and cancel_event.is_set():
+                result.status = CANCELLED
+                break
             remaining = cfg.max_seconds - (time.monotonic() - t0)
             if remaining <= 0:
                 result.status = TIMED_OUT
@@ -165,6 +175,9 @@ class ReActLoop:
             )
             result.llm_calls += 1
             result.total_tokens += llm.total_tokens or 0
+            if cancel_event is not None and cancel_event.is_set():
+                result.status = CANCELLED
+                break
             decision = llm.structured_output or {}
             trace.write_step_file(
                 step,
@@ -222,9 +235,22 @@ class ReActLoop:
             logger.info("[react] step %s %s -> ok=%s (%.1fs) %s", step, action, tool_res.ok, tool_dur, compact_json(tool_res.observation, max_chars=400))
 
             result.steps.append(StepRecord(step, thought, action, args, tool_res.ok, tool_res.observation))
+            if on_step is not None:
+                on_step(
+                    {
+                        "step": step,
+                        "action": action,
+                        "ok": tool_res.ok,
+                        "observation": tool_res.observation,
+                        "terminal": tool_res.terminal,
+                    }
+                )
             if tool_res.terminal:
                 result.status = FINISHED
                 result.final = tool_res.observation
+                break
+            if cancel_event is not None and cancel_event.is_set():
+                result.status = CANCELLED
                 break
             step += 1
 

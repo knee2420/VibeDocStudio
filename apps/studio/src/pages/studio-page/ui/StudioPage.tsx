@@ -9,6 +9,7 @@ import { registerSlotAiActions } from "@/features/compose-slot-ai";
 import { DeckCardPreview, registerKnowledgeDeckAi, useKnowledgeDeckBootstrap } from "@/features/knowledge-deck-ai";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
+import { usePdfScaffoldSync } from "@/features/mutate-document-pages";
 import { HoverPagePeekCard } from "@/features/peek-page";
 import { useWorkspaceBootstrap, useWorkspaceUrlSync } from "@/features/workspace-persistence";
 import { useZoomHierarchySync } from "@/features/zoom-hierarchy";
@@ -21,9 +22,15 @@ import { VDocPageCanvas } from "@/widgets/vdoc-page-canvas";
 
 /** 전역 부작용(URL · 단축키 · 줌 위계)은 여기서 한 번씩만 건다. */
 const StudioWorkspace: React.FC = () => {
+  const blocks = useMutateCanvasBlocks();
   useWorkspaceUrlSync();
-  useGlobalStudioShortcuts();
+  useGlobalStudioShortcuts({
+    onCopySelectedBlock: blocks.copySelectedBlock,
+    onPasteBlock: () => blocks.pasteBlock(),
+    onDeleteSelectedBlock: blocks.deleteSelectedBlock,
+  });
   useZoomHierarchySync();
+  usePdfScaffoldSync();
   useKnowledgeDeckBootstrap();
   useEvidenceFocusSync();
   useEvidenceStaleCheck();
@@ -36,7 +43,6 @@ const StudioWorkspace: React.FC = () => {
   }, []);
 
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
-  const blocks = useMutateCanvasBlocks();
 
   return (
     <div className="h-screen w-screen flex flex-col bg-[#f4f5f7] text-slate-900 overflow-hidden select-none">

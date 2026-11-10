@@ -16,12 +16,21 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
+import pymupdf
 from agent_core.llm.adapters.agy_cli import AgyCliHarness
 from agent_core.react import LoopConfig, ReActLoop, RunTrace, load_skill
 from harness_kit import packs
+from pdf_fidelity_engine import (
+    PX_PER_PT,
+    SlotTextRefinerPort,
+    apply_slot_patches,
+    build_page_model,
+    detect_suspect_slots,
+    extract_page_truth,
+)
 
 from app.form_scaffold.agents.baseline_extractor import DeterministicBaselineExtractor
-from app.form_scaffold.agents.fidelity_layout import TUNABLES, text_lines
+from app.form_scaffold.agents.fidelity_layout import FONT_ALIASES, TUNABLES, text_lines
 from app.form_scaffold.agents.fidelity_loop import (
     FidelityWorkspace,
     create_fidelity_config,
@@ -89,6 +98,7 @@ class FormScaffoldAgent:
         baseline_extractor: Optional[DeterministicBaselineExtractor] = None,
         harness_factory: Callable[..., AgyCliHarness] = AgyCliHarness,
         one_shot: Optional[OneShotRunner] = None,
+        slot_refiner: Optional[SlotTextRefinerPort] = None,
     ) -> None:
         self._policy = policy
         self._agent_runs_dir = agent_runs_dir
@@ -100,12 +110,87 @@ class FormScaffoldAgent:
         self._harness_factory = harness_factory
         #: 단발 구획명 정리에 쓰는 LLM 게이트웨이 실행기 (없으면 그 단계를 건너뛴다)
         self._one_shot = one_shot
+        self._slot_refiner = slot_refiner
 
     def _cli_provider_selected(self) -> bool:
         return bool(
             self._policy
             and CLI_PROVIDER in (self._policy.primary_provider, self._policy.fallback_provider)
         )
+
+    def _refine_suspect_slots_in_doc(
+        self,
+        vdoc: dict[str, Any],
+        *,
+        pdf_bytes: bytes,
+        doc_title: str,
+        on_progress: Optional[Callable[[dict[str, Any]], None]] = None,
+        warnings_out: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """`/ToUnicode` 누락 · PUA/한자 깨짐 · 장문 공백 누락 슬롯이 있을 때만 VLM 선별 정제를 실행한다."""
+        refiner = self._slot_refiner
+        if refiner is None or not self._external_llm_enabled or not vdoc.get("pages") or not vdoc.get("slots"):
+            return vdoc
+
+        pdf = pymupdf.open(stream=pdf_bytes, filetype="pdf")
+        updated_slots = dict(vdoc["slots"])
+        total_applied = 0
+        try:
+            for page_obj in vdoc["pages"]:
+                page_num = int(page_obj.get("pageNumber") or 1)
+                if not 1 <= page_num <= len(pdf):
+                    continue
+                truth = extract_page_truth(
+                    pdf_bytes=pdf_bytes,
+                    page_number=page_num,
+                    font_aliases=FONT_ALIASES,
+                    render_rasters=False,
+                )
+                model = build_page_model(truth, font_aliases=FONT_ALIASES)
+                pre_suspects = detect_suspect_slots(
+                    page_vdoc=page_obj,
+                    slots=updated_slots,
+                    truth=truth,
+                    model=model,
+                    page_png_bytes=None,
+                )
+                if not pre_suspects:
+                    continue
+                if on_progress is not None:
+                    on_progress({"stage": "refining_slots", "message": "깨진 슬롯 텍스트 복원 중"})
+                page_png = (
+                    pdf[page_num - 1]
+                    .get_pixmap(matrix=pymupdf.Matrix(PX_PER_PT, PX_PER_PT), alpha=False)
+                    .tobytes("png")
+                )
+                suspects = detect_suspect_slots(
+                    page_vdoc=page_obj,
+                    slots=updated_slots,
+                    truth=truth,
+                    model=model,
+                    page_png_bytes=page_png,
+                )
+                patches = refiner.refine_slots(
+                    page_png_bytes=page_png,
+                    doc_title=doc_title,
+                    suspects=suspects,
+                    page_vdoc=page_obj,
+                )
+                err = getattr(refiner, "last_error", None)
+                if err and warnings_out is not None:
+                    warnings_out.append(f"슬롯 정제({page_num}p, {len(suspects)}건) 실패: {err}")
+                if patches:
+                    updated_slots, applied = apply_slot_patches(updated_slots, patches)
+                    total_applied += len(applied)
+        finally:
+            pdf.close()
+
+        if total_applied == 0:
+            return vdoc
+        logger.info("[FormScaffoldAgent] 선별 슬롯 텍스트 보정 완료: %d건", total_applied)
+        out = copy.deepcopy(vdoc)
+        out["slots"] = updated_slots
+        return out
 
     def _agentic_loop_enabled(self) -> bool:
         return bool(
@@ -125,6 +210,8 @@ class FormScaffoldAgent:
         doc_id: str,
         doc_title: str,
         fidelity_mode: str = "balanced",
+        on_progress: Optional[Callable[[dict[str, Any]], None]] = None,
+        cancel_event: Any = None,
     ) -> tuple[Optional[dict[str, Any]], dict[str, Any]]:
         """스킬 + 도구 + 판정 피드백 루프. (보정값을 입힌 최선의 문서 | None, 실행 정보)를 돌려준다."""
         assert self._policy and self._agent_runs_dir and self._fidelity_tools_dir and self._fidelity_skill_dir
@@ -135,8 +222,22 @@ class FormScaffoldAgent:
         pdf_path.write_bytes(pdf_bytes)
 
         trace = RunTrace(run_dir, run_id)
-        info: dict[str, Any] = {"runId": run_id, "runDir": str(run_dir), "status": "started", "fidelityMode": fidelity_mode}
+        warnings_list: list[str] = []
+        info: dict[str, Any] = {
+            "runId": run_id,
+            "runDir": str(run_dir),
+            "status": "started",
+            "fidelityMode": fidelity_mode,
+            "warnings": warnings_list,
+        }
         model = normalize_agy_model(self._policy.agent_cli_model)
+
+        def emit(stage: str, **fields: Any) -> None:
+            if on_progress is not None:
+                on_progress({"stage": stage, **fields})
+
+        def is_cancelled() -> bool:
+            return bool(cancel_event is not None and cancel_event.is_set())
 
         mode_str = (fidelity_mode or "balanced").strip().lower()
         active_loop_config = LOOP_CONFIG_BY_MODE.get(mode_str, LOOP_CONFIG_BY_MODE["balanced"])
@@ -161,17 +262,57 @@ class FormScaffoldAgent:
             build_vdoc=build_vdoc,
             trace=trace,
             config=create_fidelity_config(tools_dir=self._fidelity_tools_dir, mode=mode_str),
+            on_progress=on_progress,
+            cancel_event=cancel_event,
         )
         try:
+            if is_cancelled():
+                info["status"] = "cancelled"
+                return None, info
+
             # 0단계: 정답 뽑기 + 기본 분할안 · 기본 보정값 판정 (호스트가 실행, LLM 은 결과만 받는다)
             trace.set_step(0)
+            emit("truth_extracting", message="PDF 기하 좌표 · 폰트 진실값 추출 중")
             truth = workspace.extract_truth()
+            spans_total = int(truth.get("spans_total") or 0)
+            images_total = int(truth.get("images") or 0)
+            if spans_total == 0 and images_total == 0:
+                warnings_list.append("텍스트 레이어가 없는 PDF(윤곽선/스캔)입니다. 텍스트 블록을 추출하지 못했습니다.")
+            emit(
+                "truth_extracted",
+                spansTotal=spans_total,
+                textLines=truth.get("text_lines", 0),
+                tablesCount=len(truth.get("tables", [])),
+                warnings=list(warnings_list),
+            )
+
+            if is_cancelled():
+                info["status"] = "cancelled"
+                return None, info
+
+            emit("baseline_evaluating", iter=0, message="기본 레이아웃 측정 중")
             baseline = workspace.evaluate()
             baseline_obs = workspace.iteration_observation(baseline)
             trace.write_step_file(0, "observation.json", {"truth": truth, "baseline": baseline_obs})
-            trace.event("bootstrap", truth_spans=truth.get("spans_total"), baseline_score=baseline.score,
+            trace.event("bootstrap", truth_spans=spans_total, baseline_score=baseline.score,
                         prescriptions=len(baseline.diagnosis.get("prescriptions", [])))
+            if is_cancelled():
+                info["status"] = "cancelled"
+                return None, info
+
             if baseline.error:
+                err_text = baseline.error
+                is_cdp_down = any(tok in err_text for tok in ("10061", "ConnectionRefused", "URLError", "connection refused"))
+                if is_cdp_down:
+                    warnings_list.append("디버그 크롬(CDP 9222) 미연결로 브라우저 루프를 건너뛰고 1차 정밀 레이아웃 기준선을 사용했습니다.")
+                    info["iterations"] = workspace.history()
+                    if spans_total > 0 or images_total > 0:
+                        info["status"] = "fallback_no_cdp"
+                        emit("fallback_no_cdp", iter=0, message="CDP 미연결 — 정밀 레이아웃 기준선 적용", warnings=list(warnings_list))
+                        return workspace.merge_into(build_vdoc(), workspace.plan, workspace.tune), info
+                    info["status"] = "no_text_layer"
+                    emit("no_text_layer", iter=0, message="텍스트 레이어가 없어 블록을 추출할 수 없습니다.", warnings=list(warnings_list))
+                    return None, info
                 raise RuntimeError(f"기준선 측정 실패: {baseline.error}")
 
             skill = load_skill(
@@ -179,7 +320,21 @@ class FormScaffoldAgent:
                 references=("references/cli_loop_guide.md", "references/lessons_learned.md"),
             )
             loop = ReActLoop(harness=harness, skill=skill, tools=workspace.build_tools(), trace=trace, config=active_loop_config)
-            result = loop.run(_fidelity_task(workspace, doc_title, baseline_obs))
+
+            def on_step(rec: dict[str, Any]) -> None:
+                best_now = workspace.best()
+                emit(
+                    "agent_loop",
+                    step=rec.get("step"),
+                    action=rec.get("action"),
+                    ok=rec.get("ok"),
+                    iter=best_now.index if best_now else len(workspace.iterations) - 1,
+                    verdict=best_now.verdict if best_now else None,
+                    spanScore=best_now.score if best_now else None,
+                    message=f"에이전트 튜닝 단계 {rec.get('step')} ({rec.get('action')})",
+                )
+
+            result = loop.run(_fidelity_task(workspace, doc_title, baseline_obs), cancel_event=cancel_event, on_step=on_step)
 
             best = workspace.best()
             info.update({
@@ -191,6 +346,9 @@ class FormScaffoldAgent:
                 "iterations": workspace.history(),
                 "agentSummary": (result.final or {}).get("agent_summary"),
             })
+            if result.status == "cancelled" or is_cancelled():
+                info["status"] = "cancelled"
+                return None, info
             if best is None:
                 return None, info
             info["best"] = {
@@ -322,12 +480,16 @@ class FormScaffoldAgent:
         doc_id: str,
         title: str,
         fidelity_mode: str = "balanced",
+        on_progress: Optional[Callable[[dict[str, Any]], None]] = None,
+        cancel_event: Any = None,
     ) -> tuple[dict[str, Any], int, int, Optional[dict[str, Any]]]:
         """PDF 바이트를 파싱하여 (.vdoc 문서, 블록 수, 슬롯 수, 에이전트 실행 정보 | None)을 반환한다."""
         if not pdf_bytes:
             raise ValueError("PDF payload is empty")
 
         doc_title = (title or "").strip() or "추출된 양식 문서"
+        if on_progress is not None:
+            on_progress({"stage": "baseline_extracting", "message": "기본 기하 · 표 구조 추출 중"})
 
         # 1. 고정밀 결정적 기하 추출 (MuPDF + pdf_vdoc_engine)
         baseline_doc, total_blocks, total_slots = self._baseline.extract(
@@ -335,6 +497,8 @@ class FormScaffoldAgent:
             doc_id=doc_id,
             title=doc_title,
         )
+        if cancel_event is not None and cancel_event.is_set():
+            return baseline_doc, total_blocks, total_slots, {"status": "cancelled"}
 
         # 2. agy CLI ReAct 루프: truth 기반 생성기 → 디버그 크롬 → 02 측정 → 03 판정 → 진단 · 처방 → 분할안 · 보정값 수정
         agent_run: Optional[dict[str, Any]] = None
@@ -345,16 +509,61 @@ class FormScaffoldAgent:
                 doc_id=doc_id,
                 doc_title=doc_title,
                 fidelity_mode=fidelity_mode,
+                on_progress=on_progress,
+                cancel_event=cancel_event,
             )
+            if cancel_event is not None and cancel_event.is_set():
+                return baseline_doc, total_blocks, total_slots, agent_run
             if tuned is not None:
+                if agent_run and agent_run.get("status") == "fallback_no_cdp" and self._cli_provider_selected():
+                    if on_progress is not None:
+                        on_progress({"stage": "refining_titles", "message": "구획 제목 시맨틱 정리 중"})
+                    refined_tuned = self._refine_with_agy_cli(
+                        pdf_bytes=pdf_bytes,
+                        baseline_vdoc=tuned,
+                        doc_id=doc_id,
+                        doc_title=doc_title,
+                    )
+                    if refined_tuned and "pages" in refined_tuned and "slots" in refined_tuned:
+                        tuned = refined_tuned
+                refine_warnings: list[str] = []
+                tuned = self._refine_suspect_slots_in_doc(
+                    tuned,
+                    pdf_bytes=pdf_bytes,
+                    doc_title=doc_title,
+                    on_progress=on_progress,
+                    warnings_out=refine_warnings,
+                )
+                if refine_warnings and isinstance(agent_run, dict):
+                    agent_run["warnings"] = list(agent_run.get("warnings") or []) + refine_warnings
                 # 1쪽 블록 · 표 이름은 루프의 분할안이 정했으므로 단발 이름 정리는 하지 않는다.
                 total = sum(len(p.get("blocks", [])) for p in tuned.get("pages", []))
                 return tuned, total, len(tuned.get("slots", {})), agent_run
         else:
             logger.info("[FormScaffoldAgent] 에이전틱 루프 비활성 (외부 LLM 비허용 · CLI 공급자 아님 · 경로 미주입)")
 
+        if cancel_event is not None and cancel_event.is_set():
+            return baseline_doc, total_blocks, total_slots, agent_run or {"status": "cancelled"}
+
+        refine_warnings = []
+        baseline_doc = self._refine_suspect_slots_in_doc(
+            baseline_doc,
+            pdf_bytes=pdf_bytes,
+            doc_title=doc_title,
+            on_progress=on_progress,
+            warnings_out=refine_warnings,
+        )
+        if refine_warnings:
+            agent_run = {
+                **(agent_run or {"status": "completed"}),
+                "warnings": list((agent_run or {}).get("warnings") or []) + refine_warnings,
+            }
+        total_slots = len(baseline_doc.get("slots", {}))
+
         # 3. 블록 구획명 정리 (agy 단발 호출)
-        if self._cli_provider_selected():
+        if self._cli_provider_selected() and total_blocks > 0:
+            if on_progress is not None:
+                on_progress({"stage": "refining_titles", "message": "구획 제목 시맨틱 정리 중"})
             refined = self._refine_with_agy_cli(
                 pdf_bytes=pdf_bytes,
                 baseline_vdoc=baseline_doc,
@@ -364,5 +573,12 @@ class FormScaffoldAgent:
             if refined and "pages" in refined and "slots" in refined:
                 refined_blocks = sum(len(p.get("blocks", [])) for p in refined.get("pages", []))
                 return refined, refined_blocks, len(refined.get("slots", {})), agent_run
+
+        if total_blocks == 0:
+            warnings = list((agent_run or {}).get("warnings") or [])
+            msg = "추출된 텍스트/표 블록이 없습니다. (텍스트 레이어 유무 확인 필요)"
+            if msg not in warnings and not any("텍스트 레이어가 없는" in w for w in warnings):
+                warnings.append(msg)
+            agent_run = {**(agent_run or {"status": "empty_blocks"}), "warnings": warnings}
 
         return baseline_doc, total_blocks, total_slots, agent_run

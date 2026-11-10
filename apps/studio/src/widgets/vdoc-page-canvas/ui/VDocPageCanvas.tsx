@@ -5,6 +5,7 @@ import { MemoVDocPageSheet, WindowedPageChunker } from "@vibe/slot-canvas";
 import { useActiveSlotEditorStore, type SlotAiAction } from "@vibe/slot-editor";
 import type { BackdataChunk, VDocSlot } from "@vibe/vdoc-schema";
 
+import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
@@ -13,6 +14,7 @@ import { attachToComposer, referenceTextRef } from "@/features/ai-workspace";
 import { buildSlotAiActionPrompt, SlotInlineComposerHost } from "@/features/compose-slot-ai";
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
+import { pageMutations } from "@/features/mutate-document-pages";
 import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes";
 import { getOutlineProjection, outlineCommands, useOutlineSelector } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
@@ -68,6 +70,7 @@ const DraftingCanvas: React.FC = () => {
 
   const { updateSlotContent } = useSlotContentActions();
   const blocks = useMutateCanvasBlocks();
+  const pageStatesByPageId = usePdfScaffoldJobStore((s) => s.pageStatesByPageId);
   // 캔버스는 줌 상태만 구독한다 (투영 전체를 구독하면 아웃라인 요약이 바뀔 때마다 캔버스가 다시 그려진다).
   const zoomLevel = useOutlineSelector((p) => p.activeZoomLevel);
   const zoomedNode = useOutlineSelector((p) => p.allNodes.find((n) => n.nodeId === p.rootNodeId));
@@ -92,6 +95,16 @@ const DraftingCanvas: React.FC = () => {
     setSelectedSlotId(slotId);
     openRightPanel("inspector");
   });
+  const onCancelPendingPage = useStableCallback((pageId: string) => {
+    void usePdfScaffoldJobStore.getState().cancelPendingPage(pageId);
+  });
+  const onRetryPendingPage = useStableCallback((pageId: string) => {
+    void usePdfScaffoldJobStore.getState().retryPendingPage(pageId);
+  });
+  const onRemovePendingPage = useStableCallback((pageId: string) => {
+    usePdfScaffoldJobStore.getState().clearPageState(pageId);
+    pageMutations.removePendingPlaceholderPage(doc?.docId, pageId);
+  });
   const onSlotAiAction = useStableCallback((slotId: string, action: SlotAiAction, text: string) => {
     if (action === "attach") {
       attachToComposer([referenceTextRef(slotId, text)], { role: "reference" });
@@ -114,6 +127,7 @@ const DraftingCanvas: React.FC = () => {
   const onMoveBlockTo = useStableCallback(blocks.moveBlockTo);
   const onDeleteBlock = useStableCallback(blocks.deleteBlock);
   const onInsertBlock = useStableCallback(blocks.addBlockToPage);
+  const onCopyBlock = useStableCallback(blocks.copyBlock);
   const onDuplicateBlock = useStableCallback(blocks.duplicateBlock);
   const onToggleBlockLock = useStableCallback(blocks.toggleBlockLock);
   const onMoveBlockFrame = useStableCallback(blocks.moveBlockFrame);
@@ -199,6 +213,7 @@ const DraftingCanvas: React.FC = () => {
                 onDeleteBlock={onDeleteBlock}
                 onMoveBlockTo={onMoveBlockTo}
                 onInsertBlock={onInsertBlock}
+                onCopyBlock={onCopyBlock}
                 onDuplicateBlock={onDuplicateBlock}
                 onToggleBlockLock={onToggleBlockLock}
                 onMoveBlockFrame={onMoveBlockFrame}
@@ -209,6 +224,10 @@ const DraftingCanvas: React.FC = () => {
                 onSlotAiAction={onSlotAiAction}
                 renderInlineComposer={renderInlineComposer}
                 wrapSlotContent={wrapSlotContent}
+                pendingState={pageStatesByPageId[page.pageId] ?? null}
+                onCancelPendingPage={onCancelPendingPage}
+                onRetryPendingPage={onRetryPendingPage}
+                onRemovePendingPage={onRemovePendingPage}
               />
             )}
           />

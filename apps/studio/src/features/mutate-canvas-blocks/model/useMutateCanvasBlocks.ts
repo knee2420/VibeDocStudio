@@ -1,9 +1,13 @@
 import {
   applyTableCommandToDocument,
+  cloneBlockWithSlots,
   createInsertableBlock,
   duplicateBlock as duplicateBlockOp,
+  findBlock,
+  getBlockSlotIds,
   importBlockFromDocument,
   insertBlock,
+  isBlockLocked,
   mapBlock,
   moveBlockByOffset,
   moveBlockFrame as moveBlockFrameOp,
@@ -15,10 +19,11 @@ import {
   type LayoutBlock,
   type TableCommand,
   type VDocDocument,
+  type VDocSlot,
 } from "@vibe/vdoc-schema";
 
-import { useSlotSelectionStore } from "@/entities/slot";
-import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useBlockClipboardStore, useSlotSelectionStore } from "@/entities/slot";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 
 export type { InsertableBlockKind };
 
@@ -38,6 +43,29 @@ export function useMutateCanvasBlocks() {
   const apply = (op: (doc: VDocDocument) => VDocDocument, label?: string) =>
     updateCurrentDoc(op, label ? { history: true, label } : HISTORY);
 
+  const performDeleteBlock = (pageId: string, blockId: string): boolean => {
+    let deleted = false;
+    apply((doc) => {
+      const loc = findBlock(doc, blockId);
+      if (!loc || loc.pageId !== pageId || isBlockLocked(loc.block, doc.slots)) return doc;
+      deleted = true;
+      return removeBlock(doc, pageId, blockId);
+    }, "블록 삭제");
+    if (deleted && useSlotSelectionStore.getState().selectedBlockId === blockId) {
+      useSlotSelectionStore.getState().clearSelection();
+    }
+    return deleted;
+  };
+
+  const performCopyBlock = (pageId: string, blockId: string): boolean => {
+    const doc = selectActiveDocument(useStudioDocumentStore.getState());
+    if (!doc) return false;
+    const loc = findBlock(doc, blockId);
+    if (!loc || loc.pageId !== pageId) return false;
+    useBlockClipboardStore.getState().copySnapshot(doc.docId, loc.block, doc.slots);
+    return true;
+  };
+
   return {
     moveBlock: (pageId: string, blockIndex: number, direction: -1 | 1) =>
       apply((doc) => moveBlockByOffset(doc, pageId, blockIndex, direction)),
@@ -46,7 +74,87 @@ export function useMutateCanvasBlocks() {
     moveBlockTo: (fromPageId: string, blockId: string, toPageId: string, toIndex: number) =>
       apply((doc) => moveBlockToPosition(doc, fromPageId, blockId, toPageId, toIndex)),
 
-    deleteBlock: (pageId: string, blockId: string) => apply((doc) => removeBlock(doc, pageId, blockId)),
+    deleteBlock: (pageId: string, blockId: string) => {
+      performDeleteBlock(pageId, blockId);
+    },
+
+    deleteSelectedBlock: (): boolean => {
+      const doc = selectActiveDocument(useStudioDocumentStore.getState());
+      const blockId = useSlotSelectionStore.getState().selectedBlockId;
+      if (!doc || !blockId) return false;
+      const loc = findBlock(doc, blockId);
+      if (!loc) return false;
+      return performDeleteBlock(loc.pageId, blockId);
+    },
+
+    copyBlock: performCopyBlock,
+
+    copySelectedBlock: (): boolean => {
+      const doc = selectActiveDocument(useStudioDocumentStore.getState());
+      const blockId = useSlotSelectionStore.getState().selectedBlockId;
+      if (!doc || !blockId) return false;
+      const loc = findBlock(doc, blockId);
+      if (!loc) return false;
+      return performCopyBlock(loc.pageId, blockId);
+    },
+
+    pasteBlock: (targetPageId?: string, atIndex?: number): boolean => {
+      const clipboard = useBlockClipboardStore.getState().copied;
+      const state = useStudioDocumentStore.getState();
+      const doc = selectActiveDocument(state);
+      if (!clipboard || !doc) return false;
+
+      const sel = useSlotSelectionStore.getState();
+      let pageId = targetPageId;
+      let insertAt = atIndex;
+
+      if (!pageId && sel.selectedBlockId) {
+        const selBlockLoc = findBlock(doc, sel.selectedBlockId);
+        if (selBlockLoc) {
+          pageId = selBlockLoc.pageId;
+          if (insertAt === undefined) insertAt = selBlockLoc.index + 1;
+        }
+      }
+      if (!pageId && sel.selectedSlotId) {
+        const ownerPage = doc.pages.find((p) =>
+          p.blocks.some((b) => getBlockSlotIds(b).includes(sel.selectedSlotId!))
+        );
+        if (ownerPage) pageId = ownerPage.pageId;
+      }
+      if (!pageId) {
+        pageId = doc.pages.find((p) => p.pageId === state.activePageId)?.pageId ?? doc.pages[0]?.pageId;
+      }
+      if (!pageId) return false;
+
+      let insertedBlockId: string | null = null;
+      apply((prev) => {
+        const cloned = cloneBlockWithSlots(clipboard.block, clipboard.slots, idSuffix);
+        const crossDoc = clipboard.sourceDocId !== prev.docId;
+        const pastedSlots: Record<string, VDocSlot> = {};
+        for (const sid of getBlockSlotIds(cloned.block)) {
+          const clonedSlot = cloned.slots[sid];
+          if (!clonedSlot) continue;
+          if (!crossDoc) {
+            pastedSlots[sid] = clonedSlot;
+            continue;
+          }
+          // 다른 문서로 붙여넣을 때 끊기는 근거 참조 · 채움 추적 메타를 비운다.
+          const { fill: _fill, ...rest } = clonedSlot;
+          pastedSlots[sid] = {
+            ...rest,
+            isEdited: false,
+            originalContent: undefined,
+            backDataRefs: [],
+          };
+        }
+        insertedBlockId = cloned.block.blockId;
+        return insertBlock(prev, pageId!, cloned.block, pastedSlots, insertAt);
+      }, "블록 붙여넣기");
+      if (insertedBlockId) {
+        useSlotSelectionStore.getState().setSelectedBlockId(insertedBlockId);
+      }
+      return Boolean(insertedBlockId);
+    },
 
     /** Inserts a new block at `atIndex` (default: end of page) and focuses its first slot. */
     addBlockToPage: (pageId: string, kind: InsertableBlockKind, atIndex?: number) => {

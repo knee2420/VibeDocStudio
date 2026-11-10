@@ -41,6 +41,8 @@ export interface ProjectStoreState {
     provenance?: { sourceProjectId: string; sourceNodeId: string }
   ) => Promise<void>;
   updateStorylineNode: (nodeId: string, patch: OutlineNodeFields) => void;
+  /** 즉시 서버에 제목 변경 명령을 보내고 Undo 이력에 남긴다 (페이지 이름 변경 트랜잭션 공용). */
+  renameOutlineNodeImmediate: (nodeId: string, title: string) => Promise<void>;
   deleteStorylineNode: (nodeId: string) => Promise<void>;
   moveStorylineNode: (nodeId: string, direction: -1 | 1) => Promise<void>;
   indentOutlinerNode: (nodeId: string, delta: -1 | 1) => Promise<void>;
@@ -177,6 +179,9 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
       const timer = window.setTimeout(() => void flushNodePatches(), NODE_PATCH_DEBOUNCE_MS);
       pendingNodePatches.set(nodeId, { patch: merged, timer });
     },
+
+    renameOutlineNodeImmediate: (nodeId, title) =>
+      command(`노드 이름 변경: "${title.slice(0, 28)}"`, { kind: "update_node", nodeId, patch: { title } }),
 
     deleteStorylineNode: (nodeId) =>
       command("아웃라인 노드가 삭제되었습니다.", { kind: "delete_node", nodeId }),

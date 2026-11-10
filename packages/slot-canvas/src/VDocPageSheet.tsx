@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { AlertTriangle, Clock, Loader2 } from "lucide-react";
 
 import {
   getBlockKind,
@@ -24,6 +25,21 @@ export interface TableSelectionTarget extends TableSelectionInfo {
   sectionId: string | null;
 }
 
+export interface PagePendingState {
+  status: "queued" | "running" | "failed" | "cancelled";
+  sourcePageNumber: number;
+  queuePosition?: number;
+  totalInJob?: number;
+  stage?: string;
+  iter?: number;
+  verdict?: string | null;
+  spanScore?: number | null;
+  message?: string;
+  error?: string | null;
+  warnings?: string[];
+  previewThumb?: string | null;
+}
+
 export interface VDocPageSheetProps {
   docTitle?: string;
   totalPages?: number;
@@ -44,6 +60,7 @@ export interface VDocPageSheetProps {
   onDeleteBlock: (pageId: string, blockId: string) => void;
   onMoveBlockTo?: (fromPageId: string, blockId: string, toPageId: string, toIndex: number) => void;
   onInsertBlock?: (pageId: string, kind: QuickAddKind, index: number) => void;
+  onCopyBlock?: (pageId: string, blockId: string) => void;
   onDuplicateBlock?: (pageId: string, blockId: string) => void;
   onToggleBlockLock?: (pageId: string, blockId: string) => void;
   /** Framed blocks moved with the ⋮⋮ handle: new frame position in px. */
@@ -59,6 +76,10 @@ export interface VDocPageSheetProps {
    * 고정 참조여야 한다 (상태는 감싸는 컴포넌트가 스스로 구독한다).
    */
   wrapSlotContent?: (slot: VDocSlot, content: React.ReactNode) => React.ReactNode;
+  pendingState?: PagePendingState | null;
+  onCancelPendingPage?: (pageId: string) => void;
+  onRetryPendingPage?: (pageId: string) => void;
+  onRemovePendingPage?: (pageId: string) => void;
 }
 
 
@@ -131,6 +152,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   onDeleteBlock,
   onMoveBlockTo,
   onInsertBlock,
+  onCopyBlock,
   onDuplicateBlock,
   onToggleBlockLock,
   onMoveBlockFrame,
@@ -141,8 +163,12 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   onSlotAiAction,
   renderInlineComposer,
   wrapSlotContent,
+  pendingState,
+  onCancelPendingPage,
+  onRetryPendingPage,
+  onRemovePendingPage,
 }) => {
-  const editable = mode === "Editing";
+  const editable = mode === "Editing" && !pendingState;
   const layout = page.layout;
   /** Pages with their own typography let slots inherit it instead of the Studio defaults. */
   const inheritsTypography = Boolean(layout);
@@ -404,6 +430,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         onQuickAdd={(kind) => onInsertBlock?.(page.pageId, kind, bIdx + 1)}
         onMoveUp={() => onMoveBlock(page.pageId, bIdx, -1)}
         onMoveDown={() => onMoveBlock(page.pageId, bIdx, 1)}
+        onCopy={onCopyBlock ? () => onCopyBlock(page.pageId, block.blockId) : undefined}
         onDuplicate={() => onDuplicateBlock?.(page.pageId, block.blockId)}
         onToggleLock={() => onToggleBlockLock?.(page.pageId, block.blockId)}
         onDelete={() => onDeleteBlock(page.pageId, block.blockId)}
@@ -517,6 +544,122 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         {!page.hideHeaderFooter && (
           <div className="px-10 py-3 border-t border-transparent hover:border-dashed hover:border-slate-200">
             {renderSlotBox(page.footerSlotId, { className: "text-xs text-slate-500" })}
+          </div>
+        )}
+
+        {pendingState && (
+          <div
+            data-testid={`pending-page-overlay-${page.pageId}`}
+            className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-[1px]"
+          >
+            {pendingState.previewThumb && (
+              <img
+                src={pendingState.previewThumb}
+                alt=""
+                className="pointer-events-none select-none absolute inset-0 w-full h-full object-contain p-8 opacity-25"
+              />
+            )}
+            <div className="relative z-10 max-w-sm w-full mx-6 rounded-xl border border-slate-200/90 bg-white/95 shadow-lg px-5 py-4 text-center">
+              {pendingState.status === "running" && (
+                <>
+                  <Loader2 className="w-7 h-7 text-emerald-600 animate-spin mx-auto mb-2.5" />
+                  <p className="text-sm font-semibold text-slate-800">
+                    원본 {pendingState.sourcePageNumber}p 구조 추출·검증 중
+                    {pendingState.iter ? ` (iter ${pendingState.iter})` : ""}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1 break-keep">
+                    {pendingState.message || "PDF 레이아웃 정밀 분석 진행 중..."}
+                  </p>
+                  {(pendingState.verdict || pendingState.spanScore !== undefined && pendingState.spanScore !== null) && (
+                    <p className="text-[11px] font-medium text-emerald-700 mt-1.5">
+                      {pendingState.verdict ? `판정: ${pendingState.verdict}` : ""}
+                      {pendingState.verdict && pendingState.spanScore !== null && pendingState.spanScore !== undefined ? " · " : ""}
+                      {pendingState.spanScore !== null && pendingState.spanScore !== undefined
+                        ? `일치율 ${pendingState.spanScore}%`
+                        : ""}
+                    </p>
+                  )}
+                  {onCancelPendingPage && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCancelPendingPage(page.pageId);
+                      }}
+                      className="mt-3 px-3 py-1 rounded border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                    >
+                      작업 중단
+                    </button>
+                  )}
+                </>
+              )}
+
+              {pendingState.status === "queued" && (
+                <>
+                  <Clock className="w-7 h-7 text-slate-400 mx-auto mb-2.5" />
+                  <p className="text-sm font-semibold text-slate-700">
+                    변환 대기 중 ({pendingState.queuePosition ?? "-"}/{pendingState.totalInJob ?? "-"})
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    원본 {pendingState.sourcePageNumber}p — 앞 페이지 변환이 끝나면 순서대로 실행됩니다
+                  </p>
+                  {onCancelPendingPage && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCancelPendingPage(page.pageId);
+                      }}
+                      className="mt-3 px-3 py-1 rounded border border-slate-200 text-xs font-medium text-slate-500 hover:bg-slate-50"
+                    >
+                      대기 취소
+                    </button>
+                  )}
+                </>
+              )}
+
+              {(pendingState.status === "failed" || pendingState.status === "cancelled") && (
+                <>
+                  <AlertTriangle className="w-7 h-7 text-amber-500 mx-auto mb-2.5" />
+                  <p className="text-sm font-semibold text-slate-800">
+                    {pendingState.status === "cancelled"
+                      ? `원본 ${pendingState.sourcePageNumber}p 변환이 중단되었습니다`
+                      : `원본 ${pendingState.sourcePageNumber}p 변환 실패`}
+                  </p>
+                  {(pendingState.error || pendingState.message) && (
+                    <p className="text-xs text-slate-500 mt-1 break-words">
+                      {pendingState.error || pendingState.message}
+                    </p>
+                  )}
+                  <div className="mt-3.5 flex items-center justify-center gap-2">
+                    {onRetryPendingPage && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRetryPendingPage(page.pageId);
+                        }}
+                        className="px-3 py-1 rounded bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700"
+                      >
+                        다시 시도
+                      </button>
+                    )}
+                    {onRemovePendingPage && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemovePendingPage(page.pageId);
+                        }}
+                        className="px-3 py-1 rounded border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        페이지 제거
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>

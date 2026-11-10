@@ -1,6 +1,11 @@
 import { create } from "zustand";
 
-import type { VDocDocument } from "@vibe/vdoc-schema";
+import {
+  iterPageSlotIds,
+  replacePageContent,
+  type VDocDocument,
+  type VDocSlot,
+} from "@vibe/vdoc-schema";
 
 import { errorMessage, useHistoryStore } from "@/shared/lib";
 
@@ -22,8 +27,12 @@ export type DocumentSaveState = "saved" | "dirty" | "saving" | "error" | "confli
 export interface UpdateDocOptions {
   history?: boolean;
   label?: string;
+  /** 같은 키로 연달아 들어오는 편집은 하나의 Undo 항목으로 합친다. */
+  coalesceKey?: string;
   /** 이 변경의 출처 (AI 변경안 승인 등). 저장할 때 서버 개정 이력에 작성자로 남는다. */
   change?: ChangeNote;
+  /** 비동기로 채워진 예약 페이지 ID — 이전 시점 문서 스냅샷 Undo 가 이 페이지 결과를 덮어쓰지 않게 보호한다. */
+  asyncHydratedPageId?: string;
 }
 
 export interface StudioDocumentState {
@@ -57,6 +66,8 @@ const AUTOSAVE_DELAY_MS = 800;
 const autosaveTimers = new Map<string, number>();
 /** 다음 저장에 실어 보낼 변경 출처 (문서별). 저장이 성공하면 비운다. */
 const pendingNotes = new Map<string, ChangeNote[]>();
+/** 비동기로 수화된 예약 페이지 ID (문서별) — 이전 스냅샷 restore() 가 비동기 결과를 지우지 않게 보호한다. */
+const asyncHydratedPages = new Map<string, Set<string>>();
 
 
 export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => {
@@ -104,9 +115,31 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
 
   /** 문서 전체를 갈아 끼우는 Undo/Redo (같은 문서가 열려 있을 때만). */
   const restore = (doc: VDocDocument) => {
-    if (!get().docs.some((d) => d.docId === doc.docId)) return;
-    replaceDoc(doc);
-    scheduleSave(doc.docId);
+    const liveDoc = get().docs.find((d) => d.docId === doc.docId);
+    if (!liveDoc) return;
+    let merged = doc;
+    const hydratedIds = asyncHydratedPages.get(doc.docId);
+    if (hydratedIds && hydratedIds.size > 0) {
+      for (const pageId of hydratedIds) {
+        const liveIdx = liveDoc.pages.findIndex((p) => p.pageId === pageId);
+        const snapIdx = merged.pages.findIndex((p) => p.pageId === pageId);
+        if (liveIdx < 0 || snapIdx < 0) continue;
+        const livePage = liveDoc.pages[liveIdx];
+        const snapPage = merged.pages[snapIdx];
+        if (snapPage.blocks.length === 0 && livePage.blocks.length > 0) {
+          const liveSlots: Record<string, VDocSlot> = {};
+          for (const sid of [livePage.headerSlotId, livePage.footerSlotId, ...iterPageSlotIds(livePage)]) {
+            if (sid && liveDoc.slots[sid]) liveSlots[sid] = liveDoc.slots[sid];
+          }
+          merged = replacePageContent(merged, pageId, livePage, liveSlots, {
+            thumbnail: liveDoc.preview?.pageThumbnails?.[liveIdx],
+            sourceVariables: liveDoc.variables,
+          });
+        }
+      }
+    }
+    replaceDoc(merged);
+    scheduleSave(merged.docId);
   };
 
   return {
@@ -158,6 +191,14 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
       const next = updater(current);
       if (next === current) return true;
       replaceDoc(next);
+      if (opts?.asyncHydratedPageId) {
+        let setForDoc = asyncHydratedPages.get(next.docId);
+        if (!setForDoc) {
+          setForDoc = new Set<string>();
+          asyncHydratedPages.set(next.docId, setForDoc);
+        }
+        setForDoc.add(opts.asyncHydratedPageId);
+      }
       if (opts?.change) pendingNotes.set(docId, [...(pendingNotes.get(docId) ?? []), opts.change]);
       scheduleSave(next.docId);
       if (opts?.history) {
@@ -165,6 +206,7 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
           label: opts.label ?? "문서 구조가 변경되었습니다.",
           // 활성 문서가 아닌 문서의 변경은 프로젝트 범위로 둔다 (문서를 바꿔도 되돌릴 수 있게)
           scope: docId === get().activeDocId ? "document" : "project",
+          coalesceKey: opts.coalesceKey,
           undo: () => restore(current),
           redo: () => restore(next),
         });
@@ -178,6 +220,7 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
       if (timer) window.clearTimeout(timer);
       autosaveTimers.delete(docId);
       pendingNotes.delete(docId);
+      asyncHydratedPages.delete(docId);
       replaceDoc(fresh);
       setSaveState(docId, "saved");
       set({ lastError: null });
