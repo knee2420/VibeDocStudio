@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
 
 from harness_kit import packs
@@ -24,9 +25,35 @@ PLUGIN = "vibefs"
 #: 작업 폴더 규칙 파일(`.agents/rules/vibedoc.md`) 본문 — 하네스 core 팩의 샌드박스 규칙
 RULE_TEXT = packs.text("core:sandbox/rules.md")
 
+
+def _short_path(path: str) -> str:
+    """Windows 8.3 짧은 경로 (`C:/Users/x/클로드 코드 전용` → `C:/Users/x/클로드~1`). 못 구하면 원래 경로."""
+    if sys.platform != "win32":
+        return path
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        get_short = ctypes.windll.kernel32.GetShortPathNameW
+        get_short.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
+        buf = ctypes.create_unicode_buffer(32768)
+        return buf.value if get_short(path, buf, len(buf)) else path
+    except (AttributeError, OSError):
+        return path
+
+
 def _arg(value: str) -> str:
-    """`cmd /c` 로 실행되는 훅 명령 한 조각. 공백이 있을 때만 따옴표로 감싼다."""
-    text = value.replace("\\", "/")
+    """훅 명령 한 조각. 공백이 있으면 짧은 경로로 바꿔 따옴표 없이 쓴다.
+
+    agy 1.5.3 은 훅을 `cmd /c "<명령>"` 으로 띄우면서 명령 안의 따옴표를 `\\"` 로 이스케이프한다 (실측).
+    cmd 는 `\\"` 를 모르므로 따옴표가 하나라도 있으면 경로가 깨져 훅이 exit 1 로 죽고, agy 는 그걸 차단으로
+    보고 **모든 도구**를 사유 없이 `failed` 로 막는다 (프로젝트 경로에 공백이 있는 PC 에서 Composer 가 전부 실패).
+    짧은 경로를 못 구할 때(8.3 이름이 꺼진 볼륨)만 따옴표로 감싼다.
+    """
+    text = value
+    if " " in text:
+        text = _short_path(text)
+    text = text.replace("\\", "/")
     return f'"{text}"' if " " in text else text
 
 
