@@ -20,11 +20,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-from .index import MountItem, WorkspaceIndex
-from .mapper import build_map
-from .sandbox import prepare_sandbox
-from .workbench import Workbench
-from .store import Coverage, WorkspaceStore, coverage
+from harness_kit import packs
+
+from app.core.process_tree import CREATE_NO_WINDOW
+from vibefs.index import MountItem, WorkspaceIndex
+from vibefs.mapper import build_map
+from vibefs.sandbox import ENTRY, prepare_sandbox
+from vibefs.store import Coverage, WorkspaceStore, coverage
+from vibefs.workbench import Workbench
 
 logger = logging.getLogger(__name__)
 
@@ -33,22 +36,20 @@ MOUNT_KIND = "resource-mount"
 WORKBENCH_KIND = "workbench"
 #: 이 버전보다 낮은 agy 는 작업 폴더 훅 · 플러그인 MCP 동작을 확인하지 않았다
 MIN_AGY_VERSION = (1, 5, 0)
-_CASUAL_EXCLUSIONS = re.compile(r"전체적|전반적|모든\s*면|모든\s*각도|모든\s*관점")
-_FULL_READ_EXPLICIT = re.compile(
-    r"(?:전수\s*(?:조사|검사|확인)|"
-    r"(?:모든|전체|전부)\s*(?:파일|문서|자료)|"
-    r"(?:빠짐없이|빠짐\s*없이|하나도\s*빠짐없이|샅샅이|통째로?)\s*(?:다\s*)?(?:읽|확인|검토|비교)|"
-    r"(?:파일|문서|자료)(?:들을?|를?)\s*(?:모두|전부|다)\s*(?:읽|확인|검토))"
-)
-#: "Decision 들을 읽고" · "결정 카드들 정리해줘" · "회의록들을 비교해" — 묶음 전체를 다루는 요청 (읽기 · 종합 동사)
-_SET_VERBS = r"(?:읽|확인|검토|비교|분석|정리|요약|종합|모아|훑|살펴|추려|표로|묶어|대조)"
-_CATEGORY_PLURAL_READ = re.compile(
-    r"(?P<target>[a-zA-Z0-9가-힣_-]+)\s?들(?:을|를|의|에서|이|은|는)?\s*(?:다|전부|모두|싹)?\s*(?:을\s*)?" + _SET_VERBS
-)
-#: "모든 결정 카드" · "전체 회의록" — 명시적 전체 + 대상
-_ALL_OF_TARGET = re.compile(r"(?:모든|전체)\s+(?P<target>[a-zA-Z0-9가-힣_-]{2,})")
-_NOT_TARGETS = {"이", "그", "저", "것", "우리", "저희", "너희", "사람", "분", "여러분", "이것", "그것", "파일", "문서", "자료", "내용"}
+_INTENTS = "resource:intents.ko.json"
+_compiled_intents: dict[int, dict[str, Any]] = {}
 
+
+def _intents() -> dict[str, Any]:
+    """'전체 읽기' 요청 감지 어휘 — 하네스 resource 팩."""
+    raw = packs.data(_INTENTS)
+    hit = _compiled_intents.get(id(raw))
+    if hit is None:
+        hit = {k: (packs.compile_rx(v) if isinstance(v, dict) else set(v) if isinstance(v, list) else v)
+               for k, v in raw.items() if not k.startswith("_")}
+        _compiled_intents.clear()
+        _compiled_intents[id(raw)] = hit
+    return hit
 
 def strip_recap(text: str) -> str:
     """[이전 대화 요약 …] … [/이전 대화 요약] 블록을 제거한다."""
@@ -68,16 +69,17 @@ def detect_full_read_intent(text: str) -> tuple[bool, Optional[str]]:
         return False, None
     clean = strip_recap(text)
     clean = re.sub(r"\[.*?\]", "", clean)
-    if _CASUAL_EXCLUSIONS.search(clean) and not _FULL_READ_EXPLICIT.search(clean):
+    lex = _intents()
+    if lex["casualExclusions"].search(clean) and not lex["fullReadExplicit"].search(clean):
         return False, None
-    for pattern in (_CATEGORY_PLURAL_READ, _ALL_OF_TARGET):
+    for pattern in (lex["categoryPluralRead"], lex["allOfTarget"]):
         for m in pattern.finditer(clean):
             target = m.group("target")
             if len(target) > 2:
                 target = re.sub(r"(에서|으로|에게|로|을|를|은|는|이|가|의|과|와)$", "", target)
-            if target not in _NOT_TARGETS:
+            if target not in lex["notTargets"]:
                 return True, target
-    if _FULL_READ_EXPLICIT.search(clean):
+    if lex["fullReadExplicit"].search(clean):
         return True, None
     return False, None
 
@@ -130,7 +132,7 @@ class ResourceWorkspace:
     def _check_version(self) -> None:
         try:
             out = subprocess.run([self.agy_executable or "agy", "--version"], capture_output=True, text=True,
-                                 timeout=30, creationflags=0x08000000 if sys.platform == "win32" else 0).stdout.strip()
+                                 timeout=30, creationflags=CREATE_NO_WINDOW).stdout.strip()
         except (OSError, subprocess.SubprocessError) as exc:
             logger.warning("[workspace] agy 버전 확인 실패: %s", exc)
             return
@@ -149,14 +151,14 @@ class ResourceWorkspace:
 
     def mcp_server_spec(self, session_id: str) -> list[dict[str, Any]]:
         """ACP session/new 시 전달할 vibefs MCP 서버 사양."""
-        here = Path(__file__).resolve().parent
         return [
             {
                 "name": "vibefs",
                 "command": self.python_exe.replace("\\", "/"),
                 "args": [
                     "-I",
-                    str((here / "vibefs_server.py").resolve()).replace("\\", "/"),
+                    str(ENTRY.resolve()).replace("\\", "/"),
+                    "mcp",
                     "--state",
                     str(self.state_dir.resolve()).replace("\\", "/"),
                     # 이 MCP 서버를 이 세션의 마운트에 고정한다 (다른 세션 자료가 섞이지 않게). env 보다 확실한 인자로 넘긴다.
@@ -278,6 +280,19 @@ class ResourceWorkspace:
             logger.warning("[workspace] 작업대 %s 거부: %s", label, value)
             return None
 
+    @staticmethod
+    def _consensus(project_id: str, ref_root: Optional[Path]) -> dict[str, list[dict[str, Any]]]:
+        """프로젝트 바인딩(`<references>/bindings/<projectId>.json`)의 확정 해석 카드 — refId → 카드 목록. 읽기만 한다."""
+        if not project_id or ref_root is None or not re.fullmatch(r"[\w.-]+", project_id):
+            return {}
+        path = ref_root.parent / "bindings" / f"{project_id}.json"
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {}
+        return {str(e.get("refId")): [c for c in e.get("consensus") or [] if isinstance(c, dict) and c.get("cardId")]
+                for e in raw.get("entries") or [] if isinstance(e, dict) and e.get("refId")}
+
     def set_workbench(self, session_id: str, content: str) -> Optional[Workbench]:
         """프론트의 작업대 첨부 → 문서 · 레퍼런스 경로를 풀어 세션 작업대로 저장한다 (vibefs 가 읽는다)."""
         try:
@@ -290,7 +305,10 @@ class ResourceWorkspace:
         root = self._fixture_root(raw.get("documentsRoot"), "documentsRoot") or self.documents_root
         ref_root = self._fixture_root(raw.get("referencesRoot"), "referencesRoot") or self.references_root
         scope = raw.get("scope") or {}
+        project_id = str(raw.get("projectId") or "")
+        consensus = self._consensus(project_id, ref_root)
         state = {
+            "projectId": project_id,
             "docId": raw.get("docId"),
             "docPath": None if scope.get("mode") == "off" else self._doc_path(str(raw.get("docId") or ""), root),
             "scope": scope,
@@ -299,7 +317,9 @@ class ResourceWorkspace:
             "references": [
                 {"refId": r.get("refId"), "title": r.get("title"), "dir": self._ref_dir(str(r.get("refId") or ""), ref_root),
                  "pinIds": None if r.get("pinIds") is None else [str(x) for x in r.get("pinIds") or []],
-                 "layers": {str(k): bool(v) for k, v in (r.get("layers") or {}).items()}}
+                 "layers": {str(k): bool(v) for k, v in (r.get("layers") or {}).items()},
+                 # 사용자가 확정한 해석 카드 (프로젝트 바인딩) — AI 는 다시 해석하지 않고 따른다
+                 "consensus": consensus.get(str(r.get("refId") or ""), [])}
                 for r in (raw.get("references") or []) if isinstance(r, dict) and r.get("refId")
             ],
         }
@@ -311,11 +331,8 @@ class ResourceWorkspace:
 
     def brief(self, state: MountState) -> str:
         ix = state.index
-        return (
-            "[리소스 작업 공간 — 사용자가 Resource Manager 에서 체크한 자료가 마운트됐다]\n"
-            + build_map(ix)
-            + "\n(파일 목록 전체는 ws_tree · 이름은 ws_glob · 내용은 ws_grep · 후보 목록은 ws_collect 로 찾고, 원문은 read_file 로 읽는다)"
-        )
+        msg = packs.data("resource:messages.json")["brief"]
+        return msg["head"] + build_map(ix) + msg["tail"]
 
     def coverage(
         self,
@@ -333,10 +350,5 @@ class ResourceWorkspace:
 
 def nudge_message(cov: Coverage, limit: int = 30) -> str:
     """'전체' 를 요구한 작업인데 덜 읽고 끝냈을 때 이어 읽게 하는 메시지."""
-    return (
-        "[작업 공간 확인] 사용자는 빠짐없이 확인하라고 했는데, 마운트된 자료 중 아직 읽지 않은 파일이 있다.\n"
-        + cov.render(limit=limit)
-        + "\n사용자 요청 범위(특정 폴더 · 종류를 말했다면 그 안)에 드는 파일 중 안 읽은 것을 read_file 로 읽고"
-        " (동일본은 하나만 · 양이 많으면 invoke_subagent 로 폴더별로 나눠도 된다) 앞의 답을 보완하라."
-        " 남은 파일이 요청 범위 밖이면 더 읽지 말고 '나머지는 요청 범위 밖' 이라고 한 줄로 밝히고 끝내라."
-    )
+    msg = "resource:messages.json"
+    return packs.message(msg, "coverageNudgeHead") + cov.render(limit=limit) + packs.message(msg, "coverageNudgeTail")

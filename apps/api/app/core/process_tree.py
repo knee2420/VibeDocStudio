@@ -20,6 +20,8 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 _IS_WINDOWS = sys.platform == "win32"
+#: Windows 에서 하위 프로세스가 콘솔 창을 띄우지 않게 한다 (agy 를 띄우는 모든 실행기가 이 값을 쓴다)
+CREATE_NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 if _IS_WINDOWS:  # pragma: py-not-win32
     import ctypes

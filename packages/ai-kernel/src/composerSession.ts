@@ -1,6 +1,8 @@
 import { AssistantClient, permissionToServerMode, type ToolResultPayload } from "./client";
 import type { AiRuntime } from "./runtime";
 import type { AssistantEvent, ContextRef, PermissionMode, RiskLevel, TurnUsage } from "./types";
+import coreMessages from "@vibe/harness-packs/core/messages.json";
+import coreSettings from "@vibe/harness-packs/core/settings.json";
 
 export type ComposerItem =
   | { kind: "user"; id: string; text: string; contexts: ContextRef[] }
@@ -79,8 +81,10 @@ export interface ComposerState {
 const MAX_TOOL_ROUNDS = 16;
 /** 저장하는 대화 항목 수 상한 (오래된 것부터 버린다) */
 const MAX_SAVED_ITEMS = 160;
-const RECAP_TURNS = 8;
-const RECAP_CHARS = 600;
+/** 지난 대화 요약 분량 · 머리말 — 하네스 core 팩(`settings.json` · `messages.json` recap) */
+const RECAP_TURNS = coreSettings.recap.turns;
+const RECAP_CHARS = coreSettings.recap.chars;
+const RECAP = coreMessages.recap;
 
 /** 문서별 대화를 담는 저장소 — 스튜디오가 localStorage 로 구현해 넣는다. */
 export interface ComposerPersistence {
@@ -115,6 +119,8 @@ export class ComposerSessionController {
     inbox: { refs: [], revision: 0 },
   };
   private readonly listeners = new Set<() => void>();
+  /** 서버 이벤트를 앱의 다른 위젯이 받아 가는 길 (예: 레퍼런스 해석 카드 → 레퍼런스 패널) */
+  private readonly serverListeners = new Map<string, Set<(event: AssistantEvent) => void>>();
   private abort: AbortController | null = null;
   private approvals = new Map<string, (approved: boolean) => void>();
   private engineOverride: { provider: string; model: string } | null = null;
@@ -188,11 +194,11 @@ export class ComposerSessionController {
     );
     const recent = turns.slice(-RECAP_TURNS * 2);
     if (!recent.length) return "";
-    const lines = recent.map((i) => `${i.kind === "user" ? "사용자" : "AI"}: ${i.text.replace(/\s+/g, " ").slice(0, RECAP_CHARS)}`);
+    const lines = recent.map((i) => `${i.kind === "user" ? RECAP.user : RECAP.assistant}: ${i.text.replace(/\s+/g, " ").slice(0, RECAP_CHARS)}`);
     return [
-      "[이전 대화 요약 — 서버 세션이 새로 열려 앞 대화를 기억하지 못한다. 아래를 맥락으로 이어라]",
+      RECAP.open,
       ...lines,
-      "[/이전 대화 요약]",
+      RECAP.close,
       "",
       "",
     ].join("\n");
@@ -209,6 +215,17 @@ export class ComposerSessionController {
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  };
+
+  /** 특정 종류의 서버 이벤트를 구독한다. 반환값을 부르면 구독을 끊는다. */
+  onServerEvent = <T extends AssistantEvent["type"]>(
+    type: T,
+    handler: (event: Extract<AssistantEvent, { type: T }>) => void,
+  ): (() => void) => {
+    const set = this.serverListeners.get(type) ?? new Set();
+    set.add(handler as (event: AssistantEvent) => void);
+    this.serverListeners.set(type, set);
+    return () => set.delete(handler as (event: AssistantEvent) => void);
   };
 
   private set(patch: Partial<ComposerState>): void {
@@ -430,6 +447,13 @@ export class ComposerSessionController {
     const agentTools = new Map<string, string>();
     const onEvent = (event: AssistantEvent) => {
       if (signal.aborted) return;
+      this.serverListeners.get(event.type)?.forEach((handler) => {
+        try {
+          handler(event);
+        } catch {
+          /* 구독자 오류가 대화를 막지 않게 */
+        }
+      });
       switch (event.type) {
         case "turn_start":
           model = event.model;
@@ -580,6 +604,31 @@ export class ComposerSessionController {
             }
             this.update(item.id, event.ok ? { status: "done", output } : { status: "error", error: String(event.output ?? "") });
           }
+          break;
+        }
+        case "workspace_sources": {
+          const shown = event.sources.filter((s) => s.available);
+          if (shown.length === 0) break;
+          const unused = shown.filter((s) => !s.used);
+          this.push({
+            kind: "notice",
+            id: nid("n"),
+            level: unused.length ? "warning" : "info",
+            text:
+              "확인한 출처: " +
+              shown.map((s) => `${s.label} ${s.used ? "✓" : "✗ 안 열어 봄"}${s.used && s.detail ? ` ${s.detail}` : ""}`).join(" · "),
+          });
+          break;
+        }
+        case "reference_interpretations": {
+          if (event.cards.length === 0) break;
+          const layers = [...new Set(event.cards.map((c) => c.layer))].join(" · ");
+          this.push({
+            kind: "notice",
+            id: nid("n"),
+            level: "info",
+            text: `레퍼런스 해석 카드 ${event.cards.length}장 제안 (${layers}) — 레퍼런스 패널에서 채택 강도를 정하고 확정하세요.`,
+          });
           break;
         }
         case "workspace_coverage": {

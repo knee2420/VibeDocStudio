@@ -563,8 +563,24 @@ const ToolCallCard: React.FC<{
       )}
       {open && (
         <div className="border-t border-slate-100 px-2.5 py-2 space-y-1.5 bg-slate-50/60">
-          <JsonBlock label="arguments" value={item.arguments} />
-          {item.output !== undefined && <JsonBlock label="result" value={item.output} />}
+          {item.name === "resource.cite" && Array.isArray(item.arguments?.citations) ? (
+            <div className="space-y-1.5">
+              {(item.arguments.citations as Array<{ label?: string; lines?: [number, number]; snippet?: string }>).map((c, idx) => (
+                <div key={idx} className="p-1.5 rounded bg-white border border-slate-200 text-[11px]">
+                  <div className="font-semibold text-slate-800 flex items-center justify-between">
+                    <span>{c.label || "원천 근거"}</span>
+                    {c.lines && <span className="font-mono text-[10px] text-purple-700 bg-purple-50 px-1 py-0.5 rounded">L{c.lines[0]}-{c.lines[1]}</span>}
+                  </div>
+                  {c.snippet && <div className="text-slate-600 mt-0.5 text-[10.5px] leading-relaxed italic">"{c.snippet}"</div>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <JsonBlock label="arguments" value={item.arguments} />
+              {item.output !== undefined && <JsonBlock label="result" value={item.output} />}
+            </>
+          )}
           {item.error && <div className="text-rose-600">{item.error}</div>}
         </div>
       )}
@@ -572,7 +588,7 @@ const ToolCallCard: React.FC<{
   );
 };
 
-/** 도구 인자에 들어 있는 위치(slotId · blockId · pageId · docId)를 칩으로 — 어디가 바뀌는지 바로 눌러 본다. */
+/** 도구 인자에 들어 있는 위치(slotId · blockId · pageId · docId · citations)를 칩으로 — 어디가 바뀌는지 바로 눌러 본다. */
 const TARGET_KEYS: [string, string][] = [
   ["pageId", "page"],
   ["blockId", "block"],
@@ -582,7 +598,7 @@ const TARGET_KEYS: [string, string][] = [
 ];
 
 const ToolTargets: React.FC<{ args: Record<string, unknown> }> = ({ args }) => {
-  const targets: { id: string; kind: string }[] = [];
+  const targets: { id: string; kind: string; label?: string }[] = [];
   for (const [key, kind] of TARGET_KEYS) {
     const value = args?.[key];
     if (typeof value === "string" && value) targets.push({ id: value, kind });
@@ -591,11 +607,25 @@ const ToolTargets: React.FC<{ args: Record<string, unknown> }> = ({ args }) => {
   for (const change of batch.slice(0, 12)) {
     if (typeof change?.slotId === "string") targets.push({ id: change.slotId, kind: "slot" });
   }
+  const citations = Array.isArray(args?.citations)
+    ? (args.citations as Array<{ resourceId?: string; label?: string; lines?: [number, number] }>)
+    : [];
+  for (const c of citations) {
+    if (typeof c?.resourceId === "string" && c.resourceId) {
+      const lineHash = Array.isArray(c.lines) && c.lines.length === 2 ? `#L${c.lines[0]}-L${c.lines[1]}` : "";
+      const lineLabel = Array.isArray(c.lines) && c.lines.length === 2 ? ` (L${c.lines[0]}-${c.lines[1]})` : "";
+      targets.push({
+        id: `${c.resourceId}${lineHash}`,
+        kind: "resource",
+        label: c.label ? `${c.label}${lineLabel}` : undefined,
+      });
+    }
+  }
   if (targets.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1 px-2.5 pb-1.5 -mt-0.5">
-      {targets.map((t) => (
-        <EntityChip key={`${t.kind}:${t.id}`} id={t.id} kind={t.kind} fallback={null} />
+      {targets.map((t, idx) => (
+        <EntityChip key={`${t.kind}:${t.id}:${idx}`} id={t.id} kind={t.kind} label={t.label} fallback={null} />
       ))}
       {batch.length > 12 && <span className="text-[10.5px] text-slate-400">외 {batch.length - 12}개</span>}
     </div>

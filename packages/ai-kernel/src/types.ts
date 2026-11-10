@@ -177,6 +177,26 @@ export type AssistantEvent =
   | { type: "tool_result"; id: string; name: string; ok: boolean; output?: string; durationMs?: number; chars?: number }
   | { type: "tool_call_progress"; name: string | null; chars: number }
   | { type: "status"; state: string; message: string }
+  /** 켜진 출처(에디터 · 레퍼런스 · 리소스)별로 이번 메시지에서 실제로 열어 봤는가 (턴 끝마다). */
+  | {
+      type: "workspace_sources";
+      sources: { id: string; label: string; available: boolean; used: boolean; detail: string; opened: number; total: number }[];
+    }
+  /** 레퍼런스: AI 가 이번 메시지에서 제안한 해석 카드 (사용자가 레퍼런스 패널에서 확정한다). */
+  | {
+      type: "reference_interpretations";
+      cards: {
+        cardId: string;
+        refId: string;
+        layer: string;
+        scope: string;
+        adoption: "follow" | "consult" | "exclude";
+        reading: string;
+        evidence: string[];
+        alternatives: { reading: string; evidence?: string[] }[];
+        measures?: Record<string, unknown>;
+      }[];
+    }
   /** 리소스 작업 공간: 이 대화에서 agy 가 read_file 로 읽은 범위 (턴 끝마다). */
   | {
       type: "workspace_coverage";

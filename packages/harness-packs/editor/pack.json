@@ -1,0 +1,16 @@
+{
+ "name": "editor",
+ "version": "1.0.0",
+ "description": "에디터(지금 쓰는 문서) — 작업대 도구 wb_* · 클라이언트 워크스페이스 도구 · 범위 규칙",
+ "dependsOn": [
+  "core"
+ ],
+ "tools": [
+  {
+   "file": "tools.server.json",
+   "source": "editor",
+   "aliases": "tools.aliases.json"
+  }
+ ],
+ "clientTools": "tools.client.json"
+}

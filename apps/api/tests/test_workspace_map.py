@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.assistant.workspace.index import MountItem, WorkspaceIndex
-from app.assistant.workspace.mapper import build_map, find_clusters, match_cluster_query
-from app.assistant.workspace.tools import WorkspaceTools
+from vibefs.index import MountItem, WorkspaceIndex
+from vibefs.mapper import build_map, find_clusters, match_cluster_query
+from vibefs.tools import WorkspaceTools
 
 
 def _make_vault(root: Path) -> Path:

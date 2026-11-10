@@ -366,6 +366,19 @@ export const ResourceViewerDrawer: React.FC<Props> = ({ item, focus, onClose }) 
                   <span>{lineCount.toLocaleString()} 줄</span>
                   <span>·</span>
                   <span>{charCount.toLocaleString()} 자</span>
+                  {focusLines && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const target = bodyRef.current?.querySelector<HTMLElement>("[data-focus-line='start']");
+                        target?.scrollIntoView({ block: "center", behavior: "smooth" });
+                      }}
+                      className="ml-2 px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold hover:bg-amber-200 transition cursor-pointer"
+                      title="인용된 줄 범위로 스크롤 이동"
+                    >
+                      근거 하이라이트 L{focusLines[0]}–{focusLines[1]}
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -436,15 +449,18 @@ export const ResourceViewerDrawer: React.FC<Props> = ({ item, focus, onClose }) 
 const NL = "\n";
 
 /** 근거 줄 범위를 칠한 본문 — 나머지는 그대로 둔다. */
-const FocusedText: React.FC<{ text: string; lines: [number, number] }> = ({ text, lines }) => {
-  const all = text.split(NL);
+export const FocusedText: React.FC<{ text: string; lines: [number, number] }> = ({ text, lines }) => {
+  const all = text.replace(/\r\n/g, NL).split(NL);
   const start = Math.max(1, lines[0]);
   const end = Math.min(all.length, Math.max(start, lines[1]));
   return (
     <>
       {all.slice(0, start - 1).join(NL)}
       {start > 1 ? NL : ""}
-      <mark data-focus-line="start" className="bg-amber-100 text-slate-900 rounded-sm outline outline-2 outline-amber-300">
+      <mark
+        data-focus-line="start"
+        className="block -mx-3 px-3 py-1 my-0.5 bg-amber-100/60 text-slate-900 border-l-3 border-amber-400/80 rounded-r-md"
+      >
         {all.slice(start - 1, end).join(NL)}
       </mark>
       {end < all.length ? NL : ""}

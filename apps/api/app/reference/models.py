@@ -7,7 +7,7 @@
     items/<refId>/extraction.json   구조 추출 결과 (읽기 전용 분석 재료)
     items/<refId>/layers.json       층위 측정 (D1–D6 …)
     items/<refId>/pins.json         핀
-    bindings/<projectId>.json       프로젝트 연결 (레퍼런스별 사용 여부 · 층위 on/off)
+    bindings/<projectId>.json       프로젝트 연결 (레퍼런스별 사용 여부 · 층위 on/off · 합의된 해석 카드)
 
 `extraction.json` 형식 (레퍼런스 전용 — vdoc 과 무관)::
 
@@ -165,19 +165,67 @@ class ReferencePin:
         )
 
 
+#: 해석 카드의 채택 강도 — 따름 · 참고만 · 따르지 않음
+ADOPTIONS = ("follow", "consult", "exclude")
+
+
+@dataclass(frozen=True)
+class ConsensusCard:
+    """합의된 해석 한 장: 이 레퍼런스의 **이 범위**에서 **이 층위**의 결정을 이렇게 읽고, 이 강도로 따른다.
+
+    AI 가 낸 해석(제안)을 사용자가 확정하면 여기 저장된다. 같은 레퍼런스를 사람마다 다르게 읽으므로
+    해석 문장 · 근거 앵커 · 대안 해석을 함께 남긴다.
+    """
+
+    card_id: str
+    layer: str
+    scope: str  # ref:<refId>[#p<n>|#pin:<id>|#blk:<id>]
+    adoption: str = "follow"
+    reading: str = ""
+    evidence: tuple[str, ...] = ()
+    alternatives: tuple[dict[str, Any], ...] = ()
+    status: str = "confirmed"
+    by: str = "user"
+    at: int = field(default_factory=now_ms)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"cardId": self.card_id, "layer": self.layer, "scope": self.scope, "adoption": self.adoption,
+                "reading": self.reading, "evidence": list(self.evidence),
+                "alternatives": [dict(a) for a in self.alternatives],
+                "status": self.status, "by": self.by, "at": self.at}
+
+    @classmethod
+    def from_dict(cls, raw: dict[str, Any]) -> "ConsensusCard":
+        adoption = str(raw.get("adoption") or "follow")
+        return cls(
+            card_id=str(raw.get("cardId") or ""),
+            layer=str(raw.get("layer") or ""),
+            scope=str(raw.get("scope") or ""),
+            adoption=adoption if adoption in ADOPTIONS else "follow",
+            reading=str(raw.get("reading") or ""),
+            evidence=tuple(str(x) for x in raw.get("evidence") or []),
+            alternatives=tuple(a for a in raw.get("alternatives") or [] if isinstance(a, dict)),
+            status=str(raw.get("status") or "confirmed"),
+            by=str(raw.get("by") or "user"),
+            at=int(raw.get("at") or 0) or now_ms(),
+        )
+
+
 @dataclass(frozen=True)
 class BindingEntry:
-    """프로젝트에 연결된 레퍼런스 하나. `layers` 에 없는 층위는 켜진 것으로 본다."""
+    """프로젝트에 연결된 레퍼런스 하나. `layers` 에 없는 층위는 켜진 것으로 본다. `consensus` 는 합의된 해석 카드."""
 
     ref_id: str
     enabled: bool = True
     layers: dict[str, bool] = field(default_factory=dict)
+    consensus: tuple[ConsensusCard, ...] = ()
 
     def layer_on(self, layer_id: str) -> bool:
         return self.layers.get(layer_id, True)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"refId": self.ref_id, "enabled": self.enabled, "layers": dict(self.layers)}
+        return {"refId": self.ref_id, "enabled": self.enabled, "layers": dict(self.layers),
+                "consensus": [c.to_dict() for c in self.consensus]}
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "BindingEntry":
@@ -186,6 +234,8 @@ class BindingEntry:
             ref_id=str(raw["refId"]),
             enabled=bool(raw.get("enabled", True)),
             layers={str(k): bool(v) for k, v in layers.items()} if isinstance(layers, dict) else {},
+            consensus=tuple(ConsensusCard.from_dict(c) for c in raw.get("consensus") or []
+                            if isinstance(c, dict) and c.get("cardId")),
         )
 
 

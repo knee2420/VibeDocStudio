@@ -5,6 +5,8 @@ import { errorMessage } from "@/shared/lib";
 import { referenceApi, type CreatePinInput } from "../api/referenceApi";
 import type {
   BoundReference,
+  ConsensusAdoption,
+  ConsensusCard,
   FocusedReferencePin,
   ReferenceExtraction,
   ReferenceItem,
@@ -29,6 +31,8 @@ export interface ReferenceState {
   extraction: Record<string, ReferenceExtraction>;
   layers: Record<string, ReferenceLayers>;
   checkedPinIds: string[];
+  /** AI 가 이번 대화에서 제안한 해석 카드 (확정 전) — refId 별 */
+  pendingCards: Record<string, ConsensusCard[]>;
   focusedPin: FocusedReferencePin | null;
   activeRefId: string | null;
   loading: boolean;
@@ -47,6 +51,13 @@ export interface ReferenceState {
   setEnabled: (refId: string, enabled: boolean) => Promise<void>;
   setAllEnabled: (enabled: boolean) => Promise<void>;
   toggleLayer: (refId: string, layerId: string) => Promise<void>;
+  /** 서버가 보낸 AI 해석 카드 (reference_interpretations) 를 받는다 */
+  receiveInterpretations: (cards: ConsensusCard[]) => void;
+  /** 제안 카드를 (고친 채택 강도 · 고른 대안으로) 확정한다 */
+  confirmCard: (refId: string, cardId: string, edits?: { adoption?: ConsensusAdoption; alternative?: number }) => Promise<void>;
+  discardCard: (refId: string, cardId: string) => void;
+  setCardAdoption: (refId: string, cardId: string, adoption: ConsensusAdoption) => Promise<void>;
+  removeCard: (refId: string, cardId: string) => Promise<void>;
 
   addPin: (refId: string, input: CreatePinInput) => Promise<ReferencePin>;
   updatePin: (refId: string, pinId: string, patch: { label?: string; note?: string; layer?: string }) => Promise<void>;
@@ -103,6 +114,7 @@ export const useReferenceStore = create<ReferenceState>((set, get) => {
     extraction: {},
     layers: {},
     checkedPinIds: [],
+    pendingCards: {},
     focusedPin: null,
     activeRefId: null,
     loading: false,
@@ -218,6 +230,58 @@ export const useReferenceStore = create<ReferenceState>((set, get) => {
         const on = entry ? entry.layers[layerId] ?? true : true;
         const binding = await referenceApi.updateBinding(currentProject(), refId, { layers: { [layerId]: !on } });
         await applyBinding(binding.entries);
+      }),
+
+    receiveInterpretations: (cards) =>
+      set((s) => {
+        const next = { ...s.pendingCards };
+        for (const card of cards) {
+          const refId = card.refId ?? "";
+          if (!refId) continue;
+          next[refId] = [...(next[refId] ?? []).filter((c) => c.cardId !== card.cardId), { ...card, status: "proposed" }];
+        }
+        return { pendingCards: next };
+      }),
+
+    confirmCard: async (refId, cardId, edits) =>
+      guard(async () => {
+        const card = (get().pendingCards[refId] ?? []).find((c) => c.cardId === cardId);
+        if (!card) return;
+        let { reading, evidence, alternatives } = card;
+        const pick = edits?.alternative;
+        if (pick !== undefined && alternatives[pick]) {
+          // 고른 대안을 본 해석으로, 원래 해석은 대안으로 남긴다
+          const chosen = alternatives[pick];
+          alternatives = [{ reading, evidence }, ...alternatives.filter((_, i) => i !== pick)];
+          reading = chosen.reading;
+          evidence = chosen.evidence?.length ? chosen.evidence : evidence;
+        }
+        await referenceApi.confirmCard(currentProject(), refId, {
+          cardId,
+          layer: card.layer,
+          scope: card.scope,
+          adoption: edits?.adoption ?? card.adoption,
+          reading,
+          evidence,
+          alternatives,
+        });
+        set((s) => ({ pendingCards: { ...s.pendingCards, [refId]: (s.pendingCards[refId] ?? []).filter((c) => c.cardId !== cardId) } }));
+        await applyBinding((await referenceApi.binding(currentProject())).entries);
+      }),
+
+    discardCard: (refId, cardId) =>
+      set((s) => ({ pendingCards: { ...s.pendingCards, [refId]: (s.pendingCards[refId] ?? []).filter((c) => c.cardId !== cardId) } })),
+
+    setCardAdoption: async (refId, cardId, adoption) =>
+      guard(async () => {
+        await referenceApi.updateCard(currentProject(), refId, cardId, { adoption });
+        await applyBinding((await referenceApi.binding(currentProject())).entries);
+      }),
+
+    removeCard: async (refId, cardId) =>
+      guard(async () => {
+        await referenceApi.removeCard(currentProject(), refId, cardId);
+        await applyBinding((await referenceApi.binding(currentProject())).entries);
       }),
 
     addPin: async (refId, input) =>

@@ -15,13 +15,11 @@ from .schemas import (
     CatalogBundleResponse,
     CatalogManifestResponse,
     PdfIngestResponse,
-    ScaffoldDocumentResponse,
 )
 from .use_cases import (
     GetCatalogBundleUseCase,
     IngestPdfToCatalogUseCase,
     ListCatalogFormsUseCase,
-    ScaffoldPdfToDocumentUseCase,
 )
 
 router = APIRouter()
@@ -29,7 +27,6 @@ router = APIRouter()
 ListDep = Annotated[ListCatalogFormsUseCase, Depends(Provide["list_catalog_forms"])]
 GetBundleDep = Annotated[GetCatalogBundleUseCase, Depends(Provide["get_catalog_bundle"])]
 IngestDep = Annotated[IngestPdfToCatalogUseCase, Depends(Provide["ingest_pdf_to_catalog"])]
-ScaffoldDep = Annotated[ScaffoldPdfToDocumentUseCase, Depends(Provide["scaffold_pdf_to_document"])]
 
 
 def _to_manifest_response(record: CatalogManifestRecord) -> CatalogManifestResponse:
@@ -86,35 +83,4 @@ async def ingest_pdf_to_catalog(
         checkedTables=checked_tables,
         checkedSlots=checked_slots,
         document=bundle.document,
-    )
-
-
-@router.post("/scaffold", response_model=ScaffoldDocumentResponse)
-@inject
-async def scaffold_pdf_form(
-    use_case: ScaffoldDep,
-    file: UploadFile = File(...),
-    title: str = Form(default=""),
-    fidelity_mode: str = Form(default="balanced"),
-) -> ScaffoldDocumentResponse:
-    pdf_bytes = await file.read()
-    raw_name = file.filename or "추출된 양식 문서"
-    fallback_title = raw_name[:-4] if raw_name.lower().endswith(".pdf") else raw_name
-    resolved_title = title.strip() or fallback_title
-    vdoc, total_pages, checked_blocks, checked_slots, agent_run = await run_in_threadpool(
-        use_case.execute,
-        pdf_bytes=pdf_bytes,
-        title=resolved_title,
-        fidelity_mode=fidelity_mode,
-    )
-
-    return ScaffoldDocumentResponse(
-        docId=vdoc.get("docId", ""),
-        title=vdoc.get("title", resolved_title),
-        totalPages=total_pages,
-        checkedBlocks=checked_blocks,
-        checkedSlots=checked_slots,
-        document=vdoc,
-        fidelityMode=fidelity_mode,
-        agentRun=agent_run,
     )

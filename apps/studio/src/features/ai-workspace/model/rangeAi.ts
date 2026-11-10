@@ -3,6 +3,7 @@
  * 미리보기에서 고른 것만 한꺼번에 반영(되돌리기 한 번)하거나 Staged 로 보낸다.
  */
 import type { AiAction } from "@vibe/ai-kernel";
+import inline from "@vibe/harness-packs/authoring/inline-actions.json";
 import { setSlotContent, withSlotFill, type StagedAiChange } from "@vibe/vdoc-schema";
 
 import { buildSlotHtmlChange, useAiStagingStore } from "@/entities/ai-staging";
@@ -13,15 +14,13 @@ import { editableSlotIds } from "./contextBuilders";
 
 export const SLOT_RANGE_SURFACE = "slot-range";
 
-const each = "각 칸의 역할 · 표 위치 · 분량을 지키고, 칸끼리 내용이 겹치지 않게";
-
-export const SLOT_RANGE_ACTIONS: AiAction[] = [
-  { id: "range-polish", label: "다듬기", icon: "wand", surfaces: [SLOT_RANGE_SURFACE], outputFormat: "html", instruction: `고른 칸들의 문장을 더 명확하고 자연스럽게 다듬어라. ${each}.` },
-  { id: "range-formal", label: "공문서체로", icon: "file", surfaces: [SLOT_RANGE_SURFACE], outputFormat: "html", instruction: `고른 칸들을 공문서 · 회의록 문체(간결한 개조식, 명사형 종결)로 바꿔라. ${each}.` },
-  { id: "range-concise", label: "간결하게", icon: "minimize", surfaces: [SLOT_RANGE_SURFACE], outputFormat: "html", instruction: `고른 칸들을 핵심만 남겨 더 짧게 줄여라. ${each}.` },
-  { id: "range-fill", label: "빈 칸 채우기", icon: "pencil", surfaces: [SLOT_RANGE_SURFACE], outputFormat: "html", instruction: `고른 칸 중 비어 있거나 자리표시만 있는 칸을 주변 칸 · 문서 맥락에 맞게 채워라. 이미 내용이 있는 칸은 넣지 마라.` },
-  { id: "range-translate-en", label: "영어로", icon: "languages", surfaces: [SLOT_RANGE_SURFACE], outputFormat: "html", instruction: `고른 칸들을 자연스러운 업무용 영어로 번역하라. ${each}.` },
-];
+/** 범위 AI 지시 — 하네스 authoring 팩(`inline-actions.json`). `{each}` 는 칸마다 지킬 공통 조건이다. */
+export const SLOT_RANGE_ACTIONS: AiAction[] = inline.range.actions.map((action) => ({
+  ...action,
+  outputFormat: action.outputFormat as AiAction["outputFormat"],
+  surfaces: [SLOT_RANGE_SURFACE],
+  instruction: action.instruction.replace("{each}", () => inline.range.each),
+}));
 
 /** 모델 출력 → `{slotId: html}`. 바꿀 수 있는 칸 · 실제로 달라진 칸만 남긴다. */
 export function parseSlotMap(text: string, slotIds: string[]): Record<string, string> {

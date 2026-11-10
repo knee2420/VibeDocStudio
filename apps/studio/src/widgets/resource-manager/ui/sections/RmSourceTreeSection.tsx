@@ -18,7 +18,7 @@ import {
   X,
 } from "lucide-react";
 import type { ResourceItem } from "@vibe/vdoc-schema";
-import { useResourceStore } from "@/entities/resource";
+import { computeAllNodeCounts, useResourceStore } from "@/entities/resource";
 import { useKnowledgeDeckStore } from "@/entities/knowledge-deck";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import {
@@ -65,36 +65,6 @@ const collectSubFolderIds = (item: ResourceItem): string[] => {
     item.children.forEach(traverse);
   }
   return ids;
-};
-
-const computeAllNodeCounts = (items: ResourceItem[]): Map<string, NodeCountInfo> => {
-  const map = new Map<string, NodeCountInfo>();
-  const traverse = (node: ResourceItem): NodeCountInfo => {
-    if (!node.children || node.children.length === 0) {
-      const info: NodeCountInfo = {
-        totalLeafCount: 1,
-        checkedLeafCount: node.isChecked ? 1 : 0,
-      };
-      map.set(node.id, info);
-      return info;
-    }
-
-    let total = 0;
-    let checked = 0;
-    for (const child of node.children) {
-      const cInfo = traverse(child);
-      total += cInfo.totalLeafCount;
-      checked += cInfo.checkedLeafCount;
-    }
-    const info: NodeCountInfo = { totalLeafCount: total, checkedLeafCount: checked };
-    map.set(node.id, info);
-    return info;
-  };
-
-  for (const item of items) {
-    traverse(item);
-  }
-  return map;
 };
 
 const NL = String.fromCharCode(10);

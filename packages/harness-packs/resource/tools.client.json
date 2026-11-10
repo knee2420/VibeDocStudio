@@ -1,0 +1,98 @@
+[
+ {
+  "name": "backdata.list",
+  "description": "문서에 등록된 백데이터 조각 목록 (chunkId, 출처, 요약). slotId 를 주면 그 슬롯에 연결된 것만",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "slotId": {
+     "type": "string"
+    }
+   }
+  }
+ },
+ {
+  "name": "evidence.forSlot",
+  "description": "칸 하나의 근거 후보 (direct: 이미 연결 · inherited: 이웃 칸 근거 · RM 고정 자료). 레퍼런스는 근거가 아니다(패턴 출처). 채우기 전에 무엇을 근거로 쓸지 확인한다",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "slotId": {
+     "type": "string"
+    }
+   }
+  },
+  "required": [
+   "slotId"
+  ]
+ },
+ {
+  "name": "resources.read",
+  "description": "RM 발췌 섹터 읽기 (sectorId). 텍스트 파일 원문은 이 도구가 아니라 read_file 로 읽는다",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "sectorId": {
+     "type": "string"
+    },
+    "maxChars": {
+     "type": "number",
+     "description": "기본 6000"
+    }
+   },
+   "required": [
+    "sectorId"
+   ]
+  }
+ },
+ {
+  "name": "resource.cite",
+  "description": "답변에서 사실 근거로 인용한 리소스 원천 출처와 정확한 줄 범위를 화면에 제출한다 (줄 번호는 본문 텍스트에 쓰지 말고 이 도구로만 전달)",
+  "risk": "ui",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "citations": {
+     "type": "array",
+     "description": "인용한 리소스 원천 출처 목록",
+     "items": {
+      "type": "object",
+      "properties": {
+       "resourceId": {
+        "type": "string",
+        "description": "원천 리소스 ID (예: file_af830ff196) 또는 상대 경로/파일명"
+       },
+       "label": {
+        "type": "string",
+        "description": "문서 또는 의사결정 제목"
+       },
+       "lines": {
+        "type": "array",
+        "items": {
+         "type": "integer"
+        },
+        "minItems": 2,
+        "maxItems": 2,
+        "description": "인용한 원본 파일의 시작 줄과 끝 줄 [startLine, endLine]"
+       },
+       "snippet": {
+        "type": "string",
+        "description": "근거가 된 핵심 문장 요약 발췌 (선택)"
+       }
+      },
+      "required": [
+       "resourceId",
+       "lines"
+      ]
+     }
+    }
+   },
+   "required": [
+    "citations"
+   ]
+  }
+ }
+]

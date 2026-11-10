@@ -1,0 +1,10 @@
+{
+ "name": "form-scaffold",
+ "version": "1.0.0",
+ "description": "PDF 양식 → 편집 가능한 문서 — 피델리티 루프 예산 · 보정값 · 폰트 별칭 · 스킬 · 판정 도구",
+ "dependsOn": [
+  "core"
+ ],
+ "prompts": "prompts.json",
+ "loopTools": "tools.loop.json"
+}

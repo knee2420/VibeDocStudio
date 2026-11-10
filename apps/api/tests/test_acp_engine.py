@@ -5,9 +5,9 @@ import queue
 import threading
 from pathlib import Path
 
-from app.assistant.adapters.agy_acp import AcpConversation, _split_model_and_thought
-from app.assistant.models import EngineChoice
 from app.assistant.workspace.citations import extract_citations, verify_citations
+from app.llm.adapters.agy_acp import AcpConversation, _split_model_and_thought
+from app.llm.models import EngineChoice
 
 
 def test_split_model_and_thought():
@@ -214,7 +214,7 @@ def test_acp_conversation_prompt_error_yields_turn_done(tmp_path: Path):
 
 def test_failed_tool_updates_become_error_state(tmp_path: Path):
     """agy 는 훅에 막힌 도구를 `status: failed` 로 보낸다 — 예전에는 '진행 중' → '완료' 로 둔갑했다."""
-    from app.assistant.adapters.agy_acp import _tool_error_text, _tool_state
+    from app.llm.adapters.agy_acp import _tool_error_text, _tool_state
 
     assert _tool_state("completed") == "done" and _tool_state("failed") == "error"
     assert _tool_state("cancelled") == "error" and _tool_state("in_progress") == "running"
@@ -238,7 +238,7 @@ def test_failed_tool_updates_become_error_state(tmp_path: Path):
 
 
 def test_scrub_surrogates():
-    from app.assistant.adapters.acp_client import scrub_surrogates
+    from app.llm.adapters.acp_client import scrub_surrogates
 
     # 1. 짝 없는 서로게이트가 U+FFFD 로 치환되는지 확인
     assert scrub_surrogates("a\ud83db") == "a\ufffdb"
@@ -252,7 +252,8 @@ def test_scrub_surrogates():
 def test_acp_client_send_raw_with_surrogates():
     from io import BytesIO
     from unittest.mock import MagicMock
-    from app.assistant.adapters.acp_client import AcpClient
+
+    from app.llm.adapters.acp_client import AcpClient
 
     # 가짜 클라이언트 인스턴스 준비 (서브프로세스 띄우지 않고 _send_raw 만 검증)
     client = object.__new__(AcpClient)

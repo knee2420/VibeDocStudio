@@ -4,10 +4,12 @@ import { findFirstEditableSlotId } from "@vibe/vdoc-schema";
 
 import { useAiStagingStore } from "@/entities/ai-staging";
 import { useReferenceStore } from "@/entities/reference-manager";
+import { useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { composerController } from "@/shared/ai";
 
 export type WorkspaceBootStatus = "loading" | "ready" | "error";
 
@@ -51,7 +53,10 @@ export function useWorkspaceBootstrap(): {
       }
       const activeProjectId = selectActiveProject(projectState)?.projectId;
       // 승인 전 변경안 대기열은 프로젝트별로 서버에 있다 (새로고침 뒤에도 이어서 검토)
-      if (activeProjectId) void useAiStagingStore.getState().hydrate(activeProjectId);
+      if (activeProjectId) {
+        void useAiStagingStore.getState().hydrate(activeProjectId);
+        void useResourceStore.getState().loadSession(activeProjectId);
+      }
       void useReferenceStore.getState().loadProject(activeProjectId ?? null);
       const recordedPhase = selectActiveProject(projectState)?.activePhase;
       if (!params.get("phase") && recordedPhase) session.setPhase(recordedPhase);
@@ -66,16 +71,23 @@ export function useWorkspaceBootstrap(): {
       setStatus("ready");
     })();
 
-    // 프로젝트를 바꾸면 그 프로젝트에 연결된 레퍼런스를 다시 불러온다
+    // 프로젝트를 바꾸면 그 프로젝트에 연결된 레퍼런스 및 리소스를 다시 불러온다
     const unsubscribe = useProjectStore.subscribe((state, prev) => {
       if (state.activeProjectId !== prev.activeProjectId) {
         void useReferenceStore.getState().loadProject(state.activeProjectId || null);
+        if (state.activeProjectId) void useResourceStore.getState().loadSession(state.activeProjectId);
       }
+    });
+
+    // AI 가 제안한 레퍼런스 해석 카드 → 레퍼런스 패널 (사용자가 채택 강도를 정하고 확정한다)
+    const unsubscribeCards = composerController.onServerEvent("reference_interpretations", (event) => {
+      useReferenceStore.getState().receiveInterpretations(event.cards);
     });
 
     return () => {
       cancelled = true;
       unsubscribe();
+      unsubscribeCards();
     };
   }, [attempt]);
 

@@ -25,9 +25,8 @@ import shutil
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
-from app.core.storage.payloads import externalize_span_dict, read_payload
-
 from app.core.storage.ids import safe_segment
+from app.core.storage.payloads import externalize_span_dict, read_payload
 
 logger = logging.getLogger(__name__)
 

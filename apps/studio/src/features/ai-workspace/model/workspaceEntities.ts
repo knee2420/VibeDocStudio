@@ -53,13 +53,16 @@ function highlight(id: string, on: boolean): void {
 /** 레퍼런스 · 핀 · 영역 클릭 시 레퍼런스 뷰어를 활성화하고 화면에 띄운다 (에디터 문서는 바꾸지 않는다). */
 export function revealReferenceViewer(refId: string): void {
   useReferenceStore.getState().setActiveRefId(refId);
-  useWorkspaceSessionStore.getState().openReference(refId);
   const layout = useWorkspaceLayoutStore.getState();
-  layout.setRefViewerOpen(true);
-  layout.setLeftSidebarOpen(true);
-  layout.setLeftPanelTab("reference-manager");
-  if (layout.refPlacement === "split" && layout.refSplitCollapsed) {
-    layout.setRefSplitCollapsed(false);
+  if (layout.refPlacement === "split") {
+    useWorkspaceSessionStore.getState().openReference(refId);
+    if (layout.refSplitCollapsed) {
+      layout.setRefSplitCollapsed(false);
+    }
+  } else {
+    layout.setRefViewerOpen(true);
+    layout.setLeftSidebarOpen(true);
+    layout.setLeftPanelTab("reference-manager");
   }
 }
 
@@ -308,14 +311,29 @@ const resourceResolver: EntityResolver = {
     const store = useResourceStore.getState();
     const all = flattenResourceItems(store.items);
 
+    // 해시 줄 번호(#L32-L47 또는 #L32) 분리
+    let rawId = id;
+    let targetLines: [number, number] | null = null;
+    const hashIdx = rawId.indexOf("#L");
+    if (hashIdx !== -1) {
+      const hashPart = rawId.slice(hashIdx + 2);
+      rawId = rawId.slice(0, hashIdx);
+      const m = /^(\d+)(?:-L?(\d+))?$/.exec(hashPart);
+      if (m) {
+        const s = parseInt(m[1], 10);
+        const e = m[2] ? parseInt(m[2], 10) : s;
+        targetLines = [s, e];
+      }
+    }
+
     // 1. 리소스 아이템 ID 직접 매칭 (file_xxx, dir_xxx 등)
-    let matchedItem = all.find((it) => it.id === id);
+    let matchedItem = all.find((it) => it.id === rawId);
     let matchedSector: ResourceSector | null = null;
 
     // 2. 섹터 ID 매칭 (sec_xxx 등)
     if (!matchedItem) {
       for (const it of all) {
-        const sec = it.sectors?.find((s) => s.sectorId === id);
+        const sec = it.sectors?.find((s) => s.sectorId === rawId);
         if (sec) {
           matchedItem = it;
           matchedSector = sec;
@@ -325,11 +343,33 @@ const resourceResolver: EntityResolver = {
     }
 
     // 3. 파일명/타이틀/Decision 번호 매칭 (예: "Decision 03" 이 id로 들어온 경우)
-    if (!matchedItem && id.length >= 3) {
-      const lower = id.toLowerCase();
-      matchedItem = all.find(
-        (it) => it.title.toLowerCase().includes(lower) || (it.pathOrUrl && it.pathOrUrl.toLowerCase().includes(lower))
-      );
+    if (!matchedItem && rawId.length >= 3) {
+      const lower = rawId.toLowerCase();
+      const norm = (s: string) => s.toLowerCase().replace(/[\s_]+/g, " ").trim();
+      const normLower = norm(rawId);
+      // "Decision 01 (인스파이어드...)" 처럼 괄호가 붙은 경우 Decision 01 만 추출하여 보조 매칭
+      const decisionMatch = /^decision\s+(\d+)/i.exec(lower);
+      const decPrefix = decisionMatch ? `decision ${decisionMatch[1].padStart(2, "0")}` : null;
+
+      const candidates = all.filter((it) => {
+        const t = it.title.toLowerCase();
+        const p = (it.pathOrUrl || "").toLowerCase();
+        if (t.includes(lower) || p.includes(lower)) return true;
+        if (norm(it.title).includes(normLower) || (it.pathOrUrl && norm(it.pathOrUrl).includes(normLower))) return true;
+        if (decPrefix && (t.includes(decPrefix) || p.includes(decPrefix))) return true;
+        return false;
+      });
+
+      if (candidates.length > 0) {
+        // discussions 폴더 우선, 그 다음 경로 역순(최신 날짜 우선)
+        candidates.sort((a, b) => {
+          const aDisc = (a.pathOrUrl || "").includes("discussions") ? 1 : 0;
+          const bDisc = (b.pathOrUrl || "").includes("discussions") ? 1 : 0;
+          if (aDisc !== bDisc) return bDisc - aDisc;
+          return (b.pathOrUrl || "").localeCompare(a.pathOrUrl || "");
+        });
+        matchedItem = candidates[0];
+      }
     }
 
     if (!matchedItem) return null;
@@ -340,7 +380,7 @@ const resourceResolver: EntityResolver = {
       kind: matchedSector ? "sector" : "resource",
       id,
       label,
-      detail: matchedSector ? "리소스 발췌" : "원천 리소스",
+      detail: matchedSector ? "리소스 발췌" : targetLines ? `원천 리소스 (L${targetLines[0]}-${targetLines[1]})` : "원천 리소스",
       reveal: () => {
         store.openPreview(
           matchedItem!,
@@ -350,6 +390,8 @@ const resourceResolver: EntityResolver = {
                 bbox: matchedSector.bbox,
                 label: matchedSector.label,
               }
+            : targetLines
+            ? { lines: targetLines }
             : null
         );
       },

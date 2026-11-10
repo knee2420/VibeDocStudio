@@ -80,7 +80,5 @@ class Settings:
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
+    """프로세스 설정. 처음 부를 때 환경 변수를 읽는다 (import 만으로는 읽지 않는다 — 조립부만 부른다)."""
     return Settings()
-
-
-settings = get_settings()

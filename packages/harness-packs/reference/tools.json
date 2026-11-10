@@ -1,0 +1,156 @@
+[
+ {
+  "name": "rf_map",
+  "description": "켜진 레퍼런스 지도: 형태 · 쪽 · 섹션 · 덩어리 종류 · 핀 전부(층위 태그 · 메모) · 저장된 층위 측정 요약 · 합의 상태(층위별 확정 · 제안) · 지금까지 읽은 범위. 레퍼런스 작업은 여기서 시작한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {}
+  }
+ },
+ {
+  "name": "rf_outline",
+  "description": "레퍼런스 개요: 섹션 → 덩어리 id(종류 · 쪽 · 앞부분). 잘리지 않고 offset 으로 이어 본다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "refId (켜진 레퍼런스가 하나면 생략)"
+    },
+    "section": {
+     "type": "string",
+     "description": "섹션 번호만 볼 때"
+    },
+    "page": {
+     "type": "string",
+     "description": "쪽 번호만 볼 때"
+    },
+    "offset": {
+     "type": "integer"
+    }
+   }
+  }
+ },
+ {
+  "name": "rf_read",
+  "description": "레퍼런스를 읽는다 — 앵커 ref:<refId>[#p<쪽>|#sec:<번호>|#blk:<덩어리>|#pin:<핀>]. 길면 끝에 이어 읽을 offset 이 나온다. 읽은 덩어리 · 핀이 기록되고, 해석 카드의 근거는 읽은 곳이어야 한다. 핀이 있으면 핀부터 읽는다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "anchor": {
+     "type": "string"
+    },
+    "offset": {
+     "type": "integer"
+    }
+   },
+   "required": [
+    "anchor"
+   ]
+  }
+ },
+ {
+  "name": "rf_find",
+  "description": "레퍼런스 안에서 위치를 찾는다 — 낱말(정규식) · 덩어리 종류(table · heading · list · paragraph) · 쪽. '그 표' 처럼 위치가 모호할 때 후보를 찾는다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "query": {
+     "type": "string"
+    },
+    "kind": {
+     "type": "string"
+    },
+    "ref": {
+     "type": "string"
+    },
+    "page": {
+     "type": "string"
+    }
+   }
+  }
+ },
+ {
+  "name": "rf_coverage",
+  "description": "레퍼런스를 얼마나 읽었나: 덩어리 N/M · 섹션별 · 핀 읽음/안 읽음 · 층위별 해석 카드 유무.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string"
+    }
+   }
+  }
+ },
+ {
+  "name": "rf_measure",
+  "description": "앵커의 글을 층위별 지표로 잰다 (레퍼런스 전체는 저장된 측정값). 앵커: 레퍼런스 앵커 · slot:<id> · page:<id> · doc.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "anchor": {
+     "type": "string"
+    },
+    "layers": {
+     "type": "string",
+     "description": "층위 세트: document · uiux (생략하면 레퍼런스의 세트)"
+    }
+   },
+   "required": [
+    "anchor"
+   ]
+  }
+ },
+ {
+  "name": "rf_contrast",
+  "description": "두 앵커를 층위별로 비교한다 (레퍼런스끼리 · 내 문서 칸과 레퍼런스 · 이전 판과 지금).",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    },
+    "layers": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "a",
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "rf_interpret",
+  "description": "해석 카드를 제안한다 (확정은 사용자가 한다). 카드 하나 = 한 레퍼런스의 한 범위에서 한 층위의 결정. cards: [{layer:\"D4\", scope:\"ref:<id>[#pin:…|#p2|#sec:3|#blk:…]\", adoption:\"follow|consult|exclude\", reading:\"이 범위는 ~ 하게 결정했다 (측정값 · 위치 근거)\", evidence:[\"ref:<id>#blk:…\"], alternatives:[{reading, evidence}]}]. 해석이 갈릴 수 있으면 alternatives 에 다른 해석을 낸다. 사용자가 요청에서 채택을 직접 말했으면(예: '어조만', '표는 빼고') 그대로 adoption 에 옮긴다. 근거 앵커는 rf_read 로 읽은 곳이어야 한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "cards": {
+     "type": "array",
+     "items": {
+      "type": "object"
+     }
+    }
+   },
+   "required": [
+    "cards"
+   ]
+  }
+ },
+ {
+  "name": "rf_consensus",
+  "description": "합의 상태: 사용자가 확정한 해석 카드 + 이 대화에서 낸 미확정 카드 + 사용자가 끈 층위. 후보를 내기 전에 본다. 확정 카드가 요청을 덮으면 다시 해석하지 않고 그대로 따른다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string"
+    }
+   }
+  }
+ }
+]

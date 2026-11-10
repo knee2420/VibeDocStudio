@@ -1,0 +1,25 @@
+{
+ "_doc": "후보 검증 — 후보마다 candidateGates 를 차례로, 끝에 finalGates 를 돌린다. 각 영역 팩이 자기 검증기를 선언한다.",
+ "modes": [
+  "compose",
+  "restyle",
+  "restore"
+ ],
+ "candidateGates": [
+  "authoring.slots",
+  "reference.not_a_source",
+  "resource.sources_read",
+  "resource.sources_declared",
+  "authoring.restore",
+  "resource.unsourced_numbers",
+  "reference.leak",
+  "reference.adoption"
+ ],
+ "finalGates": [
+  "authoring.diversity"
+ ],
+ "thresholds": {
+  "diversity": 0.85,
+  "restyleKeptWords": 0.5
+ }
+}

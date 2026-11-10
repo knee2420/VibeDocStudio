@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Literal, Optional
-
-Lane = Literal["composer", "inline"]
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -44,12 +42,3 @@ class ToolResult:
     name: str
     ok: bool
     output: Any = None
-
-
-@dataclass(frozen=True)
-class EngineChoice:
-    """이번 실행에 쓸 엔진 (`agy_cli` | `google_api` | `offline`) 과 모델."""
-
-    provider: str
-    model: str
-    effort: Optional[str] = None

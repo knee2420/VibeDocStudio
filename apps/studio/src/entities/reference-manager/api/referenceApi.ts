@@ -2,6 +2,8 @@ import { httpClient } from "@/shared/api";
 import { env } from "@/shared/config";
 
 import type {
+  ConsensusAdoption,
+  ConsensusCard,
   ProjectReferenceBinding,
   ReferenceExtraction,
   ReferenceItem,
@@ -67,6 +69,20 @@ export const referenceApi = {
 
   unbind: (projectId: string, refId: string) =>
     httpClient.delete<ProjectReferenceBinding>(`${project(projectId)}/items/${encodeURIComponent(refId)}`),
+
+  /** 해석 카드 확정 (AI 제안을 그대로 또는 고쳐서) — 프로젝트 합의로 저장된다. */
+  confirmCard: (projectId: string, refId: string, card: Omit<ConsensusCard, "status" | "by" | "at" | "measures" | "refId">) =>
+    httpClient.post<ConsensusCard>(`${project(projectId)}/items/${encodeURIComponent(refId)}/consensus`, card),
+
+  updateCard: (
+    projectId: string,
+    refId: string,
+    cardId: string,
+    patch: { adoption?: ConsensusAdoption; reading?: string; chooseAlternative?: number },
+  ) => httpClient.patch<ConsensusCard>(`${project(projectId)}/items/${encodeURIComponent(refId)}/consensus/${encodeURIComponent(cardId)}`, patch),
+
+  removeCard: (projectId: string, refId: string, cardId: string) =>
+    httpClient.delete<{ deleted: boolean }>(`${project(projectId)}/items/${encodeURIComponent(refId)}/consensus/${encodeURIComponent(cardId)}`),
 
   updateBinding: (projectId: string, refId: string, patch: { enabled?: boolean; layers?: Record<string, boolean> }) =>
     httpClient.patch<ProjectReferenceBinding>(`${project(projectId)}/items/${encodeURIComponent(refId)}`, {

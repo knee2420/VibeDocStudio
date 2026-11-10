@@ -14,18 +14,30 @@ from urllib.parse import urlparse
 
 from app.core.storage import new_id
 
-from ..errors import ReferenceNotFoundError, ReferencePinNotFoundError, UnsupportedReferenceSourceError
+from ..errors import (
+    ReferenceNotFoundError,
+    ReferencePinNotFoundError,
+    ReferenceValidationError,
+    UnsupportedReferenceSourceError,
+)
 from ..models import (
     DEFAULT_LAYER_SET,
     PIN_KINDS,
     BindingEntry,
+    ConsensusCard,
     ProjectBinding,
     ReferenceAnchor,
     ReferenceItem,
     ReferencePin,
     now_ms,
 )
-from ..ports import HtmlExtractorPort, LayerAnalyzerPort, PdfExtractorPort, ReferenceLibraryPort, WebFetcherPort
+from ..ports import (
+    HtmlExtractorPort,
+    LayerAnalyzerPort,
+    PdfExtractorPort,
+    ReferenceLibraryPort,
+    WebFetcherPort,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -223,14 +235,80 @@ class ReferenceLibraryService:
         entry = binding.find(ref_id)
         if entry is None:
             raise ReferenceNotFoundError(f"프로젝트 '{project_id}' 에 연결된 레퍼런스 '{ref_id}' 가 없습니다.")
-        new_entry = BindingEntry(
-            ref_id,
-            entry.enabled if enabled is None else bool(enabled),
-            {**entry.layers, **{str(k): bool(v) for k, v in (layers or {}).items()}},
+        new_entry = replace(
+            entry,
+            enabled=entry.enabled if enabled is None else bool(enabled),
+            layers={**entry.layers, **{str(k): bool(v) for k, v in (layers or {}).items()}},
         )
         updated = binding.with_entries(tuple(new_entry if e.ref_id == ref_id else e for e in binding.entries))
         self.library.save_binding(updated)
         return updated
+
+    # --- 합의된 해석 (조율 결과) --------------------------------------------------------------------
+
+    def consensus(self, project_id: str, ref_id: str) -> list[ConsensusCard]:
+        return list(self._entry(project_id, ref_id).consensus)
+
+    def confirm_card(self, project_id: str, ref_id: str, fields: dict[str, Any], by: str = "user") -> ConsensusCard:
+        """AI 가 낸 해석 카드(또는 사용자가 쓴 카드)를 확정해 저장한다. 같은 cardId 면 덮어쓴다."""
+        entry = self._entry(project_id, ref_id)
+        raw = {**fields, "status": "confirmed", "by": by, "at": now_ms()}
+        raw["cardId"] = str(raw.get("cardId") or f"card_{uuid.uuid4().hex[:10]}")
+        card = ConsensusCard.from_dict(raw)
+        self._validate_card(ref_id, card)
+        cards = [c for c in entry.consensus if c.card_id != card.card_id] + [card]
+        self._save_entry(project_id, replace(entry, consensus=tuple(cards)))
+        return card
+
+    def update_card(self, project_id: str, ref_id: str, card_id: str, fields: dict[str, Any]) -> ConsensusCard:
+        """채택 강도 · 해석 문장 · 범위를 고치거나, 대안 해석(`chooseAlternative`: 번호)을 본 해석으로 올린다."""
+        entry = self._entry(project_id, ref_id)
+        card = next((c for c in entry.consensus if c.card_id == card_id), None)
+        if card is None:
+            raise ReferenceNotFoundError(f"해석 카드 '{card_id}' 가 없습니다.")
+        raw = card.to_dict()
+        choose = fields.get("chooseAlternative")
+        if choose is not None:
+            alts = list(raw["alternatives"])
+            idx = int(choose)
+            if not 0 <= idx < len(alts):
+                raise ReferenceValidationError(f"대안 해석 번호 {idx} 가 없습니다.")
+            picked = alts.pop(idx)
+            alts.insert(0, {"reading": raw["reading"], "evidence": raw["evidence"]})
+            raw.update(reading=str(picked.get("reading") or ""), evidence=list(picked.get("evidence") or raw["evidence"]),
+                       alternatives=alts)
+        for key in ("adoption", "reading", "scope", "layer", "evidence"):
+            if fields.get(key) is not None:
+                raw[key] = fields[key]
+        raw.update(at=now_ms(), by="user")
+        updated = ConsensusCard.from_dict(raw)
+        self._validate_card(ref_id, updated)
+        cards = tuple(updated if c.card_id == card_id else c for c in entry.consensus)
+        self._save_entry(project_id, replace(entry, consensus=cards))
+        return updated
+
+    def delete_card(self, project_id: str, ref_id: str, card_id: str) -> None:
+        entry = self._entry(project_id, ref_id)
+        self._save_entry(project_id, replace(entry, consensus=tuple(c for c in entry.consensus if c.card_id != card_id)))
+
+    def _entry(self, project_id: str, ref_id: str) -> BindingEntry:
+        entry = self.binding(project_id).find(ref_id)
+        if entry is None:
+            raise ReferenceNotFoundError(f"프로젝트 '{project_id}' 에 연결된 레퍼런스 '{ref_id}' 가 없습니다.")
+        return entry
+
+    def _save_entry(self, project_id: str, new_entry: BindingEntry) -> None:
+        binding = self.binding(project_id)
+        entries = tuple(new_entry if e.ref_id == new_entry.ref_id else e for e in binding.entries)
+        self.library.save_binding(binding.with_entries(entries))
+
+    @staticmethod
+    def _validate_card(ref_id: str, card: ConsensusCard) -> None:
+        if not card.layer:
+            raise ReferenceValidationError("해석 카드에 층위(layer)가 없습니다.")
+        scope = ReferenceAnchor.parse(card.scope or f"ref:{ref_id}")
+        if scope.ref_id != ref_id:
+            raise ReferenceValidationError(f"카드 범위 {card.scope} 가 레퍼런스 {ref_id} 밖입니다.")
 
     def resolve_anchor(self, anchor: str) -> dict[str, Any]:
         parsed = ReferenceAnchor.parse(anchor)

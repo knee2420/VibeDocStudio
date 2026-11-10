@@ -1,0 +1,163 @@
+[
+ {
+  "name": "knowledge.toc",
+  "description": "덱의 전체 목차(원문 순서 · 섹션 · 제목 → 카드 id). 몇 개인지 · 무엇 다음에 무엇이 오는지 · 어느 장에 있는지 같은 구조 질문, 아웃라인 잡기에 먼저 쓴다",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "deckId": {
+     "type": "string",
+     "description": "덱 id. 첨부된 덱이 하나면 생략"
+    },
+    "sectionId": {
+     "type": "string"
+    },
+    "maxLevel": {
+     "type": "number",
+     "description": "제목 깊이 1~4 (기본 3)"
+    }
+   }
+  }
+ },
+ {
+  "name": "knowledge.lookup",
+  "description": "대충 · 다른 말로 물어도 맞는 카드 후보를 찾는다 (제목 · 별칭 · 요소 · 예상 질문 · 표 행 이름). 뜻으로 찾을 때",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "deckId": {
+     "type": "string",
+     "description": "덱 id. 첨부된 덱이 하나면 생략"
+    },
+    "query": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "query"
+   ]
+  }
+ },
+ {
+  "name": "knowledge.grep",
+  "description": "원문 조각 전체에서 정확한 용어 · 옵션 · 숫자를 찾는다. 결과는 카드별로 묶여 순위가 매겨진다 (줄을 다 읽지 말고 카드를 골라라)",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "deckId": {
+     "type": "string",
+     "description": "덱 id. 첨부된 덱이 하나면 생략"
+    },
+    "pattern": {
+     "type": "string"
+    },
+    "regex": {
+     "type": "boolean"
+    },
+    "sectionId": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "pattern"
+   ]
+  }
+ },
+ {
+  "name": "knowledge.section",
+  "description": "섹션(로컬 인덱스)의 카드 목록 · 요약 · 관련 섹션(가로축)",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "deckId": {
+     "type": "string",
+     "description": "덱 id. 첨부된 덱이 하나면 생략"
+    },
+    "sectionId": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "sectionId"
+   ]
+  }
+ },
+ {
+  "name": "knowledge.cards",
+  "description": "카드 여러 장(최대 6)을 한 번에 읽는다: 요약 · 요소 표 · 자산 · 밖으로 연결 · 원문 앵커",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "deckId": {
+     "type": "string",
+     "description": "덱 id. 첨부된 덱이 하나면 생략"
+    },
+    "cardIds": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "required": [
+    "cardIds"
+   ]
+  }
+ },
+ {
+  "name": "knowledge.assets",
+  "description": "표 · 그림 · 코드 블록 목록 (캡션 · 열 · 행 이름 · 대상). 표의 값 · 그림 · 예시 코드를 찾을 때",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "deckId": {
+     "type": "string",
+     "description": "덱 id. 첨부된 덱이 하나면 생략"
+    },
+    "kind": {
+     "type": "string",
+     "enum": [
+      "table",
+      "figure",
+      "code"
+     ]
+    },
+    "query": {
+     "type": "string"
+    }
+   }
+  }
+ },
+ {
+  "name": "knowledge.source",
+  "description": "카드의 원문 조각(줄 번호 포함). 정확한 문구 · 값 · 표 셀을 인용하기 직전에 확인한다",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "deckId": {
+     "type": "string",
+     "description": "덱 id. 첨부된 덱이 하나면 생략"
+    },
+    "cardId": {
+     "type": "string"
+    },
+    "lineFrom": {
+     "type": "number"
+    },
+    "lineTo": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "cardId"
+   ]
+  }
+ }
+]

@@ -1,6 +1,5 @@
 import type { AssistantEvent, HarnessRunPayload } from "@vibe/ai-kernel";
 import {
-  contentHash,
   getCheckedResourceItems,
   slotPlainText,
   type EvidenceLocator,
@@ -162,79 +161,5 @@ export async function runFillSlot(slotId: string, opts: FillSlotOptions = {}): P
     });
     useAiStagingStore.getState().enqueue([change]);
     return change;
-  });
-}
-
-/** `fill.variable` — 문서 변수(`[회의.일자]` 칩) 값을 근거에서 찾아 변경안으로. */
-export async function runFillVariables(docId?: string): Promise<StagedAiChange | null> {
-  return asRun(async (runId, signal) => {
-    const doc = docFor(docId);
-    if (!doc) throw new Error("문서가 없습니다.");
-    const empty = Object.entries(doc.variables ?? {}).filter(([, v]) => !String(v ?? "").trim());
-    if (empty.length === 0) throw new Error("비어 있는 변수가 없습니다.");
-    const evidence: EvidenceCandidate[] = [];
-    const seen = new Set<string>();
-    for (const slotId of Object.keys(doc.slots)) {
-      for (const c of resolveSlotEvidence(doc, slotId, {})) {
-        const key = `${c.locator.kind}:${c.locator.refId}`;
-        if (!seen.has(key) && c.tier === "direct") {
-          seen.add(key);
-          evidence.push(c);
-        }
-      }
-    }
-    for (const loc of pinnedEvidence()) evidence.push({ locator: loc, tier: "inherited" });
-    const { result, error } = await runHarnessOnce(
-      {
-        harnessId: "fill.variable",
-        runId,
-        target: { label: doc.title, variables: Object.fromEntries(empty) },
-        evidence: evidencePayload(evidence.slice(0, 10)),
-        deckIds: usableDeckIds(),
-      },
-      signal
-    );
-    if (signal.aborted) return null;
-    const map = Object.fromEntries(
-      Object.entries((result?.map ?? {}) as Record<string, unknown>).filter(([k, v]) => k in (doc.variables ?? {}) && typeof v === "string" && v.trim())
-    ) as Record<string, string>;
-    if (Object.keys(map).length === 0) throw new Error(error ?? "근거에서 변수 값을 찾지 못했습니다.");
-    const change: StagedAiChange = {
-      diffId: newId("stg-vars"),
-      phase: "drafting",
-      targetKind: "variables",
-      targetId: doc.docId,
-      title: `[변수 채우기] ${Object.keys(map).join(", ")}`,
-      beforeSummary: Object.keys(map).map((k) => `${k}=${doc.variables[k] || "(빈 값)"}`).join(", "),
-      afterSummary: Object.entries(map).map(([k, v]) => `${k}=${v}`).join(", "),
-      payload: { variables: map },
-      sourceReferenceIds: [],
-      docId: doc.docId,
-      baseHash: contentHash(JSON.stringify(doc.variables ?? {})),
-      runId,
-      harnessId: "fill.variable",
-      createdAt: new Date().toISOString(),
-      evidence: toStagedEvidence(result?.evidence),
-      warnings: result?.warnings,
-    };
-    useAiStagingStore.getState().enqueue([change]);
-    return change;
-  });
-}
-
-/** `verify.slot` — 칸의 주장이 근거와 맞는지 확인한 결과 (텍스트 목록). 문서는 바꾸지 않는다. */
-export async function runVerifySlot(slotId: string): Promise<{ text: string; evidence: number } | null> {
-  return asRun(async (runId, signal) => {
-    const doc = docFor();
-    const slot = doc?.slots[slotId];
-    if (!doc || !slot) throw new Error("확인할 칸을 찾을 수 없습니다.");
-    const cands = resolveSlotEvidence(doc, slotId, { pinned: pinnedEvidence(), references: openReferences() });
-    const { result, error } = await runHarnessOnce(
-      { harnessId: "verify.slot", runId, target: slotTarget(doc, slotId), evidence: evidencePayload(cands), deckIds: usableDeckIds() },
-      signal
-    );
-    if (signal.aborted) return null;
-    if (!result) throw new Error(error ?? "확인 결과가 없습니다.");
-    return { text: result.text ?? "", evidence: cands.length };
   });
 }

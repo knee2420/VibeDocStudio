@@ -21,6 +21,24 @@ export interface AiScopeState {
   setSourcesOn: (on: boolean) => void;
   setScopeOn: (on: boolean) => void;
 
+  /** Composer 전용 리소스 제외 플래그 (RM 원장은 보존하고 Composer 세션에서만 제외/선별) */
+  excludedSourceIds: Record<string, string[]>;
+  toggleSourceExcluded: (projectId: string, itemId: string, descendantIds?: string[]) => void;
+  setSourcesExcluded: (projectId: string, itemIds: string[], excluded: boolean) => void;
+  clearExcludedSources: (projectId: string) => void;
+
+  /** Composer 전용 레퍼런스 제외 플래그 (RM 원장은 보존하고 Composer 세션에서만 제외/선별) */
+  excludedReferenceIds: Record<string, string[]>;
+  toggleReferenceExcluded: (projectId: string, refId: string) => void;
+  setReferencesExcluded: (projectId: string, refIds: string[], excluded: boolean) => void;
+  clearExcludedReferences: (projectId: string) => void;
+
+  /** Composer 전용 레퍼런스 핀 제외 플래그 (RM 핀 원장은 보존하고 Composer 세션에서만 제외/선별) */
+  excludedReferencePinIds: Record<string, string[]>;
+  toggleReferencePinExcluded: (projectId: string, pinId: string) => void;
+  setReferencePinsExcluded: (projectId: string, pinIds: string[], excluded: boolean) => void;
+  clearExcludedReferencePins: (projectId: string) => void;
+
   /** 특정 참조 문서(규정/서식) 제외 관리 — 제외되지 않은 참조 문서는 Composer 컨텍스트에 자동 주입된다 */
 
   settingFor: (docId: string) => DocScopeSetting;
@@ -43,6 +61,9 @@ export interface AiScopeState {
 
 const KEY = "vdoc.aiScope.v1";
 const SWITCH_KEY = "vdoc.aiScope.switches";
+const EXCLUDED_SOURCES_KEY = "vdoc.aiScope.excludedSources";
+const EXCLUDED_REFERENCES_KEY = "vdoc.aiScope.excludedReferences";
+const EXCLUDED_REF_PINS_KEY = "vdoc.aiScope.excludedRefPins";
 
 function loadSwitches(): { referencesOn: boolean; sourcesOn: boolean; scopeOn: boolean } {
   try {
@@ -54,6 +75,23 @@ function loadSwitches(): { referencesOn: boolean; sourcesOn: boolean; scopeOn: b
     };
   } catch {
     return { referencesOn: true, sourcesOn: true, scopeOn: true };
+  }
+}
+
+function loadExcludedMap(key: string): Record<string, string[]> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(key) ?? "{}");
+    return raw && typeof raw === "object" ? raw : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveExcludedMap(key: string, data: Record<string, string[]>) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    /* 이번 세션만 */
   }
 }
 
@@ -130,6 +168,97 @@ export const useAiScopeStore = create<AiScopeState>((set, get) => {
       } catch {
         /* 이번 세션만 */
       }
+    },
+
+    excludedSourceIds: loadExcludedMap(EXCLUDED_SOURCES_KEY),
+    toggleSourceExcluded: (projectId, itemId, descendantIds) => {
+      const curMap = get().excludedSourceIds;
+      const curList = curMap[projectId] ?? [];
+      const targets = [itemId, ...(descendantIds ?? [])];
+      const isCurrentlyExcluded = curList.includes(itemId);
+      const nextList = isCurrentlyExcluded
+        ? curList.filter((id) => !targets.includes(id))
+        : [...new Set([...curList, ...targets])];
+      const nextMap = { ...curMap, [projectId]: nextList };
+      saveExcludedMap(EXCLUDED_SOURCES_KEY, nextMap);
+      set({ excludedSourceIds: nextMap });
+    },
+    setSourcesExcluded: (projectId, itemIds, excluded) => {
+      const curMap = get().excludedSourceIds;
+      const curList = curMap[projectId] ?? [];
+      const targetSet = new Set(itemIds);
+      const nextList = excluded
+        ? [...new Set([...curList, ...itemIds])]
+        : curList.filter((id) => !targetSet.has(id));
+      const nextMap = { ...curMap, [projectId]: nextList };
+      saveExcludedMap(EXCLUDED_SOURCES_KEY, nextMap);
+      set({ excludedSourceIds: nextMap });
+    },
+    clearExcludedSources: (projectId) => {
+      const curMap = get().excludedSourceIds;
+      const nextMap = { ...curMap, [projectId]: [] };
+      saveExcludedMap(EXCLUDED_SOURCES_KEY, nextMap);
+      set({ excludedSourceIds: nextMap });
+    },
+
+    excludedReferenceIds: loadExcludedMap(EXCLUDED_REFERENCES_KEY),
+    toggleReferenceExcluded: (projectId, refId) => {
+      const curMap = get().excludedReferenceIds;
+      const curList = curMap[projectId] ?? [];
+      const isCurrentlyExcluded = curList.includes(refId);
+      const nextList = isCurrentlyExcluded
+        ? curList.filter((id) => id !== refId)
+        : [...curList, refId];
+      const nextMap = { ...curMap, [projectId]: nextList };
+      saveExcludedMap(EXCLUDED_REFERENCES_KEY, nextMap);
+      set({ excludedReferenceIds: nextMap });
+    },
+    setReferencesExcluded: (projectId, refIds, excluded) => {
+      const curMap = get().excludedReferenceIds;
+      const curList = curMap[projectId] ?? [];
+      const targetSet = new Set(refIds);
+      const nextList = excluded
+        ? [...new Set([...curList, ...refIds])]
+        : curList.filter((id) => !targetSet.has(id));
+      const nextMap = { ...curMap, [projectId]: nextList };
+      saveExcludedMap(EXCLUDED_REFERENCES_KEY, nextMap);
+      set({ excludedReferenceIds: nextMap });
+    },
+    clearExcludedReferences: (projectId) => {
+      const curMap = get().excludedReferenceIds;
+      const nextMap = { ...curMap, [projectId]: [] };
+      saveExcludedMap(EXCLUDED_REFERENCES_KEY, nextMap);
+      set({ excludedReferenceIds: nextMap });
+    },
+
+    excludedReferencePinIds: loadExcludedMap(EXCLUDED_REF_PINS_KEY),
+    toggleReferencePinExcluded: (projectId, pinId) => {
+      const curMap = get().excludedReferencePinIds;
+      const curList = curMap[projectId] ?? [];
+      const isCurrentlyExcluded = curList.includes(pinId);
+      const nextList = isCurrentlyExcluded
+        ? curList.filter((id) => id !== pinId)
+        : [...curList, pinId];
+      const nextMap = { ...curMap, [projectId]: nextList };
+      saveExcludedMap(EXCLUDED_REF_PINS_KEY, nextMap);
+      set({ excludedReferencePinIds: nextMap });
+    },
+    setReferencePinsExcluded: (projectId, pinIds, excluded) => {
+      const curMap = get().excludedReferencePinIds;
+      const curList = curMap[projectId] ?? [];
+      const targetSet = new Set(pinIds);
+      const nextList = excluded
+        ? [...new Set([...curList, ...pinIds])]
+        : curList.filter((id) => !targetSet.has(id));
+      const nextMap = { ...curMap, [projectId]: nextList };
+      saveExcludedMap(EXCLUDED_REF_PINS_KEY, nextMap);
+      set({ excludedReferencePinIds: nextMap });
+    },
+    clearExcludedReferencePins: (projectId) => {
+      const curMap = get().excludedReferencePinIds;
+      const nextMap = { ...curMap, [projectId]: [] };
+      saveExcludedMap(EXCLUDED_REF_PINS_KEY, nextMap);
+      set({ excludedReferencePinIds: nextMap });
     },
 
     settingFor: (docId) => ({ ...DEFAULT_SCOPE, ...(get().settings[docId] ?? {}) }),

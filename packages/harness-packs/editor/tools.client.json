@@ -1,0 +1,201 @@
+[
+ {
+  "name": "workspace.getState",
+  "description": "현재 워크스페이스 상태: 프로젝트, 열린 문서/페이지, 작업 단계(phase), 선택한 슬롯/블록, 열린 참조 문서, Staged 대기 건수",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {}
+  }
+ },
+ {
+  "name": "document.getOutline",
+  "description": "열린 문서의 구조를 한 줄씩: `pageId > blockId(kind) > slotId [역할/잠금] 라벨 — 본문 앞부분`. 기본은 편집 가능한 슬롯만 (고정 문구 제외). 슬롯 id 를 찾을 때 먼저 부른다",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "pageId": {
+     "type": "string",
+     "description": "특정 페이지만 (생략 시 전체)"
+    },
+    "includeBoilerplate": {
+     "type": "boolean",
+     "description": "고정 문구 · 잠긴 슬롯도 포함"
+    }
+   }
+  }
+ },
+ {
+  "name": "slot.read",
+  "description": "슬롯 하나의 전체 본문(HTML · 평문), 제약(줄 수 · 톤 · 잠금), 연결된 백데이터 원문",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "slotId": {
+     "type": "string",
+     "description": "슬롯 id (document.getOutline 에서 확인)"
+    }
+   },
+   "required": [
+    "slotId"
+   ]
+  }
+ },
+ {
+  "name": "slot.proposeContent",
+  "description": "슬롯의 새 본문을 변경안으로 제출한다 (바로 반영되지 않고 Staged 대기열에 올라가 사용자가 승인). html 은 <p>, <ul>, <li>, <strong>, <em> 만 사용",
+  "risk": "stage",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "slotId": {
+     "type": "string"
+    },
+    "html": {
+     "type": "string",
+     "description": "새 본문 HTML 조각 (근거가 있는 문장 끝에 <sup data-cite=\"1\"></sup>)"
+    },
+    "reason": {
+     "type": "string",
+     "description": "변경 이유 한 줄"
+    },
+    "evidence": {
+     "type": "array",
+     "description": "이 내용의 근거 [{citationId, kind: kcard|backdata|resource|sector|ref-region, deckId, cardId, chunkId, label, lines}] — 본문 인용 표식 <sup data-cite=\"citationId\"></sup> 과 짝을 맞춘다"
+    }
+   },
+   "required": [
+    "slotId",
+    "html"
+   ]
+  }
+ },
+ {
+  "name": "slots.proposeBatch",
+  "description": "여러 슬롯(표 셀 · 그리드 칸 · 섹션)의 새 본문을 한 번에 변경안으로 제출한다. 블록 하나를 채우거나 고칠 때 slot.proposeContent 를 여러 번 부르지 말고 이것을 쓴다. 잠긴 · 고정 문구 슬롯은 건너뛴다",
+  "risk": "stage",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "changes": {
+     "type": "array",
+     "description": "[{slotId, html, evidence?}] — html 은 <p>, <ul>, <li>, <strong>, <em>, 인용 <sup data-cite> 만"
+    },
+    "reason": {
+     "type": "string",
+     "description": "변경 이유 한 줄"
+    }
+   },
+   "required": [
+    "changes"
+   ]
+  }
+ },
+ {
+  "name": "blocks.proposeProps",
+  "description": "슬롯 밖 블록 속성(이미지 대체 텍스트 · 정렬 · 너비, 담당자 등)의 변경안을 제출한다. 바꿀 수 있는 속성은 블록 종류마다 다르며 블록 첨부 내용의 '바꿀 수 있는 블록 속성' 에 나온다",
+  "risk": "stage",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "blockId": {
+     "type": "string"
+    },
+    "props": {
+     "type": "object",
+     "description": "{속성: 새 값}"
+    },
+    "reason": {
+     "type": "string",
+     "description": "변경 이유 한 줄"
+    }
+   },
+   "required": [
+    "blockId",
+    "props"
+   ]
+  }
+ },
+ {
+  "name": "canvas.selectSlot",
+  "description": "캔버스에서 슬롯을 선택하고 화면을 그 위치로 스크롤해 강조한다 (사용자에게 위치를 보여줄 때)",
+  "risk": "ui",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "slotId": {
+     "type": "string",
+     "description": "슬롯 id (document.getOutline 에서 확인)"
+    }
+   },
+   "required": [
+    "slotId"
+   ]
+  }
+ },
+ {
+  "name": "slots.listByState",
+  "description": "범위 안 칸들의 채움 상태 목록 (빈 칸 지도). scope: slot|block|page|document, state: empty|ai-draft|staged|filled|verified (생략하면 채울 대상 전부). 일괄 채우기 · 진행 확인에 쓴다",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "scope": {
+     "type": "string",
+     "enum": [
+      "block",
+      "page",
+      "document"
+     ]
+    },
+    "id": {
+     "type": "string",
+     "description": "scope 가 block · page 일 때 그 id (생략하면 현재 선택 · 현재 페이지)"
+    },
+    "state": {
+     "type": "string",
+     "enum": [
+      "empty",
+      "ai-draft",
+      "staged",
+      "filled",
+      "verified"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "name": "staging.list",
+  "description": "Staged 대기열에 쌓인 AI 변경안 목록 (아직 승인 전)",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {}
+  }
+ },
+ {
+  "name": "layout.openPanel",
+  "description": "화면 패널을 연다: explorer(아웃라이너), source-control(Staged 검토), inspector(슬롯 속성), blockbox(블록 추가)",
+  "risk": "ui",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "panel": {
+     "type": "string",
+     "enum": [
+      "explorer",
+      "source-control",
+      "inspector",
+      "blockbox"
+     ]
+    }
+   },
+   "required": [
+    "panel"
+   ]
+  }
+ }
+]

@@ -1,11 +1,9 @@
 import React from "react";
 import { ChevronsDownUp, ChevronsUpDown, Eye, Link2Off } from "lucide-react";
 import type { ResourceItem } from "@vibe/vdoc-schema";
+import { type NodeCountInfo } from "@/entities/resource";
 
-export interface NodeCountInfo {
-  totalLeafCount: number;
-  checkedLeafCount: number;
-}
+export type { NodeCountInfo };
 
 export interface ResourceNodeToolboxProps {
   item: ResourceItem;

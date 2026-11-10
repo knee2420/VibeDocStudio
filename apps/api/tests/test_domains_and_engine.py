@@ -24,13 +24,16 @@ def test_health_endpoint_reports_all_domains_and_flagship_models() -> None:
     assert body["status"] == "ok"
     assert set(body["domains"]) == {
         "catalog",
+        "form_scaffold",
         "documents",
-        "backdata",
-        "composer",
+        "resource.backdata",
+        "authoring",
+        "authoring.staging",
+        "authoring.harness",
         "projects",
-        "resources",
-        "knowledge",
-        "runtime",
+        "resource.ledger",
+        "resource.index",
+        "llm",
         "assistant",
         "reference",
     }

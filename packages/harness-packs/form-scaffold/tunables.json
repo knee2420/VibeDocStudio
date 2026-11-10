@@ -1,0 +1,74 @@
+{
+ "size_offsets": {
+  "type": "map",
+  "range": [
+   -12,
+   12
+  ],
+  "default": {},
+  "doc": "글자 크기(pt)별 줄 상자 오프셋 px {\"11.04\": -1}. 그 크기 글자를 이만큼 위로 올린다 (L-05, D-OFFSET 제안값)"
+ },
+ "text_dx": {
+  "type": "number",
+  "range": [
+   -20,
+   20
+  ],
+  "default": 0,
+  "doc": "표 밖 글 블록 전체를 가로로 미는 px"
+ },
+ "text_dy": {
+  "type": "number",
+  "range": [
+   -20,
+   20
+  ],
+  "default": 0,
+  "doc": "표 밖 글 블록 전체를 세로로 미는 px"
+ },
+ "table_dx": {
+  "type": "number",
+  "range": [
+   -20,
+   20
+  ],
+  "default": 0,
+  "doc": "표 상자(선 포함)를 가로로 미는 px"
+ },
+ "table_dy": {
+  "type": "number",
+  "range": [
+   -20,
+   20
+  ],
+  "default": 0,
+  "doc": "표 상자(선 포함)를 세로로 미는 px"
+ },
+ "cell_dx": {
+  "type": "number",
+  "range": [
+   -20,
+   20
+  ],
+  "default": 0,
+  "doc": "표 칸 안 글자만 가로로 미는 px (선은 그대로)"
+ },
+ "cell_dy": {
+  "type": "number",
+  "range": [
+   -20,
+   20
+  ],
+  "default": 0,
+  "doc": "표 칸 안 글자만 세로로 미는 px (선은 그대로)"
+ },
+ "line_height_scale": {
+  "type": "number",
+  "range": [
+   0.8,
+   1.3
+  ],
+  "default": 1.0,
+  "doc": "줄 높이 = 글자px × F × 배율. 여러 줄 블록에서 dy 가 줄마다 쌓일 때만 (L-04)"
+ }
+}

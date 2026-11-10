@@ -1,0 +1,31 @@
+{
+ "wb_read": {
+  "target": "anchor",
+  "path": "anchor",
+  "id": "anchor",
+  "slotId": "anchor"
+ },
+ "wb_patterns": {
+  "target": "anchor",
+  "path": "anchor"
+ },
+ "wb_search": {
+  "pattern": "query",
+  "text": "query",
+  "in": "where"
+ },
+ "wb_outline": {
+  "anchor": "target",
+  "doc": "target"
+ },
+ "wb_history": {
+  "slot": "slotId",
+  "anchor": "slotId"
+ },
+ "wb_compare": {
+  "left": "a",
+  "right": "b",
+  "anchor_a": "a",
+  "anchor_b": "b"
+ }
+}

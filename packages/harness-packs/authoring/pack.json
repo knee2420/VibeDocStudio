@@ -1,0 +1,10 @@
+{
+ "name": "authoring",
+ "version": "1.0.0",
+ "description": "변경안 생성 · 제안 — 하네스 명세(채우기 · 출처 달기) · 후보 검증 순서 · 인라인 지시 · 규칙 엔진 표",
+ "dependsOn": [
+  "core"
+ ],
+ "inlineActions": "inline-actions.json",
+ "messages": "messages.json"
+}

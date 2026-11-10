@@ -7,8 +7,8 @@ from pathlib import Path
 API_ROOT = Path(__file__).resolve().parents[1]
 APP_ROOT = API_ROOT / "app"
 
-NOT_A_DOMAIN = {"bootstrap", "core"}
-GUARDED_SEGMENTS = ("service.py", "use_cases", "adapters", "agents", "ports.py")
+#: 도메인이 아닌 공유 계층 — 조립부 · 공용 커널 · LLM 게이트웨이 (도메인이 기대는 쪽이지 도메인이 아니다)
+NOT_A_DOMAIN = {"bootstrap", "core", "llm"}
 
 
 def _domains_on_disk() -> set[str]:
@@ -47,14 +47,10 @@ def test_each_contract_forbids_every_other_domain() -> None:
         assert set(contract["forbidden_modules"]) == expected, domain
 
 
-def test_contracts_guard_every_existing_segment() -> None:
+def test_contracts_guard_the_whole_domain_package() -> None:
+    """라우터 · 하위 모듈까지 도메인 패키지 전체가 다른 도메인을 모른다 (조립은 bootstrap 만)."""
     for domain, contract in _independence_contracts().items():
-        expected = {
-            f"app.{domain}." + (segment[:-3] if segment.endswith(".py") else segment)
-            for segment in GUARDED_SEGMENTS
-            if (APP_ROOT / domain / segment).exists()
-        }
-        assert set(contract["source_modules"]) == expected, domain
+        assert contract["source_modules"] == [f"app.{domain}"], domain
 
 
 def test_storage_path_contract_is_written_in_segments_not_domain_names() -> None:

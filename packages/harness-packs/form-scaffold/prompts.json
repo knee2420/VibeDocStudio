@@ -1,0 +1,14 @@
+{
+ "task": "원본 PDF '{title}' 1쪽을 VibeDocStudio .vdoc 로 옮긴 결과를 원본과 같은 좌표로 만든다.\n모드: {mode} (허용 오차 {tol}px, 목표 점수 {target})\n생성기(줄 묶기 · 표 격자 · 좌표 배치 · 자간)는 결정적이다. 네가 정하는 것은 분할안(set_plan)과 보정값(update_tune)뿐이다.\n목표: span_score {target} 이상, 가능하면 VERDICT PASS. 허용 오차 {tol}px 는 바꿀 수 없다.\n{earlyHint}사용법은 스킬의 '참고 문서: references/cli_loop_guide.md' 를 따른다 (§3 순서, §4 관찰 읽는 법).\n\n## 쪽 개요 (01 + 쪽 모델)\n{summary}\n\n## 표 격자\n{tables}\n\n## 원본 줄 (read_lines 와 같은 형식: id | 블록 · 칸 | y | x→x1 | 크기 글꼴 | 글자)\n{lines}\n\n## 기본 분할안 · 기본 보정값 판정 (iter 0)\n{baseline}\n\n## 보정값\n{tunables}",
+ "earlyHint": "- 조기 종료 정책: span_score {target} 이상 및 VERDICT PASS 달성 시, 잔여 미세 처방이 있더라도 즉시 finish 를 호출하여 작업을 종료한다.\n",
+ "tableRow": "- {id}: {rows}행 × {cols}열, 칸 {cells}개 (합친 칸 {merged}), 상자 ({x},{y})-({x1},{y1}), 첫 칸들: {first}",
+ "emptyCell": "빈 칸",
+ "noTables": "(표 없음)",
+ "noTextLines": "(표 밖 글 줄 없음 — 분할안은 정할 것이 없다. table_titles 만)",
+ "tunableRow": "- {key}: {doc} (기본 {default}, 범위 {range})",
+ "finishRefused": "finish 거부: 분할안 · 이름을 아직 정하지 않았다. set_plan 으로 블록(title)과 표(table_titles) 이름을 한국어 업무 용어로 정하고 evaluate 로 점수가 유지되는지 확인한 뒤 finish 한다 (가이드 §3-1).",
+ "titles": "당신은 VDoc 고충실도 문서 스캐폴딩 전문 AI 에이전트입니다.\n문서명: {title}\n발견된 구획 구조:\n{blocks}\n\n위 서식 구조를 분석하여 각 구획의 명확한 한글 비즈니스 구획명(blockTitles)과 정제된 문서 제목(title)을 JSON으로 반환하십시오.\n반드시 아래 JSON 형식으로만 응답해야 합니다:\n```json\n{{\n  \"title\": \"{title}\",\n  \"blockTitles\": {{\n{keys}\n  }}\n}}\n```",
+ "titlesTable": "- {id} (표, {rows}행): {samples}",
+ "titlesBody": "- {id} (본문): {text}",
+ "titlesKey": "    \"{id}\": \"구획명\""
+}

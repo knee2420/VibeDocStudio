@@ -38,16 +38,16 @@ from common import (
     dump,
 )
 
-from app.assistant.adapters import AssistantEngineProvider
+from app.llm.adapters import AssistantEngineProvider
 from app.assistant.models import ContextItem
 from app.assistant.use_cases import AssistantService
-from app.core.llm.execution_policy import (
+from app.llm.policy import (
     CLI_PROVIDER,
     GOOGLE_PROVIDER,
     RuntimeExecutionPolicy,
 )
 from app.core.process_tree import popen_tree
-from app.knowledge.use_cases import KnowledgeToolbox
+from app.resource.index.use_cases import KnowledgeToolbox
 
 ANSWER_RULES = (
     "\n\n[답변 규칙] 한국어로 답한다. 근거가 된 위치를 반드시 출처로 남긴다"

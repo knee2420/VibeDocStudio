@@ -9,8 +9,8 @@ from fastapi.testclient import TestClient
 
 from app.assistant.models import ContextItem
 from app.assistant.use_cases.assistant_service import AssistantService
-from app.assistant.use_cases.harness_service import HarnessService
-from app.projects.adapters.local_staging_store import LocalStagingStore
+from app.authoring.adapters.local_staging_store import LocalStagingStore
+from app.authoring.use_cases.harness_service import HarnessService
 from main import app
 
 DECK_KIND = "deck"

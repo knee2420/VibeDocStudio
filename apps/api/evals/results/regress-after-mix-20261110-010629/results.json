@@ -1,0 +1,604 @@
+[
+ {
+  "id": "R6-conflict",
+  "area": "R",
+  "holdout": false,
+  "prompt": "리서치 자료끼리 서로 충돌하는 수치가 있어? 있으면 어느 쪽을 믿어야 해?",
+  "session": "asst-adee03f3ee71",
+  "seconds": 37.1,
+  "usage": {
+   "input_tokens": 29600,
+   "output_tokens": 2231,
+   "thought_tokens": 1297,
+   "cached_read_tokens": 59602,
+   "total_tokens": 91433
+  },
+  "tools": [
+   {
+    "name": "ws_tree",
+    "state": "done",
+    "params": {
+     "depth": 3,
+     "path": "",
+     "toolSummary": "Explore research directory tree"
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 10,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\README.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 10,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\archive\\보고서_요약_원래본.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\interviews\\2025-02-03_인터뷰_A사.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\interviews\\2025-03-10_인터뷰_B사.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 25,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\metrics\\2025-03_지표_요약.md",
+     "StartLine": 1
+    },
+    "error": null
+   },
+   {
+    "name": "read_file",
+    "state": "done",
+    "params": {
+     "EndLine": 20,
+     "Path": "C:\\AI_Projects\\WebNovelAssistant\\VibeDocStudio\\apps\\api\\state\\evals\\wb\\vault_beta\\research\\notes\\경쟁사_비교.md",
+     "StartLine": 1
+    },
+    "error": null
+   }
+  ],
+  "denies": [],
+  "reads": [
+   "2025-02-03_인터뷰_A사.md",
+   "2025-03-10_인터뷰_B사.md",
+   "2025-03_지표_요약.md",
+   "README.md",
+   "경쟁사_비교.md",
+   "보고서_요약_원래본.md"
+  ],
+  "proposals": [],
+  "checks": [
+   {
+    "ok": true,
+    "note": "충돌값 1,200: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "충돌값 1,450: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "어느 쪽이 맞는지 근거: 있음",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "지표 파일 읽음: 1건",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "4/4",
+  "answer": "리서치 자료 6개 전체(6/6)를 확인한 결과, **주간 활성 사용자(WAU)** 수치에서 충돌이 확인됩니다.\n\n---\n\n### 1. 충돌하는 수치\n\n* **[A사 인터뷰](vdoc:resource/file_424d917afe) (L7)**: WAU **1,200명** (2025년 2월 인터뷰, 담당자 구두 언급)\n* **[3월 지표 요약](vdoc:resource/file_ca01d6d352) (L9)**: WAU **1,450명** (2025년 3월 21일 기준)\n\n---\n\n### 2. 어느 쪽을 믿어야 하는가: **[3월 지표 요약](vdoc:resource/file_ca01d6d352) (1,450명)**\n\n[3월 지표 요약](vdoc:resource/file_ca01d6d352)의 수치를 신뢰해야 합니다. 이유는 다음과 같습니다:\n\n1. **데이터 수집 방식의 객관성**: 1,200명은 담당자의 '구두 추정치'에 불과하지만, 1,450명은 실제 시스템의 **'제품 로그'**를 기반으로 집계된 데이터입니다.\n2. **최신성**: 2025년 2월 시점의 구두 언급보다 2025년 3월 3주차 기준의 집계가 더 최신 데이터입니다.\n3. **충돌 원인 명시**: [3월 지표 요약](vdoc:resource/file_ca01d6d352) (L13)에 `※ WAU 는 제품 로그 기준(3월 3주). 2월 인터뷰의 1,200명은 구두 추정치다.`라고 해당 충돌 원인과 관계가 직접 명시되어 있습니다.",
+  "thinking": "Initial assessment: the request concerns potential conflicting data within the research documents. The resource files are limited in number (6 files, 42 lines). A full file listing will be obtained and their content examined. The initial method to investigate will be through file inspection and content review.\n\n\nInitial hypothesis: examine all six files for conflicting metrics. The files have a small line count, making full content review feasible.\n\n\nWAU discrepancy requires clarification. Interview data from February reported 1,200 WAU, while March logs show 1,450. The difference suggests either inaccurate initial estimation or growth. Evaluating the reliability of each source (verbal estimate vs. logged data) to determine a more accurate WAU.\n\n\n",
+  "errors": []
+ },
+ {
+  "id": "F4-pin",
+  "area": "F",
+  "holdout": false,
+  "prompt": "이 핀 같은 느낌으로 가고 싶어.",
+  "session": "asst-6a955f112a44",
+  "seconds": 25.4,
+  "usage": {
+   "input_tokens": 22992,
+   "output_tokens": 1853,
+   "thought_tokens": 1206,
+   "cached_read_tokens": 18415,
+   "total_tokens": 43260
+  },
+  "tools": [
+   {
+    "name": "wb_read",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_invest#pin:pinA1",
+     "toolSummary": "Read pinned reference content"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_invest#pin:pinA1",
+     "layers": "document",
+     "toolSummary": "Analyze reference patterns"
+    },
+    "error": null
+   }
+  ],
+  "denies": [],
+  "reads": [],
+  "proposals": [],
+  "checks": [
+   {
+    "ok": true,
+    "note": "핀 읽기: wb_read",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "핀의 층위 특정: 3/2 (결론[^\\n]{0,12}(먼저|앞|맨)|두괄, 짧|한 줄|간결, 숫자|수치|증거)",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "2/2",
+  "answer": "에디터=열린 문서 없음 · 레퍼런스=패턴([요약 상자](vdoc:ref-pin/ref_eval_invest#pin:pinA1)) · 리소스=마운트 없음 · 관련 없음=없음\n\n[투자 제안서](vdoc:ref/ref_eval_invest)의 [요약 상자](vdoc:ref-pin/ref_eval_invest#pin:pinA1) 핀에서 추출한 핵심 스타일 및 구조 패턴입니다. (내용·수치는 제외하고 형식만 추출)\n\n---\n\n### 층위별 패턴 분석\n\n1. **D4 서술 프레임워크 (두괄식 4단 전개)**\n   - **결론 선행 (`conclusion_first`)**: 맨 위에 최종 목표/핵심 결론 1문장을 단정형으로 먼저 제시합니다.\n   - **표준 4단 구조**: 결론 아래에 `문제 → 해법 → 증거 → 요청(Action Item)` 순서로 논리를 전개합니다.\n\n2. **D1 정보 밀도 및 스캐너빌리티 (`bullet_ratio: 0.8`)**\n   - 긴 줄글을 배제하고 단락 길이를 평균 37자 내외로 압축했습니다.\n   - `[핵심 키워드] — [요약 내용]` 형식의 대시(`—`) 구분 개조식을 일관되게 사용해 한눈에 읽히도록 구성되었습니다.\n\n3. **D2 데이터 증명 방식 (`numbers_per_100: 4.44`)**\n   - 추상적 서술 대신 각 항목마다 핵심 정량 수치(비율, 건수, 점수, 목표액 등)를 1개 이상 반드시 배치하여 설득력을 확보하는 패턴입니다.\n\n4. **D6 문체 및 톤앤매너**\n   - 불필요한 수식어를 뺀 간결한 평서문(`~다`) 및 명사형 종결을 취합니다.\n\n---\n\n### 다음 단계 안내\n현재 **에디터에 열린 문서(대상 칸)** 및 사실 근거가 될 **리소스**가 지정되어 있지 않습니다.\n- 이 패턴을 적용할 문서 블록이나 슬롯을 열어주시거나,\n- 본문에 녹여낼 주요 사실(결론/문제/해법/증거/요청)을 알려주시면 바로 반영 후보안을 작성하겠습니다.",
+  "thinking": "I'm thinking through how to approach this.\n\n\nThe analysis indicates the active pin, identified as `ref:ref_eval_invest#pin:pinA1`, is associated with a summary box within a specific document context. This summary box follows a D4 descriptive framework characterized by a 'conclusion first' structure, where the core finding is presented upfront.\n\n\n",
+  "errors": []
+ },
+ {
+  "id": "FE4-gap",
+  "area": "FE",
+  "holdout": false,
+  "prompt": "이 레퍼런스 대비 내 문서에 뭐가 부족해?",
+  "session": "asst-3806ad3883cf",
+  "seconds": 34.9,
+  "usage": {
+   "input_tokens": 24883,
+   "output_tokens": 2597,
+   "thought_tokens": 1513,
+   "cached_read_tokens": 38825,
+   "total_tokens": 66305
+  },
+  "tools": [
+   {
+    "name": "wb_compare",
+    "state": "done",
+    "params": {
+     "a": "doc",
+     "b": "ref:ref_eval_invest",
+     "toolSummary": "Compare document and reference"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_outline",
+    "state": "done",
+    "params": {
+     "target": "doc",
+     "toolSummary": "Get outline of document"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_outline",
+    "state": "done",
+    "params": {
+     "target": "ref:ref_eval_invest",
+     "toolSummary": "Get outline of reference"
+    },
+    "error": null
+   }
+  ],
+  "denies": [],
+  "reads": [],
+  "proposals": [],
+  "checks": [
+   {
+    "ok": true,
+    "note": "층위별 갭 3개 이상: 4/3 (단락|문단, 결론|두괄, 표|수치|숫자, 제목|구조)",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "측정값 비교: 있음",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "2/2",
+  "answer": "[(주)루미나랩스 시리즈A 투자 제안서](vdoc:doc/ref_eval_invest)와 비교했을 때, 현재 작성 중인 [2025 Q1 온보딩 개선 운영 보고서](vdoc:doc/vdoc_eval_report)에서 보완이 필요한 핵심 차이점은 크게 4가지 패턴 층위에서 나타납니다.\n\n---\n\n### 1. D4 서술 프레임워크 (두괄식 결론 및 논증 구조 부재)\n* **레퍼런스**: 서두에 명확한 핵심 결론(`결론: ...`)을 먼저 던진 후, **상황 → 문제 → 질문 → 해답(문제-해법-증거-요청)**으로 이어지는 인과적 서술 틀을 갖추고 있습니다 (`conclusion_first: true`).\n* **내 문서**: [요약](vdoc:slot/r_summary) 칸이 *\"이번 분기 온보딩 개선 작업은 여러 팀이 함께 참여한 대규모 프로젝트였으며...\"*와 같은 과정 나열형 만연체로 시작하여 핵심 성과와 결론이 즉시 드러나지 않습니다 (`conclusion_first: false`).\n\n### 2. D1 스캐너빌리티 및 정보 밀도 (긴 단락과 개조식 부재)\n* **레퍼런스**: 평균 단락 길이 **20.4자**(최대 56자), 불릿 리스트 비율 **25%**로 핵심 문장 단위로 짧게 끊어쳐 가독성이 높습니다.\n* **내 문서**: 평균 단락 길이 **37.2자**(최대 253자)로 호흡이 길며, 불릿 리스트(`bullet_ratio: 0.0`)가 전혀 쓰이지 않았습니다. 특히 [지표 주석](vdoc:slot/r_metric_note)은 단락 길이가 134자에 달해 권장 분량(80자)을 초과한 상태입니다.\n\n### 3. D2 데이터 증명 및 출처 표기 (수치 밀도 및 근거 결여)\n* **레퍼런스**: 100자당 수치 밀도가 **4.03개**로 촘촘하며, 데이터마다 명확한 출처 표기(`source_marks: 1`, 예: *(출처: 2024 시장조사)*)를 달아 신뢰도를 확보했습니다.\n* **내 문서**: 수치 밀도가 **1.34개**로 낮고, 수치나 결정 사항에 대한 출처 표기가 전무합니다. 이로 인해 [지표 표](vdoc:slot/r_metric_table), [지표 해설](vdoc:slot/r_metric_body), [주요 결정](vdoc:page/rp2) 등 총 6개 칸에 `근거없음` 경고가 발생해 있습니다.\n\n### 4. D5 조판 위계 및 문서 완성도 (헤딩 위계 부족 및 빈칸)\n* **레퍼런스**: H1, H2 등 5개의 구조화된 헤딩과 블록(목록, 문단, 표)을 조화롭게 배치해 시각적 리듬을 제공합니다.\n* **내 문서**: 문서 전체에 H1 제목 1개만 존재하여 섹션 구분이 평면적입니다. 또한 [문서 정보](vdoc:slot/r_meta)와 [다음 결정](vdoc:slot/r_dec_next) 2곳이 `빈칸`으로 남아 있어 완결성이 떨어집니다.\n\n---\n\n> **개선 권장 방향**: 레퍼런스의 고유명사나 사실이 아닌 **'서술 패턴'**을 차용하여, [요약](vdoc:slot/r_summary)에 두괄식 핵심 성과 1줄을 배치하고, 긴 서술은 불릿 목록으로 분절하며, [지표](vdoc:page/rp3) 칸에 측정 출처를 명시하는 구조적 개선을 추천합니다.\n\n확인하지 않은 출처: 이력(rev:1~2) — 레퍼런스와 현재 문서 초안 간의 패턴 진단 요청이므로 개정 이력은 검토하지 않음.",
+  "thinking": "The editor encompasses the entire comparison target, a 4-page document with 16 sections, and the reference is for pattern comparison with an investment proposal. No mounted resources are present. Since the request is for comparison, direct modification is not the objective.\n\nThe user's question, \"What is missing in my document compared to this reference?\" leads to the application of the workbench's rule: Use the workbench outline to read the document's content by slot, block, and page. The diagnosis will be based on the workbench patterns' measurements and section positions.\n\n\nThe reference document's clear, conclusion-first format and structured argumentation, which follows a situation-problem-question-solution flow, is noticeably different from the current document's style. Comparing this structure to the `wb_patterns` output should illuminate specific differences.\n\n\nThe current document's structure differs significantly from the reference document's clear, conclusion-first approach. Analysis reveals that the summary section uses a verbose introduction, delaying the core conclusion, while the document lacks a hierarchical heading structure beyond the top-level title.\n\nCompared to the concise paragraphs, bullet points, and high numerical density of the reference, this document features longer paragraphs, lower numerical data density, and a complete absence of bullet points or source citations, which renders some sections lacking supporting evidence. The overall typography and structural organization also deviate, as the document uses only a single top-level heading.\n\n\n",
+  "errors": []
+ },
+ {
+  "id": "RFE3-swap",
+  "area": "RFE",
+  "holdout": false,
+  "prompt": "투자 제안서 D1 스타일로 이 칸 다듬어줘. 내용은 그대로. → 레퍼런스를 공공 보고로 바꿔서 다시 적용해줘.",
+  "session": "asst-fc3629884887",
+  "seconds": 71.0,
+  "usage": {
+   "input_tokens": 41212,
+   "output_tokens": 5759,
+   "thought_tokens": 3506,
+   "cached_read_tokens": 155308,
+   "total_tokens": 202279
+  },
+  "tools": [
+   {
+    "name": "wb_read",
+    "state": "done",
+    "params": {
+     "anchor": "slot:r_metric_body",
+     "toolSummary": "Read target slot content"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_read",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_invest",
+     "toolSummary": "Read investment deck reference"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_invest",
+     "toolSummary": "Analyze reference patterns"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "slot:r_metric_body",
+     "toolSummary": "Analyze slot patterns"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_propose",
+    "state": "done",
+    "params": {
+     "candidates": [
+      {
+       "layers": [
+        "ref_eval_invest:D1"
+       ],
+       "rationale": "레퍼런스의 개조식 리스트 및 키워드 볼드 강조 패턴(blk:b4~b7)을 적용하여 핵심 수치(45분, 10명)를 즉시 파악할 수 있도록 구조화했습니다.",
+       "slots": {
+        "r_metric_body": "<p>- <strong>첫 문서 완성 시간</strong> — 평균 <strong>45분</strong></p><p>- <strong>측정 규모</strong> — <strong>10명</strong></p>"
+       },
+       "sources": [
+        "slot:r_metric_body"
+       ],
+       "title": "개조식 불릿 및 볼드 강조형"
+      },
+      {
+       "layers": [
+        "ref_eval_invest:D1"
+       ],
+       "rationale": "레퍼런스의 두괄식 핵심 메시지 볼드 강조 패턴(blk:b3, blk:b18)을 적용하여 첫 문장에서 핵심 성과가 한눈에 들어오도록 압축했습니다.",
+       "slots": {
+        "r_metric_body": "<p><strong>첫 문서 완성까지 평균 45분 소요</strong> (측정 인원: 10명)</p>"
+       },
+       "sources": [
+        "slot:r_metric_body"
+       ],
+       "title": "두괄식 볼드 인라인 강조형"
+      }
+     ],
+     "mode": "restyle",
+     "summary": "투자 제안서의 D1(스캐너빌리티·정보 밀도) 스타일을 적용하여 내용 왜곡 없이 볼드 강조 및 개조식 구조로 재구성",
+     "target": "slot:r_metric_body",
+     "toolSummary": "Propose D1 restyle candidates for slot r_metric_body"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_propose",
+    "state": "done",
+    "params": {
+     "candidates": [
+      {
+       "layers": [
+        "ref_eval_invest:D1"
+       ],
+       "rationale": "원문의 모든 낱말을 그대로 보존하면서, 레퍼런스의 개조식 리스트 및 키워드 볼드 강조(blk:b4~b7) 스타일을 적용하여 정보 파악 속도를 높였습니다.",
+       "slots": {
+        "r_metric_body": "<p>- <strong>측정 결과</strong>: 첫 문서 완성까지 평균 <strong>45분</strong>이 걸렸다.</p><p>- <strong>측정 인원</strong>: <strong>10명</strong>이다.</p>"
+       },
+       "sources": [
+        "slot:r_metric_body"
+       ],
+       "title": "개조식 분할 및 키워드 볼드형"
+      },
+      {
+       "layers": [
+        "ref_eval_invest:D1"
+       ],
+       "rationale": "원문의 어순과 단어를 유지하면서, 레퍼런스의 핵심 수치/문두 볼드 강조 패턴(blk:b3, blk:b18)을 통해 주요 지표(평균 45분, 10명)에 시선이 바로 닿도록 개선했습니다.",
+       "slots": {
+        "r_metric_body": "<p><strong>측정 결과</strong> 첫 문서 완성까지 평균 <strong>45분</strong>이 걸렸다. (측정 인원은 <strong>10명</strong>이다.)</p>"
+       },
+       "sources": [
+        "slot:r_metric_body"
+       ],
+       "title": "원문 유지 인라인 볼드 강조형"
+      }
+     ],
+     "mode": "restyle",
+     "summary": "원문의 단어를 그대로 유지하며 투자 제안서 D1(스캐너빌리티·정보 밀도) 스타일의 볼드 강조 및 개조식 구조 적용",
+     "target": "slot:r_metric_body",
+     "toolSummary": "Propose refined restyle candidates with high word retention"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_read",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_public",
+     "toolSummary": "Read public report reference"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_patterns",
+    "state": "done",
+    "params": {
+     "anchor": "ref:ref_eval_public",
+     "toolSummary": "Analyze public report patterns"
+    },
+    "error": null
+   },
+   {
+    "name": "wb_propose",
+    "state": "done",
+    "params": {
+     "candidates": [
+      {
+       "layers": [
+        "ref_eval_public:D1",
+        "ref_eval_public:D6"
+       ],
+       "rationale": "공공 보고서의 대표적인 장르 규약(D6)인 개조식 종결어미(~음·~임)와 불릿 리스트(D1)를 적용하여 공문서 격식을 갖추었습니다.",
+       "slots": {
+        "r_metric_body": "<p>- 측정 결과 첫 문서 완성까지 평균 45분이 걸림.</p><p>- 측정 인원은 10명임.</p>"
+       },
+       "sources": [
+        "slot:r_metric_body"
+       ],
+       "title": "개조식 항목 분할형 (~음·~임 종결)"
+      },
+      {
+       "layers": [
+        "ref_eval_public:D1",
+        "ref_eval_public:D6"
+       ],
+       "rationale": "공공 보고서 본문 요약 패턴(D1, D6)을 적용하여 간결한 단일 개조식 문장과 명사형 부가 정보로 정리했습니다.",
+       "slots": {
+        "r_metric_body": "<p>- 측정 결과 첫 문서 완성까지 평균 45분이 걸림 (측정 인원은 10명).</p>"
+       },
+       "sources": [
+        "slot:r_metric_body"
+       ],
+       "title": "단일 개조식 명사 종결형"
+      }
+     ],
+     "mode": "restyle",
+     "summary": "공공 보고서 레퍼런스의 D1(개조식 리스트) 및 D6(개조식·명사형 종결) 규약을 적용하여 공문서 양식으로 재구성",
+     "target": "slot:r_metric_body",
+     "toolSummary": "Propose public report restyle candidates for slot r_metric_body"
+    },
+    "error": null
+   }
+  ],
+  "denies": [],
+  "reads": [],
+  "proposals": [
+   {
+    "id": "prop_89d1687cd9",
+    "status": "ready",
+    "mode": "restyle",
+    "n": 2,
+    "report": {
+     "ok": true,
+     "errors": [],
+     "warnings": [
+      "후보 1 '개조식 불릿 및 볼드 강조형': restyle 인데 칸 r_metric_body 의 원래 낱말이 33% 만 남았다 (내용이 바뀐 것 아닌가).",
+      "후보 2 '두괄식 볼드 인라인 강조형': restyle 인데 칸 r_metric_body 의 원래 낱말이 44% 만 남았다 (내용이 바뀐 것 아닌가)."
+     ],
+     "notes": [
+      "후보 1 '개조식 불릿 및 볼드 강조형': ref_eval_invest:D1 거리 0.48 → 0.57",
+      "후보 2 '두괄식 볼드 인라인 강조형': ref_eval_invest:D1 거리 0.48 → 0.47"
+     ]
+    },
+    "candidates": [
+     {
+      "layers": [
+       "ref_eval_invest:D1"
+      ],
+      "rationale": "레퍼런스의 개조식 리스트 및 키워드 볼드 강조 패턴(blk:b4~b7)을 적용하여 핵심 수치(45분, 10명)를 즉시 파악할 수 있도록 구조화했습니다.",
+      "slots": {
+       "r_metric_body": "<p>- <strong>첫 문서 완성 시간</strong> — 평균 <strong>45분</strong></p><p>- <strong>측정 규모</strong> — <strong>10명</strong></p>"
+      },
+      "sources": [
+       "slot:r_metric_body"
+      ],
+      "title": "개조식 불릿 및 볼드 강조형"
+     },
+     {
+      "layers": [
+       "ref_eval_invest:D1"
+      ],
+      "rationale": "레퍼런스의 두괄식 핵심 메시지 볼드 강조 패턴(blk:b3, blk:b18)을 적용하여 첫 문장에서 핵심 성과가 한눈에 들어오도록 압축했습니다.",
+      "slots": {
+       "r_metric_body": "<p><strong>첫 문서 완성까지 평균 45분 소요</strong> (측정 인원: 10명)</p>"
+      },
+      "sources": [
+       "slot:r_metric_body"
+      ],
+      "title": "두괄식 볼드 인라인 강조형"
+     }
+    ]
+   },
+   {
+    "id": "prop_fc4dbd963d",
+    "status": "ready",
+    "mode": "restyle",
+    "n": 2,
+    "report": {
+     "ok": true,
+     "errors": [],
+     "warnings": [],
+     "notes": [
+      "후보 1 '개조식 분할 및 키워드 볼드형': ref_eval_invest:D1 거리 0.48 → 0.60",
+      "후보 2 '원문 유지 인라인 볼드 강조형': ref_eval_invest:D1 거리 0.48 → 0.47"
+     ]
+    },
+    "candidates": [
+     {
+      "layers": [
+       "ref_eval_invest:D1"
+      ],
+      "rationale": "원문의 모든 낱말을 그대로 보존하면서, 레퍼런스의 개조식 리스트 및 키워드 볼드 강조(blk:b4~b7) 스타일을 적용하여 정보 파악 속도를 높였습니다.",
+      "slots": {
+       "r_metric_body": "<p>- <strong>측정 결과</strong>: 첫 문서 완성까지 평균 <strong>45분</strong>이 걸렸다.</p><p>- <strong>측정 인원</strong>: <strong>10명</strong>이다.</p>"
+      },
+      "sources": [
+       "slot:r_metric_body"
+      ],
+      "title": "개조식 분할 및 키워드 볼드형"
+     },
+     {
+      "layers": [
+       "ref_eval_invest:D1"
+      ],
+      "rationale": "원문의 어순과 단어를 유지하면서, 레퍼런스의 핵심 수치/문두 볼드 강조 패턴(blk:b3, blk:b18)을 통해 주요 지표(평균 45분, 10명)에 시선이 바로 닿도록 개선했습니다.",
+      "slots": {
+       "r_metric_body": "<p><strong>측정 결과</strong> 첫 문서 완성까지 평균 <strong>45분</strong>이 걸렸다. (측정 인원은 <strong>10명</strong>이다.)</p>"
+      },
+      "sources": [
+       "slot:r_metric_body"
+      ],
+      "title": "원문 유지 인라인 볼드 강조형"
+     }
+    ]
+   },
+   {
+    "id": "prop_484ec48a38",
+    "status": "ready",
+    "mode": "restyle",
+    "n": 2,
+    "report": {
+     "ok": true,
+     "errors": [],
+     "warnings": [],
+     "notes": [
+      "후보 1 '개조식 항목 분할형 (~음·~임 종결)': ref_eval_public:D1 거리 0.46 → 0.59",
+      "후보 1 '개조식 항목 분할형 (~음·~임 종결)': ref_eval_public:D6 거리 0.25 → 0.00",
+      "후보 2 '단일 개조식 명사 종결형': ref_eval_public:D1 거리 0.46 → 0.64",
+      "후보 2 '단일 개조식 명사 종결형': ref_eval_public:D6 거리 0.25 → 0.25"
+     ]
+    },
+    "candidates": [
+     {
+      "layers": [
+       "ref_eval_public:D1",
+       "ref_eval_public:D6"
+      ],
+      "rationale": "공공 보고서의 대표적인 장르 규약(D6)인 개조식 종결어미(~음·~임)와 불릿 리스트(D1)를 적용하여 공문서 격식을 갖추었습니다.",
+      "slots": {
+       "r_metric_body": "<p>- 측정 결과 첫 문서 완성까지 평균 45분이 걸림.</p><p>- 측정 인원은 10명임.</p>"
+      },
+      "sources": [
+       "slot:r_metric_body"
+      ],
+      "title": "개조식 항목 분할형 (~음·~임 종결)"
+     },
+     {
+      "layers": [
+       "ref_eval_public:D1",
+       "ref_eval_public:D6"
+      ],
+      "rationale": "공공 보고서 본문 요약 패턴(D1, D6)을 적용하여 간결한 단일 개조식 문장과 명사형 부가 정보로 정리했습니다.",
+      "slots": {
+       "r_metric_body": "<p>- 측정 결과 첫 문서 완성까지 평균 45분이 걸림 (측정 인원은 10명).</p>"
+      },
+      "sources": [
+       "slot:r_metric_body"
+      ],
+      "title": "단일 개조식 명사 종결형"
+     }
+    ]
+   }
+  ],
+  "checks": [
+   {
+    "ok": true,
+    "note": "후보 제안: ready · 2안 · mode=restyle · 칸=['r_metric_body']",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "공공 보고로 교체: ref_eval_public:D1 ref_eval_public:D6 ref_eval_public:D1 ref_eval_public:D6",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "45 보존: 2/2안",
+    "bonus": false
+   },
+   {
+    "ok": true,
+    "note": "레퍼런스 누출 0: 없음",
+    "bonus": false
+   }
+  ],
+  "passed": true,
+  "score": "4/4",
+  "answer": "[지표 해설](vdoc:slot/r_metric_body) 칸에 [한국데이터진흥원 내부 보고](vdoc:doc/ref_eval_public)의 **D1(개조식 구성)** 및 **D6(공공 보고서 장르 규약: ~음·~임/명사형 종결)** 패턴을 반영한 2가지 변경안을 제안했습니다. 화면 미리보기에서 확인 후 선택하실 수 있습니다.\n\n### 제안 안별 차이 및 선택 기준\n\n1. **제1안: 개조식 항목 분할형 (~음·~임 종결)**\n   - **특징**: 측정 결과와 측정 인원을 2개의 불릿 항목으로 분리하고, 공공 보고서 전형의 개조식 종결어미(`~걸림`, `~10명임`)를 적용했습니다.\n   - **선택 기준**: 공공 행정·공문서 표준 서식의 격식과 가독성을 온전히 갖추고자 할 때 적합합니다.\n\n2. **제2안: 단일 개조식 명사 종결형**\n   - **특징**: 핵심 수치를 단일 행으로 통합하고 측정 인원을 괄호 내 명사형으로 간결하게 압축했습니다.\n   - **선택 기준**: 한 칸 안에서 여러 줄을 차지하지 않고 콤팩트하게 개조식 요약 형태로 표기할 때 적합합니다.\n\n---\n확인하지 않은 출처: (주)루미나랩스 투자 제안서(ref:ref_eval_invest) — 공공 보고 레퍼런스로 교체 요청됨에 따라 제외, 이력 — 단순 서식 재구성(restyle) 요청으로 미참조",
+  "thinking": "The task involves adapting a specific cell (`r_metric_body`) to match a \"D1 style\" from an investment proposal reference. The primary action is to extract the content of the target cell.\n\n\nInitial assessment of the \"D1\" pattern in the evaluation reference suggests a focus on scannability and information density. The pattern analysis indicates effective use of bolding within paragraphs, and the incorporation of bullet points or bolded keywords connected by dashes. Short sentences and paragraphs are also characteristic of this \"D1\" pattern.\n\n\nInitial restructuring focuses on scannability and information density, considering bolding and concise bullet points. The original sentence \"측정 결과 첫 문서 완성까지 평균 45분이 걸렸다. 측정 인원은 10명이다.\" can be transformed into multiple candidates reflecting D1 style. One candidate uses bullet points with bold keywords: \"첫 문서 완성 시간: 평균 45분 소요\", \"측정 대상: 총 10명\". Another proposes HTML structures with similar emphasis. Further options for restructuring will be considered to maximize clarity.\n\n\nThe warning indicates substantial content alteration during the style transformation for both candidate styles. Specifically, 'Candidate 1' retains only 33% of the original words, and 'Candidate 2' retains 44%. This suggests significant rewriting or summarization, potentially changing the intended meaning. The impact of the style changes needs assessment.\n\n\nThe response validated without any verification warnings. The instructions require a concise answer, focusing on the differences between the options and the selection criteria. Also, the response needs clickable links for screen locations or cited materials: [human-readable name](vdoc:type/id).\n\n\nD1's structure aligns with the \"개조식\" style, exhibiting a high bullet point ratio and minimal bolding, suggesting a clean, concise format. This initial observation points towards a potential match with the specified genre conventions. The analysis confirms a strong adherence to \"개조식\" ending styles, bullet point formats, and the use of the specified ending forms, supporting a hypothesis of compliance with the targeted genre.\n\n\nAnalysis suggests the original text can be restructured into a public report style. Considering word preservation and D1/D6 characteristics, a 개조식 approach with 명사/음슴체 endings is considered. Several variations are being evaluated, maintaining a high level of word retention while adopting a concise, public-report-appropriate format.\n\n\nThe public report's target distance metric now fully complies with the specification at 0.00. Validation is complete.\n\nChecked the rules:\n1.  Verified each turned-on source's relevance to the current request in the initial thought process.\n2.  Reviewed turned-on, unused sources:\n    - Editor: Applied [Metric Explanation].\n    - Reference: [Korea Data Agency].\n\n\n",
+  "errors": []
+ }
+]

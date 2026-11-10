@@ -1,0 +1,68 @@
+{
+ "_doc": "한국어 어휘 — 측정 · 검증이 글에서 신호를 찾는 패턴. 다른 언어는 같은 키로 <lang>.json 을 더한다.",
+ "measure": {
+  "endings": [
+   {
+    "label": "개조식(~함·~임·~음)",
+    "pattern": "(함|임|음|됨|필요|예정|완료)\\s*[.。]?\\s*$"
+   },
+   {
+    "label": "평서(~다)",
+    "pattern": "다\\s*[.。]\\s*$|다$"
+   },
+   {
+    "label": "해요(~요)",
+    "pattern": "요\\s*[.!?~。]?\\s*$"
+   },
+   {
+    "label": "명사형 종결",
+    "pattern": "[가-힣A-Za-z0-9)]\\s*$"
+   }
+  ],
+  "emoji": {
+   "pattern": "[🌀-🫿☀-➿]"
+  },
+  "number": {
+   "pattern": "\\d[\\d,.]*\\s*(%|퍼센트|명|분|일|개|건|원|억|만|조|배|회|시간|주|개월|년)?"
+  },
+  "meta": {
+   "meta_doc_no": {
+    "pattern": "문서\\s*번호|문서번호|Doc(ument)?\\s*No|관리\\s*번호|[A-Z]{2,}-\\d{4}-\\d{2,}"
+   },
+   "meta_approval": {
+    "pattern": "결\\s*재|담당\\s*[|·].*(검토|승인)|기안|협조|승인자"
+   },
+   "meta_summary": {
+    "pattern": "요\\s*약|개\\s*요|Executive\\s*Summary|핵심\\s*요약|TL;?DR",
+    "flags": "i"
+   },
+   "meta_footnote": {
+    "pattern": "※|\\[\\d+\\]|각주|주\\)\\s"
+   },
+   "meta_version": {
+    "pattern": "\\b[vV]\\d+(\\.\\d+)?\\b|버전|개정\\s*\\d|Rev\\.?\\s*\\d"
+   }
+  },
+  "callout": {
+   "pattern": "^\\s*(>|\\[!|💡|📌|✅|⚠|❗|👉|※)"
+  },
+  "source": {
+   "pattern": "출처|자료\\s*[:：]|Source|기준\\)|\\(\\d{4}[.\\-]\\d{1,2}"
+  },
+  "conclusion": {
+   "pattern": "결론|요약|핵심|따라서|제안|권고|해답|Answer|TL;?DR",
+   "flags": "i"
+  }
+ },
+ "proposal": {
+  "number": {
+   "pattern": "\\d[\\d,]*(?:\\.\\d+)?\\s*(?:%|퍼센트|명|분|일|개|건|원|억\\s*원|억|만\\s*원|만|조\\s*원|조|배|회|시간|주|개월|년|곳|점)?"
+  },
+  "properNoun": {
+   "pattern": "\\b[A-Z][A-Za-z]{2,}\\b|\\(주\\)\\s*[가-힣A-Za-z]+"
+  },
+  "word": {
+   "pattern": "[가-힣A-Za-z]{2,}"
+  }
+ }
+}

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { BookOpenCheck, Crosshair, PencilLine, Sparkles, Target, Wand2 } from "lucide-react";
 
 import type { ContextRef } from "@vibe/ai-kernel";
+import inline from "@vibe/harness-packs/authoring/inline-actions.json";
 
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
@@ -118,6 +119,8 @@ interface MenuItem {
   run(): void;
 }
 
+const QUICK_ICONS: Record<string, MenuItem["icon"]> = { fill: PencilLine, polish: Wand2, use: BookOpenCheck, summary: Wand2 };
+
 function menuItems(refs: ContextRef[], close: () => void): MenuItem[][] {
   const writable = refs.some((r) => r.access === "write");
   const go = (options?: AttachOptions) => () => {
@@ -130,15 +133,13 @@ function menuItems(refs: ContextRef[], close: () => void): MenuItem[][] {
   if (writable) attach.push({ key: "target", label: "고칠 대상으로 첨부", icon: Target, run: go({ role: "target" }) });
   attach.push({ key: "reference", label: "참고자료로 첨부", icon: BookOpenCheck, run: go({ role: "reference" }) });
 
-  const quick: MenuItem[] = writable
-    ? [
-        { key: "fill", label: "채워 달라고 하기", icon: PencilLine, run: go({ role: "target", prompt: "{handles} 의 빈 곳을 채워서 변경안으로 올려줘." }) },
-        { key: "polish", label: "다듬어 달라고 하기", icon: Wand2, run: go({ role: "target", prompt: "{handles} 를 더 명확하고 간결하게 다듬어서 변경안으로 올려줘." }) },
-      ]
-    : [
-        { key: "use", label: "이걸 참고해서…", icon: BookOpenCheck, run: go({ role: "reference", prompt: "{handles} 를 참고해서 " }) },
-        { key: "summary", label: "요약해 달라고 하기", icon: Wand2, run: go({ role: "reference", prompt: "{handles} 의 핵심을 요약해줘." }) },
-      ];
+  // 빠른 지시 — 하네스 authoring 팩(`inline-actions.json` attachQuick). `{handles}` 는 첨부 이름들로 바뀐다.
+  const quick: MenuItem[] = (writable ? inline.attachQuick.writable : inline.attachQuick.readonly).map((q) => ({
+    key: q.key,
+    label: q.label,
+    icon: QUICK_ICONS[q.key] ?? Wand2,
+    run: go({ role: q.role as AttachOptions["role"], prompt: q.prompt }),
+  }));
 
   const groups = [attach, quick];
   if (refs.length === 1) {
