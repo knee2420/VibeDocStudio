@@ -27,6 +27,7 @@ import {
 } from "./ResourceNodeToolbox";
 import { slotsUsingResource, useEvidenceFocusStore } from "@/features/evidence-focus";
 import { useResourcePeekTrigger } from "../../model/useResourcePeek";
+import { MEDIA_DRAG_MIME, resourceMediaSrc } from "@vibe/slot-canvas";
 
 const getFileIcon = (ext: string = "", type: string = "file") => {
   if (type === "web") return <Globe className="w-3.5 h-3.5 text-blue-500 shrink-0" />;
@@ -147,6 +148,14 @@ const TreeNode: React.FC<TreeNodeProps> = ({
       <div
         onClick={handleNodeClick}
         {...peekHandlers}
+        draggable={!isDirectory && isImagePath(item.pathOrUrl)}
+        onDragStart={(e) => {
+          if (isDirectory || !isImagePath(item.pathOrUrl)) return;
+          // 캔버스에 놓으면 이미지 블록 — 경로가 아니라 원장 id 로 가리킨다 (에이전트 dc_build 와 같은 resource:<id>)
+          e.dataTransfer.setData(MEDIA_DRAG_MIME, JSON.stringify({ src: resourceMediaSrc(item.id), alt: item.title }));
+          e.dataTransfer.setData("text/plain", item.title);
+          e.dataTransfer.effectAllowed = "copy";
+        }}
         data-rm-item={item.id}
         data-focused={isFocused ? "1" : undefined}
         onMouseEnter={(e) => {
@@ -257,6 +266,9 @@ const TreeNode: React.FC<TreeNodeProps> = ({
     </div>
   );
 };
+
+const IMAGE_EXT = /\.(png|jpe?g|webp|gif|svg)$/i;
+const isImagePath = (path?: string | null) => Boolean(path && IMAGE_EXT.test(path));
 
 export const RmSourceTreeSection: React.FC = () => {
   const activeProject = useProjectStore(selectActiveProject);

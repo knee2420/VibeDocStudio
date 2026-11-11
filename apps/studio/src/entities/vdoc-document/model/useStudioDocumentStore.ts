@@ -57,6 +57,10 @@ export interface StudioDocumentState {
   reloadDoc: (docId: string) => Promise<void>;
   /** 화면에만 올리는 임시 문서 (저장하지 않는다). 측정 도구 브리지 계약이므로 시그니처를 바꾸지 않는다. */
   upsertDocument: (doc: VDocDocument) => void;
+  /** 서버에 이미 있는 문서를 작업 사본으로 들인다 (새로 만들기 · 복제 · 에이전트가 만든 초안). 저장하지 않는다. */
+  adoptDocument: (doc: VDocDocument) => void;
+  /** 지운 문서를 작업 사본에서 뺀다. 활성 문서였으면 남은 첫 문서로 옮긴다. */
+  forgetDocument: (docId: string) => void;
   /** 서버에 저장되는 새 작업 문서 (PDF 가져오기 · .vdoc 파일 열기). */
   addDocument: (doc: VDocDocument) => Promise<void>;
   dismissError: () => void;
@@ -233,6 +237,32 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
           docs: exists ? s.docs.map((d) => (d.docId === doc.docId ? doc : d)) : [...s.docs, doc],
           activeDocId: doc.docId,
           activePageId: doc.pages[0]?.pageId ?? "",
+        };
+      }),
+
+    adoptDocument: (doc) => {
+      // 이미 열린 문서는 그 자리에서 서버 판으로 바꾸고(보고 있는 문서는 그대로), 새 문서만 열어 보여 준다
+      if (get().docs.some((d) => d.docId === doc.docId)) set((s) => ({ docs: s.docs.map((d) => (d.docId === doc.docId ? doc : d)) }));
+      else get().upsertDocument(doc);
+      set((s) => ({
+        persistedDocIds: new Set([...s.persistedDocIds, doc.docId]),
+        saveState: { ...s.saveState, [doc.docId]: "saved" },
+      }));
+    },
+
+    forgetDocument: (docId) =>
+      set((s) => {
+        const docs = s.docs.filter((d) => d.docId !== docId);
+        const persisted = new Set(s.persistedDocIds);
+        persisted.delete(docId);
+        const { [docId]: _gone, ...saveState } = s.saveState;
+        const next = s.activeDocId === docId ? docs[0] : docs.find((d) => d.docId === s.activeDocId);
+        return {
+          docs,
+          persistedDocIds: persisted,
+          saveState,
+          activeDocId: next?.docId ?? "",
+          activePageId: s.activeDocId === docId ? next?.pages[0]?.pageId ?? "" : s.activePageId,
         };
       }),
 

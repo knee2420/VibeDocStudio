@@ -4,7 +4,7 @@ export {
   useStudioDocumentStore,
 } from "./model/useStudioDocumentStore";
 export type { DocumentSaveState, StudioDocumentState, UpdateDocOptions } from "./model/useStudioDocumentStore";
-export type { ChangeNote, RevisionEntry, RevisionSlotChange } from "./api/documentApi";
+export type { ChangeNote, DocumentSummary, RevisionEntry, RevisionSlotChange } from "./api/documentApi";
 export { documentApi } from "./api/documentApi";
 export { getDocumentSource, getPageNumber, getPageThumbnailUrl } from "./lib/previewAssets";
 export type { DocumentSourceView } from "./lib/previewAssets";

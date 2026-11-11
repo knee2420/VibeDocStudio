@@ -128,6 +128,28 @@ class RefTools:
             raise ValueError(f"켜진 레퍼런스가 아니다: {rid} (켜진 것: {', '.join(self.wb.refs) or '없음'}). rf_map 을 본다.")
         return ref
 
+    @staticmethod
+    def _media_label(b: dict[str, Any]) -> str:
+        """배치 덩어리(사진 · 묶음 · 링크 카드 · 구분선)의 한 줄 설명 — 레퍼런스 사진 자체는 재료가 아니다."""
+        kind = str(b.get("kind") or "")
+        media = b.get("media") or {}
+
+        def msg(key: str, **values: Any) -> str:
+            return packs.message("reference:messages.json", "media." + key, **values)
+
+        if kind == "image":
+            width = media.get("widthPx")
+            return msg("image", role=msg("sticker" if media.get("role") == "sticker" else "photo"),
+                       width=msg("width", px=int(width)) if width else "")
+        if kind == "gallery":
+            return msg("gallery", count=media.get("count"), widths=" : ".join(str(w) for w in media.get("widths") or []))
+        if kind == "link-card":
+            return msg("linkCard", thumb=msg("thumb") if media.get("thumbnail") else "",
+                       domain=(" · " + str(media.get("domain"))) if media.get("domain") else "")
+        if kind == "divider":
+            return msg("divider", variant=media.get("variant") or "line")
+        return ""
+
     def _blocks(self, ref: RefBook, anchor: RefAnchor) -> list[dict[str, Any]]:
         if anchor.pin_id:
             pin = ref.pin(anchor.pin_id)
@@ -199,6 +221,13 @@ class RefTools:
                     tag = f" [{pin.get('layer')}]" if pin.get("layer") else ""
                     note = f" — 메모: {_clip(str(pin.get('note')), 60)}" if pin.get("note") else ""
                     rows.append(f"   · ref:{rid}#pin:{pin.get('pinId')}{tag} {pin.get('label') or ''} (p{pin.get('page') or '?'}){note}")
+            stored = (ref.layer_report or {}).get("metrics") or {}
+            if ref.has_layout() and stored.get("section_signature") is not None:
+                rows.append(packs.message("reference:messages.json", "skeleton.mapLine", sections=stored.get("sections"),
+                                          signature=stored.get("section_signature"),
+                                          share=int(float(stored.get("signature_share") or 0) * 100),
+                                          opening=stored.get("opening"), photos=stored.get("photos"),
+                                          links=stored.get("link_cards"), refId=rid))
             report_layers = (ref.layer_report or {}).get("layers") or []
             if report_layers:
                 rows.append("  저장된 층위 측정:")
@@ -240,8 +269,9 @@ class RefTools:
                     continue
             rows_all.append(f"§{sec['no']} p{sec['page']} {sec['title']}  (rf_read ref:{book.ref_id}#sec:{sec['no']})")
             for b in blocks:
+                label = self._media_label(b)
                 rows_all.append(f"   ref:{book.ref_id}#blk:{b.get('id')} ({b.get('kind')} · p{b.get('page') or 1}) — "
-                                f"{_clip(str(b.get('text') or ''), 70)}")
+                                f"{(label + ' ') if label else ''}{_clip(str(b.get('text') or ''), 70)}")
         if not rows_all:
             return "(조건에 맞는 덩어리가 없다 — 이미지 · 스캔본이면 핀 영역의 글을 본다)"
         start = max(0, int(offset or 0))
@@ -273,7 +303,12 @@ class RefTools:
             shown = blocks  # 핀을 읽으면 겹치는 덩어리도 읽은 것으로 친다
         else:
             for b in blocks[start:]:
-                text = html_to_text(str(b.get("html") or "")) or str(b.get("text") or "") or "(비어 있음)"
+                label = self._media_label(b)
+                text = html_to_text(str(b.get("html") or "")) or str(b.get("text") or "")
+                text = (label + (" " + text if text else "")) if label else (text or "(비어 있음)")
+                align = (b.get("style") or {}).get("align")
+                if align and align != "left":
+                    text = f"(정렬 {align}) {text}"
                 piece = f"── ref:{ref.ref_id}#blk:{b.get('id')} ({b.get('kind')} · p{b.get('page') or 1})\n{text}"
                 if shown and used + len(piece) > READ_BUDGET:
                     break
@@ -293,6 +328,41 @@ class RefTools:
         head = f"{_LEAK_HEADER}\n[{parsed.render()} · 덩어리 {start + 1}–{max(start + 1, end)}/{len(blocks)}]" if not parsed.pin_id \
             else f"{_LEAK_HEADER}\n[{parsed.render()}]"
         return head + "\n" + "\n".join(rows) + tail
+
+    def _rf_skeleton(self, ref: str = "", **_: Any) -> str:
+        """레퍼런스의 배치 뼈대: 첫머리 · 섹션마다 모양(토큰) · 대표 모양 · 맺음 — 내용 없이 '어떻게 쌓았나' 만."""
+        book = self._ref(ref) if ref else (next(iter(self.wb.refs.values()), None))
+        if book is None:
+            raise ValueError("켜진 레퍼런스가 없다.")
+        tokens = [patterns.layout_token(b) for b in book.blocks]
+        sk = "skeleton."
+        rows = [f"{_LEAK_HEADER}", packs.message("reference:messages.json", sk + "head", refId=book.ref_id, title=book.title),
+                packs.message("reference:messages.json", sk + "legend")]
+        sections: list[tuple[str, list[str]]] = []
+        opening: list[str] = []
+        for tok, b in zip(tokens, book.blocks):
+            if not tok:
+                continue
+            if tok == "H":
+                sections.append((_clip(str(b.get("text") or ""), 40), [tok]))
+            elif sections:
+                sections[-1][1].append(tok)
+            else:
+                opening.append(tok)
+        if opening:
+            rows.append(packs.message("reference:messages.json", sk + "opening", tokens=" ".join(opening)))
+        for i, (title, toks) in enumerate(sections, start=1):
+            rows.append(packs.message("reference:messages.json", sk + "section", no=i, tokens=" ".join(toks), title=title))
+        metrics = patterns.measure_layout(book.blocks)
+        rows.append(packs.message("reference:messages.json", sk + "summary", signature=metrics["section_signature"],
+                                  share=int(metrics["signature_share"] * 100), photos=metrics["photos_per_section"],
+                                  paras=metrics["paras_per_section"], sizes=metrics["gallery_sizes"] or "-",
+                                  questions=int(metrics["question_headings"] * 100)))
+        rows.append(packs.message("reference:messages.json", sk + "tail"))
+        if self.store is not None:
+            self.store.record_ref_read(session_id=self.session_id, conversation_id=self.conversation_id, ref_id=book.ref_id,
+                                       blocks=[], pins=[], anchor=f"ref:{book.ref_id}#skeleton")
+        return "\n".join(rows)
 
     def _rf_find(self, query: str = "", kind: str = "", ref: str = "", page: str = "", **_: Any) -> str:
         if not (query or kind or page):
@@ -374,10 +444,15 @@ class RefTools:
             htmls = [str(b.get("html") or "") for b in blocks]
             if parsed.pin_id and not any(htmls):
                 htmls = [str((ref.pin(parsed.pin_id) or {}).get("text") or "")]
-            return patterns.measure(htmls, sorted({str(b.get("kind")) for b in blocks if b.get("kind")})), ref.layer_set
+            kinds = sorted({str(b.get("kind")) for b in blocks if b.get("kind")})
+            return patterns.measure_all(htmls, kinds, blocks if ref.has_layout() else None), ref.layer_set
         _, htmls = self.wb.read(anchor)
         kinds = sorted({p.block_kind for p in self.wb.doc.places.values() if p.block_kind}) if self.wb.doc is not None else []
-        return patterns.measure(htmls, kinds), "document"
+        layout = self.wb.doc.layout_blocks(anchor) if self.wb.doc is not None else None
+        if layout and anchor.split(":", 1)[0] in ("doc", "page", "block"):
+            htmls = [str(b.get("html") or "") for b in layout]
+        genre = str((self.wb.doc.data.get("genre") if self.wb.doc is not None else "") or "document")
+        return patterns.measure_all(htmls, kinds, layout), genre if genre in patterns.registry()["sets"] else "document"
 
     def _rf_measure(self, anchor: str = "", layers: str = "", **_: Any) -> str:
         metrics, default_set = self._measure(anchor)
@@ -424,7 +499,9 @@ class RefTools:
             if layer not in known:
                 errors.append(f"층위 '{layer}' 는 레지스트리에 없다 ({', '.join(sorted(known))}).")
             elif layer not in patterns.layer_ids(ref.layer_set):
-                warnings.append(f"층위 {layer} 는 이 레퍼런스의 세트({ref.layer_set})가 아니다.")
+                # 다른 세트의 층위로 낸 카드는 이 레퍼런스의 측정 · 합의와 이어지지 않는다 — 세트의 id 로 다시 낸다
+                errors.append(f"층위 {layer} 는 이 레퍼런스의 세트({ref.layer_set})가 아니다 — "
+                              f"{', '.join(sorted(patterns.layer_ids(ref.layer_set)))} 중에서 고른다 (rf_map 의 저장된 층위 측정).")
             if adoption not in ADOPTIONS:
                 errors.append(f"adoption 은 {', '.join(ADOPTIONS)} 중 하나.")
             if len(reading) < 12:

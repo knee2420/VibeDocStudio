@@ -38,6 +38,7 @@ from app.authoring.use_cases import (
     StagedPhaseRunner,
     StagingQueueUseCase,
 )
+from app.bootstrap.project_links import ProjectDocLinks
 from app.catalog.adapters import FilesystemCatalogRepository, PdfVDocEngineAdapter
 from app.catalog.use_cases import (
     GetCatalogBundleUseCase,
@@ -49,6 +50,7 @@ from app.core.observation import CancellationRegistry
 from app.documents.adapters import LocalVDocDocumentRepository
 from app.documents.use_cases import (
     DeleteDocumentUseCase,
+    DocumentLifecycleUseCase,
     GetDocumentPageChunkUseCase,
     GetDocumentUseCase,
     ListDocumentsUseCase,
@@ -83,6 +85,7 @@ from app.projects.use_cases import (
     SaveProjectUseCase,
 )
 from app.reference.adapters import (
+    FidelityWebLayoutExtractor,
     HtmlStructureExtractor,
     LocalReferenceLibrary,
     MeasuredLayerAnalyzer,
@@ -296,6 +299,12 @@ class Container(containers.DeclarativeContainer):
     save_project = providers.Factory(SaveProjectUseCase, repository=project_repository)
     get_project_outline_tree = providers.Factory(GetProjectOutlineTreeUseCase, repository=project_repository)
     apply_outline_command = providers.Factory(ApplyOutlineCommandUseCase, repository=project_repository)
+    # 문서 생애(만들기 · 이름 · 복제 · 삭제) — 프로젝트 docIds 연결을 함께 한다
+    document_lifecycle = providers.Factory(
+        DocumentLifecycleUseCase,
+        repository=document_repository,
+        projects=providers.Factory(ProjectDocLinks, repository=project_repository),
+    )
 
     # --- 7. Resource: 자동 색인 지식 덱 (`data/knowledge/decks` · `data/knowledge/jobs`) ---
     knowledge_files = providers.Singleton(FsDeckFiles, root=providers.Callable(lambda st: st.knowledge_of("decks"), storage))
@@ -383,7 +392,8 @@ class Container(containers.DeclarativeContainer):
         pdf_extractor=providers.Singleton(PyMuPdfExtractor),
         html_extractor=providers.Singleton(HtmlStructureExtractor),
         fetcher=providers.Singleton(UrllibWebFetcher),
+        layout_extractor=providers.Singleton(FidelityWebLayoutExtractor),
         analyzer=providers.Singleton(
-            MeasuredLayerAnalyzer, measure=layer_patterns.measure, by_layer=layer_patterns.by_layer
+            MeasuredLayerAnalyzer, measure=layer_patterns.measure, by_layer=layer_patterns.by_layer, layout=layer_patterns.measure_layout
         ),
     )

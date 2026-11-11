@@ -30,6 +30,9 @@ export const LAYOUT_BLOCK_KINDS = [
   "summary-list",
   "cover-banner",
   "callout-box",
+  "link-card",
+  "divider",
+  "hero",
 ] as const;
 
 export type LayoutBlockKind = (typeof LAYOUT_BLOCK_KINDS)[number];

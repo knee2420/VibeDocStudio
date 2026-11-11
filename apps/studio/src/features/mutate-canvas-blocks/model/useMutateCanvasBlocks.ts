@@ -337,6 +337,18 @@ export function useMutateCanvasBlocks() {
       else if (createdBlockId) useSlotSelectionStore.getState().setSelectedBlockId(createdBlockId);
     },
 
+    /** 리소스 사진을 끌어 놓은 자리에 이미지 블록 (`src` = `resource:<id>`, 새로고침 · 다른 PC 에서도 유지). */
+    addMediaToPage: (pageId: string, src: string, alt: string, atIndex?: number) => {
+      let createdBlockId: string | null = null;
+      apply((doc) => {
+        const draft = createInsertableBlock("image", { suffix: idSuffix() });
+        const block = { ...draft.block, src, alt: alt || "사진", title: alt || "사진", width: "100%", align: "center" } as typeof draft.block;
+        createdBlockId = block.blockId;
+        return insertBlock(doc, pageId, block, draft.slots, atIndex);
+      }, "사진 넣기");
+      if (createdBlockId) useSlotSelectionStore.getState().setSelectedBlockId(createdBlockId);
+    },
+
     duplicateBlock: (pageId: string, blockId: string) => {
       let duplicatedBlockId: string | null = null;
       apply((doc) => {

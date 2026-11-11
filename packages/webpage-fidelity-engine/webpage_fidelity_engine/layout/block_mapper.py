@@ -112,6 +112,23 @@ def _constraints_from_style(style: TextInlineStyle, *, default_size: Optional[st
     return out
 
 
+def _stacked(upper: Optional[WebNode], lower: WebNode, gap_px: float = 28.0) -> bool:
+    """위 노드가 아래 노드에 바로 붙어 있고(세로 틈 작음) 좌우가 겹치는지 — 실측 좌표가 있을 때만."""
+    if upper is None or upper.rect is None or lower.rect is None:
+        return False
+    a, b = upper.rect, lower.rect
+    gap = b.y - (a.y + a.height)
+    overlap = min(a.x + a.width, b.x + b.width) - max(a.x, b.x)
+    return -4.0 <= gap <= gap_px and overlap >= 0.6 * min(a.width, b.width)
+
+
+def _same_asset(a: str, b: str) -> bool:
+    """쿼리(크기 지정)만 다른 같은 원본 사진인지."""
+    if not a or not b:
+        return False
+    return a.split("?", 1)[0] == b.split("?", 1)[0]
+
+
 def _scaled_image_dims(img: WebImage, *, max_w: float, max_h: float) -> tuple[float, float]:
     w = float(img.width_px or img.render_width_px or 640)
     h = float(img.height_px or img.render_height_px or 380)
@@ -168,7 +185,9 @@ def map_nodes_to_blocks(
         seq += 1
         return f"w_{prefix}_{seq}"
 
+    prev_node: Optional[WebNode] = None
     for node in coalesced:
+        last_node, prev_node = prev_node, node
         if node.kind == "heading":
             bid = next_id("hd")
             sid = f"{bid}_s"
@@ -334,21 +353,37 @@ def map_nodes_to_blocks(
             bid = next_id("lnk")
             sid = f"{bid}_s"
             title_esc = html_lib.escape(card.title or card.url)
-            url_esc = html_lib.escape(card.url, quote=True)
-            parts = [f'<p><strong><a href="{url_esc}">{title_esc}</a></strong></p>']
+            parts = [f"<p><strong>{title_esc}</strong></p>"]
             if card.description:
                 parts.append(f"<p>{html_lib.escape(card.description[:140])}</p>")
-            if card.domain:
-                parts.append(f'<p><span style="color: #64748b">{html_lib.escape(card.domain)}</span></p>')
+            thumb_src = ""
+            if card.thumbnail is not None:
+                thumb_src = card.thumbnail.resolved_src or ("" if inline_images else card.thumbnail.src)
+                # 브라우저 실측은 카드 안 썸네일을 이미지 노드로도 따로 낸다 — 바로 앞 같은 사진은 카드에 합친다
+                if mapped and mapped[-1].block.get("kind") == "image":
+                    prev_src = str(mapped[-1].block.get("src") or "")
+                    raw = card.thumbnail.src
+                    if prev_src and (prev_src == thumb_src or prev_src == raw or _same_asset(prev_src, raw)):
+                        thumb_src = thumb_src or prev_src
+                        mapped.pop()
+            elif mapped and mapped[-1].block.get("kind") == "image" and _stacked(last_node, node):
+                # 카드 썸네일이 <a> 밖 형제로 놓인 사이트(네이버 등) — 카드 바로 위에 붙은 사진은 카드의 썸네일이다
+                thumb_src = str(mapped[-1].block.get("src") or "")
+                mapped.pop()
             block = {
                 "blockId": bid,
-                "kind": "callout-box",
+                "kind": "link-card",
                 "title": (card.title or "링크 카드")[:32],
                 "slotId": sid,
-                "tone": "info",
+                "url": card.url,
+                "domain": card.domain,
+                "layout": "thumb-top",
+                "width": "72%",
             }
+            if thumb_src:
+                block["thumbnail"] = thumb_src
             slot = make_slot(sid, "링크 카드", "".join(parts), constraints={"fontSize": "13px", "lineHeight": "1.5"})
-            est_h = 84.0 if card.description else 64.0
+            est_h = (84.0 if card.description else 64.0) + (200.0 if thumb_src else 0.0)
             mapped.append(
                 MappedBlock(
                     block=block,
@@ -361,16 +396,8 @@ def map_nodes_to_blocks(
 
         if node.kind == "divider":
             bid = next_id("hr")
-            sid = f"{bid}_s"
-            block = {
-                "blockId": bid,
-                "kind": "text",
-                "title": "구분선",
-                "slotId": sid,
-                "align": "center",
-            }
-            slot = make_slot(sid, "구분선", "<hr/>")
-            mapped.append(MappedBlock(block=block, slots={sid: slot}, estimated_height_px=24.0))
+            block = {"blockId": bid, "kind": "divider", "title": "구분선", "variant": "line", "spacing": 12}
+            mapped.append(MappedBlock(block=block, slots={}, estimated_height_px=24.0))
             continue
 
         if node.kind == "image" and node.images:

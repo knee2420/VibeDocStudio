@@ -6,6 +6,7 @@ import { AiAttachLayer, registerWorkspaceAi, useAiScopeLiveSync } from "@/featur
 import { registerCitationNavigation, registerEvidenceFocusAi, useEvidenceFocusSync, useEvidenceStaleCheck } from "@/features/evidence-focus";
 import { GlobalUndoToastHost, useGlobalStudioShortcuts } from "@/features/command-bus";
 import { registerSlotAiActions } from "@/features/compose-slot-ai";
+import { registerAgentDraftSync } from "@/features/manage-documents";
 import { DeckCardPreview, registerKnowledgeDeckAi, useKnowledgeDeckBootstrap } from "@/features/knowledge-deck-ai";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
@@ -41,7 +42,7 @@ const StudioWorkspace: React.FC = () => {
   useAiScopeLiveSync();
   // AI 런타임 확장 지점: 기능마다 도구 · 컨텍스트 · 액션을 등록한다 (Composer · 인라인 공용).
   React.useEffect(() => {
-    const offs = [registerWorkspaceAi(), registerSlotAiActions(), registerKnowledgeDeckAi(), registerCitationNavigation(), registerEvidenceFocusAi()];
+    const offs = [registerWorkspaceAi(), registerSlotAiActions(), registerKnowledgeDeckAi(), registerCitationNavigation(), registerEvidenceFocusAi(), registerAgentDraftSync()];
     return () => offs.forEach((off) => off());
   }, []);
 

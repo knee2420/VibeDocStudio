@@ -82,10 +82,34 @@ export function hasLegacyClasses(html: string): boolean {
   return /\sclass="[^"]*(text-|font-|leading-|m[tby]-|p[tb]-|space-y-|underline|border-)/.test(html);
 }
 
+/** `<span style="background-color:…">` 형광펜 (웹 추출 · 에이전트 글) — 편집기의 형광펜 mark 는 `<mark>` 만 읽는다. */
+export function hasSpanHighlights(html: string): boolean {
+  return /<span\b[^>]*style="[^"]*background(?:-color)?\s*:/i.test(html);
+}
+
+/** 배경색 span 을 `<mark data-color>` 로 감싸 형광펜으로 살린다 (글자색 등 나머지 스타일은 안쪽 span 에 남긴다). */
+function liftSpanHighlights(doc: Document): void {
+  for (const span of [...doc.body.querySelectorAll<HTMLElement>("span[style]")]) {
+    const color = span.style.backgroundColor;
+    if (!color || color === "transparent") continue;
+    span.style.removeProperty("background-color");
+    span.style.removeProperty("background");
+    const mark = doc.createElement("mark");
+    mark.setAttribute("data-color", color);
+    mark.setAttribute("style", `background-color: ${color}`);
+    span.replaceWith(mark);
+    if (span.getAttribute("style")?.trim()) mark.appendChild(span);
+    else while (span.firstChild) mark.appendChild(span.firstChild);
+  }
+}
+
 export function normalizeLegacyHtml(html: string): string {
-  if (typeof DOMParser === "undefined" || !hasLegacyClasses(html)) return html;
+  const legacy = hasLegacyClasses(html);
+  if (typeof DOMParser === "undefined" || (!legacy && !hasSpanHighlights(html))) return html;
   const doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
   const body = doc.body;
+  liftSpanHighlights(doc);
+  if (!legacy) return body.innerHTML;
 
   // Inherited text styles from wrappers flow down to their blocks.
   const visit = (el: HTMLElement, inherited: Record<string, string>, inheritedBlock: Record<string, string>) => {

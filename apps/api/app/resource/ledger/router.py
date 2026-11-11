@@ -107,6 +107,16 @@ def get_raw_file(path: str, ledger: LedgerDep) -> FileResponse:
     return FileResponse(target, media_type=media_type)
 
 
+@router.get("/raw/{resource_id}")
+@inject
+def get_raw_by_id(resource_id: str, ledger: LedgerDep) -> FileResponse:
+    """문서 블록의 `resource:<id>` 사진 · 그림 — 경로가 아니라 원장 id 로 열어 문서가 다른 PC 에서도 같은 자료를 가리킨다."""
+    target = ledger.raw_by_id(resource_id)
+    media_type, _ = mimetypes.guess_type(target.name)
+    return FileResponse(target, media_type=media_type or "application/octet-stream",
+                        headers={"Cache-Control": "private, max-age=3600"})
+
+
 @router.post("/{project_id}/batch-decouple", response_model=ResourceSessionResponse)
 @inject
 def batch_decouple_resources(project_id: str, req: BatchDecoupleRequest, ledger: LedgerDep) -> dict:

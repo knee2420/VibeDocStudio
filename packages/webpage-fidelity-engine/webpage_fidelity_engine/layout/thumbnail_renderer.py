@@ -185,7 +185,7 @@ def render_page_thumbnail_data_url(
                 y += 8
             continue
 
-        if kind == "callout-box":
+        if kind in ("callout-box", "link-card"):
             box_h = max(12, min(max_y - y, max(12, est_h)))
             tone = item.block.get("tone", "neutral")
             fill = "#f0f9ff" if tone == "info" else "#f8fafc"

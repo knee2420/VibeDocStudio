@@ -52,6 +52,14 @@ class HtmlExtractorPort(Protocol):
         ...
 
 
+class LayoutWebExtractorPort(Protocol):
+    """브라우저 실측 레이아웃 추출 — (레퍼런스 덩어리 목록, 레이아웃 .vdoc). 사진 · 묶음 · 링크 카드를 보존한다."""
+
+    def extract(self, url: str) -> tuple[dict[str, Any], dict[str, Any]]: ...
+
+    def from_layout(self, layout: dict[str, Any], url: str = "") -> dict[str, Any]: ...
+
+
 class WebFetcherPort(Protocol):
     def fetch(self, url: str) -> tuple[bytes, str]:
         """URL → (본문 바이트, content-type). 실패하면 예외."""

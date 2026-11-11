@@ -32,6 +32,19 @@
   }
  },
  {
+  "name": "rf_skeleton",
+  "description": "레퍼런스의 배치 뼈대: 첫머리 · 섹션마다 모양(H 소제목 · P 문단 · IMG 사진 · G<n> 사진 묶음 · LINK 링크 카드 · HR 구분선) · 대표 섹션 모양 · 섹션당 사진 · 문단 수. 블로그 · 칼럼처럼 배치가 결정인 레퍼런스로 새 글을 짓거나 구조를 잡기 전에 본다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "refId (생략하면 첫 레퍼런스)"
+    }
+   }
+  }
+ },
+ {
   "name": "rf_read",
   "description": "레퍼런스를 읽는다 — 앵커 ref:<refId>[#p<쪽>|#sec:<번호>|#blk:<덩어리>|#pin:<핀>]. 길면 끝에 이어 읽을 offset 이 나온다. 읽은 덩어리 · 핀이 기록되고, 해석 카드의 근거는 읽은 곳이어야 한다. 핀이 있으면 핀부터 읽는다.",
   "inputSchema": {

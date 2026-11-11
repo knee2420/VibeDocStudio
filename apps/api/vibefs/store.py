@@ -294,6 +294,10 @@ class WorkspaceStore:
                 path = str((rec.get("args") or {}).get("Path") or "")
                 if not hint or not path or os.path.basename(path.replace("\\", "/")) == hint:
                     return str(rec.get("reason") or "작업 공간 가드가 막았다.")
+        for rec in reversed(_tail_jsonl(self.path(HOOK_LOG_FILE))):
+            # vibefs MCP 도구가 낸 오류 (ACP 이름은 mcp_vibefs_<도구>)
+            if rec.get("ev") == "mcp_fail" and matches(rec) and tool in (rec.get("tool"), f"mcp_vibefs_{rec.get('tool')}"):
+                return str(rec.get("reason") or "")
         if tool == "read_file":
             for rec in reversed(_tail_jsonl(self.path(READS_FILE))):
                 if not rec.get("ok", True) and matches(rec):

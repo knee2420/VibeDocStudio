@@ -61,7 +61,7 @@ async def add_file(service: ServiceDep, file: UploadFile = File(...), title: str
 @router.post("/items/url")
 @inject
 def add_url(body: AddUrlRequest, service: ServiceDep) -> dict[str, Any]:
-    return service.add_url(body.url, body.title).to_dict()
+    return service.add_url(body.url, body.title, body.layerSet).to_dict()
 
 
 @router.get("/items/{ref_id}")

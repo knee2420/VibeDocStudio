@@ -6,6 +6,9 @@ import type { StructuredTableBlockDef } from "./table-block";
 import type { ColumnsGridBlockDef } from "./grid-block";
 import type { FillableGroupBlockDef } from "./fillable-block";
 import type { HeadingBlockDef, FormTitleBlockDef } from "./heading-block";
+import type { LinkCardBlockDef } from "./link-card-block";
+import type { DividerBlockDef } from "./divider-block";
+import type { HeroBlockDef } from "./hero-block";
 import type {
   CompositeFormFrameBlockDef,
   SummaryListBlockDef,
@@ -21,6 +24,9 @@ export * from "./grid-block";
 export * from "./fillable-block";
 export * from "./heading-block";
 export * from "./summary-banner-blocks";
+export * from "./link-card-block";
+export * from "./divider-block";
+export * from "./hero-block";
 
 export type LayoutBlock =
   | ImageBlockDef
@@ -34,5 +40,8 @@ export type LayoutBlock =
   | CompositeFormFrameBlockDef
   | SummaryListBlockDef
   | CoverBannerBlockDef
-  | CalloutBoxBlockDef;
+  | CalloutBoxBlockDef
+  | LinkCardBlockDef
+  | DividerBlockDef
+  | HeroBlockDef;
 

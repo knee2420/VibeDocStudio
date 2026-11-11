@@ -18,7 +18,7 @@ from .proposals import ProposalStore, propose, render_report
 from .workbench import Workbench
 
 #: wb_* 도구 명세 — 하네스 editor 팩
-WB_TOOL_SPECS: list[dict[str, Any]] = packs.tool_specs("editor")
+WB_TOOL_SPECS: list[dict[str, Any]] = packs.tool_specs("editor", "tools.server.json")
 
 WB_ARG_ALIASES: dict[str, dict[str, str]] = packs.tool_aliases("editor")
 

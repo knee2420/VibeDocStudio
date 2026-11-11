@@ -34,6 +34,7 @@ from ..models import (
 from ..ports import (
     HtmlExtractorPort,
     LayerAnalyzerPort,
+    LayoutWebExtractorPort,
     PdfExtractorPort,
     ReferenceLibraryPort,
     WebFetcherPort,
@@ -55,6 +56,14 @@ _FILE_KINDS = {
 _MAX_FILE_BYTES = 80 * 1024 * 1024
 
 
+def _guess_layer_set(extraction: dict[str, Any]) -> str:
+    """사진이 글 덩어리에 견줄 만큼 많으면 시각 글(blog) 층위 세트로 잰다."""
+    blocks = extraction.get("blocks") or []
+    photos = int((extraction.get("stats") or {}).get("photos") or 0)
+    texts = sum(1 for b in blocks if b.get("kind") in ("paragraph", "list"))
+    return "blog" if photos >= 4 and photos * 3 >= max(1, texts) else DEFAULT_LAYER_SET
+
+
 def _empty_extraction(kind: str) -> dict[str, Any]:
     return {"version": 1, "kind": kind, "pages": [{"page": 1, "width": 0, "height": 0}], "blocks": [], "outline": []}
 
@@ -67,12 +76,15 @@ class ReferenceLibraryService:
         html_extractor: HtmlExtractorPort,
         fetcher: WebFetcherPort,
         analyzer: Optional[LayerAnalyzerPort] = None,
+        layout_extractor: Optional[LayoutWebExtractorPort] = None,
     ) -> None:
         self.library = library
         self.pdf_extractor = pdf_extractor
         self.html_extractor = html_extractor
         self.fetcher = fetcher
         self.analyzer = analyzer
+        #: 웹 주소는 먼저 브라우저 실측(사진 · 배치 보존)으로, 안 되면 정적 HTML 파서로
+        self.layout_extractor = layout_extractor
 
     # --- 라이브러리 ------------------------------------------------------------------------------
 
@@ -108,19 +120,22 @@ class ReferenceLibraryService:
         self.library.write_source(item.ref_id, ext, data)
         return self._process(item, data, content_type=mime, explicit_title=bool(title))
 
-    def add_url(self, url: str, title: str = "") -> ReferenceItem:
+    def add_url(self, url: str, title: str = "", layer_set: str = "") -> ReferenceItem:
         url = (url or "").strip()
         parsed = urlparse(url)
         if parsed.scheme not in ("http", "https") or not parsed.netloc:
             raise UnsupportedReferenceSourceError("http(s) 주소 하나를 넣어 주세요.")
         item = ReferenceItem(
             ref_id=new_id(REFERENCE_PREFIX), kind="web", title=(title or parsed.netloc).strip(),
-            source_url=url, mime_type="text/html",
+            source_url=url, mime_type="text/html", layer_set=(layer_set or "").strip() or DEFAULT_LAYER_SET,
         )
-        return self._fetch_into(item, explicit_title=bool(title))
+        return self._fetch_into(item, explicit_title=bool(title), auto_layer_set=not layer_set)
 
     def reanalyze(self, ref_id: str) -> ReferenceItem:
         item = self.get(ref_id)
+        layout = self.library.load_artifact(ref_id, "layout")
+        if item.kind == "web" and isinstance(layout, dict) and self.layout_extractor is not None:
+            return self._finish(item, self.layout_extractor.from_layout(layout, item.source_url), explicit_title=True)
         source = self.library.read_source(ref_id)
         if source is None:
             if item.kind == "web" and item.source_url:
@@ -339,6 +354,16 @@ class ReferenceLibraryService:
                 extraction = self.html_extractor.extract(data, item.source_url, content_type)
             else:
                 extraction = _empty_extraction("image")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[reference] %s 해체 실패: %s", item.ref_id, exc)
+            done = item.touched(status="failed", error=f"구조 추출 실패: {exc}"[:300])
+            self.library.save_item(done)
+            return done
+        return self._finish(item, extraction, explicit_title=explicit_title)
+
+    def _finish(self, item: ReferenceItem, extraction: dict[str, Any], *, explicit_title: bool) -> ReferenceItem:
+        """덩어리 목록 저장 → 층위 측정 → 항목 갱신."""
+        try:
             extraction["refId"] = item.ref_id
             self.library.save_artifact(item.ref_id, "extraction", extraction)
             layer_set = item.layer_set or DEFAULT_LAYER_SET
@@ -348,16 +373,37 @@ class ReferenceLibraryService:
             article_title = str((extraction.get("article") or {}).get("title") or "").strip()
             if not explicit_title and article_title:
                 title = article_title[:120]
-            done = item.touched(status="ready", error="", title=title,
+            done = item.touched(status="ready", error="", title=title, layer_set=layer_set,
                                 page_count=len(extraction.get("pages") or []) or 1)
         except Exception as exc:  # noqa: BLE001
-            logger.warning("[reference] %s 해체 실패: %s", item.ref_id, exc)
+            logger.warning("[reference] %s 측정 실패: %s", item.ref_id, exc)
             done = item.touched(status="failed", error=f"구조 추출 실패: {exc}"[:300])
         self.library.save_item(done)
         return done
 
-    def _fetch_into(self, item: ReferenceItem, *, explicit_title: bool) -> ReferenceItem:
-        """웹 주소를 가져와 같은 refId 에 원본으로 둔다. 실패해도 항목은 남겨 다시 시도할 수 있게 한다."""
+    def _fetch_into(self, item: ReferenceItem, *, explicit_title: bool, auto_layer_set: bool = False) -> ReferenceItem:
+        """웹 주소를 가져와 같은 refId 에 원본으로 둔다. 실패해도 항목은 남겨 다시 시도할 수 있게 한다.
+
+        브라우저 실측 추출기가 있으면 먼저 쓴다 (사진 · 사진 묶음 · 링크 카드 · 구분선까지 덩어리로 남고, 레이아웃
+        `.vdoc` 를 `layout` 산출물로 보관한다). 원문 HTML 은 보기용으로만 따로 받아 둔다 (실패해도 계속).
+        """
+        if self.layout_extractor is not None and not item.source_url.lower().endswith(".pdf"):
+            try:
+                extraction, layout = self.layout_extractor.extract(item.source_url)
+            except Exception as exc:  # noqa: BLE001 — 실측이 안 되면 정적 파서로 내려간다
+                logger.warning("[reference] %s 레이아웃 실측 실패 → 정적 파서: %s", item.ref_id, exc)
+            else:
+                if extraction.get("blocks"):
+                    self.library.save_artifact(item.ref_id, "layout", layout)
+                    try:
+                        data, _ = self.fetcher.fetch(item.source_url)
+                        self.library.write_source(item.ref_id, ".html", data)
+                        item = replace(item, size_bytes=len(data))
+                    except Exception:  # noqa: BLE001
+                        pass
+                    if auto_layer_set:
+                        item = replace(item, layer_set=_guess_layer_set(extraction))
+                    return self._finish(item, extraction, explicit_title=explicit_title)
         try:
             data, content_type = self.fetcher.fetch(item.source_url)
         except Exception as exc:  # noqa: BLE001

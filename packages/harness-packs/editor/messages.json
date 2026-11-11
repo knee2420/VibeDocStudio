@@ -1,0 +1,104 @@
+{
+ "_doc": "에디터 영역 메시지 — 문서 짓기(dc_*) 결과 글 · 블록 기본 이름. `{이름}` 자리는 str.format.",
+ "compose": {
+  "created": "새 문서를 만들었다: docId={docId} · 「{title}」 · 지면 {surface} · 장르 {genre}\n첫 쪽: {pageId} (p1). 이 대화의 작업대가 이 문서를 가리킨다.\n다음: dc_build(ops=[…]) 로 쪽 · 블록을 쌓는다 (블록 종류 · 필드는 도구 설명). 다 쌓으면 dc_check.",
+  "noDoc": "작업 중인 문서가 없다 — dc_new(title=…) 로 새 문서를 만든다.",
+  "noProject": "이 대화에 프로젝트가 없다 — 사용자에게 프로젝트를 열어 달라고 한다.",
+  "notAgentDraft": "이 문서는 사람이 만든 문서다 — 블록 · 쪽 구조는 바꾸지 않는다. 칸 내용은 slots.proposeBatch(변경안)로 낸다. 새 글을 지으려면 dc_new 로 초안 문서를 만든다.",
+  "srcNotResource": "사진은 내 자료(리소스)의 것만 쓴다 — 'resource:<resourceId>' (ws_images 로 찾는다). 받은 값: {src}",
+  "srcUnknown": "마운트된 자료에 없는 사진이다: {src} — ws_images 결과의 resource:… 를 그대로 쓴다.",
+  "opFailed": "{n}번 작업({op} {kind}) 실패 — 아무것도 저장하지 않았다: {error}",
+  "saved": "저장했다 (rev {revision}) — {count}개 작업: {notes}{aliases}",
+  "checkHead": "[점검] {docId} 「{title}」 — 블록 {blocks} · 사진 {photos}장 · 섹션 {sections}",
+  "checkCompareHead": "레퍼런스 {refId} 와 층위별 차이 (같으면 '같음' · 15% 안쪽 차이는 같은 결정으로 본다):",
+  "checkSignature": "레퍼런스 대표 섹션 모양: \"{theirs}\" · 내 문서: \"{mine}\" (사진 1장 · 묶음을 같이 보면 레퍼런스 \"{theirsPhoto}\" · 내 문서 \"{minePhoto}\")",
+  "checkTail": "고칠 것이 있으면 dc_build(set · props · add · move · remove). 사실 근거는 리소스에서 읽은 줄 안에서만.",
+  "problems": {
+   "empty": "빈 칸 {count}개: {ids}",
+   "notResource": "리소스가 아닌 사진 {count}개 (레퍼런스 · 외부 사진은 쓰지 않는다)",
+   "duplicate": "같은 사진을 두 번 이상: {ids}",
+   "longParas": "320자 넘는 문단 {count}개 (훑어보기 어려움): {ids}",
+   "none": "없음",
+   "label": "문제: "
+  },
+  "labels": {
+   "heading": "소제목",
+   "body": "본문",
+   "photo": "사진",
+   "gallery": "사진 묶음 ({count}장)",
+   "linkCard": "링크 카드",
+   "divider": "구분선",
+   "heroTitle": "표지 제목",
+   "heroSubtitle": "표지 부제",
+   "callout": "안내 상자",
+   "header": "머리말",
+   "footer": "꼬리말",
+   "page": "{n}쪽"
+  },
+  "hintsHead": "권장 조치 (레퍼런스와 30% 넘게 다른 지표 — 의도한 차이가 아니면 고친다):",
+  "hintLine": "- {metric}: 레퍼런스 {theirs} → 내 문서 {mine} — {hint}",
+  "hints": {
+   "_doc": "지표 이름 → 고치는 방법. 지표가 레퍼런스보다 낮을 때(low) · 높을 때(high). 새 지표는 여기에 한 줄 더하면 dc_check 가 알려 준다.",
+   "highlight_per_para": {
+    "low": "문단마다 핵심 구절 한 곳에 형광펜(<span style=\"background-color:#fff3a3\">)을 더한다",
+    "high": "형광펜을 문단당 한 곳 이하로 줄인다"
+   },
+   "bold_per_para": {
+    "low": "문단의 핵심어를 굵게 한다",
+    "high": "굵게를 줄이고 형광펜 · 색으로 나눠 강조한다"
+   },
+   "centered_ratio": {
+    "low": "안내 · 요약 한 줄 문단을 가운데 정렬한다 (align: center)",
+    "high": "본문 문단은 왼쪽 정렬로 둔다"
+   },
+   "avg_para_chars": {
+    "low": "문단이 너무 짧다 — 이어지는 문단을 합친다",
+    "high": "긴 문단을 2~3문장씩 나눈다"
+   },
+   "photos_per_section": {
+    "low": "섹션마다 사진(또는 사진 묶음)을 하나 더 둔다 — 주제에 맞는 사진만",
+    "high": "섹션당 사진을 줄인다"
+   },
+   "photo_text_ratio": {
+    "low": "글에 비해 사진이 적다 — 사진 묶음(gallery)을 쓴다",
+    "high": "사진에 비해 글이 적다 — 사진마다 설명 문단을 둔다"
+   },
+   "link_thumb_ratio": {
+    "low": "링크 카드에 썸네일(그 노트가 쓴 사진 resource:<id>)을 단다",
+    "high": "썸네일 없는 카드로 둔다"
+   },
+   "link_cards_per_section": {
+    "low": "섹션 끝에 관련 노트로 가는 링크 카드를 둔다",
+    "high": "링크 카드를 줄인다"
+   },
+   "question_headings": {
+    "low": "소제목을 질문형(…은?)으로 바꾼다",
+    "high": "소제목을 서술형으로 바꾼다"
+   },
+   "paras_per_section": {
+    "low": "섹션마다 문단을 하나 더 둔다",
+    "high": "섹션의 문단을 줄인다"
+   },
+   "caption_ratio": {
+    "low": "중요한 사진 아래에 짧은 캡션(caption)을 단다",
+    "high": "캡션을 줄인다"
+   },
+   "accent_per_para": {
+    "low": "안내 문구 · 핵심 낱말에 강조색(<span style=\"color:#00a84b\">)을 쓴다",
+    "high": "강조색을 줄인다"
+   },
+   "gallery_share": {
+    "low": "사진 1장 대신 2~3장 묶음(gallery)을 더 쓴다",
+    "high": "묶음 일부를 사진 1장으로 바꾼다"
+   },
+   "photo_first_ratio": {
+    "low": "섹션을 소제목 바로 다음 사진(또는 묶음)으로 연다",
+    "high": "일부 섹션은 글로 먼저 연다"
+   },
+   "link_end_ratio": {
+    "low": "섹션 끝을 관련 노트 링크 카드로 맺는다",
+    "high": "일부 섹션은 링크 카드 없이 맺는다"
+   }
+  }
+ }
+}

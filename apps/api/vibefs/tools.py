@@ -195,6 +195,49 @@ class WorkspaceTools:
             rows.append(f"- … 외 {len(back) - 60}개")
         return "\n".join(rows)
 
+    def ws_images(self, query: str = "", folder: str = "", offset: int = 0) -> str:
+        """사진 · 그림 목록 — resource:<id> · 크기 · 이 사진을 붙여 쓴 노트의 줄(맥락)."""
+        ix = self.index
+        exts = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+        folder_n = folder.strip().strip("/").replace("\\", "/").lower()
+        rx = None
+        if query.strip():
+            try:
+                rx = re.compile(query.strip(), re.I)
+            except re.error:
+                rx = re.compile(re.escape(query.strip()), re.I)
+        rows: list[str] = []
+        for entry in ix.files:
+            if os.path.splitext(entry.abs_path)[1].lower() not in exts:
+                continue
+            if folder_n and not entry.rel.lower().startswith(folder_n):
+                continue
+            contexts: list[str] = []
+            for src_key, line in ix.backlinks.get(entry.key, [])[:3]:
+                src = ix.by_key.get(src_key)
+                if src is None:
+                    continue
+                around = [t for t in src.text_lines[max(0, line - 3):line + 2] if t.strip() and "![[" not in t and "](" not in t]
+                note = " / ".join(" ".join(t.split())[:90] for t in around[-3:])
+                head = next((h.text for h in reversed(src.headings) if h.line <= line), "")
+                contexts.append(f"{src.rel} L{line}{f' §{head[:40]}' if head else ''}: {note}")
+            blob = entry.rel + " " + " ".join(contexts)
+            if rx is not None and not rx.search(blob):
+                continue
+            size = _image_size(entry.abs_path)
+            rid = f"resource:{entry.resource_id}" if entry.resource_id else "(resourceId 없음 — 문서에 못 넣음)"
+            rows.append(f"- {rid} · {entry.rel} · {entry.size // 1024}KB{f' · {size[0]}×{size[1]}' if size else ''}")
+            rows.extend(f"    ↳ {c}" for c in contexts)
+            if not contexts:
+                rows.append("    ↳ (이 사진을 붙여 쓴 노트가 마운트 안에 없다 — 이름 · 폴더로만 짐작)")
+        if not rows:
+            return "사진이 없다 (조건을 넓히거나 RM 에서 사진 폴더를 체크해 달라고 한다)."
+        start = max(0, int(offset or 0))
+        page = rows[start:start + 120]
+        tail = f"\n… {len(rows) - start - 120}줄 더 — ws_images(offset={start + 120})" if start + 120 < len(rows) else ""
+        count = sum(1 for r in rows if r.startswith("- "))
+        return f"[사진 {count}장 — 문서에는 resource:<id> 로 넣는다 · 맥락 줄은 그 사진이 무엇인지의 근거]\n" + "\n".join(page) + tail
+
     def ws_find(self, field: str, value: str = "") -> str:
         field_l = field.strip().lower()
         counts: Counter = Counter()
@@ -333,3 +376,22 @@ def _clip(text: str) -> str:
         return text
     cut = raw[: MAX_BYTES - 150].decode("utf-8", errors="ignore")
     return cut + "\n… (결과가 길어 잘랐다 — path · glob · offset 으로 좁혀 다시 불러라)"
+
+
+def _image_size(path: str) -> Optional[tuple[int, int]]:
+    """사진 가로×세로 (Pillow 가 있으면 · 없거나 못 읽으면 None). SVG 는 viewBox 에서."""
+    if path.lower().endswith(".svg"):
+        try:
+            with open(path, "r", encoding="utf-8", errors="replace") as fh:
+                head = fh.read(4000)
+            m = re.search(r'viewBox="[\d.\-]+\s+[\d.\-]+\s+([\d.]+)\s+([\d.]+)"', head)
+            return (int(float(m.group(1))), int(float(m.group(2)))) if m else None
+        except OSError:
+            return None
+    try:
+        from PIL import Image  # type: ignore
+
+        with Image.open(path) as im:
+            return int(im.width), int(im.height)
+    except Exception:  # noqa: BLE001
+        return None

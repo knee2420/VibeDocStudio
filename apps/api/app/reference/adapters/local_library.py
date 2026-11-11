@@ -9,7 +9,7 @@ from app.core.storage import read_json, safe_segment, write_json
 
 from ..models import ProjectBinding, ReferenceItem, ReferencePin
 
-_ARTIFACTS = ("extraction", "layers")
+_ARTIFACTS = ("extraction", "layers", "layout")
 
 
 class LocalReferenceLibrary:

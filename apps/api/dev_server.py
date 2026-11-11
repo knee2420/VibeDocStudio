@@ -52,7 +52,9 @@ from app.core.process_tree import ProcessTree, popen_tree  # noqa: E402
 def _start(port: str) -> ProcessTree:
     cmd = [sys.executable, "-m", "uvicorn", "main:app", "--port", port]
     flags = subprocess.CREATE_NEW_PROCESS_GROUP if IS_WINDOWS else 0
-    tree = popen_tree(cmd, cwd=str(HERE), creationflags=flags, start_new_session=not IS_WINDOWS)
+    # agy 가 띄우는 vibefs MCP(문서 짓기 dc_*)가 이 API 로 문서를 읽고 쓴다
+    env = {**os.environ, "VIBE_API_BASE": os.environ.get("VIBE_API_BASE") or f"http://127.0.0.1:{port}"}
+    tree = popen_tree(cmd, cwd=str(HERE), creationflags=flags, start_new_session=not IS_WINDOWS, env=env)
     print(f"[dev_server] uvicorn 시작 (pid={tree.proc.pid}, port={port})", flush=True)
     return tree
 

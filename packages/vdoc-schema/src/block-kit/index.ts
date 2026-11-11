@@ -12,6 +12,9 @@ import { sectionBlock } from "./kinds/section";
 import { summaryBlock } from "./kinds/summary";
 import { tableBlock } from "./kinds/table";
 import { textBlock } from "./kinds/text";
+import { linkCardBlock } from "./kinds/link-card";
+import { dividerBlock } from "./kinds/divider";
+import { heroBlock } from "./kinds/hero";
 import { registerBlockKind } from "./registry";
 
 /** 기본 블록 종류 (블록 추가 메뉴는 이 순서로 보인다). */
@@ -27,6 +30,9 @@ export const BUILTIN_BLOCK_KINDS = [
   summaryBlock,
   coverBlock,
   calloutBlock,
+  linkCardBlock,
+  dividerBlock,
+  heroBlock,
 ] as const;
 
 for (const def of BUILTIN_BLOCK_KINDS) registerBlockKind(def as never);

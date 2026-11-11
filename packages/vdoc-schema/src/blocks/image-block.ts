@@ -10,4 +10,6 @@ export interface ImageBlockDef extends BaseLayoutBlock {
   align?: "left" | "center" | "right";
   objectFit?: "contain" | "cover" | "fill";
   fit?: "contain" | "cover";
+  /** 사진 아래 작은 회색 설명. */
+  caption?: string;
 }

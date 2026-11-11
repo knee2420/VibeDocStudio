@@ -17,7 +17,7 @@ import {
   X,
 } from "lucide-react";
 
-import { PROJECT_ROOT_CRUMB_ID, type OutlinerNode, type WorkbenchPhase } from "@vibe/vdoc-schema";
+import { documentSurface, PROJECT_ROOT_CRUMB_ID, type OutlinerNode, type WorkbenchPhase } from "@vibe/vdoc-schema";
 import type { PagePendingState } from "@vibe/slot-canvas";
 
 import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
@@ -39,12 +39,14 @@ import {
   useInsertTemplatePages,
   type TemplateSourceKind,
 } from "@/features/insert-template-pages";
+import { DocumentImportDialog, documentLifecycle } from "@/features/manage-documents";
 import { usePageMutations } from "@/features/mutate-document-pages";
 import { resolvePeekTarget, usePeekTrigger, type PeekHandlers } from "@/features/peek-page";
 import { useFractalZoomNavigation, useOutlineSelector } from "@/features/zoom-hierarchy";
 import { useDragResize } from "@/shared/lib";
-import { CollapsedPanelRail, EmptyStateCard } from "@/shared/ui";
+import { CollapsedPanelRail, EmptyStateCard, type DocumentSurfaceKind } from "@/shared/ui";
 
+import { NewDocumentMenu } from "./NewDocumentMenu";
 import { OutlineNodeRow, outlineNodeTargetId } from "./OutlineNodeRow";
 import { ReferenceDeckSection } from "./ReferenceDeckSection";
 import { SourceControlSidebarPanel } from "./SourceControlSidebarPanel";
@@ -179,6 +181,8 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
   const pickAnchor = React.useRef<string | null>(null);
 
   const [renaming, setRenaming] = useState<{ nodeId: string; initialTitle: string } | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [newDocMenu, setNewDocMenu] = useState<{ top: number; left: number } | null>(null);
   const [addPageMenu, setAddPageMenu] = useState<{ docId: string; top: number; left: number } | null>(null);
   const addPageMenuRef = useRef<HTMLDivElement>(null);
 
@@ -193,6 +197,18 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
     }
     return map;
   }, [docPageCountKey]);
+  const docSurfaceKey = useStudioDocumentStore((s) =>
+    s.docs.map((d) => `${d.docId}:${documentSurface(d).kind}`).join("|")
+  );
+  const surfacesByDocId = useMemo(() => {
+    const map = new Map<string, DocumentSurfaceKind>();
+    for (const part of docSurfaceKey.split("|")) {
+      if (!part) continue;
+      const sep = part.lastIndexOf(":");
+      if (sep > 0) map.set(part.slice(0, sep), part.slice(sep + 1) === "scroll" ? "scroll" : "paged");
+    }
+    return map;
+  }, [docSurfaceKey]);
 
   const pageStatesByPageId = usePdfScaffoldJobStore((s) => s.pageStatesByPageId);
   const pageMutations = usePageMutations();
@@ -234,6 +250,11 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
 
   const commitRename = (node: OutlinerNode, nextTitle: string) => {
     setRenaming(null);
+    // 문서 행 (자동 문서 노드): 문서 자체의 이름을 바꾼다
+    if (isDocumentTargetNode(node) && node.targetDocId && node.nodeId.startsWith("auto-doc-")) {
+      void documentLifecycle().renameDocument(node.targetDocId, nextTitle).catch((err) => window.alert(String(err)));
+      return;
+    }
     if (isPageTargetNode(node) && node.targetPageId) {
       void pageMutations.renamePage(node.targetDocId || activeDocId, node.targetPageId, nextTitle);
       return;
@@ -243,12 +264,34 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
     }
   };
 
+  const closeNewDocMenu = React.useCallback(() => setNewDocMenu(null), []);
+
   const openAddPageMenuForNode = (node: OutlinerNode, anchorEl: HTMLElement) => {
+    setNewDocMenu(null);
     const docId = node.targetDocId || activeDocId;
     const rect = anchorEl.getBoundingClientRect();
     const top = Math.min(rect.bottom + 4, Math.max(8, window.innerHeight - 250));
     const left = Math.min(rect.left, Math.max(8, window.innerWidth - 260));
     setAddPageMenu({ docId, top, left });
+  };
+
+  const openNewDocumentMenu = (anchorEl: HTMLElement) => {
+    setAddPageMenu(null);
+    setNewDocMenu((prev) => {
+      if (prev) return null;
+      const rect = anchorEl.getBoundingClientRect();
+      const top = Math.min(rect.bottom + 4, Math.max(8, window.innerHeight - 190));
+      const left = Math.min(rect.left, Math.max(8, window.innerWidth - 260));
+      return { top, left };
+    });
+  };
+
+  const createDocumentBySurface = (surface: "paged" | "scroll") => {
+    const title = window.prompt(surface === "scroll" ? "새 블로그 글 제목" : "새 문서 제목", surface === "scroll" ? "새 글" : "새 문서");
+    if (title === null) return;
+    void documentLifecycle()
+      .createDocument({ title: title.trim() || "새 문서", surface })
+      .catch((err) => window.alert(String(err)));
   };
 
   const handleTemplateSourcePick = (kind: TemplateSourceKind, docId: string) => {
@@ -338,6 +381,16 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
       usePdfScaffoldJobStore.getState().clearPageState(node.targetPageId);
       pageMutations.removePage(node.targetDocId || activeDocId, node.targetPageId);
     },
+    duplicateDocument: (node) => {
+      if (node.targetDocId) void documentLifecycle().duplicateDocument(node.targetDocId).catch((err) => window.alert(String(err)));
+    },
+    deleteDocument: (node) => {
+      if (!node.targetDocId) return;
+      if (!window.confirm(`「${node.title}」 문서를 지웁니다. 되돌릴 수 없습니다.`)) return;
+      void documentLifecycle().deleteDocument(node.targetDocId).catch((err) => window.alert(String(err)));
+    },
+    openNewDocumentMenu,
+    refreshDocuments: () => void documentLifecycle().refreshDocuments().catch((err) => window.alert(String(err))),
   };
   const latest = React.useRef(handlers);
   React.useLayoutEffect(() => {
@@ -358,6 +411,10 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
       cancelRename: () => latest.current.cancelRename(),
       duplicatePage: (node) => latest.current.duplicatePage(node),
       deletePage: (node) => latest.current.deletePage(node),
+      duplicateDocument: (node) => latest.current.duplicateDocument(node),
+      deleteDocument: (node) => latest.current.deleteDocument(node),
+      openNewDocumentMenu: (anchorEl) => latest.current.openNewDocumentMenu(anchorEl),
+      refreshDocuments: () => latest.current.refreshDocuments(),
       // 피크 대상(문서 · 첫 페이지)은 마우스 이벤트 순간에 스토어에서 읽는다.
       peek: (node) =>
         peekTrigger(() => {
@@ -514,6 +571,7 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
                 node={node}
                 phase={currentPhase}
                 pageCount={pageCountsByDocId.get(docId) ?? 0}
+                docSurface={node.zoomLevel === "document" ? (surfacesByDocId.get(node.targetDocId ?? "") ?? "paged") : undefined}
                 isSelected={selectedOutlinerNodeId === node.nodeId || projection.rootNodeId === node.nodeId}
                 isHighlighted={isHighlighted(node)}
                 isPicked={Boolean(pickedOutline?.some((r) => r.id === outlineNodeTargetId(node) || r.id === node.nodeId))}
@@ -614,6 +672,16 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
         onConfirmPdfPages={templateInsert.confirmPdfPages}
         onClose={templateInsert.closeModals}
       />
+
+      <NewDocumentMenu
+        anchor={newDocMenu}
+        onCreatePaged={() => createDocumentBySurface("paged")}
+        onCreateScroll={() => createDocumentBySurface("scroll")}
+        onImportDocuments={() => setImportOpen(true)}
+        onClose={closeNewDocMenu}
+      />
+
+      <DocumentImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </>
   );
 };
@@ -632,6 +700,10 @@ interface OutlineRowActions {
   cancelRename: () => void;
   duplicatePage: (node: OutlinerNode) => void;
   deletePage: (node: OutlinerNode) => void;
+  duplicateDocument: (node: OutlinerNode) => void;
+  deleteDocument: (node: OutlinerNode) => void;
+  openNewDocumentMenu: (anchorEl: HTMLElement) => void;
+  refreshDocuments: () => void;
   /** 피크 핸들러 — 문서 목록은 호버 순간에 읽는다 (문서 구독으로 트리 전체가 다시 그려지지 않게). */
   peek: (node: OutlinerNode) => PeekHandlers;
 }
@@ -640,6 +712,7 @@ interface OutlineTreeRowProps {
   node: OutlinerNode;
   phase: WorkbenchPhase;
   pageCount: number;
+  docSurface?: DocumentSurfaceKind;
   isSelected: boolean;
   isHighlighted: boolean;
   isPicked: boolean;
@@ -658,6 +731,7 @@ const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
   node,
   phase,
   pageCount,
+  docSurface,
   isSelected,
   isHighlighted,
   isPicked,
@@ -685,6 +759,10 @@ const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
       onCancelRename: () => actions.cancelRename(),
       onDuplicatePage: () => actions.duplicatePage(node),
       onDeletePage: () => actions.deletePage(node),
+      onDuplicateDocument: () => actions.duplicateDocument(node),
+      onDeleteDocument: () => actions.deleteDocument(node),
+      onOpenNewDocumentMenu: (anchorEl: HTMLElement) => actions.openNewDocumentMenu(anchorEl),
+      onRefreshDocuments: () => actions.refreshDocuments(),
     }),
     [node, actions]
   );
@@ -699,6 +777,9 @@ const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
       editable={isEditableOutlineNode(node, phase)}
       canAddPage={isDocumentTargetNode(node)}
       canManagePage={isPageTargetNode(node)}
+      canManageDocument={isDocumentTargetNode(node) && node.nodeId.startsWith("auto-doc-")}
+      docSurface={docSurface}
+      isProjectRoot={node.zoomLevel === "project" && node.parentId === null}
       canDeletePage={pageCount > 1 && !isBusyPending}
       pendingState={pendingState}
       renamingInitialTitle={renamingInitialTitle}

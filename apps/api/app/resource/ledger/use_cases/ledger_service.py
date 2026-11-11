@@ -244,6 +244,16 @@ class ResourceLedgerService:
         ]
         return {"totalSources": len(sources), "sources": sources}
 
+    def raw_by_id(self, resource_id: str) -> Path:
+        """원장 항목 id 로 원본 파일을 연다 (문서의 `resource:<id>` 사진). 등록된 파일 · 폴더 아래 파일만."""
+        rid = (resource_id or "").strip()
+        if rid:
+            for session in self._repo.iter_sessions():
+                for item in _walk(session.items):
+                    if item.id == rid and item.type != "web" and item.path_or_url and not item.children:
+                        return self.raw_file(item.path_or_url)
+        raise NotFoundError("자료를 찾을 수 없습니다.")
+
     def raw_file(self, path: str) -> Path:
         """원장에 등록된 로컬 파일(또는 등록된 폴더 아래 파일)만 연다 — 임의 경로 읽기를 막는다."""
         target = Path(path)

@@ -13,6 +13,9 @@ import { sectionView } from "./views/SectionBlockView";
 import { summaryView } from "./views/SummaryBlockView";
 import { tableView } from "./views/TableBlockView";
 import { textView } from "./views/TextBlockView";
+import { linkCardView } from "./views/LinkCardBlockView";
+import { dividerView } from "./views/DividerBlockView";
+import { heroView } from "./views/HeroBlockView";
 
 export const BUILTIN_BLOCK_VIEWS = [
   textView,
@@ -26,6 +29,9 @@ export const BUILTIN_BLOCK_VIEWS = [
   frameView,
   summaryView,
   imageView,
+  linkCardView,
+  dividerView,
+  heroView,
 ] as const;
 
 for (const view of BUILTIN_BLOCK_VIEWS) registerBlockView(view as never);

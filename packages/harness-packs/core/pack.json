@@ -17,7 +17,8 @@
    "resource:rules/workspace.md",
    "authoring:rules/workspace.md",
    "core:rules/workspace-tail.md",
-   "reference:rules/procedure.md"
+   "reference:rules/procedure.md",
+   "editor:rules/compose.md"
   ]
  }
 }

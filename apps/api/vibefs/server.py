@@ -15,6 +15,7 @@ import traceback
 
 from harness_kit import packs
 
+from .doc_tools import DC_TOOL_SPECS, DocTools
 from .index import WorkspaceIndex
 from .proposals import ProposalStore
 from .ref_tools import RF_TOOL_SPECS, RefTools, cards_for
@@ -55,7 +56,13 @@ class Server:
         index, conv_ids = self.index_for(conv)
         ids = set(conv_ids) | ({conv} if conv else set())
         reads = lambda: self.store.reads(conversation_ids=ids)  # noqa: E731
-        if WorkbenchTools.handles(name) or RefTools.handles(name):
+        if DocTools.handles(name):
+            session = self.session_id
+            if not session:
+                mount = self.store.mount_for(conv or None)
+                session = mount.session_id if mount else ""
+            tools = DocTools(self.store, session, index=index)
+        elif WorkbenchTools.handles(name) or RefTools.handles(name):
             session = self.session_id
             if not session:
                 mount = self.store.mount_for(conv or None)
@@ -101,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
                       "capabilities": {"tools": {}}, "serverInfo": {"name": "vibefs", "version": "1.0"},
                       "instructions": packs.message("core:messages.json", "sandbox.serverInstructions")}
         elif method == "tools/list":
-            result = {"tools": [*TOOL_SPECS, *WB_TOOL_SPECS, *RF_TOOL_SPECS]}
+            result = {"tools": [*TOOL_SPECS, *WB_TOOL_SPECS, *DC_TOOL_SPECS, *RF_TOOL_SPECS]}
         elif method == "tools/call":
             try:
                 text = server.call(str(params.get("name") or ""), dict(params.get("arguments") or {}), dict(params.get("_meta") or {}))
@@ -110,6 +117,10 @@ def main(argv: list[str] | None = None) -> int:
                 detail = str(exc) if isinstance(exc, ValueError) else f"{type(exc).__name__}: {exc}"
                 if not isinstance(exc, ValueError):
                     server.store.log_hook({"ev": "mcp_error", "trace": traceback.format_exc()[-1500:]})
+                # ACP 는 실패 사유를 싣지 않는다 — 화면이 사유를 보여 줄 수 있게 남긴다 (tool_failure_reason)
+                meta = dict(params.get("_meta") or {})
+                conv = next((str(meta[k]) for k in CONV_META_KEYS if meta.get(k)), "")
+                server.store.log_hook({"ev": "mcp_fail", "tool": str(params.get("name") or ""), "conv": conv, "reason": detail[:600]})
                 result = {"content": [{"type": "text", "text": f"오류: {detail}"}], "isError": True}
         elif method == "ping":
             result = {}

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import subprocess
 import sys
@@ -165,7 +166,9 @@ class ResourceWorkspace:
                     "--session",
                     session_id,
                 ],
-                "env": [{"name": "VIBE_WORKSPACE_SESSION", "value": session_id}],
+                "env": [{"name": "VIBE_WORKSPACE_SESSION", "value": session_id},
+                        # 문서 짓기 도구(dc_*)가 문서 API 로 읽고 쓴다 (저장 버전 · 이력 · 프로젝트 연결이 사람 편집과 같은 길)
+                        {"name": "VIBE_API_BASE", "value": os.environ.get("VIBE_API_BASE", "http://127.0.0.1:8090")}],
             }
         ]
 
@@ -309,6 +312,7 @@ class ResourceWorkspace:
         consensus = self._consensus(project_id, ref_root)
         state = {
             "projectId": project_id,
+            "documentsRoot": str(root) if root else None,
             "docId": raw.get("docId"),
             "docPath": None if scope.get("mode") == "off" else self._doc_path(str(raw.get("docId") or ""), root),
             "scope": scope,

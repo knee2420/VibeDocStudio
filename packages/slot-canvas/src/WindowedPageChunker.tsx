@@ -6,6 +6,8 @@ export interface WindowedPageChunkerProps {
   pages: VDocPage[];
   activePageId?: string;
   chunkSize?: number;
+  /** 쪽 사이 간격 (px). 이음매 없는 지면은 0. */
+  pageGapPx?: number;
   renderPage: (page: VDocPage, index: number) => React.ReactNode;
 }
 
@@ -33,6 +35,7 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
   pages,
   activePageId,
   chunkSize = 15,
+  pageGapPx = A4_PAGE_GAP_PX,
   renderPage,
 }) => {
   const totalPages = pages.length;
@@ -45,11 +48,11 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
     const sums: number[] = [];
     let acc = 0;
     for (const p of pages) {
-      acc += resolvePageDimensionsPx(p).height + A4_PAGE_GAP_PX;
+      acc += resolvePageDimensionsPx(p).height + pageGapPx;
       sums.push(acc);
     }
     return sums;
-  }, [pages]);
+  }, [pages, pageGapPx]);
 
   // Sync window automatically when activePageId jumps outside current window
   if (activePageId !== prevActivePageId) {

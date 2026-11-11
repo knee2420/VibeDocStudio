@@ -37,6 +37,7 @@ export const imageBlock = defineBlockKind<ImageBlockDef>({
     describe: (b) => [
       `이미지 주소: ${b.src.startsWith("data:") ? "(내장 이미지)" : b.src.slice(0, 200)}`,
       `대체 텍스트: ${b.alt || "(없음)"}`,
+      ...(b.caption ? [`캡션: ${b.caption}`] : []),
       `정렬: ${b.align ?? "center"} · 너비: ${b.width ?? "auto"} · 최대 높이: ${b.maxHeight ?? "-"}`,
     ],
     editableProps: {
@@ -44,6 +45,7 @@ export const imageBlock = defineBlockKind<ImageBlockDef>({
       align: ALIGN_PROP,
       width: { type: "string", description: "너비 (예: 240px, 50%)" },
       maxHeight: { type: "string", description: "최대 높이 (예: 120px)" },
+      caption: { type: "string", description: "사진 아래 작은 설명" },
     },
   },
 });

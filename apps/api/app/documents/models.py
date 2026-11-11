@@ -11,6 +11,8 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from typing import Any
 
+from harness_kit.vdoc_build import blank_page
+
 from .errors import VDocSlotNotFoundError
 
 #: A4 한 장(1123px) + 장 사이 간격(24px). 프론트 `A4_PAGE_STRIDE_PX` 와 같은 값이어야 한다.
@@ -173,6 +175,10 @@ class VDocAggregateRecord:
             payload={**self.payload, **changes, "updatedAt": now, "revision": revision},
         )
 
+    def with_fields(self, *, now: str, **fields: Any) -> VDocAggregateRecord:
+        """문서 머리 필드(제목 · 상태 · 장르 등)만 바꾼다."""
+        return self._with(now=now, **fields)
+
     def with_payload(self, payload: dict[str, Any], *, now: str) -> VDocAggregateRecord:
         return VDocAggregateRecord(doc_id=self.doc_id, payload={**payload, "updatedAt": now})
 
@@ -258,3 +264,31 @@ class VDocAggregateRecord:
 
 def _slot(slot_id: str, label: str, role: str, content: str) -> dict[str, Any]:
     return {"slotId": slot_id, "label": label, "role": role, "content": content, "backDataRefs": []}
+
+
+def blank_document(doc_id: str, title: str, *, surface: str = "paged", surface_width: int | None = None,
+                   genre: str = "document", origin: dict[str, Any] | None = None, project_id: str = "",
+                   now: str = "") -> dict[str, Any]:
+    """빈 문서 한 편 (쪽 하나). 지면 · 장르 · 출처 · 프로젝트를 머리에 적는다."""
+    page, slots = blank_page(f"{doc_id}_p1", 1, surface=surface, surface_width=surface_width,
+                             label="본문" if surface == "scroll" else "")
+    doc: dict[str, Any] = {
+        "version": "1.0.0",
+        "docId": doc_id,
+        "title": title,
+        "status": "Draft",
+        "updatedAt": now,
+        "variables": {},
+        "pages": [page],
+        "slots": slots,
+        "backdata": {},
+        "revision": 1,
+        "surface": {"kind": surface, **({"width": int(surface_width)} if surface_width else {})},
+        "genre": genre,
+    }
+    if origin:
+        doc["origin"] = origin
+    if project_id:
+        doc["projectId"] = project_id
+    return doc
+

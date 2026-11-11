@@ -111,6 +111,28 @@ class VDoc:
     def slots_of_block(self, block_id: str) -> list[str]:
         return [sid for sid in self.order if sid in self.places and self.places[sid].block_id == block_id]
 
+    def layout_blocks(self, anchor: str = "doc") -> list[dict[str, Any]]:
+        """배치 측정용 블록 목록 (doc · page:<id|번호> · block:<id>) — 블록에 본문 html 을 붙여 레퍼런스 덩어리와 같은 자로 잰다."""
+        anchor = str(anchor or "doc").strip()
+        pages = self.pages
+        if anchor.startswith("page:"):
+            page = self.page_of(anchor[5:])
+            pages = [page] if page else []
+        out: list[dict[str, Any]] = []
+        for page in pages:
+            for block in page.get("blocks") or []:
+                if anchor.startswith("block:") and block.get("blockId") != anchor[6:]:
+                    continue
+                if anchor.startswith("slot:"):
+                    continue
+                sid = block.get("slotId") or block.get("titleSlotId")
+                html = str((self.slots.get(sid) or {}).get("content") or "") if sid else ""
+                text = plain(html)
+                if block.get("kind") in ("heading", "form-title") and text:
+                    html = f"<h2>{text}</h2>"  # 측정은 제목을 <h2> 로 알아본다 (레퍼런스 덩어리와 같은 자)
+                out.append({**block, "html": html, "text": text})
+        return out
+
     def evidence_for(self, slot_id: str) -> list[dict[str, Any]]:
         links = self.data.get("evidenceLinks") or []
         if isinstance(links, dict):
@@ -189,6 +211,8 @@ class RefBook:
     all_pins: list[dict[str, Any]] = field(default_factory=list)
     layer_set: str = "document"
     layer_report: dict[str, Any] = field(default_factory=dict)
+    #: 브라우저 실측으로 배치(사진 · 묶음 · 링크 카드)까지 덩어리로 남은 레퍼런스인지
+    layout: bool = False
     consensus: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
@@ -221,9 +245,13 @@ class RefBook:
             layers={str(k): bool(v) for k, v in (layers or {}).items()},
             all_pins=all_pins,
             layer_set=str(meta.get("layerSet") or "document"),
+            layout=bool(extraction.get("layout")),
             layer_report=read("layers.json", {}) or {},
             consensus=[c for c in consensus or [] if isinstance(c, dict) and c.get("cardId")],
         )
+
+    def has_layout(self) -> bool:
+        return self.layout
 
     def sections(self) -> list[dict[str, Any]]:
         """제목 덩어리로 나눈 섹션: [{no, title, level, page, start, end}] (start · end 는 blocks 색인, end 미포함).

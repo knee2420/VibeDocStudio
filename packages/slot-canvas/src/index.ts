@@ -11,3 +11,4 @@ export * from "./base";
 export * from "./blocks/ImageBlockView";
 export * from "./block-views";
 export * from "./keyLayer";
+export * from "./mediaSrc";
