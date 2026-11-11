@@ -63,6 +63,7 @@ from app.form_scaffold.use_cases import (
     PreviewPdfUseCase,
     ScaffoldJobRunner,
     ScaffoldPdfToDocumentUseCase,
+    ScaffoldUrlToDocumentUseCase,
 )
 from app.llm import catalog as llm_catalog
 from app.llm.adapters import AssistantEngineProvider, OsCredentialStore, run_agy_print
@@ -205,6 +206,7 @@ class Container(containers.DeclarativeContainer):
         ),
     )
     scaffold_pdf_to_document = providers.Factory(ScaffoldPdfToDocumentUseCase, agent=form_scaffold_agent)
+    scaffold_url_to_document = providers.Factory(ScaffoldUrlToDocumentUseCase)
     preview_pdf = providers.Factory(PreviewPdfUseCase)
     scaffold_job_store = providers.Singleton(
         LocalScaffoldJobStore,

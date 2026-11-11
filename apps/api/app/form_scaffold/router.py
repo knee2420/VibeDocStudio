@@ -17,11 +17,17 @@ from fastapi.responses import StreamingResponse
 from app.core.errors import NotFoundError, ValidationError
 from app.core.sse import SSE_HEADERS
 
-from .schemas import PdfPreviewResponse, ScaffoldDocumentResponse
+from .schemas import (
+    PdfPreviewResponse,
+    ScaffoldDocumentResponse,
+    UrlScaffoldRequest,
+    UrlScaffoldResponse,
+)
 from .use_cases import (
     PreviewPdfUseCase,
     ScaffoldJobRunner,
     ScaffoldPdfToDocumentUseCase,
+    ScaffoldUrlToDocumentUseCase,
 )
 
 router = APIRouter()
@@ -29,6 +35,7 @@ router = APIRouter()
 ScaffoldDep = Annotated[ScaffoldPdfToDocumentUseCase, Depends(Provide["scaffold_pdf_to_document"])]
 PreviewDep = Annotated[PreviewPdfUseCase, Depends(Provide["preview_pdf"])]
 JobsDep = Annotated[ScaffoldJobRunner, Depends(Provide["scaffold_jobs"])]
+UrlScaffoldDep = Annotated[ScaffoldUrlToDocumentUseCase, Depends(Provide["scaffold_url_to_document"])]
 
 
 @router.post("/scaffold", response_model=ScaffoldDocumentResponse)
@@ -75,6 +82,35 @@ async def preview_pdf_pages(
     resolved_title = title.strip() or fallback_title
     result = await run_in_threadpool(use_case.execute, pdf_bytes=pdf_bytes, title=resolved_title)
     return PdfPreviewResponse(**result)
+
+
+@router.post("/url-scaffold", response_model=UrlScaffoldResponse)
+@inject
+async def scaffold_url_form(
+    body: UrlScaffoldRequest,
+    use_case: UrlScaffoldDep,
+) -> UrlScaffoldResponse:
+    vdoc, metrics, warnings = await run_in_threadpool(
+        use_case.execute,
+        url=body.url,
+        title=body.title,
+        split_mode=body.splitMode,
+        target_height_px=body.targetHeightPx,
+        include_images=body.includeImages,
+        use_browser_fallback=body.useBrowserFallback,
+    )
+    pages = vdoc.get("pages") or []
+    return UrlScaffoldResponse(
+        docId=vdoc.get("docId", ""),
+        title=vdoc.get("title", ""),
+        sourceUrl=body.url.strip(),
+        totalPages=len(pages),
+        checkedBlocks=int(metrics.get("blockCount") or sum(len(p.get("blocks", [])) for p in pages)),
+        checkedSlots=int(metrics.get("slotCount") or len(vdoc.get("slots", {}))),
+        document=vdoc,
+        metrics=metrics,
+        warnings=warnings,
+    )
 
 
 @router.post("/scaffold-jobs")

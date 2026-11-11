@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Check, FileText, FolderKanban, Layers, Loader2, X } from "lucide-react";
 
-import type { VDocCatalogManifest, VDocDocument } from "@vibe/vdoc-schema";
+import { resolvePageDimensionsPx, type VDocCatalogManifest, type VDocDocument } from "@vibe/vdoc-schema";
 
 import { PdfPagePreviewGrid, type FidelityMode } from "@/entities/scaffold-job";
 import { PageThumbnail } from "@/entities/vdoc-document";
@@ -9,11 +9,12 @@ import { PageThumbnail } from "@/entities/vdoc-document";
 import type { PdfPreviewPickerState } from "../model/useInsertTemplatePages";
 
 export interface PagePickerModalProps {
-  /** 다중 페이지 선택 대상 문서 (카탈로그 번들). */
+  /** 다중 페이지 선택 대상 문서 (카탈로그 번들 · URL 임포트). */
   pagePicker: {
     targetDocId: string;
     sourceTitle: string;
     sourceDoc: VDocDocument;
+    warnings?: string[];
   } | null;
   /** 1단계 PDF 썸네일 미리보기 & 페이지 선택 대상. */
   pdfPreviewPicker?: PdfPreviewPickerState | null;
@@ -24,6 +25,7 @@ export interface PagePickerModalProps {
   } | null;
   loadingMessage: string | null;
   error: string | null;
+  suppressErrorModal?: boolean;
   onDismissError: () => void;
   onSelectCatalog: (targetDocId: string, manifest: VDocCatalogManifest) => void;
   onConfirmPages: (targetDocId: string, sourceDoc: VDocDocument, pageIds: string[], label: string) => void;
@@ -48,6 +50,7 @@ export const PagePickerModal: React.FC<PagePickerModalProps> = ({
   catalogBrowser,
   loadingMessage,
   error,
+  suppressErrorModal = false,
   onDismissError,
   onSelectCatalog,
   onConfirmPages,
@@ -99,7 +102,7 @@ export const PagePickerModal: React.FC<PagePickerModalProps> = ({
   }
 
   // 오류 알림 모달
-  if (error && !pagePicker && !catalogBrowser) {
+  if (error && !suppressErrorModal && !pagePicker && !catalogBrowser && !loadingMessage) {
     return (
       <div
         data-testid="template-error-modal"
@@ -207,24 +210,35 @@ export const PagePickerModal: React.FC<PagePickerModalProps> = ({
             </button>
           </div>
 
+          {pagePicker.warnings && pagePicker.warnings.length > 0 && (
+            <div className="px-5 py-2 bg-amber-50 border-b border-amber-200 text-[11px] text-amber-900 shrink-0">
+              {pagePicker.warnings.join(" · ")}
+            </div>
+          )}
+
           <div className="flex-1 overflow-y-auto p-5 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#f8fafc]">
             {pages.map((page) => {
               const checked = selectedIds.includes(page.pageId);
               const blockNames = page.blocks.map((b) => b.title || b.kind).slice(0, 3);
+              const dims = resolvePageDimensionsPx(page);
+              const thumbH = Math.max(64, Math.min(136, Math.round((64 * dims.height) / Math.max(1, dims.width))));
               return (
                 <button
                   key={page.pageId}
                   type="button"
                   data-testid={`page-picker-item-${page.pageId}`}
                   onClick={() => toggleOne(page.pageId)}
-                  className={`text-left rounded-xl border p-3 flex gap-3 transition cursor-pointer bg-white ${
+                  className={`text-left rounded-xl border p-3 flex gap-3 transition cursor-pointer bg-white items-start ${
                     checked
                       ? "border-emerald-500 ring-2 ring-emerald-500/20"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
-                  <div className="w-16 h-22 rounded border border-slate-200 overflow-hidden shrink-0 bg-slate-50">
-                    <PageThumbnail doc={pagePicker.sourceDoc} pageNumber={page.pageNumber} fit="cover" />
+                  <div
+                    className="w-16 rounded border border-slate-200 overflow-hidden shrink-0 bg-white"
+                    style={{ height: thumbH }}
+                  >
+                    <PageThumbnail doc={pagePicker.sourceDoc} pageNumber={page.pageNumber} fit="contain" />
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
                     <div>

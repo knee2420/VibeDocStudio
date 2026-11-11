@@ -8,6 +8,7 @@ import {
   ChevronsUpDown,
   FilePlus2,
   FileUp,
+  Globe,
   Layers,
   LayoutGrid,
   MoreHorizontal,
@@ -34,6 +35,7 @@ import {
 import {
   PagePickerModal,
   TEMPLATE_SOURCE_REGISTRY,
+  UrlImportModal,
   useInsertTemplatePages,
   type TemplateSourceKind,
 } from "@/features/insert-template-pages";
@@ -244,7 +246,7 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
   const openAddPageMenuForNode = (node: OutlinerNode, anchorEl: HTMLElement) => {
     const docId = node.targetDocId || activeDocId;
     const rect = anchorEl.getBoundingClientRect();
-    const top = Math.min(rect.bottom + 4, Math.max(8, window.innerHeight - 190));
+    const top = Math.min(rect.bottom + 4, Math.max(8, window.innerHeight - 250));
     const left = Math.min(rect.left, Math.max(8, window.innerWidth - 260));
     setAddPageMenu({ docId, top, left });
   };
@@ -256,6 +258,8 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
       templateInsert.insertBasicPage(docId, `새 페이지 ${nextNum}`);
     } else if (kind === "pdf") {
       templateInsert.triggerPdfPick(docId);
+    } else if (kind === "url") {
+      templateInsert.openUrlImport(docId);
     } else if (kind === "catalog") {
       void templateInsert.openCatalogBrowser(docId);
     }
@@ -560,7 +564,14 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
         >
           <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">페이지 추가 출처</div>
           {TEMPLATE_SOURCE_REGISTRY.map((src) => {
-            const Icon = src.kind === "blank" ? FilePlus2 : src.kind === "pdf" ? FileUp : Layers;
+            const Icon =
+              src.kind === "blank"
+                ? FilePlus2
+                : src.kind === "pdf"
+                  ? FileUp
+                  : src.kind === "url"
+                    ? Globe
+                    : Layers;
             return (
               <button
                 key={src.kind}
@@ -580,12 +591,23 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
         </div>
       )}
 
+      <UrlImportModal
+        key={templateInsert.urlImportTargetDocId ?? "closed"}
+        targetDocId={templateInsert.urlImportTargetDocId}
+        loading={templateInsert.urlImporting}
+        error={templateInsert.error}
+        onDismissError={templateInsert.dismissError}
+        onSubmit={templateInsert.submitUrlImport}
+        onClose={templateInsert.closeModals}
+      />
+
       <PagePickerModal
         pagePicker={templateInsert.pagePicker}
         pdfPreviewPicker={templateInsert.pdfPreviewPicker}
         catalogBrowser={templateInsert.catalogBrowser}
         loadingMessage={templateInsert.loadingMessage}
         error={templateInsert.error}
+        suppressErrorModal={Boolean(templateInsert.urlImportTargetDocId)}
         onDismissError={templateInsert.dismissError}
         onSelectCatalog={templateInsert.selectCatalogTemplate}
         onConfirmPages={templateInsert.confirmSelectedPages}

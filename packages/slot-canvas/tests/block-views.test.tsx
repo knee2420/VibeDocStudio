@@ -16,6 +16,7 @@ import { getBlockView, hasBlockView, type BlockRenderContext } from "../src/bloc
 import { AlignmentGuides } from "../src/AlignmentGuides";
 import { InsertCursorButton } from "../src/InsertCursorButton";
 import { InsertMenu } from "../src/InsertMenu";
+import { WindowedPageChunker } from "../src/WindowedPageChunker";
 import { ImageBlockView } from "../src/blocks/ImageBlockView";
 
 /** 페이지 시트 대신 쓰는 최소 연결: 슬롯은 표시만 붙인 빈 상자로 그린다. */
@@ -125,5 +126,27 @@ describe("블록 뷰", () => {
       })
     );
     assert.ok(emptyImgHtml.includes("이미지를 추가하세요"));
+  });
+
+  it("WindowedPageChunker 는 가변 pageRect 높이를 합산해 가상 스크롤 스페이서를 계산한다", () => {
+    const pages = [1, 2, 3, 4].map((num) => ({
+      pageId: `wp_${num}`,
+      pageNumber: num,
+      pageLabel: `P${num}`,
+      headerSlotId: `h_${num}`,
+      footerSlotId: `f_${num}`,
+      pageRect: { width: 794, height: num === 4 ? 2000 : 1500, unit: "px" as const },
+      blocks: [],
+    }));
+    const html = renderToStaticMarkup(
+      React.createElement(WindowedPageChunker, {
+        pages,
+        chunkSize: 2,
+        renderPage: (p) => React.createElement("div", { key: p.pageId }, p.pageId),
+      })
+    );
+    // 1~2p 활성(chunkSize=2), 남은 3p(1500+24=1524) + 4p(2000+24=2024) = 3548px
+    assert.ok(html.includes('data-testid="chunker-bottom-spacer"'));
+    assert.ok(html.includes("height:3548px"));
   });
 });

@@ -9,9 +9,11 @@ import {
   duplicateBlock,
   findFullySelectedBlocks,
   findNearestFlowGap,
+  getPageContentWidth,
   insertAtY,
   mergeMissingVariables,
   placePastedBlock,
+  resolvePageDimensionsPx,
   snapFrame,
   type LayoutBlock,
   type PageSnapBox,
@@ -354,6 +356,29 @@ describe("deleteUnitsFromDocument 범위 삭제(방식 A)", () => {
       full.map((f) => f.block.blockId),
       ["blk_tbl", "blk_img"]
     );
+  });
+
+  it("resolvePageDimensionsPx 와 getPageContentWidth 는 가변 pageRect 규격을 반영한다", () => {
+    assert.deepEqual(resolvePageDimensionsPx(undefined), { width: A4_PAGE_WIDTH_PX, height: A4_PAGE_HEIGHT_PX });
+    const tallPage: VDocPage = {
+      ...makePage("p_tall", [makeTextBlock("b1", "s1", { x: 40, y: 1400, w: 600, h: 120 })]),
+      pageRect: { width: 900, height: 1800, unit: "px" },
+    };
+    assert.deepEqual(resolvePageDimensionsPx(tallPage), { width: 900, height: 1800 });
+    assert.equal(getPageContentWidth(tallPage), 900 - 112);
+
+    const ptPage: VDocPage = {
+      ...makePage("p_pt", []),
+      pageRect: { width: 600, height: 900, unit: "pt" },
+    };
+    assert.deepEqual(resolvePageDimensionsPx(ptPage), { width: 800, height: 1200 });
+
+    const pasted = placePastedBlock(tallPage, makeTextBlock("b1", "s1", { x: 40, y: 1400, w: 600, h: 120 }), {
+      sourcePageId: "p_tall",
+      sourceFrame: { x: 40, y: 1400, w: 600, h: 120 },
+      pasteCount: 1,
+    });
+    assert.equal(pasted.block.frame?.y, 1416);
   });
 });
 

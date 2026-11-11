@@ -1,9 +1,9 @@
 """form_scaffold HTTP 응답 스키마."""
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ScaffoldDocumentResponse(BaseModel):
@@ -34,3 +34,24 @@ class PdfPreviewResponse(BaseModel):
     totalPages: int
     hasAnyTextLayer: bool
     pages: list[PdfPreviewPageSchema]
+
+
+class UrlScaffoldRequest(BaseModel):
+    url: str
+    title: str = ""
+    splitMode: Literal["height", "heading", "single"] = "height"
+    targetHeightPx: int = Field(default=1500, ge=480, le=4000)
+    includeImages: bool = True
+    useBrowserFallback: bool = True
+
+
+class UrlScaffoldResponse(BaseModel):
+    docId: str
+    title: str
+    sourceUrl: str
+    totalPages: int
+    checkedBlocks: int
+    checkedSlots: int
+    document: dict[str, Any]
+    metrics: dict[str, Any]
+    warnings: list[str] = Field(default_factory=list)

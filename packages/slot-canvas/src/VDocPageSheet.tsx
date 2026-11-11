@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, Clock, Loader2 } from "lucide-react";
 
 import {
-  A4_PAGE_HEIGHT_PX,
-  A4_PAGE_WIDTH_PX,
   DEFAULT_SNAP_THRESHOLD_PX,
   findNearestFlowGap,
   getBlockKind,
@@ -12,6 +10,7 @@ import {
   getPageContentWidth,
   isBlockLocked,
   isFramedPage,
+  resolvePageDimensionsPx,
   resolvePageMargins,
   snapFrame,
   type AlignmentGuideLine,
@@ -429,6 +428,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     );
   }
 
+  const pageDims = resolvePageDimensionsPx(page);
   const contentPadding = layout?.margin ? "" : page.hideHeaderFooter ? "px-14 pt-12 pb-12" : "px-10 py-6";
   const contentStyle: React.CSSProperties = {
     display: "flex",
@@ -444,6 +444,10 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
       : {}),
   };
   const sheetStyle: React.CSSProperties = {
+    width: pageDims.width,
+    minWidth: pageDims.width,
+    maxWidth: pageDims.width,
+    minHeight: pageDims.height,
     fontFamily: layout?.fontFamily,
     fontSize: layout?.fontSize,
     color: layout?.color,
@@ -464,8 +468,10 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
 
   const snapBlockMove = useCallback((movingBlock: LayoutBlock, dx: number, dy: number, altKey: boolean) => {
     if (!movingBlock.frame) return { dx, dy };
+    const currentPage = pageRef.current;
+    const currentDims = resolvePageDimensionsPx(currentPage);
     const sheetEl = sheetRef.current;
-    const scale = sheetEl ? sheetEl.getBoundingClientRect().width / A4_PAGE_WIDTH_PX || 1 : 1;
+    const scale = sheetEl ? sheetEl.getBoundingClientRect().width / currentDims.width || 1 : 1;
     const measureHeight = (id: string, kind: string) => {
       const el = sheetEl?.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
       if (el) return el.getBoundingClientRect().height / scale;
@@ -477,7 +483,6 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
       w: movingBlock.frame.w,
       h: movingBlock.frame.h ?? measureHeight(movingBlock.blockId, movingBlock.kind),
     };
-    const currentPage = pageRef.current;
     const others: SnapRect[] = [];
     for (const b of currentPage.blocks) {
       if (!b.frame || b.blockId === movingBlock.blockId) continue;
@@ -489,8 +494,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
       });
     }
     const pageBox = {
-      width: A4_PAGE_WIDTH_PX,
-      height: A4_PAGE_HEIGHT_PX,
+      width: currentDims.width,
+      height: currentDims.height,
       margin: resolvePageMargins(currentPage),
     };
     const snapped = snapFrame(movingRect, others, pageBox, DEFAULT_SNAP_THRESHOLD_PX, altKey);
@@ -512,10 +517,11 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   const collectFlowGaps = useCallback((): FlowGap[] => {
     const sheetEl = sheetRef.current;
     const currentPage = pageRef.current;
+    const currentDims = resolvePageDimensionsPx(currentPage);
     const margins = resolvePageMargins(currentPage);
     if (!sheetEl) return [{ index: 0, y: margins.top + 16 }];
     const sheetRect = sheetEl.getBoundingClientRect();
-    const scale = sheetRect.width / A4_PAGE_WIDTH_PX || 1;
+    const scale = sheetRect.width / currentDims.width || 1;
     const gapPx = currentPage.layout?.blockGap ?? (currentPage.hideHeaderFooter ? 20 : 24);
     const flowEls = [...sheetEl.querySelectorAll<HTMLElement>("[data-flow-block-index]")];
     if (flowEls.length === 0) return [{ index: 0, y: margins.top + 16 }];
@@ -541,7 +547,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     }
     gaps.push({
       index: currentPage.blocks.length,
-      y: Math.min(A4_PAGE_HEIGHT_PX - 16, Math.round(boxes[boxes.length - 1].bottom + gapPx / 2)),
+      y: Math.min(currentDims.height - 16, Math.round(boxes[boxes.length - 1].bottom + gapPx / 2)),
     });
     return gaps;
   }, []);
@@ -619,8 +625,13 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
 
   return (
     <CanvasKeyLayerContext.Provider value={registerKeyLayer ?? null}>
-      <section id={`vdoc-page-${page.pageId}`} onClick={() => onSelectPage(page.pageId)} className="w-[794px] min-w-[794px] mx-auto">
-      {/* A4 sheet: 794 × 1123 px at 96 dpi. The ring does not take layout space, so frames map 1:1. */}
+      <section
+        id={`vdoc-page-${page.pageId}`}
+        onClick={() => onSelectPage(page.pageId)}
+        className="mx-auto"
+        style={{ width: pageDims.width, minWidth: pageDims.width }}
+      >
+      {/* Page sheet (A4 default 794 × 1123 px, or explicit pageRect). The ring does not take layout space, so frames map 1:1. */}
       <div
         ref={sheetRef}
         onPointerMove={(e) => {
@@ -631,11 +642,11 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
           const sheetEl = sheetRef.current;
           if (!sheetEl) return;
           const rect = sheetEl.getBoundingClientRect();
-          const scale = rect.width / A4_PAGE_WIDTH_PX || 1;
+          const scale = rect.width / pageDims.width || 1;
           const rawY = Math.round((e.clientY - rect.top) / scale);
           if (rawY < 0 || rawY > rect.height / scale) return;
           if (pageFramed) {
-            const clampedY = Math.max(pageMargins.top, Math.min(A4_PAGE_HEIGHT_PX - Math.max(24, pageMargins.bottom), rawY));
+            const clampedY = Math.max(pageMargins.top, Math.min(pageDims.height - Math.max(24, pageMargins.bottom), rawY));
             setCursorTarget((prev) => (prev && Math.abs(prev.y - clampedY) < 1 ? prev : { y: clampedY }));
           } else {
             const gaps = collectFlowGaps();
@@ -648,7 +659,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         onPointerLeave={() => {
           scheduleHideInsertCursor();
         }}
-        className="relative bg-white rounded-xs shadow-[0_4px_28px_rgba(15,23,42,0.08),0_1px_4px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/5 w-[794px] min-w-[794px] max-w-[794px] min-h-[1123px] mx-auto flex flex-col justify-between"
+        className="relative bg-white rounded-xs shadow-[0_4px_28px_rgba(15,23,42,0.08),0_1px_4px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/5 mx-auto flex flex-col justify-between"
         style={sheetStyle}
         data-exact-layout={layout?.exactText ? "" : undefined}
       >

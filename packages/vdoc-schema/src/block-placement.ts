@@ -99,6 +99,33 @@ export function getDefaultBlockFrameHeight(kind: LayoutBlockKind | string): numb
   return DEFAULT_HEIGHT_BY_KIND[kind as LayoutBlockKind] ?? FALLBACK_BLOCK_HEIGHT;
 }
 
+export interface PageDimensionsPx {
+  width: number;
+  height: number;
+}
+
+const MIN_PAGE_DIM_PX = 240;
+
+function toCssPx(value: number, unit: "px" | "pt" | "mm" | "%" | undefined, fallbackPx: number): number {
+  if (!Number.isFinite(value) || value <= 0) return fallbackPx;
+  if (unit === "pt") return Math.max(MIN_PAGE_DIM_PX, Math.round(value * (96 / 72)));
+  if (unit === "mm") return Math.max(MIN_PAGE_DIM_PX, Math.round(value * (96 / 25.4)));
+  if (unit === "%") return fallbackPx;
+  return Math.max(MIN_PAGE_DIM_PX, Math.round(value));
+}
+
+/** 페이지 `pageRect` 규격(미지정 시 A4 794×1123px)을 96dpi CSS px 단위로 해석한다. */
+export function resolvePageDimensionsPx(page?: Pick<VDocPage, "pageRect"> | null): PageDimensionsPx {
+  const rect = page?.pageRect;
+  if (!rect) {
+    return { width: A4_PAGE_WIDTH_PX, height: A4_PAGE_HEIGHT_PX };
+  }
+  return {
+    width: toCssPx(rect.width, rect.unit, A4_PAGE_WIDTH_PX),
+    height: toCssPx(rect.height, rect.unit, A4_PAGE_HEIGHT_PX),
+  };
+}
+
 /** 페이지 여백(px)을 반환한다 (`layout.margin` 우선, 생략 시 시트 기본 패딩과 동일). */
 export function resolvePageMargins(page: Pick<VDocPage, "layout" | "hideHeaderFooter">): PageMargins {
   if (page.layout?.margin) {
@@ -113,9 +140,10 @@ export function resolvePageMargins(page: Pick<VDocPage, "layout" | "hideHeaderFo
 }
 
 /** 페이지 본문 너비(px). */
-export function getPageContentWidth(page: Pick<VDocPage, "layout" | "hideHeaderFooter">): number {
+export function getPageContentWidth(page: Pick<VDocPage, "layout" | "hideHeaderFooter" | "pageRect">): number {
   const m = resolvePageMargins(page);
-  return Math.max(MIN_BLOCK_SIZE, Math.round(A4_PAGE_WIDTH_PX - m.left - m.right));
+  const { width } = resolvePageDimensionsPx(page);
+  return Math.max(MIN_BLOCK_SIZE, Math.round(width - m.left - m.right));
 }
 
 /** 고정 좌표(`frame`) 블록이 하나라도 있으면 고정 좌표 페이지로 다룬다. */
@@ -127,16 +155,20 @@ function clampNumber(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-/** 블록 프레임을 A4 페이지(`794×1123px`) 경계 안으로 제한한다. */
-export function clampFrameToPage(frame: BlockFrameRect, fallbackHeight = 40): BlockFrameRect {
-  const w = Math.round(clampNumber(frame.w, MIN_BLOCK_SIZE, A4_PAGE_WIDTH_PX));
+/** 블록 프레임을 페이지(`pageRect` 또는 A4 794×1123px) 경계 안으로 제한한다. */
+export function clampFrameToPage(
+  frame: BlockFrameRect,
+  fallbackHeight = 40,
+  pageDims: PageDimensionsPx = { width: A4_PAGE_WIDTH_PX, height: A4_PAGE_HEIGHT_PX }
+): BlockFrameRect {
+  const w = Math.round(clampNumber(frame.w, MIN_BLOCK_SIZE, pageDims.width));
   const h =
     frame.h !== undefined
-      ? Math.round(clampNumber(frame.h, MIN_BLOCK_SIZE, A4_PAGE_HEIGHT_PX))
+      ? Math.round(clampNumber(frame.h, MIN_BLOCK_SIZE, pageDims.height))
       : undefined;
-  const effectiveH = h ?? Math.round(clampNumber(fallbackHeight, MIN_BLOCK_SIZE, A4_PAGE_HEIGHT_PX));
-  const x = Math.round(clampNumber(frame.x, 0, Math.max(0, A4_PAGE_WIDTH_PX - w)));
-  const y = Math.round(clampNumber(frame.y, 0, Math.max(0, A4_PAGE_HEIGHT_PX - effectiveH)));
+  const effectiveH = h ?? Math.round(clampNumber(fallbackHeight, MIN_BLOCK_SIZE, pageDims.height));
+  const x = Math.round(clampNumber(frame.x, 0, Math.max(0, pageDims.width - w)));
+  const y = Math.round(clampNumber(frame.y, 0, Math.max(0, pageDims.height - effectiveH)));
   return {
     x,
     y,
@@ -198,6 +230,7 @@ export function placePastedBlock(
   const sourceIsFramed = Boolean(sourceFrame);
 
   if (targetIsFramed) {
+    const pageDims = resolvePageDimensionsPx(targetPage);
     if (sourceIsFramed && sourceFrame) {
       const samePage = Boolean(ctx.sourcePageId && ctx.sourcePageId === targetPage.pageId);
       const count = samePage ? Math.max(1, ctx.pasteCount ?? 1) : 0;
@@ -208,7 +241,8 @@ export function placePastedBlock(
           x: sourceFrame.x + offset,
           y: sourceFrame.y + offset,
         },
-        getDefaultBlockFrameHeight(block.kind)
+        getDefaultBlockFrameHeight(block.kind),
+        pageDims
       );
       return { block: { ...block, frame: nextFrame }, atIndex: undefined };
     }
@@ -227,7 +261,8 @@ export function placePastedBlock(
     }
     const nextFrame = clampFrameToPage(
       { x: margins.left, y, w: width },
-      getDefaultBlockFrameHeight(block.kind)
+      getDefaultBlockFrameHeight(block.kind),
+      pageDims
     );
     return { block: { ...block, frame: nextFrame }, atIndex: undefined };
   }
@@ -397,10 +432,11 @@ export function insertAtY(
   ctx: InsertAtYContext = {}
 ): InsertAtYResult {
   if (isFramedPage(page)) {
+    const pageDims = resolvePageDimensionsPx(page);
     const margins = resolvePageMargins(page);
     const width = getPageContentWidth(page);
     const height = ctx.defaultHeight ?? getDefaultBlockFrameHeight(block.kind);
-    const frame = clampFrameToPage({ x: margins.left, y, w: width, h: height }, height);
+    const frame = clampFrameToPage({ x: margins.left, y, w: width, h: height }, height, pageDims);
     return { block: { ...block, frame }, atIndex: undefined };
   }
 

@@ -8,8 +8,10 @@ import {
   type FidelityMode,
   type PdfPreviewResult,
 } from "@/entities/scaffold-job";
+import { isAbortError } from "@/shared/api";
 import { errorMessage } from "@/shared/lib";
 
+import { catalogApi, type UrlScaffoldParams } from "../api/catalogApi";
 import {
   buildBasicPageTemplate,
   listCatalogTemplatesGrouped,
@@ -55,15 +57,19 @@ export function useInsertTemplatePages(
     targetDocId: string;
     sourceTitle: string;
     sourceDoc: VDocDocument;
+    warnings?: string[];
   } | null>(null);
   const [pdfPreviewPicker, setPdfPreviewPicker] = useState<PdfPreviewPickerState | null>(null);
   const [catalogBrowser, setCatalogBrowser] = useState<{
     targetDocId: string;
     categories: { category: string; items: VDocCatalogManifest[] }[];
   } | null>(null);
+  const [urlImportTargetDocId, setUrlImportTargetDocId] = useState<string | null>(null);
+  const [urlImporting, setUrlImporting] = useState(false);
 
   const pendingPdfDocId = useRef<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
+  const urlAbortRef = useRef<AbortController | null>(null);
 
   const resolveOrPickPages = useCallback(
     (targetDocId: string, sourceTitle: string, sourceDoc: VDocDocument) => {
@@ -219,13 +225,53 @@ export function useInsertTemplatePages(
     [onCommitPages]
   );
 
+  const openUrlImport = useCallback((targetDocId: string) => {
+    setError(null);
+    setCatalogBrowser(null);
+    setPagePicker(null);
+    setPdfPreviewPicker(null);
+    setUrlImportTargetDocId(targetDocId);
+  }, []);
+
+  const submitUrlImport = useCallback(async (targetDocId: string, params: UrlScaffoldParams) => {
+    urlAbortRef.current?.abort();
+    const controller = new AbortController();
+    urlAbortRef.current = controller;
+    setError(null);
+    setUrlImporting(true);
+    try {
+      const res = await catalogApi.scaffoldUrl(params, controller.signal);
+      if (res.document.pages.length === 0) {
+        setError("가져온 웹페이지에 삽입할 페이지가 없습니다.");
+        return;
+      }
+      setUrlImportTargetDocId(null);
+      setPagePicker({
+        targetDocId,
+        sourceTitle: res.title || params.url,
+        sourceDoc: res.document,
+        warnings: res.warnings,
+      });
+    } catch (err) {
+      if (!isAbortError(err)) {
+        setError(errorMessage(err, "웹페이지 가져오기에 실패했습니다."));
+      }
+    } finally {
+      if (urlAbortRef.current === controller) {
+        urlAbortRef.current = null;
+      }
+      setUrlImporting(false);
+    }
+  }, []);
+
   const closeModals = useCallback(() => {
-    if (loadingMessage) return;
+    if (loadingMessage || urlImporting) return;
     setPagePicker(null);
     setPdfPreviewPicker(null);
     setCatalogBrowser(null);
+    setUrlImportTargetDocId(null);
     setError(null);
-  }, [loadingMessage]);
+  }, [loadingMessage, urlImporting]);
 
   return {
     loadingMessage,
@@ -233,6 +279,8 @@ export function useInsertTemplatePages(
     pagePicker,
     pdfPreviewPicker,
     catalogBrowser,
+    urlImportTargetDocId,
+    urlImporting,
     pdfInputRef,
     insertBasicPage,
     triggerPdfPick,
@@ -240,6 +288,8 @@ export function useInsertTemplatePages(
     confirmPdfPages,
     openCatalogBrowser,
     selectCatalogTemplate,
+    openUrlImport,
+    submitUrlImport,
     confirmSelectedPages,
     dismissError: () => setError(null),
     closeModals,

@@ -2,7 +2,7 @@ import { createSectionPage, type VDocCatalogManifest, type VDocDocument } from "
 
 import { catalogApi } from "../api/catalogApi";
 
-export type TemplateSourceKind = "blank" | "pdf" | "catalog";
+export type TemplateSourceKind = "blank" | "pdf" | "catalog" | "url";
 
 export interface TemplateSourceDescriptor {
   kind: TemplateSourceKind;
@@ -12,7 +12,7 @@ export interface TemplateSourceDescriptor {
 
 /**
  * 페이지 삽입 템플릿 출처 레지스트리.
- * 장르/카테고리별 하드코딩 없이, `blank` · `pdf` · `catalog` 세 출처 모두
+ * 장르/카테고리별 하드코딩 없이, `blank` · `pdf` · `catalog` · `url` 네 출처 모두
  * 최종적으로 `VDocDocument` 하나를 반환하여 공용 페이지 선택 · 복제 경로로 합쳐진다.
  */
 export const TEMPLATE_SOURCE_REGISTRY: readonly TemplateSourceDescriptor[] = [
@@ -29,7 +29,12 @@ export const TEMPLATE_SOURCE_REGISTRY: readonly TemplateSourceDescriptor[] = [
   {
     kind: "catalog",
     label: "카탈로그 · 섹터 템플릿에서",
-    description: "등록된 공용 서식이나 블로그 등 섹터 템플릿을 골라 넣습니다.",
+    description: "등록된 공용 서식이나 섹터 템플릿을 골라 넣습니다.",
+  },
+  {
+    kind: "url",
+    label: "URL에서 가져오기",
+    description: "웹사이트·블로그·칼럼 주소를 페이지별로 잘라 골라 넣습니다.",
   },
 ];
 

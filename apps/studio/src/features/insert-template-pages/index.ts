@@ -1,5 +1,8 @@
 export { PagePickerModal } from "./ui/PagePickerModal";
 export type { PagePickerModalProps } from "./ui/PagePickerModal";
+export { UrlImportModal } from "./ui/UrlImportModal";
+export type { UrlImportModalProps } from "./ui/UrlImportModal";
+export type { UrlScaffoldParams, UrlScaffoldResponse, UrlSplitMode } from "./api/catalogApi";
 export { useInsertTemplatePages } from "./model/useInsertTemplatePages";
 export type {
   CommitTemplatePagesFn,

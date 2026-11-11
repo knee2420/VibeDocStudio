@@ -204,7 +204,7 @@ const DraftingCanvas: React.FC = () => {
           </div>
         )}
 
-        <div className="w-[794px] min-w-[794px] mx-auto">
+        <div className="w-fit min-w-[794px] mx-auto">
           <WindowedPageChunker
             pages={pagesToRender}
             activePageId={activePageId}
