@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 
+import base64
 import json
 import os
 import shutil
@@ -24,6 +25,7 @@ from ..extract.css_normalizer import normalize_css_color, parse_css_length_px
 from ..models import (
     BrowserElementGeometry,
     BrowserLayoutSnapshot,
+    BrowserScreenshotTile,
     MeasuredRect,
     TextInlineStyle,
     WebImage,
@@ -34,6 +36,86 @@ from .http_fetcher import validate_public_http_url
 
 _IS_WINDOWS = sys.platform == "win32"
 
+# 공용 JS: 바깥 window · same-origin iframe(네이버 블로그 #mainFrame 등) · 내부 overflow 컨테이너 중
+# 실제 스크롤 주체를 판별해 좌표를 이동/측정한다.
+_SCROLL_HELPER_JS = r"""
+  const _docHeight = (d) => Math.max(
+    d && d.body ? d.body.scrollHeight : 0,
+    d && d.documentElement ? d.documentElement.scrollHeight : 0
+  );
+  const _findScrollTarget = () => {
+    let doc = document, win = window, targetIframe = null;
+    const outerLen = ((document.body && document.body.innerText) || '').trim().length;
+    const outerH = _docHeight(document);
+    const outerMax = Math.max(0, outerH - (window.innerHeight || 0));
+    if (outerLen < 160 || outerMax <= 40) {
+      let bestScore = outerLen;
+      for (const ifr of document.querySelectorAll('iframe')) {
+        try {
+          const idoc = ifr.contentDocument;
+          if (!idoc || !idoc.body) continue;
+          const flen = (idoc.body.innerText || '').trim().length;
+          const iwin = idoc.defaultView || window;
+          const ih = _docHeight(idoc);
+          const ivh = ifr.clientHeight || iwin.innerHeight || 900;
+          if (flen > 120 && (ih - ivh > outerMax + 80 || (outerLen < 160 && flen > bestScore + 200))) {
+            bestScore = flen;
+            doc = idoc;
+            win = iwin;
+            targetIframe = ifr;
+          }
+        } catch (_e) {}
+      }
+    }
+    const innerH = _docHeight(doc);
+    const innerVh = targetIframe ? (targetIframe.clientHeight || win.innerHeight || 900) : (win.innerHeight || 900);
+    const innerMax = Math.max(0, innerH - innerVh);
+    if (targetIframe && innerMax > 40) {
+      return { mode: 'win', doc, win, el: null, totalHeight: innerH, vh: innerVh, sameDoc: false };
+    }
+    if (outerMax > 40) {
+      return { mode: 'win', doc: document, win: window, el: null, totalHeight: outerH, vh: window.innerHeight || 900, sameDoc: true };
+    }
+    let bestEl = null, bestOverflow = 0;
+    for (const cand of doc.querySelectorAll('main, article, [role="main"], #root, #app, div, section')) {
+      try {
+        const ch = cand.clientHeight || 0;
+        const sh = cand.scrollHeight || 0;
+        if (ch < 240 || sh - ch <= 80) continue;
+        const ov = (win.getComputedStyle(cand).overflowY || '').toLowerCase();
+        if ((ov === 'auto' || ov === 'scroll' || ov === 'overlay') && sh - ch > bestOverflow) {
+          bestOverflow = sh - ch;
+          bestEl = cand;
+        }
+      } catch (_e) {}
+    }
+    if (bestEl) {
+      return { mode: 'el', doc, win, el: bestEl, totalHeight: bestEl.scrollHeight, vh: bestEl.clientHeight || innerVh, sameDoc: doc === document };
+    }
+    return { mode: 'win', doc, win, el: null, totalHeight: Math.max(outerH, innerH), vh: innerVh, sameDoc: doc === document };
+  };
+  const _scrollTargetTo = (st, y) => {
+    const ty = Math.max(0, Number(y) || 0);
+    if (st.mode === 'el' && st.el) {
+      try { st.el.scrollTo({ top: ty, left: 0, behavior: 'instant' }); } catch (_e) {}
+      st.el.scrollTop = ty;
+    } else {
+      try { st.win.scrollTo({ top: ty, left: 0, behavior: 'instant' }); } catch (_e) { st.win.scrollTo(0, ty); }
+      if (st.doc && st.doc.documentElement && Math.abs((st.win.scrollY || 0) - ty) > 2) {
+        try { st.doc.documentElement.scrollTop = ty; } catch (_e) {}
+      }
+      if (st.doc && st.doc.body && Math.abs((st.win.scrollY || 0) - ty) > 2) {
+        try { st.doc.body.scrollTop = ty; } catch (_e) {}
+      }
+    }
+  };
+  const _readScrollY = (st) => {
+    if (st.mode === 'el' && st.el) return st.el.scrollTop || 0;
+    const d = st.doc;
+    return st.win.scrollY || (d && d.documentElement ? d.documentElement.scrollTop : 0) || (d && d.body ? d.body.scrollTop : 0) || 0;
+  };
+"""
+
 # JS: 스크롤을 단계적으로 훑어 lazy 이미지를 깨운 뒤, 본문 루트를 격리하고
 # 모든 가시 블록의 실측 bounding box 및 getComputedStyle 을 JSON 직렬화한다.
 _MEASURE_ARTICLE_JS = r"""
@@ -42,37 +124,23 @@ _MEASURE_ARTICLE_JS = r"""
   const clean = (s) => (s || '').replace(/[\u200B\uFEFF\u00A0]/g, ' ').replace(/\s+/g, ' ').trim();
   const escAttr = (s) => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const escHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+__SCROLL_HELPER__
+  const scrollTarget = _findScrollTarget();
+  const doc = scrollTarget.doc;
+  const win = scrollTarget.win;
 
-  // 1. iframe 래퍼 문서(동일 출처 내 단일 큰 본문 프레임)가 있으면 내부 document 사용
-  let doc = document;
+  // 2. lazy-load 이미지 활성화를 위해 전체 높이를 구간 스크롤 후 복귀 (최대 ~1.3초)
   try {
-    const bodyLen = clean(document.body ? document.body.innerText : '').length;
-    if (bodyLen < 160) {
-      for (const ifr of document.querySelectorAll('iframe')) {
-        try {
-          const idoc = ifr.contentDocument;
-          if (idoc && idoc.body && clean(idoc.body.innerText).length > bodyLen + 200) {
-            doc = idoc;
-            break;
-          }
-        } catch (_e) {}
-      }
-    }
-  } catch (_e) {}
-
-  const win = doc.defaultView || window;
-
-  // 2. lazy-load 이미지 활성화를 위해 몇 구간 스크롤 후 복귀 (최대 ~1.2초)
-  try {
-    const totalH = Math.max(doc.body ? doc.body.scrollHeight : 0, doc.documentElement ? doc.documentElement.scrollHeight : 0);
-    const step = Math.max(500, Math.floor((win.innerHeight || 900) * 0.85));
-    const maxSteps = 10;
+    const totalH = scrollTarget.totalHeight;
+    const vh = Math.max(400, scrollTarget.vh || 900);
+    const step = Math.max(500, Math.floor(vh * 0.85));
+    const maxSteps = 18;
     const stride = totalH > step * maxSteps ? Math.ceil(totalH / maxSteps) : step;
-    for (let y = 0; y <= totalH && y < step * 14; y += stride) {
-      win.scrollTo(0, y);
-      await sleep(75);
+    for (let y = 0; y <= totalH; y += stride) {
+      _scrollTargetTo(scrollTarget, y);
+      await sleep(60);
     }
-    win.scrollTo(0, 0);
+    _scrollTargetTo(scrollTarget, 0);
     await sleep(120);
   } catch (_e) {}
 
@@ -92,7 +160,7 @@ _MEASURE_ARTICLE_JS = r"""
   } catch (_e) {}
 
   const scrollX = win.scrollX || 0;
-  const scrollY = win.scrollY || 0;
+  const scrollY = _readScrollY(scrollTarget);
   const absRect = (el) => {
     const r = el.getBoundingClientRect();
     return {
@@ -781,7 +849,7 @@ _MEASURE_ARTICLE_JS = r"""
     elements,
   });
 })();
-"""
+""".replace("__SCROLL_HELPER__", _SCROLL_HELPER_JS)
 
 
 def _find_browser_executable() -> Optional[str]:
@@ -1016,6 +1084,149 @@ def parse_browser_snapshot_json(raw_json: str, *, fallback_url: str = "") -> Opt
     )
 
 
+def compute_scroll_bands(
+    total_height: int,
+    viewport_height: int,
+    overlap_px: int = 80,
+    max_tiles: int = 24,
+) -> list[int]:
+    """스크롤 높이 대비 캡처할 Y 좌표 목록을 계산한다 (상단 0 및 하단 누락 방지, 최대 타일 예산 내 균등 표집)."""
+    vh = max(240, int(viewport_height))
+    total = max(vh, int(total_height))
+    if total <= vh or max_tiles <= 1:
+        return [0]
+    step = max(200, vh - max(0, int(overlap_px)))
+    max_y = total - vh
+    bands = list(range(0, max_y, step))
+    if not bands or bands[-1] != max_y:
+        bands.append(max_y)
+    if len(bands) <= max_tiles:
+        return bands
+    # 첫 장(0) 과 마지막 장은 반드시 포함하고 나머지를 균등 샘플링
+    picked = [0]
+    inner_slots = max_tiles - 2
+    for slot in range(1, inner_slots + 1):
+        idx = round(slot * (len(bands) - 1) / (inner_slots + 1))
+        if bands[idx] not in picked:
+            picked.append(bands[idx])
+    if bands[-1] not in picked:
+        picked.append(bands[-1])
+    return sorted(picked)
+
+
+_SCROLL_INFO_JS = """
+(() => {
+__SCROLL_HELPER__
+  const st = _findScrollTarget();
+  return JSON.stringify({totalHeight: st.totalHeight, sameDoc: st.sameDoc, scrollMode: st.mode});
+})()
+""".replace("__SCROLL_HELPER__", _SCROLL_HELPER_JS)
+
+
+_TAB_READY_JS = r"""
+(() => {
+  const outerLen = (document.body && document.body.innerText ? document.body.innerText.trim().length : 0);
+  let maxLen = outerLen;
+  let ready = document.readyState === 'complete';
+  if (ready && outerLen <= 120) {
+    for (const ifr of document.querySelectorAll('iframe')) {
+      try {
+        const idoc = ifr.contentDocument;
+        if (idoc && idoc.body) {
+          const flen = (idoc.body.innerText || '').trim().length;
+          if (flen > maxLen) {
+            maxLen = flen;
+            ready = idoc.readyState === 'complete';
+          }
+        }
+      } catch (_e) {}
+    }
+  }
+  return JSON.stringify({href: location.href, ready, len: maxLen});
+})()
+"""
+
+
+def _toggle_sticky_js(hidden: bool) -> str:
+    flag = "true" if hidden else "false"
+    return f"""
+(() => {{
+  const hide = {flag};
+  const docs = [document];
+  for (const ifr of document.querySelectorAll('iframe')) {{
+    try {{ if (ifr.contentDocument) docs.push(ifr.contentDocument); }} catch (_e) {{}}
+  }}
+  for (const d of docs) {{
+    const w = d.defaultView || window;
+    for (const el of d.querySelectorAll('*')) {{
+      if (hide) {{
+        const cs = w.getComputedStyle(el);
+        if (cs.position === 'fixed' || cs.position === 'sticky') {{
+          const r = el.getBoundingClientRect();
+          if (r.height > 0 && r.height <= 200 && cs.visibility !== 'hidden') {{
+            el.setAttribute('data-vdoc-prev-vis', el.style.visibility || '');
+            el.setAttribute('data-vdoc-masked', '1');
+            el.style.visibility = 'hidden';
+          }}
+        }}
+      }} else if (el.getAttribute('data-vdoc-masked') === '1') {{
+        el.style.visibility = el.getAttribute('data-vdoc-prev-vis') || '';
+        el.removeAttribute('data-vdoc-prev-vis');
+        el.removeAttribute('data-vdoc-masked');
+      }}
+    }}
+  }}
+}})()
+"""
+
+
+def _scroll_tile_js(scroll_y: int, *, mask_sticky: bool = False, wait_images: bool = True) -> str:
+    mask_stmt = (_toggle_sticky_js(True).strip() + ";") if mask_sticky else ""
+    img_wait_ms = 450 if wait_images else 0
+    return (
+        """
+(async () => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
+__SCROLL_HELPER__
+  const st = _findScrollTarget();
+  const targetY = __TARGET_Y__;
+  _scrollTargetTo(st, targetY);
+  await nextFrame();
+  await sleep(120);
+  __MASK_CALL__
+  if (__IMG_WAIT_MS__ > 0 && st.doc) {
+    try {
+      const vh = Math.max(400, st.vh || 900);
+      const pending = [...st.doc.querySelectorAll('img')].filter((im) => {
+        if (im.complete) return false;
+        const src = im.currentSrc || im.getAttribute('src') || im.dataset?.lazySrc || im.dataset?.src;
+        if (!src) return false;
+        const r = im.getBoundingClientRect();
+        return r.bottom >= -150 && r.top <= vh + 150;
+      });
+      if (pending.length) {
+        await Promise.race([
+          Promise.all(pending.slice(0, 12).map((im) => new Promise((res) => {
+            if (im.complete) return res();
+            im.addEventListener('load', res, { once: true });
+            im.addEventListener('error', res, { once: true });
+          }))),
+          sleep(__IMG_WAIT_MS__),
+        ]);
+      }
+    } catch (_e) {}
+  }
+  await nextFrame();
+  return JSON.stringify({actualY: Math.round(_readScrollY(st)), mode: st.mode});
+})()
+""".replace("__SCROLL_HELPER__", _SCROLL_HELPER_JS)
+        .replace("__TARGET_Y__", str(max(0, int(scroll_y))))
+        .replace("__MASK_CALL__", mask_stmt)
+        .replace("__IMG_WAIT_MS__", str(img_wait_ms))
+    )
+
+
 class CdpBrowserDomFetcher:
     """디버그 크롬(CDP) 또는 임시 헤드리스 Chrome/Edge 탭에서 렌더 DOM · 기하 좌표를 수집한다."""
 
@@ -1098,7 +1309,8 @@ class CdpBrowserDomFetcher:
         url: str,
         *,
         viewport_width: int,
-        timeout_s: float,
+        viewport_height: int = 900,
+        timeout_s: float = 18.0,
     ) -> Optional[tuple[dict[str, Any], Any]]:
         import websocket
 
@@ -1130,7 +1342,7 @@ class CdpBrowserDomFetcher:
         call(
             "Emulation.setDeviceMetricsOverride",
             width=max(480, int(viewport_width)),
-            height=900,
+            height=max(400, int(viewport_height)),
             deviceScaleFactor=1,
             mobile=False,
         )
@@ -1141,45 +1353,48 @@ class CdpBrowserDomFetcher:
         while time.monotonic() < deadline:
             ev = call(
                 "Runtime.evaluate",
-                expression=(
-                    "location.href + '|' + document.readyState + '|' + "
-                    "(document.body ? document.body.innerText.trim().length : 0)"
-                ),
+                expression=_TAB_READY_JS,
                 returnByValue=True,
             )
-            val = str(ev.get("result", {}).get("value") or "")
-            parts = val.split("|", 2)
-            href = parts[0] if len(parts) > 0 else ""
-            state = parts[1] if len(parts) > 1 else ""
-            length_str = parts[2] if len(parts) > 2 else "0"
-            if href and href != "about:blank" and state == "complete" and int(length_str or "0") > 120:
+            raw = str(ev.get("result", {}).get("value") or "")
+            try:
+                probe = json.loads(raw) if raw else {}
+            except ValueError:
+                probe = {}
+            href = str(probe.get("href") or "")
+            ready = bool(probe.get("ready"))
+            text_len = int(probe.get("len") or 0)
+            if href and href != "about:blank" and ready and text_len > 120:
                 break
             time.sleep(0.25)
 
         return target, (ws, call)
 
-    def _eval_on_tab(
+    @contextmanager
+    def _tab_session(
         self,
         url: str,
         *,
         viewport_width: int,
-        timeout_s: float,
-        expression: str,
-        await_promise: bool = False,
-    ) -> Optional[str]:
+        viewport_height: int = 900,
+        timeout_s: float = 18.0,
+    ) -> Iterator[Optional[Any]]:
         try:
             import websocket  # noqa: F401
         except ImportError:
-            return None
+            yield None
+            return
 
         try:
             safe_url = validate_public_http_url(url, allow_private_hosts=self._allow_private)
         except ValueError:
-            return None
+            yield None
+            return
 
         with self._cdp_endpoint(viewport_width=viewport_width) as endpoint:
             if not endpoint:
-                return None
+                yield None
+                return
             target: Optional[dict[str, Any]] = None
             ws = None
             try:
@@ -1187,21 +1402,17 @@ class CdpBrowserDomFetcher:
                     endpoint,
                     safe_url,
                     viewport_width=viewport_width,
+                    viewport_height=viewport_height,
                     timeout_s=timeout_s,
                 )
-                if not opened:
-                    return None
-                target, (ws, call) = opened
-                res = call(
-                    "Runtime.evaluate",
-                    expression=expression,
-                    returnByValue=True,
-                    awaitPromise=await_promise,
-                )
-                val = res.get("result", {}).get("value")
-                return val if isinstance(val, str) and val else None
             except Exception:
-                return None
+                opened = None
+            if not opened:
+                yield None
+                return
+            target, (ws, call) = opened
+            try:
+                yield call
             finally:
                 if ws is not None:
                     try:
@@ -1214,16 +1425,92 @@ class CdpBrowserDomFetcher:
                     except Exception:
                         pass
 
+    def _capture_viewport_tiles(
+        self,
+        call: Any,
+        *,
+        viewport_width: int,
+        viewport_height: int,
+        overlap_px: int,
+        max_screenshots: int,
+    ) -> list[BrowserScreenshotTile]:
+        vw = max(480, int(viewport_width))
+        vh = max(400, int(viewport_height))
+        info_raw = call("Runtime.evaluate", expression=_SCROLL_INFO_JS, returnByValue=True).get("result", {}).get("value")
+        try:
+            info = json.loads(info_raw or "{}")
+        except ValueError:
+            info = {}
+        total_h = int(info.get("totalHeight") or vh)
+        bands = compute_scroll_bands(total_h, vh, overlap_px=overlap_px, max_tiles=max_screenshots)
+        tiles: list[BrowserScreenshotTile] = []
+        masked = False
+        try:
+            for idx, scroll_y in enumerate(bands, start=1):
+                if scroll_y > 0:
+                    masked = True
+                scroll_res_raw = (
+                    call(
+                        "Runtime.evaluate",
+                        expression=_scroll_tile_js(scroll_y, mask_sticky=(scroll_y > 0), wait_images=True),
+                        returnByValue=True,
+                        awaitPromise=True,
+                    )
+                    .get("result", {})
+                    .get("value")
+                )
+                actual_y = scroll_y
+                if isinstance(scroll_res_raw, str) and scroll_res_raw:
+                    try:
+                        parsed = json.loads(scroll_res_raw)
+                        if isinstance(parsed, dict) and parsed.get("actualY") is not None:
+                            actual_y = int(parsed["actualY"])
+                    except (ValueError, TypeError):
+                        pass
+                shot = call("Page.captureScreenshot", format="png")
+                b64 = shot.get("data") if isinstance(shot, dict) else None
+                if not isinstance(b64, str) or not b64:
+                    continue
+                tiles.append(
+                    BrowserScreenshotTile(
+                        index=idx,
+                        scroll_y=actual_y,
+                        width=vw,
+                        height=vh,
+                        png_bytes=base64.b64decode(b64),
+                        total_height=total_h,
+                    )
+                )
+        finally:
+            if masked:
+                try:
+                    call("Runtime.evaluate", expression=_toggle_sticky_js(False), returnByValue=True)
+                except Exception:
+                    pass
+            try:
+                call(
+                    "Runtime.evaluate",
+                    expression=_scroll_tile_js(0, mask_sticky=False, wait_images=False),
+                    returnByValue=True,
+                    awaitPromise=True,
+                )
+            except Exception:
+                pass
+        return tiles
+
     def render_dom(self, url: str, *, timeout_s: float = 15.0) -> Optional[tuple[str, str]]:
         """JS 평가 완료 후 `(outerHTML, final_url)` 을 반환한다."""
-        raw = self._eval_on_tab(
-            url,
-            viewport_width=1280,
-            timeout_s=timeout_s,
-            expression="JSON.stringify({html: document.documentElement.outerHTML, url: location.href})",
-            await_promise=False,
-        )
-        if not raw:
+        with self._tab_session(url, viewport_width=1280, timeout_s=timeout_s) as call:
+            if call is None:
+                return None
+            res = call(
+                "Runtime.evaluate",
+                expression="JSON.stringify({html: document.documentElement.outerHTML, url: location.href})",
+                returnByValue=True,
+                awaitPromise=False,
+            )
+            raw = res.get("result", {}).get("value")
+        if not isinstance(raw, str) or not raw:
             return None
         try:
             payload = json.loads(raw)
@@ -1237,15 +1524,36 @@ class CdpBrowserDomFetcher:
         *,
         viewport_width: int = 1280,
         timeout_s: float = 18.0,
+        capture_screenshots: bool = False,
+        viewport_height: int = 900,
+        overlap_px: int = 80,
+        max_screenshots: int = 24,
     ) -> Optional[BrowserLayoutSnapshot]:
-        """가시 DOM 요소의 `getBoundingClientRect` · `getComputedStyle` 실측 스냅샷을 반환한다."""
-        raw = self._eval_on_tab(
+        """가시 DOM 요소의 `getBoundingClientRect` · `getComputedStyle` 실측 스냅샷과 선택적 PNG 타일을 반환한다."""
+        with self._tab_session(
             url,
             viewport_width=viewport_width,
+            viewport_height=viewport_height,
             timeout_s=timeout_s,
-            expression=_MEASURE_ARTICLE_JS,
-            await_promise=True,
-        )
-        if not raw:
-            return None
-        return parse_browser_snapshot_json(raw, fallback_url=url)
+        ) as call:
+            if call is None:
+                return None
+            res = call(
+                "Runtime.evaluate",
+                expression=_MEASURE_ARTICLE_JS,
+                returnByValue=True,
+                awaitPromise=True,
+            )
+            raw = res.get("result", {}).get("value")
+            if not isinstance(raw, str) or not raw:
+                return None
+            snapshot = parse_browser_snapshot_json(raw, fallback_url=url)
+            if capture_screenshots and snapshot is not None:
+                snapshot.screenshots = self._capture_viewport_tiles(
+                    call,
+                    viewport_width=viewport_width,
+                    viewport_height=viewport_height,
+                    overlap_px=overlap_px,
+                    max_screenshots=max_screenshots,
+                )
+            return snapshot

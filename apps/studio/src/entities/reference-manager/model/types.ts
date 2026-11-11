@@ -126,6 +126,26 @@ export interface ReferenceLayers {
   layers: ReferenceLayer[];
 }
 
+export interface ReferenceShotTile {
+  index: number;
+  file: string;
+  scrollY: number;
+  width: number;
+  height: number;
+  sections?: number[];
+  title?: string;
+}
+
+export interface ReferenceShotsManifest {
+  version: number;
+  refId: string;
+  sourceUrl?: string;
+  viewportWidth?: number;
+  totalHeight?: number;
+  capturedAt?: number;
+  shots: ReferenceShotTile[];
+}
+
 /** 뷰어에서 지금 초점을 받은 핀 · 영역. */
 export interface FocusedReferencePin {
   refId: string;

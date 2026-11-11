@@ -141,3 +141,52 @@ def test_layout_extraction_and_layout_metrics_see_the_rhythm() -> None:
     assert m["sections"] == 2 and m["photos"] == 3 and m["stickers"] == 1
     assert m["photo_first_ratio"] == 1.0 and m["link_end_ratio"] == 0.5 and m["question_headings"] == 1.0
     assert m["link_thumb_ratio"] == 1.0 and m["highlight_per_para"] == 0.5
+
+
+def test_dc_use_switches_target_and_allows_building_in_empty_user_doc() -> None:
+    tools, api = _tools()
+    blank_id = "vdoc-blank-user-1"
+    filled_id = "vdoc-filled-user-2"
+    api.docs[blank_id] = {
+        "docId": blank_id,
+        "title": "타이난 여행(가제목)",
+        "projectId": "p1",
+        "revision": 1,
+        "surface": {"kind": "paged"},
+        "origin": {"createdBy": "user"},
+        "pages": [{"pageId": "p1", "pageLabel": "Page 1", "blocks": []}],
+        "slots": {},
+    }
+    api.docs[filled_id] = {
+        "docId": filled_id,
+        "title": "기존 채워진 문서",
+        "projectId": "p1",
+        "revision": 1,
+        "surface": {"kind": "paged"},
+        "origin": {"createdBy": "user"},
+        "pages": [{"pageId": "p1", "pageLabel": "Page 1", "blocks": [{"blockId": "b1", "kind": "text", "slotId": "s1"}]}],
+        "slots": {"s1": {"content": "<p>이미 작성된 글</p>"}},
+    }
+    tools.store.state["projectDocs"] = [
+        {"docId": blank_id, "title": "타이난 여행(가제목)", "surface": "paged", "pages": 1, "blocks": 0},
+        {"docId": filled_id, "title": "기존 채워진 문서", "surface": "paged", "pages": 1, "blocks": 1},
+    ]
+
+    # 1) 제목으로 작업 문서를 지정해 전환하면 빈 문서는 곧바로 dc_build 로 지을 수 있다
+    selected = tools.call("dc_use", {"doc": "타이난 여행(가제목)"})
+    assert f"docId={blank_id}" in selected
+    assert tools.store.state["docId"] == blank_id
+
+    saved = tools.call("dc_build", {"ops": [
+        {"op": "add", "kind": "heading", "text": "첫 섹션"},
+        {"op": "add", "kind": "image", "src": "resource:file_1"},
+    ]})
+    assert f"docId={blank_id}" in saved
+    assert api.docs[blank_id]["origin"].get("agentComposed") is True
+    assert len(api.docs[blank_id]["pages"][0]["blocks"]) == 2
+
+    # 2) 이미 블록이 채워진 사람 문서는 dc_use 로 전환해도 dc_build 구조 덮어쓰기는 여전히 거부한다
+    switched = tools.call("dc_use", {"doc": filled_id})
+    assert f"docId={filled_id}" in switched
+    with pytest.raises(ValueError):
+        tools.call("dc_build", {"ops": [{"op": "add", "kind": "divider"}]})

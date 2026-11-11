@@ -167,6 +167,20 @@ export class ComposerSessionController {
     this.set({ sessionId: snap?.sessionId ?? null, items, status: "idle", queue: [] });
   }
 
+  /**
+   * 진행 중이거나 방금 시작한 대화를 새 키(문서)로 그대로 옮긴다.
+   * dc_new · dc_use 처럼 대화 도중 활성 문서가 바뀔 때, 화면이 새 문서로 전환되어도
+   * 현재 스트리밍 · 메시지 목록 · 세션 ID 를 그대로 유지하고 새 문서 키에 이어 저장한다.
+   */
+  transferConversation(key: string | null): void {
+    this.pendingKey = null;
+    if (key === this.conversationKey) return;
+    this.conversationKey = key;
+    if (key && this.persistence && this.state.items.length > 0) {
+      this.flushSave();
+    }
+  }
+
   private scheduleSave(): void {
     if (!this.conversationKey || !this.persistence) return;
     clearTimeout(this.saveTimer);
@@ -628,6 +642,22 @@ export class ComposerSessionController {
             id: nid("n"),
             level: "info",
             text: `레퍼런스 해석 카드 ${event.cards.length}장 제안 (${layers}) — 레퍼런스 패널에서 채택 강도를 정하고 확정하세요.`,
+          });
+          break;
+        }
+        case "workbench_proposals": {
+          if (event.proposals.length === 0) break;
+          const slotCount = event.proposals.reduce(
+            (sum, p) => sum + Object.keys(p.candidates[0]?.slots ?? {}).length,
+            0,
+          );
+          const maxCandidates = Math.max(...event.proposals.map((p) => p.candidates.length));
+          const altText = maxCandidates > 1 ? ` · 후보 ${maxCandidates}안` : "";
+          this.push({
+            kind: "notice",
+            id: nid("n"),
+            level: "info",
+            text: `개편안 대기열(Staged)에 ${slotCount}개 슬롯 변경안${altText}을 올렸습니다 — 본문 diff 또는 검토 서랍에서 확인하고 승인하세요.`,
           });
           break;
         }

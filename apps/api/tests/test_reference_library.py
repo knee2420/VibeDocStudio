@@ -140,6 +140,9 @@ def test_reference_api_round_trip() -> None:
     ref_id = res.json()["refId"]
     assert client.get(f"/api/reference/items/{ref_id}/source").headers["content-type"] == "application/pdf"
     assert client.get(f"/api/reference/items/{ref_id}/extraction").json()["outline"]
+    assert client.get(f"/api/reference/items/{ref_id}/shots").json()["shots"] == []
+    assert client.get(f"/api/reference/items/{ref_id}/shots/shot_01.png").status_code == 404
+    assert client.post(f"/api/reference/items/{ref_id}/capture-live").status_code == 400
     view = client.put(f"/api/reference/projects/vproj-enterprise-architecture-suite/items/{ref_id}").json()
     assert view["entries"][-1]["item"]["refId"] == ref_id
     pin = client.post(f"/api/reference/items/{ref_id}/pins", json={"kind": "text", "page": 1, "text": "skim"}).json()
@@ -176,3 +179,76 @@ def test_reference_domain_imports_nothing_from_vdoc_or_other_domains() -> None:
             names = [node.module or ""] if isinstance(node, ast.ImportFrom) else [a.name for a in node.names] if isinstance(node, ast.Import) else []
             offenders += [f"{path.name}: {n}" for n in names if n.startswith(banned)]
     assert offenders == []
+
+
+def test_web_layout_shots_persist_map_to_sections_and_serve_http(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from webpage_fidelity_engine.models import BrowserScreenshotTile
+
+    class _LayoutWithShots:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def extract_with_shots(self, url: str):  # type: ignore[no-untyped-def]
+            self.calls += 1
+            layout = {
+                "title": "도시 기록",
+                "slots": {
+                    "h1": {"label": "제목", "content": "<p>첫째 구간</p>"},
+                    "t1": {"label": "본문", "content": "<p>상단 본문</p>"},
+                    "h2": {"label": "제목", "content": "<p>둘째 구간</p>"},
+                    "t2": {"label": "본문", "content": "<p>하단 본문</p>"},
+                },
+                "pages": [{"blocks": [
+                    {"blockId": "b_h1", "kind": "heading", "slotId": "h1"},
+                    {"blockId": "b_t1", "kind": "text", "slotId": "t1"},
+                    {"blockId": "b_h2", "kind": "heading", "slotId": "h2"},
+                    {"blockId": "b_t2", "kind": "text", "slotId": "t2"},
+                ]}],
+                "preview": {
+                    "blockRects": {
+                        "b_h1": {"x": 0, "y": 100.0, "width": 700, "height": 40},
+                        "b_t1": {"x": 0, "y": 160.0, "width": 700, "height": 80},
+                        "b_h2": {"x": 0, "y": 1100.0, "width": 700, "height": 40},
+                        "b_t2": {"x": 0, "y": 1160.0, "width": 700, "height": 80},
+                    }
+                },
+            }
+            from app.reference.adapters import layout_to_extraction
+
+            ex = layout_to_extraction(layout, url)
+            tiles = [
+                BrowserScreenshotTile(index=1, scroll_y=0, width=1280, height=900, png_bytes=b"\x89PNGSHOT1", total_height=1800),
+                BrowserScreenshotTile(index=2, scroll_y=900, width=1280, height=900, png_bytes=b"\x89PNGSHOT2", total_height=1800),
+            ]
+            return ex, layout, tiles
+
+        def extract(self, url: str):  # type: ignore[no-untyped-def]
+            ex, layout, _ = self.extract_with_shots(url)
+            return ex, layout
+
+        def from_layout(self, layout: dict, url: str = ""):  # type: ignore[no-untyped-def]
+            from app.reference.adapters import layout_to_extraction
+
+            return layout_to_extraction(layout, url)
+
+    fake_layout = _LayoutWithShots()
+    lib = LocalReferenceLibrary(tmp_path / "references")
+    svc = ReferenceLibraryService(
+        library=lib,
+        pdf_extractor=PyMuPdfExtractor(),
+        html_extractor=HtmlStructureExtractor(),
+        fetcher=_Fetcher(b"<html><body>ok</body></html>", "text/html"),
+        analyzer=MeasuredLayerAnalyzer(patterns.measure, patterns.by_layer),
+        layout_extractor=fake_layout,  # type: ignore[arg-type]
+    )
+    item = svc.add_url("https://example.com/blog/1")
+    manifest = svc.shots(item.ref_id)
+    assert manifest["totalHeight"] == 1800 and len(manifest["shots"]) == 2
+    assert manifest["shots"][0]["sections"] == [1]
+    assert manifest["shots"][1]["sections"] == [2]
+    assert svc.shot_bytes(item.ref_id, "shot_01.png") == b"\x89PNGSHOT1"
+    with pytest.raises(NotFoundError):
+        svc.shot_bytes(item.ref_id, "../ref.json")
+
+    refreshed = svc.capture_live(item.ref_id)
+    assert refreshed.ref_id == item.ref_id and fake_layout.calls == 2

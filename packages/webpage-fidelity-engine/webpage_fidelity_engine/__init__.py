@@ -36,6 +36,7 @@ from .layout import (
 from .models import (
     BrowserElementGeometry,
     BrowserLayoutSnapshot,
+    BrowserScreenshotTile,
     MeasuredRect,
     PageSplitMode,
     TextInlineStyle,
@@ -79,6 +80,7 @@ __all__ = [
     "WebNode",
     "BrowserElementGeometry",
     "BrowserLayoutSnapshot",
+    "BrowserScreenshotTile",
     "WebArticleIR",
     "WebpageQualityMetrics",
     "WebpageExtractionResult",

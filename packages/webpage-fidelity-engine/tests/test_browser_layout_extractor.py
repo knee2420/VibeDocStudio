@@ -14,7 +14,8 @@ from webpage_fidelity_engine import (
     run_webpage_extraction,
 )
 from webpage_fidelity_engine.extract import extract_ir_from_browser_snapshot
-from webpage_fidelity_engine.fetch.browser_fetcher import parse_browser_snapshot_json
+from webpage_fidelity_engine.fetch.browser_fetcher import compute_scroll_bands, parse_browser_snapshot_json
+from webpage_fidelity_engine.models import BrowserScreenshotTile
 from webpage_fidelity_engine.verify import validate_vdoc_document
 
 
@@ -244,3 +245,232 @@ def test_pipeline_falls_back_to_static_heuristics_when_browser_unavailable() -> 
     h2_titles = [b["title"] for b in blocks if b["kind"] == "heading" and b.get("level") == 2]
     assert "첫 번째 질문?" in h2_titles
     assert "두 번째 질문?" in h2_titles
+
+
+def test_compute_scroll_bands_and_screenshot_pipeline_forwarding() -> None:
+    assert compute_scroll_bands(800, 900) == [0]
+    assert compute_scroll_bands(2000, 900, overlap_px=100, max_tiles=10) == [0, 800, 1100]
+    capped = compute_scroll_bands(25000, 900, overlap_px=80, max_tiles=6)
+    assert len(capped) <= 6 and capped[0] == 0 and capped[-1] == 24100
+
+    snap = parse_browser_snapshot_json(_sample_browser_snapshot_json())
+    snap.screenshots = [
+        BrowserScreenshotTile(index=1, scroll_y=0, width=1280, height=900, png_bytes=b"\x89PNGmock1", total_height=2200),
+        BrowserScreenshotTile(index=2, scroll_y=820, width=1280, height=900, png_bytes=b"\x89PNGmock2", total_height=2200),
+    ]
+
+    class _ShotBrowserLayout:
+        def __init__(self) -> None:
+            self.called_with: dict[str, object] = {}
+
+        def render_layout_snapshot(self, url: str, **kwargs):  # type: ignore[no-untyped-def]
+            self.called_with = dict(kwargs)
+            return snap
+
+    fake = _ShotBrowserLayout()
+    res = run_webpage_extraction(
+        "https://travel.example.com/post/42",
+        options=WebpageExtractOptions(include_images=False, capture_screenshots=True, max_screenshots=8),
+        browser_dom=fake,
+    )
+    assert fake.called_with["capture_screenshots"] is True
+    assert fake.called_with["max_screenshots"] == 8
+    assert len(res.screenshots) == 2 and res.screenshots[0].png_bytes == b"\x89PNGmock1"
+    rects = (res.document.get("preview") or {}).get("blockRects") or {}
+    assert rects and any(v["y"] == 100.0 for v in rects.values())
+
+
+def test_capture_viewport_tiles_scrolls_via_target_helper_and_restores() -> None:
+    from webpage_fidelity_engine.fetch.browser_fetcher import (
+        _SCROLL_INFO_JS,
+        CdpBrowserDomFetcher,
+    )
+
+    calls: list[tuple[str, dict[str, object]]] = []
+    fake_png = base64.b64encode(b"\x89PNGfake").decode("ascii")
+
+    def fake_call(method: str, **params: object) -> dict[str, object]:
+        calls.append((method, dict(params)))
+        if method == "Runtime.evaluate":
+            expr = str(params.get("expression") or "")
+            if expr == _SCROLL_INFO_JS:
+                return {"result": {"value": json.dumps({"totalHeight": 2500, "sameDoc": False, "scrollMode": "win"})}}
+            if "actualY" in expr:
+                # 요청한 targetY 에서 2px 보정된 실제 스크롤 값을 돌려줘도 그대로 기록되는지 검증
+                for line in expr.splitlines():
+                    if line.strip().startswith("const targetY = "):
+                        ty = int(line.split("=", 1)[1].strip().rstrip(";"))
+                        return {"result": {"value": json.dumps({"actualY": max(0, ty - 2) if ty > 0 else 0, "mode": "win"})}}
+            return {"result": {"value": ""}}
+        if method == "Page.captureScreenshot":
+            return {"data": fake_png}
+        return {}
+
+    fetcher = CdpBrowserDomFetcher(auto_launch=False)
+    tiles = fetcher._capture_viewport_tiles(
+        fake_call,
+        viewport_width=1280,
+        viewport_height=900,
+        overlap_px=80,
+        max_screenshots=6,
+    )
+
+    assert [t.scroll_y for t in tiles] == [0, 818, 1598]
+    assert all(t.total_height == 2500 and t.png_bytes == b"\x89PNGfake" for t in tiles)
+
+    scroll_exprs = [str(p.get("expression") or "") for m, p in calls if m == "Runtime.evaluate" and "actualY" in str(p.get("expression") or "")]
+    assert len(scroll_exprs) == 4  # 3개 타일 + finally y=0 복귀 1회
+    assert all("window.scrollTo(0," not in expr for expr in scroll_exprs)
+    assert all("_findScrollTarget()" in expr and "_scrollTargetTo(" in expr for expr in scroll_exprs)
+    assert "data-vdoc-masked" not in scroll_exprs[0]  # scroll_y == 0 에서는 고정 헤더 마스킹 안 함
+    assert "data-vdoc-masked" in scroll_exprs[1]      # scroll_y > 0 에서는 고정 헤더 마스킹 포함
+    assert any(
+        m == "Runtime.evaluate" and "const hide = false;" in str(p.get("expression") or "")
+        for m, p in calls
+    )
+
+
+def test_scroll_helper_js_resolves_outer_iframe_and_overflow_containers_in_node() -> None:
+    import shutil
+    import subprocess
+
+    import webpage_fidelity_engine.fetch.browser_fetcher as bf
+
+    node_bin = shutil.which("node")
+    assert node_bin, "Node.js is required to syntax/runtime-verify injected CDP JS helpers"
+
+    scroll_2400_js = bf._scroll_tile_js(2400, mask_sticky=False, wait_images=False)
+    scroll_1600_js = bf._scroll_tile_js(1600, mask_sticky=False, wait_images=False)
+
+    js_driver = r"""
+const fs = require('fs');
+const vm = require('vm');
+const cases = JSON.parse(fs.readFileSync(0, 'utf8'));
+
+// 0) _MEASURE_ARTICLE_JS 문법 파싱 검증
+new vm.Script(cases.measureJs);
+
+const makeSandbox = ({ outerText = '', outerH = 900, vh = 900, iframes = [], overflowDivs = [] }) => {
+  const outerCalls = [];
+  const docEl = { scrollHeight: outerH, scrollTop: 0 };
+  const body = { innerText: outerText, scrollHeight: outerH, scrollTop: 0 };
+  const doc = {
+    URL: 'https://example.com',
+    readyState: 'complete',
+    body,
+    documentElement: docEl,
+    querySelectorAll(sel) {
+      if (sel === 'iframe') return iframes;
+      if (sel.includes('main')) return overflowDivs;
+      return [];
+    },
+  };
+  const win = {
+    innerHeight: vh,
+    scrollX: 0,
+    scrollY: 0,
+    location: { href: 'https://example.com' },
+    scrollTo(arg, yArg) {
+      const y = typeof arg === 'object' ? arg.top : yArg;
+      win.scrollY = y;
+      docEl.scrollTop = y;
+      outerCalls.push(y);
+    },
+    getComputedStyle(el) {
+      return el.__style || {};
+    },
+  };
+  return {
+    sandbox: {
+      document: doc,
+      window: win,
+      location: win.location,
+      requestAnimationFrame: (cb) => setTimeout(cb, 0),
+      setTimeout,
+      JSON, Number, Math, Promise, Set,
+    },
+    outerCalls,
+  };
+};
+
+(async () => {
+  // 1) 네이버 블로그형 wrapper + same-origin iframe(#mainFrame)
+  const iframeCalls = [];
+  const iframeDocEl = { scrollHeight: 12000, scrollTop: 0 };
+  const iframeBody = { innerText: 'x'.repeat(500), scrollHeight: 12000, scrollTop: 0 };
+  const iframeWin = {
+    innerHeight: 900,
+    scrollX: 0,
+    scrollY: 0,
+    scrollTo(arg, yArg) {
+      const y = typeof arg === 'object' ? arg.top : yArg;
+      iframeWin.scrollY = y;
+      iframeDocEl.scrollTop = y;
+      iframeCalls.push(y);
+    },
+    getComputedStyle() { return {}; },
+  };
+  const iframeDoc = {
+    readyState: 'complete',
+    body: iframeBody,
+    documentElement: iframeDocEl,
+    defaultView: iframeWin,
+    querySelectorAll() { return []; },
+  };
+  const s1 = makeSandbox({
+    outerText: '',
+    outerH: 900,
+    iframes: [{ clientHeight: 900, contentDocument: iframeDoc }],
+  });
+  const ready1 = JSON.parse(vm.runInNewContext(cases.tabReadyJs, s1.sandbox));
+  const info1 = JSON.parse(vm.runInNewContext(cases.scrollInfoJs, s1.sandbox));
+  const res1 = JSON.parse(await vm.runInNewContext(cases.scroll2400Js, s1.sandbox));
+
+  // 2) 일반 outer window 스크롤 페이지
+  const s2 = makeSandbox({ outerText: 'y'.repeat(500), outerH: 4000 });
+  const info2 = JSON.parse(vm.runInNewContext(cases.scrollInfoJs, s2.sandbox));
+  const res2 = JSON.parse(await vm.runInNewContext(cases.scroll1600Js, s2.sandbox));
+
+  // 3) SPA 고정 셸 + 내부 overflow-y: auto 컨테이너
+  const divEl = {
+    clientHeight: 820,
+    scrollHeight: 6400,
+    scrollTop: 0,
+    __style: { overflowY: 'auto' },
+    scrollTo(arg) { divEl.scrollTop = typeof arg === 'object' ? arg.top : 0; },
+  };
+  const s3 = makeSandbox({ outerText: 'z'.repeat(500), outerH: 900, overflowDivs: [divEl] });
+  const info3 = JSON.parse(vm.runInNewContext(cases.scrollInfoJs, s3.sandbox));
+  const res3 = JSON.parse(await vm.runInNewContext(cases.scroll1600Js, s3.sandbox));
+
+  console.log(JSON.stringify({
+    iframe: { ready: ready1, info: info1, res: res1, iframeCalls, outerCalls: s1.outerCalls },
+    outer: { info: info2, res: res2, outerCalls: s2.outerCalls },
+    container: { info: info3, res: res3, divTop: divEl.scrollTop, outerCalls: s3.outerCalls },
+  }));
+})();
+"""
+    payload = json.dumps({
+        "measureJs": bf._MEASURE_ARTICLE_JS,
+        "tabReadyJs": bf._TAB_READY_JS,
+        "scrollInfoJs": bf._SCROLL_INFO_JS,
+        "scroll2400Js": scroll_2400_js,
+        "scroll1600Js": scroll_1600_js,
+    })
+    proc = subprocess.run([node_bin, "-e", js_driver], input=payload, capture_output=True, text=True, check=False)
+    assert proc.returncode == 0, f"node failed:\nSTDOUT: {proc.stdout}\nSTDERR: {proc.stderr}"
+    out = json.loads(proc.stdout)
+
+    assert out["iframe"]["ready"] == {"href": "https://example.com", "ready": True, "len": 500}
+    assert out["iframe"]["info"] == {"totalHeight": 12000, "sameDoc": False, "scrollMode": "win"}
+    assert out["iframe"]["res"] == {"actualY": 2400, "mode": "win"}
+    assert out["iframe"]["iframeCalls"] == [2400] and out["iframe"]["outerCalls"] == []
+
+    assert out["outer"]["info"] == {"totalHeight": 4000, "sameDoc": True, "scrollMode": "win"}
+    assert out["outer"]["res"] == {"actualY": 1600, "mode": "win"}
+    assert out["outer"]["outerCalls"] == [1600]
+
+    assert out["container"]["info"] == {"totalHeight": 6400, "sameDoc": True, "scrollMode": "el"}
+    assert out["container"]["res"] == {"actualY": 1600, "mode": "el"}
+    assert out["container"]["divTop"] == 1600 and out["container"]["outerCalls"] == []
+

@@ -28,6 +28,7 @@ def assemble_webpage_vdoc(
     slots: dict[str, dict[str, Any]] = {}
     pages_out: list[dict[str, Any]] = []
     thumbnails: list[str] = []
+    block_rects: dict[str, dict[str, float]] = {}
 
     source_label = article.site_name or article.url
     for pg in paginated_pages:
@@ -56,6 +57,13 @@ def assemble_webpage_vdoc(
         for item in pg.items:
             blocks_out.append(item.block)
             slots.update(item.slots)
+            if item.source_rect is not None and item.block.get("blockId"):
+                block_rects[str(item.block["blockId"])] = {
+                    "x": round(item.source_rect.x, 1),
+                    "y": round(item.source_rect.y, 1),
+                    "width": round(item.source_rect.width, 1),
+                    "height": round(item.source_rect.height, 1),
+                }
 
         page_obj: dict[str, Any] = {
             "pageId": page_id,
@@ -99,6 +107,8 @@ def assemble_webpage_vdoc(
         preview["sourceWebUrl"] = article.url
     if thumbnails:
         preview["pageThumbnails"] = thumbnails
+    if block_rects:
+        preview["blockRects"] = block_rects
 
     doc: dict[str, Any] = {
         "version": "1.0.0",

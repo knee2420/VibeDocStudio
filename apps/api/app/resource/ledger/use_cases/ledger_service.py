@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import os
 import uuid
 from pathlib import Path
 from typing import Any, Iterable
@@ -65,29 +66,50 @@ def _walk(items: Iterable[ResourceItem]) -> Iterable[ResourceItem]:
         yield from _walk(item.children)
 
 
-def _state_map(items: list[ResourceItem]) -> dict[str, tuple[bool, list[ResourceSector]]]:
-    """재스캔 전 체크 상태 · 섹터를 경로와 id 로 기억한다."""
-    state: dict[str, tuple[bool, list[ResourceSector]]] = {}
+def _path_key(raw: str) -> str:
+    text = (raw or "").strip()
+    if not text or "://" in text:
+        return text
+    return os.path.normcase(os.path.normpath(text))
+
+
+def _state_map(items: list[ResourceItem]) -> dict[str, tuple[str, bool, list[ResourceSector]]]:
+    """재스캔 · 재등록 전 기존 id · 체크 상태 · 섹터를 정규화 경로와 id 로 기억한다."""
+    state: dict[str, tuple[str, bool, list[ResourceSector]]] = {}
     for node in _walk(items):
-        state[node.path_or_url or node.id] = (node.is_checked, node.sectors)
-        state[node.id] = (node.is_checked, node.sectors)
+        entry = (node.id, node.is_checked, node.sectors)
+        if node.path_or_url:
+            state[_path_key(node.path_or_url)] = entry
+        if node.id:
+            state[node.id] = entry
     return state
 
 
-def _restore_state(items: list[ResourceItem], state: dict[str, tuple[bool, list[ResourceSector]]]) -> None:
+def _restore_state(items: list[ResourceItem], state: dict[str, tuple[str, bool, list[ResourceSector]]]) -> None:
     for node in _walk(items):
-        key = node.path_or_url or node.id
-        if key in state:
-            node.is_checked, node.sectors = state[key]
-        elif node.id in state:
-            node.is_checked, node.sectors = state[node.id]
+        key = _path_key(node.path_or_url) if node.path_or_url else node.id
+        saved = state.get(key) or state.get(node.id)
+        if not saved:
+            continue
+        old_id, checked, sectors = saved
+        if old_id:
+            node.id = old_id
+            for sector in node.sectors:
+                sector.resource_id = old_id
+        node.is_checked = checked
+        if sectors:
+            for sector in sectors:
+                if node.id:
+                    sector.resource_id = node.id
+            node.sectors = sectors
 
 
 def _prepend_replacing_same_path(session: ResourceSession, new_items: list[ResourceItem]) -> None:
-    existing_paths = {it.path_or_url for it in session.items if it.path_or_url}
+    existing_paths = {_path_key(it.path_or_url) for it in session.items if it.path_or_url}
     for item in new_items:
-        if item.path_or_url and item.path_or_url in existing_paths:
-            session.items = [it for it in session.items if it.path_or_url != item.path_or_url]
+        key = _path_key(item.path_or_url)
+        if key and key in existing_paths:
+            session.items = [it for it in session.items if _path_key(it.path_or_url) != key]
         session.items.insert(0, item)
 
 
@@ -115,6 +137,7 @@ class ResourceLedgerService:
         if not new_items:
             raise ValidationError("디렉토리를 찾을 수 없거나 접근할 수 없습니다.")
         session = self._repo.get_session(project_id)
+        _restore_state(new_items, _state_map(session.items))
         _prepend_replacing_same_path(session, new_items)
         self._repo.save_session(session)
         return session
@@ -133,6 +156,7 @@ class ResourceLedgerService:
         if not new_items:
             raise ValidationError("파일을 파싱하거나 추가할 수 없습니다.")
         session = self._repo.get_session(project_id)
+        _restore_state(new_items, _state_map(session.items))
         _prepend_replacing_same_path(session, new_items)
         self._repo.save_session(session)
         return session

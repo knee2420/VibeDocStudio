@@ -64,6 +64,84 @@ def _guess_layer_set(extraction: dict[str, Any]) -> str:
     return "blog" if photos >= 4 and photos * 3 >= max(1, texts) else DEFAULT_LAYER_SET
 
 
+def _section_y_spans(extraction: dict[str, Any], total_height: int) -> list[tuple[int, str, float, float]]:
+    """extraction.json 의 제목 블록 기준으로 섹션별 Y 범위(px) 를 구한다."""
+    blocks = [b for b in extraction.get("blocks") or [] if isinstance(b, dict)]
+    heads = [i for i, b in enumerate(blocks) if b.get("kind") == "heading"]
+    if not blocks or not heads:
+        return []
+    spans_idx: list[tuple[int, str, int, int]] = []
+    if heads[0] > 0:
+        spans_idx.append((1, "", 0, heads[0]))
+    base_no = len(spans_idx) + 1
+    for offset, hi in enumerate(heads):
+        end = heads[offset + 1] if offset + 1 < len(heads) else len(blocks)
+        spans_idx.append((base_no + offset, str(blocks[hi].get("text") or "")[:60], hi, end))
+    out: list[tuple[int, str, float, float]] = []
+    n_secs = len(spans_idx)
+    for sec_no, title, start, end in spans_idx:
+        ys = [float(blocks[i]["sourceY"]) for i in range(start, end) if blocks[i].get("sourceY") is not None]
+        y_ends = [
+            float(blocks[i]["sourceY"]) + max(24.0, float(blocks[i].get("sourceHeight") or 24.0))
+            for i in range(start, end)
+            if blocks[i].get("sourceY") is not None
+        ]
+        if ys:
+            y0 = min(ys)
+            y1 = max(y_ends) if y_ends else y0 + 200.0
+        else:
+            band = max(400.0, float(total_height) / max(1, n_secs))
+            y0 = (sec_no - 1) * band
+            y1 = sec_no * band
+        out.append((sec_no, title, y0, y1))
+    return out
+
+
+def _build_shots_payload(
+    ref_id: str,
+    source_url: str,
+    extraction: dict[str, Any],
+    tiles: list[Any],
+) -> tuple[list[tuple[str, bytes]], dict[str, Any]]:
+    """캡처 타일 목록 → 저장할 `(파일명, PNG)` 목록과 `shots.json` 메타."""
+    total_height = max([int(getattr(t, "total_height", 0) or 0) for t in tiles] or [900])
+    vp_width = int(getattr(tiles[0], "width", 1280) or 1280) if tiles else 1280
+    sec_spans = _section_y_spans(extraction, total_height)
+    files: list[tuple[str, bytes]] = []
+    items: list[dict[str, Any]] = []
+    for idx, tile in enumerate(tiles, start=1):
+        name = f"shot_{idx:02d}.png"
+        scroll_y = int(getattr(tile, "scroll_y", 0) or 0)
+        w = int(getattr(tile, "width", vp_width) or vp_width)
+        h = int(getattr(tile, "height", 900) or 900)
+        png = bytes(getattr(tile, "png_bytes", b"") or b"")
+        if not png:
+            continue
+        files.append((name, png))
+        t_end = scroll_y + h
+        hit_secs = [no for no, _, y0, y1 in sec_spans if y0 <= t_end and y1 >= scroll_y]
+        hit_title = next((title for no, title, _, _ in sec_spans if no in hit_secs and title), "")
+        items.append({
+            "index": idx,
+            "file": name,
+            "scrollY": scroll_y,
+            "width": w,
+            "height": h,
+            "sections": hit_secs,
+            "title": hit_title,
+        })
+    manifest = {
+        "version": 1,
+        "refId": ref_id,
+        "sourceUrl": source_url,
+        "viewportWidth": vp_width,
+        "totalHeight": total_height,
+        "capturedAt": now_ms(),
+        "shots": items,
+    }
+    return files, manifest
+
+
 def _empty_extraction(kind: str) -> dict[str, Any]:
     return {"version": 1, "kind": kind, "pages": [{"page": 1, "width": 0, "height": 0}], "blocks": [], "outline": []}
 
@@ -177,6 +255,25 @@ class ReferenceLibraryService:
         item = self.get(ref_id)
         raw = self.library.load_artifact(ref_id, "layers")
         return raw if isinstance(raw, dict) else {"version": 1, "set": item.layer_set, "metrics": {}, "layers": []}
+
+    def shots(self, ref_id: str) -> dict[str, Any]:
+        self.get(ref_id)
+        raw = self.library.load_artifact(ref_id, "shots")
+        return raw if isinstance(raw, dict) else {"version": 1, "refId": ref_id, "shots": []}
+
+    def shot_bytes(self, ref_id: str, filename: str) -> bytes:
+        self.get(ref_id)
+        reader = getattr(self.library, "read_shot", None)
+        data = reader(ref_id, filename) if callable(reader) else None
+        if data is None:
+            raise ReferenceNotFoundError(f"레퍼런스 '{ref_id}' 에 캡처 '{filename}' 가 없습니다.")
+        return data
+
+    def capture_live(self, ref_id: str) -> ReferenceItem:
+        item = self.get(ref_id)
+        if item.kind != "web" or not item.source_url:
+            raise UnsupportedReferenceSourceError("웹 레퍼런스만 라이브 캡처를 지원합니다.")
+        return self._fetch_into(item, explicit_title=item.title != urlparse(item.source_url).netloc)
 
     # --- 핀 --------------------------------------------------------------------------------
 
@@ -389,12 +486,22 @@ class ReferenceLibraryService:
         """
         if self.layout_extractor is not None and not item.source_url.lower().endswith(".pdf"):
             try:
-                extraction, layout = self.layout_extractor.extract(item.source_url)
+                extract_shots_fn = getattr(self.layout_extractor, "extract_with_shots", None)
+                if callable(extract_shots_fn):
+                    extraction, layout, tiles = extract_shots_fn(item.source_url)
+                else:
+                    extraction, layout = self.layout_extractor.extract(item.source_url)
+                    tiles = []
             except Exception as exc:  # noqa: BLE001 — 실측이 안 되면 정적 파서로 내려간다
                 logger.warning("[reference] %s 레이아웃 실측 실패 → 정적 파서: %s", item.ref_id, exc)
             else:
                 if extraction.get("blocks"):
                     self.library.save_artifact(item.ref_id, "layout", layout)
+                    save_shots_fn = getattr(self.library, "save_shots", None)
+                    if tiles and callable(save_shots_fn):
+                        shot_files, manifest = _build_shots_payload(item.ref_id, item.source_url, extraction, tiles)
+                        if shot_files:
+                            save_shots_fn(item.ref_id, shot_files, manifest)
                     try:
                         data, _ = self.fetcher.fetch(item.source_url)
                         self.library.write_source(item.ref_id, ".html", data)

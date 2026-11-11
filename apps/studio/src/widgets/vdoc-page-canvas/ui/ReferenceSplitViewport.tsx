@@ -275,10 +275,12 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
   const { refId, item } = entry;
   const sourceUrl = referenceApi.sourceUrl(refId);
   const extraction = useReferenceStore((s) => s.extraction[refId]);
+  const shotsManifest = useReferenceStore((s) => s.shots[refId]);
   const pins = useReferenceStore((s) => s.pins[refId] ?? EMPTY_PINS);
   const focusedPin = useReferenceStore((s) => s.focusedPin);
   const ensureDetail = useReferenceStore((s) => s.ensureDetail);
   const reanalyze = useReferenceStore((s) => s.reanalyze);
+  const captureLive = useReferenceStore((s) => s.captureLive);
 
   const [pdfMode, setPdfMode] = useState<"text" | "box">("text");
   const [segments, setSegments] = useState<ViewerSegment[]>([]);
@@ -287,7 +289,31 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
   const [regionText, setRegionText] = useState<{ segmentId: string; text: string } | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [capturingLive, setCapturingLive] = useState(false);
   const articleRef = React.useRef<HTMLElement>(null);
+
+  const liveShots = useMemo(
+    () =>
+      (shotsManifest?.shots ?? []).map((tile) => ({
+        index: tile.index,
+        imageUrl: referenceApi.shotUrl(refId, tile.file, shotsManifest?.capturedAt),
+        scrollY: tile.scrollY,
+        width: tile.width,
+        height: tile.height,
+        sections: tile.sections,
+        title: tile.title,
+      })),
+    [refId, shotsManifest]
+  );
+
+  const handleRefreshLive = async () => {
+    setCapturingLive(true);
+    try {
+      await captureLive(refId);
+    } finally {
+      setCapturingLive(false);
+    }
+  };
 
   useEffect(() => {
     void ensureDetail(refId);
@@ -550,6 +576,10 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
             initialMode="reader"
             snapshotUrl={sourceUrl}
             article={article}
+            liveShots={liveShots}
+            liveTotalHeight={shotsManifest?.totalHeight}
+            refreshingLive={capturingLive}
+            onRefreshLiveCapture={handleRefreshLive}
             onExtractText={(text) => void copyText(text)}
           />
         ) : item.kind === "image" ? (

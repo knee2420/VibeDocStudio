@@ -26,6 +26,7 @@ from harness_kit import packs
 from app.core.process_tree import CREATE_NO_WINDOW
 from vibefs.index import MountItem, WorkspaceIndex
 from vibefs.mapper import build_map
+from vibefs.proposals import ProposalStore
 from vibefs.sandbox import ENTRY, prepare_sandbox
 from vibefs.store import Coverage, WorkspaceStore, coverage
 from vibefs.workbench import Workbench
@@ -109,6 +110,7 @@ class ResourceWorkspace:
         self.agy_executable = agy_executable
         self.transport = (transport or "acp").lower()
         self.store = WorkspaceStore(str(self.state_dir))
+        self.proposals = ProposalStore(str(self.state_dir))
         self._indexes: dict[str, tuple[float, WorkspaceIndex]] = {}
         self._lock = threading.Lock()
         self.agy_version: Optional[str] = None
@@ -233,6 +235,11 @@ class ResourceWorkspace:
 
     def bind(self, session_id: str, conversation_id: Optional[str]) -> None:
         self.store.bind_conversation(session_id, conversation_id)
+        self.store.bind_workbench_conversation(session_id, conversation_id)
+
+    def proposals_since(self, session_id: str, since: float = 0.0) -> list[dict[str, Any]]:
+        """이번 턴(since) 이후 wb_propose 로 기록된 작업대 개편 제안을 반환한다."""
+        return self.proposals.list(session_id, since=since)
 
     def index(self, signature: str, items: list[MountItem], id_map: Optional[dict[str, str]] = None) -> WorkspaceIndex:
         with self._lock:
@@ -247,14 +254,21 @@ class ResourceWorkspace:
         return built
 
     def roots_for(self, session_id: str) -> list[str]:
+        roots: list[str] = []
         mount = self.store.mount_for(session_id)
-        if not mount:
-            return []
-        if mount.roots:
-            return list(mount.roots)
-        sig = mount.signature
-        ix = self.index(sig, mount.items, id_map=mount.id_map)
-        return list(ix.roots)
+        if mount:
+            if mount.roots:
+                roots.extend(mount.roots)
+            else:
+                ix = self.index(mount.signature, mount.items, id_map=mount.id_map)
+                roots.extend(ix.roots)
+        wb = self.store.workbench_for(session_id)
+        for ref in (wb or {}).get("references") or []:
+            if isinstance(ref, dict) and ref.get("dir"):
+                shots_dir = os.path.join(str(ref["dir"]), "shots")
+                if os.path.isdir(shots_dir) and shots_dir not in roots:
+                    roots.append(shots_dir)
+        return roots
 
     # --- 작업대 (에디터 · 레퍼런스 · 이력) ----------------------------------------------------
 
@@ -309,6 +323,12 @@ class ResourceWorkspace:
         ref_root = self._fixture_root(raw.get("referencesRoot"), "referencesRoot") or self.references_root
         scope = raw.get("scope") or {}
         project_id = str(raw.get("projectId") or "")
+        prev = self.store.workbench_for(session_id) or {}
+        same_proj = str(prev.get("projectId") or "") == project_id
+        adopted = list(prev.get("adoptedDocs") or []) if same_proj else []
+        designated = str(raw.get("designatedDocId") or "").strip() or None
+        if designated and designated not in adopted:
+            adopted.append(designated)
         consensus = self._consensus(project_id, ref_root)
         state = {
             "projectId": project_id,
@@ -317,6 +337,9 @@ class ResourceWorkspace:
             "docPath": None if scope.get("mode") == "off" else self._doc_path(str(raw.get("docId") or ""), root),
             "scope": scope,
             "selection": list(raw.get("selection") or []),
+            "designatedDocId": designated,
+            "adoptedDocs": adopted,
+            "projectDocs": [dict(d) for d in (raw.get("projectDocs") or []) if isinstance(d, dict) and d.get("docId")],
             # 레퍼런스는 라이브러리 폴더를 가리킨다 (vdoc 이 아니다). pinIds 가 없으면(None) 핀 전부, 목록이면 그 핀만.
             "references": [
                 {"refId": r.get("refId"), "title": r.get("title"), "dir": self._ref_dir(str(r.get("refId") or ""), ref_root),

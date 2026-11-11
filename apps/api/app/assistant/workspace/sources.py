@@ -56,7 +56,7 @@ def _args_text(args: Any) -> str:
 
 def _short(name: str) -> str:
     """`mcp_vibefs_xxx_wb_read` 같은 이름 → `wb_read`."""
-    for prefix in ("wb_", "ws_"):
+    for prefix in ("wb_", "ws_", "rf_", "dc_"):
         idx = name.find(prefix)
         if idx >= 0:
             return name[idx:]

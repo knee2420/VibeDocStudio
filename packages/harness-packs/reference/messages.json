@@ -48,5 +48,12 @@
   "linkCard": "[링크 카드{thumb}{domain}]",
   "thumb": " · 썸네일",
   "divider": "[구분선 · {variant}]"
+ },
+ "visual": {
+  "head": "[시각 캡처] ref:{refId} — {title} (전체 {totalCount}장 · 폭 {width}px · 높이 {height}px)",
+  "row": "- #{index} {path}  (y={scrollY}..{yEnd}px · {span})",
+  "none": "ref:{refId} 에 저장된 렌더링 캡처가 없다 — 레퍼런스 [라이브] 의 '라이브 캡처' 로 찍거나 rf_skeleton · rf_read 로 본다.",
+  "tail": "위 경로 중 보고 싶은 1~4장을 내장 read_file(Path=절대 경로) 로 직접 열어 배치 · 색감 · 강조 스타일을 눈으로 확인하라.",
+  "mapLine": "  시각 캡처: {count}장 (폭 {width}px · 전체 {height}px) — 실제 화면 색감 · 여백 · 카드 배치는 rf_visual(ref=\"{refId}\")"
  }
 }

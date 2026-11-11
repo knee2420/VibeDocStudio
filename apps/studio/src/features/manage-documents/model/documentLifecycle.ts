@@ -1,3 +1,4 @@
+import { useAiStagingStore } from "@/entities/ai-staging";
 import { documentApi, selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 
@@ -47,6 +48,7 @@ export function documentLifecycle() {
     if (!docId) return;
     await documentApi.remove(docId);
     useStudioDocumentStore.getState().forgetDocument(docId);
+    useAiStagingStore.getState().removeByDoc(docId);
     await refreshProjects();
   };
 

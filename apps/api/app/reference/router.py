@@ -106,6 +106,25 @@ def get_layers(ref_id: str, service: ServiceDep) -> dict[str, Any]:
     return service.layers(ref_id)
 
 
+@router.get("/items/{ref_id}/shots")
+@inject
+def get_shots(ref_id: str, service: ServiceDep) -> dict[str, Any]:
+    return service.shots(ref_id)
+
+
+@router.get("/items/{ref_id}/shots/{shot_name}")
+@inject
+def get_shot_image(ref_id: str, shot_name: str, service: ServiceDep) -> Response:
+    data = service.shot_bytes(ref_id, shot_name)
+    return Response(content=data, media_type="image/png", headers={"Cache-Control": "no-store"})
+
+
+@router.post("/items/{ref_id}/capture-live")
+@inject
+def capture_live(ref_id: str, service: ServiceDep) -> dict[str, Any]:
+    return service.capture_live(ref_id).to_dict()
+
+
 @router.post("/items/{ref_id}/reanalyze")
 @inject
 def reanalyze(ref_id: str, service: ServiceDep) -> dict[str, Any]:

@@ -40,6 +40,7 @@ class Server:
         if self.session_id and conversation_id:
             # 대화 id 를 처음 알게 된 순간 세션에 묶어 둔다 — 훅(read_file 가드 · 원장)도 바로 같은 마운트를 쓰게 된다
             self.store.bind_conversation(self.session_id, conversation_id)
+            self.store.bind_workbench_conversation(self.session_id, conversation_id)
         mount = self.store.mount_for(conversation_id or None, self.session_id or None)
         if mount is None:
             return WorkspaceIndex([]), []

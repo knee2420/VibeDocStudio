@@ -214,6 +214,8 @@ class RefBook:
     #: 브라우저 실측으로 배치(사진 · 묶음 · 링크 카드)까지 덩어리로 남은 레퍼런스인지
     layout: bool = False
     consensus: list[dict[str, Any]] = field(default_factory=list)
+    dir_path: str = ""
+    shots_manifest: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def load(cls, folder: str, ref_id: str = "", pin_ids: Optional[Iterable[str]] = None,
@@ -248,7 +250,28 @@ class RefBook:
             layout=bool(extraction.get("layout")),
             layer_report=read("layers.json", {}) or {},
             consensus=[c for c in consensus or [] if isinstance(c, dict) and c.get("cardId")],
+            dir_path=os.path.abspath(folder),
+            shots_manifest=read("shots.json", {}) or {},
         )
+
+    def shot_files(self) -> list[dict[str, Any]]:
+        """실제 파일이 존재하는 캡처 타일 목록(절대 경로 포함)."""
+        if not self.dir_path:
+            return []
+        shots_dir = os.path.join(self.dir_path, "shots")
+        if not os.path.isdir(shots_dir):
+            return []
+        out: list[dict[str, Any]] = []
+        for entry in (self.shots_manifest or {}).get("shots") or []:
+            if not isinstance(entry, dict):
+                continue
+            name = os.path.basename(str(entry.get("file") or ""))
+            if not name:
+                continue
+            full = os.path.abspath(os.path.join(shots_dir, name))
+            if os.path.isfile(full):
+                out.append({**entry, "file": name, "path": full.replace("\\", "/")})
+        return out
 
     def has_layout(self) -> bool:
         return self.layout
@@ -334,6 +357,7 @@ class Workbench:
     refs: dict[str, RefBook]
     revisions: list[dict[str, Any]]
     selection: list[str]
+    project_docs: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
     def from_state(cls, state: Optional[dict[str, Any]]) -> "Workbench":
@@ -368,7 +392,8 @@ class Workbench:
                             continue
             except OSError:
                 pass
-        return cls(doc, dict(state.get("scope") or {}), refs, revisions, list(state.get("selection") or []))
+        return cls(doc, dict(state.get("scope") or {}), refs, revisions, list(state.get("selection") or []),
+                   list(state.get("projectDocs") or []))
 
     # --- 범위 ---------------------------------------------------------------------------------
 
@@ -420,6 +445,14 @@ class Workbench:
                 rows.append(f"   선택된 칸: {', '.join(self.selection[:8])}")
         else:
             rows.append("✎ 에디터: 열린 문서 없음 (또는 범위 끔)")
+        if self.project_docs:
+            rows.append(f"📁 프로젝트 문서 ({len(self.project_docs)}개 — 다른 문서 전환은 dc_use):")
+            for pd in self.project_docs[:25]:
+                did = pd.get("docId")
+                mark = "★현재" if self.doc is not None and did == self.doc.doc_id else "   "
+                bcount = pd.get("blocks")
+                bnote = " · 빈 문서" if bcount == 0 else (f" · 블록 {bcount}개" if bcount is not None else "")
+                rows.append(f"   {mark} docId={did} · 「{pd.get('title') or ''}」 ({pd.get('surface') or 'paged'} · {pd.get('pages', 1)}쪽{bnote})")
         if self.refs:
             rows.append(f"📖 레퍼런스(남의 결정 · 패턴만 가져온다 · 사실 근거 아님): {len(self.refs)}개 — 자세히는 rf_map")
             for rid, ref in self.refs.items():

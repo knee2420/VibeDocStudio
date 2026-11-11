@@ -10,6 +10,7 @@ import type {
   ReferenceLayers,
   ReferencePin,
   ReferencePinKind,
+  ReferenceShotsManifest,
 } from "../model/types";
 
 const item = (refId: string) => `/api/reference/items/${encodeURIComponent(refId)}`;
@@ -45,9 +46,16 @@ export const referenceApi = {
 
   reanalyze: (refId: string) => httpClient.post<ReferenceItem>(`${item(refId)}/reanalyze`, {}),
 
+  captureLive: (refId: string) => httpClient.post<ReferenceItem>(`${item(refId)}/capture-live`, {}),
+
   extraction: (refId: string) => httpClient.get<ReferenceExtraction>(`${item(refId)}/extraction`),
 
   layers: (refId: string) => httpClient.get<ReferenceLayers>(`${item(refId)}/layers`),
+
+  shots: (refId: string) => httpClient.get<ReferenceShotsManifest>(`${item(refId)}/shots`),
+
+  shotUrl: (refId: string, filename: string, cacheBust?: number) =>
+    `${env.apiBaseUrl}${item(refId)}/shots/${encodeURIComponent(filename)}${cacheBust ? `?t=${cacheBust}` : ""}`,
 
   /** 원본 바이트 주소 (PDF 뷰어 · 이미지 태그가 직접 읽는다). */
   sourceUrl: (refId: string) => `${env.apiBaseUrl}${item(refId)}/source`,

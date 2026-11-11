@@ -1,13 +1,14 @@
-"""문서 짓기 도구 (dc_*) — 에이전트가 새 문서를 만들고, 블록을 쌓고, 글을 채우고, 레퍼런스 뼈대와 견줘 본다.
+"""문서 짓기 도구 (dc_*) — 에이전트가 새 문서를 만들고, 지정 문서를 전환해 블록을 쌓고, 글을 채우고, 레퍼런스 뼈대와 견줘 본다.
 
   dc_new     새 문서 (프로젝트에 연결 · 지면 · 장르) — 이 세션의 작업대가 그 문서를 가리키게 된다
+  dc_use     프로젝트 내 기존 문서를 지금 대화의 작업 문서로 전환한다 (빈 문서면 바로 dc_build 가능)
   dc_build   한 번에 여러 작업: 쪽 추가 · 블록 추가(heading · text · image · gallery · link-card · divider · hero · callout)
              · 글 바꾸기 · 속성 · 옮기기 · 지우기 — 서버가 바로 저장한다 (화면이 열려 있지 않아도 된다)
   dc_outline 지금 문서의 구조 (쪽 → 블록 id · 종류 · 사진 · 글 앞부분)
   dc_check   배치 · 사진 · 빈 칸 점검 + 레퍼런스 뼈대(rf_skeleton)와의 차이
 
-구조(블록 · 쪽)까지 바꾸는 것은 에이전트가 만든 초안 문서(`origin.createdBy == "agent"`)만이다.
-사람이 만든 문서는 지금처럼 칸 내용 변경안(slots.proposeBatch · wb_propose)으로만 고친다.
+구조(블록 · 쪽)까지 바꾸는 것은 에이전트가 만든 초안(`origin.createdBy == "agent"` 또는 `agentComposed`) · 지정된 빈 초안 문서만이다.
+이미 사람이 블록을 채운 문서는 지금처럼 칸 내용 변경안(slots.proposeBatch · wb_propose)으로만 고친다.
 문서는 API(`/api/documents`)로 읽고 쓴다 — 저장 버전 · 개정 이력 · 프로젝트 연결이 사람 편집과 같은 길로 남는다.
 """
 from __future__ import annotations
@@ -122,9 +123,69 @@ class DocTools:
         return self.api.call("PUT", f"/api/documents/{doc['docId']}", body)["document"]
 
     @staticmethod
-    def _require_agent_draft(doc: dict[str, Any]) -> None:
-        if str((doc.get("origin") or {}).get("createdBy") or "") != "agent":
-            raise ValueError(packs.message(MSG, "compose.notAgentDraft"))
+    def _is_empty_draft(doc: dict[str, Any]) -> bool:
+        pages = doc.get("pages") or []
+        if any(p.get("blocks") for p in pages):
+            return False
+        slots = doc.get("slots") or {}
+        return all(not html_to_text(str((s or {}).get("content") or "")).strip() for s in slots.values())
+
+    def _require_agent_draft(self, doc: dict[str, Any]) -> None:
+        origin = doc.get("origin") or {}
+        if str(origin.get("createdBy") or "") == "agent" or origin.get("agentComposed") is True:
+            return
+        state = self._wb_state()
+        doc_id = str(doc.get("docId") or "")
+        adopted = set(state.get("adoptedDocs") or [])
+        if self._is_empty_draft(doc) and doc_id and (doc_id in adopted or doc_id == str(state.get("designatedDocId") or "")):
+            return
+        if self._is_empty_draft(doc) and doc_id:
+            raise ValueError(packs.message(MSG, "compose.notAgentDraft") + f" (빈 문서라면 먼저 dc_use(doc='{doc_id}') 로 지정한다)")
+        raise ValueError(packs.message(MSG, "compose.notAgentDraft"))
+
+    def _resolve_doc_id(self, doc: str, state: dict[str, Any]) -> str:
+        target = str(doc or "").strip()
+        if target.startswith("doc:"):
+            target = target[4:].strip()
+        if not target:
+            raise ValueError(packs.message(MSG, "compose.noDoc"))
+        docs = [d for d in (state.get("projectDocs") or []) if isinstance(d, dict) and d.get("docId")]
+        for d in docs:
+            if str(d.get("docId")) == target:
+                return target
+        lowered = target.casefold()
+        exact_title = [str(d["docId"]) for d in docs if str(d.get("title") or "").strip().casefold() == lowered]
+        if len(exact_title) == 1:
+            return exact_title[0]
+        partial = [str(d["docId"]) for d in docs if lowered in str(d.get("title") or "").casefold()]
+        if len(partial) == 1:
+            return partial[0]
+        root = state.get("documentsRoot") or (os.path.dirname(os.path.dirname(state["docPath"])) if state.get("docPath") else "")
+        if root and os.path.isdir(root):
+            if os.path.isfile(os.path.join(root, target, "document.vdoc.json")):
+                return target
+            project_id = str(state.get("projectId") or "").strip()
+            matches: list[str] = []
+            for entry in sorted(os.listdir(root)):
+                path = os.path.join(root, entry, "document.vdoc.json")
+                if not os.path.isfile(path):
+                    continue
+                try:
+                    with open(path, "r", encoding="utf-8") as fh:
+                        meta = json.load(fh)
+                except (OSError, ValueError):
+                    continue
+                if project_id and str(meta.get("projectId") or "") != project_id:
+                    continue
+                if str(meta.get("title") or "").strip().casefold() == lowered:
+                    return str(meta.get("docId") or entry)
+                if lowered in str(meta.get("title") or "").casefold():
+                    matches.append(str(meta.get("docId") or entry))
+            if len(matches) == 1:
+                return matches[0]
+        if target.startswith("vdoc"):
+            return target
+        raise ValueError(packs.message(MSG, "compose.notFound", doc=target))
 
     # --- 자료(리소스) 사진 확인 ----------------------------------------------------------------
 
@@ -161,10 +222,58 @@ class DocTools:
         doc = self.api.call("POST", "/api/documents", body)["document"]
         root = state.get("documentsRoot") or (os.path.dirname(os.path.dirname(state["docPath"])) if state.get("docPath") else "")
         doc_path = os.path.join(root, doc["docId"], "document.vdoc.json") if root else None
-        self._set_state(docId=doc["docId"], docPath=doc_path, scope={"mode": "doc"}, selection=[])
+        docs_list = [d for d in (state.get("projectDocs") or []) if isinstance(d, dict) and d.get("docId") != doc["docId"]]
+        docs_list.append({
+            "docId": doc["docId"],
+            "title": doc["title"],
+            "surface": (doc.get("surface") or {}).get("kind", "scroll"),
+            "pages": len(doc.get("pages") or []),
+            "blocks": 0,
+        })
+        self._set_state(docId=doc["docId"], docPath=doc_path, scope={"mode": "doc"}, selection=[], projectDocs=docs_list)
         page = doc["pages"][0]
         return packs.message(MSG, "compose.created", docId=doc["docId"], title=doc["title"], surface=doc["surface"]["kind"],
                              genre=doc.get("genre"), pageId=page["pageId"])
+
+    def _dc_use(self, doc: str = "", **_: Any) -> str:
+        state = self._wb_state()
+        resolved_id = self._resolve_doc_id(doc, state)
+        try:
+            loaded = self.api.call("GET", f"/api/documents/{resolved_id}")["document"]
+        except ValueError as exc:
+            raise ValueError(packs.message(MSG, "compose.notFound", doc=doc)) from exc
+        root = state.get("documentsRoot") or (os.path.dirname(os.path.dirname(state["docPath"])) if state.get("docPath") else "")
+        doc_path = os.path.join(root, loaded["docId"], "document.vdoc.json") if root else None
+        is_empty = self._is_empty_draft(loaded)
+        adopted = list(dict.fromkeys([*(state.get("adoptedDocs") or []), *([loaded["docId"]] if is_empty else [])]))
+        blocks_count = sum(len(p.get("blocks") or []) for p in loaded.get("pages") or [])
+        docs_list = [d for d in (state.get("projectDocs") or []) if isinstance(d, dict) and d.get("docId") != loaded["docId"]]
+        docs_list.append({
+            "docId": loaded["docId"],
+            "title": loaded.get("title") or loaded["docId"],
+            "surface": (loaded.get("surface") or {}).get("kind", "paged"),
+            "pages": len(loaded.get("pages") or []),
+            "blocks": blocks_count,
+        })
+        self._set_state(docId=loaded["docId"], docPath=doc_path, scope={"mode": "doc"},
+                        selection=[], adoptedDocs=adopted, projectDocs=docs_list)
+        head = packs.message(
+            MSG, "compose.selected",
+            docId=loaded["docId"],
+            title=loaded.get("title") or loaded["docId"],
+            surface=(loaded.get("surface") or {}).get("kind", "paged"),
+            genre=loaded.get("genre") or "blog",
+            pages=len(loaded.get("pages") or []),
+            blocks=blocks_count,
+        )
+        origin = loaded.get("origin") or {}
+        can_compose = is_empty or str(origin.get("createdBy") or "") == "agent" or origin.get("agentComposed") is True
+        hint = (
+            "\n지금 비어 있거나 에이전트 초안이므로 곧바로 dc_build(ops=[…]) 로 쪽 · 블록을 지을 수 있다."
+            if can_compose
+            else f"\n참고: 이미 블록 {blocks_count}개가 있는 문서다 — 구조(dc_build)는 바꾸지 말고 칸 내용은 slots.proposeBatch 로 제안한다."
+        )
+        return head + hint + "\n" + self._outline(loaded)
 
     def _dc_outline(self, doc: str = "", page: str = "", **_: Any) -> str:
         data = self._load(doc)
@@ -348,9 +457,13 @@ class DocTools:
                     raise ValueError(f"모르는 작업 '{kind_op}' (page · add · set · props · move · remove · title)")
             except ValueError as exc:
                 raise ValueError(packs.message(MSG, "compose.opFailed", n=n, op=kind_op, kind=op.get("kind") or "", error=exc)) from exc
+        origin = data.setdefault("origin", {})
+        if str(origin.get("createdBy") or "") != "agent":
+            origin["agentComposed"] = True
         saved = self._save(data, touched, "dc_build")
         alias_line = (" · 별칭 " + ", ".join(f"{k}={v}" for k, v in alias.items())) if alias else ""
-        head = packs.message(MSG, "compose.saved", revision=saved.get("revision"), count=len(ops),
+        head = packs.message(MSG, "compose.saved", docId=saved.get("docId") or data.get("docId"),
+                             revision=saved.get("revision"), count=len(ops),
                              notes=", ".join(notes[:12]) + (" …" if len(notes) > 12 else ""), aliases=alias_line)
         return head + "\n" + self._outline(saved)
 

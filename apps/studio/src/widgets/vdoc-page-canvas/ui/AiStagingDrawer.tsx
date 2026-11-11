@@ -3,7 +3,7 @@ import { ArrowRight, Check, CheckCheck, Sparkles, Trash2, X } from "lucide-react
 
 import { useAiStagingStore } from "@/entities/ai-staging";
 import { attachable, stagedRef } from "@/features/ai-workspace";
-import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { ProposalCandidateBar, useStageAiChanges } from "@/features/stage-ai-changes";
 import { EmptyStateCard, TruncatedLabel } from "@/shared/ui";
 
 export const AiStagingDrawer: React.FC = () => {
@@ -84,6 +84,7 @@ export const AiStagingDrawer: React.FC = () => {
       </div>
 
       {/* Diff Items: GitHub PR Diff List 스타일 */}
+      <ProposalCandidateBar />
       <div className="overflow-y-auto pt-2 space-y-1.5 flex-1">
         {stagingQueue.length === 0 ? (
           <EmptyStateCard

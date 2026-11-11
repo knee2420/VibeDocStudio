@@ -58,22 +58,45 @@ def _tool_state(status: Any) -> str:
     return "running"
 
 
-def _tool_error_text(update: dict[str, Any]) -> str:
-    """실패한 도구 갱신에 실린 사유 (content 의 text · rawOutput 의 output/error). 없으면 빈 문자열."""
+def _extract_text_blocks(blocks: Any) -> list[str]:
     parts: list[str] = []
-    for block in update.get("content") or []:
-        inner = block.get("content") if isinstance(block, dict) else None
-        text = (inner or {}).get("text") if isinstance(inner, dict) else None
+    if not isinstance(blocks, list):
+        return parts
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+        inner = block.get("content")
+        text = inner.get("text") if isinstance(inner, dict) else block.get("text")
         if text and str(text).strip():
             parts.append(str(text).strip())
+    return parts
+
+
+def _tool_text(update: dict[str, Any], keys: tuple[str, ...], sep: str, max_chars: int) -> str:
+    """도구 갱신 페이로드(content · rawOutput)에서 텍스트 조각을 뽑아 합친다."""
+    parts = _extract_text_blocks(update.get("content"))
     raw = update.get("rawOutput")
     if isinstance(raw, dict):
-        for key in ("error", "output", "message"):
-            if raw.get(key) and str(raw[key]).strip():
-                parts.append(str(raw[key]).strip())
+        parts.extend(_extract_text_blocks(raw.get("content")))
+        for key in keys:
+            val = raw.get(key)
+            if val is not None and not isinstance(val, (dict, list)) and str(val).strip():
+                parts.append(str(val).strip())
+    elif isinstance(raw, list):
+        parts.extend(_extract_text_blocks(raw))
     elif isinstance(raw, str) and raw.strip():
         parts.append(raw.strip())
-    return " · ".join(dict.fromkeys(parts))[:500]
+    return sep.join(dict.fromkeys(parts))[:max_chars]
+
+
+def _tool_error_text(update: dict[str, Any]) -> str:
+    """실패한 도구 갱신에 실린 사유 (content 의 text · rawOutput 의 output/error). 없으면 빈 문자열."""
+    return _tool_text(update, ("error", "output", "message"), " · ", 500)
+
+
+def _tool_output_text(update: dict[str, Any]) -> str:
+    """완료된 도구 갱신에 실린 출력 요약 (content 의 text · rawOutput). 없으면 빈 문자열."""
+    return _tool_text(update, ("output", "text", "message", "result"), "\n", 800)
 
 
 class AcpConversation:
@@ -285,7 +308,11 @@ class AcpConversation:
                         "title": update.get("title"),
                         "locations": update.get("locations"),
                     }
-                    if state == "error":
+                    if state == "done":
+                        output = _tool_output_text(update)
+                        if output:
+                            event["output"] = output
+                    elif state == "error":
                         # 사유가 실려 오면 쓴다. 비어 있으면(훅 차단 등) 상위 계층이 훅 로그에서 채운다.
                         event["error"] = _tool_error_text(update)
                     yield event

@@ -45,14 +45,22 @@ def _slot_label(slots: dict[str, Any], slot_id: Optional[str]) -> str:
 def layout_to_extraction(layout: dict[str, Any], url: str = "") -> dict[str, Any]:
     """엔진 `.vdoc` → 레퍼런스 `extraction.json` (version 2: 배치 덩어리 포함)."""
     slots = layout.get("slots") or {}
+    block_rects = (layout.get("preview") or {}).get("blockRects") or {}
     blocks: list[dict[str, Any]] = []
+    cur_rect: dict[str, Any] | None = None
 
     def add(kind: str, *, text: str = "", html: str = "", level: int = 0, **extra: Any) -> None:
+        geom: dict[str, Any] = {}
+        if isinstance(cur_rect, dict) and cur_rect.get("y") is not None:
+            geom["sourceY"] = cur_rect["y"]
+            if cur_rect.get("height") is not None:
+                geom["sourceHeight"] = cur_rect["height"]
         blocks.append({"id": f"b{len(blocks) + 1}", "page": 1, "kind": kind, "level": level,
-                       "text": text, "html": html, "bbox": None, **extra})
+                       "text": text, "html": html, "bbox": None, **geom, **extra})
 
     for page in layout.get("pages") or []:
         for b in page.get("blocks") or []:
+            cur_rect = block_rects.get(str(b.get("blockId") or ""))
             kind = b.get("kind")
             sid = b.get("slotId")
             html = _slot_html(slots, sid)
@@ -130,12 +138,13 @@ def layout_to_extraction(layout: dict[str, Any], url: str = "") -> dict[str, Any
 
 
 class FidelityWebLayoutExtractor:
-    """헤드리스 브라우저로 실측한 레이아웃 `.vdoc` 와 레퍼런스 덩어리 목록을 함께 만든다."""
+    """헤드리스 브라우저로 실측한 레이아웃 `.vdoc` · 레퍼런스 덩어리 · 시각 타일을 함께 만든다."""
 
-    def __init__(self, use_browser: bool = True) -> None:
+    def __init__(self, use_browser: bool = True, capture_screenshots: bool = True) -> None:
         self.use_browser = use_browser
+        self.capture_screenshots = capture_screenshots
 
-    def extract(self, url: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    def extract_with_shots(self, url: str) -> tuple[dict[str, Any], dict[str, Any], list[Any]]:
         from webpage_fidelity_engine import (
             WebpageExtractOptions,
             run_webpage_extraction,
@@ -148,10 +157,17 @@ class FidelityWebLayoutExtractor:
             inline_images=False,
             generate_thumbnails=False,
             use_browser_fallback=self.use_browser,
+            fetch_timeout_s=22.0,
+            capture_screenshots=self.capture_screenshots,
+            max_screenshots=16,
         )
         res = run_webpage_extraction(url, options=opts)
         layout = res.document
-        return layout_to_extraction(layout, url), layout
+        return layout_to_extraction(layout, url), layout, list(getattr(res, "screenshots", []) or [])
+
+    def extract(self, url: str) -> tuple[dict[str, Any], dict[str, Any]]:
+        extraction, layout, _ = self.extract_with_shots(url)
+        return extraction, layout
 
     def from_layout(self, layout: dict[str, Any], url: str = "") -> dict[str, Any]:
         return layout_to_extraction(layout, url)
