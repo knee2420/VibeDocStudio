@@ -1,0 +1,61 @@
+[
+ {
+  "name": "dc_new",
+  "description": "새 문서(초안)를 만들어 이 프로젝트에 넣고, 이 대화의 작업대가 그 문서를 가리키게 한다. 사용자가 기존 문서를 지정하지 않고 '새 글 · 포스트 · 보고서를 써 달라' 고 할 때 처음 한 번(특정 문서·빈 문서를 지정했으면 dc_new 대신 dc_use). 블로그 · 칼럼은 surface=scroll(이음매 없는 한 단), 보고서 · 서식은 paged(A4).",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "title": {"type": "string", "description": "문서 제목"},
+    "surface": {"type": "string", "enum": ["scroll", "paged"], "description": "지면 (기본 scroll)"},
+    "genre": {"type": "string", "description": "장르 = 측정 층위 세트 (blog · document). 레퍼런스의 층위 세트와 맞춘다"},
+    "width": {"type": "integer", "description": "scroll 지면 폭 px (기본 720)"}
+   },
+   "required": ["title"]
+  }
+ },
+ {
+  "name": "dc_use",
+  "description": "이 프로젝트의 기존 문서를 지금 대화의 작업 문서로 지정하고 화면도 그 문서로 전환한다. 사용자가 '@문서' 첨부나 제목/ID로 특정 문서를 지정해 작업하라고 할 때 dc_new 대신 먼저 부른다. 비어 있는 문서나 에이전트 초안이면 바로 dc_build 로 쪽 · 블록을 지을 수 있다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "doc": {"type": "string", "description": "대상 문서의 docId(예: vdoc-…) 또는 프로젝트 내 문서 제목"}
+   },
+   "required": ["doc"]
+  }
+ },
+ {
+  "name": "dc_build",
+  "description": "지금 문서(에이전트 초안)에 작업 여러 개를 한 번에 적용하고 저장한다. 한 섹션(소제목 + 사진 + 글 + 연결)씩 묶어 부른다 (최대 60개). 하나라도 실패하면 아무것도 저장하지 않고 몇 번째 작업이 왜 실패했는지 돌려준다. 결과로 새 구조(블록 id)가 온다.\nops 원소:\n· {\"op\":\"add\",\"kind\":K, …필드, \"page\":\"p1|pageId|$별칭\"(생략=마지막 쪽), \"after\"|\"before\":blockId(생략=쪽 끝), \"as\":\"$별칭\"}\n  K 별 필드 — heading: text, decoration(quote|bar), accent(#색), align · text: html(<p> <strong> <em> <u> <span style=\"color:#…\"> <span style=\"background-color:#fff3a3\">(형광펜) <a href> <ul><li>), align(left|center) · image: src(resource:<id>), caption, width(예 100%|480px), maxHeight · gallery: images[2~4개 resource:<id>], height(예 240px) · link-card: title, description, url, thumbnail(resource:<id>) · divider: variant(line|short|dots|space) · hero: title, subtitle, image(resource:<id>), height · callout: html, tone(neutral|info|warning)\n· {\"op\":\"page\",\"label\":…,\"as\":\"$p2\"} 쪽 추가 (scroll 지면은 한 쪽에 계속 쌓아도 된다)\n· {\"op\":\"set\",\"slot\":slotId 또는 \"block\":blockId,\"html\":…} 글 바꾸기\n· {\"op\":\"props\",\"block\":id,…속성} 속성 (image: src caption width align maxHeight · gallery: images height gap · heading: decoration accent align · link-card: url thumbnail layout · divider: variant · hero: image height overlay)\n· {\"op\":\"move\",\"block\":id,\"after\"|\"before\":id} · {\"op\":\"remove\",\"block\":id} · {\"op\":\"title\",\"text\":…}\n사진은 내 자료의 것만(resource:<id>, ws_images 로 찾는다). 레퍼런스의 문장 · 사진 · 고유명사는 넣지 않는다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "ops": {"type": "array", "items": {"type": "object"}, "description": "작업 목록 (위 문법)"},
+    "doc": {"type": "string", "description": "docId (생략하면 작업대 문서)"}
+   },
+   "required": ["ops"]
+  }
+ },
+ {
+  "name": "dc_outline",
+  "description": "지금 문서의 구조: 쪽 → 블록 id · 종류(배치 토큰 H · P · IMG · G<n> · LINK · HR) · 사진 · 글 앞부분. dc_build 로 고칠 블록 · 칸 id 를 찾을 때.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "page": {"type": "string", "description": "특정 쪽만 (p1 · pageId)"},
+    "doc": {"type": "string", "description": "docId (생략하면 작업대 문서)"}
+   }
+  }
+ },
+ {
+  "name": "dc_check",
+  "description": "지은 문서 점검: 빈 칸 · 리소스가 아닌 사진 · 같은 사진 반복 · 너무 긴 문단 + 켜진 레퍼런스와 층위별 배치 차이(섹션 모양 · 섹션당 사진 · 문단 길이 · 링크 카드 · 강조). 다 지은 뒤 한 번, 고친 뒤 다시.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "ref": {"type": "string", "description": "견줄 refId (생략하면 첫 레퍼런스)"},
+    "doc": {"type": "string", "description": "docId (생략하면 작업대 문서)"}
+   }
+  }
+ }
+]

@@ -13,6 +13,7 @@ import {
   backdataRef,
   blockRef,
   docIndex,
+  docRef,
   pageRef,
   referenceRef,
   resolveContextContent,
@@ -279,11 +280,26 @@ export const WORKBENCH_CONTEXT_PROVIDER: ContextProvider = {
         layers: Object.fromEntries(r.layersOff.map((id) => [id, false])),
       };
     });
-    if (!d && references.length === 0) return [];
+    const allDocs = useStudioDocumentStore.getState().docs;
+    const byDocId = new Map(allDocs.map((item) => [item.docId, item]));
+    const projectDocIds = project?.docIds ?? (d ? [d.docId] : []);
+    const projectDocs = projectDocIds
+      .map((id) => byDocId.get(id))
+      .filter((item): item is VDocDocument => Boolean(item))
+      .map((item) => ({
+        docId: item.docId,
+        title: item.title,
+        surface: item.surface?.kind ?? "paged",
+        pages: item.pages.length,
+        blocks: item.pages.reduce((sum, page) => sum + page.blocks.length, 0),
+      }));
+
+    if (!d && references.length === 0 && projectDocs.length === 0) return [];
     const payload = {
       // 서버가 이 프로젝트의 확정 해석 카드(레퍼런스 합의)를 찾는 데 쓴다
       projectId,
       docId: d?.docId ?? null,
+      projectDocs,
       scope: scope
         ? {
             mode: scope.mode,
@@ -301,7 +317,7 @@ export const WORKBENCH_CONTEXT_PROVIDER: ContextProvider = {
         id: "wb:state",
         label: "작업대",
         content: JSON.stringify(payload),
-        hint: `${d?.title ?? "문서 없음"} · 레퍼런스 ${references.length}`,
+        hint: `${d?.title ?? "문서 없음"} · 문서 ${projectDocs.length} · 레퍼런스 ${references.length}`,
         access: "read",
         role: "reference",
       },
@@ -309,10 +325,28 @@ export const WORKBENCH_CONTEXT_PROVIDER: ContextProvider = {
   },
 };
 
+const DOCUMENTS_CONTEXT_PROVIDER: ContextProvider = {
+  id: "documents",
+  label: "문서",
+  search: (query) => {
+    const project = selectActiveProject(useProjectStore.getState());
+    const docs = useStudioDocumentStore.getState().docs;
+    const byDocId = new Map(docs.map((item) => [item.docId, item]));
+    const pool = (project?.docIds ?? docs.map((item) => item.docId))
+      .map((id) => byDocId.get(id))
+      .filter((item): item is VDocDocument => Boolean(item));
+    return pool
+      .filter((item) => matches(query, item.title, item.docId, item.genre ?? ""))
+      .slice(0, 8)
+      .map((item) => ({ ...docRef(item), role: "target" as const }));
+  },
+};
+
 export const WORKSPACE_CONTEXT_PROVIDERS: ContextProvider[] = [
   WORKBENCH_CONTEXT_PROVIDER,
   REFERENCES_CONTEXT_PROVIDER,
   RESOURCE_CONTEXT_PROVIDER,
+  DOCUMENTS_CONTEXT_PROVIDER,
   {
     // 캔버스 선택은 자동으로 붙이지 않는다 — Composer 입력창에 "첨부 제안"으로만 보이고,
     // 사용자가 누르거나(제안 칩) Ctrl+L · 끌어 놓기 · 우클릭으로 첨부할 때만 들어간다.

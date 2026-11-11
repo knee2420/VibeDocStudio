@@ -17,6 +17,9 @@ REGISTERED_BLOCK_KINDS = frozenset({
     "summary-list",
     "cover-banner",
     "callout-box",
+    "link-card",
+    "divider",
+    "hero",
 })
 
 

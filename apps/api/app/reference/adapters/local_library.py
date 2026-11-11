@@ -1,6 +1,7 @@
 """`data/knowledge/references/` 아래 레퍼런스 라이브러리 저장소."""
 from __future__ import annotations
 
+import re
 import shutil
 from pathlib import Path
 from typing import Any, Optional
@@ -9,7 +10,8 @@ from app.core.storage import read_json, safe_segment, write_json
 
 from ..models import ProjectBinding, ReferenceItem, ReferencePin
 
-_ARTIFACTS = ("extraction", "layers")
+_ARTIFACTS = ("extraction", "layers", "layout", "shots")
+_SHOT_NAME_RE = re.compile(r"^shot_\d{2,4}\.png$")
 
 
 class LocalReferenceLibrary:
@@ -74,6 +76,26 @@ class LocalReferenceLibrary:
         if name not in _ARTIFACTS:
             raise ValueError(f"알 수 없는 산출물 '{name}'")
         return read_json(self._dir(ref_id) / f"{name}.json")
+
+    def shots_dir(self, ref_id: str) -> Path:
+        return self._dir(ref_id) / "shots"
+
+    def save_shots(self, ref_id: str, files: list[tuple[str, bytes]], manifest: dict[str, Any]) -> None:
+        shots = self.shots_dir(ref_id)
+        if shots.exists():
+            shutil.rmtree(shots)
+        shots.mkdir(parents=True, exist_ok=True)
+        for name, raw in files:
+            if not _SHOT_NAME_RE.match(name):
+                raise ValueError(f"잘못된 캡처 파일명: {name}")
+            (shots / name).write_bytes(raw)
+        self.save_artifact(ref_id, "shots", manifest)
+
+    def read_shot(self, ref_id: str, filename: str) -> Optional[bytes]:
+        if not _SHOT_NAME_RE.match(filename):
+            return None
+        target = self.shots_dir(ref_id) / filename
+        return target.read_bytes() if target.is_file() else None
 
     def load_pins(self, ref_id: str) -> list[ReferencePin]:
         raw = read_json(self._dir(ref_id) / "pins.json", default=[])

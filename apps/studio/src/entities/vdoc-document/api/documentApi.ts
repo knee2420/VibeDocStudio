@@ -39,6 +39,15 @@ export interface RevisionEntry {
   variables: { key: string; before?: string | null; after?: string | null; author: string }[];
 }
 
+export interface DocumentSummary {
+  docId: string;
+  title: string;
+  status: string;
+  updatedAt: string;
+  pageCount: number;
+  slotCount: number;
+}
+
 const path = (docId: string) => `/api/documents/${encodeURIComponent(docId)}`;
 
 /** `/api/documents` — `.vdoc` 작업 문서의 서버 원장. */
@@ -54,6 +63,32 @@ export const documentApi = {
         changes: opts.changes ?? [],
       })
     ).document,
+
+  /** 빈 문서 한 편을 만들어 프로젝트 문서 목록에 넣는다 (지면 · 장르 · 만든 이). */
+  create: async (input: {
+    projectId: string;
+    title: string;
+    surface?: "paged" | "scroll";
+    surfaceWidth?: number;
+    genre?: string;
+  }) => (await httpClient.post<DocumentEnvelope>("/api/documents", input)).document,
+
+  rename: async (docId: string, title: string) =>
+    (await httpClient.patch<DocumentEnvelope>(`${path(docId)}/title`, { title })).document,
+
+  duplicate: async (docId: string, opts: { title?: string; projectId?: string } = {}) =>
+    (await httpClient.post<DocumentEnvelope>(`${path(docId)}/duplicate`, opts)).document,
+
+  /** 서버에 있는 문서 전부 (불러오기 목록). */
+  list: async () => httpClient.get<DocumentSummary[]>("/api/documents"),
+
+  /** 이미 있는 문서를 프로젝트 문서 목록에 넣는다. */
+  link: async (docId: string, projectId: string) =>
+    (await httpClient.post<DocumentEnvelope>(`${path(docId)}/link`, { projectId })).document,
+
+  /** 문서를 지우고 그 문서를 가진 프로젝트 목록에서도 뺀다. */
+  remove: async (docId: string) =>
+    httpClient.delete<{ docId: string; unlinkedProjects: string[] }>(path(docId)),
 
   revisions: async (docId: string, opts: { slotId?: string; limit?: number } = {}) => {
     const q = new URLSearchParams();

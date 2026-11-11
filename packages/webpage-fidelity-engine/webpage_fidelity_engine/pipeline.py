@@ -1,8 +1,9 @@
 """단일 진입 파사드: 수집(fetch) → 격리·추출(extract) → 자산 해소(resolve) → 블록 매핑·분할(layout) → 검증(verify)."""
 from __future__ import annotations
 
+import inspect
 import uuid
-from typing import Optional
+from typing import Any, Optional
 
 from .extract.browser_layout_extractor import extract_ir_from_browser_snapshot
 from .extract.site_profiles.registry import extract_article_ir
@@ -16,7 +17,7 @@ from .fetch.http_fetcher import (
 from .layout.block_mapper import map_nodes_to_blocks
 from .layout.paginator import paginate_mapped_blocks
 from .layout.vdoc_assembler import assemble_webpage_vdoc
-from .models import WebArticleIR, WebpageExtractionResult, WebpageExtractOptions
+from .models import BrowserScreenshotTile, WebArticleIR, WebpageExtractionResult, WebpageExtractOptions
 from .ports import (
     AssetFetcherPort,
     BrowserDomPort,
@@ -34,12 +35,12 @@ def _try_browser_extraction(
     opts: WebpageExtractOptions,
     browser_dom: Optional[BrowserDomPort | BrowserLayoutPort],
     allow_default_browser: bool,
-) -> tuple[Optional[WebArticleIR], bool]:
-    """브라우저 실측(`render_layout_snapshot`)을 우선 시도한다. `(article, attempted)` 반환."""
+) -> tuple[Optional[WebArticleIR], bool, list[BrowserScreenshotTile]]:
+    """브라우저 실측(`render_layout_snapshot`)을 우선 시도한다. `(article, attempted, screenshots)` 반환."""
     dom_port = browser_dom
     if dom_port is None:
         if not allow_default_browser:
-            return None, False
+            return None, False, []
         dom_port = CdpBrowserDomFetcher(
             opts.cdp_http,
             auto_launch=opts.auto_launch_browser,
@@ -48,17 +49,25 @@ def _try_browser_extraction(
 
     snapshot_fn = getattr(dom_port, "render_layout_snapshot", None)
     if callable(snapshot_fn):
-        snapshot = snapshot_fn(
-            resolved_url,
-            viewport_width=opts.browser_viewport_width,
-            timeout_s=max(14.0, opts.fetch_timeout_s),
-        )
+        kwargs: dict[str, Any] = {
+            "viewport_width": opts.browser_viewport_width,
+            "timeout_s": max(14.0, opts.fetch_timeout_s),
+        }
+        sig = inspect.signature(snapshot_fn).parameters
+        if opts.capture_screenshots and ("capture_screenshots" in sig or any(p.kind == p.VAR_KEYWORD for p in sig.values())):
+            kwargs.update(
+                capture_screenshots=True,
+                viewport_height=opts.screenshot_viewport_height,
+                overlap_px=opts.screenshot_overlap_px,
+                max_screenshots=opts.max_screenshots,
+            )
+        snapshot = snapshot_fn(resolved_url, **kwargs)
         if snapshot and snapshot.elements:
             ir = extract_ir_from_browser_snapshot(snapshot, include_images=opts.include_images)
             if ir.nodes:
-                return ir, True
+                return ir, True, list(getattr(snapshot, "screenshots", []) or [])
 
-    return None, True
+    return None, True, []
 
 
 def run_webpage_extraction(
@@ -79,6 +88,7 @@ def run_webpage_extraction(
     resolved_url = (url or "").strip()
     article: Optional[WebArticleIR] = None
     browser_attempted = False
+    screenshots: list[BrowserScreenshotTile] = []
 
     if not html:
         if not resolved_url:
@@ -86,7 +96,7 @@ def run_webpage_extraction(
 
         # 1차 경로(방식 B): 브라우저 getBoundingClientRect + getComputedStyle 실측
         if opts.use_browser_fallback or browser_dom is not None:
-            article, browser_attempted = _try_browser_extraction(
+            article, browser_attempted, screenshots = _try_browser_extraction(
                 resolved_url,
                 opts=opts,
                 browser_dom=browser_dom,
@@ -199,4 +209,5 @@ def run_webpage_extraction(
         article=article,
         metrics=metrics,
         warnings=list(article.warnings),
+        screenshots=screenshots,
     )

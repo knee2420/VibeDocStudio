@@ -33,7 +33,7 @@ import { BaseBlockWrapper } from "./base/BaseBlockWrapper";
 import { getBlockView, type BlockRenderContext, type SlotBoxOptions, type TableCellLike } from "./block-views";
 import type { TableSelectionInfo } from "./InteractiveTable";
 import { CanvasKeyLayerContext, type CanvasKeyRegistrar } from "./keyLayer";
-import { ACCENT, BLOCK_DRAG_MIME, DROP_LINE, NEW_BLOCK_DRAG_MIME } from "./tokens";
+import { ACCENT, BLOCK_DRAG_MIME, DROP_LINE, MEDIA_DRAG_MIME, NEW_BLOCK_DRAG_MIME } from "./tokens";
 
 export interface TableSelectionTarget extends TableSelectionInfo {
   pageId: string;
@@ -59,6 +59,11 @@ export interface PagePendingState {
 export interface VDocPageSheetProps {
   docTitle?: string;
   totalPages?: number;
+  /**
+   * 이음매 없는 지면(scroll · 블로그): 쪽 사이 간격 · 그림자 없이 위아래로 붙여 한 단처럼 그린다.
+   * 쪽은 여전히 편집 · AI 범위 단위다 (편집 모드에서는 경계에 옅은 점선만).
+   */
+  seamless?: boolean;
   page: VDocPage;
   slots: Record<string, VDocSlot>;
   backdata: Record<string, BackdataChunk>;
@@ -78,6 +83,8 @@ export interface VDocPageSheetProps {
   onDeleteBlock: (pageId: string, blockId: string) => void;
   onMoveBlockTo?: (fromPageId: string, blockId: string, toPageId: string, toIndex: number) => void;
   onInsertBlock?: (pageId: string, kind: QuickAddKind, index: number) => void;
+  /** 리소스 사진을 끌어 놓았다 — 그 자리에 이미지 블록 (`src` 는 `resource:<id>`). */
+  onInsertMedia?: (pageId: string, src: string, alt: string, index: number) => void;
   onInsertBlockAtY?: (pageId: string, y: number, kind: InsertableBlockKind | string, flowGaps?: readonly FlowGap[]) => void;
   onCopyBlock?: (pageId: string, blockId: string) => void;
   onDuplicateBlock?: (pageId: string, blockId: string) => void;
@@ -107,6 +114,15 @@ const readDragPayload = (e: React.DragEvent) => {
   if (moved) return { kind: "move" as const, ...(JSON.parse(moved) as { pageId: string; blockId: string }) };
   const added = e.dataTransfer.getData(NEW_BLOCK_DRAG_MIME);
   if (added) return { kind: "new" as const, blockKind: added as QuickAddKind };
+  const media = e.dataTransfer.getData(MEDIA_DRAG_MIME);
+  if (media) {
+    try {
+      const parsed = JSON.parse(media) as { src?: string; alt?: string };
+      if (parsed.src) return { kind: "media" as const, src: parsed.src, alt: parsed.alt ?? "" };
+    } catch {
+      /* 다른 앱이 넣은 깨진 값 — 무시 */
+    }
+  }
   return null;
 };
 
@@ -156,6 +172,7 @@ const PageBlock = React.memo(
  * LayoutBlock kinds, with yesform/PandaDoc editing affordances on blocks and tables.
  */
 export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
+  seamless = false,
   page,
   slots,
   backdata = {},
@@ -173,6 +190,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   onDeleteBlock,
   onMoveBlockTo,
   onInsertBlock,
+  onInsertMedia,
   onInsertBlockAtY,
   onCopyBlock,
   onDuplicateBlock,
@@ -245,6 +263,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     setDropTarget(null);
     if (!payload) return;
     if (payload.kind === "move") onMoveBlockTo?.(payload.pageId, payload.blockId, page.pageId, toIndex);
+    else if (payload.kind === "media") onInsertMedia?.(page.pageId, payload.src, payload.alt, toIndex);
     else onInsertBlock?.(page.pageId, payload.blockKind, toIndex);
   };
 
@@ -659,7 +678,11 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         onPointerLeave={() => {
           scheduleHideInsertCursor();
         }}
-        className="relative bg-white rounded-xs shadow-[0_4px_28px_rgba(15,23,42,0.08),0_1px_4px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/5 mx-auto flex flex-col justify-between"
+        className={
+          seamless
+            ? `relative bg-white mx-auto flex flex-col justify-between ${editable ? "border-b border-dashed border-slate-200" : ""}`
+            : "relative bg-white rounded-xs shadow-[0_4px_28px_rgba(15,23,42,0.08),0_1px_4px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/5 mx-auto flex flex-col justify-between"
+        }
         style={sheetStyle}
         data-exact-layout={layout?.exactText ? "" : undefined}
       >
@@ -961,8 +984,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         )}
       </div>
 
-      {/* Page gap; the PDF page break falls here. */}
-      <div className="h-6" />
+      {/* Page gap; the PDF page break falls here. 이음매 없는 지면은 붙인다. */}
+      {!seamless && <div className="h-6" />}
     </section>
     </CanvasKeyLayerContext.Provider>
   );

@@ -634,3 +634,74 @@ def test_composer_sends_workbench_map_once_then_short_status(tmp_path: Path) -> 
     # 다음 턴엔 지도 대신 켜진 출처 목록 (긴 대화에서도 다른 출처를 잊지 않게)
     assert "작업대 지도" not in engine.turns[1] and "[켜진 출처" in engine.turns[1] and "에디터: 보고서" in engine.turns[1]
     assert ws.store.workbench_for("s1")["docId"] == "d1"
+
+
+def test_assistant_emits_ready_workbench_proposals_even_without_references(tmp_path: Path) -> None:
+    """레퍼런스/리소스가 꺼져 있어도(usage_rows=[]) wb_propose 통과안은 workbench_proposals 로 나가고, 실패안·중복은 걸러진다."""
+    from vibefs.wb_tools import WorkbenchTools
+
+    docs = tmp_path / "documents"
+    (docs / "d1").mkdir(parents=True)
+    (docs / "d1" / "document.vdoc.json").write_text(
+        json.dumps(
+            {
+                "docId": "d1",
+                "title": "보고서",
+                "pages": [{"pageId": "p1", "blocks": [{"blockId": "b1", "kind": "text", "slotId": "s1"}]}],
+                "slots": {
+                    "s1": {"slotId": "s1", "label": "요약", "role": "editable-slot", "content": "<p>기존 문장</p>"},
+                    "s_lock": {"slotId": "s_lock", "label": "고정", "role": "boilerplate", "content": "<p>머리글</p>"},
+                },
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    ws = ResourceWorkspace(state_dir=tmp_path / "ws", sandbox_dir=tmp_path / "sandbox", documents_root=docs)
+
+    def _on_turn(turn_no: int, _text: str) -> None:
+        if turn_no != 1:
+            return
+        wb = ws.store.workbench_for("s1")
+        assert wb is not None
+        from vibefs.workbench import Workbench
+
+        tools = WorkbenchTools(Workbench.from_state(wb), proposals=ws.proposals, session_id="s1")
+        # 1) 검증 실패 제안 (고정 슬롯 수정) → 프론트로 내려보내면 안 된다
+        tools.call("wb_propose", {"target": "slot:s_lock", "candidates": [{"slots": {"s_lock": "<p>변경</p>"}}]})
+        # 2) 검증 통과 제안 (레퍼런스 0개 환경) → 프론트로 내려보낸다
+        tools.call(
+            "wb_propose",
+            {
+                "target": "slot:s1",
+                "mode": "compose",
+                "summary": "요약 개편",
+                "candidates": [
+                    {"title": "간결안", "slots": {"s1": "<p>새 요약 1안</p>"}},
+                    {"title": "상세안", "slots": {"s1": "<p>새 요약 2안</p>"}},
+                ],
+            },
+        )
+
+    engine = _FakeEngine(["개편안을 작성했습니다.", "후속 답변입니다."], on_turn=_on_turn)
+    service = AssistantService(engines=SimpleNamespace(), policy=SimpleNamespace(), inline_model="m", workspace=ws)  # type: ignore[arg-type]
+    service._sessions["s1"] = _Session(session_id="s1", engine=engine)  # type: ignore[arg-type]
+    ctx = ContextItem(
+        kind="workbench",
+        ref_id="wb:state",
+        label="작업대",
+        content=json.dumps({"docId": "d1", "scope": {"mode": "document"}, "selection": ["s1"], "references": []}),
+    )
+
+    first = list(service.send_message("s1", text="요약 슬롯 고쳐줘", contexts=[ctx], tools=[]))
+    prop_events = [e for e in first if e.get("type") == "workbench_proposals"]
+    assert len(prop_events) == 1
+    proposals = prop_events[0]["proposals"]
+    assert len(proposals) == 1
+    assert proposals[0]["docId"] == "d1"
+    assert len(proposals[0]["candidates"]) == 2
+    assert proposals[0]["candidates"][0]["slots"]["s1"] == "<p>새 요약 1안</p>"
+
+    # 두 번째 턴에서는 이미 보낸 proposalId 를 중복 전송하지 않는다
+    second = list(service.send_message("s1", text="고마워", contexts=[ctx], tools=[]))
+    assert not any(e.get("type") == "workbench_proposals" for e in second)

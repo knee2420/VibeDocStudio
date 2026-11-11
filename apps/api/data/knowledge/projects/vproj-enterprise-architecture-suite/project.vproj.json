@@ -4,7 +4,11 @@
   "description": "다중 문서(.vdoc) 아키텍처 회의록·투자 제안서·정산 명세서 통합 작업 프로젝트",
   "activePhase": "drafting",
   "docIds": [
-    "vdoc_meeting_minutes_1028"
+    "vdoc_meeting_minutes_1028",
+    "vdoc-1a1c8b1a2b3-6dcc5fc9",
+    "vdoc-1a1c8b7e23d-fe519ff1",
+    "vdoc-1a1c8d2fc3d-157163ca",
+    "vdoc-1a1c947341b-9c211a00"
   ],
   "storylineNodes": [
     {
@@ -114,5 +118,5 @@
       "clonedAt": "2026-11-03T12:25:23Z"
     }
   ],
-  "updatedAt": "2026-11-09T15:56:51Z"
+  "updatedAt": "2026-11-11T08:33:12Z"
 }

@@ -27,5 +27,9 @@
  "rf_contrast": {
   "left": "a",
   "right": "b"
+ },
+ "rf_visual": {
+  "refId": "ref",
+  "pinId": "pin"
  }
 }

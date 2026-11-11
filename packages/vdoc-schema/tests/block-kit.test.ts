@@ -130,11 +130,11 @@ describe("표 · 새 블록 · AI", () => {
     const items = listInsertableBlocks();
     assert.deepEqual(
       items.map((item) => item.kind),
-      ["text", "image", "structured-table", "columns-grid", "section-block", "fillable-group"]
+      ["text", "image", "structured-table", "columns-grid", "section-block", "fillable-group", "hero", "link-card", "divider"]
     );
     assert.deepEqual(
       items.map((item) => item.shortcut),
-      [1, 2, 3, 4, 5, 6]
+      [1, 2, 3, 4, 5, 6, 7, 8, 9]
     );
     for (const item of items) {
       const draft = createInsertableBlock(item.kind, { suffix: "conf" });

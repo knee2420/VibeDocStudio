@@ -204,7 +204,7 @@ const docResolver: EntityResolver = {
       detail: `${doc.pages.length}p`,
       reveal: () => useStudioDocumentStore.getState().setActiveDocId(id),
       highlight: (on) => highlight(id, on),
-      toContext: () => ({ kind: "document", id, label: doc.title, access: "read" }),
+      toContext: () => ({ kind: "doc", id, label: doc.title, access: "write", meta: { docId: id } }),
     };
   },
 };

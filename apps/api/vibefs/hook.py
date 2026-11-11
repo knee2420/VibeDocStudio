@@ -172,6 +172,36 @@ def _inside(path: str, base: str) -> bool:
     return key == root or key.startswith(root + os.sep)
 
 
+def _ref_shot_dirs(store: WorkspaceStore, conv: str, mount: Optional[object]) -> list[str]:
+    """현재 세션 작업대에 켜진 레퍼런스의 `shots/` 폴더 목록."""
+    sid = getattr(mount, "session_id", None) if (mount is not None and (not conv or conv in getattr(mount, "conversation_ids", []))) else None
+    wb = store.workbench_for_conversation(conv or None, sid)
+    if not isinstance(wb, dict):
+        return []
+    out: list[str] = []
+    for ref in wb.get("references") or []:
+        if not isinstance(ref, dict) or not ref.get("dir"):
+            continue
+        shots = os.path.abspath(os.path.join(str(ref["dir"]), "shots"))
+        if os.path.isdir(shots) and shots not in out:
+            out.append(shots)
+    return out
+
+
+def _resolve_shot_file(raw: str, shot_dirs: list[str]) -> Optional[str]:
+    """요청 경로가 허용된 레퍼런스 캡처 PNG 를 가리키면 절대 경로를 돌려준다."""
+    if not raw or not shot_dirs:
+        return None
+    cleaned = raw.strip().strip('"').replace("/", os.sep)
+    if os.path.isabs(cleaned):
+        return os.path.abspath(cleaned) if os.path.isfile(cleaned) and any(_inside(cleaned, d) for d in shot_dirs) else None
+    name = os.path.basename(cleaned)
+    if not name or name in (".", ".."):
+        return None
+    hits = [os.path.abspath(os.path.join(d, name)) for d in shot_dirs if os.path.isfile(os.path.join(d, name))]
+    return hits[0] if len(hits) == 1 else None
+
+
 def decide(payload: dict, store: WorkspaceStore) -> dict:
     call = payload.get("toolCall") or {}
     name = str(call.get("name") or "")
@@ -196,6 +226,12 @@ def decide(payload: dict, store: WorkspaceStore) -> dict:
     if raw and os.path.isabs(raw) and _inside(raw, AGY_HOME):
         return {"decision": "allow"}
     mount = store.mount_for(conv or None)
+    shot_dirs = _ref_shot_dirs(store, conv, mount)
+    shot_hit = _resolve_shot_file(raw, shot_dirs)
+    if shot_hit:
+        if os.path.isabs(raw) and norm(raw) == norm(shot_hit):
+            return {"decision": "allow"}
+        return {"decision": "allow", "overwrite": {"Path": shot_hit}, "_fixed": True}
     if mount is None or not mount.items:
         return {"decision": "deny", "reason": _msg("noMount")}
     mounted = Mounted(mount.items, roots=getattr(mount, "roots", None))
@@ -236,8 +272,10 @@ def main(argv: list[str] | None = None) -> int:
             if name == "read_file":
                 path = str(args.get("Path") or "")
                 if path and not (os.path.isabs(path) and _inside(path, AGY_HOME)):
-                    store.record_read(conv, path, args.get("StartLine"), args.get("EndLine"), ok=not payload.get("error"),
-                                      extra={"error": str(payload.get("error") or "")[:200]} if payload.get("error") else None)
+                    mount = store.mount_for(conv or None)
+                    if not _resolve_shot_file(path, _ref_shot_dirs(store, conv, mount)):
+                        store.record_read(conv, path, args.get("StartLine"), args.get("EndLine"), ok=not payload.get("error"),
+                                          extra={"error": str(payload.get("error") or "")[:200]} if payload.get("error") else None)
         except Exception:
             store.log_hook({"ev": "post_error", "trace": traceback.format_exc()[-1200:]})
         sys.stdout.write("{}")

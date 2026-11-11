@@ -1,10 +1,35 @@
 [
  {
   "name": "rf_map",
-  "description": "켜진 레퍼런스 지도: 형태 · 쪽 · 섹션 · 덩어리 종류 · 핀 전부(층위 태그 · 메모) · 저장된 층위 측정 요약 · 합의 상태(층위별 확정 · 제안) · 지금까지 읽은 범위. 레퍼런스 작업은 여기서 시작한다.",
+  "description": "켜진 레퍼런스 지도: 형태 · 쪽 · 섹션 · 덩어리 종류 · 핀 전부(층위 태그 · 메모) · 저장된 층위 측정 요약 · 시각 캡처 유무 · 합의 상태(층위별 확정 · 제안) · 지금까지 읽은 범위. 레퍼런스 작업은 여기서 시작한다.",
   "inputSchema": {
    "type": "object",
    "properties": {}
+  }
+ },
+ {
+  "name": "rf_visual",
+  "description": "웹 레퍼런스의 실제 렌더링 캡처 PNG 경로를 찾는다 (상단 히어로 · 섹션 번호 · 핀 좌표별 매칭). 돌려받은 경로 중 필요한 1~4장을 내장 read_file(Path=...) 로 직접 열어 레이아웃 · 여백 · 색감 · 강조 · 사진 비율을 눈으로 확인한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "refId (켜진 레퍼런스가 하나면 생략)"
+    },
+    "section": {
+     "type": "string",
+     "description": "볼 섹션 번호(예: 1, 2) 또는 opening(상단 히어로)"
+    },
+    "pin": {
+     "type": "string",
+     "description": "핀 id (그 핀 영역 주변 캡처를 고른다)"
+    },
+    "limit": {
+     "type": "integer",
+     "description": "돌려줄 최대 캡처 수 (기본 4, 최대 8)"
+    }
+   }
   }
  },
  {
@@ -27,6 +52,19 @@
     },
     "offset": {
      "type": "integer"
+    }
+   }
+  }
+ },
+ {
+  "name": "rf_skeleton",
+  "description": "레퍼런스의 배치 뼈대: 첫머리 · 섹션마다 모양(H 소제목 · P 문단 · IMG 사진 · G<n> 사진 묶음 · LINK 링크 카드 · HR 구분선) · 대표 섹션 모양 · 섹션당 사진 · 문단 수. 블로그 · 칼럼처럼 배치가 결정인 레퍼런스로 새 글을 짓거나 구조를 잡기 전에 본다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "refId (생략하면 첫 레퍼런스)"
     }
    }
   }

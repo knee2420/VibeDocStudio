@@ -34,6 +34,7 @@ from ..models import (
 from ..ports import (
     HtmlExtractorPort,
     LayerAnalyzerPort,
+    LayoutWebExtractorPort,
     PdfExtractorPort,
     ReferenceLibraryPort,
     WebFetcherPort,
@@ -55,6 +56,92 @@ _FILE_KINDS = {
 _MAX_FILE_BYTES = 80 * 1024 * 1024
 
 
+def _guess_layer_set(extraction: dict[str, Any]) -> str:
+    """사진이 글 덩어리에 견줄 만큼 많으면 시각 글(blog) 층위 세트로 잰다."""
+    blocks = extraction.get("blocks") or []
+    photos = int((extraction.get("stats") or {}).get("photos") or 0)
+    texts = sum(1 for b in blocks if b.get("kind") in ("paragraph", "list"))
+    return "blog" if photos >= 4 and photos * 3 >= max(1, texts) else DEFAULT_LAYER_SET
+
+
+def _section_y_spans(extraction: dict[str, Any], total_height: int) -> list[tuple[int, str, float, float]]:
+    """extraction.json 의 제목 블록 기준으로 섹션별 Y 범위(px) 를 구한다."""
+    blocks = [b for b in extraction.get("blocks") or [] if isinstance(b, dict)]
+    heads = [i for i, b in enumerate(blocks) if b.get("kind") == "heading"]
+    if not blocks or not heads:
+        return []
+    spans_idx: list[tuple[int, str, int, int]] = []
+    if heads[0] > 0:
+        spans_idx.append((1, "", 0, heads[0]))
+    base_no = len(spans_idx) + 1
+    for offset, hi in enumerate(heads):
+        end = heads[offset + 1] if offset + 1 < len(heads) else len(blocks)
+        spans_idx.append((base_no + offset, str(blocks[hi].get("text") or "")[:60], hi, end))
+    out: list[tuple[int, str, float, float]] = []
+    n_secs = len(spans_idx)
+    for sec_no, title, start, end in spans_idx:
+        ys = [float(blocks[i]["sourceY"]) for i in range(start, end) if blocks[i].get("sourceY") is not None]
+        y_ends = [
+            float(blocks[i]["sourceY"]) + max(24.0, float(blocks[i].get("sourceHeight") or 24.0))
+            for i in range(start, end)
+            if blocks[i].get("sourceY") is not None
+        ]
+        if ys:
+            y0 = min(ys)
+            y1 = max(y_ends) if y_ends else y0 + 200.0
+        else:
+            band = max(400.0, float(total_height) / max(1, n_secs))
+            y0 = (sec_no - 1) * band
+            y1 = sec_no * band
+        out.append((sec_no, title, y0, y1))
+    return out
+
+
+def _build_shots_payload(
+    ref_id: str,
+    source_url: str,
+    extraction: dict[str, Any],
+    tiles: list[Any],
+) -> tuple[list[tuple[str, bytes]], dict[str, Any]]:
+    """캡처 타일 목록 → 저장할 `(파일명, PNG)` 목록과 `shots.json` 메타."""
+    total_height = max([int(getattr(t, "total_height", 0) or 0) for t in tiles] or [900])
+    vp_width = int(getattr(tiles[0], "width", 1280) or 1280) if tiles else 1280
+    sec_spans = _section_y_spans(extraction, total_height)
+    files: list[tuple[str, bytes]] = []
+    items: list[dict[str, Any]] = []
+    for idx, tile in enumerate(tiles, start=1):
+        name = f"shot_{idx:02d}.png"
+        scroll_y = int(getattr(tile, "scroll_y", 0) or 0)
+        w = int(getattr(tile, "width", vp_width) or vp_width)
+        h = int(getattr(tile, "height", 900) or 900)
+        png = bytes(getattr(tile, "png_bytes", b"") or b"")
+        if not png:
+            continue
+        files.append((name, png))
+        t_end = scroll_y + h
+        hit_secs = [no for no, _, y0, y1 in sec_spans if y0 <= t_end and y1 >= scroll_y]
+        hit_title = next((title for no, title, _, _ in sec_spans if no in hit_secs and title), "")
+        items.append({
+            "index": idx,
+            "file": name,
+            "scrollY": scroll_y,
+            "width": w,
+            "height": h,
+            "sections": hit_secs,
+            "title": hit_title,
+        })
+    manifest = {
+        "version": 1,
+        "refId": ref_id,
+        "sourceUrl": source_url,
+        "viewportWidth": vp_width,
+        "totalHeight": total_height,
+        "capturedAt": now_ms(),
+        "shots": items,
+    }
+    return files, manifest
+
+
 def _empty_extraction(kind: str) -> dict[str, Any]:
     return {"version": 1, "kind": kind, "pages": [{"page": 1, "width": 0, "height": 0}], "blocks": [], "outline": []}
 
@@ -67,12 +154,15 @@ class ReferenceLibraryService:
         html_extractor: HtmlExtractorPort,
         fetcher: WebFetcherPort,
         analyzer: Optional[LayerAnalyzerPort] = None,
+        layout_extractor: Optional[LayoutWebExtractorPort] = None,
     ) -> None:
         self.library = library
         self.pdf_extractor = pdf_extractor
         self.html_extractor = html_extractor
         self.fetcher = fetcher
         self.analyzer = analyzer
+        #: 웹 주소는 먼저 브라우저 실측(사진 · 배치 보존)으로, 안 되면 정적 HTML 파서로
+        self.layout_extractor = layout_extractor
 
     # --- 라이브러리 ------------------------------------------------------------------------------
 
@@ -108,19 +198,22 @@ class ReferenceLibraryService:
         self.library.write_source(item.ref_id, ext, data)
         return self._process(item, data, content_type=mime, explicit_title=bool(title))
 
-    def add_url(self, url: str, title: str = "") -> ReferenceItem:
+    def add_url(self, url: str, title: str = "", layer_set: str = "") -> ReferenceItem:
         url = (url or "").strip()
         parsed = urlparse(url)
         if parsed.scheme not in ("http", "https") or not parsed.netloc:
             raise UnsupportedReferenceSourceError("http(s) 주소 하나를 넣어 주세요.")
         item = ReferenceItem(
             ref_id=new_id(REFERENCE_PREFIX), kind="web", title=(title or parsed.netloc).strip(),
-            source_url=url, mime_type="text/html",
+            source_url=url, mime_type="text/html", layer_set=(layer_set or "").strip() or DEFAULT_LAYER_SET,
         )
-        return self._fetch_into(item, explicit_title=bool(title))
+        return self._fetch_into(item, explicit_title=bool(title), auto_layer_set=not layer_set)
 
     def reanalyze(self, ref_id: str) -> ReferenceItem:
         item = self.get(ref_id)
+        layout = self.library.load_artifact(ref_id, "layout")
+        if item.kind == "web" and isinstance(layout, dict) and self.layout_extractor is not None:
+            return self._finish(item, self.layout_extractor.from_layout(layout, item.source_url), explicit_title=True)
         source = self.library.read_source(ref_id)
         if source is None:
             if item.kind == "web" and item.source_url:
@@ -162,6 +255,25 @@ class ReferenceLibraryService:
         item = self.get(ref_id)
         raw = self.library.load_artifact(ref_id, "layers")
         return raw if isinstance(raw, dict) else {"version": 1, "set": item.layer_set, "metrics": {}, "layers": []}
+
+    def shots(self, ref_id: str) -> dict[str, Any]:
+        self.get(ref_id)
+        raw = self.library.load_artifact(ref_id, "shots")
+        return raw if isinstance(raw, dict) else {"version": 1, "refId": ref_id, "shots": []}
+
+    def shot_bytes(self, ref_id: str, filename: str) -> bytes:
+        self.get(ref_id)
+        reader = getattr(self.library, "read_shot", None)
+        data = reader(ref_id, filename) if callable(reader) else None
+        if data is None:
+            raise ReferenceNotFoundError(f"레퍼런스 '{ref_id}' 에 캡처 '{filename}' 가 없습니다.")
+        return data
+
+    def capture_live(self, ref_id: str) -> ReferenceItem:
+        item = self.get(ref_id)
+        if item.kind != "web" or not item.source_url:
+            raise UnsupportedReferenceSourceError("웹 레퍼런스만 라이브 캡처를 지원합니다.")
+        return self._fetch_into(item, explicit_title=item.title != urlparse(item.source_url).netloc)
 
     # --- 핀 --------------------------------------------------------------------------------
 
@@ -339,6 +451,16 @@ class ReferenceLibraryService:
                 extraction = self.html_extractor.extract(data, item.source_url, content_type)
             else:
                 extraction = _empty_extraction("image")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[reference] %s 해체 실패: %s", item.ref_id, exc)
+            done = item.touched(status="failed", error=f"구조 추출 실패: {exc}"[:300])
+            self.library.save_item(done)
+            return done
+        return self._finish(item, extraction, explicit_title=explicit_title)
+
+    def _finish(self, item: ReferenceItem, extraction: dict[str, Any], *, explicit_title: bool) -> ReferenceItem:
+        """덩어리 목록 저장 → 층위 측정 → 항목 갱신."""
+        try:
             extraction["refId"] = item.ref_id
             self.library.save_artifact(item.ref_id, "extraction", extraction)
             layer_set = item.layer_set or DEFAULT_LAYER_SET
@@ -348,16 +470,47 @@ class ReferenceLibraryService:
             article_title = str((extraction.get("article") or {}).get("title") or "").strip()
             if not explicit_title and article_title:
                 title = article_title[:120]
-            done = item.touched(status="ready", error="", title=title,
+            done = item.touched(status="ready", error="", title=title, layer_set=layer_set,
                                 page_count=len(extraction.get("pages") or []) or 1)
         except Exception as exc:  # noqa: BLE001
-            logger.warning("[reference] %s 해체 실패: %s", item.ref_id, exc)
+            logger.warning("[reference] %s 측정 실패: %s", item.ref_id, exc)
             done = item.touched(status="failed", error=f"구조 추출 실패: {exc}"[:300])
         self.library.save_item(done)
         return done
 
-    def _fetch_into(self, item: ReferenceItem, *, explicit_title: bool) -> ReferenceItem:
-        """웹 주소를 가져와 같은 refId 에 원본으로 둔다. 실패해도 항목은 남겨 다시 시도할 수 있게 한다."""
+    def _fetch_into(self, item: ReferenceItem, *, explicit_title: bool, auto_layer_set: bool = False) -> ReferenceItem:
+        """웹 주소를 가져와 같은 refId 에 원본으로 둔다. 실패해도 항목은 남겨 다시 시도할 수 있게 한다.
+
+        브라우저 실측 추출기가 있으면 먼저 쓴다 (사진 · 사진 묶음 · 링크 카드 · 구분선까지 덩어리로 남고, 레이아웃
+        `.vdoc` 를 `layout` 산출물로 보관한다). 원문 HTML 은 보기용으로만 따로 받아 둔다 (실패해도 계속).
+        """
+        if self.layout_extractor is not None and not item.source_url.lower().endswith(".pdf"):
+            try:
+                extract_shots_fn = getattr(self.layout_extractor, "extract_with_shots", None)
+                if callable(extract_shots_fn):
+                    extraction, layout, tiles = extract_shots_fn(item.source_url)
+                else:
+                    extraction, layout = self.layout_extractor.extract(item.source_url)
+                    tiles = []
+            except Exception as exc:  # noqa: BLE001 — 실측이 안 되면 정적 파서로 내려간다
+                logger.warning("[reference] %s 레이아웃 실측 실패 → 정적 파서: %s", item.ref_id, exc)
+            else:
+                if extraction.get("blocks"):
+                    self.library.save_artifact(item.ref_id, "layout", layout)
+                    save_shots_fn = getattr(self.library, "save_shots", None)
+                    if tiles and callable(save_shots_fn):
+                        shot_files, manifest = _build_shots_payload(item.ref_id, item.source_url, extraction, tiles)
+                        if shot_files:
+                            save_shots_fn(item.ref_id, shot_files, manifest)
+                    try:
+                        data, _ = self.fetcher.fetch(item.source_url)
+                        self.library.write_source(item.ref_id, ".html", data)
+                        item = replace(item, size_bytes=len(data))
+                    except Exception:  # noqa: BLE001
+                        pass
+                    if auto_layer_set:
+                        item = replace(item, layer_set=_guess_layer_set(extraction))
+                    return self._finish(item, extraction, explicit_title=explicit_title)
         try:
             data, content_type = self.fetcher.fetch(item.source_url)
         except Exception as exc:  # noqa: BLE001

@@ -1,8 +1,15 @@
 import { create } from "zustand";
 
-import type { StagedAiChange } from "@vibe/vdoc-schema";
+import type { WorkbenchProposal } from "@vibe/ai-kernel";
+import type { StagedAiChange, VDocDocument } from "@vibe/vdoc-schema";
 
 import { httpClient } from "@/shared/api";
+import { buildProposalSlotChanges } from "../lib/proposalStaging";
+
+export interface StagedProposalEntry {
+  proposal: WorkbenchProposal;
+  selectedCandidate: number;
+}
 
 /**
  * AI 실행과 그 결과로 쌓인 Staged 변경안 대기열.
@@ -15,6 +22,8 @@ import { httpClient } from "@/shared/api";
 export interface AiStagingState {
   projectId: string | null;
   queue: StagedAiChange[];
+  /** `wb_propose` 로 들어온 다중 후보(1안·2안…) 제안 메타 — 대기열에 남은 변경안이 사라지면 함께 정리된다. */
+  proposals: Record<string, StagedProposalEntry>;
   isRunning: boolean;
   activeRunId: string | null;
   lastAbortedRunId: string | null;
@@ -27,8 +36,14 @@ export interface AiStagingState {
   /** 서버에서 새로 들어온 변경안(일괄 작업)을 합친다. */
   mergeFromServer: () => Promise<void>;
   enqueue: (changes: StagedAiChange[]) => void;
+  /** `wb_propose` 제안의 후보안을 Staged 변경안으로 올린다 (같은 문서·슬롯의 기존 미승인 diff 는 새 안으로 교체). */
+  receiveProposal: (proposal: WorkbenchProposal, doc: VDocDocument, candidateIndex?: number) => StagedAiChange[];
+  /** 다중 후보(1안·2안…) 사이를 전환해 Staged diff 를 갈아끼운다. */
+  selectProposalCandidate: (proposalId: string, candidateIndex: number, doc: VDocDocument) => StagedAiChange[];
   remove: (diffId: string) => void;
   removeMany: (diffIds: string[]) => void;
+  /** 삭제된 문서에 매여 있던 미승인 변경안을 모두 비운다. */
+  removeByDoc: (docId: string) => void;
   /** 변경안 하나를 고친다 (부분 승인 뒤 남은 부분 · 경고 갱신). */
   replace: (change: StagedAiChange) => void;
   clear: () => void;
@@ -49,6 +64,55 @@ const SYNC_DELAY_MS = 400;
 const removedSinceSync = new Set<string>();
 
 const stagingPath = (projectId: string) => `/api/projects/${encodeURIComponent(projectId)}/staging`;
+
+function slotKey(change: StagedAiChange): string | null {
+  return change.targetKind === "slot-html" ? `${change.docId ?? ""}\0${change.payload.slotId}` : null;
+}
+
+function dedupeIncomingChanges(changes: StagedAiChange[], stamp: string): StagedAiChange[] {
+  const withStamp = changes.map((c) => ({ ...c, createdAt: c.createdAt ?? stamp }));
+  const seenKeys = new Set<string>();
+  const reversed: StagedAiChange[] = [];
+  for (let i = withStamp.length - 1; i >= 0; i -= 1) {
+    const key = slotKey(withStamp[i]);
+    if (key && seenKeys.has(key)) continue;
+    if (key) seenKeys.add(key);
+    reversed.push(withStamp[i]);
+  }
+  return reversed.reverse();
+}
+
+function mergeReplacingSlots(
+  prev: StagedAiChange[],
+  incoming: StagedAiChange[],
+  extraDrop?: (c: StagedAiChange) => boolean,
+): StagedAiChange[] {
+  const incomingKeys = new Set(incoming.map(slotKey).filter((k): k is string => k !== null));
+  const kept: StagedAiChange[] = [];
+  for (const item of prev) {
+    const k = slotKey(item);
+    const shouldDrop = Boolean(extraDrop?.(item)) || (k !== null && incomingKeys.has(k));
+    if (shouldDrop) removedSinceSync.add(item.diffId);
+    else kept.push(item);
+  }
+  return [...kept, ...incoming];
+}
+
+function pruneProposals(
+  proposals: Record<string, StagedProposalEntry>,
+  queue: StagedAiChange[],
+): Record<string, StagedProposalEntry> {
+  const keys = Object.keys(proposals);
+  if (keys.length === 0) return proposals;
+  const activeRunIds = new Set(queue.map((c) => c.runId).filter((id): id is string => Boolean(id)));
+  let changed = false;
+  const next: Record<string, StagedProposalEntry> = {};
+  for (const id of keys) {
+    if (activeRunIds.has(id)) next[id] = proposals[id];
+    else changed = true;
+  }
+  return changed ? next : proposals;
+}
 
 export const useAiStagingStore = create<AiStagingState>((set, get) => {
   /** 대기열 전체를 서버에 맞춘다 (잠깐 모았다가 한 번에). */
@@ -71,14 +135,20 @@ export const useAiStagingStore = create<AiStagingState>((set, get) => {
     }, SYNC_DELAY_MS);
   };
 
-  const setQueue = (queue: StagedAiChange[], openReview = false) => {
-    set(openReview ? { queue, reviewOpen: true } : { queue });
+  const setQueue = (
+    queue: StagedAiChange[],
+    openReview = false,
+    proposals?: Record<string, StagedProposalEntry>,
+  ) => {
+    const nextProposals = pruneProposals(proposals ?? get().proposals, queue);
+    set(openReview ? { queue, proposals: nextProposals, reviewOpen: true } : { queue, proposals: nextProposals });
     scheduleSync();
   };
 
   return {
     projectId: null,
     queue: [],
+    proposals: {},
     isRunning: false,
     activeRunId: null,
     lastAbortedRunId: null,
@@ -86,10 +156,15 @@ export const useAiStagingStore = create<AiStagingState>((set, get) => {
     reviewOpen: false,
 
     hydrate: async (projectId) => {
-      set({ projectId });
+      set({ projectId, proposals: {} });
       try {
         const res = await httpClient.get<{ changes: StagedAiChange[] }>(stagingPath(projectId));
-        set({ queue: res.changes ?? [], reviewOpen: (res.changes ?? []).length > 0 ? get().reviewOpen : false });
+        const changes = res.changes ?? [];
+        set({
+          queue: changes,
+          proposals: pruneProposals(get().proposals, changes),
+          reviewOpen: changes.length > 0 ? get().reviewOpen : false,
+        });
       } catch {
         /* 서버 대기열을 못 읽어도 이번 세션 대기열로 계속한다 */
       }
@@ -102,7 +177,12 @@ export const useAiStagingStore = create<AiStagingState>((set, get) => {
         const res = await httpClient.get<{ changes: StagedAiChange[] }>(stagingPath(projectId));
         const known = new Set(get().queue.map((c) => c.diffId));
         const incoming = (res.changes ?? []).filter((c) => !known.has(c.diffId));
-        if (incoming.length) set((s) => ({ queue: [...s.queue, ...incoming], reviewOpen: true }));
+        if (incoming.length) {
+          set((s) => {
+            const nextQueue = mergeReplacingSlots(s.queue, incoming);
+            return { queue: nextQueue, proposals: pruneProposals(s.proposals, nextQueue), reviewOpen: true };
+          });
+        }
       } catch {
         /* 다음 기회에 */
       }
@@ -110,8 +190,38 @@ export const useAiStagingStore = create<AiStagingState>((set, get) => {
 
     enqueue: (changes) => {
       if (changes.length === 0) return;
-      const stamp = new Date().toISOString();
-      setQueue([...get().queue, ...changes.map((c) => ({ ...c, createdAt: c.createdAt ?? stamp }))], true);
+      const incoming = dedupeIncomingChanges(changes, new Date().toISOString());
+      setQueue(mergeReplacingSlots(get().queue, incoming), true);
+    },
+    receiveProposal: (proposal, doc, candidateIndex = 0) => {
+      const candidates = proposal.candidates ?? [];
+      if (candidates.length === 0) return [];
+      const safeIndex = Math.max(0, Math.min(candidateIndex, candidates.length - 1));
+      const built = buildProposalSlotChanges(proposal, doc, safeIndex);
+      if (built.length === 0) return [];
+      const nextQueue = mergeReplacingSlots(get().queue, built, (c) => c.runId === proposal.proposalId);
+      const nextProposals = {
+        ...get().proposals,
+        [proposal.proposalId]: { proposal, selectedCandidate: safeIndex },
+      };
+      setQueue(nextQueue, true, nextProposals);
+      return built;
+    },
+    selectProposalCandidate: (proposalId, candidateIndex, doc) => {
+      const entry = get().proposals[proposalId];
+      if (!entry) return [];
+      const candidates = entry.proposal.candidates ?? [];
+      if (candidates.length === 0) return [];
+      const safeIndex = Math.max(0, Math.min(candidateIndex, candidates.length - 1));
+      const built = buildProposalSlotChanges(entry.proposal, doc, safeIndex);
+      if (built.length === 0) return [];
+      const nextQueue = mergeReplacingSlots(get().queue, built, (c) => c.runId === proposalId);
+      const nextProposals = {
+        ...get().proposals,
+        [proposalId]: { ...entry, selectedCandidate: safeIndex },
+      };
+      setQueue(nextQueue, false, nextProposals);
+      return built;
     },
     remove: (diffId) => {
       removedSinceSync.add(diffId);
@@ -122,10 +232,17 @@ export const useAiStagingStore = create<AiStagingState>((set, get) => {
       diffIds.forEach((id) => removedSinceSync.add(id));
       setQueue(get().queue.filter((c) => !drop.has(c.diffId)));
     },
+    removeByDoc: (docId) => {
+      if (!docId) return;
+      const matching = get().queue.filter((c) => c.docId === docId);
+      if (matching.length === 0) return;
+      matching.forEach((c) => removedSinceSync.add(c.diffId));
+      setQueue(get().queue.filter((c) => c.docId !== docId));
+    },
     replace: (change) => setQueue(get().queue.map((c) => (c.diffId === change.diffId ? change : c))),
     clear: () => {
       get().queue.forEach((c) => removedSinceSync.add(c.diffId));
-      setQueue([]);
+      setQueue([], false, {});
     },
 
     startRun: (runId, abort) => {

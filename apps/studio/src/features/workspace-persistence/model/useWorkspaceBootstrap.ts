@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { findFirstEditableSlotId } from "@vibe/vdoc-schema";
+import { findFirstEditableSlotId, type VDocDocument } from "@vibe/vdoc-schema";
 
 import { useAiStagingStore } from "@/entities/ai-staging";
 import { useReferenceStore } from "@/entities/reference-manager";
 import { useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
-import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { documentApi, selectActiveDocument, selectDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { composerController } from "@/shared/ai";
@@ -71,11 +71,14 @@ export function useWorkspaceBootstrap(): {
       setStatus("ready");
     })();
 
-    // 프로젝트를 바꾸면 그 프로젝트에 연결된 레퍼런스 및 리소스를 다시 불러온다
+    // 프로젝트를 바꾸면 그 프로젝트에 연결된 레퍼런스 · 리소스 · Staged 대기열을 다시 불러온다
     const unsubscribe = useProjectStore.subscribe((state, prev) => {
       if (state.activeProjectId !== prev.activeProjectId) {
         void useReferenceStore.getState().loadProject(state.activeProjectId || null);
-        if (state.activeProjectId) void useResourceStore.getState().loadSession(state.activeProjectId);
+        if (state.activeProjectId) {
+          void useResourceStore.getState().loadSession(state.activeProjectId);
+          void useAiStagingStore.getState().hydrate(state.activeProjectId);
+        }
       }
     });
 
@@ -84,10 +87,41 @@ export function useWorkspaceBootstrap(): {
       useReferenceStore.getState().receiveInterpretations(event.cards);
     });
 
+    // AI Composer 가 wb_propose 로 검증 통과한 개편안 → 활성/대상 문서의 Staged Diff 대기열로 연결
+    const unsubscribeProposals = composerController.onServerEvent("workbench_proposals", (event) => {
+      for (const proposal of event.proposals) {
+        const docState = useStudioDocumentStore.getState();
+        const existingDoc = proposal.docId ? selectDocument(proposal.docId)(docState) : selectActiveDocument(docState);
+        const stageForDoc = (doc: VDocDocument) => {
+          useAiStagingStore.getState().receiveProposal(proposal, doc, 0);
+          const activeProject = selectActiveProject(useProjectStore.getState());
+          const inProject = !activeProject || activeProject.docIds.includes(doc.docId);
+          if (inProject && useStudioDocumentStore.getState().activeDocId !== doc.docId) {
+            useStudioDocumentStore.getState().setActiveDocId(doc.docId);
+          }
+        };
+        if (existingDoc) {
+          stageForDoc(existingDoc);
+        } else if (proposal.docId) {
+          void documentApi
+            .get(proposal.docId)
+            .then((loaded) => {
+              if (cancelled) return;
+              useStudioDocumentStore.getState().adoptDocument(loaded);
+              stageForDoc(loaded);
+            })
+            .catch(() => {
+              /* 존재하지 않는 문서 id 는 건너뛴다 */
+            });
+        }
+      }
+    });
+
     return () => {
       cancelled = true;
       unsubscribe();
       unsubscribeCards();
+      unsubscribeProposals();
     };
   }, [attempt]);
 

@@ -14,7 +14,7 @@ import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { RevisionTimeline } from "@/features/document-revisions";
 import { attachable, stagedRef } from "@/features/ai-workspace";
-import { useStageAiChanges } from "@/features/stage-ai-changes";
+import { ProposalCandidateBar, useStageAiChanges } from "@/features/stage-ai-changes";
 import { useHistoryStore } from "@/shared/lib";
 import { EmptyStateCard } from "@/shared/ui";
 
@@ -98,6 +98,7 @@ export const SourceControlSidebarPanel: React.FC = () => {
           </div>
 
           <div className="mt-2 space-y-1.5">
+            <ProposalCandidateBar compact />
             {stagingQueue.length === 0 ? (
               <EmptyStateCard
                 testId="source-control-empty-state"

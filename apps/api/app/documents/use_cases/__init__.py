@@ -1,4 +1,5 @@
 from .delete_document import DeleteDocumentUseCase
+from .document_lifecycle import DocumentLifecycleUseCase, ProjectLinkPort
 from .get_document import GetDocumentUseCase
 from .get_document_page_chunk import GetDocumentPageChunkUseCase
 from .list_documents import ListDocumentsUseCase
@@ -15,4 +16,6 @@ __all__ = [
     "UpdateSlotContentUseCase",
     "PatchDocumentStructureUseCase",
     "DeleteDocumentUseCase",
+    "DocumentLifecycleUseCase",
+    "ProjectLinkPort",
 ]

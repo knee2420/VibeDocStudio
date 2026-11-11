@@ -239,6 +239,8 @@ export type AssistantEvent =
     }
   /** 하네스가 모은 근거 묶음 (E1, E2 … — 결과의 인용 표식이 가리킨다) */
   | { type: "evidence"; items: { id: string; tier: string; locator: Record<string, unknown> }[] }
+  /** 작업대: AI 가 wb_propose 로 제안해 검증을 통과한 개편안 (Staged Diff 큐로 흘러간다). */
+  | { type: "workbench_proposals"; proposals: WorkbenchProposal[] }
   | {
       type: "turn_done";
       stopReason: "end_turn" | "tool_calls" | "error" | "tool_limit";
@@ -269,4 +271,25 @@ export interface ToolManifestEntry {
   description: string;
   risk: RiskLevel;
   inputSchema: Record<string, unknown>;
+}
+
+export interface WorkbenchProposalCandidate {
+  title?: string;
+  rationale?: string;
+  slots: Record<string, string>;
+  sources?: string[];
+  layers?: string[];
+  follows?: string[];
+  notes?: string;
+}
+
+export interface WorkbenchProposal {
+  proposalId: string;
+  docId: string;
+  target: string;
+  mode: string;
+  summary: string;
+  candidates: WorkbenchProposalCandidate[];
+  warnings?: string[];
+  createdAt?: number;
 }

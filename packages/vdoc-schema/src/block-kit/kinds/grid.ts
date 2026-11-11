@@ -23,7 +23,15 @@ export const gridBlock = defineBlockKind<ColumnsGridBlockDef>({
           : []
     );
   },
-  outline: (b, ctx) => outlineSlotGroup(gridSlotIds(b), ctx, "다단 그리드", (n) => `다단 그리드 · ${n}칸`),
+  outline: (b, ctx) => {
+    const photos = (b.columns ?? []).filter((c) => c.image).length;
+    // 사진만 든 그리드(사진 묶음)도 아웃라이너에 한 줄로 나온다 — 슬롯이 없어도 선택 단위가 있다
+    if (photos && gridSlotIds(b).length === 0) {
+      ctx.emitStatic(ctx.blockTitle || "사진 묶음", `사진 ${photos}장`);
+      return;
+    }
+    outlineSlotGroup(gridSlotIds(b), ctx, "다단 그리드", (n) => `다단 그리드 · ${n}칸`);
+  },
   insertable: {
     label: "2단 그리드",
     description: "좌우 분할 2단 슬롯",

@@ -127,14 +127,20 @@ def _num(v: Any) -> Optional[float]:
     return None
 
 
+def count_metrics() -> set[str]:
+    """분량(글 길이 · 재료 양)에 따라 커지는 지표 — 결정의 차이가 아니라 분량의 차이라 비교 · 준수 판단에서 뺀다."""
+    return set(registry().get("countMetrics") or [])
+
+
 def compare(a: dict[str, Any], b: dict[str, Any], set_name: str = "", a_name: str = "A", b_name: str = "B") -> str:
     msg = packs.data("reference:messages.json")["compare"]
+    counts = count_metrics()
     rows = [msg["head"].format(a=a_name, b=b_name)]
     for layer in layer_set(set_name):
         diffs = []
         for key in layer.get("metrics") or []:
             va, vb = a.get(key), b.get(key)
-            if va == vb:
+            if va == vb or key in counts:
                 continue
             na, nb = _num(va), _num(vb)
             if na is not None and nb is not None and not isinstance(va, (list, dict)) and max(abs(na), abs(nb)) > 0:
@@ -165,3 +171,148 @@ def distance(a: dict[str, Any], b: dict[str, Any], layer_id: str, set_name: str 
                 continue
             parts.append(0.0 if max(abs(na), abs(nb)) == 0 else min(1.0, abs(na - nb) / max(abs(na), abs(nb))))
     return round(sum(parts) / max(1, len(parts)), 3)
+
+
+# --- 배치(레이아웃) 측정 -------------------------------------------------------------------------
+# 글 지표(measure)와 같은 자로, 덩어리의 "배치" 를 잰다: 섹션 단위 리듬 · 사진 서사 · 연결 동선 · 강조.
+# 레퍼런스 덩어리(extraction.blocks) 와 내 문서 블록(.vdoc blocks) 둘 다 같은 토큰으로 바꿔 잰다.
+
+_HL = re.compile(r"background(?:-color)?\s*:", re.I)
+_COLOR = re.compile(r"(?<![-\w])color\s*:", re.I)
+
+
+def layout_token(block: dict[str, Any]) -> str:
+    """덩어리 하나 → 배치 토큰. H · P · LIST · CAP · IMG · STK · G<n> · LINK · HR · BOX · TABLE · HERO."""
+    kind = str(block.get("kind") or "")
+    media = block.get("media") or {}
+    if kind in ("heading", "form-title"):
+        return "H"
+    if kind in ("paragraph", "text"):
+        return "P"
+    if kind == "list":
+        return "LIST"
+    if kind == "caption":
+        return "CAP"
+    if kind == "image":
+        width = media.get("widthPx")
+        if media.get("role") == "sticker":
+            return "STK"
+        if width is None:
+            m = re.match(r"\s*([\d.]+)\s*px", str(block.get("width") or ""))
+            width = float(m.group(1)) if m else None
+        return "STK" if width is not None and width <= 160 else "IMG"
+    if kind == "gallery":
+        return f"G{int(media.get('count') or 0)}"
+    if kind == "columns-grid":
+        cols = block.get("columns") or []
+        imgs = [c for c in cols if isinstance(c, dict) and c.get("image")]
+        return f"G{len(imgs)}" if imgs and len(imgs) == len(cols) else "P"
+    if kind == "link-card":
+        return "LINK"
+    if kind == "divider":
+        return "HR"
+    if kind in ("callout", "callout-box"):
+        return "BOX"
+    if kind in ("table", "structured-table"):
+        return "TABLE"
+    if kind == "hero":
+        return "HERO"
+    return "P" if (block.get("text") or block.get("html")) else ""
+
+
+def _photos(token: str) -> int:
+    if token == "IMG":
+        return 1
+    if token.startswith("G"):
+        try:
+            return int(token[1:])
+        except ValueError:
+            return 0
+    return 0
+
+
+def _signature(tokens: list[str]) -> str:
+    """섹션 하나의 모양 — 같은 토큰이 이어지면 접고(P P P → P+), 사진 묶음은 G 로 묶는다."""
+    out: list[str] = []
+    for t in tokens:
+        t = "G" if t.startswith("G") else t
+        if out and out[-1].rstrip("+") == t:
+            out[-1] = t + "+"
+        else:
+            out.append(t)
+    return " ".join(out)
+
+
+def measure_layout(blocks: Iterable[dict[str, Any]], htmls: Optional[Iterable[str]] = None) -> dict[str, Any]:
+    """배치 지표. blocks 는 {kind, media?, style?|align?, html?, text?} 사전들 (레퍼런스 덩어리 · vdoc 블록 공용)."""
+    items = [b for b in blocks if isinstance(b, dict)]
+    tokens = [layout_token(b) for b in items]
+    pairs = [(t, b) for t, b in zip(tokens, items) if t]
+    toks = [t for t, _ in pairs]
+    sections: list[list[str]] = []
+    opening: list[str] = []
+    for t in toks:
+        if t == "H":
+            sections.append([t])
+        elif sections:
+            sections[-1].append(t)
+        else:
+            opening.append(t)
+    sigs = [_signature(s) for s in sections]
+    common = max(set(sigs), key=sigs.count) if sigs else ""
+    # 사진 1장 · 사진 묶음을 같은 PHOTO 로 본 섹션 모양 (레퍼런스도 섹션마다 섞어 쓴다)
+    psigs = [_signature(["PHOTO" if (x == "IMG" or x.startswith("G")) else x for x in s]) for s in sections]
+    pcommon = max(set(psigs), key=psigs.count) if psigs else ""
+    photos = sum(_photos(t) for t in toks)
+    galleries = [int(t[1:]) for t in toks if t.startswith("G") and t[1:].isdigit()]
+    paras = [b for t, b in pairs if t in ("P", "LIST")]
+    html_list = list(htmls) if htmls is not None else [str(b.get("html") or "") for _, b in pairs]
+    joined = "\n".join(html_list)
+    centered = sum(1 for b in paras if (b.get("align") or (b.get("style") or {}).get("align")) == "center")
+    n_sec = max(1, len(sections))
+    heads = [str(b.get("text") or "") for t, b in pairs if t == "H"]
+    return {
+        "sections": len(sections),
+        "section_signature": common,
+        "signature_share": round(sigs.count(common) / max(1, len(sigs)), 2) if sigs else 0.0,
+        "photo_signature": pcommon,
+        # 섹션 리듬의 고정점: 소제목 바로 다음이 사진인 섹션 · 링크 카드로 끝나는 섹션의 비율
+        "photo_first_ratio": round(sum(1 for s in sections if len(s) > 1 and (s[1] == "IMG" or s[1].startswith("G"))) / n_sec, 2)
+        if sections else 0.0,
+        "link_end_ratio": round(sum(1 for s in sections if s[-1] == "LINK") / n_sec, 2) if sections else 0.0,
+        "photo_signature_share": round(psigs.count(pcommon) / max(1, len(psigs)), 2) if psigs else 0.0,
+        "opening": _signature(opening),
+        "paras_per_section": round(sum(1 for t in toks if t in ("P", "LIST")) / n_sec, 1),
+        "photos": photos,
+        "photos_per_section": round(photos / n_sec, 1),
+        "galleries": len(galleries),
+        "gallery_sizes": sorted(set(galleries)),
+        "photo_text_ratio": round(photos / max(1, len(paras)), 2),
+        "captions": toks.count("CAP"),
+        "caption_ratio": round(toks.count("CAP") / max(1, sum(1 for x in toks if x == "IMG" or x.startswith("G"))), 2),
+        "gallery_share": round(len(galleries) / max(1, sum(1 for x in toks if x == "IMG" or x.startswith("G"))), 2),
+        "stickers": toks.count("STK"),
+        "link_cards": toks.count("LINK"),
+        "link_cards_per_section": round(toks.count("LINK") / n_sec, 2),
+        "link_thumb_ratio": round(sum(1 for t, b in pairs if t == "LINK" and (b.get("thumbnail") or (b.get("media") or {}).get("thumbnail")))
+                                  / max(1, toks.count("LINK")), 2),
+        "dividers": toks.count("HR"),
+        "boxes": toks.count("BOX"),
+        "hero": "HERO" in toks,
+        "highlight_per_para": round(len(_HL.findall(joined)) / max(1, len(paras)), 2),
+        "color_accents": len(_COLOR.findall(joined)),
+        "accent_per_para": round(len(_COLOR.findall(joined)) / max(1, len(paras)), 2),
+        "centered_ratio": round(centered / max(1, len(paras)), 2),
+        "question_headings": round(sum(1 for h in heads if h.strip().endswith("?")) / max(1, len(heads)), 2),
+        "layout_tokens": " ".join(toks[:80]),
+    }
+
+
+def measure_all(htmls: Iterable[str], block_kinds: Optional[Iterable[str]] = None,
+                blocks: Optional[Iterable[dict[str, Any]]] = None) -> dict[str, Any]:
+    """글 지표 + (덩어리가 있으면) 배치 지표."""
+    htmls = list(htmls)
+    out = measure(htmls, block_kinds)
+    if blocks is not None:
+        out.update(measure_layout(list(blocks)))
+    return out

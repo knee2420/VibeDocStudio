@@ -38,6 +38,22 @@ class WebpageExtractOptions:
     browser_viewport_width: int = 1280
     cdp_http: str = "http://127.0.0.1:9222"
     allow_private_hosts: bool = False
+    capture_screenshots: bool = False
+    screenshot_viewport_height: int = 900
+    screenshot_overlap_px: int = 80
+    max_screenshots: int = 24
+
+
+@dataclass(frozen=True)
+class BrowserScreenshotTile:
+    """브라우저 CDP 뷰포트 캡처 타일 (시각 참조용 PNG)."""
+
+    index: int
+    scroll_y: int
+    width: int
+    height: int
+    png_bytes: bytes
+    total_height: int = 0
 
 
 @dataclass(frozen=True)
@@ -162,6 +178,7 @@ class BrowserLayoutSnapshot:
     body_font_size_px: float = 16.0
     root_rect: Optional[MeasuredRect] = None
     elements: list[BrowserElementGeometry] = field(default_factory=list)
+    screenshots: list[BrowserScreenshotTile] = field(default_factory=list)
 
 
 @dataclass
@@ -217,3 +234,4 @@ class WebpageExtractionResult:
     article: WebArticleIR
     metrics: WebpageQualityMetrics
     warnings: list[str] = field(default_factory=list)
+    screenshots: list[BrowserScreenshotTile] = field(default_factory=list)

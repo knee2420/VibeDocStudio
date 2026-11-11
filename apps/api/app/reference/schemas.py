@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field
 class AddUrlRequest(BaseModel):
     url: str
     title: str = ""
+    #: 층위 세트 (비우면 자동: 사진이 많으면 blog)
+    layerSet: str = ""
 
 
 class RenameRequest(BaseModel):

@@ -14,6 +14,10 @@ export interface HeadingBlockDef extends BaseLayoutBlock {
     color?: string;
     marginTop?: string;
   };
+  /** 장식: quote = 위에 따옴표 · bar = 왼쪽 세로 막대 · none (블로그 소제목 등). */
+  decoration?: "none" | "quote" | "bar";
+  /** 장식 · 글자 강조색 (예: #00a84b). */
+  accent?: string;
 }
 
 export interface FormTitleBlockDef extends BaseLayoutBlock {

@@ -3,6 +3,8 @@ import { ImageIcon } from "lucide-react";
 
 import type { ImageBlockDef } from "@vibe/vdoc-schema";
 
+import { resolveMediaSrc } from "../mediaSrc";
+
 export interface ImageBlockViewProps {
   block: ImageBlockDef;
 }
@@ -13,12 +15,13 @@ export interface ImageBlockViewProps {
  */
 export const ImageBlockView: React.FC<ImageBlockViewProps> = ({ block }) => {
   const justifyClass = block.align === "right" ? "justify-end" : block.align === "center" ? "justify-center" : "justify-start";
+  const src = resolveMediaSrc(block.src);
   return (
     <div className="relative w-full h-full">
       <div className={`flex ${block.frame ? "h-full" : "py-2"} ${justifyClass} w-full`}>
-        {block.src ? (
+        {src ? (
           <img
-            src={block.src}
+            src={src}
             alt={block.alt || block.title || "Image"}
             draggable={false}
             className="select-none max-w-full"
@@ -40,6 +43,7 @@ export const ImageBlockView: React.FC<ImageBlockViewProps> = ({ block }) => {
           </div>
         )}
       </div>
+      {block.caption && <div className="-mt-1 pb-1 text-center text-[12px] text-slate-400">{block.caption}</div>}
     </div>
   );
 };

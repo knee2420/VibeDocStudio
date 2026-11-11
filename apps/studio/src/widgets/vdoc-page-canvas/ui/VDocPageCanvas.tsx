@@ -3,7 +3,7 @@ import { ArrowUpLeft } from "lucide-react";
 
 import { MemoVDocPageSheet, WindowedPageChunker } from "@vibe/slot-canvas";
 import { useActiveSlotEditorStore, type SlotAiAction } from "@vibe/slot-editor";
-import type { BackdataChunk, VDocSlot } from "@vibe/vdoc-schema";
+import { documentSurface, type BackdataChunk, type VDocSlot } from "@vibe/vdoc-schema";
 
 import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
 import { useSlotSelectionStore } from "@/entities/slot";
@@ -138,6 +138,7 @@ const DraftingCanvas: React.FC = () => {
   const onMoveBlockTo = useStableCallback(blocks.moveBlockTo);
   const onDeleteBlock = useStableCallback(blocks.deleteBlock);
   const onInsertBlock = useStableCallback(blocks.addBlockToPage);
+  const onInsertMedia = useStableCallback(blocks.addMediaToPage);
   const onInsertBlockAtY = useStableCallback(blocks.insertFromMenu);
   const onCopyBlock = useStableCallback(blocks.copyBlock);
   const isExternalRangeActive = React.useCallback(() => {
@@ -171,6 +172,7 @@ const DraftingCanvas: React.FC = () => {
     doc.pages.length > 1 &&
     doc.pages.some((p) => p.pageId === zoomedPageId);
   const pagesToRender = isPageZoomed ? doc.pages.filter((p) => p.pageId === zoomedPageId) : doc.pages;
+  const seamless = documentSurface(doc).kind === "scroll";
 
   return (
     <main
@@ -209,9 +211,11 @@ const DraftingCanvas: React.FC = () => {
             pages={pagesToRender}
             activePageId={activePageId}
             chunkSize={WINDOW_CHUNK_PAGES}
+            pageGapPx={seamless ? 0 : undefined}
             renderPage={(page) => (
               <MemoVDocPageSheet
                 key={page.pageId}
+                seamless={seamless}
                 docTitle={doc.title}
                 totalPages={doc.pages.length}
                 page={page}
@@ -233,6 +237,7 @@ const DraftingCanvas: React.FC = () => {
                 onDeleteBlock={onDeleteBlock}
                 onMoveBlockTo={onMoveBlockTo}
                 onInsertBlock={onInsertBlock}
+                onInsertMedia={onInsertMedia}
                 onInsertBlockAtY={onInsertBlockAtY}
                 onCopyBlock={onCopyBlock}
                 onDuplicateBlock={onDuplicateBlock}

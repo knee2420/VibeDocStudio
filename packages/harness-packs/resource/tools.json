@@ -180,5 +180,26 @@
     }
    }
   }
+ },
+ {
+  "name": "ws_images",
+  "description": "마운트된 자료의 사진 · 그림 목록: resource:<id>(문서에 넣을 때 이 값을 그대로) · 경로 · 크기(가로×세로) · 이 사진을 붙여 쓴 노트와 그 줄(사진이 무엇인지 알려 주는 맥락). 새 글에 넣을 사진을 고를 때. query 로 경로 · 맥락 글을 거른다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "query": {
+     "type": "string",
+     "description": "경로 · 맥락 글에서 찾을 낱말 (생략하면 전부)"
+    },
+    "folder": {
+     "type": "string",
+     "description": "이 폴더 아래만 (상대 경로)"
+    },
+    "offset": {
+     "type": "integer",
+     "description": "이어 보기"
+    }
+   }
+  }
  }
 ]

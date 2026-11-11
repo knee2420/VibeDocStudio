@@ -40,7 +40,7 @@ class ProposalStore:
             json.dump(proposal, fh, ensure_ascii=False, indent=1)
         return path
 
-    def list(self, session_id: str) -> list[dict[str, Any]]:
+    def list(self, session_id: str, *, since: float = 0.0) -> list[dict[str, Any]]:
         folder = os.path.join(self.root, session_id or "_")
         out = []
         try:
@@ -50,9 +50,12 @@ class ProposalStore:
         for name in names:
             try:
                 with open(os.path.join(folder, name), "r", encoding="utf-8") as fh:
-                    out.append(json.load(fh))
+                    item = json.load(fh)
             except (OSError, ValueError):
                 continue
+            if since and float(item.get("createdAt") or 0) < since:
+                continue
+            out.append(item)
         return sorted(out, key=lambda p: p.get("createdAt", 0))
 
 

@@ -11,15 +11,22 @@ MeasureFn = Callable[[Iterable[str], Iterable[str]], dict[str, Any]]
 ByLayerFn = Callable[[dict[str, Any], str], list[tuple[dict[str, Any], dict[str, Any]]]]
 
 
+LayoutFn = Callable[[list[dict[str, Any]]], dict[str, Any]]
+
+
 class MeasuredLayerAnalyzer:
-    def __init__(self, measure: MeasureFn, by_layer: ByLayerFn) -> None:
+    def __init__(self, measure: MeasureFn, by_layer: ByLayerFn, layout: LayoutFn | None = None) -> None:
         self._measure = measure
         self._by_layer = by_layer
+        #: 배치 자 — 사진 · 묶음 · 링크 카드 덩어리가 있는 추출(브라우저 실측)에만 쓴다
+        self._layout = layout
 
     def analyze(self, extraction: dict[str, Any], layer_set: str) -> dict[str, Any]:
         blocks = [b for b in extraction.get("blocks") or [] if isinstance(b, dict)]
         kinds = sorted({str(b.get("kind")) for b in blocks if b.get("kind")})
         metrics = self._measure([str(b.get("html") or "") for b in blocks], kinds)
+        if self._layout is not None and extraction.get("layout"):
+            metrics.update(self._layout(blocks))
         layers = [
             {
                 "id": layer["id"],

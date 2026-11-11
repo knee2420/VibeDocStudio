@@ -106,6 +106,7 @@ class _Session:
     #: 실행 구간(벽시계) — 대화 id 를 모르는 서브에이전트의 읽기를 이 세션 몫으로 칠 때 쓴다
     turn_windows: list[tuple[float, float]] = field(default_factory=list)
     conversation_ids: list[str] = field(default_factory=list)
+    emitted_proposal_ids: set[str] = field(default_factory=set)
     cancel: threading.Event = field(default_factory=threading.Event)
     lock: threading.Lock = field(default_factory=threading.Lock)
 
@@ -442,18 +443,33 @@ class AssistantService:
             return rest
         raw = items[-1].content
         try:
+            meta = json.loads(raw)
+        except ValueError:
+            meta = {}
+        # 사용자가 @문서(target) 로 작업 문서를 명시 지정한 경우 작업대 대상도 함께 맞춘다
+        explicit_doc = next(
+            (c.ref_id for c in reversed(rest) if c.role == "target" and c.kind in ("doc", "document") and c.ref_id),
+            None,
+        )
+        if explicit_doc and isinstance(meta, dict):
+            if str(meta.get("docId") or "") != explicit_doc:
+                meta["scope"] = {"mode": "doc"}
+                meta["selection"] = []
+            elif (meta.get("scope") or {}).get("mode") == "off":
+                meta["scope"] = {"mode": "doc"}
+            meta["docId"] = explicit_doc
+            meta["designatedDocId"] = explicit_doc
+            raw = json.dumps(meta, ensure_ascii=False)
+        try:
             wb = self._workspace.set_workbench(session.session_id, raw)
         except Exception as exc:  # 작업대가 실패해도 대화는 이어간다
             logger.warning("[assistant] 작업대 설정 실패: %s", exc)
             return rest
         if wb is None:
             return rest
-        try:
-            meta = json.loads(raw)
-        except ValueError:
-            meta = {}
-        sig = json.dumps({"doc": meta.get("docId"), "refs": [(r.get("refId"), sorted(r.get("pinIds") or []), r.get("layers") or {})
-                                                           for r in meta.get("references") or []]}, sort_keys=True)
+        sig = json.dumps({"doc": meta.get("docId"), "docs": [d.get("docId") for d in meta.get("projectDocs") or []],
+                          "refs": [(r.get("refId"), sorted(r.get("pinIds") or []), r.get("layers") or {})
+                                   for r in meta.get("references") or []]}, sort_keys=True)
         line = (f"파일 {len(session.mount.index.files)}개 (ws_overview · ws_collect · read_file)"
                 if session.mount is not None else "")
         if sig != session.workbench_sig:
@@ -479,6 +495,38 @@ class AssistantService:
         except Exception as exc:  # 카드 집계가 실패해도 대화는 이어간다
             logger.warning("[assistant] 해석 카드 집계 실패: %s", exc)
             return []
+
+    def _new_proposals(self, session: _Session) -> list[dict[str, Any]]:
+        """이번 메시지에서 AI 가 wb_propose 로 낸 작업대 개편 제안 (검증 통과분만, 중복 송신 방지)."""
+        if self._workspace is None or not session.msg_started:
+            return []
+        try:
+            records = self._workspace.proposals_since(session_id=session.session_id, since=session.msg_started)
+        except Exception as exc:  # 제안 집계가 실패해도 대화는 이어간다
+            logger.warning("[assistant] 작업대 제안 집계 실패: %s", exc)
+            return []
+        ready: list[dict[str, Any]] = []
+        for rec in records:
+            if rec.get("status") != "ready":
+                continue
+            pid = str(rec.get("id") or "")
+            if not pid or pid in session.emitted_proposal_ids:
+                continue
+            candidates = rec.get("candidates") or []
+            if not candidates:
+                continue
+            session.emitted_proposal_ids.add(pid)
+            ready.append({
+                "proposalId": pid,
+                "docId": str(rec.get("docId") or ""),
+                "target": str(rec.get("target") or ""),
+                "mode": str(rec.get("mode") or "compose"),
+                "summary": str(rec.get("summary") or ""),
+                "candidates": candidates,
+                "warnings": list((rec.get("report") or {}).get("warnings") or []),
+                "createdAt": rec.get("createdAt") or 0,
+            })
+        return ready
 
     def _source_usage(self, session: _Session):
         """이번 메시지에서 켜진 출처별로 실제로 열어 봤는지 (작업대 · 리소스 마운트가 있을 때만)."""
@@ -546,7 +594,7 @@ class AssistantService:
         return str(conv) if conv else None
 
     def _bind_conversation(self, session: _Session) -> None:
-        if self._workspace is None or session.mount is None:
+        if self._workspace is None:
             return
         conv = self._conversation_id(session)
         if conv and conv not in session.conversation_ids:
@@ -649,12 +697,19 @@ class AssistantService:
                         for call in client_calls:
                             session.pending_calls[call.call_id] = call
                         session.carry_results = server_results
+                        if not session.cancel.is_set():
+                            proposals = self._new_proposals(session)
+                            if proposals:
+                                yield {"type": "workbench_proposals", "proposals": proposals}
                         yield {"type": "turn_done", **meta, "stopReason": "tool_calls"}
                         return
                     if server_results and not errored and not session.cancel.is_set():
                         server_rounds += 1
                         session.tool_rounds += 1
                         if session.tool_rounds > MAX_TOOL_ROUNDS:
+                            proposals = self._new_proposals(session)
+                            if proposals:
+                                yield {"type": "workbench_proposals", "proposals": proposals}
                             yield {"type": "error", "message": f"도구 호출이 {MAX_TOOL_ROUNDS}회를 넘어 멈췄습니다."}
                             yield {"type": "turn_done", **meta, "stopReason": "tool_limit"}
                             return
@@ -737,6 +792,11 @@ class AssistantService:
                                 ],
                                 "warnings": warnings,
                             }
+                    if not session.cancel.is_set():
+                        proposals = self._new_proposals(session)
+                        if proposals:
+                            # 검증 통과한 wb_propose 개편안을 Staged Diff 큐로 내려보낸다
+                            yield {"type": "workbench_proposals", "proposals": proposals}
                     yield {"type": "turn_done", **meta, "stopReason": stop}
                     return
             finally:

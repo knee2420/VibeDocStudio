@@ -9,27 +9,36 @@ import {
   Clock,
   Copy,
   FilePlus2,
-  FileText,
   FolderTree,
   Layers,
   LayoutGrid,
   Loader2,
   Pencil,
+  RefreshCw,
   Trash2,
 } from "lucide-react";
 
 import type { PagePendingState } from "@vibe/slot-canvas";
 import type { OutlinerNode } from "@vibe/vdoc-schema";
 
+import { DocumentSurfaceIcon, type DocumentSurfaceKind } from "@/shared/ui";
+
 /** 아웃라인 노드가 캔버스에서 가리키는 대상 (호버 강조에 쓴다). */
 export function outlineNodeTargetId(node: OutlinerNode): string {
   return node.targetSlotId || node.targetBlockId || node.targetPageId || node.nodeId;
 }
 
-const NodeIcon: React.FC<{ node: OutlinerNode }> = ({ node }) => {
+const NodeIcon: React.FC<{ node: OutlinerNode; docSurface?: DocumentSurfaceKind }> = ({ node, docSurface = "paged" }) => {
   const cls = "w-3.5 h-3.5 text-slate-400 shrink-0";
   if (node.zoomLevel === "project") return <FolderTree className={cls} />;
-  if (node.zoomLevel === "document") return <FileText className={cls} />;
+  if (node.zoomLevel === "document") {
+    return (
+      <DocumentSurfaceIcon
+        surface={docSurface}
+        className={`w-3.5 h-3.5 shrink-0 ${docSurface === "scroll" ? "text-emerald-600" : "text-sky-600"}`}
+      />
+    );
+  }
   if (node.zoomLevel === "page") return node.targetBlockId ? <LayoutGrid className={cls} /> : <Layers className={cls} />;
   return node.isStatic ? (
     <span className="w-1.5 h-1.5 rounded-full border border-slate-300 shrink-0 mx-1" />
@@ -76,6 +85,16 @@ export interface OutlineNodeRowProps {
   onCancelRename?: () => void;
   onDuplicatePage?: () => void;
   onDeletePage?: () => void;
+  /** 문서 지면 서식 (`paged`: A4 페이지 · `scroll`: 블로그 스크롤). */
+  docSurface?: DocumentSurfaceKind;
+  /** 문서 행 (이름 변경 · 복제 · 문서 삭제 아이콘). */
+  canManageDocument?: boolean;
+  /** 프로젝트 루트 행 (새 문서 메뉴 · 새로고침 아이콘 — 늘 보인다). */
+  isProjectRoot?: boolean;
+  onDuplicateDocument?: () => void;
+  onDeleteDocument?: () => void;
+  onOpenNewDocumentMenu?: (anchorEl: HTMLElement) => void;
+  onRefreshDocuments?: () => void;
 }
 
 /** Workflowy 식 아웃라인 한 줄: 접기 삼각형 · 수준 아이콘 · 제목(더블클릭/F2 편집) · 호버 동작. */
@@ -107,6 +126,13 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
   onCancelRename,
   onDuplicatePage,
   onDeletePage,
+  docSurface = "paged",
+  canManageDocument = false,
+  isProjectRoot = false,
+  onDuplicateDocument,
+  onDeleteDocument,
+  onOpenNewDocumentMenu,
+  onRefreshDocuments,
 }) => {
   const isRenaming = renamingInitialTitle !== undefined;
   const [draft, setDraft] = useState(renamingInitialTitle ?? "");
@@ -204,7 +230,7 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
           className="w-3.5 h-3.5 text-amber-500 shrink-0"
         />
       ) : (
-        <NodeIcon node={node} />
+        <NodeIcon node={node} docSurface={docSurface} />
       )}
 
       {isRenaming ? (
@@ -232,7 +258,11 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
         /* 고정 텍스트는 회색, 위치로 지은 이름은 ⚠ */
         <span
           data-testid={`outline-node-title-${node.nodeId}`}
-          title={`${node.title}${node.summary ? `\n\n${node.summary}` : ""}${
+          title={`${node.title}${
+            node.zoomLevel === "document"
+              ? `\n서식: ${docSurface === "scroll" ? "블로그 글 (스크롤)" : "A4 페이지 문서"}`
+              : ""
+          }${node.summary ? `\n\n${node.summary}` : ""}${
             node.nameNeedsReview ? "\n\n⚠ 이름 확인 필요 (라벨을 찾지 못해 위치로 지은 이름)" : ""
           }${canRename ? "\n\n더블클릭 또는 F2: 이름 변경" : ""}`}
           className={`truncate flex-1 min-w-0 ${node.isStatic ? "text-slate-400" : ""}`}
@@ -274,6 +304,27 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
         </span>
       )}
 
+      {!isRenaming && isProjectRoot && (
+        <div className="flex items-center gap-0.5 shrink-0 ml-1" data-testid="project-root-doc-actions">
+          <button
+            type="button"
+            data-testid="outline-new-doc-menu-btn"
+            data-new-doc-trigger=""
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenNewDocumentMenu?.(e.currentTarget);
+            }}
+            title="새 문서 (A4 · 블로그 글 · 불러오기)"
+            className={hoverAction}
+          >
+            <FilePlus2 className="w-3.5 h-3.5" />
+          </button>
+          <button type="button" data-testid="outline-refresh-docs-btn" onClick={stop(() => onRefreshDocuments?.())} title="새로고침 (에이전트 · 다른 곳에서 만든 문서 반영)" className={hoverAction}>
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {!isRenaming && (
         <div className="hidden group-hover:flex items-center gap-0.5 shrink-0 ml-1">
           <button type="button" data-testid={`zoom-bullet-${node.nodeId}`} onClick={stop(onZoomIn)} title="Zoom-In" className={hoverAction}>
@@ -294,6 +345,26 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
               <FilePlus2 className="w-3 h-3" />
               <span>+ 페이지</span>
             </button>
+          )}
+
+          {canManageDocument && (
+            <>
+              <button type="button" data-testid={`rename-doc-btn-${node.nodeId}`} onClick={stop(() => onStartRename?.())} title="문서 이름 바꾸기 (F2 / 더블클릭)" className={hoverAction}>
+                <Pencil className="w-3 h-3" />
+              </button>
+              <button type="button" data-testid={`duplicate-doc-btn-${node.nodeId}`} onClick={stop(() => onDuplicateDocument?.())} title="문서 복제" className={hoverAction}>
+                <Copy className="w-3 h-3" />
+              </button>
+              <button
+                type="button"
+                data-testid={`delete-doc-btn-${node.nodeId}`}
+                onClick={stop(() => onDeleteDocument?.())}
+                title="문서 삭제"
+                className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-600 cursor-pointer"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </>
           )}
 
           {canManagePage && (

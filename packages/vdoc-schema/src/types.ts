@@ -249,4 +249,31 @@ export interface VDocDocument {
   evidenceLinks?: EvidenceLink[];
   /** 서버 저장 버전 — 저장할 때 보낸 버전이 서버와 다르면 충돌(409)이다 (다른 탭 · 다른 사람). */
   revision?: number;
+  /** 지면: paged = A4 쪽 나눔(기본) · scroll = 높이가 내용 따라 늘고 쪽 사이 이음매 없는 한 단(블로그). */
+  surface?: VDocSurface;
+  /** 장르 — 레퍼런스 층위 세트 이름 (document · blog · …). 문서 성격 표시이자 측정 기준. */
+  genre?: string;
+  /** 누가 만들었나 — agent 가 만든 초안은 에이전트가 구조(블록 · 쪽)까지 직접 고칠 수 있다. */
+  origin?: VDocOrigin;
+  /** 속한 프로젝트 (프로젝트 manifest 의 docIds 와 짝). */
+  projectId?: string;
+}
+
+export interface VDocSurface {
+  kind: "paged" | "scroll";
+  /** scroll 지면 폭 (px). 기본 720. */
+  width?: number;
+}
+
+export interface VDocOrigin {
+  createdBy: "user" | "agent" | "import";
+  createdAt?: string;
+  /** agent 가 만들었으면 그 작업 세션. */
+  sessionId?: string;
+}
+
+/** 문서의 지면 (없으면 A4 쪽 나눔). */
+export function documentSurface(doc: Pick<VDocDocument, "surface"> | null | undefined): Required<VDocSurface> {
+  const kind = doc?.surface?.kind === "scroll" ? "scroll" : "paged";
+  return { kind, width: doc?.surface?.width ?? (kind === "scroll" ? 720 : 794) };
 }

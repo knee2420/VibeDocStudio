@@ -24,6 +24,7 @@ import { selectCurrentReferenceId, useReferenceStore } from "@/entities/referenc
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
+import { DocumentLifecycleMenuItems } from "@/features/manage-documents";
 import { ImportPdfButton } from "@/features/import-pdf-form";
 import { OutlineBreadcrumbBar } from "@/features/zoom-hierarchy";
 import { useHistoryStore } from "@/shared/lib";
@@ -101,6 +102,8 @@ export const StudioTopRibbon: React.FC = () => {
               </button>
               {activeMenu === "file" && (
                 <div className="absolute left-0 top-7 z-50 w-60 rounded-lg bg-slate-900 border border-slate-700 shadow-2xl p-1 text-xs text-slate-200 space-y-0.5">
+                  <DocumentLifecycleMenuItems onActionDone={() => setActiveMenu(null)} />
+                  <div className="my-1 border-t border-slate-800" />
                   <ImportPdfButton onActionDone={() => setActiveMenu(null)} />
                   <div className="my-1 border-t border-slate-800" />
                   <VDocFileActionButtons onActionDone={() => setActiveMenu(null)} />

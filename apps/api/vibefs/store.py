@@ -174,8 +174,30 @@ class WorkspaceStore:
                 return
             data.pop(session_id, None)
         else:
-            data[session_id] = {**state, "updatedAt": time.time()}
+            prev = data.get(session_id) or {}
+            convs = list(state.get("conversationIds") or prev.get("conversationIds") or [])
+            data[session_id] = {**state, "conversationIds": convs, "updatedAt": time.time()}
         _atomic_write(path, data)
+
+    def bind_workbench_conversation(self, session_id: str, conversation_id: Optional[str]) -> None:
+        if not session_id or not conversation_id:
+            return
+        with _WRITE_LOCK:
+            path = self.path(WORKBENCH_FILE)
+            try:
+                with open(path, encoding="utf-8") as fh:
+                    data = json.load(fh)
+            except (OSError, ValueError):
+                return
+            if not isinstance(data, dict) or session_id not in data or not isinstance(data[session_id], dict):
+                return
+            convs = list(data[session_id].get("conversationIds") or [])
+            if conversation_id in convs:
+                return
+            convs.append(conversation_id)
+            data[session_id]["conversationIds"] = convs
+            data[session_id]["updatedAt"] = time.time()
+            _atomic_write(path, data)
 
     def workbench_for(self, session_id: Optional[str]) -> Optional[dict[str, Any]]:
         if not session_id:
@@ -185,6 +207,28 @@ class WorkspaceStore:
                 return (json.load(fh) or {}).get(session_id)
         except (OSError, ValueError):
             return None
+
+    def workbench_for_conversation(self, conversation_id: Optional[str], session_id: Optional[str] = None) -> Optional[dict[str, Any]]:
+        if session_id:
+            wb = self.workbench_for(session_id)
+            if wb is not None:
+                return wb
+        try:
+            with open(self.path(WORKBENCH_FILE), encoding="utf-8") as fh:
+                data = json.load(fh) or {}
+        except (OSError, ValueError):
+            return None
+        if not isinstance(data, dict) or not data:
+            return None
+        if conversation_id:
+            for mount in self.mounts():
+                if conversation_id in mount.conversation_ids and mount.session_id in data:
+                    return data[mount.session_id]
+            for wb in data.values():
+                if isinstance(wb, dict) and conversation_id in (wb.get("conversationIds") or []):
+                    return wb
+        candidates = [wb for wb in data.values() if isinstance(wb, dict)]
+        return max(candidates, key=lambda wb: float(wb.get("updatedAt") or 0)) if candidates else None
 
     def mount_for(self, conversation_id: Optional[str], session_id: Optional[str] = None) -> Optional[Mount]:
         """agy 대화 id(또는 세션 id) → 그 세션의 마운트.
@@ -294,6 +338,10 @@ class WorkspaceStore:
                 path = str((rec.get("args") or {}).get("Path") or "")
                 if not hint or not path or os.path.basename(path.replace("\\", "/")) == hint:
                     return str(rec.get("reason") or "작업 공간 가드가 막았다.")
+        for rec in reversed(_tail_jsonl(self.path(HOOK_LOG_FILE))):
+            # vibefs MCP 도구가 낸 오류 (ACP 이름은 mcp_vibefs_<도구>)
+            if rec.get("ev") == "mcp_fail" and matches(rec) and tool in (rec.get("tool"), f"mcp_vibefs_{rec.get('tool')}"):
+                return str(rec.get("reason") or "")
         if tool == "read_file":
             for rec in reversed(_tail_jsonl(self.path(READS_FILE))):
                 if not rec.get("ok", True) and matches(rec):

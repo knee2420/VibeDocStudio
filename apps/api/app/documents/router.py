@@ -9,8 +9,13 @@ from fastapi import APIRouter, Depends, Query, status
 
 from .models import VDocAggregateRecord, VDocSummaryRecord
 from .schemas import (
+    CreateDocumentRequest,
+    DeleteDocumentResponse,
+    DuplicateDocumentRequest,
+    LinkDocumentRequest,
     PatchDocumentStructureRequest,
     PatchSlotContentRequest,
+    RenameDocumentRequest,
     RevisionListResponse,
     SaveVDocRequest,
     VDocDocumentResponse,
@@ -18,7 +23,7 @@ from .schemas import (
     VDocSummaryResponse,
 )
 from .use_cases import (
-    DeleteDocumentUseCase,
+    DocumentLifecycleUseCase,
     GetDocumentPageChunkUseCase,
     GetDocumentUseCase,
     ListDocumentsUseCase,
@@ -36,7 +41,7 @@ ChunkDep = Annotated[GetDocumentPageChunkUseCase, Depends(Provide["get_document_
 SaveDep = Annotated[SaveDocumentUseCase, Depends(Provide["save_document"])]
 UpdateSlotDep = Annotated[UpdateSlotContentUseCase, Depends(Provide["update_slot_content"])]
 PatchStructureDep = Annotated[PatchDocumentStructureUseCase, Depends(Provide["patch_document_structure"])]
-DeleteDep = Annotated[DeleteDocumentUseCase, Depends(Provide["delete_document"])]
+LifecycleDep = Annotated[DocumentLifecycleUseCase, Depends(Provide["document_lifecycle"])]
 RevisionsDep = Annotated[ListRevisionsUseCase, Depends(Provide["list_document_revisions"])]
 
 
@@ -138,7 +143,44 @@ def patch_document_structure(
     )
 
 
-@router.delete("/{doc_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("", response_model=VDocDocumentResponse, status_code=status.HTTP_201_CREATED)
 @inject
-def delete_document(doc_id: str, use_case: DeleteDep) -> None:
-    use_case.execute(doc_id)
+def create_document(body: CreateDocumentRequest, use_case: LifecycleDep) -> VDocDocumentResponse:
+    """빈 문서 한 편을 만들고 프로젝트 문서 목록에 넣는다 (지면 · 장르 · 만든 이 기록)."""
+    return _document_response(
+        use_case.create(
+            body.projectId,
+            title=body.title,
+            surface=body.surface,
+            surface_width=body.surfaceWidth,
+            genre=body.genre,
+            created_by=body.createdBy,
+            session_id=body.sessionId,
+        )
+    )
+
+
+@router.patch("/{doc_id}/title", response_model=VDocDocumentResponse)
+@inject
+def rename_document(doc_id: str, body: RenameDocumentRequest, use_case: LifecycleDep) -> VDocDocumentResponse:
+    return _document_response(use_case.rename(doc_id, body.title))
+
+
+@router.post("/{doc_id}/duplicate", response_model=VDocDocumentResponse, status_code=status.HTTP_201_CREATED)
+@inject
+def duplicate_document(doc_id: str, body: DuplicateDocumentRequest, use_case: LifecycleDep) -> VDocDocumentResponse:
+    return _document_response(use_case.duplicate(doc_id, title=body.title, project_id=body.projectId))
+
+
+@router.post("/{doc_id}/link", response_model=VDocDocumentResponse)
+@inject
+def link_document(doc_id: str, body: LinkDocumentRequest, use_case: LifecycleDep) -> VDocDocumentResponse:
+    """이미 있는 문서를 프로젝트 문서 목록에 넣는다 (불러오기)."""
+    return _document_response(use_case.link(doc_id, body.projectId))
+
+
+@router.delete("/{doc_id}", response_model=DeleteDocumentResponse)
+@inject
+def delete_document(doc_id: str, use_case: LifecycleDep) -> DeleteDocumentResponse:
+    """문서를 지우고 그 문서를 가진 프로젝트 목록에서도 뺀다."""
+    return DeleteDocumentResponse(docId=doc_id, unlinkedProjects=use_case.delete(doc_id))

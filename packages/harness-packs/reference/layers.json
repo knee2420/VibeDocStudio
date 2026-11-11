@@ -127,6 +127,90 @@
     "question": "애매한 기준을 어떤 시각적 증거로 고정하는가?",
     "metrics": []
    }
+  ],
+  "blog": [
+   {
+    "id": "B1",
+    "name": "섹션 리듬·반복 단위",
+    "question": "글을 어떤 단위로 끊고, 한 단위 안에서 무엇을 어떤 순서로 보여 주는가? (소제목 → 사진 → 글 → 연결)",
+    "metrics": [
+     "sections",
+     "photo_first_ratio",
+     "link_end_ratio",
+     "section_signature",
+     "photo_signature",
+     "photo_signature_share",
+     "signature_share",
+     "opening",
+     "paras_per_section",
+     "layout_tokens"
+    ]
+   },
+   {
+    "id": "B2",
+    "name": "사진 서사",
+    "question": "사진을 몇 장, 어떤 묶음(1장 · 2~3장 나란히)으로, 글과 어떤 비율로 놓아 이야기를 끌고 가는가?",
+    "metrics": [
+     "photos",
+     "photos_per_section",
+     "galleries",
+     "gallery_sizes",
+     "photo_text_ratio",
+     "captions",
+     "hero",
+     "gallery_share",
+     "caption_ratio"
+    ]
+   },
+   {
+    "id": "B3",
+    "name": "훑어보기·강조",
+    "question": "스크롤로 훑는 독자의 눈을 어디에 멈추게 하는가? (짧은 문단 · 가운데 정렬 · 형광펜 · 색 · 굵게)",
+    "metrics": [
+     "avg_para_chars",
+     "max_para_chars",
+     "centered_ratio",
+     "highlight_per_para",
+     "color_accents",
+     "accent_per_para",
+     "bold_per_para"
+    ]
+   },
+   {
+    "id": "B4",
+    "name": "소제목 문법",
+    "question": "소제목을 어떤 말투 · 형식으로 다는가? (질문형 · 랭킹형 · 요약형)",
+    "metrics": [
+     "headings",
+     "question_headings",
+     "heading_sequence"
+    ]
+   },
+   {
+    "id": "B5",
+    "name": "동선·연결",
+    "question": "독자를 다음 글 · 외부 정보로 어떻게 넘기는가? (링크 카드 · 안내 문구 · 구분선 · 스티커)",
+    "metrics": [
+     "link_cards",
+     "link_cards_per_section",
+     "link_thumb_ratio",
+     "dividers",
+     "stickers",
+     "boxes"
+    ]
+   },
+   {
+    "id": "B6",
+    "name": "말투·장르 규약",
+    "question": "이 장르 독자가 어색해하지 않을 말투는? (종결어미 · 감탄 · 이모지 · 1인칭 경험담)",
+    "metrics": [
+     "ending_style",
+     "emoji",
+     "exclamations",
+     "questions",
+     "avg_sentence_chars"
+    ]
+   }
   ]
  },
  "adoptionCheck": {
@@ -134,5 +218,31 @@
   "followSlack": 0.08,
   "excludeApproach": 0.2,
   "excludeFloor": 0.35
- }
+ },
+ "countMetrics": [
+  "chars",
+  "paragraphs",
+  "headings",
+  "sections",
+  "photos",
+  "galleries",
+  "captions",
+  "link_cards",
+  "dividers",
+  "stickers",
+  "boxes",
+  "color_accents",
+  "emoji",
+  "exclamations",
+  "questions",
+  "tables",
+  "layout_tokens",
+  "heading_sequence",
+  "section_signature",
+  "photo_signature",
+  "opening",
+  "signature_share",
+  "photo_signature_share"
+ ],
+ "_countDoc": "countMetrics: 분량에 따라 커지는 지표 · 내용 그대로의 목록 — 측정에는 보이지만 레퍼런스 비교 · 준수 판단 · 권장 조치에서는 뺀다 (비율 지표로 견준다)."
 }

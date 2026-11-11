@@ -278,3 +278,34 @@ def test_acp_client_send_raw_with_surrogates():
     assert "\ufffd" in decoded
 
 
+def test_completed_tool_updates_include_output(tmp_path: Path):
+    """완료된 ACP 도구 갱신의 출력(content/rawOutput)이 agent_tool.output 으로 전달되어야 프론트가 dc_new/dc_build/dc_use 를 감지한다."""
+    from app.llm.adapters.agy_acp import _tool_output_text
+
+    assert _tool_output_text({
+        "content": [{"type": "content", "content": {"type": "text", "text": "새 문서를 만들었다: docId=vdoc-123"}}],
+    }) == "새 문서를 만들었다: docId=vdoc-123"
+    assert _tool_output_text({"rawOutput": {"output": "저장했다 (rev 2) [vdoc-123]"}}) == "저장했다 (rev 2) [vdoc-123]"
+    assert _tool_output_text({"content": [], "rawOutput": {}}) == ""
+
+    client = FakeAcpClient()
+
+    def prompt(session_id, prompt_text, timeout=None):
+        for q in client.subscriber_queues:
+            q.put({"sessionUpdate": "tool_call", "toolCallId": "t1", "name": "mcp_vibefs_dc_new", "rawInput": {"title": "새 글"}})
+            q.put({
+                "sessionUpdate": "tool_call_update",
+                "toolCallId": "t1",
+                "name": "mcp_vibefs_dc_new",
+                "status": "completed",
+                "content": [{"type": "content", "content": {"type": "text", "text": "새 문서를 만들었다: docId=vdoc-abc-1"}}],
+            })
+        return {"result": {"stopReason": "end_turn", "usage": {}}}
+
+    client.prompt = prompt  # type: ignore[method-assign]
+    conv = AcpConversation(client=client, choice=EngineChoice("agy_cli", "gemini-3.8-flash"), sandbox_dir=tmp_path, idle_timeout=10.0)  # type: ignore[arg-type]
+    events = [e for e in conv.run_turn("hi", threading.Event()) if e["type"] == "agent_tool"]
+    assert [e["state"] for e in events] == ["running", "done"]
+    assert events[-1]["output"] == "새 문서를 만들었다: docId=vdoc-abc-1"
+
+

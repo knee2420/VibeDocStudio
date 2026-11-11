@@ -231,3 +231,101 @@ def test_propose_checks_follows_and_excluded_layers(bench) -> None:
     excluded = propose(wb, {"target": "slot:s_sum", "mode": "restyle",
                             "candidates": [{"follows": ["cardX"], "slots": {"s_sum": "<p>지금 요약 a b</p>"}}]}, [], store, "s1", cards=cards)
     assert any("따르지 않음" in e for e in excluded["report"]["errors"])
+
+
+def test_rf_visual_selects_shots_and_hook_allows_active_shot_reads_even_without_rm(tmp_path: Path) -> None:
+    from app.assistant.workspace.sources import source_usage
+    from vibefs.hook import decide
+
+    refs = tmp_path / "references"
+    ref_dir = _ref(
+        refs,
+        "web1",
+        [
+            {"id": "h1", "page": 1, "kind": "heading", "level": 2, "text": "첫 섹션", "html": "<h2>첫 섹션</h2>", "sourceY": 100},
+            {"id": "p1", "page": 1, "kind": "paragraph", "text": "첫 내용", "html": "<p>첫 내용</p>", "sourceY": 200},
+            {"id": "h2", "page": 1, "kind": "heading", "level": 2, "text": "둘째 섹션", "html": "<h2>둘째 섹션</h2>", "sourceY": 1350},
+            {"id": "p2", "page": 1, "kind": "paragraph", "text": "둘째 내용", "html": "<p>둘째 내용</p>", "sourceY": 1450},
+        ],
+        pins=[{"pinId": "pinW", "refId": "web1", "kind": "region", "label": "하단카드", "page": 1, "bbox": [750, 0, 950, 1000], "layer": "B5"}],
+    )
+    shots_dir = ref_dir / "shots"
+    shots_dir.mkdir()
+    (shots_dir / "shot_01.png").write_bytes(b"\x89PNG1")
+    (shots_dir / "shot_02.png").write_bytes(b"\x89PNG2")
+    (ref_dir / "shots.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "refId": "web1",
+                "viewportWidth": 1280,
+                "totalHeight": 2200,
+                "shots": [
+                    {"index": 1, "file": "shot_01.png", "scrollY": 0, "width": 1280, "height": 900, "sections": [1], "title": "첫 섹션"},
+                    {"index": 2, "file": "shot_02.png", "scrollY": 1200, "width": 1280, "height": 900, "sections": [2], "title": "둘째 섹션"},
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    store_dir = tmp_path / "ws_state"
+    ws = ResourceWorkspace(state_dir=store_dir, sandbox_dir=tmp_path / "sandbox", references_root=refs)
+    wb_payload = json.dumps({"projectId": "p1", "docId": None, "references": [{"refId": "web1", "title": "블로그", "pinIds": None}]})
+    wb = ws.set_workbench("s_ref", wb_payload)
+    assert wb is not None
+    ws.bind("s_ref", "conv_only_ref")
+
+    # 1. roots_for 에 shots/ 폴더가 잡힌다 (additionalDirectories)
+    assert str(shots_dir.resolve()) in [str(Path(r).resolve()) for r in ws.roots_for("s_ref")]
+
+    # 2. rf_map · rf_visual 출력 검증
+    rf = RefTools(wb, ws.store, session_id="s_ref", conversation_id="conv_only_ref")
+    rmap = rf.call("rf_map", {})
+    assert "시각 캡처: 2장" in rmap and "rf_visual" in rmap
+    sec2 = rf.call("rf_visual", {"ref": "web1", "section": "2"})
+    assert "shot_02.png" in sec2 and "shot_01.png" not in sec2
+    pin_out = rf.call("rf_visual", {"ref": "web1", "pin": "pinW"})
+    assert "shot_02.png" in pin_out
+
+    # 3. RM 마운트가 없어도 active reference shots/*.png 만 read_file 허용 · ref.json 등은 차단
+    ok_shot = decide({"conversationId": "conv_only_ref", "toolCall": {"name": "read_file", "args": {"Path": str(shots_dir / "shot_01.png")}}}, ws.store)
+    assert ok_shot["decision"] == "allow"
+    ok_base = decide({"conversationId": "conv_only_ref", "toolCall": {"name": "read_file", "args": {"Path": "shot_02.png"}}}, ws.store)
+    assert ok_base["decision"] == "allow" and ok_base["overwrite"]["Path"].endswith("shot_02.png")
+    deny_meta = decide({"conversationId": "conv_only_ref", "toolCall": {"name": "read_file", "args": {"Path": str(ref_dir / "ref.json")}}}, ws.store)
+    assert deny_meta["decision"] == "deny"
+
+    # 4. source_usage 가 mcp_vibefs_rf_visual 을 레퍼런스 열람으로 정확히 집계
+    usage = {u.id: u for u in source_usage(wb, mounted=0, mcp_calls=[{"tool": "mcp_vibefs_rf_visual", "args": {"ref": "web1"}}], reads=[])}
+    assert usage["references"].used is True
+
+
+def test_workbench_lists_project_docs_and_records_designated_doc(tmp_path: Path, bench) -> None:
+    root, _ = bench
+    ws = ResourceWorkspace(state_dir=tmp_path / "state" / "assistant" / "workspace", sandbox_dir=tmp_path / "sb",
+                           documents_root=root / "documents", references_root=root / "references")
+    wb = ws.set_workbench("s_proj", json.dumps({
+        "projectId": "p1",
+        "docId": "doc1",
+        "designatedDocId": "doc_blank",
+        "projectDocs": [
+            {"docId": "doc1", "title": "기본 문서", "surface": "paged", "pages": 1, "blocks": 2},
+            {"docId": "doc_blank", "title": "타이난 여행(가제목)", "surface": "paged", "pages": 1, "blocks": 0},
+        ],
+    }))
+    assert wb is not None
+    ov = wb.overview()
+    assert "프로젝트 문서 (2개" in ov and "★현재 docId=doc1" in ov and "docId=doc_blank · 「타이난 여행(가제목)」" in ov and "빈 문서" in ov
+    stored = ws.store.workbench_for("s_proj") or {}
+    assert "doc_blank" in (stored.get("adoptedDocs") or [])
+
+
+def test_proposal_store_filters_by_since(tmp_path: Path) -> None:
+    store = ProposalStore(str(tmp_path / "st"))
+    older = store.save("s1", {"id": "prop_old", "createdAt": 100.0, "status": "ready"})
+    newer = store.save("s1", {"id": "prop_new", "createdAt": 200.0, "status": "ready"})
+    assert older and newer
+    assert [p["id"] for p in store.list("s1")] == ["prop_old", "prop_new"]
+    assert [p["id"] for p in store.list("s1", since=150.0)] == ["prop_new"]

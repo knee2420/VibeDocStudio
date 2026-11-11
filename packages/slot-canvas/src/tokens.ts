@@ -12,3 +12,5 @@ export const MENU_SHADOW = "0px 4px 12px 0px rgba(47,44,44,0.1)";
 /** Mime types for block drag-and-drop inside the canvas. */
 export const BLOCK_DRAG_MIME = "application/x-vdoc-block";
 export const NEW_BLOCK_DRAG_MIME = "application/x-vdoc-new-block";
+/** 리소스 매니저 사진을 캔버스로 끌어 놓기 — `{ src: "resource:<id>", alt }`. */
+export const MEDIA_DRAG_MIME = "application/x-vdoc-media";

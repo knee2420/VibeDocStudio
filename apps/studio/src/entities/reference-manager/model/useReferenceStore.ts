@@ -12,6 +12,7 @@ import type {
   ReferenceItem,
   ReferenceLayers,
   ReferencePin,
+  ReferenceShotsManifest,
 } from "./types";
 
 /**
@@ -30,6 +31,7 @@ export interface ReferenceState {
   pins: Record<string, ReferencePin[]>;
   extraction: Record<string, ReferenceExtraction>;
   layers: Record<string, ReferenceLayers>;
+  shots: Record<string, ReferenceShotsManifest>;
   checkedPinIds: string[];
   /** AI 가 이번 대화에서 제안한 해석 카드 (확정 전) — refId 별 */
   pendingCards: Record<string, ConsensusCard[]>;
@@ -45,6 +47,7 @@ export interface ReferenceState {
   addFile: (file: File, title?: string) => Promise<ReferenceItem>;
   addUrl: (url: string, title?: string) => Promise<ReferenceItem>;
   reanalyze: (refId: string) => Promise<void>;
+  captureLive: (refId: string) => Promise<void>;
   bind: (refId: string) => Promise<void>;
   unbind: (refId: string) => Promise<void>;
   removeFromLibrary: (refId: string) => Promise<void>;
@@ -113,6 +116,7 @@ export const useReferenceStore = create<ReferenceState>((set, get) => {
     pins: {},
     extraction: {},
     layers: {},
+    shots: {},
     checkedPinIds: [],
     pendingCards: {},
     focusedPin: null,
@@ -148,12 +152,17 @@ export const useReferenceStore = create<ReferenceState>((set, get) => {
     },
 
     ensureDetail: async (refId) => {
-      const { extraction, layers } = get();
-      if (extraction[refId] && layers[refId]) return;
-      const [ex, ly] = await Promise.allSettled([referenceApi.extraction(refId), referenceApi.layers(refId)]);
+      const { extraction, layers, shots } = get();
+      if (extraction[refId] && layers[refId] && shots[refId]) return;
+      const [ex, ly, sh] = await Promise.allSettled([
+        referenceApi.extraction(refId),
+        referenceApi.layers(refId),
+        referenceApi.shots(refId),
+      ]);
       set((s) => ({
         extraction: ex.status === "fulfilled" ? { ...s.extraction, [refId]: ex.value } : s.extraction,
         layers: ly.status === "fulfilled" ? { ...s.layers, [refId]: ly.value } : s.layers,
+        shots: sh.status === "fulfilled" ? { ...s.shots, [refId]: sh.value } : s.shots,
       }));
     },
 
@@ -183,6 +192,20 @@ export const useReferenceStore = create<ReferenceState>((set, get) => {
           bound: s.bound.map((b) => (b.refId === refId ? { ...b, item: updated } : b)),
           extraction: Object.fromEntries(Object.entries(s.extraction).filter(([k]) => k !== refId)),
           layers: Object.fromEntries(Object.entries(s.layers).filter(([k]) => k !== refId)),
+          shots: Object.fromEntries(Object.entries(s.shots).filter(([k]) => k !== refId)),
+        }));
+        await get().ensureDetail(refId);
+      }),
+
+    captureLive: async (refId) =>
+      guard(async () => {
+        const updated = await referenceApi.captureLive(refId);
+        set((s) => ({
+          library: upsert(s.library, updated),
+          bound: s.bound.map((b) => (b.refId === refId ? { ...b, item: updated } : b)),
+          extraction: Object.fromEntries(Object.entries(s.extraction).filter(([k]) => k !== refId)),
+          layers: Object.fromEntries(Object.entries(s.layers).filter(([k]) => k !== refId)),
+          shots: Object.fromEntries(Object.entries(s.shots).filter(([k]) => k !== refId)),
         }));
         await get().ensureDetail(refId);
       }),

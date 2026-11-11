@@ -10,7 +10,12 @@
    "file": "tools.server.json",
    "source": "editor",
    "aliases": "tools.aliases.json"
+  },
+  {
+   "file": "tools.compose.json",
+   "source": "editor"
   }
  ],
- "clientTools": "tools.client.json"
+ "clientTools": "tools.client.json",
+ "messages": "messages.json"
 }

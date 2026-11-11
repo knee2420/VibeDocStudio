@@ -108,6 +108,18 @@ export function pageRef(doc: VDocDocument, page: VDocPage): ContextRef {
   };
 }
 
+export function docRef(doc: VDocDocument): ContextRef {
+  const blocks = doc.pages.reduce((sum, page) => sum + page.blocks.length, 0);
+  return {
+    kind: "doc",
+    id: doc.docId,
+    label: doc.title,
+    hint: `${doc.surface?.kind === "scroll" ? "스크롤" : "페이지"} · ${doc.pages.length}쪽 · 블록 ${blocks}개`,
+    access: "write",
+    meta: { docId: doc.docId },
+  };
+}
+
 /**
  * 아웃라인 노드 → 그 노드가 가리키는 실제 요소(슬롯 · 블록 · 페이지)로 첨부한다.
  * 그래서 아웃라이너에서 끈 표와 캔버스에서 끈 표가 같은 칩(@블록1)이 된다. 대상이 없는 노드만 `node`.
@@ -130,6 +142,10 @@ export function outlineNodeRef(node: OutlinerNode): ContextRef {
   if (node.targetPageId) {
     const found = pick((d) => docIndex(d).pages.get(node.targetPageId!));
     if (found) return { ...pageRef(found.doc, found.value), label: node.title || found.value.pageLabel };
+  }
+  if (docId) {
+    const targetDoc = findDoc(docId);
+    if (targetDoc) return { ...docRef(targetDoc), label: node.title || targetDoc.title };
   }
   return outlineNodeOnlyRef(node);
 }
@@ -445,6 +461,17 @@ export function resolveContextContent(ref: ContextRef): string | null {
     case "page": {
       const found = pickDoc((d) => docIndex(d).pages.get(ref.id));
       return found ? pageContent(found.doc, found.value) : null;
+    }
+    case "doc":
+    case "document": {
+      const targetDoc = findDoc(ref.id);
+      if (!targetDoc) return null;
+      const blocks = targetDoc.pages.reduce((sum, p) => sum + p.blocks.length, 0);
+      const hint =
+        blocks === 0
+          ? "비어 있는 문서 — dc_use 후 dc_build 로 바로 구조를 지을 수 있다."
+          : "구조는 document.getOutline 또는 dc_outline 으로 읽는다.";
+      return `문서 "${targetDoc.title}" (docId=${targetDoc.docId}, 지면 ${targetDoc.surface?.kind ?? "paged"}, ${targetDoc.pages.length}쪽 · 블록 ${blocks}개)\n${hint}`;
     }
     case "node": {
       const slotId = meta.slotId as string | null;

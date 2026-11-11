@@ -1,12 +1,19 @@
 """로컬 파일 및 디렉토리 스캔 프로바이더 어댑터."""
 from __future__ import annotations
 
+import hashlib
 import os
-import uuid
 from pathlib import Path
 
 from ..models import ResourceItem, ResourceSector
 from ..ports import ResourceProvider
+
+
+def deterministic_resource_id(prefix: str, path: Path) -> str:
+    """정규화 경로를 해시해 재스캔·재등록 후에도 변하지 않는 원장 ID 를 만든다."""
+    norm = os.path.normcase(os.path.normpath(str(path.resolve())))
+    digest = hashlib.sha1(norm.encode("utf-8")).hexdigest()[:10]
+    return f"{prefix}_{digest}"
 
 # 지원 및 텍스트 파싱 가능한 확장자
 SUPPORTED_EXTENSIONS = {
@@ -61,7 +68,7 @@ class FileDirectoryProvider(ResourceProvider):
 
         stat = dir_path.stat()
         return ResourceItem(
-            id=f"dir_{uuid.uuid4().hex[:10]}",
+            id=deterministic_resource_id("dir", dir_path),
             type="file",
             title=dir_path.name,
             path_or_url=str(dir_path),
@@ -79,7 +86,7 @@ class FileDirectoryProvider(ResourceProvider):
             return None
 
         ext = file_path.suffix.lower()
-        res_id = f"file_{uuid.uuid4().hex[:10]}"
+        res_id = deterministic_resource_id("file", file_path)
         sectors: list[ResourceSector] = []
 
         # 텍스트 스니펫 미리보기 생성 (간단히 앞 500자)
@@ -95,7 +102,7 @@ class FileDirectoryProvider(ResourceProvider):
 
         if snippet:
             sectors.append(ResourceSector(
-                sector_id=f"sec_{uuid.uuid4().hex[:8]}",
+                sector_id=deterministic_resource_id("sec", file_path)[:12],
                 resource_id=res_id,
                 title="개요 스니펫",
                 text_snippet=snippet,

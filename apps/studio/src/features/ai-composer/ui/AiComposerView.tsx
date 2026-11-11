@@ -13,12 +13,15 @@ import {
   targetFromBlock,
   targetFromSlots,
   useAiScopeStore,
+  type ResolvedScope,
   type ScopeTarget,
 } from "@/entities/ai-scope";
 import { useKnowledgeDeckStore } from "@/entities/knowledge-deck";
 import { useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useProjectStore } from "@/entities/vdoc-project";
+import type { VDocDocument } from "@vibe/vdoc-schema";
 import { aiRuntime, composerController } from "@/shared/ai";
 
 import { ComposerSettingsBar } from "./ComposerSettingsBar";
@@ -29,8 +32,8 @@ const DECK_KIND = "deck";
 /** 📌 고정 · 이번 메시지 범위가 될 수 있는 첨부 — 칸 · 블록 · 칸 범위 */
 const SELECTION_KINDS = new Set(["slot", "block", "slot-range"]);
 
-function refTarget(ref: ContextRef): ScopeTarget | null {
-  const doc = selectActiveDocument(useStudioDocumentStore.getState());
+function refTarget(ref: ContextRef, targetDoc?: VDocDocument): ScopeTarget | null {
+  const doc = targetDoc ?? selectActiveDocument(useStudioDocumentStore.getState());
   if (!doc) return null;
   const meta = ref.meta ?? {};
   if (typeof meta.docId === "string" && meta.docId !== doc.docId) return null;
@@ -46,35 +49,89 @@ function refTarget(ref: ContextRef): ScopeTarget | null {
 
 /**
  * 보내기 직전: 이번 메시지의 범위를 정한다.
- * 프롬프트에 @선택(칸 · 블록 · 칸 범위 · 페이지)이 있으면 이번 메시지만 그것으로 좁히고, 없으면 설정바 범위.
- * 범위 첨부를 그 범위로 바꿔 싣고, 문서 도구가 같은 범위를 지키도록 `turn` 에 걸어 둔다.
+ * 사용자가 `@문서` 등으로 다른 작업 문서를 지정했으면 캔버스·대화 키·작업대를 그 문서로 맞추고,
+ * 프롬프트에 `@선택`(칸 · 블록 · 칸 범위 · 페이지)이 있으면 이번 메시지만 그것으로 좁히며, 없으면 설정바 범위를 따른다.
  */
 function scopeForSend(_text: string, contexts: ContextRef[]): ContextRef[] {
   const docState = useStudioDocumentStore.getState();
-  const doc = selectActiveDocument(docState);
+  const currentDoc = selectActiveDocument(docState);
   const { sourcesOn, scopeOn } = useAiScopeStore.getState();
   // 리소스 OFF: 자동으로 붙는 덱/원천 리소스를 뺀다 (프롬프트에서 직접 @멘션한 것은 사용자의 뜻이므로 둔다)
-  const kept = sourcesOn
+  let kept = sourcesOn
     ? contexts
     : contexts.filter((c) => !(c.kind === DECK_KIND && !c.handle) && !(c.kind === "resource" && !c.handle));
+
+  const projectState = useProjectStore.getState();
+  const activeProjectId = projectState.activeProjectId;
+  const projectDocIds = projectState.projects.find((p) => p.projectId === activeProjectId)?.docIds;
+  const isWorkspaceDoc = (id: string) =>
+    (!projectDocIds || projectDocIds.includes(id)) && docState.docs.some((item) => item.docId === id);
+
+  let targetDoc = currentDoc;
+  let explicitDocMentioned = false;
+  for (let i = kept.length - 1; i >= 0; i--) {
+    const c = kept[i];
+    if (c.role === "reference") continue;
+    const candidateId =
+      (c.kind === "doc" || c.kind === "document") && c.id
+        ? c.id
+        : c.handle && typeof c.meta?.docId === "string"
+          ? c.meta.docId
+          : null;
+    if (candidateId && isWorkspaceDoc(candidateId)) {
+      const found = docState.docs.find((item) => item.docId === candidateId);
+      if (found) {
+        targetDoc = found;
+        if (c.kind === "doc" || c.kind === "document") explicitDocMentioned = true;
+        break;
+      }
+    }
+  }
+
+  const switchedDoc = Boolean(targetDoc && targetDoc.docId !== currentDoc?.docId);
+  if (switchedDoc && targetDoc) {
+    const nextKey = activeProjectId ? `${activeProjectId}:${targetDoc.docId}` : null;
+    if (composerController.getState().status === "idle") {
+      composerController.bindConversation(nextKey);
+    } else {
+      composerController.transferConversation(nextKey);
+    }
+    docState.setActiveDocId(targetDoc.docId);
+    const wbProvider = aiRuntime.contexts.list().find((p) => p.id === "workbench");
+    const freshWb = wbProvider?.current ? wbProvider.current() : [];
+    if (freshWb.length > 0) {
+      kept = [...freshWb, ...kept.filter((c) => c.kind !== "workbench")];
+    }
+  }
+
+  const doc = targetDoc;
   if (!doc) {
     useAiScopeStore.getState().setTurn(null);
     return kept;
   }
+  const activePageId = switchedDoc ? (doc.pages[0]?.pageId ?? null) : (docState.activePageId || null);
   const explicit = kept.filter((c) => c.handle);
-  const targets = explicit.filter((c) => SELECTION_KINDS.has(c.kind)).map(refTarget).filter((t): t is ScopeTarget => !!t);
+  const targets = explicit
+    .filter((c) => SELECTION_KINDS.has(c.kind))
+    .map((c) => refTarget(c, doc))
+    .filter((t): t is ScopeTarget => !!t);
   const pages = explicit.filter((c) => c.kind === "page" && doc.pages.some((p) => p.pageId === c.id)).map((c) => c.id);
-  // 프롬프트의 @선택이 가장 우선 (범위 OFF 여도 사용자가 이번 메시지에 직접 집은 것) → 설정바 범위 → 범위 OFF 면 문서 없이
+  const explicitDocScope: ResolvedScope | null =
+    explicitDocMentioned || switchedDoc
+      ? { docId: doc.docId, mode: "document", label: doc.title, pageIds: null, slotIds: null, blockIds: null, oneOff: true }
+      : null;
+  // 프롬프트의 @선택이 가장 우선 → 명시 @문서 지정 → 설정바 범위 → 범위 OFF 면 문서 없이
   const base =
     oneOffScope(doc, targets, pages) ??
-    (scopeOn ? currentScope(doc, useSlotSelectionStore.getState(), docState.activePageId || null) : offScope(doc.docId));
+    explicitDocScope ??
+    (scopeOn ? currentScope(doc, useSlotSelectionStore.getState(), activePageId) : offScope(doc.docId));
   if (!base) {
     useAiScopeStore.getState().setTurn(null);
     return kept;
   }
   const scope = { ...base, sourcesOff: !sourcesOn };
   useAiScopeStore.getState().setTurn(scope);
-  const ref = scopeContextRef(doc, scope, docState.activePageId || null);
+  const ref = scopeContextRef(doc, scope, activePageId);
   return [ref, ...kept.filter((c) => c.kind !== SCOPE_CONTEXT_KIND)];
 }
 
