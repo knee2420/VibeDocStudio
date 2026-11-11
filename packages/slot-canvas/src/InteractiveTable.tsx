@@ -32,6 +32,7 @@ import {
   type TableModel,
 } from "@vibe/vdoc-schema";
 
+import { useCanvasKeyLayer } from "./keyLayer";
 import { ACCENT, AFFORDANCE_BORDER, ADD_ICON_COLOR, GRIP_COLOR, MENU_SHADOW } from "./tokens";
 
 export interface TableSelectionInfo {
@@ -49,6 +50,9 @@ export interface InteractiveTableProps {
   roundedOuter?: boolean;
   editable: boolean;
   selectedSlotId: string | null;
+  blockSelected?: boolean;
+  onSelectBlock?: () => void;
+  isExternalRangeActive?: () => boolean;
   onSelectSlot: (slotId: string) => void;
   onCommand: (cmd: TableCommand) => void;
   onDeleteTable: () => void;
@@ -139,6 +143,9 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
   roundedOuter = true,
   editable,
   selectedSlotId,
+  blockSelected,
+  onSelectBlock,
+  isExternalRangeActive,
   onSelectSlot,
   onCommand,
   onDeleteTable,
@@ -186,16 +193,18 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
         p.col >= selectedRect.c0 && p.col <= selectedRect.c1
     ).length > 1;
 
+  const isTableSelected = blockSelected === false ? false : tableSelected;
+
   useEffect(() => {
     onSelectionChange?.(
-      rangeIsMultiCell || tableSelected
-        ? { range: rangeIsMultiCell ? range : null, tableSelected }
+      rangeIsMultiCell || isTableSelected
+        ? { range: rangeIsMultiCell ? range : null, tableSelected: isTableSelected }
         : null
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rangeIsMultiCell, tableSelected, range]);
+  }, [rangeIsMultiCell, isTableSelected, range]);
 
-  // Clicking outside clears the table/range selection; Escape closes everything.
+  // 바깥 포인터 클릭 시 표 범위/메뉴/선택 해제.
   useEffect(() => {
     const onPointerDown = (e: PointerEvent) => {
       const target = e.target as Element;
@@ -209,20 +218,66 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
         setRange(null);
       }
     };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setMenu(null);
-        setRange(null);
-        setTableSelected(false);
-      }
-    };
     document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
     };
   }, []);
+
+  // 키 입력 계층(`table`): 메뉴 · 다중 셀 범위 선택(Esc / Ctrl+C)을 블록 선택보다 먼저 처리한다.
+  useCanvasKeyLayer(
+    "table",
+    (e) => {
+      if (!editable) return false;
+      if (e.key === "Escape") {
+        if (menu !== null) {
+          e.preventDefault();
+          setMenu(null);
+          return true;
+        }
+        if (range !== null) {
+          if (isExternalRangeActive?.()) {
+            setRange(null);
+            return false; // 표 바깥까지 걸친 다중 범위는 rangeSelection 계층에서 함께 해제한다.
+          }
+          e.preventDefault();
+          setRange(null);
+          return true;
+        }
+        if (isTableSelected && blockSelected !== true) {
+          e.preventDefault();
+          setTableSelected(false);
+          return true;
+        }
+        return false;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c" && rangeIsMultiCell && selectedRect) {
+        if (isExternalRangeActive?.()) return false; // 표 밖 요소까지 선택된 상태면 rangeSelection 이 전체를 복사한다.
+        const active = document.activeElement as HTMLElement | null;
+        if (active?.closest("input, textarea, [data-testid='ai-composer-panel']")) return false;
+        const lines: string[] = [];
+        for (let r = selectedRect.r0; r <= selectedRect.r1; r++) {
+          const row = table.rows[r];
+          if (!row) continue;
+          const cellsText: string[] = [];
+          for (const c of row.cells) {
+            const p = placementByCellId.get(c.cellId);
+            if (!p || p.col < selectedRect.c0 || p.col > selectedRect.c1) continue;
+            const td = tableRef.current?.querySelector<HTMLElement>(`td[data-cell-id="${CSS.escape(c.cellId)}"]`);
+            cellsText.push((td?.innerText ?? td?.textContent ?? "").trim());
+          }
+          if (cellsText.length) lines.push(cellsText.join("\t"));
+        }
+        if (lines.length > 0) {
+          e.preventDefault();
+          void navigator.clipboard?.writeText?.(lines.join("\n"));
+          return true;
+        }
+      }
+      return false;
+    },
+    editable && (menu !== null || range !== null || rangeIsMultiCell || (isTableSelected && blockSelected !== true))
+  );
 
   // Column border and corner-handle drags.
   useEffect(() => {
@@ -275,8 +330,8 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
     setRange(null);
   };
 
-  const showAffordances = editable && (hovered || active || tableSelected || drag !== null);
-  const showAddColumn = editable && (tableSelected || nearRightEdge);
+  const showAffordances = editable && (hovered || active || isTableSelected || drag !== null);
+  const showAddColumn = editable && (isTableSelected || nearRightEdge);
   const rowSep = borderRules.rowBottom || "1px solid #e2e8f0";
   const colSep = borderRules.vertical === "none" ? undefined : borderRules.vertical || "1px solid #e2e8f0";
 
@@ -373,6 +428,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                           rowSpan={cell.rowSpan}
                           onPointerDown={(e) => {
                             if (!editable || e.button !== 0 || !placement) return;
+                            if (!e.shiftKey && (e.currentTarget as Element).closest?.("[data-block-drag]")) return;
                             const pos = { row: placement.row, col: placement.col };
                             if (e.shiftKey) {
                               const anchor = placements.find((p) => p.cell.slotId === selectedSlotId);
@@ -396,7 +452,15 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                           onPointerUp={() => {
                             selectingFrom.current = null;
                           }}
-                          onClick={() => onSelectSlot(cell.slotId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectSlot(cell.slotId);
+                            const target = e.target as Element;
+                            if (!target.closest?.(".vdoc-slot-editor")) {
+                              const editor = e.currentTarget.querySelector<HTMLElement>("[contenteditable=true], [data-lazy-slot-editor]");
+                              editor?.focus({ preventScroll: true });
+                            }
+                          }}
                           style={{
                             padding:
                               cell.padding || cellPadding || (isHeaderRow ? headerStyle.padding || "8px 10px" : "8px 10px"),
@@ -439,7 +503,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
           </table>
         </div>
 
-        {editable && tableSelected && (
+        {editable && isTableSelected && (
           <div className="pointer-events-none absolute -inset-px z-[32] border-2" style={{ borderColor: ACCENT }} />
         )}
 
@@ -450,6 +514,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
             return (
               <div
                 key={i}
+                data-col-resize=""
                 title="열 너비 조절"
                 onPointerDown={(e) => {
                   e.preventDefault();
@@ -472,6 +537,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                 e.stopPropagation();
                 setTableSelected(true);
                 setRange(null);
+                onSelectBlock?.();
               }}
               className="absolute top-0 -left-[30px] z-[33] flex h-4 w-[30px] cursor-pointer items-center justify-start transition-opacity duration-150"
               style={{ color: GRIP_COLOR }}

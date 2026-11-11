@@ -57,8 +57,14 @@ from app.documents.use_cases import (
     SaveDocumentUseCase,
     UpdateSlotContentUseCase,
 )
+from app.form_scaffold.adapters import AgySlotTextRefiner, LocalScaffoldJobStore
 from app.form_scaffold.agents import FormScaffoldAgent
-from app.form_scaffold.use_cases import ScaffoldPdfToDocumentUseCase
+from app.form_scaffold.use_cases import (
+    PreviewPdfUseCase,
+    ScaffoldJobRunner,
+    ScaffoldPdfToDocumentUseCase,
+    ScaffoldUrlToDocumentUseCase,
+)
 from app.llm import catalog as llm_catalog
 from app.llm.adapters import AssistantEngineProvider, OsCredentialStore, run_agy_print
 from app.llm.policy import CLI_PROVIDER, GOOGLE_PROVIDER, RuntimeExecutionPolicy
@@ -188,8 +194,30 @@ class Container(containers.DeclarativeContainer):
         one_shot=providers.Callable(
             lambda st: partial(run_agy_print, cwd=st.state / "form_scaffold" / "sandbox"), storage
         ),
+        slot_refiner=providers.Callable(
+            lambda st, pol: AgySlotTextRefiner(
+                one_shot=partial(run_agy_print, cwd=st.state / "form_scaffold" / "sandbox"),
+                policy=pol,
+                timeout_seconds=120,
+                work_root=st.state / "form_scaffold" / "sandbox" / "_slot_refine",
+            ),
+            storage,
+            runtime_policy,
+        ),
     )
     scaffold_pdf_to_document = providers.Factory(ScaffoldPdfToDocumentUseCase, agent=form_scaffold_agent)
+    scaffold_url_to_document = providers.Factory(ScaffoldUrlToDocumentUseCase)
+    preview_pdf = providers.Factory(PreviewPdfUseCase)
+    scaffold_job_store = providers.Singleton(
+        LocalScaffoldJobStore,
+        root=providers.Callable(lambda st: st.state / "form_scaffold" / "jobs", storage),
+    )
+    scaffold_jobs = providers.Singleton(
+        ScaffoldJobRunner,
+        store=scaffold_job_store,
+        agent=form_scaffold_agent,
+        max_parallel_jobs=1,
+    )
 
     # --- 3. documents 도메인 (`data/knowledge/documents`) ---
     document_repository = providers.Singleton(

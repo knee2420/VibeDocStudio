@@ -43,6 +43,9 @@ export interface SummaryLike {
 export interface TableBindings {
   editable: boolean;
   selectedSlotId: string | null;
+  blockSelected?: boolean;
+  onSelectBlock?: () => void;
+  isExternalRangeActive?: () => boolean;
   onSelectSlot: (slotId: string) => void;
   onCommand: (cmd: TableCommand) => void;
   onDeleteTable: () => void;

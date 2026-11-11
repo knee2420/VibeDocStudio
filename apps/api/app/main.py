@@ -102,7 +102,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if settings.external_llm_enabled:
             container.assistant_service().warmup()  # 첫 질문 전에 agy 를 예열 (백그라운드)
         container.knowledge_jobs().start()  # 서버가 꺼지기 전에 돌던 색인 작업을 이어서 돌린다
+        container.scaffold_jobs().start()  # 중단된 비동기 PDF 스캐폴딩 작업을 이어서 돌린다
         yield
+        container.scaffold_jobs().shutdown()
         container.knowledge_jobs().shutdown()
         # agy 상주 프로세스(Composer 세션 · 예열 풀)는 API 와 함께 내려간다.
         container.assistant_service().shutdown()

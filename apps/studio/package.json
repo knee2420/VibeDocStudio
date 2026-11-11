@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 5180",
     "typecheck": "tsc --noEmit",
-    "lint": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\oxlint.CMD -c .oxlintrc.json src"
+    "lint": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\oxlint.CMD -c .oxlintrc.json src",
+    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/undo-coalesce.test.ts tests/shortcut-guards.test.ts tests/pdf-placeholder-hydration.test.ts tests/block-clipboard-selection.test.ts tests/url-template-import.test.ts"
   },
   "dependencies": {
     "@vibe/agent-core": "workspace:*",

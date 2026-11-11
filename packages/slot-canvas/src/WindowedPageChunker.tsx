@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { A4_PAGE_STRIDE_PX, type VDocPage } from "@vibe/vdoc-schema";
+import { A4_PAGE_GAP_PX, resolvePageDimensionsPx, type VDocPage } from "@vibe/vdoc-schema";
 
 export interface WindowedPageChunkerProps {
   pages: VDocPage[];
@@ -24,10 +24,10 @@ function clampStart(start: number, totalPages: number, chunkSize: number): numbe
 }
 
 /**
- * Sliding-window A4 page chunker (`10~20p` active DOM window + proportional top/bottom height spacers).
+ * Sliding-window page chunker (`10~20p` active DOM window + proportional top/bottom height spacers).
  *
- * 스페이서는 언마운트된 페이지의 실제 높이만큼 자리를 차지하므로 스크롤바 길이 · 위치가 문서 전체와
- * 일치한다. 스크롤 위치에서 지금 보고 있는 쪽을 계산해 창을 따라 옮기고, `activePageId` 점프로도 옮긴다.
+ * 스페이서는 언마운트된 페이지의 실제 `pageRect` 높이만큼 자리를 차지하므로 가변 세로 비율 문서에서도
+ * 스크롤바 길이 · 위치가 일치한다.
  */
 export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
   pages,
@@ -40,6 +40,16 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const [windowStart, setWindowStart] = useState<number>(1);
   const [prevActivePageId, setPrevActivePageId] = useState<string | undefined>(activePageId);
+
+  const cumulativeBottoms = useMemo(() => {
+    const sums: number[] = [];
+    let acc = 0;
+    for (const p of pages) {
+      acc += resolvePageDimensionsPx(p).height + A4_PAGE_GAP_PX;
+      sums.push(acc);
+    }
+    return sums;
+  }, [pages]);
 
   // Sync window automatically when activePageId jumps outside current window
   if (activePageId !== prevActivePageId) {
@@ -63,9 +73,10 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
     const onScroll = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        // 청커 윗변이 스크롤 영역 윗변보다 얼마나 위로 지나갔는지 = 청커 안에서의 스크롤 거리
-        const offset = scroller.getBoundingClientRect().top - root.getBoundingClientRect().top;
-        const viewingPage = Math.floor(Math.max(0, offset) / A4_PAGE_STRIDE_PX) + 1;
+        const offset = Math.max(0, scroller.getBoundingClientRect().top - root.getBoundingClientRect().top);
+        let idx = cumulativeBottoms.findIndex((bottom) => offset < bottom);
+        if (idx < 0) idx = Math.max(0, totalPages - 1);
+        const viewingPage = idx + 1;
         const next = clampStart(viewingPage - Math.floor(chunkSize / 3), totalPages, chunkSize);
         setWindowStart((prev) => (Math.abs(prev - next) >= Math.ceil(chunkSize / 3) ? next : prev));
       });
@@ -75,7 +86,7 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
       cancelAnimationFrame(frame);
       scroller.removeEventListener("scroll", onScroll);
     };
-  }, [virtualized, totalPages, chunkSize]);
+  }, [virtualized, totalPages, chunkSize, cumulativeBottoms]);
 
   const { startPage, visiblePages, topSpacerPx, bottomSpacerPx } = useMemo(() => {
     if (!virtualized) {
@@ -88,13 +99,16 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
     }
     const clampedStart = clampStart(windowStart, totalPages, chunkSize);
     const clampedEnd = Math.min(totalPages, clampedStart + chunkSize - 1);
+    const topPx = clampedStart > 1 ? cumulativeBottoms[clampedStart - 2] ?? 0 : 0;
+    const totalPx = cumulativeBottoms[totalPages - 1] ?? 0;
+    const endPx = cumulativeBottoms[clampedEnd - 1] ?? totalPx;
     return {
       startPage: clampedStart,
       visiblePages: pages.slice(clampedStart - 1, clampedEnd),
-      topSpacerPx: (clampedStart - 1) * A4_PAGE_STRIDE_PX,
-      bottomSpacerPx: (totalPages - clampedEnd) * A4_PAGE_STRIDE_PX,
+      topSpacerPx: topPx,
+      bottomSpacerPx: Math.max(0, totalPx - endPx),
     };
-  }, [pages, totalPages, chunkSize, windowStart, virtualized]);
+  }, [pages, totalPages, chunkSize, windowStart, virtualized, cumulativeBottoms]);
 
   return (
     <div ref={rootRef} data-testid="windowed-page-chunker" className="w-full">

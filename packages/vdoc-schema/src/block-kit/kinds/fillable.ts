@@ -13,6 +13,9 @@ export const fillableBlock = defineBlockKind<FillableGroupBlockDef>({
   insertable: {
     label: "할당형 입력 필드",
     description: "담당자 및 실행과제",
+    order: 6,
+    shortcut: 6,
+    defaultFrameHeight: 72,
     create: ({ suffix, defaultBackdataRefs = [] }) => {
       const slots = {};
       const field = makeSlot(slots, `slot_fill_${suffix}`, "할당형 입력 슬롯", "<p></p>", defaultBackdataRefs, { role: "fillable-field" });

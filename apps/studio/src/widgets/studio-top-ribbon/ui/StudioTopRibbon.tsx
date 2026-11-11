@@ -29,6 +29,7 @@ import { OutlineBreadcrumbBar } from "@/features/zoom-hierarchy";
 import { useHistoryStore } from "@/shared/lib";
 
 import { ExecutionPhaseStepper } from "./ExecutionPhaseStepper";
+import { ScaffoldJobStatusPill } from "./ScaffoldJobStatusPill";
 import { ShortcutHelpPopover } from "./ShortcutHelpPopover";
 
 const selectRibbonDocFields = (s: Parameters<typeof selectActiveDocument>[0]) => {
@@ -234,6 +235,7 @@ export const StudioTopRibbon: React.FC = () => {
           )}
 
           <SaveConflictPill />
+          <ScaffoldJobStatusPill />
 
           {/* Staged AI Diffs Pill -> Links directly to Source Control Activity */}
           <button

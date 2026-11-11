@@ -37,6 +37,22 @@ class SlotUpdate:
     label: str | None = None
 
 
+def _page_stride_px(page: dict[str, Any]) -> int:
+    rect = page.get("pageRect")
+    if isinstance(rect, dict):
+        h = rect.get("height")
+        if isinstance(h, (int, float)) and h > 0:
+            unit = rect.get("unit")
+            if unit == "pt":
+                px = float(h) * (96.0 / 72.0)
+            elif unit == "mm":
+                px = float(h) * (96.0 / 25.4)
+            else:
+                px = float(h)
+            return max(264, int(round(px)) + 24)
+    return A4_PAGE_STRIDE_PX
+
+
 @dataclass(frozen=True)
 class VDocPageWindow:
     """대용량 문서의 페이지 창 하나와 그 창이 참조하는 슬롯 · 근거 자료만 담은 투영."""
@@ -49,6 +65,8 @@ class VDocPageWindow:
     pages: list[dict[str, Any]]
     slots: dict[str, Any]
     backdata: dict[str, Any]
+    before_spacer_px: int | None = None
+    after_spacer_px: int | None = None
 
     @property
     def window_size(self) -> int:
@@ -56,10 +74,14 @@ class VDocPageWindow:
 
     @property
     def top_spacer_px(self) -> int:
+        if self.before_spacer_px is not None:
+            return self.before_spacer_px
         return max(0, (self.start_page - 1) * A4_PAGE_STRIDE_PX)
 
     @property
     def bottom_spacer_px(self) -> int:
+        if self.after_spacer_px is not None:
+            return self.after_spacer_px
         return max(0, (self.total_pages - self.end_page) * A4_PAGE_STRIDE_PX)
 
 
@@ -137,6 +159,8 @@ class VDocAggregateRecord:
             pages=window_pages,
             slots=slots,
             backdata=backdata,
+            before_spacer_px=sum(_page_stride_px(p) for p in pages[: max(0, start - 1)]),
+            after_spacer_px=sum(_page_stride_px(p) for p in pages[end:]),
         )
 
     # --- 변경 ---------------------------------------------------------------

@@ -55,6 +55,19 @@
         "CleanInvoice"
       ],
       "description": "Atticus LLC의 공식 결제 인보이스 정밀 조판 번들 ($147.00 일시불 결제 및 ThriveCart 처리 확인)"
+    },
+    {
+      "catalogId": "blog-sector-sample",
+      "title": "프로덕트·기술 블로그 섹터 템플릿",
+      "sourceOrigin": "VibeDocStudio Catalog Sector Sample",
+      "category": "블로그 섹터",
+      "tags": [
+        "블로그",
+        "인트로",
+        "비교그리드",
+        "CTA"
+      ],
+      "description": "인트로·문제 정의(1p)와 AS-IS/TO-BE 비교 및 CTA 마무리(2p)를 필요한 섹터만 골라 꽂아 쓰는 블로그 템플릿"
     }
   ]
 }

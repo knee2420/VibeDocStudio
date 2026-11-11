@@ -5,9 +5,9 @@
   "description": "FastAPI 헥사고날 도메인 슬라이스 백엔드",
   "scripts": {
     "dev": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe dev_server.py --port 8090",
-    "build": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -m compileall -q app vibefs main.py ../../packages/pdf-vdoc-engine/pdf_vdoc_engine",
+    "build": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -m compileall -q app vibefs main.py ../../packages/pdf-vdoc-engine/pdf_vdoc_engine ../../packages/pdf-fidelity-engine/pdf_fidelity_engine ../../packages/webpage-fidelity-engine/webpage_fidelity_engine",
     "typecheck": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -c \"import main\"",
-    "lint": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -m compileall -q app vibefs main.py tests && ..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\ruff.exe check app vibefs main.py tests ../../packages/pdf-vdoc-engine/pdf_vdoc_engine ../../packages/harness-kit/harness_kit && ..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -c \"import sys; sys.path[:0]=['.', '../../packages/pdf-vdoc-engine', '../../packages/harness-kit']; from importlinter.cli import lint_imports; raise SystemExit(lint_imports())\"",
+    "lint": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -m compileall -q app vibefs main.py tests && ..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\ruff.exe check app vibefs main.py tests ../../packages/pdf-vdoc-engine/pdf_vdoc_engine ../../packages/pdf-fidelity-engine/pdf_fidelity_engine ../../packages/webpage-fidelity-engine/webpage_fidelity_engine ../../packages/harness-kit/harness_kit && ..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -c \"import sys; sys.path[:0]=['.', '../../packages/pdf-vdoc-engine', '../../packages/pdf-fidelity-engine', '../../packages/webpage-fidelity-engine', '../../packages/harness-kit']; from importlinter.cli import lint_imports; raise SystemExit(lint_imports())\"",
     "test": "..\\..\\..\\VibePatchNote\\apps\\api\\venv\\Scripts\\python.exe -m pytest --basetemp .pytest-tmp"
   }
 }

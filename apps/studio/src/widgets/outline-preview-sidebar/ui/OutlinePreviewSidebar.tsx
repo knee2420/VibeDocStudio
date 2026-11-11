@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpLeft,
   BookOpen,
@@ -6,6 +6,10 @@ import {
   FolderTree,
   ChevronsDownUp,
   ChevronsUpDown,
+  FilePlus2,
+  FileUp,
+  Globe,
+  Layers,
   LayoutGrid,
   MoreHorizontal,
   Plus,
@@ -13,13 +17,29 @@ import {
   X,
 } from "lucide-react";
 
-import { PROJECT_ROOT_CRUMB_ID, type OutlinerNode } from "@vibe/vdoc-schema";
+import { PROJECT_ROOT_CRUMB_ID, type OutlinerNode, type WorkbenchPhase } from "@vibe/vdoc-schema";
+import type { PagePendingState } from "@vibe/slot-canvas";
 
+import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useProjectStore } from "@/entities/vdoc-project";
 import { SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachable, outlineNodeRef, useAttachPickStore, withPicked } from "@/features/ai-workspace";
-import { isEditableOutlineNode, useOutlineNodeEditing } from "@/features/edit-outline";
+import {
+  isDocumentTargetNode,
+  isEditableOutlineNode,
+  isPageTargetNode,
+  useOutlineNodeEditing,
+} from "@/features/edit-outline";
+import {
+  PagePickerModal,
+  TEMPLATE_SOURCE_REGISTRY,
+  UrlImportModal,
+  useInsertTemplatePages,
+  type TemplateSourceKind,
+} from "@/features/insert-template-pages";
+import { usePageMutations } from "@/features/mutate-document-pages";
 import { resolvePeekTarget, usePeekTrigger, type PeekHandlers } from "@/features/peek-page";
 import { useFractalZoomNavigation, useOutlineSelector } from "@/features/zoom-hierarchy";
 import { useDragResize } from "@/shared/lib";
@@ -158,9 +178,99 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
   const pickedOutline = useAttachPickStore((s) => s.picked.outline);
   const pickAnchor = React.useRef<string | null>(null);
 
+  const [renaming, setRenaming] = useState<{ nodeId: string; initialTitle: string } | null>(null);
+  const [addPageMenu, setAddPageMenu] = useState<{ docId: string; top: number; left: number } | null>(null);
+  const addPageMenuRef = useRef<HTMLDivElement>(null);
+
+  const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
+  const docPageCountKey = useStudioDocumentStore((s) => s.docs.map((d) => `${d.docId}:${d.pages.length}`).join("|"));
+  const pageCountsByDocId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const part of docPageCountKey.split("|")) {
+      if (!part) continue;
+      const sep = part.lastIndexOf(":");
+      if (sep > 0) map.set(part.slice(0, sep), Number(part.slice(sep + 1)) || 0);
+    }
+    return map;
+  }, [docPageCountKey]);
+
+  const pageStatesByPageId = usePdfScaffoldJobStore((s) => s.pageStatesByPageId);
+  const pageMutations = usePageMutations();
+  const templateInsert = useInsertTemplatePages(
+    (docId, sourceDoc, pageIds, label) => {
+      pageMutations.importTemplatePages(docId, sourceDoc, pageIds, { label });
+    },
+    { onReservePdfPlaceholders: pageMutations.reservePdfPlaceholderPages }
+  );
+
+  useEffect(() => {
+    if (!addPageMenu) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!addPageMenuRef.current?.contains(e.target as Node)) setAddPageMenu(null);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAddPageMenu(null);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [addPageMenu]);
+
+  const startRename = (node: OutlinerNode) => {
+    let initialTitle = node.title;
+    if (isPageTargetNode(node) && node.nodeId.startsWith("auto-page-") && node.targetPageId) {
+      const docId = node.targetDocId || activeDocId;
+      const page = useStudioDocumentStore
+        .getState()
+        .docs.find((d) => d.docId === docId)
+        ?.pages.find((p) => p.pageId === node.targetPageId);
+      if (page) initialTitle = page.pageLabel;
+    }
+    setRenaming({ nodeId: node.nodeId, initialTitle });
+  };
+
+  const commitRename = (node: OutlinerNode, nextTitle: string) => {
+    setRenaming(null);
+    if (isPageTargetNode(node) && node.targetPageId) {
+      void pageMutations.renamePage(node.targetDocId || activeDocId, node.targetPageId, nextTitle);
+      return;
+    }
+    if (isEditableOutlineNode(node, useWorkspaceSessionStore.getState().currentPhase)) {
+      void useProjectStore.getState().renameOutlineNodeImmediate(node.nodeId, nextTitle);
+    }
+  };
+
+  const openAddPageMenuForNode = (node: OutlinerNode, anchorEl: HTMLElement) => {
+    const docId = node.targetDocId || activeDocId;
+    const rect = anchorEl.getBoundingClientRect();
+    const top = Math.min(rect.bottom + 4, Math.max(8, window.innerHeight - 250));
+    const left = Math.min(rect.left, Math.max(8, window.innerWidth - 260));
+    setAddPageMenu({ docId, top, left });
+  };
+
+  const handleTemplateSourcePick = (kind: TemplateSourceKind, docId: string) => {
+    setAddPageMenu(null);
+    if (kind === "blank") {
+      const nextNum = (pageCountsByDocId.get(docId) ?? 0) + 1;
+      templateInsert.insertBasicPage(docId, `새 페이지 ${nextNum}`);
+    } else if (kind === "pdf") {
+      templateInsert.triggerPdfPick(docId);
+    } else if (kind === "url") {
+      templateInsert.openUrlImport(docId);
+    } else if (kind === "catalog") {
+      void templateInsert.openCatalogBrowser(docId);
+    }
+  };
+
   const { projection, handleBulletZoomIn, handleSelectOutlineNode, handleBreadcrumbClick, handleZoomOutOneLevel } =
     useFractalZoomNavigation();
-  const editing = useOutlineNodeEditing(activeDocId);
+  const editing = useOutlineNodeEditing(activeDocId, {
+    onStartRename: startRename,
+    onRemovePage: pageMutations.removePage,
+  });
   const peekTrigger = usePeekTrigger();
 
   const allParentIds = projection.allNodes.filter((n) => projection.hasChildrenMap[n.nodeId]).map((n) => n.nodeId);
@@ -214,8 +324,20 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
     hover: (node, hovering) => setHoveredTargetId(hovering ? outlineNodeTargetId(node) : null),
     toggleCollapse: (node) => toggleNodeCollapse(node.nodeId),
     zoomIn: (node) => handleBulletZoomIn(node),
-    move: (node, direction) => void editing.moveNode(node.nodeId, direction),
-    remove: (node) => void editing.deleteNode(node.nodeId),
+    move: (node, direction) => void editing.moveNode(node, direction),
+    remove: (node) => void editing.deleteNode(node),
+    openAddPageMenu: openAddPageMenuForNode,
+    startRename,
+    commitRename,
+    cancelRename: () => setRenaming(null),
+    duplicatePage: (node) => {
+      if (node.targetPageId) pageMutations.duplicatePage(node.targetDocId || activeDocId, node.targetPageId);
+    },
+    deletePage: (node) => {
+      if (!node.targetPageId) return;
+      usePdfScaffoldJobStore.getState().clearPageState(node.targetPageId);
+      pageMutations.removePage(node.targetDocId || activeDocId, node.targetPageId);
+    },
   };
   const latest = React.useRef(handlers);
   React.useLayoutEffect(() => {
@@ -230,6 +352,12 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
       zoomIn: (node) => latest.current.zoomIn(node),
       move: (node, direction) => latest.current.move(node, direction),
       remove: (node) => latest.current.remove(node),
+      openAddPageMenu: (node, anchorEl) => latest.current.openAddPageMenu(node, anchorEl),
+      startRename: (node) => latest.current.startRename(node),
+      commitRename: (node, nextTitle) => latest.current.commitRename(node, nextTitle),
+      cancelRename: () => latest.current.cancelRename(),
+      duplicatePage: (node) => latest.current.duplicatePage(node),
+      deletePage: (node) => latest.current.deletePage(node),
       // 피크 대상(문서 · 첫 페이지)은 마우스 이벤트 순간에 스토어에서 읽는다.
       peek: (node) =>
         peekTrigger(() => {
@@ -370,36 +498,122 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
             description={`"${quickFilterQuery}"에 일치하는 항목이 없습니다.`}
             actionLabel="필터 초기화"
             onAction={() => setQuickFilterQuery("")}
-            secondaryActionLabel="+ 새 노드 추가"
-            onSecondaryAction={addNode}
+            secondaryActionLabel={currentPhase !== "drafting" ? "+ 새 노드 추가" : undefined}
+            onSecondaryAction={currentPhase !== "drafting" ? addNode : undefined}
           />
         ) : (
-          projection.visibleNodes.map((node) => (
-            <OutlineTreeRow
-              key={node.nodeId}
-              node={node}
-              isSelected={selectedOutlinerNodeId === node.nodeId || projection.rootNodeId === node.nodeId}
-              isHighlighted={isHighlighted(node)}
-              isPicked={Boolean(pickedOutline?.some((r) => r.id === outlineNodeTargetId(node) || r.id === node.nodeId))}
-              hasChildren={Boolean(projection.hasChildrenMap[node.nodeId])}
-              isCollapsed={collapsedNodeIds.includes(node.nodeId)}
-              actions={rowActions}
-            />
-          ))
+          projection.visibleNodes.map((node) => {
+            const docId = node.targetDocId || activeDocId;
+            const pendingState =
+              node.zoomLevel === "page" && !node.targetBlockId && node.targetPageId
+                ? (pageStatesByPageId[node.targetPageId] ?? null)
+                : null;
+            return (
+              <OutlineTreeRow
+                key={node.nodeId}
+                node={node}
+                phase={currentPhase}
+                pageCount={pageCountsByDocId.get(docId) ?? 0}
+                isSelected={selectedOutlinerNodeId === node.nodeId || projection.rootNodeId === node.nodeId}
+                isHighlighted={isHighlighted(node)}
+                isPicked={Boolean(pickedOutline?.some((r) => r.id === outlineNodeTargetId(node) || r.id === node.nodeId))}
+                hasChildren={Boolean(projection.hasChildrenMap[node.nodeId])}
+                isCollapsed={collapsedNodeIds.includes(node.nodeId)}
+                pendingState={pendingState}
+                renamingInitialTitle={renaming?.nodeId === node.nodeId ? renaming.initialTitle : undefined}
+                actions={rowActions}
+              />
+            );
+          })
         )}
 
-        <div className="p-2 pt-3 shrink-0 flex items-center justify-center">
-          <button
-            type="button"
-            data-testid="add-outline-node-btn"
-            onClick={addNode}
-            className="w-full py-1.5 px-4 rounded-full bg-slate-200/60 hover:bg-slate-200 active:bg-slate-300/70 text-slate-600 hover:text-slate-800 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ New node</span>
-          </button>
-        </div>
+        {currentPhase !== "drafting" && (
+          <div className="p-2 pt-3 shrink-0 flex items-center justify-center">
+            <button
+              type="button"
+              data-testid="add-outline-node-btn"
+              onClick={addNode}
+              className="w-full py-1.5 px-4 rounded-full bg-slate-200/60 hover:bg-slate-200 active:bg-slate-300/70 text-slate-600 hover:text-slate-800 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ New node</span>
+            </button>
+          </div>
+        )}
       </div>
+
+      <input
+        ref={templateInsert.pdfInputRef}
+        type="file"
+        accept="application/pdf,.pdf"
+        data-testid="outline-pdf-template-input"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          void templateInsert.handlePdfFileSelected(file);
+        }}
+      />
+
+      {addPageMenu && (
+        <div
+          ref={addPageMenuRef}
+          data-testid="add-page-source-menu"
+          style={{ top: `${addPageMenu.top}px`, left: `${addPageMenu.left}px` }}
+          className="fixed z-[110] w-60 rounded-xl bg-white border border-slate-200 shadow-xl p-1.5 text-xs space-y-1"
+        >
+          <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">페이지 추가 출처</div>
+          {TEMPLATE_SOURCE_REGISTRY.map((src) => {
+            const Icon =
+              src.kind === "blank"
+                ? FilePlus2
+                : src.kind === "pdf"
+                  ? FileUp
+                  : src.kind === "url"
+                    ? Globe
+                    : Layers;
+            return (
+              <button
+                key={src.kind}
+                type="button"
+                data-testid={`add-page-source-${src.kind}`}
+                onClick={() => handleTemplateSourcePick(src.kind, addPageMenu.docId)}
+                className="w-full text-left px-2 py-1.5 rounded-lg hover:bg-emerald-50 text-slate-700 hover:text-emerald-950 flex items-start gap-2 cursor-pointer transition-colors"
+              >
+                <Icon className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-[11px]">{src.label}</div>
+                  <div className="text-[10px] text-slate-500 leading-snug">{src.description}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <UrlImportModal
+        key={templateInsert.urlImportTargetDocId ?? "closed"}
+        targetDocId={templateInsert.urlImportTargetDocId}
+        loading={templateInsert.urlImporting}
+        error={templateInsert.error}
+        onDismissError={templateInsert.dismissError}
+        onSubmit={templateInsert.submitUrlImport}
+        onClose={templateInsert.closeModals}
+      />
+
+      <PagePickerModal
+        pagePicker={templateInsert.pagePicker}
+        pdfPreviewPicker={templateInsert.pdfPreviewPicker}
+        catalogBrowser={templateInsert.catalogBrowser}
+        loadingMessage={templateInsert.loadingMessage}
+        error={templateInsert.error}
+        suppressErrorModal={Boolean(templateInsert.urlImportTargetDocId)}
+        onDismissError={templateInsert.dismissError}
+        onSelectCatalog={templateInsert.selectCatalogTemplate}
+        onConfirmPages={templateInsert.confirmSelectedPages}
+        onConfirmPdfPages={templateInsert.confirmPdfPages}
+        onClose={templateInsert.closeModals}
+      />
     </>
   );
 };
@@ -412,17 +626,27 @@ interface OutlineRowActions {
   zoomIn: (node: OutlinerNode) => void;
   move: (node: OutlinerNode, direction: -1 | 1) => void;
   remove: (node: OutlinerNode) => void;
+  openAddPageMenu: (node: OutlinerNode, anchorEl: HTMLElement) => void;
+  startRename: (node: OutlinerNode) => void;
+  commitRename: (node: OutlinerNode, nextTitle: string) => void;
+  cancelRename: () => void;
+  duplicatePage: (node: OutlinerNode) => void;
+  deletePage: (node: OutlinerNode) => void;
   /** 피크 핸들러 — 문서 목록은 호버 순간에 읽는다 (문서 구독으로 트리 전체가 다시 그려지지 않게). */
   peek: (node: OutlinerNode) => PeekHandlers;
 }
 
 interface OutlineTreeRowProps {
   node: OutlinerNode;
+  phase: WorkbenchPhase;
+  pageCount: number;
   isSelected: boolean;
   isHighlighted: boolean;
   isPicked: boolean;
   hasChildren: boolean;
   isCollapsed: boolean;
+  pendingState?: PagePendingState | null;
+  renamingInitialTitle?: string;
   actions: OutlineRowActions;
 }
 
@@ -432,13 +656,18 @@ interface OutlineTreeRowProps {
  */
 const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
   node,
+  phase,
+  pageCount,
   isSelected,
   isHighlighted,
   isPicked,
   hasChildren,
   isCollapsed,
+  pendingState = null,
+  renamingInitialTitle,
   actions,
 }) {
+  const isBusyPending = pendingState?.status === "queued" || pendingState?.status === "running";
   const handlers = React.useMemo(
     () => ({
       attachProps: attachable(() => withPicked("outline", outlineNodeRef(node))),
@@ -450,6 +679,12 @@ const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
       onZoomIn: () => actions.zoomIn(node),
       onMove: (direction: -1 | 1) => actions.move(node, direction),
       onDelete: () => actions.remove(node),
+      onOpenAddPageMenu: (anchorEl: HTMLElement) => actions.openAddPageMenu(node, anchorEl),
+      onStartRename: () => actions.startRename(node),
+      onCommitRename: (nextTitle: string) => actions.commitRename(node, nextTitle),
+      onCancelRename: () => actions.cancelRename(),
+      onDuplicatePage: () => actions.duplicatePage(node),
+      onDeletePage: () => actions.deletePage(node),
     }),
     [node, actions]
   );
@@ -461,7 +696,12 @@ const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
       isPicked={isPicked}
       hasChildren={hasChildren}
       isCollapsed={isCollapsed}
-      editable={isEditableOutlineNode(node)}
+      editable={isEditableOutlineNode(node, phase)}
+      canAddPage={isDocumentTargetNode(node)}
+      canManagePage={isPageTargetNode(node)}
+      canDeletePage={pageCount > 1 && !isBusyPending}
+      pendingState={pendingState}
+      renamingInitialTitle={renamingInitialTitle}
       {...handlers}
     />
   );

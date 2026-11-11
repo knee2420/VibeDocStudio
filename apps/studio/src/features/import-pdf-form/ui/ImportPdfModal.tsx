@@ -13,6 +13,8 @@ import {
   Crosshair,
 } from "lucide-react";
 
+import { PdfPagePreviewGrid, type PdfPreviewResult } from "@/entities/scaffold-job";
+
 import type { FidelityMode, ImportMode } from "../model/useImportPdfForm";
 
 interface ImportPdfModalProps {
@@ -26,6 +28,11 @@ interface ImportPdfModalProps {
   onModeChange: (mode: ImportMode) => void;
   fidelityMode: FidelityMode;
   onFidelityModeChange: (mode: FidelityMode) => void;
+  preview: PdfPreviewResult | null;
+  isPreviewLoading: boolean;
+  selectedPageNumbers: readonly number[];
+  onTogglePreviewPage: (pageNumber: number) => void;
+  onToggleAllPreviewPages: () => void;
   isLoading: boolean;
   currentStep: 1 | 2 | 3;
   errorMessage: string | null;
@@ -43,6 +50,11 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
   onModeChange,
   fidelityMode,
   onFidelityModeChange,
+  preview,
+  isPreviewLoading,
+  selectedPageNumbers,
+  onTogglePreviewPage,
+  onToggleAllPreviewPages,
   isLoading,
   currentStep,
   errorMessage,
@@ -81,9 +93,15 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
 
   if (typeof document === "undefined") return null;
 
+  const widenForPreview = importMode === "canvas" && Boolean(preview);
+
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div
+        className={`w-full ${
+          widenForPreview ? "max-w-2xl" : "max-w-lg"
+        } bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2.5">
@@ -225,8 +243,29 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
             </div>
           </div>
 
-          {/* Fidelity Mode Selector (캔버스 스캐폴딩 모드일 때만 활성화) */}
-          {importMode === "canvas" && (
+          {/* 1단계 PDF 썸네일 미리보기 + 페이지 선택 (캔버스 모드) */}
+          {importMode === "canvas" && isPreviewLoading && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex items-center gap-2.5 text-xs text-slate-600">
+              <Loader2 className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
+              <span>페이지 썸네일과 텍스트 레이어를 확인하고 있습니다...</span>
+            </div>
+          )}
+
+          {importMode === "canvas" && preview && !isPreviewLoading && (
+            <PdfPagePreviewGrid
+              preview={preview}
+              selectedPageNumbers={selectedPageNumbers}
+              onTogglePage={onTogglePreviewPage}
+              onToggleAll={onToggleAllPreviewPages}
+              fidelityMode={fidelityMode}
+              onFidelityModeChange={onFidelityModeChange}
+              disabled={isLoading}
+              compact
+            />
+          )}
+
+          {/* Fidelity Mode Selector (미리보기 전 기본 표시용) */}
+          {importMode === "canvas" && !preview && !isPreviewLoading && (
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-medium text-slate-700">
@@ -350,13 +389,23 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
           <button
             type="button"
             onClick={onSubmit}
-            disabled={!selectedFile || isLoading}
+            disabled={
+              !selectedFile ||
+              isLoading ||
+              isPreviewLoading ||
+              (importMode === "canvas" && Boolean(preview) && selectedPageNumbers.length === 0)
+            }
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition disabled:opacity-50 disabled:pointer-events-none"
           >
             {isLoading ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                분석 중...
+                준비 중...
+              </>
+            ) : importMode === "canvas" && preview ? (
+              <>
+                <FileText className="w-3.5 h-3.5" />
+                선택한 {selectedPageNumbers.length}개 페이지로 문서 만들기 · 변환 시작
               </>
             ) : (
               <>

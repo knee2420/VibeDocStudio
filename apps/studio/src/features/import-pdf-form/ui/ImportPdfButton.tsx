@@ -21,6 +21,11 @@ export const ImportPdfButton: React.FC<ImportPdfButtonProps> = ({ onActionDone }
     setImportMode,
     fidelityMode,
     setFidelityMode,
+    preview,
+    isPreviewLoading,
+    selectedPageNumbers,
+    togglePreviewPage,
+    toggleAllPreviewPages,
     isLoading,
     currentStep,
     errorMessage,
@@ -58,6 +63,11 @@ export const ImportPdfButton: React.FC<ImportPdfButtonProps> = ({ onActionDone }
         onModeChange={setImportMode}
         fidelityMode={fidelityMode}
         onFidelityModeChange={setFidelityMode}
+        preview={preview}
+        isPreviewLoading={isPreviewLoading}
+        selectedPageNumbers={selectedPageNumbers}
+        onTogglePreviewPage={togglePreviewPage}
+        onToggleAllPreviewPages={toggleAllPreviewPages}
         isLoading={isLoading}
         currentStep={currentStep}
         errorMessage={errorMessage}

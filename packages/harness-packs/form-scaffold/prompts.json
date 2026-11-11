@@ -10,5 +10,7 @@
  "titles": "당신은 VDoc 고충실도 문서 스캐폴딩 전문 AI 에이전트입니다.\n문서명: {title}\n발견된 구획 구조:\n{blocks}\n\n위 서식 구조를 분석하여 각 구획의 명확한 한글 비즈니스 구획명(blockTitles)과 정제된 문서 제목(title)을 JSON으로 반환하십시오.\n반드시 아래 JSON 형식으로만 응답해야 합니다:\n```json\n{{\n  \"title\": \"{title}\",\n  \"blockTitles\": {{\n{keys}\n  }}\n}}\n```",
  "titlesTable": "- {id} (표, {rows}행): {samples}",
  "titlesBody": "- {id} (본문): {text}",
- "titlesKey": "    \"{id}\": \"구획명\""
+ "titlesKey": "    \"{id}\": \"구획명\"",
+ "slotRefineItem": "- slotId={slot_id} ({kind}, {block_title}) 사유={reasons}\n  깨진 추출 텍스트: {raw_text}\n  크롭 이미지 경로: {crop_path}",
+ "slotRefine": "당신은 VDoc PDF→HTML 슬롯 텍스트 복원 전문 AI입니다.\n첨부된 페이지 이미지({page_path})와 각 슬롯의 크롭 이미지를 확인하고, 글꼴/ToUnicode 누락·기호 깨짐·띄어쓰기 결여가 탐지된 아래 슬롯들의 실제 본문 텍스트만 정확히 복원하십시오.\n문서명: {doc_title}\n\n대상 슬롯 목록:\n{items}\n\n규칙:\n1. 표 구조·바운더리·슬롯 ID는 절대 바꾸지 마십시오.\n2. 이미지에서 실제 보이는 글자·특수기호(예: ☞, ◎, ●, ※, ☺ 등)·문장부호·띄어쓰기를 줄 단위 문자열 배열(paragraphs)로 반환하십시오.\n3. 반드시 아래 JSON 형식으로만 응답하십시오:\n```json\n{{\n  \"patches\": {{\n{example_keys}\n  }}\n}}\n```"
 }

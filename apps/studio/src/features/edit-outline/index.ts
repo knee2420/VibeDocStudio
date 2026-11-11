@@ -1,1 +1,6 @@
-export { isEditableOutlineNode, useOutlineNodeEditing } from "./model/useOutlineNodeEditing";
+export {
+  isDocumentTargetNode,
+  isEditableOutlineNode,
+  isPageTargetNode,
+  useOutlineNodeEditing,
+} from "./model/useOutlineNodeEditing";

@@ -17,7 +17,6 @@ CLI 가 읽는 사용법은 스킬의 `references/cli_loop_guide.md` 에 있다.
 """
 from __future__ import annotations
 
-import base64
 import copy
 import json
 import logging
@@ -33,6 +32,7 @@ from typing import Any, Callable, Optional
 
 from agent_core.react import RunTrace, Tool, ToolRegistry, ToolResult
 from harness_kit import packs
+from pdf_fidelity_engine.extract.raw_truth import extract_page_image_data_uris
 
 from app.form_scaffold.agents.fidelity_diagnosis import diagnose
 from app.form_scaffold.agents.fidelity_layout import (
@@ -50,6 +50,14 @@ from app.form_scaffold.agents.fidelity_layout import (
 logger = logging.getLogger(__name__)
 
 PAGE_SELECTOR = "section[id^='vdoc-page-'] > div.bg-white"
+
+
+def _find_repo_root(start: Path) -> Path:
+    """`apps/studio/public/fonts` 를 포함하는 최상위 저장소 루트를 탐색한다."""
+    for cand in (start, *start.parents):
+        if (cand / "apps" / "studio" / "public" / "fonts").is_dir():
+            return cand
+    return start.parents[min(4, len(start.parents) - 1)]
 
 
 def default_font_map(repo_root: Path) -> dict[str, Path]:
@@ -228,6 +236,8 @@ class FidelityWorkspace:
         build_vdoc: Callable[[], dict[str, Any]],
         trace: RunTrace,
         config: FidelityConfig,
+        on_progress: Optional[Callable[[dict[str, Any]], None]] = None,
+        cancel_event: Any = None,
     ) -> None:
         self.run_id = run_id
         self.dir = run_dir / "fidelity"
@@ -236,8 +246,10 @@ class FidelityWorkspace:
         self._build_vdoc = build_vdoc
         self._trace = trace
         self.cfg = config
+        self._on_progress = on_progress
+        self._cancel_event = cancel_event
         if not self.cfg.font_map:
-            self.cfg.font_map = default_font_map(self.cfg.tools_dir.parents[2])
+            self.cfg.font_map = default_font_map(_find_repo_root(self.cfg.tools_dir))
         self.tune = default_tune()
         self.plan: dict[str, Any] = {"blocks": [], "table_titles": {}}
         self.iterations: list[Iteration] = []
@@ -299,27 +311,12 @@ class FidelityWorkspace:
             import pymupdf
         except ImportError:
             return {}
-        out: dict[int, str] = {}
         try:
-            doc = pymupdf.open(self.pdf_path)
-            page = doc[0]
-            for k, info in enumerate(page.get_image_info(xrefs=True)):
-                png: Optional[bytes] = None
-                xref = info.get("xref") or 0
-                if xref:
-                    try:
-                        pix = pymupdf.Pixmap(doc, xref)
-                        if pix.n - pix.alpha >= 4:
-                            pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
-                        png = pix.tobytes("png")
-                    except Exception:
-                        png = None
-                if png is None:
-                    png = page.get_pixmap(clip=pymupdf.Rect(info["bbox"]), matrix=pymupdf.Matrix(2, 2)).tobytes("png")
-                out[k] = "data:image/png;base64," + base64.b64encode(png).decode("ascii")
+            with pymupdf.open(self.pdf_path) as doc:
+                return extract_page_image_data_uris(doc[0])
         except Exception as exc:
             logger.warning("[fidelity] 그림 추출 실패: %s", exc)
-        return out
+            return {}
 
     # --- 생성 -------------------------------------------------------------------
 
@@ -383,11 +380,18 @@ class FidelityWorkspace:
         time.sleep(0.8)
         return marker
 
+    def _emit_progress(self, payload: dict[str, Any]) -> None:
+        if self._on_progress is not None:
+            self._on_progress(payload)
+
     def evaluate(self) -> Iteration:
         idx = len(self.iterations)
         it = Iteration(index=idx, tune=copy.deepcopy(self.tune), plan=copy.deepcopy(self.plan),
                        out_dir=self.dir / f"iter_{idx:02d}", changed=self._pending_change)
         self._pending_change = ""
+        if self._cancel_event is not None and self._cancel_event.is_set():
+            it.error = "Cancelled"
+            return it
         it.out_dir.mkdir(parents=True, exist_ok=True)
         self.iterations.append(it)
         (it.out_dir / "tune.json").write_text(json.dumps(it.tune, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -396,6 +400,7 @@ class FidelityWorkspace:
         vdoc = self.render(it.plan, it.tune, doc_id_suffix=f"-fid{idx:02d}")
         (it.out_dir / "candidate.vdoc.json").write_text(json.dumps(vdoc, ensure_ascii=False, indent=2), encoding="utf-8")
 
+        self._emit_progress({"stage": "measuring", "iter": idx})
         self._tab: Optional[CdpTab] = None
         try:
             marker = self._render_in_browser(vdoc)
@@ -448,6 +453,13 @@ class FidelityWorkspace:
         (it.out_dir / "diagnosis.json").write_text(json.dumps(it.diagnosis, ensure_ascii=False, indent=2), encoding="utf-8")
         self._trace.event("diagnosis", iteration=it.index, prescriptions=len(it.diagnosis["prescriptions"]),
                           engine_issues=[e["rule"] for e in it.diagnosis["engine_issues"]])
+        self._emit_progress({
+            "stage": "evaluated",
+            "iter": it.index,
+            "verdict": it.verdict,
+            "spanScore": it.score,
+            "verdictLine": it.summary.get("verdict_line"),
+        })
         return it
 
     def _by_block(self, verify: dict[str, Any], plan: dict[str, Any]) -> list[dict[str, Any]]:

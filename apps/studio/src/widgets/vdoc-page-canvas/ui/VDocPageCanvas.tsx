@@ -5,14 +5,17 @@ import { MemoVDocPageSheet, WindowedPageChunker } from "@vibe/slot-canvas";
 import { useActiveSlotEditorStore, type SlotAiAction } from "@vibe/slot-editor";
 import type { BackdataChunk, VDocSlot } from "@vibe/vdoc-schema";
 
+import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachToComposer, referenceTextRef } from "@/features/ai-workspace";
+import { studioKeyLayers } from "@/features/command-bus";
 import { buildSlotAiActionPrompt, SlotInlineComposerHost } from "@/features/compose-slot-ai";
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
+import { pageMutations } from "@/features/mutate-document-pages";
 import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes";
 import { getOutlineProjection, outlineCommands, useOutlineSelector } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
@@ -68,6 +71,7 @@ const DraftingCanvas: React.FC = () => {
 
   const { updateSlotContent } = useSlotContentActions();
   const blocks = useMutateCanvasBlocks();
+  const pageStatesByPageId = usePdfScaffoldJobStore((s) => s.pageStatesByPageId);
   // 캔버스는 줌 상태만 구독한다 (투영 전체를 구독하면 아웃라인 요약이 바뀔 때마다 캔버스가 다시 그려진다).
   const zoomLevel = useOutlineSelector((p) => p.activeZoomLevel);
   const zoomedNode = useOutlineSelector((p) => p.allNodes.find((n) => n.nodeId === p.rootNodeId));
@@ -77,6 +81,16 @@ const DraftingCanvas: React.FC = () => {
   const mainRef = React.useRef<HTMLElement>(null);
   const getMain = React.useCallback(() => mainRef.current, []);
   useCanvasRangeSelection(getMain);
+
+  // 블록 선택 상태가 되면 캔버스 루트에 포커스를 주어 Ctrl+C / Ctrl+V / Delete 가 바로 동작하게 한다.
+  React.useEffect(() => {
+    if (!selectedBlockId || composerOpenSlotId) return;
+    const activeEl = document.activeElement as HTMLElement | null;
+    if (activeEl?.isContentEditable) activeEl.blur();
+    if (activeEl !== mainRef.current) {
+      mainRef.current?.focus({ preventScroll: true });
+    }
+  }, [selectedBlockId, composerOpenSlotId]);
 
   // 페이지 시트에 넘기는 콜백은 모두 고정 참조여야 MemoVDocPageSheet 의 메모가 유지된다.
   const onSelectSlot = useStableCallback((slotId: string) => {
@@ -91,6 +105,16 @@ const DraftingCanvas: React.FC = () => {
   const onOpenBackdataDrawer = useStableCallback((slotId: string) => {
     setSelectedSlotId(slotId);
     openRightPanel("inspector");
+  });
+  const onCancelPendingPage = useStableCallback((pageId: string) => {
+    void usePdfScaffoldJobStore.getState().cancelPendingPage(pageId);
+  });
+  const onRetryPendingPage = useStableCallback((pageId: string) => {
+    void usePdfScaffoldJobStore.getState().retryPendingPage(pageId);
+  });
+  const onRemovePendingPage = useStableCallback((pageId: string) => {
+    usePdfScaffoldJobStore.getState().clearPageState(pageId);
+    pageMutations.removePendingPlaceholderPage(doc?.docId, pageId);
   });
   const onSlotAiAction = useStableCallback((slotId: string, action: SlotAiAction, text: string) => {
     if (action === "attach") {
@@ -114,6 +138,12 @@ const DraftingCanvas: React.FC = () => {
   const onMoveBlockTo = useStableCallback(blocks.moveBlockTo);
   const onDeleteBlock = useStableCallback(blocks.deleteBlock);
   const onInsertBlock = useStableCallback(blocks.addBlockToPage);
+  const onInsertBlockAtY = useStableCallback(blocks.insertFromMenu);
+  const onCopyBlock = useStableCallback(blocks.copyBlock);
+  const isExternalRangeActive = React.useCallback(() => {
+    const r = useSlotSelectionStore.getState().slotRange;
+    return Boolean(r && !r.withinTable);
+  }, []);
   const onDuplicateBlock = useStableCallback(blocks.duplicateBlock);
   const onToggleBlockLock = useStableCallback(blocks.toggleBlockLock);
   const onMoveBlockFrame = useStableCallback(blocks.moveBlockFrame);
@@ -145,8 +175,10 @@ const DraftingCanvas: React.FC = () => {
   return (
     <main
       ref={mainRef}
+      tabIndex={-1}
+      data-vdoc-canvas-main=""
       onClick={() => clearSelection()}
-      className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6]"
+      className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6] focus:outline-none"
     >
       <div className={`w-fit min-w-[794px] ${openReferenceCount > 0 ? "ml-2.5 mr-auto" : "mx-auto"} flex flex-col items-center`}>
         {isPageZoomed && (
@@ -172,7 +204,7 @@ const DraftingCanvas: React.FC = () => {
           </div>
         )}
 
-        <div className="w-[794px] min-w-[794px] mx-auto">
+        <div className="w-fit min-w-[794px] mx-auto">
           <WindowedPageChunker
             pages={pagesToRender}
             activePageId={activePageId}
@@ -192,6 +224,8 @@ const DraftingCanvas: React.FC = () => {
                 onSelectPage={setActivePageId}
                 onSelectBlock={onSelectBlock}
                 onSelectSlot={onSelectSlot}
+                registerKeyLayer={studioKeyLayers.register}
+                isExternalRangeActive={isExternalRangeActive}
                 onToggleComposerForSlot={toggleComposerForSlot}
                 onOpenBackdataDrawer={onOpenBackdataDrawer}
                 onUpdateSlotContent={onUpdateSlotContent}
@@ -199,6 +233,8 @@ const DraftingCanvas: React.FC = () => {
                 onDeleteBlock={onDeleteBlock}
                 onMoveBlockTo={onMoveBlockTo}
                 onInsertBlock={onInsertBlock}
+                onInsertBlockAtY={onInsertBlockAtY}
+                onCopyBlock={onCopyBlock}
                 onDuplicateBlock={onDuplicateBlock}
                 onToggleBlockLock={onToggleBlockLock}
                 onMoveBlockFrame={onMoveBlockFrame}
@@ -209,6 +245,10 @@ const DraftingCanvas: React.FC = () => {
                 onSlotAiAction={onSlotAiAction}
                 renderInlineComposer={renderInlineComposer}
                 wrapSlotContent={wrapSlotContent}
+                pendingState={pageStatesByPageId[page.pageId] ?? null}
+                onCancelPendingPage={onCancelPendingPage}
+                onRetryPendingPage={onRetryPendingPage}
+                onRemovePendingPage={onRemovePendingPage}
               />
             )}
           />

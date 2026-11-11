@@ -11,12 +11,14 @@
 import { useEffect } from "react";
 
 import { useSlotSelectionStore, type SlotRangeSelection } from "@/entities/slot";
+import { studioKeyLayers } from "@/features/command-bus";
 
 const DRAG_THRESHOLD = 4;
 /** 칸 안에서 시작했을 때, 칸 경계를 이만큼 넘어야 사각형 선택으로 바뀐다. */
 const LEAVE_SLOT_TOLERANCE = 4;
 const EDGE_SCROLL = 48;
-const IGNORE_START = "button, input, textarea, select, a[href], [draggable='true'], [data-table-menu], [role='menu'], [data-keep-table-selection]";
+const IGNORE_START =
+  "button, input, textarea, select, a[href], [draggable='true'], [data-block-drag], [data-block-grip], [data-resize-handle], [data-col-resize], [data-table-menu], [role='menu'], [data-keep-table-selection]";
 
 /**
  * 선택 단위 요소 — 블록 뷰가 단위마다 붙이는 `data-vdoc-unit` (슬롯 · 이미지 …).
@@ -195,6 +197,9 @@ export function useCanvasRangeSelection(getMain: () => HTMLElement | null): void
           if (inside) return;
         }
         drag.active = true;
+        const activeEl = document.activeElement as HTMLElement | null;
+        if (activeEl?.isContentEditable) activeEl.blur();
+        main.focus({ preventScroll: true });
         document.body.classList.add("vdoc-range-dragging");
       }
       update(main);
@@ -260,27 +265,31 @@ export function useCanvasRangeSelection(getMain: () => HTMLElement | null): void
       selectionTimer = window.setTimeout(syncNativeSelection, 120);
     };
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && useSlotSelectionStore.getState().slotRange) commit(null);
-    };
+    const offKey = studioKeyLayers.register("rangeSelection", (e) => {
+      if (e.key === "Escape" && useSlotSelectionStore.getState().slotRange) {
+        e.preventDefault();
+        commit(null);
+        return true;
+      }
+      return false;
+    });
 
     document.addEventListener("pointerdown", onPointerDown, true);
     document.addEventListener("pointermove", onPointerMove, true);
     document.addEventListener("pointerup", onPointerUp, true);
     document.addEventListener("click", onClickCapture, true);
     document.addEventListener("selectionchange", onSelectionChange);
-    document.addEventListener("keydown", onKeyDown);
     return () => {
       window.clearInterval(scrollTimer);
       window.clearTimeout(selectionTimer);
       removeMarquee();
       document.body.classList.remove("vdoc-range-dragging");
+      offKey();
       document.removeEventListener("pointerdown", onPointerDown, true);
       document.removeEventListener("pointermove", onPointerMove, true);
       document.removeEventListener("pointerup", onPointerUp, true);
       document.removeEventListener("click", onClickCapture, true);
       document.removeEventListener("selectionchange", onSelectionChange);
-      document.removeEventListener("keydown", onKeyDown);
     };
   }, [getMain]);
 }

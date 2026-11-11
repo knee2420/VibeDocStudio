@@ -12,6 +12,8 @@ export type HistoryScope = "project" | "document";
 export interface HistoryEntry {
   label: string;
   scope: HistoryScope;
+  /** 같은 키로 연달아 들어오는 편집(예: 슬롯 타이핑 디바운스)은 첫 `undo` 를 유지한 채 하나로 합친다. */
+  coalesceKey?: string;
   undo: () => void | Promise<void>;
   redo: () => void | Promise<void>;
 }
@@ -42,14 +44,30 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 
   push: (entry) => {
     if (openTransaction) {
-      openTransaction.push(entry);
+      const prev = openTransaction.at(-1);
+      if (entry.coalesceKey && prev?.coalesceKey === entry.coalesceKey) {
+        openTransaction[openTransaction.length - 1] = { ...entry, undo: prev.undo };
+      } else {
+        openTransaction.push(entry);
+      }
       return;
     }
-    set((s) => ({
-      past: [...s.past, entry].slice(-HISTORY_LIMIT),
-      future: [],
-      lastMessage: entry.label,
-    }));
+    set((s) => {
+      const prev = s.past.at(-1);
+      if (entry.coalesceKey && prev?.coalesceKey === entry.coalesceKey) {
+        const merged: HistoryEntry = { ...entry, undo: prev.undo };
+        return {
+          past: [...s.past.slice(0, -1), merged],
+          future: [],
+          lastMessage: merged.label,
+        };
+      }
+      return {
+        past: [...s.past, entry].slice(-HISTORY_LIMIT),
+        future: [],
+        lastMessage: entry.label,
+      };
+    });
   },
 
   undo: async () => {

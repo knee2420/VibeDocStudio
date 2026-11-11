@@ -206,7 +206,7 @@ export interface VDocPage {
   engine?: "dom" | "typst";
   typstSvg?: string;
   typstTemplate?: string;
-  pageRect?: { width: number; height: number; unit?: "pt" | "mm" | "%" };
+  pageRect?: { width: number; height: number; unit?: "px" | "pt" | "mm" | "%" };
   layout?: VDocPageLayout;
 }
 

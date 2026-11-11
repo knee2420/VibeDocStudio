@@ -48,8 +48,8 @@ export interface BlockTable {
 export interface InsertableBlockDraft {
   block: LayoutBlock;
   slots: Record<string, VDocSlot>;
-  /** 끼워 넣은 뒤 바로 편집할 슬롯. */
-  focusSlotId: string;
+  /** 끼워 넣은 뒤 바로 편집할 슬롯 (이미지 등 슬롯이 없는 블록은 생략). */
+  focusSlotId?: string;
 }
 
 export interface InsertableBlockOptions {
@@ -114,6 +114,9 @@ export interface BlockModelDefinition<B extends LayoutBlock = LayoutBlock> {
   insertable?: {
     label: string;
     description: string;
+    order: number;
+    shortcut: number;
+    defaultFrameHeight?: number;
     create(options: InsertableBlockOptions): InsertableBlockDraft;
   };
   /** 화면 동작 힌트 (블록 테두리 · 핸들). */

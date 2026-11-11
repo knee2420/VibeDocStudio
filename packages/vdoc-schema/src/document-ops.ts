@@ -2,8 +2,9 @@
  * @vibe/vdoc-schema — 블록 단위 순수 문서 연산 (이동 · 삽입 · 삭제 · 복제 · 잠금 · 프레임 · 표).
  * 바뀐 것이 없으면 같은 문서 참조를 돌려준다.
  */
-import { getBlockKind } from "./block-kit";
+import { getBlockKind, getBlockUnits } from "./block-kit";
 import { cloneBlockWithSlots, getBlockSlotIds, isBlockLocked } from "./block-ops";
+import { placePastedBlock } from "./block-placement";
 import { applyTableCommand, type TableCommand } from "./table-ops";
 import type { LayoutBlock, VDocDocument, VDocSlot } from "./types";
 
@@ -18,6 +19,15 @@ export interface BlockLocation {
 export function findBlock(doc: VDocDocument, blockId: string): BlockLocation | null {
   for (const page of doc.pages) {
     const index = page.blocks.findIndex((b) => b.blockId === blockId);
+    if (index >= 0) return { pageId: page.pageId, index, block: page.blocks[index] };
+  }
+  return null;
+}
+
+/** 주어진 `slotId` 를 소유한 레이아웃 블록과 페이지 위치를 찾는다. */
+export function findBlockBySlotId(doc: VDocDocument, slotId: string): BlockLocation | null {
+  for (const page of doc.pages) {
+    const index = page.blocks.findIndex((b) => getBlockSlotIds(b).includes(slotId));
     if (index >= 0) return { pageId: page.pageId, index, block: page.blocks[index] };
   }
   return null;
@@ -108,6 +118,99 @@ export function removeBlock(doc: VDocDocument, pageId: string, blockId: string):
   );
 }
 
+/**
+ * 범위 선택(`unitIds`) 삭제:
+ * - 블록의 모든 선택 단위가 포함됐으면 잠기지 않은 블록 자체를 제거한다.
+ * - 블록의 일부 칸만 포함됐으면 잠기지 않은 해당 슬롯 내용만 비운다(`<p></p>`).
+ */
+export function deleteUnitsFromDocument(doc: VDocDocument, unitIds: readonly string[]): VDocDocument {
+  if (unitIds.length === 0) return doc;
+  const selected = new Set(unitIds);
+  let pagesChanged = false;
+  let slotsChanged = false;
+  let nextSlots = doc.slots;
+
+  const nextPages = doc.pages.map((page) => {
+    let pageModified = false;
+    const keptBlocks: LayoutBlock[] = [];
+
+    for (const block of page.blocks) {
+      const units = getBlockUnits(block).filter((u) => u.kind !== "slot" || Boolean(doc.slots[u.slotId ?? u.unitId]));
+      if (units.length === 0) {
+        keptBlocks.push(block);
+        continue;
+      }
+
+      const matched = units.filter((u) => selected.has(u.unitId));
+      if (matched.length === 0) {
+        keptBlocks.push(block);
+        continue;
+      }
+
+      if (matched.length === units.length) {
+        if (!isBlockLocked(block, doc.slots)) {
+          pageModified = true;
+          continue;
+        }
+        keptBlocks.push(block);
+        continue;
+      }
+
+      // 일부 칸만 선택된 경우: 블록은 유지하고 잠기지 않은 슬롯 내용만 비운다.
+      keptBlocks.push(block);
+      for (const u of matched) {
+        if (u.kind !== "slot") continue;
+        const sid = u.slotId ?? u.unitId;
+        const slot = nextSlots[sid];
+        if (!slot || slot.constraints?.locked || slot.content === "<p></p>") continue;
+        if (!slotsChanged) {
+          nextSlots = { ...doc.slots };
+          slotsChanged = true;
+        }
+        nextSlots[sid] = {
+          ...slot,
+          content: "<p></p>",
+          isEdited: true,
+          originalContent: slot.originalContent ?? slot.content,
+        };
+      }
+    }
+
+    if (!pageModified) return page;
+    pagesChanged = true;
+    return { ...page, blocks: keptBlocks };
+  });
+
+  if (!pagesChanged && !slotsChanged) return doc;
+  return {
+    ...doc,
+    ...(pagesChanged ? { pages: nextPages } : {}),
+    ...(slotsChanged ? { slots: nextSlots } : {}),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * 선택된 `unitIds` 에 블록의 모든 단위가 포함된 블록들을 페이지·문서 순서대로 찾아 반환한다.
+ */
+export function findFullySelectedBlocks(
+  doc: VDocDocument,
+  unitIds: readonly string[]
+): { pageId: string; block: LayoutBlock }[] {
+  if (unitIds.length === 0) return [];
+  const selected = new Set(unitIds);
+  const hits: { pageId: string; block: LayoutBlock }[] = [];
+  for (const page of doc.pages) {
+    for (const block of page.blocks) {
+      const units = getBlockUnits(block).filter((u) => u.kind !== "slot" || Boolean(doc.slots[u.slotId ?? u.unitId]));
+      if (units.length > 0 && units.every((u) => selected.has(u.unitId))) {
+        hits.push({ pageId: page.pageId, block });
+      }
+    }
+  }
+  return hits;
+}
+
 /** 블록과 그 블록이 쓰는 새 슬롯을 함께 넣는다 (`atIndex` 생략 시 페이지 끝). */
 export function insertBlock(
   doc: VDocDocument,
@@ -134,8 +237,15 @@ export function duplicateBlock(
   const page = doc.pages.find((p) => p.pageId === pageId);
   const index = page?.blocks.findIndex((b) => b.blockId === blockId) ?? -1;
   if (!page || index < 0) return doc;
-  const { block, slots } = cloneBlockWithSlots(page.blocks[index], doc.slots, newId);
-  return { ...insertBlock(doc, pageId, block, {}, index + 1), slots };
+  const orig = page.blocks[index];
+  const { block, slots } = cloneBlockWithSlots(orig, doc.slots, newId);
+  const placed = placePastedBlock(page, block, {
+    sourcePageId: pageId,
+    sourceFrame: orig.frame,
+    selectedBlockId: blockId,
+    pasteCount: 1,
+  });
+  return { ...insertBlock(doc, pageId, placed.block, {}, placed.atIndex), slots };
 }
 
 /**

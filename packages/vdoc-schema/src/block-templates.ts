@@ -7,13 +7,43 @@ import { getBlockKind, listBlockKinds, type InsertableBlockDraft, type Insertabl
 export type { InsertableBlockDraft, InsertableBlockOptions } from "./block-kit";
 
 /** 블록 추가 메뉴에 나오는 종류 (정의에 `insertable` 이 있는 것). */
-export type InsertableBlockKind = "columns-grid" | "structured-table" | "section-block" | "fillable-group";
+export type InsertableBlockKind =
+  | "text"
+  | "image"
+  | "structured-table"
+  | "columns-grid"
+  | "section-block"
+  | "fillable-group";
 
-/** 블록 추가 메뉴 항목 (레지스트리 순서). */
-export function listInsertableBlocks(): { kind: string; label: string; description: string; icon: string }[] {
-  return listBlockKinds().flatMap((def) =>
-    def.insertable ? [{ kind: def.kinds[0], label: def.insertable.label, description: def.insertable.description, icon: def.icon }] : []
-  );
+export interface InsertableBlockMenuItem {
+  kind: InsertableBlockKind | string;
+  label: string;
+  description: string;
+  icon: string;
+  order: number;
+  shortcut: number;
+  defaultFrameHeight?: number;
+}
+
+/** 블록 추가 메뉴 항목 (`insertable.order` 순). */
+export function listInsertableBlocks(): InsertableBlockMenuItem[] {
+  return listBlockKinds()
+    .flatMap((def) =>
+      def.insertable
+        ? [
+            {
+              kind: def.kinds[0],
+              label: def.insertable.label,
+              description: def.insertable.description,
+              icon: def.icon,
+              order: def.insertable.order,
+              shortcut: def.insertable.shortcut,
+              defaultFrameHeight: def.insertable.defaultFrameHeight,
+            },
+          ]
+        : []
+    )
+    .sort((a, b) => a.order - b.order);
 }
 
 export function createInsertableBlock(kind: InsertableBlockKind | string, options: InsertableBlockOptions): InsertableBlockDraft {

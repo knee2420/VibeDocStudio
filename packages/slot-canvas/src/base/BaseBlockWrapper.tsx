@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
+  ClipboardCopy,
   Copy,
   Lock,
-  Plus,
   Settings,
   Trash2,
   Unlock,
@@ -13,14 +13,17 @@ import {
 import type { BaseLayoutBlock } from "@vibe/vdoc-schema";
 
 import { MenuItem, GripIcon } from "../InteractiveTable";
+import { useCanvasKeyLayer } from "../keyLayer";
 import { ACCENT, AFFORDANCE_BORDER, DROP_LINE, GRIP_COLOR, MENU_SHADOW } from "../tokens";
 import { CornerResizeMarkers } from "./CornerResizeMarkers";
-import { QUICK_ADD_ITEMS, type DropEdge, type QuickAddKind } from "../BlockFrame";
+import type { DropEdge } from "../BlockFrame";
 
 export interface BaseBlockWrapperProps {
   block: BaseLayoutBlock;
   editable: boolean;
   selected: boolean;
+  /** 내부 칸(슬롯/셀) 편집 중일 때 참 — 선택과 구분되는 블록 테두리를 유지한다. */
+  editing?: boolean;
   resizable?: boolean;
   hasOwnGrip?: boolean;
   locked?: boolean;
@@ -31,13 +34,15 @@ export interface BaseBlockWrapperProps {
   onSelectBlock?: (blockId: string) => void;
   onDragOverEdge?: (edge: DropEdge) => void;
   onDropEdge?: (e: React.DragEvent, edge: DropEdge) => void;
-  onQuickAdd?: (kind: QuickAddKind) => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  onCopy?: () => void;
   onDuplicate?: () => void;
   onToggleLock?: () => void;
   onDelete?: () => void;
   onFreeMove?: (dx: number, dy: number) => void;
+  onSnapMove?: (dx: number, dy: number, altKey: boolean) => { dx: number; dy: number };
+  onEndSnapMove?: () => void;
   onResizeFrame?: (dw: number, dh: number) => void;
   children: React.ReactNode;
 }
@@ -49,13 +54,14 @@ const edgeFromEvent = (e: React.DragEvent, el: HTMLElement): DropEdge => {
 
 /**
  * BaseBlockWrapper: Unified Base Block Chrome for all .vdoc layout blocks.
- * Implements PandaDoc-style 2px selection outline, corner resize markers,
- * left ⋮⋮ drag handle, quick-add [+] and right ⚙️ settings menu.
+ * Implements PandaDoc-style selection & editing outlines, corner resize markers,
+ * left ⋮⋮ drag handle, body drag + snap for selected framed blocks, and ⚙️ settings menu.
  */
 export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
   block,
   editable,
   selected,
+  editing = false,
   resizable = false,
   hasOwnGrip = false,
   locked = false,
@@ -66,78 +72,149 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
   onSelectBlock,
   onDragOverEdge,
   onDropEdge,
-  onQuickAdd,
   onMoveUp,
   onMoveDown,
+  onCopy,
   onDuplicate,
   onToggleLock,
   onDelete,
   onFreeMove,
+  onSnapMove,
+  onEndSnapMove,
   onResizeFrame,
   children,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const suppressClickRef = useRef(false);
   const [hovered, setHovered] = useState(false);
-  const [menu, setMenu] = useState<"settings" | "add" | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [offset, setOffset] = useState<{ dx: number; dy: number } | null>(null);
 
   useEffect(() => {
-    if (!menu) return;
+    if (!menuOpen) return;
     const close = (e: PointerEvent) => {
-      if (!(e.target as Element).closest?.("[data-block-menu]")) setMenu(null);
+      if (!(e.target as Element).closest?.("[data-block-menu]")) setMenuOpen(false);
     };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenu(null);
     document.addEventListener("pointerdown", close);
-    document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("pointerdown", close);
-      document.removeEventListener("keydown", onKey);
     };
-  }, [menu]);
+  }, [menuOpen]);
 
-  const startFreeMove = (e: React.PointerEvent) => {
+  useCanvasKeyLayer(
+    "canvas",
+    (e) => {
+      if (e.key === "Escape" && menuOpen) {
+        e.preventDefault();
+        setMenuOpen(false);
+        return true;
+      }
+      return false;
+    },
+    menuOpen
+  );
+
+  const beginFreeDrag = (e: React.PointerEvent, threshold: number) => {
     if (!onFreeMove) return;
-    e.preventDefault();
-    e.stopPropagation();
+    if (threshold === 0) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     const sx = e.clientX;
     const sy = e.clientY;
+    let engaged = threshold === 0;
+    let lastClientX = sx;
+    let lastClientY = sy;
     let last = { dx: 0, dy: 0 };
-    const move = (ev: PointerEvent) => {
-      last = { dx: Math.round(ev.clientX - sx), dy: Math.round(ev.clientY - sy) };
-      setOffset(last);
+
+    const applyMove = (cx: number, cy: number, altKey: boolean) => {
+      const rawDx = Math.round(cx - sx);
+      const rawDy = Math.round(cy - sy);
+      const snapped = onSnapMove ? onSnapMove(rawDx, rawDy, altKey) : { dx: rawDx, dy: rawDy };
+      last = snapped;
+      setOffset(snapped);
     };
+
+    const move = (ev: PointerEvent) => {
+      lastClientX = ev.clientX;
+      lastClientY = ev.clientY;
+      if (!engaged) {
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) < threshold) return;
+        engaged = true;
+        window.getSelection()?.removeAllRanges();
+      }
+      applyMove(ev.clientX, ev.clientY, ev.altKey);
+    };
+
+    const onKeyToggleAlt = (kev: KeyboardEvent) => {
+      if (!engaged || kev.key !== "Alt") return;
+      applyMove(lastClientX, lastClientY, kev.altKey);
+    };
+
     const up = () => {
       window.removeEventListener("pointermove", move);
-      setOffset(null);
-      if (last.dx || last.dy) onFreeMove(last.dx, last.dy);
+      window.removeEventListener("keydown", onKeyToggleAlt);
+      window.removeEventListener("keyup", onKeyToggleAlt);
+      onEndSnapMove?.();
+      if (engaged && (last.dx !== 0 || last.dy !== 0)) {
+        suppressClickRef.current = true;
+        window.setTimeout(() => {
+          suppressClickRef.current = false;
+        }, 0);
+        setOffset(null);
+        onFreeMove(last.dx, last.dy);
+      } else {
+        setOffset(null);
+      }
     };
+
     window.addEventListener("pointermove", move);
+    window.addEventListener("keydown", onKeyToggleAlt);
+    window.addEventListener("keyup", onKeyToggleAlt);
     window.addEventListener("pointerup", up, { once: true });
   };
 
-  const showChrome = editable && (hovered || selected || menu !== null || offset !== null);
+  const canDragBody = editable && selected && Boolean(onFreeMove);
+  const showChrome = editable && (hovered || selected || editing || menuOpen || offset !== null);
 
   const selectionOutlineClass =
     editable && selected
       ? "outline outline-2 outline-offset-[2px] z-30"
-      : hovered && editable
-        ? "outline outline-1 outline-dashed outline-offset-[2px] outline-slate-300"
-        : "";
+      : editable && editing
+        ? "outline outline-1 outline-offset-[2px] z-20"
+        : hovered && editable
+          ? "outline outline-1 outline-dashed outline-offset-[2px] outline-slate-300"
+          : "";
 
   return (
     <div
       ref={ref}
       data-block-id={block.blockId}
-      className={`relative transition-shadow duration-75 ${selectionOutlineClass}`}
+      data-block-drag={canDragBody ? "" : undefined}
+      className={`relative transition-shadow duration-75 ${selectionOutlineClass} ${
+        canDragBody ? "cursor-move" : ""
+      }`}
       style={{
-        outlineColor: selected ? ACCENT : undefined,
+        outlineColor: selected ? ACCENT : editing ? `${ACCENT}73` : undefined,
         ...(offset ? { transform: `translate(${offset.dx}px, ${offset.dy}px)`, zIndex: 50 } : {}),
       }}
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}
+      onPointerDown={(e) => {
+        if (!canDragBody || e.button !== 0) return;
+        const target = e.target as Element | null;
+        if (target?.closest?.("button, [data-block-menu], [data-resize-handle], [data-col-resize], [data-block-grip]")) {
+          return;
+        }
+        beginFreeDrag(e, 3);
+      }}
       onClick={(e) => {
         // Stop bubbling so outer canvas doesn't clear block selection
         e.stopPropagation();
+        if (suppressClickRef.current) {
+          suppressClickRef.current = false;
+          return;
+        }
         onSelectBlock?.(block.blockId);
       }}
       onDragOver={(e) => {
@@ -170,8 +247,9 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
       {/* Left ⋮⋮ Move Grip */}
       {showChrome && !hasOwnGrip && (
         <div
+          data-block-grip=""
           title="끌어서 이동"
-          {...(onFreeMove ? { onPointerDown: startFreeMove } : dragHandleProps)}
+          {...(onFreeMove ? { onPointerDown: (e) => beginFreeDrag(e, 0) } : dragHandleProps)}
           className="absolute top-0 -left-[30px] z-[33] flex h-4 w-[30px] cursor-grab items-center active:cursor-grabbing"
           style={{ color: GRIP_COLOR }}
         >
@@ -179,60 +257,23 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
         </div>
       )}
 
-      {/* Left [+] Quick Add & Right [⚙️] Settings Button */}
+      {/* Right [⚙️] Settings Button */}
       {showChrome && (
-        <>
-          <button
-            type="button"
-            title="블록 추가"
-            onClick={(e) => {
-              e.stopPropagation();
-              setMenu(menu === "add" ? null : "add");
-            }}
-            className="absolute top-1/2 -left-[34px] z-[33] flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border bg-white text-slate-500 hover:bg-neutral-100 shadow-sm"
-            style={{ borderColor: AFFORDANCE_BORDER }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            title="블록 설정"
-            onClick={(e) => {
-              e.stopPropagation();
-              setMenu(menu === "settings" ? null : "settings");
-            }}
-            className="absolute top-0 -right-[30px] z-[33] flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-slate-500 hover:bg-neutral-100 shadow-sm"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
-        </>
-      )}
-
-      {/* [+] Quick Add Popup Menu */}
-      {menu === "add" && (
-        <div
-          data-block-menu
-          role="menu"
-          className="absolute top-1/2 left-0 z-[60] w-[176px] -translate-x-[calc(100%+40px)] rounded-lg border bg-white p-1"
-          style={{ borderColor: AFFORDANCE_BORDER, boxShadow: MENU_SHADOW }}
+        <button
+          type="button"
+          title="블록 설정"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((open) => !open);
+          }}
+          className="absolute top-0 -right-[30px] z-[33] flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-slate-500 hover:bg-neutral-100 shadow-sm"
         >
-          <div className="px-2.5 py-1 text-[11px] text-slate-400">아래에 추가</div>
-          {QUICK_ADD_ITEMS.map((item) => (
-            <MenuItem
-              key={item.kind}
-              label={item.label}
-              icon={item.icon}
-              onSelect={() => {
-                setMenu(null);
-                onQuickAdd?.(item.kind);
-              }}
-            />
-          ))}
-        </div>
+          <Settings className="w-4 h-4" />
+        </button>
       )}
 
       {/* [⚙️] Block Settings Popup Menu */}
-      {menu === "settings" && (
+      {menuOpen && (
         <div
           data-block-menu
           role="menu"
@@ -244,7 +285,7 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
             icon={<ArrowUp className="w-4 h-4" />}
             disabled={!canMoveUp}
             onSelect={() => {
-              setMenu(null);
+              setMenuOpen(false);
               onMoveUp?.();
             }}
           />
@@ -253,15 +294,23 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
             icon={<ArrowDown className="w-4 h-4" />}
             disabled={!canMoveDown}
             onSelect={() => {
-              setMenu(null);
+              setMenuOpen(false);
               onMoveDown?.();
+            }}
+          />
+          <MenuItem
+            label="복사"
+            icon={<ClipboardCopy className="w-4 h-4" />}
+            onSelect={() => {
+              setMenuOpen(false);
+              onCopy?.();
             }}
           />
           <MenuItem
             label="복제"
             icon={<Copy className="w-4 h-4" />}
             onSelect={() => {
-              setMenu(null);
+              setMenuOpen(false);
               onDuplicate?.();
             }}
           />
@@ -269,7 +318,7 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
             label={locked ? "잠금 해제" : "내용 잠금"}
             icon={locked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
             onSelect={() => {
-              setMenu(null);
+              setMenuOpen(false);
               onToggleLock?.();
             }}
           />
@@ -277,9 +326,11 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
           <MenuItem
             label="삭제"
             icon={<Trash2 className="w-4 h-4" />}
+            disabled={locked}
             danger
             onSelect={() => {
-              setMenu(null);
+              if (locked) return;
+              setMenuOpen(false);
               onDelete?.();
             }}
           />
@@ -291,4 +342,3 @@ export const BaseBlockWrapper: React.FC<BaseBlockWrapperProps> = ({
     </div>
   );
 };
-
