@@ -104,9 +104,6 @@ class PageLayoutTruth(BaseModel):
 
 
 _LEADER_RE = re.compile(r"(?:\.{3,}|…{2,}|-{4,}|_{4,}|·{3,})")
-_TOC_PAGE_RE = re.compile(r"(?:^|\s)(?:\d{1,4}|-\s*\d+\s*-)\s*$")
-_INLINE_OPEN_RE = re.compile(r"[\(\[]\s*$")
-_INLINE_CLOSE_RE = re.compile(r"^\s*[\)\]]")
 
 
 def _norm_band_text(txt: str) -> str:
@@ -190,23 +187,8 @@ def _build_truth_lines(atoms: list[CharAtom]) -> list[TruthLine]:
         lx1 = max(s.bbox[2] for s in segs)
         ly1 = max(s.bbox[3] for s in segs)
         full_text = "   ".join(s.text for s in segs)
-        has_leader = bool(_LEADER_RE.search(full_text) and _TOC_PAGE_RE.search(full_text))
-        is_inline_blank = (
-            len(segs) >= 2
-            and any(
-                (_INLINE_OPEN_RE.search(a.text) and _INLINE_CLOSE_RE.search(b.text))
-                or (b.bbox[0] - a.bbox[2]) < max(26.0, med_pt * 2.4)
-                for a, b in zip(segs, segs[1:])
-            )
-            and not has_leader
-        )
-        is_spaced_chars = (
-            len(segs) <= 3
-            and (lx1 - lx0) < float(atoms[0].x0 + 180.0 if False else 150.0)
-            and all(len(s.text.strip()) == 1 for s in segs)
-            and not has_leader
-        )
-        has_split = len(segs) >= 2 and not is_inline_blank and not is_spaced_chars
+        has_split = len(segs) >= 2
+        has_leader = bool(_LEADER_RE.search(full_text))
         lines.append(
             TruthLine(
                 bbox=(round(lx0, 2), round(ly0, 2), round(lx1, 2), round(ly1, 2)),
@@ -335,7 +317,6 @@ def _extract_orthogonal_tables(
                 cells=cells,
             )
         )
-    tables.sort(key=lambda t: (t.bbox[1], t.bbox[0]))
     return tables
 
 
@@ -535,28 +516,15 @@ def extract_page_layout_truth(
         raster_heights, raster_pitch, est_scan_pt, raster_photos = _analyze_raster_page(page)
         photo_regions = raster_photos
 
-    # Filter non-table body lines & segments for typography, spacing & horizontal group truth.
-    def _seg_in_table(bbox: BBox) -> bool:
-        cx = (bbox[0] + bbox[2]) * 0.5
-        cy = (bbox[1] + bbox[3]) * 0.5
+    # Filter non-table body lines for typography & spacing ground truth.
+    def _in_table(ln: TruthLine) -> bool:
+        cx = (ln.bbox[0] + ln.bbox[2]) * 0.5
+        cy = (ln.bbox[1] + ln.bbox[3]) * 0.5
         return any(t.bbox[0] - 2.0 <= cx <= t.bbox[2] + 2.0 and t.bbox[1] - 2.0 <= cy <= t.bbox[3] + 2.0 for t in tables)
 
-    def _in_table(ln: TruthLine) -> bool:
-        if ln.segments:
-            return all(_seg_in_table(s.bbox) for s in ln.segments)
-        return _seg_in_table(ln.bbox)
-
     non_table_lines = [ln for ln in lines if not _in_table(ln)]
-    weight_src = non_table_lines if sum(len(ln.text.replace(" ", "")) for ln in non_table_lines) >= 10 else lines
-    size_weights: dict[float, int] = {}
-    for ln in weight_src:
-        if ln.sizePt >= 6.0:
-            k = round(ln.sizePt, 1)
-            size_weights[k] = size_weights.get(k, 0) + max(1, len(ln.text.replace(" ", "")))
-    if size_weights:
-        dom_size: Optional[float] = max(size_weights.items(), key=lambda kv: (kv[1], -kv[0]))[0]
-    else:
-        dom_size = est_scan_pt
+    body_sizes = [ln.sizePt for ln in non_table_lines if ln.sizePt >= 6.0]
+    dom_size = round(statistics.median(body_sizes), 1) if body_sizes else est_scan_pt
     distinct_sizes = sorted({round(ln.sizePt, 1) for ln in lines if ln.sizePt >= 6.0})
 
     line_ratios: list[float] = []
@@ -569,22 +537,13 @@ def extract_page_layout_truth(
             continue
         ref_pt = max(6.0, min(a.sizePt, b.sizePt))
         ratio = dy / ref_pt
-        is_row_item = a.hasHorizontalSplit or a.hasLeaderDots or b.hasHorizontalSplit or b.hasLeaderDots
-        same_size = abs(a.sizePt - b.sizePt) < 1.2
-        if same_size and not is_row_item and 0.9 <= ratio <= 2.3:
+        if 0.9 <= ratio <= 2.3:
             line_ratios.append(ratio)
         elif 2.3 < ratio <= 8.0:
             para_gaps.append(round(dy - ref_pt * 1.2, 2))
     med_lh = round(statistics.median(line_ratios), 2) if line_ratios else None
 
-    horiz_groups = 0
-    for ln in non_table_lines:
-        if ln.hasLeaderDots:
-            horiz_groups += 1
-        elif ln.hasHorizontalSplit:
-            free_segs = [s for s in ln.segments if not _seg_in_table(s.bbox)]
-            if len(free_segs) >= 2:
-                horiz_groups += 1
+    horiz_groups = sum(1 for ln in non_table_lines if ln.hasHorizontalSplit or ln.hasLeaderDots)
     toc_lines = sum(1 for ln in non_table_lines if ln.hasLeaderDots)
 
     margins: dict[str, float] = {}
@@ -660,4 +619,3 @@ def extract_doc_layout_truth(
             if (r.bottomBandText and bot_counts.get(r.bottomBandText, 0) >= 2) or (r.hasBottomImageBand and bot_img_cnt >= 2):
                 r.repeatedFooter = True
     return results
-
