@@ -155,7 +155,7 @@ class VDoc:
             "maxChars": max_chars,
             "over": bool(max_chars) and len(text) > int(max_chars),
             "evidence": len(self.evidence_for(slot_id)),
-            "locked": role in ("boilerplate", "locked") or bool(cons.get("locked")),
+            "locked": bool(cons.get("locked")),
             "edited": bool(slot.get("isEdited")),
             "ai": fill.get("author") == "ai",
             "hasOriginal": bool(slot.get("originalContent")),

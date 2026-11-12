@@ -11,7 +11,7 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from typing import Any
 
-from harness_kit.vdoc_build import blank_page
+from docstruct_engine.compile.vdoc_build import blank_page
 
 from .errors import VDocSlotNotFoundError
 
@@ -233,8 +233,8 @@ class VDocAggregateRecord:
         header, footer, heading, body = (f"{pid}_{part}" for part in SECTION_SLOT_PARTS)
 
         slots = self.slots
-        slots[header] = _slot(header, "머리말", "boilerplate", f"<p>{self.payload.get('title', 'VibeDocStudio')}</p>")
-        slots[footer] = _slot(footer, "바닥글", "boilerplate", f"<p>Page {number}</p>")
+        slots[header] = _slot(header, "머리말", "editable-slot", f"<p>{self.payload.get('title', 'VibeDocStudio')}</p>")
+        slots[footer] = _slot(footer, "바닥글", "editable-slot", f"<p>Page {number}</p>")
         slots[heading] = _slot(heading, f"{label} 제목", "editable-slot", f"<h2>{label}</h2>")
         slots[body] = _slot(
             body,

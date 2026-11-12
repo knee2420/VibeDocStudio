@@ -8,12 +8,9 @@ import {
   X,
   Layers,
   Archive,
-  Zap,
-  Scale,
-  Crosshair,
 } from "lucide-react";
 
-import { PdfPagePreviewGrid, type PdfPreviewResult } from "@/entities/scaffold-job";
+import { FIDELITY_OPTIONS, PdfPagePreviewGrid, type PdfPreviewResult } from "@/entities/scaffold-job";
 
 import type { FidelityMode, ImportMode } from "../model/useImportPdfForm";
 
@@ -113,7 +110,7 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
                 PDF 양식 불러오기
               </h2>
               <p className="text-xs text-slate-500">
-                기하 좌표를 추출하고 조항 위계를 자동으로 스캐폴딩합니다.
+                DocIR 구조·표·OCR 분석으로 편집 가능한 .vdoc 양식을 생성합니다.
               </p>
             </div>
           </div>
@@ -272,72 +269,33 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
                   AI 에이전트 정밀도 모드
                 </label>
                 <span className="text-[10px] text-slate-400">
-                  루프 엄격도 및 허용 오차 제어
+                  검증 깊이 및 VLM 재판독 루프 제어
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {/* Fast Mode */}
-                <button
-                  type="button"
-                  onClick={() => onFidelityModeChange("fast")}
-                  disabled={isLoading}
-                  className={`p-2.5 rounded-xl border text-left transition ${
-                    fidelityMode === "fast"
-                      ? "border-emerald-500 bg-emerald-50/50 text-emerald-950 ring-1 ring-emerald-500 shadow-2xs"
-                      : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 font-semibold text-xs text-slate-900">
-                    <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    빠름 (Fast)
-                  </div>
-                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">
-                    ±2.0px 오차 허용<br />
-                    1~2회 빠른 조기 종료
-                  </div>
-                </button>
-
-                {/* Balanced Mode */}
-                <button
-                  type="button"
-                  onClick={() => onFidelityModeChange("balanced")}
-                  disabled={isLoading}
-                  className={`p-2.5 rounded-xl border text-left transition ${
-                    fidelityMode === "balanced"
-                      ? "border-emerald-500 bg-emerald-50/50 text-emerald-950 ring-1 ring-emerald-500 shadow-2xs"
-                      : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 font-semibold text-xs text-slate-900">
-                    <Scale className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    균형 (권장)
-                  </div>
-                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">
-                    ±1.5px 실용적 고충실도<br />
-                    통과 시 즉시 조기 종료
-                  </div>
-                </button>
-
-                {/* Strict Mode */}
-                <button
-                  type="button"
-                  onClick={() => onFidelityModeChange("strict")}
-                  disabled={isLoading}
-                  className={`p-2.5 rounded-xl border text-left transition ${
-                    fidelityMode === "strict"
-                      ? "border-emerald-500 bg-emerald-50/50 text-emerald-950 ring-1 ring-emerald-500 shadow-2xs"
-                      : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 font-semibold text-xs text-slate-900">
-                    <Crosshair className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                    초정밀 (Strict)
-                  </div>
-                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">
-                    ±1.0px 서브픽셀 검증<br />
-                    처방 0건까지 지속 튜닝
-                  </div>
-                </button>
+                {FIDELITY_OPTIONS.map(({ mode, label, detailLines, Icon, iconClass }) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => onFidelityModeChange(mode)}
+                    disabled={isLoading}
+                    className={`p-2.5 rounded-xl border text-left transition ${
+                      fidelityMode === mode
+                        ? "border-emerald-500 bg-emerald-50/50 text-emerald-950 ring-1 ring-emerald-500 shadow-2xs"
+                        : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-semibold text-xs text-slate-900">
+                      <Icon className={`w-3.5 h-3.5 ${iconClass} shrink-0`} />
+                      {label}
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-1 leading-tight">
+                      {detailLines[0]}
+                      <br />
+                      {detailLines[1]}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -351,9 +309,9 @@ export const ImportPdfModal: React.FC<ImportPdfModalProps> = ({
                   스캐폴딩 파이프라인 가동 중...
                 </span>
                 <span className="text-[11px] text-slate-500">
-                  {currentStep === 1 && "1/3단계: 기하 좌표 측정"}
-                  {currentStep === 2 && `2/3단계: AI 에이전트 자율 보정 (${fidelityMode} 모드)`}
-                  {currentStep === 3 && "3/3단계: 캔버스 렌더링"}
+                  {currentStep === 1 && "1/3단계: DocIR 구조·OCR 추출"}
+                  {currentStep === 2 && `2/3단계: 구조 검증 · VLM 재판독 (${fidelityMode} 모드)`}
+                  {currentStep === 3 && "3/3단계: .vdoc 컴파일 및 렌더링"}
                 </span>
               </div>
               <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">

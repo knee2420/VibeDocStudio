@@ -66,11 +66,11 @@ export function stripScopePrefix(label: string, scopeTitle: string): string {
 }
 
 /**
- * 표 칸의 역할. 손으로 만든 서식은 `slot.role`(boilerplate)이 라벨을 알려 주지만,
- * import 한 서식은 모든 칸이 editable 이라 "라벨 = 내용을 베낀 짧은 글자" 서명으로 찾는다.
+ * 표 칸의 역할. 헤더(`cell.isHeader`)이거나 라벨 패턴 / 내용과 같은 짧은 글자면 라벨로 분류한다.
+ * 모든 칸은 역할과 무관하게 접근 · 편집 가능하다.
  */
 export function classifyTableCell(cell: TableCellSlotDef, slot: VDocSlot): OutlineCellRole {
-  if (cell.isHeader || slot.role === "boilerplate") return "label";
+  if (cell.isHeader) return "label";
   if (LABEL_NAMED.test(slot.label || "")) return "label";
   const text = plainText(slot.content);
   const isCopiedLabel =

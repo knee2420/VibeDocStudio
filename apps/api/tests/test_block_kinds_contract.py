@@ -12,7 +12,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 BASE_BLOCK_TS = ROOT / "packages" / "vdoc-schema" / "src" / "base-block.ts"
 DOCUMENTS = ROOT / "apps" / "api" / "data" / "knowledge" / "documents"
-PY_SOURCES = [ROOT / "packages" / "pdf-vdoc-engine" / "pdf_vdoc_engine", ROOT / "apps" / "api" / "app"]
+PY_SOURCES = [
+    ROOT / "packages" / "docstruct-engine" / "docstruct_engine" / "compile",
+    ROOT / "apps" / "api" / "app",
+]
 
 
 def _registered_kinds() -> set[str]:

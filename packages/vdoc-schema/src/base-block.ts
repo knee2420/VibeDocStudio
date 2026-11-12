@@ -44,6 +44,8 @@ export interface BaseLayoutBlock {
   /** Fixed position on the page sheet in CSS px. When omitted, block flows in document order. */
   frame?: BlockFrameRect;
   /** Explicit block-level lock flag preventing content mutations and structural moves. */
+  /** Explicit vertical space before this flow block in CSS px (when blockGap is 0). */
+  spaceBefore?: number;
   locked?: boolean;
 }
 

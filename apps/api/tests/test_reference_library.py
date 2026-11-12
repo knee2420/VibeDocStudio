@@ -8,9 +8,6 @@ from pathlib import Path
 
 import pymupdf
 import pytest
-from fastapi.testclient import TestClient
-from harness_kit import patterns
-
 from app.core.errors import NotFoundError, ValidationError
 from app.reference.adapters import (
     HtmlStructureExtractor,
@@ -20,6 +17,8 @@ from app.reference.adapters import (
 )
 from app.reference.models import ReferenceAnchor
 from app.reference.use_cases import ReferenceLibraryService
+from fastapi.testclient import TestClient
+from harness_kit import patterns
 from main import app
 
 
@@ -172,7 +171,7 @@ def test_reference_domain_imports_nothing_from_vdoc_or_other_domains() -> None:
     import ast
 
     root = Path(__file__).resolve().parents[1] / "app" / "reference"
-    banned = ("pdf_vdoc_engine", "app.documents", "app.catalog", "app.projects", "app.assistant", "app.resource.ledger")
+    banned = ("docstruct_engine.compile", "app.documents", "app.catalog", "app.projects", "app.assistant", "app.resource.ledger")
     offenders = []
     for path in root.rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):

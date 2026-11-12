@@ -3,7 +3,7 @@
 """
 02_measure_browser_page.py
 디버그 크롬(CDP)에 떠 있는 후보 페이지를 재서 `measure.json` 과 `candidate.png` 를 만든다.
-실제 CDP 계측 로직은 `pdf_fidelity_engine.verify.browser_measure` 에 위임한다.
+실제 CDP 계측 로직은 로컬 `browser_measure` 모듈에 위임한다.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fidelity_core as _core  # noqa: E402, F401
-from pdf_fidelity_engine.verify.browser_measure import measure_browser_page  # noqa: E402
+from browser_measure import measure_browser_page  # noqa: E402
 
 
 def main() -> None:

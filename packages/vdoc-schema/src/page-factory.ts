@@ -48,8 +48,8 @@ export function createSectionPage(spec: SectionPageSpec): {
       ],
     },
     slots: {
-      [header]: slot(header, "머리말", "boilerplate", spec.headerHtml),
-      [footer]: slot(footer, "바닥글", "boilerplate", spec.footerHtml),
+      [header]: slot(header, "머리말", "editable-slot", spec.headerHtml),
+      [footer]: slot(footer, "바닥글", "editable-slot", spec.footerHtml),
       [heading]: slot(heading, `${spec.pageLabel} 제목`, "editable-slot", spec.headingHtml),
       [body]: slot(body, `${spec.pageLabel} 본문`, "editable-slot", spec.bodyHtml),
     },

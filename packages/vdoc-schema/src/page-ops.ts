@@ -497,14 +497,14 @@ export function buildReservedPdfPlaceholders(
     slots[headerSlotId] = {
       slotId: headerSlotId,
       label: "머리말",
-      role: "boilerplate",
+      role: "editable-slot",
       content: "",
       backDataRefs: [],
     };
     slots[footerSlotId] = {
       slotId: footerSlotId,
       label: "바닥글",
-      role: "boilerplate",
+      role: "editable-slot",
       content: "",
       backDataRefs: [],
     };

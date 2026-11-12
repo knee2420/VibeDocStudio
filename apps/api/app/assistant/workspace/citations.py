@@ -104,6 +104,16 @@ def extract_citations_from_tool_calls(client_calls: list[tuple[str, dict[str, An
 
 
 
+def _merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    merged: list[tuple[int, int]] = []
+    for start, end in sorted(ranges):
+        if merged and start <= merged[-1][1] + 1:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+        else:
+            merged.append((start, end))
+    return merged
+
+
 def verify_citations(
     citations: list[Citation],
     reads: list[dict[str, Any]],
@@ -181,7 +191,8 @@ def verify_citations(
             ranges = read_map.get(abs_p) or read_map.get(abs_p.split("/")[-1]) or []
 
         matched = False
-        for rs, re_line in ranges:
+        # 이어서 읽은 범위(겹치거나 맞닿은)는 하나로 본다 — 긴 원문을 나눠 읽고 한 번에 인용하는 경우
+        for rs, re_line in _merge_ranges(ranges):
             # 인용 범위가 읽은 범위 안에 포섭되는지 (오차 1줄 허용)
             if rs - 1 <= c.start_line and c.end_line <= re_line + 1:
                 matched = True

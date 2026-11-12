@@ -20,6 +20,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Iterable, Optional
 
+from docstruct_engine.acquire import doc_text
 from harness_kit import packs
 
 from .contracts import ScopeProfile, SourceDoc
@@ -164,6 +165,10 @@ def _in_scope(rel: str, profile: ScopeProfile) -> bool:
 def _normalize(path: Path, ext: str) -> Optional[tuple[str, str, list[int], str]]:
     if ext in PDF_EXT:
         return _normalize_pdf(path)
+    if ext in doc_text.CONVERTERS:
+        # 압축 서식(hwpx 등) — vibefs 가 agy 에게 보여 주는 것과 같은 렌더를 원문으로 쓴다
+        rendered = doc_text.render(str(path))
+        return rendered.kind, rendered.text, rendered.page_starts, rendered.title
     raw = path.read_bytes()
     if b"\x00" in raw[:4096]:
         return None

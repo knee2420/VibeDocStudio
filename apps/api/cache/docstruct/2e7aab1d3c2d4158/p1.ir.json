@@ -1,0 +1,4866 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-vector",
+  "size": {
+    "width": 595.0,
+    "height": 841.0
+  },
+  "margins": {
+    "top": 60.9,
+    "right": 57.5,
+    "bottom": 34.1,
+    "left": 57.3
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "■",
+      "bbox": [
+        60.81,
+        61.76,
+        67.53,
+        69.55
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 68.45,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "근로복지기본법",
+      "bbox": [
+        70.88,
+        61.76,
+        121.62,
+        69.55
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 68.45,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w2",
+      "text": "시행규칙",
+      "bbox": [
+        124.85,
+        61.76,
+        154.01,
+        69.55
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 68.45,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w3",
+      "text": "[별지",
+      "bbox": [
+        157.24,
+        61.76,
+        175.59,
+        69.55
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 68.45,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w4",
+      "text": "제13호서식]",
+      "bbox": [
+        178.82,
+        61.76,
+        219.79,
+        69.55
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 68.45,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "<개정",
+      "bbox": [
+        223.2,
+        60.93,
+        244.79,
+        69.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.75,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#0000ff",
+      "needsReview": false,
+      "baseline": 68.45,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w6",
+      "text": "2016.1.19.>",
+      "bbox": [
+        248.5,
+        60.93,
+        295.81,
+        69.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.75,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#0000ff",
+      "needsReview": false,
+      "baseline": 68.45,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w7",
+      "text": "제",
+      "bbox": [
+        85.64,
+        85.82,
+        101.11,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w8",
+      "text": "차",
+      "bbox": [
+        129.65,
+        85.82,
+        145.12,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w9",
+      "text": "(정",
+      "bbox": [
+        151.96,
+        85.82,
+        173.43,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w10",
+      "text": "기",
+      "bbox": [
+        173.18,
+        85.82,
+        188.66,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w11",
+      "text": "ㆍ임",
+      "bbox": [
+        188.3,
+        85.82,
+        218.16,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 15.59,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w12",
+      "text": "시",
+      "bbox": [
+        217.92,
+        85.82,
+        233.39,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w13",
+      "text": ")",
+      "bbox": [
+        233.03,
+        85.82,
+        238.84,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w14",
+      "text": "사",
+      "bbox": [
+        246.34,
+        85.82,
+        261.82,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w15",
+      "text": "내",
+      "bbox": [
+        261.46,
+        85.82,
+        276.93,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w16",
+      "text": "(공동)근",
+      "bbox": [
+        276.69,
+        85.82,
+        334.62,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w17",
+      "text": "로",
+      "bbox": [
+        334.26,
+        85.82,
+        349.73,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w18",
+      "text": "복",
+      "bbox": [
+        349.37,
+        85.82,
+        364.85,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w19",
+      "text": "지",
+      "bbox": [
+        364.61,
+        85.82,
+        380.08,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w20",
+      "text": "기",
+      "bbox": [
+        379.72,
+        85.82,
+        395.19,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w21",
+      "text": "금협",
+      "bbox": [
+        394.83,
+        85.82,
+        425.54,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w22",
+      "text": "의",
+      "bbox": [
+        425.18,
+        85.82,
+        440.65,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w23",
+      "text": "회",
+      "bbox": [
+        440.29,
+        85.82,
+        455.76,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w24",
+      "text": "회",
+      "bbox": [
+        462.71,
+        85.82,
+        478.19,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w25",
+      "text": "의",
+      "bbox": [
+        477.83,
+        85.82,
+        493.3,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w26",
+      "text": "록",
+      "bbox": [
+        492.94,
+        85.82,
+        508.41,
+        104.95
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "T2",
+      "size": 15.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 101.77,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w27",
+      "text": "(앞쪽)",
+      "bbox": [
+        514.04,
+        111.38,
+        534.03,
+        119.17
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 118.07,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w28",
+      "text": "회의",
+      "bbox": [
+        64.04,
+        132.54,
+        84.56,
+        143.33
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.8,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w29",
+      "text": "일시",
+      "bbox": [
+        88.76,
+        132.54,
+        109.26,
+        143.33
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.8,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w30",
+      "text": "년",
+      "bbox": [
+        215.4,
+        133.1,
+        224.89,
+        142.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 9.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.44,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w31",
+      "text": "월",
+      "bbox": [
+        263.74,
+        133.1,
+        273.22,
+        142.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 9.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.44,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w32",
+      "text": "일(",
+      "bbox": [
+        312.07,
+        133.1,
+        326.05,
+        142.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 9.71,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.44,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w33",
+      "text": "시",
+      "bbox": [
+        352.25,
+        133.93,
+        360.77,
+        142.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 8.75,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.44,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w34",
+      "text": "분",
+      "bbox": [
+        387.15,
+        133.93,
+        395.67,
+        142.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 8.75,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.44,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w35",
+      "text": "~",
+      "bbox": [
+        400.22,
+        133.93,
+        404.48,
+        142.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 8.75,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.44,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w36",
+      "text": "시",
+      "bbox": [
+        435.13,
+        133.93,
+        443.65,
+        142.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 8.75,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.44,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w37",
+      "text": "분)",
+      "bbox": [
+        469.9,
+        133.93,
+        482.93,
+        142.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 8.75,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 141.44,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w38",
+      "text": "회의",
+      "bbox": [
+        64.04,
+        162.27,
+        84.56,
+        173.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 171.53,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w39",
+      "text": "장소",
+      "bbox": [
+        88.76,
+        162.27,
+        109.26,
+        173.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "DotumChe",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 171.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w40",
+      "text": "의제",
+      "bbox": [
+        60.81,
+        189.72,
+        81.32,
+        200.5
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 198.98,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w41",
+      "text": "협의사항",
+      "bbox": [
+        60.81,
+        296.4,
+        100.99,
+        307.19
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 305.66,
+      "lineHint": 6,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w42",
+      "text": "※",
+      "bbox": [
+        448.68,
+        459.6,
+        456.24,
+        467.39
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 466.29,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w43",
+      "text": "별도",
+      "bbox": [
+        460.31,
+        459.6,
+        475.67,
+        467.39
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 466.29,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w44",
+      "text": "용지",
+      "bbox": [
+        479.74,
+        459.6,
+        495.1,
+        467.39
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 466.29,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w45",
+      "text": "사용",
+      "bbox": [
+        499.17,
+        459.6,
+        514.41,
+        467.39
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 466.29,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w46",
+      "text": "가능",
+      "bbox": [
+        518.48,
+        459.6,
+        533.84,
+        467.39
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 466.29,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w47",
+      "text": "결정사항",
+      "bbox": [
+        60.81,
+        477.4,
+        100.99,
+        488.19
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 486.67,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w48",
+      "text": "그",
+      "bbox": [
+        60.81,
+        658.64,
+        71.36,
+        669.44
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 667.91,
+      "lineHint": 9,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w49",
+      "text": "밖의",
+      "bbox": [
+        75.68,
+        658.64,
+        96.07,
+        669.44
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 667.91,
+      "lineHint": 9,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w50",
+      "text": "토의사항",
+      "bbox": [
+        100.39,
+        658.64,
+        140.56,
+        669.44
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 667.91,
+      "lineHint": 9,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w51",
+      "text": "210mm×297mm[백상지(80g/㎡)",
+      "bbox": [
+        333.9,
+        799.07,
+        453.19,
+        806.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 805.76,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w52",
+      "text": "또는",
+      "bbox": [
+        457.19,
+        799.07,
+        472.43,
+        806.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 805.76,
+      "lineHint": 10,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w53",
+      "text": "중질지(80g/㎡)]",
+      "bbox": [
+        476.51,
+        799.07,
+        534.01,
+        806.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 805.76,
+      "lineHint": 10,
+      "spaceBefore": true,
+      "trailingSpace": null
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "h",
+      "x0": 87.41,
+      "y0": 89.03,
+      "x1": 98.86,
+      "y1": 90.26,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 155.55,
+      "y0": 89.03,
+      "x1": 185.61,
+      "y1": 90.28,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 222.87,
+      "y0": 89.03,
+      "x1": 235.19,
+      "y1": 90.17,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 250.64,
+      "y0": 89.03,
+      "x1": 258.26,
+      "y1": 90.02,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 270.34,
+      "y0": 89.03,
+      "x1": 315.18,
+      "y1": 89.72,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 321.52,
+      "y0": 89.18,
+      "x1": 353.1,
+      "y1": 90.45,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 375.77,
+      "y0": 89.03,
+      "x1": 407.75,
+      "y1": 90.28,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 488.99,
+      "y0": 89.03,
+      "x1": 505.93,
+      "y1": 89.66,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 285.07,
+      "y0": 91.22,
+      "x1": 293.57,
+      "y1": 91.53,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 302.41,
+      "y0": 90.93,
+      "x1": 310.8,
+      "y1": 91.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 353.96,
+      "y0": 90.45,
+      "x1": 360.31,
+      "y1": 90.77,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 366.62,
+      "y0": 90.23,
+      "x1": 374.32,
+      "y1": 90.54,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 397.22,
+      "y0": 91.2,
+      "x1": 405.46,
+      "y1": 91.52,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 495.59,
+      "y0": 90.9,
+      "x1": 503.84,
+      "y1": 91.22,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 87.41,
+      "y0": 91.76,
+      "x1": 93.76,
+      "y1": 92.07,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 131.4,
+      "y0": 92.03,
+      "x1": 139.71,
+      "y1": 92.35,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 159.89,
+      "y0": 91.49,
+      "x1": 179.53,
+      "y1": 92.89,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 302.41,
+      "y0": 92.36,
+      "x1": 310.88,
+      "y1": 92.68,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 321.52,
+      "y0": 91.51,
+      "x1": 329.78,
+      "y1": 91.82,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 336.92,
+      "y0": 91.89,
+      "x1": 345.17,
+      "y1": 92.2,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 366.62,
+      "y0": 92.08,
+      "x1": 374.32,
+      "y1": 92.39,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 381.53,
+      "y0": 91.81,
+      "x1": 386.06,
+      "y1": 92.12,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 495.59,
+      "y0": 91.47,
+      "x1": 503.84,
+      "y1": 91.78,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 336.92,
+      "y0": 93.07,
+      "x1": 345.17,
+      "y1": 93.38,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 497.69,
+      "y0": 93.0,
+      "x1": 506.21,
+      "y1": 93.89,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 131.4,
+      "y0": 93.85,
+      "x1": 139.71,
+      "y1": 94.16,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 283.64,
+      "y0": 94.04,
+      "x1": 310.88,
+      "y1": 95.1,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 320.09,
+      "y0": 94.47,
+      "x1": 362.4,
+      "y1": 95.14,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 395.78,
+      "y0": 94.2,
+      "x1": 409.36,
+      "y1": 94.52,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 298.73,
+      "y0": 95.24,
+      "x1": 312.32,
+      "y1": 95.55,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 339.01,
+      "y0": 95.42,
+      "x1": 363.89,
+      "y1": 96.44,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 395.78,
+      "y0": 96.02,
+      "x1": 409.36,
+      "y1": 96.33,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 493.86,
+      "y0": 95.12,
+      "x1": 507.47,
+      "y1": 96.26,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 205.68,
+      "y0": 96.75,
+      "x1": 215.95,
+      "y1": 97.89,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 259.19,
+      "y0": 97.05,
+      "x1": 266.26,
+      "y1": 97.96,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 283.64,
+      "y0": 96.61,
+      "x1": 312.32,
+      "y1": 97.35,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 320.09,
+      "y0": 96.54,
+      "x1": 333.68,
+      "y1": 96.85,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 350.32,
+      "y0": 97.16,
+      "x1": 363.89,
+      "y1": 97.48,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 397.55,
+      "y0": 97.53,
+      "x1": 407.58,
+      "y1": 97.85,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 419.93,
+      "y0": 96.61,
+      "x1": 423.52,
+      "y1": 97.4,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 336.92,
+      "y0": 97.87,
+      "x1": 362.34,
+      "y1": 98.2,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 493.86,
+      "y0": 97.67,
+      "x1": 507.47,
+      "y1": 98.53,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 335.19,
+      "y0": 99.47,
+      "x1": 360.25,
+      "y1": 99.98,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 415.4,
+      "y0": 98.89,
+      "x1": 421.42,
+      "y1": 99.2,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 495.56,
+      "y0": 99.95,
+      "x1": 503.75,
+      "y1": 100.27,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 324.21,
+      "y0": 100.93,
+      "x1": 348.79,
+      "y1": 101.62,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 94.62,
+      "y0": 102.76,
+      "x1": 99.62,
+      "y1": 103.38,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 205.68,
+      "y0": 102.77,
+      "x1": 215.92,
+      "y1": 103.41,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 229.09,
+      "y0": 103.0,
+      "x1": 235.19,
+      "y1": 103.41,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 270.34,
+      "y0": 102.73,
+      "x1": 281.87,
+      "y1": 103.36,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 322.12,
+      "y0": 102.73,
+      "x1": 332.41,
+      "y1": 103.04,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 390.88,
+      "y0": 102.77,
+      "x1": 423.5,
+      "y1": 103.44,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.93,
+      "y0": 121.48,
+      "x1": 537.55,
+      "y1": 121.85,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 152.66,
+      "x1": 537.55,
+      "y1": 153.02,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 180.94,
+      "x1": 537.55,
+      "y1": 181.31,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 186.46,
+      "x1": 537.55,
+      "y1": 187.3,
+      "thickness": 0.84,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 292.06,
+      "x1": 537.55,
+      "y1": 293.98,
+      "thickness": 0.84,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 468.51,
+      "x1": 537.55,
+      "y1": 469.35,
+      "thickness": 0.84,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 474.14,
+      "x1": 537.55,
+      "y1": 474.98,
+      "thickness": 0.84,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 649.75,
+      "x1": 537.55,
+      "y1": 650.59,
+      "thickness": 0.84,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 655.38,
+      "x1": 537.55,
+      "y1": 656.22,
+      "thickness": 0.84,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 793.71,
+      "x1": 537.55,
+      "y1": 794.55,
+      "thickness": 0.84,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 92.58,
+      "y0": 90.1,
+      "x1": 93.92,
+      "y1": 96.33,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 94.46,
+      "y0": 89.33,
+      "x1": 94.78,
+      "y1": 102.92,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 96.48,
+      "y0": 89.19,
+      "x1": 97.72,
+      "y1": 103.22,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 99.47,
+      "y0": 90.23,
+      "x1": 99.78,
+      "y1": 103.22,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 115.2,
+      "y0": 121.67,
+      "x1": 115.56,
+      "y1": 181.12,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "v",
+      "x0": 139.55,
+      "y0": 89.19,
+      "x1": 140.56,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 142.34,
+      "y0": 90.44,
+      "x1": 142.65,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 166.88,
+      "y0": 89.81,
+      "x1": 167.39,
+      "y1": 94.55,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 169.17,
+      "y0": 89.19,
+      "x1": 169.49,
+      "y1": 97.76,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 171.26,
+      "y0": 90.48,
+      "x1": 171.57,
+      "y1": 97.76,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 184.2,
+      "y0": 89.19,
+      "x1": 184.52,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 186.29,
+      "y0": 90.18,
+      "x1": 186.6,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 205.52,
+      "y0": 97.73,
+      "x1": 205.83,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 213.71,
+      "y0": 89.19,
+      "x1": 214.02,
+      "y1": 96.91,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 215.76,
+      "y0": 90.18,
+      "x1": 216.1,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 228.94,
+      "y0": 89.19,
+      "x1": 229.25,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 231.02,
+      "y0": 90.18,
+      "x1": 231.34,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 256.94,
+      "y0": 89.19,
+      "x1": 257.26,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 259.04,
+      "y0": 90.44,
+      "x1": 259.34,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 263.39,
+      "y0": 90.42,
+      "x1": 263.71,
+      "y1": 99.71,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 265.48,
+      "y0": 91.44,
+      "x1": 265.79,
+      "y1": 97.8,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 270.18,
+      "y0": 89.42,
+      "x1": 270.5,
+      "y1": 102.89,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 272.2,
+      "y0": 89.19,
+      "x1": 273.55,
+      "y1": 103.2,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 275.29,
+      "y0": 90.23,
+      "x1": 275.6,
+      "y1": 103.2,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 300.09,
+      "y0": 89.42,
+      "x1": 300.4,
+      "y1": 94.19,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 310.64,
+      "y0": 89.42,
+      "x1": 311.03,
+      "y1": 94.19,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 321.96,
+      "y0": 98.27,
+      "x1": 322.28,
+      "y1": 102.89,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 336.76,
+      "y0": 90.29,
+      "x1": 337.08,
+      "y1": 98.04,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 347.1,
+      "y0": 90.29,
+      "x1": 347.69,
+      "y1": 98.04,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 351.71,
+      "y0": 89.33,
+      "x1": 352.08,
+      "y1": 99.83,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 360.09,
+      "y0": 99.83,
+      "x1": 360.41,
+      "y1": 103.28,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 362.18,
+      "y0": 90.13,
+      "x1": 362.56,
+      "y1": 103.28,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 375.62,
+      "y0": 89.19,
+      "x1": 375.93,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 377.71,
+      "y0": 90.18,
+      "x1": 378.02,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 390.73,
+      "y0": 89.19,
+      "x1": 391.04,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 392.82,
+      "y0": 90.18,
+      "x1": 393.13,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 397.4,
+      "y0": 97.69,
+      "x1": 397.71,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 407.42,
+      "y0": 97.69,
+      "x1": 407.74,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 413.15,
+      "y0": 97.83,
+      "x1": 413.47,
+      "y1": 103.28,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 415.24,
+      "y0": 98.61,
+      "x1": 415.55,
+      "y1": 103.28,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 419.78,
+      "y0": 92.15,
+      "x1": 420.09,
+      "y1": 96.77,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 421.26,
+      "y0": 89.19,
+      "x1": 421.59,
+      "y1": 103.28,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 423.35,
+      "y0": 90.29,
+      "x1": 423.68,
+      "y1": 103.28,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 436.19,
+      "y0": 89.19,
+      "x1": 436.5,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 438.28,
+      "y0": 90.18,
+      "x1": 438.58,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 451.3,
+      "y0": 89.19,
+      "x1": 451.61,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 453.39,
+      "y0": 90.18,
+      "x1": 453.7,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 473.72,
+      "y0": 89.19,
+      "x1": 474.04,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 475.81,
+      "y0": 90.18,
+      "x1": 476.13,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 488.83,
+      "y0": 89.19,
+      "x1": 489.15,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 490.93,
+      "y0": 90.18,
+      "x1": 491.24,
+      "y1": 103.25,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 495.4,
+      "y0": 89.51,
+      "x1": 495.75,
+      "y1": 100.11,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 503.6,
+      "y0": 100.11,
+      "x1": 503.91,
+      "y1": 103.28,
+      "thickness": 0.32,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 505.68,
+      "y0": 89.51,
+      "x1": 506.37,
+      "y1": 103.28,
+      "thickness": 0.32,
+      "style": "dashed",
+      "color": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "t0",
+      "kind": "table",
+      "bbox": [
+        57.33,
+        121.66,
+        537.55,
+        293.02
+      ],
+      "nRows": 4,
+      "nCols": 8,
+      "colXs": [
+        57.33,
+        161.88,
+        244.42,
+        292.44,
+        338.96,
+        373.98,
+        419.5,
+        457.01,
+        537.55
+      ],
+      "rowYs": [
+        121.66,
+        152.84,
+        181.12,
+        186.88,
+        293.02
+      ],
+      "widthRatio": [
+        0.2177,
+        0.1719,
+        0.1,
+        0.0969,
+        0.0729,
+        0.0948,
+        0.0781,
+        0.1677
+      ],
+      "widthPt": 480.22,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            57.33,
+            121.66,
+            161.88,
+            152.84
+          ],
+          "wordIds": [
+            "w28",
+            "w29"
+          ],
+          "text": "회의 일시",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 10.9,
+            "r": 12.0,
+            "b": 9.5,
+            "l": 6.7
+          },
+          "font": {
+            "family": "DotumChe",
+            "color": "#000000",
+            "size": 10.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            161.88,
+            121.66,
+            244.42,
+            152.84
+          ],
+          "wordIds": [
+            "w30"
+          ],
+          "text": "년",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 11.4,
+            "r": 12.0,
+            "b": 10.0,
+            "l": 12.0
+          },
+          "font": {
+            "family": "DotumChe",
+            "color": "#000000",
+            "size": 9.7,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            244.42,
+            121.66,
+            292.44,
+            152.84
+          ],
+          "wordIds": [
+            "w31"
+          ],
+          "text": "월",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 11.4,
+            "r": 12.0,
+            "b": 10.0,
+            "l": 12.0
+          },
+          "font": {
+            "family": "DotumChe",
+            "color": "#000000",
+            "size": 9.7,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            292.44,
+            121.66,
+            338.96,
+            152.84
+          ],
+          "wordIds": [
+            "w32"
+          ],
+          "text": "일(",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 11.4,
+            "r": 12.0,
+            "b": 10.0,
+            "l": 12.0
+          },
+          "font": {
+            "family": "DotumChe",
+            "color": "#000000",
+            "size": 9.7,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            338.96,
+            121.66,
+            373.98,
+            152.84
+          ],
+          "wordIds": [
+            "w33"
+          ],
+          "text": "시",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 12.0,
+            "r": 12.0,
+            "b": 10.2,
+            "l": 12.0
+          },
+          "font": {
+            "family": "DotumChe",
+            "color": "#000000",
+            "size": 8.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 5,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            373.98,
+            121.66,
+            419.5,
+            152.84
+          ],
+          "wordIds": [
+            "w34",
+            "w35"
+          ],
+          "text": "분 ~",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 12.0,
+            "r": 12.0,
+            "b": 10.2,
+            "l": 12.0
+          },
+          "font": {
+            "family": "DotumChe",
+            "color": "#000000",
+            "size": 8.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 6,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            419.5,
+            121.66,
+            457.01,
+            152.84
+          ],
+          "wordIds": [
+            "w36"
+          ],
+          "text": "시",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 12.0,
+            "r": 12.0,
+            "b": 10.2,
+            "l": 12.0
+          },
+          "font": {
+            "family": "DotumChe",
+            "color": "#000000",
+            "size": 8.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            457.01,
+            121.66,
+            537.55,
+            152.84
+          ],
+          "wordIds": [
+            "w37"
+          ],
+          "text": "분)",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 12.0,
+            "r": 12.0,
+            "b": 10.2,
+            "l": 12.0
+          },
+          "font": {
+            "family": "DotumChe",
+            "color": "#000000",
+            "size": 8.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            57.33,
+            152.84,
+            161.88,
+            181.12
+          ],
+          "wordIds": [
+            "w38",
+            "w39"
+          ],
+          "text": "회의 장소",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 9.4,
+            "r": 12.0,
+            "b": 8.1,
+            "l": 6.7
+          },
+          "font": {
+            "family": "DotumChe",
+            "color": "#000000",
+            "size": 10.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            161.88,
+            152.84,
+            244.42,
+            181.12
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c1",
+            "kind": "text",
+            "label": "r2c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            244.42,
+            152.84,
+            292.44,
+            181.12
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c2",
+            "kind": "text",
+            "label": "r2c3",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            292.44,
+            152.84,
+            338.96,
+            181.12
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c3",
+            "kind": "text",
+            "label": "r2c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            338.96,
+            152.84,
+            373.98,
+            181.12
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c4",
+            "kind": "text",
+            "label": "r2c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 5,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            373.98,
+            152.84,
+            419.5,
+            181.12
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c5",
+            "kind": "text",
+            "label": "r2c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 6,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            419.5,
+            152.84,
+            457.01,
+            181.12
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c6",
+            "kind": "text",
+            "label": "r2c7",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            457.01,
+            152.84,
+            537.55,
+            181.12
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c7",
+            "kind": "text",
+            "label": "r2c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            57.33,
+            181.12,
+            161.88,
+            186.88
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c0",
+            "kind": "text",
+            "label": "r3c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            161.88,
+            181.12,
+            244.42,
+            186.88
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c1",
+            "kind": "text",
+            "label": "r3c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            244.42,
+            181.12,
+            292.44,
+            186.88
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c2",
+            "kind": "text",
+            "label": "r3c3",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            292.44,
+            181.12,
+            338.96,
+            186.88
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c3",
+            "kind": "text",
+            "label": "r3c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            338.96,
+            181.12,
+            373.98,
+            186.88
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c4",
+            "kind": "text",
+            "label": "r3c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 5,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            373.98,
+            181.12,
+            419.5,
+            186.88
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c5",
+            "kind": "text",
+            "label": "r3c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 6,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            419.5,
+            181.12,
+            457.01,
+            186.88
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c6",
+            "kind": "text",
+            "label": "r3c7",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            457.01,
+            181.12,
+            537.55,
+            186.88
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c7",
+            "kind": "text",
+            "label": "r3c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            57.33,
+            186.88,
+            161.88,
+            293.02
+          ],
+          "wordIds": [
+            "w40"
+          ],
+          "text": "의제",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 2.8,
+            "r": 12.0,
+            "b": 12.0,
+            "l": 3.5
+          },
+          "font": {
+            "family": "Dotum",
+            "color": "#000000",
+            "size": 10.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            161.88,
+            186.88,
+            244.42,
+            293.02
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r3c1",
+            "kind": "text",
+            "label": "r4c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            244.42,
+            186.88,
+            292.44,
+            293.02
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r3c2",
+            "kind": "text",
+            "label": "r4c3",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            292.44,
+            186.88,
+            338.96,
+            293.02
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r3c3",
+            "kind": "text",
+            "label": "r4c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            338.96,
+            186.88,
+            373.98,
+            293.02
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r3c4",
+            "kind": "text",
+            "label": "r4c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 5,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            373.98,
+            186.88,
+            419.5,
+            293.02
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r3c5",
+            "kind": "text",
+            "label": "r4c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 6,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            419.5,
+            186.88,
+            457.01,
+            293.02
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r3c6",
+            "kind": "text",
+            "label": "r4c7",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            457.01,
+            186.88,
+            537.55,
+            293.02
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.84,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r3c7",
+            "kind": "text",
+            "label": "r4c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": null,
+      "imageFallbackSrc": null
+    },
+    {
+      "id": "fld0",
+      "bbox": [
+        60.81,
+        60.93,
+        295.81,
+        69.68
+      ],
+      "wordIds": [
+        "w0",
+        "w1",
+        "w2",
+        "w3",
+        "w4",
+        "w5",
+        "w6"
+      ],
+      "text": "■ 근로복지기본법 시행규칙 [별지 제13호서식] <개정 2016.1.19.>",
+      "align": null,
+      "spans": [
+        {
+          "wordIds": [
+            "w0",
+            "w1",
+            "w2",
+            "w3",
+            "w4"
+          ],
+          "text": "■ 근로복지기본법 시행규칙 [별지 제13호서식]",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.8,
+          "font": "Dotum",
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w5",
+            "w6"
+          ],
+          "text": "<개정 2016.1.19.>",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#0000ff",
+          "size": 8.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "field",
+      "fieldKind": "box",
+      "label": "근로복지기본법 시행규칙 [별지 제13호서식] <개정 2016.1.19.>",
+      "assigneeName": "",
+      "placeholder": "■"
+    },
+    {
+      "id": "hd0",
+      "bbox": [
+        85.64,
+        85.82,
+        508.41,
+        104.95
+      ],
+      "wordIds": [
+        "w7",
+        "w8",
+        "w9",
+        "w10",
+        "w11",
+        "w12",
+        "w13",
+        "w14",
+        "w15",
+        "w16",
+        "w17",
+        "w18",
+        "w19",
+        "w20",
+        "w21",
+        "w22",
+        "w23",
+        "w24",
+        "w25",
+        "w26"
+      ],
+      "text": "제 차 (정 기 ㆍ임 시 ) 사 내 (공동)근 로 복 지 기 금협 의 회 회 의 록",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w7",
+            "w8",
+            "w9",
+            "w10"
+          ],
+          "text": "제 차 (정 기",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 15.7,
+          "font": "T2",
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w11"
+          ],
+          "text": "ㆍ임",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 15.6,
+          "font": "Dotum",
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w12",
+            "w13",
+            "w14",
+            "w15",
+            "w16",
+            "w17",
+            "w18",
+            "w19",
+            "w20",
+            "w21",
+            "w22",
+            "w23",
+            "w24",
+            "w25",
+            "w26"
+          ],
+          "text": "시 ) 사 내 (공동)근 로 복 지 기 금협 의 회 회 의 록",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 15.7,
+          "font": "T2",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 1
+    },
+    {
+      "id": "p1",
+      "bbox": [
+        514.04,
+        111.38,
+        534.03,
+        119.17
+      ],
+      "wordIds": [
+        "w27"
+      ],
+      "text": "(앞쪽)",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w27"
+          ],
+          "text": "(앞쪽)",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "hd2",
+      "bbox": [
+        60.81,
+        296.4,
+        100.99,
+        307.19
+      ],
+      "wordIds": [
+        "w41"
+      ],
+      "text": "협의사항",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w41"
+          ],
+          "text": "협의사항",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 10.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 2
+    },
+    {
+      "id": "hd3",
+      "bbox": [
+        60.81,
+        477.4,
+        100.99,
+        488.19
+      ],
+      "wordIds": [
+        "w47"
+      ],
+      "text": "결정사항",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w47"
+          ],
+          "text": "결정사항",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 10.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 2
+    },
+    {
+      "id": "hd4",
+      "bbox": [
+        60.81,
+        658.64,
+        140.56,
+        669.44
+      ],
+      "wordIds": [
+        "w48",
+        "w49",
+        "w50"
+      ],
+      "text": "그 밖의 토의사항",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w48",
+            "w49",
+            "w50"
+          ],
+          "text": "그 밖의 토의사항",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 10.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 2
+    },
+    {
+      "id": "nt5",
+      "bbox": [
+        448.68,
+        459.6,
+        533.84,
+        467.39
+      ],
+      "wordIds": [
+        "w42",
+        "w43",
+        "w44",
+        "w45",
+        "w46"
+      ],
+      "text": "※ 별도 용지 사용 가능",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w42",
+            "w43",
+            "w44",
+            "w45",
+            "w46"
+          ],
+          "text": "※ 별도 용지 사용 가능",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "note",
+      "noteKind": "annotation"
+    },
+    {
+      "id": "nt6",
+      "bbox": [
+        333.9,
+        799.07,
+        534.01,
+        806.86
+      ],
+      "wordIds": [
+        "w51",
+        "w52",
+        "w53"
+      ],
+      "text": "210mm×297mm[백상지(80g/㎡) 또는 중질지(80g/㎡)]",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w51",
+            "w52",
+            "w53"
+          ],
+          "text": "210mm×297mm[백상지(80g/㎡) 또는 중질지(80g/㎡)]",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "note",
+      "noteKind": "footer"
+    }
+  ],
+  "readingOrder": [
+    "fld0",
+    "hd0",
+    "p1",
+    "t0",
+    "hd2",
+    "nt5",
+    "hd3",
+    "hd4",
+    "nt6"
+  ],
+  "metrics": {
+    "ocrAvgConf": null,
+    "rulingCount": 116,
+    "tableCount": 1,
+    "wordCount": 54,
+    "occludedCharsFiltered": 0,
+    "invariantErrors": [],
+    "rulingsH": 62,
+    "rulingsV": 54,
+    "tableShapes": [
+      "t0:4x8(32)"
+    ],
+    "cellCount": 32,
+    "needsReviewCells": 0,
+    "headingCount": 4,
+    "captionCount": 0,
+    "noteCount": 2,
+    "headerFooterCount": 1,
+    "headingSummary": [
+      "H1:제 차 (정 기 ㆍ임 시 ) 사 내 (공동)근 로 복 지 ",
+      "H2:협의사항",
+      "H2:결정사항",
+      "H2:그 밖의 토의사항"
+    ],
+    "headerTexts": [
+      "210mm×297mm[백상지(80g/㎡) 또는 중질지(80g/㎡)]"
+    ],
+    "blockCounts": {
+      "table": 1,
+      "field": 1,
+      "heading": 4,
+      "paragraph": 1,
+      "note": 2
+    }
+  }
+}

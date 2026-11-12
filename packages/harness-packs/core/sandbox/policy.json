@@ -22,6 +22,7 @@
   "agentsDir": "작업 공간 설정 파일은 읽을 수 없고 읽을 필요도 없다. 사용자 자료는 vibefs 도구와 read_file 로 읽는다.",
   "outsideHint": " 혹시 이 파일인가: {hints}.",
   "outside": "마운트 밖 경로다: {path}.{hint} 마운트된 루트: {roots}.",
-  "guardError": "작업 공간 가드 오류로 막았다. 다시 시도하라."
+  "guardError": "작업 공간 가드 오류로 막았다. 다시 시도하라.",
+  "convertFailed": "이 서식 파일을 텍스트로 풀지 못했다(손상 · 암호 · 지원하지 않는 구조): {path}. 사용자에게 PDF 나 텍스트로 넣어 달라고 해라."
  }
 }

@@ -1,0 +1,6278 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-vector",
+  "size": {
+    "width": 595.0,
+    "height": 842.0
+  },
+  "margins": {
+    "top": 56.5,
+    "right": 56.2,
+    "bottom": 69.3,
+    "left": 56.6
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "회의",
+      "bbox": [
+        227.64,
+        56.48,
+        267.48,
+        81.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 22.3,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 78.0,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "진행",
+      "bbox": [
+        277.56,
+        56.48,
+        317.52,
+        81.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 22.3,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 78.0,
+      "lineHint": 0,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w2",
+      "text": "방법",
+      "bbox": [
+        327.6,
+        56.48,
+        367.56,
+        81.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 22.3,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 78.0,
+      "lineHint": 0,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w3",
+      "text": "1.일반적인",
+      "bbox": [
+        56.64,
+        94.11,
+        131.04,
+        109.26
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 15.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 107.04,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w4",
+      "text": "회순",
+      "bbox": [
+        138.48,
+        94.11,
+        168.48,
+        109.26
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 15.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 107.04,
+      "lineHint": 1,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "1.",
+      "bbox": [
+        61.68,
+        119.51,
+        74.1,
+        132.6
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 130.68,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w6",
+      "text": "개회사",
+      "bbox": [
+        76.92,
+        119.55,
+        115.8,
+        132.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 130.68,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w7",
+      "text": "4.의제",
+      "bbox": [
+        236.28,
+        119.51,
+        274.08,
+        132.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 130.68,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w8",
+      "text": "토의",
+      "bbox": [
+        280.56,
+        119.55,
+        306.48,
+        132.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 130.68,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w9",
+      "text": "9.",
+      "bbox": [
+        399.84,
+        119.51,
+        410.82,
+        132.6
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 130.68,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w10",
+      "text": "반가",
+      "bbox": [
+        413.64,
+        119.55,
+        439.56,
+        132.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 130.68,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w11",
+      "text": "제창",
+      "bbox": [
+        446.04,
+        119.55,
+        472.08,
+        132.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 130.68,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w12",
+      "text": "2.",
+      "bbox": [
+        61.68,
+        135.23,
+        74.1,
+        148.32
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 146.4,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w13",
+      "text": "국민의례",
+      "bbox": [
+        76.92,
+        135.27,
+        128.88,
+        148.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 146.4,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w14",
+      "text": "·의제",
+      "bbox": [
+        248.04,
+        135.23,
+        278.4,
+        148.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 146.4,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w15",
+      "text": "제안",
+      "bbox": [
+        284.88,
+        135.27,
+        310.8,
+        148.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 146.4,
+      "lineHint": 3,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w16",
+      "text": "및",
+      "bbox": [
+        317.4,
+        135.27,
+        330.36,
+        148.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 146.4,
+      "lineHint": 3,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w17",
+      "text": "설명",
+      "bbox": [
+        336.84,
+        135.27,
+        362.76,
+        148.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 146.4,
+      "lineHint": 3,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w18",
+      "text": "10.",
+      "bbox": [
+        393.36,
+        135.23,
+        410.82,
+        148.32
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 146.4,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w19",
+      "text": "페회사",
+      "bbox": [
+        413.64,
+        135.27,
+        452.52,
+        148.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 146.4,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w20",
+      "text": "·국기에",
+      "bbox": [
+        76.92,
+        151.07,
+        120.12,
+        164.2
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w21",
+      "text": "대한",
+      "bbox": [
+        126.72,
+        151.11,
+        152.64,
+        164.2
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 4,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w22",
+      "text": "경례",
+      "bbox": [
+        159.12,
+        151.11,
+        185.16,
+        164.2
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 4,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w23",
+      "text": "·의제",
+      "bbox": [
+        248.04,
+        151.07,
+        278.4,
+        164.2
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w24",
+      "text": "채택",
+      "bbox": [
+        284.88,
+        151.11,
+        310.8,
+        164.2
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 4,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w25",
+      "text": "·애국가",
+      "bbox": [
+        76.92,
+        166.91,
+        120.12,
+        180.04
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 178.08,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w26",
+      "text": "제창",
+      "bbox": [
+        126.72,
+        166.95,
+        152.64,
+        180.04
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 178.08,
+      "lineHint": 5,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w27",
+      "text": "·실천",
+      "bbox": [
+        248.04,
+        166.91,
+        278.4,
+        180.04
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 178.08,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w28",
+      "text": "방법(노력점)",
+      "bbox": [
+        284.04,
+        166.91,
+        358.86,
+        180.04
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 178.08,
+      "lineHint": 5,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w29",
+      "text": "토의",
+      "bbox": [
+        364.56,
+        166.95,
+        390.48,
+        180.04
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 178.08,
+      "lineHint": 5,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w30",
+      "text": "※부회장이",
+      "bbox": [
+        413.64,
+        167.07,
+        468.36,
+        180.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 178.2,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w31",
+      "text": "회의",
+      "bbox": [
+        473.64,
+        167.07,
+        495.6,
+        180.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 178.2,
+      "lineHint": 5,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w32",
+      "text": "3.",
+      "bbox": [
+        61.68,
+        182.62,
+        74.1,
+        195.72
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w33",
+      "text": "생활",
+      "bbox": [
+        76.92,
+        182.67,
+        102.84,
+        195.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w34",
+      "text": "반성",
+      "bbox": [
+        109.32,
+        182.67,
+        135.36,
+        195.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w35",
+      "text": "및",
+      "bbox": [
+        141.84,
+        182.67,
+        154.8,
+        195.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w36",
+      "text": "계획",
+      "bbox": [
+        161.28,
+        182.67,
+        187.32,
+        195.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w37",
+      "text": "발표",
+      "bbox": [
+        193.8,
+        182.67,
+        219.72,
+        195.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w38",
+      "text": "5.기타",
+      "bbox": [
+        236.28,
+        182.62,
+        274.08,
+        195.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w39",
+      "text": "토의",
+      "bbox": [
+        280.56,
+        182.67,
+        306.48,
+        195.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w40",
+      "text": "를",
+      "bbox": [
+        426.6,
+        182.67,
+        437.64,
+        195.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w41",
+      "text": "순서대로",
+      "bbox": [
+        442.92,
+        182.67,
+        486.72,
+        195.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.8,
+      "lineHint": 6,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w42",
+      "text": "·의제",
+      "bbox": [
+        76.92,
+        198.47,
+        107.16,
+        211.6
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 209.64,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w43",
+      "text": "실천",
+      "bbox": [
+        113.64,
+        198.51,
+        139.68,
+        211.6
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 209.64,
+      "lineHint": 7,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w44",
+      "text": "결과",
+      "bbox": [
+        146.16,
+        198.51,
+        172.08,
+        211.6
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 209.64,
+      "lineHint": 7,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w45",
+      "text": "반성",
+      "bbox": [
+        178.68,
+        198.51,
+        204.6,
+        211.6
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 209.64,
+      "lineHint": 7,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w46",
+      "text": "6.건의",
+      "bbox": [
+        236.28,
+        198.47,
+        274.08,
+        211.6
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 209.64,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w47",
+      "text": "사항",
+      "bbox": [
+        280.56,
+        198.51,
+        306.48,
+        211.6
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 209.64,
+      "lineHint": 7,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w48",
+      "text": "진행한다.",
+      "bbox": [
+        426.6,
+        198.23,
+        474.42,
+        211.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 209.4,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w49",
+      "text": "·각부",
+      "bbox": [
+        76.92,
+        214.31,
+        107.16,
+        227.44
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 225.48,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w50",
+      "text": "생활",
+      "bbox": [
+        113.64,
+        214.35,
+        139.68,
+        227.44
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 225.48,
+      "lineHint": 8,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w51",
+      "text": "반성",
+      "bbox": [
+        146.16,
+        214.35,
+        172.08,
+        227.44
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 225.48,
+      "lineHint": 8,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w52",
+      "text": "7.선생님의",
+      "bbox": [
+        236.28,
+        214.31,
+        300.0,
+        227.44
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 225.48,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w53",
+      "text": "지도",
+      "bbox": [
+        306.6,
+        214.35,
+        332.52,
+        227.44
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 225.48,
+      "lineHint": 8,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w54",
+      "text": "말씀",
+      "bbox": [
+        339.0,
+        214.35,
+        365.04,
+        227.44
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 225.48,
+      "lineHint": 8,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w55",
+      "text": "·각부",
+      "bbox": [
+        76.92,
+        230.03,
+        107.16,
+        243.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 241.2,
+      "lineHint": 9,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w56",
+      "text": "생활",
+      "bbox": [
+        113.64,
+        230.07,
+        139.68,
+        243.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 241.2,
+      "lineHint": 9,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w57",
+      "text": "계획",
+      "bbox": [
+        146.16,
+        230.07,
+        172.08,
+        243.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 241.2,
+      "lineHint": 9,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w58",
+      "text": "발표",
+      "bbox": [
+        178.68,
+        230.07,
+        204.6,
+        243.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 241.2,
+      "lineHint": 9,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w59",
+      "text": "8.회의록",
+      "bbox": [
+        236.28,
+        230.03,
+        287.04,
+        243.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 241.2,
+      "lineHint": 9,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w60",
+      "text": "낭독",
+      "bbox": [
+        293.52,
+        230.07,
+        319.56,
+        243.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 241.2,
+      "lineHint": 9,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w61",
+      "text": "2.각",
+      "bbox": [
+        56.64,
+        270.03,
+        86.04,
+        285.18
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 15.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 282.96,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w62",
+      "text": "순서별",
+      "bbox": [
+        93.48,
+        270.03,
+        138.48,
+        285.18
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 15.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 282.96,
+      "lineHint": 10,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w63",
+      "text": "세부",
+      "bbox": [
+        146.04,
+        270.03,
+        176.04,
+        285.18
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 15.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 282.96,
+      "lineHint": 10,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w64",
+      "text": "진행",
+      "bbox": [
+        183.48,
+        270.03,
+        213.48,
+        285.18
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 15.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 282.96,
+      "lineHint": 10,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w65",
+      "text": "방법",
+      "bbox": [
+        220.92,
+        270.03,
+        250.92,
+        285.18
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 15.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 282.96,
+      "lineHint": 10,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w66",
+      "text": "1)",
+      "bbox": [
+        69.0,
+        292.58,
+        80.76,
+        304.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 303.0,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w67",
+      "text": "개회사",
+      "bbox": [
+        87.24,
+        292.54,
+        123.12,
+        304.9
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 303.0,
+      "lineHint": 11,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w68",
+      "text": "부회장:",
+      "bbox": [
+        100.08,
+        310.54,
+        141.0,
+        322.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 320.88,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w69",
+      "text": "“개회사”",
+      "bbox": [
+        147.72,
+        310.54,
+        196.56,
+        322.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 320.88,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w70",
+      "text": "䂮",
+      "bbox": [
+        81.48,
+        316.94,
+        92.28,
+        344.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "TTF97B79EFtCID32K",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 338.88,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w71",
+      "text": "회",
+      "bbox": [
+        100.32,
+        328.54,
+        111.12,
+        340.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 338.88,
+      "lineHint": 13,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w72",
+      "text": "장:",
+      "bbox": [
+        125.16,
+        328.54,
+        141.24,
+        340.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 338.88,
+      "lineHint": 13,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w73",
+      "text": "“지금부터",
+      "bbox": [
+        147.84,
+        328.54,
+        202.2,
+        340.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 338.88,
+      "lineHint": 13,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w74",
+      "text": "제()회",
+      "bbox": [
+        210.0,
+        328.54,
+        273.6,
+        340.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 338.88,
+      "lineHint": 13,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w75",
+      "text": "학급",
+      "bbox": [
+        281.4,
+        328.54,
+        304.68,
+        340.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 338.88,
+      "lineHint": 13,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w76",
+      "text": "어린이회를",
+      "bbox": [
+        312.48,
+        328.54,
+        373.08,
+        340.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 338.88,
+      "lineHint": 13,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w77",
+      "text": "시작하겠습니다.”",
+      "bbox": [
+        380.88,
+        328.54,
+        477.0,
+        340.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 338.88,
+      "lineHint": 13,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w78",
+      "text": "☺",
+      "bbox": [
+        81.48,
+        346.58,
+        92.28,
+        358.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 356.88,
+      "lineHint": 14,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w79",
+      "text": "회",
+      "bbox": [
+        100.08,
+        346.54,
+        110.88,
+        358.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 356.88,
+      "lineHint": 14,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w80",
+      "text": "원:",
+      "bbox": [
+        124.92,
+        346.54,
+        141.0,
+        358.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 356.88,
+      "lineHint": 14,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w81",
+      "text": "모두",
+      "bbox": [
+        147.6,
+        346.54,
+        170.88,
+        358.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 356.88,
+      "lineHint": 14,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w82",
+      "text": "박수를",
+      "bbox": [
+        178.68,
+        346.54,
+        214.44,
+        358.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 356.88,
+      "lineHint": 14,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w83",
+      "text": "친다.",
+      "bbox": [
+        222.24,
+        346.54,
+        250.23,
+        358.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 356.88,
+      "lineHint": 14,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w84",
+      "text": "2)",
+      "bbox": [
+        69.0,
+        364.58,
+        80.76,
+        376.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 375.0,
+      "lineHint": 15,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w85",
+      "text": "국민의례",
+      "bbox": [
+        87.24,
+        364.54,
+        135.6,
+        376.9
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 375.0,
+      "lineHint": 15,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w86",
+      "text": "부회장:",
+      "bbox": [
+        100.08,
+        382.54,
+        141.0,
+        394.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 392.88,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w87",
+      "text": "䃱",
+      "bbox": [
+        147.72,
+        370.94,
+        158.52,
+        398.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "TTF97B79EFtCID32K",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 392.88,
+      "lineHint": 16,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w88",
+      "text": "“다음은",
+      "bbox": [
+        166.56,
+        382.54,
+        208.44,
+        394.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 392.88,
+      "lineHint": 16,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w89",
+      "text": "국민의례가",
+      "bbox": [
+        216.24,
+        382.54,
+        276.84,
+        394.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 392.88,
+      "lineHint": 16,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w90",
+      "text": "있겠습니다.”",
+      "bbox": [
+        284.64,
+        382.54,
+        355.92,
+        394.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 392.88,
+      "lineHint": 16,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w91",
+      "text": "䂮",
+      "bbox": [
+        81.48,
+        388.94,
+        92.28,
+        416.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "TTF97B79EFtCID32K",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w92",
+      "text": "회",
+      "bbox": [
+        100.32,
+        400.54,
+        111.12,
+        412.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w93",
+      "text": "장:",
+      "bbox": [
+        125.16,
+        400.54,
+        141.24,
+        412.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w94",
+      "text": "䃱“모두",
+      "bbox": [
+        147.84,
+        388.94,
+        189.96,
+        416.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w95",
+      "text": "일어나서",
+      "bbox": [
+        197.88,
+        400.54,
+        246.0,
+        412.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w96",
+      "text": "정면의",
+      "bbox": [
+        253.8,
+        400.54,
+        289.44,
+        412.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w97",
+      "text": "국기를",
+      "bbox": [
+        297.36,
+        400.54,
+        333.0,
+        412.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w98",
+      "text": "향해",
+      "bbox": [
+        340.8,
+        400.54,
+        364.08,
+        412.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w99",
+      "text": "주시기",
+      "bbox": [
+        371.88,
+        400.54,
+        407.64,
+        412.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w100",
+      "text": "바랍니다.”",
+      "bbox": [
+        415.44,
+        400.54,
+        474.24,
+        412.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 410.88,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w101",
+      "text": "䃱“국기에",
+      "bbox": [
+        143.4,
+        406.94,
+        198.0,
+        434.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 428.88,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w102",
+      "text": "대하여",
+      "bbox": [
+        205.8,
+        418.54,
+        241.56,
+        430.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 428.88,
+      "lineHint": 18,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w103",
+      "text": "경례!”",
+      "bbox": [
+        249.36,
+        418.54,
+        283.57,
+        430.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 428.88,
+      "lineHint": 18,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w104",
+      "text": "䃱“나는",
+      "bbox": [
+        143.4,
+        424.94,
+        183.84,
+        452.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w105",
+      "text": "자랑스런",
+      "bbox": [
+        190.08,
+        436.54,
+        236.52,
+        448.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w106",
+      "text": "태극기",
+      "bbox": [
+        242.76,
+        436.54,
+        277.32,
+        448.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w107",
+      "text": "앞에",
+      "bbox": [
+        283.44,
+        436.54,
+        306.12,
+        448.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w108",
+      "text": "조국과",
+      "bbox": [
+        312.36,
+        436.54,
+        346.92,
+        448.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w109",
+      "text": "민족의",
+      "bbox": [
+        353.16,
+        436.54,
+        387.72,
+        448.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w110",
+      "text": "무궁한",
+      "bbox": [
+        393.84,
+        436.54,
+        428.4,
+        448.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w111",
+      "text": "영광을",
+      "bbox": [
+        434.64,
+        436.54,
+        469.2,
+        448.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w112",
+      "text": "위하여",
+      "bbox": [
+        475.44,
+        436.54,
+        510.0,
+        448.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w113",
+      "text": "몸과",
+      "bbox": [
+        516.12,
+        436.54,
+        538.8,
+        448.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 446.88,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w114",
+      "text": "마음을",
+      "bbox": [
+        166.08,
+        454.54,
+        201.72,
+        466.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 464.88,
+      "lineHint": 20,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w115",
+      "text": "바쳐",
+      "bbox": [
+        209.64,
+        454.54,
+        232.8,
+        466.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 464.88,
+      "lineHint": 20,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w116",
+      "text": "충성을",
+      "bbox": [
+        240.72,
+        454.54,
+        276.36,
+        466.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 464.88,
+      "lineHint": 20,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w117",
+      "text": "다할",
+      "bbox": [
+        284.16,
+        454.54,
+        307.44,
+        466.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 464.88,
+      "lineHint": 20,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w118",
+      "text": "것을",
+      "bbox": [
+        315.24,
+        454.54,
+        338.52,
+        466.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 464.88,
+      "lineHint": 20,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w119",
+      "text": "굳게",
+      "bbox": [
+        346.32,
+        454.54,
+        369.6,
+        466.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 464.88,
+      "lineHint": 20,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w120",
+      "text": "다짐합니다.“",
+      "bbox": [
+        377.4,
+        454.54,
+        448.68,
+        466.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 464.88,
+      "lineHint": 20,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w121",
+      "text": "䃱“바로!”",
+      "bbox": [
+        143.4,
+        460.94,
+        196.45,
+        488.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 482.88,
+      "lineHint": 21,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w122",
+      "text": "䃱“애국가",
+      "bbox": [
+        143.4,
+        478.94,
+        198.0,
+        506.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 500.88,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w123",
+      "text": "제창”",
+      "bbox": [
+        205.8,
+        490.54,
+        236.16,
+        502.69
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 500.88,
+      "lineHint": 22,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w124",
+      "text": "䃱“애국가는",
+      "bbox": [
+        143.4,
+        496.94,
+        210.48,
+        524.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 518.88,
+      "lineHint": 23,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w125",
+      "text": "일절만",
+      "bbox": [
+        218.28,
+        508.54,
+        253.92,
+        520.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 518.88,
+      "lineHint": 23,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w126",
+      "text": "부르겠습니다.”",
+      "bbox": [
+        261.84,
+        508.54,
+        345.48,
+        520.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 518.88,
+      "lineHint": 23,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w127",
+      "text": "※반주와",
+      "bbox": [
+        153.48,
+        526.58,
+        206.88,
+        538.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 536.88,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w128",
+      "text": "지휘를",
+      "bbox": [
+        215.64,
+        526.58,
+        255.24,
+        538.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 536.88,
+      "lineHint": 24,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w129",
+      "text": "하는",
+      "bbox": [
+        264.0,
+        526.58,
+        289.8,
+        538.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 536.88,
+      "lineHint": 24,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w130",
+      "text": "아동을",
+      "bbox": [
+        298.44,
+        526.58,
+        338.04,
+        538.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 536.88,
+      "lineHint": 24,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w131",
+      "text": "미리",
+      "bbox": [
+        346.8,
+        526.58,
+        372.6,
+        538.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 536.88,
+      "lineHint": 24,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w132",
+      "text": "선정해",
+      "bbox": [
+        381.36,
+        526.58,
+        420.96,
+        538.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 536.88,
+      "lineHint": 24,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w133",
+      "text": "둔다.",
+      "bbox": [
+        429.6,
+        526.58,
+        460.7,
+        538.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 536.88,
+      "lineHint": 24,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w134",
+      "text": "䃱“모두",
+      "bbox": [
+        143.4,
+        532.94,
+        185.52,
+        560.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 554.88,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w135",
+      "text": "자리에",
+      "bbox": [
+        193.44,
+        544.54,
+        229.08,
+        556.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 554.88,
+      "lineHint": 25,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w136",
+      "text": "앉아",
+      "bbox": [
+        236.88,
+        544.54,
+        260.16,
+        556.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 554.88,
+      "lineHint": 25,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w137",
+      "text": "주십시오.”",
+      "bbox": [
+        267.96,
+        544.54,
+        326.76,
+        556.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 554.88,
+      "lineHint": 25,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w138",
+      "text": "3)",
+      "bbox": [
+        69.0,
+        562.58,
+        80.76,
+        574.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 573.0,
+      "lineHint": 26,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w139",
+      "text": "전교",
+      "bbox": [
+        87.24,
+        562.54,
+        110.76,
+        574.9
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 573.0,
+      "lineHint": 26,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w140",
+      "text": "어린이회의",
+      "bbox": [
+        118.32,
+        562.54,
+        179.16,
+        574.9
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 573.0,
+      "lineHint": 26,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w141",
+      "text": "결과",
+      "bbox": [
+        186.72,
+        562.54,
+        210.24,
+        574.9
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 573.0,
+      "lineHint": 26,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w142",
+      "text": "보고",
+      "bbox": [
+        217.8,
+        562.54,
+        241.32,
+        574.9
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 573.0,
+      "lineHint": 26,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w143",
+      "text": "부회장:",
+      "bbox": [
+        100.08,
+        580.54,
+        141.0,
+        592.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 590.88,
+      "lineHint": 27,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w144",
+      "text": "䃱“전교",
+      "bbox": [
+        147.72,
+        568.94,
+        189.84,
+        596.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 590.88,
+      "lineHint": 27,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w145",
+      "text": "어린이회의",
+      "bbox": [
+        197.64,
+        580.54,
+        258.24,
+        592.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 590.88,
+      "lineHint": 27,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w146",
+      "text": "결과",
+      "bbox": [
+        266.04,
+        580.54,
+        289.32,
+        592.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 590.88,
+      "lineHint": 27,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w147",
+      "text": "보고”",
+      "bbox": [
+        297.12,
+        580.54,
+        327.36,
+        592.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 590.88,
+      "lineHint": 27,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w148",
+      "text": "䂮",
+      "bbox": [
+        81.48,
+        586.94,
+        92.28,
+        614.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "TTF97B79EFtCID32K",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w149",
+      "text": "회",
+      "bbox": [
+        98.4,
+        598.54,
+        109.2,
+        610.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w150",
+      "text": "장:",
+      "bbox": [
+        120.36,
+        598.54,
+        135.48,
+        610.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w151",
+      "text": "䃱“지난주에",
+      "bbox": [
+        140.28,
+        586.94,
+        203.28,
+        614.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w152",
+      "text": "있었던",
+      "bbox": [
+        209.28,
+        598.54,
+        243.24,
+        610.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w153",
+      "text": "제()회",
+      "bbox": [
+        249.24,
+        598.54,
+        299.76,
+        610.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w154",
+      "text": "전교",
+      "bbox": [
+        305.76,
+        598.54,
+        328.2,
+        610.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w155",
+      "text": "어린이회의",
+      "bbox": [
+        334.08,
+        598.54,
+        391.44,
+        610.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w156",
+      "text": "소식을",
+      "bbox": [
+        397.44,
+        598.54,
+        431.52,
+        610.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w157",
+      "text": "전해드리겠습니다.”",
+      "bbox": [
+        437.4,
+        598.54,
+        538.68,
+        610.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 608.88,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w158",
+      "text": "(결정된",
+      "bbox": [
+        139.68,
+        616.58,
+        182.52,
+        628.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 626.88,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w159",
+      "text": "사항을",
+      "bbox": [
+        189.84,
+        616.58,
+        227.52,
+        628.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 626.88,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w160",
+      "text": "기록한",
+      "bbox": [
+        234.84,
+        616.58,
+        272.52,
+        628.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 626.88,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w161",
+      "text": "회의록을",
+      "bbox": [
+        279.72,
+        616.58,
+        330.24,
+        628.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 626.88,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w162",
+      "text": "여러",
+      "bbox": [
+        337.56,
+        616.58,
+        362.4,
+        628.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 626.88,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w163",
+      "text": "회원들에게",
+      "bbox": [
+        369.72,
+        616.58,
+        433.08,
+        628.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 626.88,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w164",
+      "text": "낭독한다.)",
+      "bbox": [
+        440.28,
+        616.58,
+        500.0,
+        628.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 626.88,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w165",
+      "text": "4)",
+      "bbox": [
+        69.0,
+        634.58,
+        80.76,
+        646.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 645.0,
+      "lineHint": 30,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w166",
+      "text": "금주",
+      "bbox": [
+        87.24,
+        634.54,
+        110.76,
+        646.9
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 645.0,
+      "lineHint": 30,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w167",
+      "text": "생활반성",
+      "bbox": [
+        118.32,
+        634.54,
+        166.68,
+        646.9
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 645.0,
+      "lineHint": 30,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w168",
+      "text": "부회장:",
+      "bbox": [
+        93.84,
+        652.54,
+        134.76,
+        664.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 662.88,
+      "lineHint": 31,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w169",
+      "text": "䃱“다음에는",
+      "bbox": [
+        141.48,
+        640.94,
+        208.44,
+        668.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 662.88,
+      "lineHint": 31,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w170",
+      "text": "금주",
+      "bbox": [
+        216.36,
+        652.54,
+        239.52,
+        664.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 662.88,
+      "lineHint": 31,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w171",
+      "text": "생활반성이",
+      "bbox": [
+        247.44,
+        652.54,
+        307.92,
+        664.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 662.88,
+      "lineHint": 31,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w172",
+      "text": "있겠습니다.”",
+      "bbox": [
+        315.84,
+        652.54,
+        387.0,
+        664.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 662.88,
+      "lineHint": 31,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w173",
+      "text": "䂮회",
+      "bbox": [
+        81.48,
+        658.94,
+        104.88,
+        686.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "TTF97B79EFtCID32K",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 680.88,
+      "lineHint": 32,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w174",
+      "text": "장:",
+      "bbox": [
+        118.92,
+        670.54,
+        135.0,
+        682.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 680.88,
+      "lineHint": 32,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w175",
+      "text": "䃱“금주",
+      "bbox": [
+        141.72,
+        658.94,
+        183.84,
+        686.9
+      ],
+      "conf": 0.5,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": true,
+      "baseline": 680.88,
+      "lineHint": 32,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w176",
+      "text": "생활을",
+      "bbox": [
+        191.64,
+        670.54,
+        227.28,
+        682.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 680.88,
+      "lineHint": 32,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w177",
+      "text": "반성하곘습니다.",
+      "bbox": [
+        235.2,
+        670.54,
+        325.35,
+        682.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 680.88,
+      "lineHint": 32,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w178",
+      "text": "금주",
+      "bbox": [
+        155.88,
+        688.54,
+        179.04,
+        700.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 698.88,
+      "lineHint": 33,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w179",
+      "text": "생활목표는",
+      "bbox": [
+        186.96,
+        688.54,
+        247.44,
+        700.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 698.88,
+      "lineHint": 33,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w180",
+      "text": "(),",
+      "bbox": [
+        255.36,
+        688.58,
+        373.12,
+        700.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 698.88,
+      "lineHint": 33,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w181",
+      "text": "실천사항으로는,",
+      "bbox": [
+        379.8,
+        688.54,
+        470.08,
+        700.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 698.88,
+      "lineHint": 33,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w182",
+      "text": "첫째:()",
+      "bbox": [
+        155.88,
+        706.54,
+        323.75,
+        718.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 716.88,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w183",
+      "text": "둘째:(),",
+      "bbox": [
+        155.88,
+        724.54,
+        327.4,
+        736.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 734.88,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w184",
+      "text": "이렇게",
+      "bbox": [
+        143.4,
+        742.54,
+        176.88,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w185",
+      "text": "정해",
+      "bbox": [
+        182.52,
+        742.54,
+        204.6,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w186",
+      "text": "놓고",
+      "bbox": [
+        210.24,
+        742.54,
+        232.44,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w187",
+      "text": "한주일",
+      "bbox": [
+        238.08,
+        742.54,
+        271.44,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w188",
+      "text": "동안",
+      "bbox": [
+        277.08,
+        742.54,
+        299.28,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w189",
+      "text": "실천을",
+      "bbox": [
+        304.92,
+        742.54,
+        338.28,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w190",
+      "text": "해",
+      "bbox": [
+        343.92,
+        742.54,
+        354.72,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w191",
+      "text": "왔는데",
+      "bbox": [
+        360.36,
+        742.54,
+        393.84,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w192",
+      "text": "잘",
+      "bbox": [
+        399.48,
+        742.54,
+        410.28,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w193",
+      "text": "지켜졌는지",
+      "bbox": [
+        415.92,
+        742.54,
+        471.96,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w194",
+      "text": "좋은",
+      "bbox": [
+        477.6,
+        742.54,
+        499.8,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w195",
+      "text": "의견을",
+      "bbox": [
+        505.44,
+        742.54,
+        538.8,
+        754.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 752.88,
+      "lineHint": 36,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w196",
+      "text": "많이",
+      "bbox": [
+        135.24,
+        760.54,
+        158.52,
+        772.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 770.88,
+      "lineHint": 37,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w197",
+      "text": "발표해",
+      "bbox": [
+        166.32,
+        760.54,
+        201.96,
+        772.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 770.88,
+      "lineHint": 37,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w198",
+      "text": "주시기",
+      "bbox": [
+        209.88,
+        760.54,
+        245.52,
+        772.66
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 770.88,
+      "lineHint": 37,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w199",
+      "text": "바랍니다.",
+      "bbox": [
+        253.32,
+        760.54,
+        306.27,
+        772.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 770.88,
+      "lineHint": 37,
+      "spaceBefore": false,
+      "trailingSpace": null
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "h",
+      "x0": 227.64,
+      "y0": 81.78,
+      "x1": 367.68,
+      "y1": 82.14,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 117.66,
+      "x1": 504.12,
+      "y1": 118.74,
+      "thickness": 1.08,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 244.02,
+      "x1": 504.12,
+      "y1": 245.1,
+      "thickness": 1.08,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 57.54,
+      "y0": 118.2,
+      "x1": 58.62,
+      "y1": 244.56,
+      "thickness": 1.08,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 234.78,
+      "y0": 118.2,
+      "x1": 235.14,
+      "y1": 244.56,
+      "thickness": 0.36,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 391.74,
+      "y0": 118.2,
+      "x1": 392.1,
+      "y1": 244.56,
+      "thickness": 0.36,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 502.98,
+      "y0": 118.2,
+      "x1": 504.06,
+      "y1": 244.56,
+      "thickness": 1.08,
+      "style": "solid",
+      "color": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "t0",
+      "kind": "table",
+      "bbox": [
+        58.08,
+        118.2,
+        503.52,
+        244.56
+      ],
+      "nRows": 1,
+      "nCols": 3,
+      "colXs": [
+        58.08,
+        234.96,
+        391.92,
+        503.52
+      ],
+      "rowYs": [
+        118.2,
+        244.56
+      ],
+      "widthRatio": [
+        0.3971,
+        0.3524,
+        0.2505
+      ],
+      "widthPt": 445.44,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            118.2,
+            234.96,
+            244.56
+          ],
+          "wordIds": [
+            "w5",
+            "w6",
+            "w12",
+            "w13",
+            "w20",
+            "w21",
+            "w22",
+            "w25",
+            "w26",
+            "w32",
+            "w33",
+            "w34",
+            "w35",
+            "w36",
+            "w37",
+            "w42",
+            "w43",
+            "w44",
+            "w45",
+            "w49",
+            "w50",
+            "w51",
+            "w55",
+            "w56",
+            "w57",
+            "w58"
+          ],
+          "text": "1. 개회사\n2. 국민의례\n·국기에 대한 경례\n·애국가 제창\n3. 생활 반성 및 계획 발표\n·의제 실천 결과 반성\n·각부 생활 반성\n·각부 생활 계획 발표",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.3,
+            "r": 12.0,
+            "b": 1.4,
+            "l": 3.6
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 13.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            234.96,
+            118.2,
+            391.92,
+            244.56
+          ],
+          "wordIds": [
+            "w7",
+            "w8",
+            "w14",
+            "w15",
+            "w16",
+            "w17",
+            "w23",
+            "w24",
+            "w27",
+            "w28",
+            "w29",
+            "w38",
+            "w39",
+            "w46",
+            "w47",
+            "w52",
+            "w53",
+            "w54",
+            "w59",
+            "w60"
+          ],
+          "text": "4.의제 토의\n·의제 제안 및 설명\n·의제 채택\n·실천 방법(노력점) 토의\n5.기타 토의\n6.건의 사항\n7.선생님의 지도 말씀\n8.회의록 낭독",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.3,
+            "r": 1.4,
+            "b": 1.4,
+            "l": 1.3
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 13.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            391.92,
+            118.2,
+            503.52,
+            244.56
+          ],
+          "wordIds": [
+            "w9",
+            "w10",
+            "w11",
+            "w18",
+            "w19",
+            "w30",
+            "w31",
+            "w40",
+            "w41",
+            "w48"
+          ],
+          "text": "9. 반가 제창\n10. 페회사\n※부회장이 회의를 순서대로\n진행한다.",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.3,
+            "r": 7.9,
+            "b": 12.0,
+            "l": 1.4
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.5,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": null,
+      "imageFallbackSrc": null
+    },
+    {
+      "id": "hd0",
+      "bbox": [
+        227.64,
+        56.48,
+        367.56,
+        81.7
+      ],
+      "wordIds": [
+        "w0",
+        "w1",
+        "w2"
+      ],
+      "text": "회의 진행 방법",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w0",
+            "w1",
+            "w2"
+          ],
+          "text": "회의 진행 방법",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 22.3,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 1
+    },
+    {
+      "id": "hd1",
+      "bbox": [
+        56.64,
+        94.11,
+        168.48,
+        109.26
+      ],
+      "wordIds": [
+        "w3",
+        "w4"
+      ],
+      "text": "1.일반적인 회순",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w3",
+            "w4"
+          ],
+          "text": "1.일반적인 회순",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 15.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 2
+    },
+    {
+      "id": "hd2",
+      "bbox": [
+        56.64,
+        270.03,
+        250.92,
+        285.18
+      ],
+      "wordIds": [
+        "w61",
+        "w62",
+        "w63",
+        "w64",
+        "w65"
+      ],
+      "text": "2.각 순서별 세부 진행 방법",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w61",
+            "w62",
+            "w63",
+            "w64",
+            "w65"
+          ],
+          "text": "2.각 순서별 세부 진행 방법",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 15.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 2
+    },
+    {
+      "id": "hd3",
+      "bbox": [
+        69.0,
+        292.54,
+        123.12,
+        304.94
+      ],
+      "wordIds": [
+        "w66",
+        "w67"
+      ],
+      "text": "1) 개회사",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w66",
+            "w67"
+          ],
+          "text": "1) 개회사",
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 3
+    },
+    {
+      "id": "p4",
+      "bbox": [
+        100.08,
+        310.54,
+        196.56,
+        322.69
+      ],
+      "wordIds": [
+        "w68",
+        "w69"
+      ],
+      "text": "부회장: “개회사”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w68",
+            "w69"
+          ],
+          "text": "부회장: “개회사”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p5",
+      "bbox": [
+        81.48,
+        316.94,
+        477.0,
+        358.69
+      ],
+      "wordIds": [
+        "w70",
+        "w71",
+        "w72",
+        "w73",
+        "w74",
+        "w75",
+        "w76",
+        "w77",
+        "w78",
+        "w79",
+        "w80",
+        "w81",
+        "w82",
+        "w83"
+      ],
+      "text": "䂮 회 장: “지금부터 제()회 학급 어린이회를 시작하겠습니다.” ☺ 회 원: 모두 박수를 친다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w70"
+          ],
+          "text": "䂮",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "TTF97B79EFtCID32K",
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w71",
+            "w72",
+            "w73",
+            "w74",
+            "w75",
+            "w76",
+            "w77",
+            "w78",
+            "w79",
+            "w80",
+            "w81",
+            "w82",
+            "w83"
+          ],
+          "text": "회 장: “지금부터 제()회 학급 어린이회를 시작하겠습니다.” ☺ 회 원: 모두 박수를 친다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": 1.58,
+      "paragraphs": null
+    },
+    {
+      "id": "hd6",
+      "bbox": [
+        69.0,
+        364.54,
+        135.6,
+        376.94
+      ],
+      "wordIds": [
+        "w84",
+        "w85"
+      ],
+      "text": "2) 국민의례",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w84",
+            "w85"
+          ],
+          "text": "2) 국민의례",
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 3
+    },
+    {
+      "id": "p7",
+      "bbox": [
+        100.08,
+        370.94,
+        355.92,
+        398.9
+      ],
+      "wordIds": [
+        "w86",
+        "w87",
+        "w88",
+        "w89",
+        "w90"
+      ],
+      "text": "부회장: 䃱 “다음은 국민의례가 있겠습니다.”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w86"
+          ],
+          "text": "부회장:",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w87"
+          ],
+          "text": "䃱",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "TTF97B79EFtCID32K",
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w88",
+            "w89",
+            "w90"
+          ],
+          "text": "“다음은 국민의례가 있겠습니다.”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p8",
+      "bbox": [
+        81.48,
+        388.94,
+        474.24,
+        416.9
+      ],
+      "wordIds": [
+        "w91",
+        "w92",
+        "w93",
+        "w94",
+        "w95",
+        "w96",
+        "w97",
+        "w98",
+        "w99",
+        "w100"
+      ],
+      "text": "䂮 회 장: 䃱“모두 일어나서 정면의 국기를 향해 주시기 바랍니다.”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w91"
+          ],
+          "text": "䂮",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "TTF97B79EFtCID32K",
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w92",
+            "w93",
+            "w94",
+            "w95",
+            "w96",
+            "w97",
+            "w98",
+            "w99",
+            "w100"
+          ],
+          "text": "회 장: 䃱“모두 일어나서 정면의 국기를 향해 주시기 바랍니다.”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p9",
+      "bbox": [
+        143.4,
+        406.94,
+        283.57,
+        434.9
+      ],
+      "wordIds": [
+        "w101",
+        "w102",
+        "w103"
+      ],
+      "text": "䃱“국기에 대하여 경례!”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w101",
+            "w102",
+            "w103"
+          ],
+          "text": "䃱“국기에 대하여 경례!”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p10",
+      "bbox": [
+        143.4,
+        424.94,
+        538.8,
+        452.9
+      ],
+      "wordIds": [
+        "w104",
+        "w105",
+        "w106",
+        "w107",
+        "w108",
+        "w109",
+        "w110",
+        "w111",
+        "w112",
+        "w113"
+      ],
+      "text": "䃱“나는 자랑스런 태극기 앞에 조국과 민족의 무궁한 영광을 위하여 몸과",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w104",
+            "w105",
+            "w106",
+            "w107",
+            "w108",
+            "w109",
+            "w110",
+            "w111",
+            "w112",
+            "w113"
+          ],
+          "text": "䃱“나는 자랑스런 태극기 앞에 조국과 민족의 무궁한 영광을 위하여 몸과",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p11",
+      "bbox": [
+        166.08,
+        454.54,
+        448.68,
+        466.69
+      ],
+      "wordIds": [
+        "w114",
+        "w115",
+        "w116",
+        "w117",
+        "w118",
+        "w119",
+        "w120"
+      ],
+      "text": "마음을 바쳐 충성을 다할 것을 굳게 다짐합니다.“",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w114",
+            "w115",
+            "w116",
+            "w117",
+            "w118",
+            "w119",
+            "w120"
+          ],
+          "text": "마음을 바쳐 충성을 다할 것을 굳게 다짐합니다.“",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p12",
+      "bbox": [
+        143.4,
+        460.94,
+        196.45,
+        488.9
+      ],
+      "wordIds": [
+        "w121"
+      ],
+      "text": "䃱“바로!”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w121"
+          ],
+          "text": "䃱“바로!”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p13",
+      "bbox": [
+        143.4,
+        478.94,
+        236.16,
+        506.9
+      ],
+      "wordIds": [
+        "w122",
+        "w123"
+      ],
+      "text": "䃱“애국가 제창”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w122",
+            "w123"
+          ],
+          "text": "䃱“애국가 제창”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p14",
+      "bbox": [
+        143.4,
+        496.94,
+        345.48,
+        524.9
+      ],
+      "wordIds": [
+        "w124",
+        "w125",
+        "w126"
+      ],
+      "text": "䃱“애국가는 일절만 부르겠습니다.”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w124",
+            "w125",
+            "w126"
+          ],
+          "text": "䃱“애국가는 일절만 부르겠습니다.”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "nt15",
+      "bbox": [
+        153.48,
+        526.58,
+        460.7,
+        538.7
+      ],
+      "wordIds": [
+        "w127",
+        "w128",
+        "w129",
+        "w130",
+        "w131",
+        "w132",
+        "w133"
+      ],
+      "text": "※반주와 지휘를 하는 아동을 미리 선정해 둔다.",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w127",
+            "w128",
+            "w129",
+            "w130",
+            "w131",
+            "w132",
+            "w133"
+          ],
+          "text": "※반주와 지휘를 하는 아동을 미리 선정해 둔다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 12.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "note",
+      "noteKind": "annotation"
+    },
+    {
+      "id": "p16",
+      "bbox": [
+        143.4,
+        532.94,
+        326.76,
+        560.9
+      ],
+      "wordIds": [
+        "w134",
+        "w135",
+        "w136",
+        "w137"
+      ],
+      "text": "䃱“모두 자리에 앉아 주십시오.”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w134",
+            "w135",
+            "w136",
+            "w137"
+          ],
+          "text": "䃱“모두 자리에 앉아 주십시오.”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "hd17",
+      "bbox": [
+        69.0,
+        562.54,
+        241.32,
+        574.94
+      ],
+      "wordIds": [
+        "w138",
+        "w139",
+        "w140",
+        "w141",
+        "w142"
+      ],
+      "text": "3) 전교 어린이회의 결과 보고",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w138",
+            "w139",
+            "w140",
+            "w141",
+            "w142"
+          ],
+          "text": "3) 전교 어린이회의 결과 보고",
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 3
+    },
+    {
+      "id": "p18",
+      "bbox": [
+        100.08,
+        568.94,
+        327.36,
+        596.9
+      ],
+      "wordIds": [
+        "w143",
+        "w144",
+        "w145",
+        "w146",
+        "w147"
+      ],
+      "text": "부회장: 䃱“전교 어린이회의 결과 보고”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w143",
+            "w144",
+            "w145",
+            "w146",
+            "w147"
+          ],
+          "text": "부회장: 䃱“전교 어린이회의 결과 보고”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p19",
+      "bbox": [
+        81.48,
+        586.94,
+        538.68,
+        614.9
+      ],
+      "wordIds": [
+        "w148",
+        "w149",
+        "w150",
+        "w151",
+        "w152",
+        "w153",
+        "w154",
+        "w155",
+        "w156",
+        "w157"
+      ],
+      "text": "䂮 회 장: 䃱“지난주에 있었던 제()회 전교 어린이회의 소식을 전해드리겠습니다.”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w148"
+          ],
+          "text": "䂮",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "TTF97B79EFtCID32K",
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w149",
+            "w150",
+            "w151",
+            "w152",
+            "w153",
+            "w154",
+            "w155",
+            "w156",
+            "w157"
+          ],
+          "text": "회 장: 䃱“지난주에 있었던 제()회 전교 어린이회의 소식을 전해드리겠습니다.”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p20",
+      "bbox": [
+        139.68,
+        616.58,
+        500.0,
+        628.7
+      ],
+      "wordIds": [
+        "w158",
+        "w159",
+        "w160",
+        "w161",
+        "w162",
+        "w163",
+        "w164"
+      ],
+      "text": "(결정된 사항을 기록한 회의록을 여러 회원들에게 낭독한다.)",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w158",
+            "w159",
+            "w160",
+            "w161",
+            "w162",
+            "w163",
+            "w164"
+          ],
+          "text": "(결정된 사항을 기록한 회의록을 여러 회원들에게 낭독한다.)",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 12.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "hd21",
+      "bbox": [
+        69.0,
+        634.54,
+        166.68,
+        646.94
+      ],
+      "wordIds": [
+        "w165",
+        "w166",
+        "w167"
+      ],
+      "text": "4) 금주 생활반성",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w165",
+            "w166",
+            "w167"
+          ],
+          "text": "4) 금주 생활반성",
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 3
+    },
+    {
+      "id": "p22",
+      "bbox": [
+        93.84,
+        640.94,
+        387.0,
+        668.9
+      ],
+      "wordIds": [
+        "w168",
+        "w169",
+        "w170",
+        "w171",
+        "w172"
+      ],
+      "text": "부회장: 䃱“다음에는 금주 생활반성이 있겠습니다.”",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w168",
+            "w169",
+            "w170",
+            "w171",
+            "w172"
+          ],
+          "text": "부회장: 䃱“다음에는 금주 생활반성이 있겠습니다.”",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p23",
+      "bbox": [
+        81.48,
+        658.94,
+        325.35,
+        686.9
+      ],
+      "wordIds": [
+        "w173",
+        "w174",
+        "w175",
+        "w176",
+        "w177"
+      ],
+      "text": "䂮회 장: 䃱“금주 생활을 반성하곘습니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w173"
+          ],
+          "text": "䂮회",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "TTF97B79EFtCID32K",
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w174",
+            "w175",
+            "w176",
+            "w177"
+          ],
+          "text": "장: 䃱“금주 생활을 반성하곘습니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p24",
+      "bbox": [
+        155.88,
+        688.54,
+        470.08,
+        700.7
+      ],
+      "wordIds": [
+        "w178",
+        "w179",
+        "w180",
+        "w181"
+      ],
+      "text": "금주 생활목표는 (), 실천사항으로는,",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w178",
+            "w179",
+            "w180",
+            "w181"
+          ],
+          "text": "금주 생활목표는 (), 실천사항으로는,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p25",
+      "bbox": [
+        155.88,
+        706.54,
+        323.75,
+        718.7
+      ],
+      "wordIds": [
+        "w182"
+      ],
+      "text": "첫째:()",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w182"
+          ],
+          "text": "첫째:()",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p26",
+      "bbox": [
+        155.88,
+        724.54,
+        327.4,
+        736.7
+      ],
+      "wordIds": [
+        "w183"
+      ],
+      "text": "둘째:(),",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w183"
+          ],
+          "text": "둘째:(),",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p27",
+      "bbox": [
+        135.24,
+        742.54,
+        538.8,
+        772.7
+      ],
+      "wordIds": [
+        "w184",
+        "w185",
+        "w186",
+        "w187",
+        "w188",
+        "w189",
+        "w190",
+        "w191",
+        "w192",
+        "w193",
+        "w194",
+        "w195",
+        "w196",
+        "w197",
+        "w198",
+        "w199"
+      ],
+      "text": "이렇게 정해 놓고 한주일 동안 실천을 해 왔는데 잘 지켜졌는지 좋은 의견을 많이 발표해 주시기 바랍니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w184",
+            "w185",
+            "w186",
+            "w187",
+            "w188",
+            "w189",
+            "w190",
+            "w191",
+            "w192",
+            "w193",
+            "w194",
+            "w195",
+            "w196",
+            "w197",
+            "w198",
+            "w199"
+          ],
+          "text": "이렇게 정해 놓고 한주일 동안 실천을 해 왔는데 잘 지켜졌는지 좋은 의견을 많이 발표해 주시기 바랍니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.4,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": 1.58,
+      "paragraphs": null
+    }
+  ],
+  "readingOrder": [
+    "hd0",
+    "hd1",
+    "t0",
+    "hd2",
+    "hd3",
+    "p4",
+    "p5",
+    "hd6",
+    "p7",
+    "p8",
+    "p9",
+    "p10",
+    "p11",
+    "p12",
+    "p13",
+    "p14",
+    "nt15",
+    "p16",
+    "hd17",
+    "p18",
+    "p19",
+    "p20",
+    "hd21",
+    "p22",
+    "p23",
+    "p24",
+    "p25",
+    "p26",
+    "p27"
+  ],
+  "metrics": {
+    "ocrAvgConf": null,
+    "rulingCount": 7,
+    "tableCount": 1,
+    "wordCount": 200,
+    "occludedCharsFiltered": 0,
+    "invariantErrors": [],
+    "rulingsH": 3,
+    "rulingsV": 4,
+    "tableShapes": [
+      "t0:1x3(3)"
+    ],
+    "cellCount": 3,
+    "needsReviewCells": 0,
+    "headingCount": 7,
+    "captionCount": 0,
+    "noteCount": 1,
+    "headerFooterCount": 0,
+    "headingSummary": [
+      "H1:회의 진행 방법",
+      "H2:1.일반적인 회순",
+      "H2:2.각 순서별 세부 진행 방법",
+      "H3:1) 개회사",
+      "H3:2) 국민의례",
+      "H3:3) 전교 어린이회의 결과 보고",
+      "H3:4) 금주 생활반성"
+    ],
+    "headerTexts": [],
+    "blockCounts": {
+      "table": 1,
+      "heading": 7,
+      "paragraph": 20,
+      "note": 1
+    }
+  }
+}

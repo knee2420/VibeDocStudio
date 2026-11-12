@@ -1,7 +1,7 @@
 """catalog 도메인 외부 의존 계약 (Protocol)."""
 from __future__ import annotations
 
-from typing import Any, Optional, Protocol
+from typing import Any, Protocol
 
 from .models import CatalogFormBundleRecord, CatalogManifestRecord
 
@@ -17,7 +17,7 @@ class CatalogRepositoryPort(Protocol):
 
 
 class PdfVDocExtractorPort(Protocol):
-    """PDF 바이트로부터 `.vdoc` 문서와 기하 검증 점수를 도출하는 엔진 포트."""
+    """PDF 바이트로부터 `.vdoc` 문서와 추출 통계를 도출하는 엔진 포트."""
 
     def extract_and_validate(
         self,
@@ -25,6 +25,6 @@ class PdfVDocExtractorPort(Protocol):
         pdf_bytes: bytes,
         doc_id: str,
         title: str,
-    ) -> tuple[dict[str, Any], int, int, Optional[dict[str, Any]]]:
-        """(문서, 블록 수, 슬롯 수, 에이전트 실행 정보 | None). 실행 정보에는 runId 와 로그 디렉터리가 있다."""
+    ) -> tuple[dict[str, Any], int, int]:
+        """(문서, 표 수, 슬롯 수)."""
         ...

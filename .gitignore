@@ -36,6 +36,9 @@ Thumbs.db
 # Runtime State & Logs
 apps/api/state/
 apps/api/data/
+
 data/
+packages/docstruct-engine/eval/paths.local.json
+
 
 

@@ -5,8 +5,8 @@ import copy
 from typing import Any
 
 import pytest
+from docstruct_engine.compile.vdoc_build import make_block, sanitize_html
 from harness_kit import patterns
-from harness_kit.vdoc_build import make_block, sanitize_html
 
 from app.reference.adapters import layout_to_extraction
 from vibefs.doc_tools import DocTools

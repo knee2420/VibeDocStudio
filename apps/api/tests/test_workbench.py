@@ -44,7 +44,7 @@ def bench(tmp_path: Path) -> tuple[Path, dict]:
     slots = {
         "s_sum": {"slotId": "s_sum", "label": "요약", "content": "<p>지금 요약 <strong>a</strong> <strong>b</strong></p>", "originalContent": ORIG},
         "s_num": {"slotId": "s_num", "label": "지표", "content": "<p>평균 45분, 인원 10명이다.</p>", "constraints": {"maxChars": 40}},
-        "s_lock": {"slotId": "s_lock", "label": "머리", "role": "boilerplate", "content": "<p>고정</p>"},
+        "s_lock": {"slotId": "s_lock", "label": "머리", "role": "editable-slot", "content": "<p>고정</p>", "constraints": {"locked": True}},
     }
     pages = [{"pageId": "p1", "pageLabel": "요약", "blocks": [{"blockId": "b1", "kind": "text", "slotId": "s_sum"},
                                                              {"blockId": "b2", "kind": "text", "slotId": "s_num"},
@@ -120,7 +120,7 @@ def test_propose_rejects_leaks_scope_lock_and_capacity(bench) -> None:
         {"layers": ["ref1:D1"], "sources": ["slot:s_num"], "slots": {"s_sum": "<p>결론: 루미나랩스는 시장 1위가 된다. 고객사 37곳.</p>"}},
         {"layers": ["ref1:D4"], "slots": {"s_lock": "<p>x</p>"}},
     ]})
-    assert "검증 실패" in out and "문장이 그대로" in out and "37곳" in out and "target" in out and "고정" in out
+    assert "검증 실패" in out and "문장이 그대로" in out and "37곳" in out and "target" in out and "잠긴" in out
 
 
 def test_propose_restyle_must_keep_numbers(bench) -> None:

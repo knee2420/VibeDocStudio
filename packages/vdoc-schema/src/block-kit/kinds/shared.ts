@@ -2,11 +2,11 @@
 import type { VDocSlot } from "../../types";
 import type { BlockOutlineContext } from "../contract";
 
-/** 슬롯 하나짜리 블록의 아웃라인: 그 슬롯을 페이지 바로 아래에 (고정 문구면 회색). */
+/** 슬롯 하나짜리 블록의 아웃라인: 그 슬롯을 페이지 바로 아래에 (잠김이면 회색). */
 export function outlineSingleSlot(slotId: string, ctx: BlockOutlineContext): void {
   const slot = ctx.doc.slots[slotId];
   if (!slot) return;
-  ctx.emitSlot(ctx.pageNode, slotId, ctx.nameStandaloneSlot(slot, ctx.blockTitle), slot.role === "boilerplate");
+  ctx.emitSlot(ctx.pageNode, slotId, ctx.nameStandaloneSlot(slot, ctx.blockTitle), Boolean(slot.constraints?.locked));
 }
 
 /** 슬롯 여러 개 블록의 아웃라인: 하나면 그 슬롯, 여럿이면 컨테이너 아래에. */
@@ -23,7 +23,7 @@ export function outlineSlotGroup(slotIds: string[], ctx: BlockOutlineContext, ti
     present.map((slotId) => ({
       slotId,
       name: ctx.nameStandaloneSlot(ctx.doc.slots[slotId], ""),
-      isStatic: ctx.doc.slots[slotId].role === "boilerplate",
+      isStatic: Boolean(ctx.doc.slots[slotId]?.constraints?.locked),
     }))
   );
 }

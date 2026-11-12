@@ -14,16 +14,38 @@ export interface PdfPagePreviewGridProps {
   compact?: boolean;
 }
 
-const FIDELITY_OPTIONS: readonly {
+export const FIDELITY_OPTIONS: readonly {
   mode: FidelityMode;
   label: string;
   desc: string;
+  detailLines: readonly [string, string];
   Icon: React.ComponentType<{ className?: string }>;
   iconClass: string;
 }[] = [
-  { mode: "fast", label: "빠름 (Fast)", desc: "±2.0px · 조기 종료", Icon: Zap, iconClass: "text-amber-500" },
-  { mode: "balanced", label: "균형 (권장)", desc: "±1.5px · 고충실도", Icon: Scale, iconClass: "text-emerald-600" },
-  { mode: "strict", label: "초정밀 (Strict)", desc: "±1.0px · 무결점 루프", Icon: Crosshair, iconClass: "text-indigo-500" },
+  {
+    mode: "fast",
+    label: "빠름 (Fast)",
+    desc: "결정적 추출 · 즉시 변환",
+    detailLines: ["DocIR 구조·표·OCR 추출", "VLM 재판독 생략"],
+    Icon: Zap,
+    iconClass: "text-amber-500",
+  },
+  {
+    mode: "balanced",
+    label: "균형 (권장)",
+    desc: "이상 구간 VLM 재판독",
+    detailLines: ["1차 검증 후 의심 표·OCR만", "최대 1회 VLM 정밀 보정"],
+    Icon: Scale,
+    iconClass: "text-emerald-600",
+  },
+  {
+    mode: "strict",
+    label: "초정밀 (Strict)",
+    desc: "표본 검증 · 최대 2회 루프",
+    detailLines: ["표본 교차검증 포함", "최대 2라운드 VLM 재판독"],
+    Icon: Crosshair,
+    iconClass: "text-indigo-500",
+  },
 ];
 
 /**
@@ -53,7 +75,7 @@ export const PdfPagePreviewGrid: React.FC<PdfPagePreviewGridProps> = ({
           <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div className="leading-relaxed">
             <span className="font-semibold">텍스트 레이어가 없는 PDF(윤곽선/스캔)입니다.</span>{" "}
-            폰트 글자가 벡터 선이나 이미지로만 들어 있어 편집 가능한 텍스트 블록 추출이 제한될 수 있습니다.
+            OCR(광학 문자 인식)과 DocIR 격자 분석으로 텍스트·표 구조를 자동 추출합니다. ("균형" 또는 "초정밀" 모드 권장)
           </div>
         </div>
       )}

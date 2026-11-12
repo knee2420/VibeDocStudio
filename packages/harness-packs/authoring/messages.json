@@ -6,7 +6,7 @@
   "slotMissing": "{tag}: 칸 {sid} 가 문서에 없다 (wb_outline 으로 확인).",
   "outOfTarget": "{tag}: 칸 {sid} 는 target({target}) 밖이다.",
   "outOfScope": "{tag}: 칸 {sid} 는 사용자가 정한 범위({scope}) 밖이다.",
-  "locked": "{tag}: 칸 {sid} 는 고정(boilerplate) 칸이다.",
+  "locked": "{tag}: 칸 {sid} 는 잠긴 칸이다.",
   "tooLong": "{tag}: 칸 {sid} 분량 {chars}자 > 제한 {limit}자.",
   "restyleLostNumbers": "{tag}: restyle 인데 칸 {sid} 의 수치가 사라졌다: {nums}",
   "restyleKept": "{tag}: restyle 인데 칸 {sid} 의 원래 낱말이 {kept:.0%} 만 남았다 (내용이 바뀐 것 아닌가).",

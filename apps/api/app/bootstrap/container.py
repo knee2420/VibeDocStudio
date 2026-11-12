@@ -39,7 +39,10 @@ from app.authoring.use_cases import (
     StagingQueueUseCase,
 )
 from app.bootstrap.project_links import ProjectDocLinks
-from app.catalog.adapters import FilesystemCatalogRepository, PdfVDocEngineAdapter
+from app.catalog.adapters import (
+    DocStructCatalogExtractorAdapter,
+    FilesystemCatalogRepository,
+)
 from app.catalog.use_cases import (
     GetCatalogBundleUseCase,
     IngestPdfToCatalogUseCase,
@@ -59,8 +62,7 @@ from app.documents.use_cases import (
     SaveDocumentUseCase,
     UpdateSlotContentUseCase,
 )
-from app.form_scaffold.adapters import AgySlotTextRefiner, LocalScaffoldJobStore
-from app.form_scaffold.agents import FormScaffoldAgent
+from app.form_scaffold.adapters import DocStructScaffoldAgent, LocalScaffoldJobStore
 from app.form_scaffold.use_cases import (
     PreviewPdfUseCase,
     ScaffoldJobRunner,
@@ -173,7 +175,10 @@ class Container(containers.DeclarativeContainer):
         FilesystemCatalogRepository,
         catalog_root=providers.Callable(lambda st: st.catalog, storage),
     )
-    pdf_vdoc_extractor = providers.Singleton(PdfVDocEngineAdapter)
+    pdf_vdoc_extractor = providers.Singleton(
+        DocStructCatalogExtractorAdapter,
+        cache_root=providers.Callable(lambda st: st.cache, storage),
+    )
     list_catalog_forms = providers.Factory(ListCatalogFormsUseCase, repository=catalog_repository)
     get_catalog_bundle = providers.Factory(GetCatalogBundleUseCase, repository=catalog_repository)
     ingest_pdf_to_catalog = providers.Factory(
@@ -182,30 +187,17 @@ class Container(containers.DeclarativeContainer):
         extractor=pdf_vdoc_extractor,
     )
 
-    # --- 2-1. form_scaffold: PDF → 편집 가능한 .vdoc (기준선 · 피델리티 루프 · 단발 구획명 정리) ---
+    # --- 2-1. form_scaffold: PDF/스캔 → DocIR · 검증 · VLM 재판독 → .vdoc ---
     form_scaffold_agent = providers.Singleton(
-        FormScaffoldAgent,
+        DocStructScaffoldAgent,
         policy=runtime_policy,
-        agent_runs_dir=providers.Callable(lambda st: st.state / "agent_runs", storage),
-        fidelity_tools_dir=providers.Callable(lambda: packs.path("form-scaffold:tools/visual_fidelity")),
-        fidelity_skill_dir=providers.Callable(
-            lambda: packs.path("form-scaffold:skills/external_pm_08_visual_fidelity_replicator")
-        ),
+        cache_root=providers.Callable(lambda st: st.cache, storage),
+        work_root=providers.Callable(lambda st: st.state / "form_scaffold" / "docstruct", storage),
         external_llm_enabled=providers.Callable(lambda s: s.external_llm_enabled, settings),
         agentic_loop_enabled=providers.Callable(lambda s: s.scaffold_agent_loop_enabled, settings),
-        # 단발 구획명 정리는 빈 샌드박스 폴더에서 돈다 (agy 내장 도구가 사용자 파일을 건드리지 않게)
+        # VLM 재판독(reread)은 빈 샌드박스 폴더에서 실행 (agy 내장 도구가 사용자 파일을 건드리지 않게)
         one_shot=providers.Callable(
             lambda st: partial(run_agy_print, cwd=st.state / "form_scaffold" / "sandbox"), storage
-        ),
-        slot_refiner=providers.Callable(
-            lambda st, pol: AgySlotTextRefiner(
-                one_shot=partial(run_agy_print, cwd=st.state / "form_scaffold" / "sandbox"),
-                policy=pol,
-                timeout_seconds=120,
-                work_root=st.state / "form_scaffold" / "sandbox" / "_slot_refine",
-            ),
-            storage,
-            runtime_policy,
         ),
     )
     scaffold_pdf_to_document = providers.Factory(ScaffoldPdfToDocumentUseCase, agent=form_scaffold_agent)

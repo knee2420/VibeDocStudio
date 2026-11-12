@@ -3,13 +3,25 @@
 `-I`(격리 모드)는 스크립트 폴더를 import 경로에 넣지 않으므로, 패키지가 들어 있는 폴더를 여기서 한 번만
 경로에 올린 뒤 패키지로 import 한다. 패키지 모듈들은 상대 import 만 쓴다.
 """
+import os
+import site
 import sys
 from pathlib import Path
 
 if not __package__:
     _HERE = Path(__file__).resolve()
-    # vibefs 패키지가 든 폴더 · 하네스 기본기(harness-kit) — 규칙 · 도구 명세 · 어휘는 하네스 팩에서 읽는다
-    sys.path[:0] = [str(_HERE.parents[1]), str(_HERE.parents[3] / "packages" / "harness-kit")]
+    _PKGS = _HERE.parents[3] / "packages"
+    # vibefs 패키지가 든 폴더 · 하네스/문서엔진 패키지 — 격리 모드(-I)에서 직접 경로 등록
+    _extra = [str(_HERE.parents[1])]
+    for _pkg in ("harness-kit", "docstruct-engine"):
+        _p = _PKGS / _pkg
+        if _p.is_dir():
+            _extra.append(str(_p))
+    sys.path[:0] = _extra
+    # Windows 등 --user 설치 의존성(pymupdf, pydantic 등)은 -I 에서 빠지므로 존재할 때만 뒤에 붙인다
+    _user_site = site.getusersitepackages()
+    if _user_site and os.path.isdir(_user_site) and _user_site not in sys.path:
+        sys.path.append(_user_site)
 
 
 def main(argv: list[str]) -> int:

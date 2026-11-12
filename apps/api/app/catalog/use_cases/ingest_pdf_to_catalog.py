@@ -35,11 +35,11 @@ class IngestPdfToCatalogUseCase:
         manifest = CatalogManifestRecord(
             catalog_id=catalog_id,
             title=clean_title,
-            source_origin="pdf-vdoc-engine",
+            source_origin="docstruct-engine",
             source_id=catalog_id,
             category=category,
-            tags=("PDF자동추출", "WYSIWYM", "결정적격자"),
-            description=f"pdf-vdoc-engine 수평 파이프라인으로 추출된 양식 (표 {checked_tables}개 · 슬롯 {checked_slots}개)",
+            tags=("PDF자동추출", "DocIR", "OCR지원"),
+            description=f"docstruct-engine 파이프라인으로 추출된 양식 (표 {checked_tables}개 · 슬롯 {checked_slots}개)",
         )
         bundle = CatalogFormBundleRecord(manifest=manifest, document=vdoc)
         self._repository.save_bundle(bundle)

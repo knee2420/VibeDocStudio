@@ -190,5 +190,18 @@
  "tableCaption": {
   "pattern": "^\\s*(?:\\[?\\s*)?(표|Table)\\s*[\\d\\-.]+",
   "flags": "i"
+ },
+ "docText": {
+  "chapterMarks": "편장",
+  "tableLabel": "[표 p{page}-{n}]",
+  "imageLabel": "이미지 {n}",
+  "pageLabel": "원문 p{n}",
+  "cellLabel": "칸 {r}-{c}",
+  "bodyLabel": "본문",
+  "tableTitle": "표 {n}",
+  "headingLabel": "제목",
+  "fieldLabel": "입력란",
+  "imageAlt": "그림",
+  "defaultAssignee": "작성자"
  }
 }

@@ -372,7 +372,7 @@ export const WORKSPACE_CONTEXT_PROVIDERS: ContextProvider[] = [
       const d = doc();
       if (!d) return [];
       return Object.values(d.slots)
-        .filter((s) => s.role !== "boilerplate" && matches(q, s.label, s.slotId))
+        .filter((s) => matches(q, s.label, s.slotId))
         .slice(0, 10)
         .map((s) => ({ ...slotRef(d, s), hint: htmlToPlain(s.content, 40) }));
     },

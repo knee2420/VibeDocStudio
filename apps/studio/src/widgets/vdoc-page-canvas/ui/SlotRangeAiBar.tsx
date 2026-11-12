@@ -307,7 +307,7 @@ export const SlotRangeAiBar: React.FC = () => {
   const mediaCount = range.unitIds.length - range.slotIds.length;
   const lockedCount = range.slotIds.filter((id) => {
     const s = doc.slots[id];
-    return !s || s.role === "boilerplate" || s.constraints?.locked;
+    return !s || s.constraints?.locked;
   }).length;
   const running = run.status === "running";
 

@@ -1,0 +1,9144 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-scan",
+  "size": {
+    "width": 595.2,
+    "height": 841.92
+  },
+  "margins": {
+    "top": 100.1,
+    "right": 82.8,
+    "bottom": 96.5,
+    "left": 100.1
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "개인정보",
+      "bbox": [
+        238.56,
+        100.32,
+        282.72,
+        111.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 8.8,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 111.36,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "활용",
+      "bbox": [
+        289.92,
+        100.08,
+        311.52,
+        111.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 8.8,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 111.12,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w2",
+      "text": "동의서",
+      "bbox": [
+        318.48,
+        100.08,
+        350.88,
+        111.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 8.8,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 111.12,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w3",
+      "text": "수집하는",
+      "bbox": [
+        116.64,
+        129.12,
+        153.84,
+        138.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 138.24,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w4",
+      "text": "개인정보의",
+      "bbox": [
+        160.08,
+        128.88,
+        205.2,
+        138.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 138.24,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "항목",
+      "bbox": [
+        211.92,
+        128.88,
+        229.68,
+        138.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 138.0,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w6",
+      "text": "1.",
+      "bbox": [
+        100.08,
+        130.32,
+        106.32,
+        137.52
+      ],
+      "conf": 0.94,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 137.52,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w7",
+      "text": "고객관리,",
+      "bbox": [
+        116.88,
+        154.08,
+        151.92,
+        162.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.96,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w8",
+      "text": "계약서",
+      "bbox": [
+        158.64,
+        154.08,
+        182.4,
+        162.48
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.48,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w9",
+      "text": "작성",
+      "bbox": [
+        189.36,
+        154.08,
+        204.48,
+        162.48
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.48,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w10",
+      "text": "및",
+      "bbox": [
+        211.92,
+        154.08,
+        218.64,
+        162.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w11",
+      "text": "관리",
+      "bbox": [
+        224.88,
+        153.84,
+        240.48,
+        162.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w12",
+      "text": "등",
+      "bbox": [
+        247.68,
+        154.08,
+        255.12,
+        162.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w13",
+      "text": "각종",
+      "bbox": [
+        261.6,
+        153.84,
+        277.68,
+        162.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w14",
+      "text": "서비스의",
+      "bbox": [
+        283.92,
+        153.84,
+        316.32,
+        162.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.0,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w15",
+      "text": "제공을",
+      "bbox": [
+        323.28,
+        153.6,
+        348.24,
+        162.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.0,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w16",
+      "text": "위해",
+      "bbox": [
+        354.48,
+        153.6,
+        369.84,
+        162.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.0,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w17",
+      "text": "이름,",
+      "bbox": [
+        376.8,
+        153.6,
+        394.32,
+        162.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w18",
+      "text": "주소,",
+      "bbox": [
+        400.56,
+        153.84,
+        418.56,
+        162.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.24,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w19",
+      "text": "휴대폰번호,",
+      "bbox": [
+        424.8,
+        153.36,
+        468.96,
+        162.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 162.0,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w20",
+      "text": "전화번호,",
+      "bbox": [
+        475.44,
+        153.12,
+        510.24,
+        161.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 161.76,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w21",
+      "text": "생년월일′",
+      "bbox": [
+        116.88,
+        170.4,
+        152.16,
+        179.04
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 179.04,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w22",
+      "text": "성별,",
+      "bbox": [
+        157.92,
+        170.16,
+        175.44,
+        179.04
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 179.04,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w23",
+      "text": "이메일",
+      "bbox": [
+        181.2,
+        170.16,
+        204.72,
+        178.8
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 178.8,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w24",
+      "text": "등을",
+      "bbox": [
+        210.48,
+        170.16,
+        226.56,
+        178.32
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 178.32,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w25",
+      "text": "수집합니다.",
+      "bbox": [
+        232.08,
+        169.92,
+        276.24,
+        178.56
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 178.56,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w26",
+      "text": "개인정보",
+      "bbox": [
+        117.12,
+        194.88,
+        154.08,
+        204.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 204.0,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w27",
+      "text": "수집방법",
+      "bbox": [
+        160.08,
+        194.64,
+        196.08,
+        204.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 204.0,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w28",
+      "text": "2.",
+      "bbox": [
+        100.08,
+        196.32,
+        106.8,
+        203.28
+      ],
+      "conf": 0.94,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 203.28,
+      "lineHint": 6,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w29",
+      "text": "청약",
+      "bbox": [
+        117.36,
+        220.08,
+        133.44,
+        228.48
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 228.48,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w30",
+      "text": "접수",
+      "bbox": [
+        138.72,
+        219.84,
+        154.8,
+        228.48
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 228.48,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w31",
+      "text": "또는",
+      "bbox": [
+        160.08,
+        220.32,
+        176.16,
+        228.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 228.0,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w32",
+      "text": "계약서",
+      "bbox": [
+        181.92,
+        219.84,
+        205.44,
+        228.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 228.24,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w33",
+      "text": "작성",
+      "bbox": [
+        211.44,
+        219.6,
+        226.8,
+        228.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 228.24,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w34",
+      "text": "시",
+      "bbox": [
+        233.28,
+        219.6,
+        239.76,
+        228.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 228.0,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w35",
+      "text": "직접",
+      "bbox": [
+        246.48,
+        219.6,
+        261.6,
+        228.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 228.0,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w36",
+      "text": "입력을",
+      "bbox": [
+        268.08,
+        219.6,
+        292.08,
+        228.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 228.0,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w37",
+      "text": "통한",
+      "bbox": [
+        297.36,
+        219.6,
+        313.68,
+        227.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 227.76,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w38",
+      "text": "등록(작성)",
+      "bbox": [
+        318.72,
+        219.36,
+        357.84,
+        228.48
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 228.48,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w39",
+      "text": "방법으로",
+      "bbox": [
+        363.36,
+        219.36,
+        396.0,
+        227.52
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 227.52,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w40",
+      "text": "개인",
+      "bbox": [
+        401.52,
+        219.12,
+        417.12,
+        227.52
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 227.52,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w41",
+      "text": "정보를",
+      "bbox": [
+        423.12,
+        219.12,
+        447.84,
+        227.28
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 227.28,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w42",
+      "text": "수집합니다.",
+      "bbox": [
+        453.36,
+        218.88,
+        497.04,
+        227.52
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 227.52,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w43",
+      "text": "개인정보의",
+      "bbox": [
+        117.36,
+        244.32,
+        163.44,
+        253.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 253.68,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w44",
+      "text": "수집",
+      "bbox": [
+        169.92,
+        244.32,
+        186.96,
+        253.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 253.44,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w45",
+      "text": "및",
+      "bbox": [
+        194.16,
+        244.32,
+        201.6,
+        253.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 253.44,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w46",
+      "text": "이용목적",
+      "bbox": [
+        208.08,
+        244.08,
+        244.32,
+        253.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 253.44,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w47",
+      "text": "3.",
+      "bbox": [
+        100.32,
+        245.76,
+        107.04,
+        252.96
+      ],
+      "conf": 0.94,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 252.96,
+      "lineHint": 9,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w48",
+      "text": "개인정보의",
+      "bbox": [
+        117.6,
+        269.52,
+        158.88,
+        277.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.92,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w49",
+      "text": "수집은",
+      "bbox": [
+        165.6,
+        269.28,
+        190.32,
+        277.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.68,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w50",
+      "text": "부동산",
+      "bbox": [
+        196.56,
+        269.28,
+        221.52,
+        277.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.68,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w51",
+      "text": "임대를",
+      "bbox": [
+        228.24,
+        269.04,
+        252.72,
+        277.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.44,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w52",
+      "text": "위한",
+      "bbox": [
+        259.2,
+        269.04,
+        275.28,
+        277.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.44,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w53",
+      "text": "매물",
+      "bbox": [
+        282.0,
+        269.04,
+        297.84,
+        277.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.44,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w54",
+      "text": "관리,",
+      "bbox": [
+        303.84,
+        269.04,
+        322.08,
+        277.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.68,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w55",
+      "text": "부동산",
+      "bbox": [
+        328.32,
+        268.8,
+        353.52,
+        277.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.44,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w56",
+      "text": "임대를",
+      "bbox": [
+        360.24,
+        268.8,
+        384.24,
+        277.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.2,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w57",
+      "text": "위한",
+      "bbox": [
+        390.72,
+        268.56,
+        406.8,
+        277.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.2,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w58",
+      "text": "계약서",
+      "bbox": [
+        413.52,
+        268.56,
+        437.28,
+        276.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 276.96,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w59",
+      "text": "작성,",
+      "bbox": [
+        444.72,
+        268.56,
+        462.72,
+        277.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 277.2,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w60",
+      "text": "지속가능한",
+      "bbox": [
+        469.2,
+        268.32,
+        510.72,
+        276.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 276.96,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w61",
+      "text": "서비스",
+      "bbox": [
+        117.6,
+        285.6,
+        142.08,
+        294.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 294.24,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w62",
+      "text": "제공을",
+      "bbox": [
+        149.04,
+        285.6,
+        173.52,
+        294.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 294.24,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w63",
+      "text": "위한",
+      "bbox": [
+        180.24,
+        285.6,
+        196.08,
+        294.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 294.24,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w64",
+      "text": "고객관리를",
+      "bbox": [
+        202.56,
+        285.36,
+        244.8,
+        294.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 294.0,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w65",
+      "text": "위한",
+      "bbox": [
+        251.52,
+        285.36,
+        267.6,
+        293.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 293.76,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w66",
+      "text": "목적으로",
+      "bbox": [
+        274.08,
+        285.36,
+        307.44,
+        293.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 293.76,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w67",
+      "text": "수집하며,",
+      "bbox": [
+        313.92,
+        285.12,
+        349.44,
+        294.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 294.0,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w68",
+      "text": "이외의",
+      "bbox": [
+        356.4,
+        284.88,
+        379.92,
+        293.52
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 293.52,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w69",
+      "text": "목적으로는",
+      "bbox": [
+        387.12,
+        284.88,
+        429.12,
+        293.52
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 293.52,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w70",
+      "text": "사용되지",
+      "bbox": [
+        435.84,
+        284.64,
+        468.48,
+        293.28
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 293.28,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w71",
+      "text": "않습니다.",
+      "bbox": [
+        476.16,
+        284.64,
+        510.72,
+        293.28
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 293.28,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w72",
+      "text": "단,",
+      "bbox": [
+        117.84,
+        301.92,
+        126.96,
+        310.8
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 310.8,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w73",
+      "text": "주민등록번호는",
+      "bbox": [
+        133.68,
+        301.92,
+        192.72,
+        310.32
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 310.32,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w74",
+      "text": "공인중개사법",
+      "bbox": [
+        199.2,
+        301.68,
+        249.36,
+        310.08
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 310.08,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w75",
+      "text": "제26조(거래계약서의",
+      "bbox": [
+        257.04,
+        301.44,
+        335.76,
+        310.56
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 310.56,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w76",
+      "text": "작성",
+      "bbox": [
+        343.44,
+        301.2,
+        358.8,
+        309.84
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 309.84,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w77",
+      "text": "등)",
+      "bbox": [
+        366.24,
+        301.68,
+        376.32,
+        310.32
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 310.32,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w78",
+      "text": "및",
+      "bbox": [
+        384.0,
+        301.2,
+        390.24,
+        309.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 309.36,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w79",
+      "text": "부동산거래신고에",
+      "bbox": [
+        397.2,
+        300.96,
+        464.64,
+        309.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 309.6,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w80",
+      "text": "관한",
+      "bbox": [
+        472.08,
+        300.96,
+        488.16,
+        309.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 309.12,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w81",
+      "text": "법률",
+      "bbox": [
+        495.6,
+        300.72,
+        510.96,
+        309.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 309.12,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w82",
+      "text": "제3조(부동",
+      "bbox": [
+        117.6,
+        318.24,
+        158.4,
+        327.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 327.36,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w83",
+      "text": "산거래의",
+      "bbox": [
+        163.92,
+        318.0,
+        196.08,
+        326.4
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 326.4,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w84",
+      "text": "신과의",
+      "bbox": [
+        202.08,
+        317.76,
+        228.72,
+        327.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 327.12,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w85",
+      "text": "목적",
+      "bbox": [
+        234.72,
+        317.76,
+        250.32,
+        326.16
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 326.16,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w86",
+      "text": "이외에는",
+      "bbox": [
+        256.8,
+        317.76,
+        289.92,
+        326.16
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 326.16,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w87",
+      "text": "사용되지",
+      "bbox": [
+        295.2,
+        317.52,
+        327.36,
+        326.16
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 326.16,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w88",
+      "text": "않습니다.",
+      "bbox": [
+        333.84,
+        317.52,
+        369.12,
+        325.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 325.92,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w89",
+      "text": "개인정보의",
+      "bbox": [
+        122.64,
+        342.48,
+        168.48,
+        351.84
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 351.84,
+      "lineHint": 14,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w90",
+      "text": "보유",
+      "bbox": [
+        174.96,
+        342.72,
+        192.72,
+        351.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 351.6,
+      "lineHint": 14,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w91",
+      "text": "및",
+      "bbox": [
+        199.2,
+        342.48,
+        206.88,
+        351.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 351.6,
+      "lineHint": 14,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w92",
+      "text": "이용기간",
+      "bbox": [
+        213.36,
+        342.24,
+        250.32,
+        351.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 351.6,
+      "lineHint": 14,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w93",
+      "text": "4.",
+      "bbox": [
+        100.32,
+        344.16,
+        107.28,
+        351.12
+      ],
+      "conf": 0.94,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 351.12,
+      "lineHint": 15,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w94",
+      "text": "저장된",
+      "bbox": [
+        118.08,
+        367.68,
+        141.6,
+        376.08
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 376.08,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w95",
+      "text": "개인정보는",
+      "bbox": [
+        147.84,
+        367.68,
+        189.6,
+        376.08
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 376.08,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w96",
+      "text": "원칙적으로",
+      "bbox": [
+        195.12,
+        367.44,
+        236.88,
+        375.84
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 375.84,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w97",
+      "text": "개인정보의",
+      "bbox": [
+        242.4,
+        367.2,
+        283.68,
+        375.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 375.6,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w98",
+      "text": "수집",
+      "bbox": [
+        289.44,
+        367.2,
+        304.8,
+        375.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 375.6,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w99",
+      "text": "및",
+      "bbox": [
+        311.76,
+        367.2,
+        318.24,
+        375.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 375.36,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w100",
+      "text": "이용목적이",
+      "bbox": [
+        324.24,
+        366.96,
+        365.04,
+        375.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 375.36,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w101",
+      "text": "달성되면",
+      "bbox": [
+        371.76,
+        366.96,
+        403.92,
+        375.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 375.36,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w102",
+      "text": "지제",
+      "bbox": [
+        409.92,
+        366.96,
+        425.28,
+        375.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 375.12,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w103",
+      "text": "없이",
+      "bbox": [
+        431.76,
+        366.72,
+        446.88,
+        375.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 375.12,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w104",
+      "text": "파기합니다.",
+      "bbox": [
+        452.88,
+        366.48,
+        496.56,
+        375.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 375.12,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w105",
+      "text": "단,",
+      "bbox": [
+        118.32,
+        391.44,
+        127.2,
+        400.32
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 400.32,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w106",
+      "text": "관련법령에",
+      "bbox": [
+        132.72,
+        391.44,
+        174.24,
+        399.84
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.84,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w107",
+      "text": "의한",
+      "bbox": [
+        180.72,
+        391.44,
+        196.56,
+        399.84
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.84,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w108",
+      "text": "정보보유",
+      "bbox": [
+        202.56,
+        391.2,
+        235.44,
+        399.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.6,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w109",
+      "text": "사유",
+      "bbox": [
+        241.44,
+        391.2,
+        257.52,
+        399.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.6,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w110",
+      "text": "상법,",
+      "bbox": [
+        263.52,
+        391.2,
+        281.28,
+        399.84
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.84,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w111",
+      "text": "전자금융거래법",
+      "bbox": [
+        287.28,
+        390.96,
+        345.36,
+        399.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.36,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w112",
+      "text": "등",
+      "bbox": [
+        351.84,
+        391.2,
+        359.28,
+        399.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.12,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w113",
+      "text": "관계법령의",
+      "bbox": [
+        364.8,
+        390.72,
+        406.08,
+        399.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.36,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w114",
+      "text": "규정에",
+      "bbox": [
+        412.32,
+        390.72,
+        436.56,
+        399.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.12,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w115",
+      "text": "의하여",
+      "bbox": [
+        443.04,
+        390.48,
+        467.04,
+        399.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 399.12,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w116",
+      "text": "보존할",
+      "bbox": [
+        473.52,
+        390.24,
+        498.0,
+        398.64
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 398.64,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w117",
+      "text": "필",
+      "bbox": [
+        504.0,
+        390.48,
+        510.72,
+        398.64
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 398.64,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w118",
+      "text": "요가",
+      "bbox": [
+        117.84,
+        407.76,
+        134.16,
+        416.16
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 416.16,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w119",
+      "text": "있는",
+      "bbox": [
+        139.68,
+        407.52,
+        155.76,
+        415.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 415.92,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w120",
+      "text": "경우",
+      "bbox": [
+        161.28,
+        407.52,
+        177.12,
+        415.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 415.92,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w121",
+      "text": "관례법령에서",
+      "bbox": [
+        182.4,
+        407.28,
+        231.84,
+        415.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 415.92,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w122",
+      "text": "정한",
+      "bbox": [
+        238.32,
+        407.28,
+        254.4,
+        415.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 415.68,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w123",
+      "text": "일정한",
+      "bbox": [
+        260.4,
+        407.28,
+        284.64,
+        415.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 415.44,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w124",
+      "text": "기간",
+      "bbox": [
+        290.16,
+        407.04,
+        305.76,
+        415.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 415.68,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w125",
+      "text": "동안",
+      "bbox": [
+        311.04,
+        407.04,
+        327.36,
+        415.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 415.44,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w126",
+      "text": "개인정보를",
+      "bbox": [
+        332.88,
+        407.04,
+        374.64,
+        415.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 415.44,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w127",
+      "text": "보관합니다.",
+      "bbox": [
+        379.92,
+        406.8,
+        423.6,
+        415.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 415.2,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w128",
+      "text": ">",
+      "bbox": [
+        127.68,
+        432.96,
+        132.96,
+        440.16
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 440.16,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w129",
+      "text": "근거",
+      "bbox": [
+        139.2,
+        431.52,
+        154.8,
+        439.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 439.92,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w130",
+      "text": ":",
+      "bbox": [
+        161.04,
+        434.4,
+        162.0,
+        439.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 439.2,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w131",
+      "text": "공인중개사법",
+      "bbox": [
+        167.04,
+        431.28,
+        216.48,
+        439.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 439.92,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w132",
+      "text": "및",
+      "bbox": [
+        223.44,
+        431.28,
+        230.16,
+        439.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 439.44,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w133",
+      "text": "공인중개사법",
+      "bbox": [
+        235.68,
+        431.28,
+        285.84,
+        439.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 439.68,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w134",
+      "text": "시행령",
+      "bbox": [
+        291.84,
+        431.04,
+        315.6,
+        439.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 439.68,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w135",
+      "text": "〉",
+      "bbox": [
+        326.88,
+        432.48,
+        332.4,
+        439.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 439.44,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w136",
+      "text": "보존",
+      "bbox": [
+        338.88,
+        431.52,
+        355.2,
+        438.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 438.96,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w137",
+      "text": "기간",
+      "bbox": [
+        360.96,
+        430.8,
+        376.56,
+        439.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 439.44,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w138",
+      "text": ":",
+      "bbox": [
+        381.6,
+        433.92,
+        382.56,
+        438.48
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 438.48,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w139",
+      "text": "5년",
+      "bbox": [
+        386.88,
+        430.8,
+        398.4,
+        438.72
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 438.72,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w140",
+      "text": "개인정보의",
+      "bbox": [
+        118.08,
+        456.0,
+        164.16,
+        465.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 465.36,
+      "lineHint": 20,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w141",
+      "text": "제3자에",
+      "bbox": [
+        170.88,
+        455.76,
+        202.8,
+        465.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 465.12,
+      "lineHint": 20,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w142",
+      "text": "대한",
+      "bbox": [
+        209.76,
+        455.76,
+        227.52,
+        465.12
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 465.12,
+      "lineHint": 20,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w143",
+      "text": "제공",
+      "bbox": [
+        233.52,
+        455.76,
+        251.52,
+        464.88
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 464.88,
+      "lineHint": 20,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w144",
+      "text": "5.",
+      "bbox": [
+        101.04,
+        458.16,
+        107.04,
+        464.4
+      ],
+      "conf": 0.94,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 464.4,
+      "lineHint": 21,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w145",
+      "text": "개인정보를",
+      "bbox": [
+        118.32,
+        480.96,
+        160.32,
+        489.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 489.6,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w146",
+      "text": "제공받는",
+      "bbox": [
+        166.08,
+        480.96,
+        198.72,
+        489.6
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 489.6,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w147",
+      "text": "자",
+      "bbox": [
+        204.48,
+        480.96,
+        211.92,
+        489.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 489.36,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w148",
+      "text": ":",
+      "bbox": [
+        217.44,
+        483.6,
+        218.4,
+        488.64
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 488.64,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w149",
+      "text": "지방자치단제(세군구)′",
+      "bbox": [
+        224.16,
+        480.72,
+        311.28,
+        489.84
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 489.84,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w150",
+      "text": "임대사업자′",
+      "bbox": [
+        317.52,
+        480.48,
+        360.96,
+        489.36
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 489.36,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w151",
+      "text": "임대사업자에게",
+      "bbox": [
+        366.96,
+        480.24,
+        424.56,
+        488.88
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 488.88,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w152",
+      "text": "임대위탁관리를",
+      "bbox": [
+        431.52,
+        480.0,
+        490.32,
+        488.64
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 488.64,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w153",
+      "text": "맡은",
+      "bbox": [
+        496.08,
+        480.0,
+        511.92,
+        488.4
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 488.4,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w154",
+      "text": "자,",
+      "bbox": [
+        118.32,
+        497.52,
+        127.68,
+        506.4
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 506.4,
+      "lineHint": 23,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w155",
+      "text": "건물시설",
+      "bbox": [
+        133.2,
+        497.28,
+        165.84,
+        505.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 505.68,
+      "lineHint": 23,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w156",
+      "text": "관리위탁사",
+      "bbox": [
+        171.6,
+        497.28,
+        213.36,
+        505.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 505.68,
+      "lineHint": 23,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w157",
+      "text": "등",
+      "bbox": [
+        218.64,
+        497.52,
+        226.32,
+        505.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 505.44,
+      "lineHint": 23,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w158",
+      "text": "개인정보를",
+      "bbox": [
+        118.32,
+        521.04,
+        160.56,
+        529.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 529.68,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w159",
+      "text": "제공받는",
+      "bbox": [
+        166.56,
+        521.04,
+        199.44,
+        529.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 529.44,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w160",
+      "text": "자의",
+      "bbox": [
+        205.92,
+        520.8,
+        221.28,
+        529.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 529.44,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w161",
+      "text": "개인정보",
+      "bbox": [
+        228.24,
+        520.8,
+        261.6,
+        529.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 529.2,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w162",
+      "text": "이용목적",
+      "bbox": [
+        268.08,
+        520.56,
+        300.0,
+        529.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 529.2,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w163",
+      "text": ":",
+      "bbox": [
+        306.72,
+        523.68,
+        307.68,
+        528.48
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 528.48,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w164",
+      "text": "임대주택의",
+      "bbox": [
+        314.4,
+        520.56,
+        355.2,
+        528.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 528.96,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w165",
+      "text": "입주예정자",
+      "bbox": [
+        362.64,
+        520.32,
+        403.92,
+        528.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 528.96,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w166",
+      "text": "자격심사",
+      "bbox": [
+        410.16,
+        520.32,
+        443.52,
+        528.72
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 528.72,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w167",
+      "text": "및",
+      "bbox": [
+        450.48,
+        520.08,
+        456.96,
+        528.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 528.24,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w168",
+      "text": "당첨자",
+      "bbox": [
+        463.68,
+        520.08,
+        488.16,
+        528.48
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 528.48,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w169",
+      "text": "선정,",
+      "bbox": [
+        494.4,
+        520.08,
+        511.92,
+        528.72
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 528.72,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w170",
+      "text": "임대차",
+      "bbox": [
+        118.8,
+        537.36,
+        143.04,
+        545.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 545.76,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w171",
+      "text": "계약",
+      "bbox": [
+        150.24,
+        537.12,
+        166.32,
+        545.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 545.76,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w172",
+      "text": "및",
+      "bbox": [
+        173.52,
+        537.12,
+        180.48,
+        545.52
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 545.52,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w173",
+      "text": "임대관리,",
+      "bbox": [
+        187.68,
+        537.12,
+        222.48,
+        545.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 545.76,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w174",
+      "text": "임대마케팅,",
+      "bbox": [
+        229.68,
+        536.88,
+        273.12,
+        545.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 545.76,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w175",
+      "text": "임대자계약신고,",
+      "bbox": [
+        280.32,
+        536.64,
+        340.8,
+        545.52
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 545.52,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w176",
+      "text": "임대보증금",
+      "bbox": [
+        348.48,
+        536.64,
+        389.52,
+        545.04
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 545.04,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w177",
+      "text": "보증보험,",
+      "bbox": [
+        396.24,
+        536.4,
+        431.52,
+        545.04
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 545.04,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w178",
+      "text": "입주고객서비스",
+      "bbox": [
+        439.2,
+        536.16,
+        497.76,
+        544.8
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 544.8,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w179",
+      "text": "등",
+      "bbox": [
+        504.48,
+        536.4,
+        511.92,
+        544.56
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 544.56,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w180",
+      "text": "본인",
+      "bbox": [
+        127.2,
+        569.76,
+        142.56,
+        577.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 577.68,
+      "lineHint": 26,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w181",
+      "text": "은",
+      "bbox": [
+        144.0,
+        570.0,
+        151.92,
+        577.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 577.68,
+      "lineHint": 26,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w182",
+      "text": "습니다.",
+      "bbox": [
+        118.56,
+        673.44,
+        145.44,
+        681.84
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 681.84,
+      "lineHint": 27,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w183",
+      "text": "개인정보의",
+      "bbox": [
+        157.44,
+        569.52,
+        198.24,
+        577.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 577.92,
+      "lineHint": 28,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w184",
+      "text": "수집•이용목적",
+      "bbox": [
+        204.24,
+        569.28,
+        257.04,
+        577.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 577.92,
+      "lineHint": 28,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w185",
+      "text": "등에",
+      "bbox": [
+        263.04,
+        569.28,
+        278.64,
+        577.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 577.68,
+      "lineHint": 28,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w186",
+      "text": "동의합니다.",
+      "bbox": [
+        284.4,
+        569.04,
+        328.32,
+        577.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 577.68,
+      "lineHint": 28,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w187",
+      "text": ">",
+      "bbox": [
+        118.56,
+        596.4,
+        121.92,
+        600.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 600.0,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w188",
+      "text": "본인은",
+      "bbox": [
+        127.2,
+        593.52,
+        151.92,
+        601.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 601.92,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w189",
+      "text": "개인정보의",
+      "bbox": [
+        157.68,
+        593.52,
+        198.24,
+        601.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 601.92,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w190",
+      "text": "제3자에",
+      "bbox": [
+        204.48,
+        593.28,
+        233.28,
+        601.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 601.92,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w191",
+      "text": "대한",
+      "bbox": [
+        239.52,
+        593.28,
+        255.6,
+        601.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 601.68,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w192",
+      "text": "제공에",
+      "bbox": [
+        261.12,
+        593.28,
+        284.88,
+        601.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 601.68,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w193",
+      "text": "대하여",
+      "bbox": [
+        291.36,
+        593.04,
+        314.64,
+        601.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 601.68,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w194",
+      "text": "동의합니다.",
+      "bbox": [
+        320.64,
+        593.04,
+        364.8,
+        601.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 601.44,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w195",
+      "text": ">",
+      "bbox": [
+        118.8,
+        620.4,
+        121.92,
+        623.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 623.76,
+      "lineHint": 30,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w196",
+      "text": "본인은",
+      "bbox": [
+        127.2,
+        617.52,
+        151.92,
+        625.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 625.68,
+      "lineHint": 30,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w197",
+      "text": "본인의",
+      "bbox": [
+        157.44,
+        617.52,
+        181.44,
+        625.92
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 625.92,
+      "lineHint": 30,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w198",
+      "text": "고유식별정보를",
+      "bbox": [
+        187.44,
+        617.28,
+        246.48,
+        625.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 625.68,
+      "lineHint": 30,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w199",
+      "text": "수집하는",
+      "bbox": [
+        252.0,
+        617.04,
+        285.36,
+        625.68
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 625.68,
+      "lineHint": 30,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w200",
+      "text": "것에",
+      "bbox": [
+        290.88,
+        617.04,
+        306.0,
+        625.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 625.44,
+      "lineHint": 30,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w201",
+      "text": "대하여",
+      "bbox": [
+        312.48,
+        617.04,
+        336.0,
+        625.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 625.44,
+      "lineHint": 30,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w202",
+      "text": "동의합니다.",
+      "bbox": [
+        342.24,
+        616.8,
+        385.92,
+        625.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 625.44,
+      "lineHint": 30,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w203",
+      "text": "口",
+      "bbox": [
+        432.72,
+        570.24,
+        439.92,
+        577.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 577.2,
+      "lineHint": 31,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w204",
+      "text": "동의",
+      "bbox": [
+        445.44,
+        568.8,
+        461.04,
+        577.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 577.2,
+      "lineHint": 31,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w205",
+      "text": "口",
+      "bbox": [
+        467.28,
+        570.24,
+        474.48,
+        576.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 576.96,
+      "lineHint": 31,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w206",
+      "text": "미동의",
+      "bbox": [
+        480.48,
+        568.56,
+        503.76,
+        576.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 576.96,
+      "lineHint": 31,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w207",
+      "text": "口",
+      "bbox": [
+        434.64,
+        594.24,
+        441.84,
+        601.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 601.2,
+      "lineHint": 32,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w208",
+      "text": "동의",
+      "bbox": [
+        447.6,
+        592.8,
+        463.2,
+        601.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 601.2,
+      "lineHint": 32,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w209",
+      "text": "口",
+      "bbox": [
+        469.44,
+        594.0,
+        476.4,
+        600.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 600.96,
+      "lineHint": 32,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w210",
+      "text": "미동의",
+      "bbox": [
+        482.4,
+        592.56,
+        505.92,
+        600.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 600.96,
+      "lineHint": 32,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w211",
+      "text": "口",
+      "bbox": [
+        434.4,
+        618.24,
+        441.6,
+        624.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 624.96,
+      "lineHint": 33,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w212",
+      "text": "동의",
+      "bbox": [
+        447.12,
+        616.56,
+        462.72,
+        624.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 624.96,
+      "lineHint": 33,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w213",
+      "text": "口",
+      "bbox": [
+        468.96,
+        618.0,
+        475.92,
+        624.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 624.96,
+      "lineHint": 33,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w214",
+      "text": "미동의",
+      "bbox": [
+        481.92,
+        616.32,
+        505.44,
+        624.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 624.96,
+      "lineHint": 33,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w215",
+      "text": ">",
+      "bbox": [
+        118.8,
+        644.16,
+        121.92,
+        647.52
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 647.52,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w216",
+      "text": "본인은",
+      "bbox": [
+        127.68,
+        641.28,
+        152.4,
+        649.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 649.44,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w217",
+      "text": "동의를",
+      "bbox": [
+        158.64,
+        641.28,
+        183.12,
+        649.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 649.44,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w218",
+      "text": "거부할",
+      "bbox": [
+        189.12,
+        641.04,
+        213.36,
+        649.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 649.44,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w219",
+      "text": "수",
+      "bbox": [
+        219.36,
+        641.28,
+        226.8,
+        649.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 649.44,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w220",
+      "text": "있다는",
+      "bbox": [
+        233.28,
+        641.04,
+        257.76,
+        649.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 649.2,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w221",
+      "text": "안내를",
+      "bbox": [
+        263.52,
+        641.04,
+        288.24,
+        649.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 649.2,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w222",
+      "text": "받았으며,",
+      "bbox": [
+        294.24,
+        640.8,
+        329.04,
+        649.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 649.44,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w223",
+      "text": "동의를",
+      "bbox": [
+        334.56,
+        640.8,
+        359.76,
+        648.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 648.96,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w224",
+      "text": "거부할",
+      "bbox": [
+        365.76,
+        640.32,
+        390.0,
+        648.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 648.96,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w225",
+      "text": "경우",
+      "bbox": [
+        396.24,
+        640.56,
+        412.08,
+        648.72
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 648.72,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w226",
+      "text": "본인의",
+      "bbox": [
+        417.84,
+        640.32,
+        442.08,
+        648.72
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 648.72,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w227",
+      "text": "임대주택",
+      "bbox": [
+        449.28,
+        640.32,
+        481.44,
+        648.72
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 648.72,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w228",
+      "text": "공급신",
+      "bbox": [
+        487.44,
+        640.08,
+        511.68,
+        648.48
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 648.48,
+      "lineHint": 34,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w229",
+      "text": "청접수를",
+      "bbox": [
+        119.04,
+        657.36,
+        152.16,
+        665.76
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 665.76,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w230",
+      "text": "거부하거나",
+      "bbox": [
+        158.64,
+        657.12,
+        200.16,
+        665.52
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 665.52,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w231",
+      "text": "임대자계약(갱신계약포함)",
+      "bbox": [
+        206.88,
+        656.88,
+        305.04,
+        666.0
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 666.0,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w232",
+      "text": "체결에",
+      "bbox": [
+        311.52,
+        656.88,
+        335.28,
+        665.28
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 665.28,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w233",
+      "text": "응하지",
+      "bbox": [
+        342.0,
+        656.64,
+        366.0,
+        665.04
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 665.04,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w234",
+      "text": "않는다는",
+      "bbox": [
+        373.2,
+        656.64,
+        406.08,
+        664.8
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 664.8,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w235",
+      "text": "것에",
+      "bbox": [
+        412.56,
+        656.64,
+        427.92,
+        664.8
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 664.8,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w236",
+      "text": "대하여",
+      "bbox": [
+        434.88,
+        656.4,
+        458.64,
+        664.8
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 664.8,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w237",
+      "text": "안내를",
+      "bbox": [
+        465.84,
+        656.4,
+        490.32,
+        664.56
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 664.56,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w238",
+      "text": "받았",
+      "bbox": [
+        496.56,
+        656.4,
+        512.4,
+        664.56
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.5,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 664.56,
+      "lineHint": 35,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w239",
+      "text": "년",
+      "bbox": [
+        284.16,
+        713.28,
+        290.4,
+        721.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 721.2,
+      "lineHint": 36,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w240",
+      "text": "개인정보",
+      "bbox": [
+        337.92,
+        736.8,
+        371.04,
+        745.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 745.2,
+      "lineHint": 37,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w241",
+      "text": "제공자",
+      "bbox": [
+        376.56,
+        736.56,
+        401.28,
+        744.96
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 744.96,
+      "lineHint": 37,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w242",
+      "text": ":",
+      "bbox": [
+        406.32,
+        739.44,
+        407.52,
+        744.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 744.24,
+      "lineHint": 37,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w243",
+      "text": "口",
+      "bbox": [
+        435.36,
+        674.16,
+        442.32,
+        680.88
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 680.88,
+      "lineHint": 38,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w244",
+      "text": "동의",
+      "bbox": [
+        449.76,
+        672.48,
+        465.36,
+        680.88
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.7,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 680.88,
+      "lineHint": 38,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w245",
+      "text": "口",
+      "bbox": [
+        473.28,
+        673.92,
+        480.24,
+        680.88
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 680.88,
+      "lineHint": 38,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w246",
+      "text": "미동의",
+      "bbox": [
+        488.16,
+        672.24,
+        511.68,
+        680.88
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.9,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 680.88,
+      "lineHint": 38,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w247",
+      "text": "(서명",
+      "bbox": [
+        456.48,
+        736.32,
+        474.96,
+        745.44
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.3,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 745.44,
+      "lineHint": 39,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w248",
+      "text": "또는",
+      "bbox": [
+        480.72,
+        736.8,
+        496.56,
+        744.24
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 6.0,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 744.24,
+      "lineHint": 39,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w249",
+      "text": "인)",
+      "bbox": [
+        502.32,
+        736.32,
+        512.4,
+        745.2
+      ],
+      "conf": 0.88,
+      "src": "ocr",
+      "font": null,
+      "size": 7.1,
+      "bold": null,
+      "italic": null,
+      "underline": null,
+      "color": null,
+      "needsReview": false,
+      "baseline": 745.2,
+      "lineHint": 39,
+      "spaceBefore": null,
+      "trailingSpace": null
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "v",
+      "x0": 261.58,
+      "y0": 711.28,
+      "x1": 262.59,
+      "y1": 723.79,
+      "thickness": 1.0,
+      "style": "solid",
+      "color": "#ffffff"
+    },
+    {
+      "orient": "v",
+      "x0": 283.1,
+      "y0": 711.28,
+      "x1": 284.09,
+      "y1": 723.79,
+      "thickness": 1.0,
+      "style": "solid",
+      "color": "#ffffff"
+    },
+    {
+      "orient": "h",
+      "x0": 262.09,
+      "y0": 723.29,
+      "x1": 283.6,
+      "y1": 724.29,
+      "thickness": 1.0,
+      "style": "solid",
+      "color": "#ffffff"
+    },
+    {
+      "orient": "h",
+      "x0": 262.09,
+      "y0": 710.77,
+      "x1": 283.6,
+      "y1": 711.77,
+      "thickness": 1.0,
+      "style": "solid",
+      "color": "#ffffff"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "hd0",
+      "bbox": [
+        238.56,
+        100.08,
+        350.88,
+        111.36
+      ],
+      "wordIds": [
+        "w0",
+        "w1",
+        "w2"
+      ],
+      "text": "개인정보 활용 동의서",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w0",
+            "w1",
+            "w2"
+          ],
+          "text": "개인정보 활용 동의서",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 8.8,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 2
+    },
+    {
+      "id": "li1",
+      "bbox": [
+        100.08,
+        128.88,
+        229.68,
+        138.24
+      ],
+      "wordIds": [
+        "w6",
+        "w3",
+        "w4",
+        "w5"
+      ],
+      "text": "1. 수집하는 개인정보의 항목",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w6"
+          ],
+          "text": "1.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w3"
+          ],
+          "text": "수집하는",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w4"
+          ],
+          "text": "개인정보의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w5"
+          ],
+          "text": "항목",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "listItem",
+      "marker": "1.",
+      "markerKind": "number",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    },
+    {
+      "id": "p2",
+      "bbox": [
+        116.88,
+        153.12,
+        510.24,
+        179.04
+      ],
+      "wordIds": [
+        "w7",
+        "w8",
+        "w9",
+        "w10",
+        "w11",
+        "w12",
+        "w13",
+        "w14",
+        "w15",
+        "w16",
+        "w17",
+        "w18",
+        "w19",
+        "w20",
+        "w21",
+        "w22",
+        "w23",
+        "w24",
+        "w25"
+      ],
+      "text": "고객관리, 계약서 작성 및 관리 등 각종 서비스의 제공을 위해 이름, 주소, 휴대폰번호, 전화번호, 생년월일′ 성별, 이메일 등을 수집합니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w7"
+          ],
+          "text": "고객관리,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w8",
+            "w9"
+          ],
+          "text": "계약서 작성",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w10"
+          ],
+          "text": "및",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w11"
+          ],
+          "text": "관리",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w12"
+          ],
+          "text": "등",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w13"
+          ],
+          "text": "각종",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w14"
+          ],
+          "text": "서비스의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w15",
+            "w16"
+          ],
+          "text": "제공을 위해",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w17"
+          ],
+          "text": "이름,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w18"
+          ],
+          "text": "주소,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w19",
+            "w20",
+            "w21"
+          ],
+          "text": "휴대폰번호, 전화번호, 생년월일′",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w22"
+          ],
+          "text": "성별,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w23"
+          ],
+          "text": "이메일",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w24"
+          ],
+          "text": "등을",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w25"
+          ],
+          "text": "수집합니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": 2.07,
+      "paragraphs": null
+    },
+    {
+      "id": "li3",
+      "bbox": [
+        100.08,
+        194.64,
+        196.08,
+        204.0
+      ],
+      "wordIds": [
+        "w28",
+        "w26",
+        "w27"
+      ],
+      "text": "2. 개인정보 수집방법",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w28"
+          ],
+          "text": "2.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w26"
+          ],
+          "text": "개인정보",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w27"
+          ],
+          "text": "수집방법",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.5,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "listItem",
+      "marker": "2.",
+      "markerKind": "number",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    },
+    {
+      "id": "p4",
+      "bbox": [
+        117.36,
+        218.88,
+        497.04,
+        228.48
+      ],
+      "wordIds": [
+        "w29",
+        "w30",
+        "w31",
+        "w32",
+        "w33",
+        "w34",
+        "w35",
+        "w36",
+        "w37",
+        "w38",
+        "w39",
+        "w40",
+        "w41",
+        "w42"
+      ],
+      "text": "청약 접수 또는 계약서 작성 시 직접 입력을 통한 등록(작성) 방법으로 개인 정보를 수집합니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w29"
+          ],
+          "text": "청약",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w30"
+          ],
+          "text": "접수",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w31"
+          ],
+          "text": "또는",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w32"
+          ],
+          "text": "계약서",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w33"
+          ],
+          "text": "작성",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w34",
+            "w35",
+            "w36"
+          ],
+          "text": "시 직접 입력을",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w37"
+          ],
+          "text": "통한",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w38"
+          ],
+          "text": "등록(작성)",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w39"
+          ],
+          "text": "방법으로",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w40"
+          ],
+          "text": "개인",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w41"
+          ],
+          "text": "정보를",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w42"
+          ],
+          "text": "수집합니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "li5",
+      "bbox": [
+        100.32,
+        244.08,
+        244.32,
+        253.68
+      ],
+      "wordIds": [
+        "w47",
+        "w43",
+        "w44",
+        "w45",
+        "w46"
+      ],
+      "text": "3. 개인정보의 수집 및 이용목적",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w47"
+          ],
+          "text": "3.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w43"
+          ],
+          "text": "개인정보의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w44",
+            "w45"
+          ],
+          "text": "수집 및",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w46"
+          ],
+          "text": "이용목적",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.5,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "listItem",
+      "marker": "3.",
+      "markerKind": "number",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    },
+    {
+      "id": "p6",
+      "bbox": [
+        117.6,
+        268.32,
+        510.96,
+        327.36
+      ],
+      "wordIds": [
+        "w48",
+        "w49",
+        "w50",
+        "w51",
+        "w52",
+        "w53",
+        "w54",
+        "w55",
+        "w56",
+        "w57",
+        "w58",
+        "w59",
+        "w60",
+        "w61",
+        "w62",
+        "w63",
+        "w64",
+        "w65",
+        "w66",
+        "w67",
+        "w68",
+        "w69",
+        "w70",
+        "w71",
+        "w72",
+        "w73",
+        "w74",
+        "w75",
+        "w76",
+        "w77",
+        "w78",
+        "w79",
+        "w80",
+        "w81",
+        "w82",
+        "w83",
+        "w84",
+        "w85",
+        "w86",
+        "w87",
+        "w88"
+      ],
+      "text": "개인정보의 수집은 부동산 임대를 위한 매물 관리, 부동산 임대를 위한 계약서 작성, 지속가능한 서비스 제공을 위한 고객관리를 위한 목적으로 수집하며, 이외의 목적으로는 사용되지 않습니다. 단, 주민등록번호는 공인중개사법 제26조(거래계약서의 작성 등) 및 부동산거래신고에 관한 법률 제3조(부동 산거래의 신과의 목적 이외에는 사용되지 않습니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w48",
+            "w49",
+            "w50",
+            "w51",
+            "w52",
+            "w53"
+          ],
+          "text": "개인정보의 수집은 부동산 임대를 위한 매물",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w54",
+            "w55"
+          ],
+          "text": "관리, 부동산",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w56"
+          ],
+          "text": "임대를",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w57"
+          ],
+          "text": "위한",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w58"
+          ],
+          "text": "계약서",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w59",
+            "w60",
+            "w61",
+            "w62",
+            "w63",
+            "w64"
+          ],
+          "text": "작성, 지속가능한 서비스 제공을 위한 고객관리를",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w65",
+            "w66"
+          ],
+          "text": "위한 목적으로",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w67"
+          ],
+          "text": "수집하며,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w68",
+            "w69",
+            "w70",
+            "w71"
+          ],
+          "text": "이외의 목적으로는 사용되지 않습니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w72"
+          ],
+          "text": "단,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w73",
+            "w74"
+          ],
+          "text": "주민등록번호는 공인중개사법",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w75"
+          ],
+          "text": "제26조(거래계약서의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w76",
+            "w77"
+          ],
+          "text": "작성 등)",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w78"
+          ],
+          "text": "및",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w79"
+          ],
+          "text": "부동산거래신고에",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w80"
+          ],
+          "text": "관한",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w81"
+          ],
+          "text": "법률",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w82"
+          ],
+          "text": "제3조(부동",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w83"
+          ],
+          "text": "산거래의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w84"
+          ],
+          "text": "신과의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w85",
+            "w86"
+          ],
+          "text": "목적 이외에는",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w87"
+          ],
+          "text": "사용되지",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w88"
+          ],
+          "text": "않습니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": 2.04,
+      "paragraphs": null
+    },
+    {
+      "id": "li7",
+      "bbox": [
+        100.32,
+        342.24,
+        250.32,
+        351.84
+      ],
+      "wordIds": [
+        "w93",
+        "w89",
+        "w90",
+        "w91",
+        "w92"
+      ],
+      "text": "4. 개인정보의 보유 및 이용기간",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w93"
+          ],
+          "text": "4.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w89"
+          ],
+          "text": "개인정보의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w90"
+          ],
+          "text": "보유",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w91"
+          ],
+          "text": "및",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w92"
+          ],
+          "text": "이용기간",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.5,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "listItem",
+      "marker": "4.",
+      "markerKind": "number",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    },
+    {
+      "id": "p8",
+      "bbox": [
+        118.08,
+        366.48,
+        496.56,
+        376.08
+      ],
+      "wordIds": [
+        "w94",
+        "w95",
+        "w96",
+        "w97",
+        "w98",
+        "w99",
+        "w100",
+        "w101",
+        "w102",
+        "w103",
+        "w104"
+      ],
+      "text": "저장된 개인정보는 원칙적으로 개인정보의 수집 및 이용목적이 달성되면 지제 없이 파기합니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w94",
+            "w95",
+            "w96",
+            "w97",
+            "w98"
+          ],
+          "text": "저장된 개인정보는 원칙적으로 개인정보의 수집",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w99"
+          ],
+          "text": "및",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w100",
+            "w101"
+          ],
+          "text": "이용목적이 달성되면",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w102"
+          ],
+          "text": "지제",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w103"
+          ],
+          "text": "없이",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w104"
+          ],
+          "text": "파기합니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p9",
+      "bbox": [
+        117.84,
+        390.24,
+        510.72,
+        416.16
+      ],
+      "wordIds": [
+        "w105",
+        "w106",
+        "w107",
+        "w108",
+        "w109",
+        "w110",
+        "w111",
+        "w112",
+        "w113",
+        "w114",
+        "w115",
+        "w116",
+        "w117",
+        "w118",
+        "w119",
+        "w120",
+        "w121",
+        "w122",
+        "w123",
+        "w124",
+        "w125",
+        "w126",
+        "w127"
+      ],
+      "text": "단, 관련법령에 의한 정보보유 사유 상법, 전자금융거래법 등 관계법령의 규정에 의하여 보존할 필 요가 있는 경우 관례법령에서 정한 일정한 기간 동안 개인정보를 보관합니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w105"
+          ],
+          "text": "단,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w106",
+            "w107",
+            "w108",
+            "w109"
+          ],
+          "text": "관련법령에 의한 정보보유 사유",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w110"
+          ],
+          "text": "상법,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w111"
+          ],
+          "text": "전자금융거래법",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w112"
+          ],
+          "text": "등",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w113"
+          ],
+          "text": "관계법령의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w114"
+          ],
+          "text": "규정에",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w115"
+          ],
+          "text": "의하여",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w116"
+          ],
+          "text": "보존할",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w117"
+          ],
+          "text": "필",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w118",
+            "w119",
+            "w120"
+          ],
+          "text": "요가 있는 경우",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w121"
+          ],
+          "text": "관례법령에서",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w122"
+          ],
+          "text": "정한",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w123"
+          ],
+          "text": "일정한",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w124"
+          ],
+          "text": "기간",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w125",
+            "w126",
+            "w127"
+          ],
+          "text": "동안 개인정보를 보관합니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": 2.04,
+      "paragraphs": null
+    },
+    {
+      "id": "p10",
+      "bbox": [
+        127.68,
+        430.8,
+        398.4,
+        440.16
+      ],
+      "wordIds": [
+        "w128",
+        "w129",
+        "w130",
+        "w131",
+        "w132",
+        "w133",
+        "w134",
+        "w135",
+        "w136",
+        "w137",
+        "w138",
+        "w139"
+      ],
+      "text": "> 근거 : 공인중개사법 및 공인중개사법 시행령 〉 보존 기간 : 5년",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w128"
+          ],
+          "text": ">",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w129"
+          ],
+          "text": "근거",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w130"
+          ],
+          "text": ":",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w131"
+          ],
+          "text": "공인중개사법",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w132"
+          ],
+          "text": "및",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w133"
+          ],
+          "text": "공인중개사법",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w134"
+          ],
+          "text": "시행령",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w135",
+            "w136"
+          ],
+          "text": "〉 보존",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w137"
+          ],
+          "text": "기간",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w138"
+          ],
+          "text": ":",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w139"
+          ],
+          "text": "5년",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.3,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "li11",
+      "bbox": [
+        101.04,
+        455.76,
+        251.52,
+        465.36
+      ],
+      "wordIds": [
+        "w144",
+        "w140",
+        "w141",
+        "w142",
+        "w143"
+      ],
+      "text": "5. 개인정보의 제3자에 대한 제공",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w144"
+          ],
+          "text": "5.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w140",
+            "w141",
+            "w142"
+          ],
+          "text": "개인정보의 제3자에 대한",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w143"
+          ],
+          "text": "제공",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "listItem",
+      "marker": "5.",
+      "markerKind": "number",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    },
+    {
+      "id": "p12",
+      "bbox": [
+        118.32,
+        480.0,
+        511.92,
+        506.4
+      ],
+      "wordIds": [
+        "w145",
+        "w146",
+        "w147",
+        "w148",
+        "w149",
+        "w150",
+        "w151",
+        "w152",
+        "w153",
+        "w154",
+        "w155",
+        "w156",
+        "w157"
+      ],
+      "text": "개인정보를 제공받는 자 : 지방자치단제(세군구)′ 임대사업자′ 임대사업자에게 임대위탁관리를 맡은 자, 건물시설 관리위탁사 등",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w145",
+            "w146"
+          ],
+          "text": "개인정보를 제공받는",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w147"
+          ],
+          "text": "자",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w148"
+          ],
+          "text": ":",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w149"
+          ],
+          "text": "지방자치단제(세군구)′",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w150"
+          ],
+          "text": "임대사업자′",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w151",
+            "w152"
+          ],
+          "text": "임대사업자에게 임대위탁관리를",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w153"
+          ],
+          "text": "맡은",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w154"
+          ],
+          "text": "자,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w155",
+            "w156"
+          ],
+          "text": "건물시설 관리위탁사",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w157"
+          ],
+          "text": "등",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.3,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": 2.04,
+      "paragraphs": null
+    },
+    {
+      "id": "p13",
+      "bbox": [
+        118.32,
+        520.08,
+        511.92,
+        545.76
+      ],
+      "wordIds": [
+        "w158",
+        "w159",
+        "w160",
+        "w161",
+        "w162",
+        "w163",
+        "w164",
+        "w165",
+        "w166",
+        "w167",
+        "w168",
+        "w169",
+        "w170",
+        "w171",
+        "w172",
+        "w173",
+        "w174",
+        "w175",
+        "w176",
+        "w177",
+        "w178",
+        "w179"
+      ],
+      "text": "개인정보를 제공받는 자의 개인정보 이용목적 : 임대주택의 입주예정자 자격심사 및 당첨자 선정, 임대차 계약 및 임대관리, 임대마케팅, 임대자계약신고, 임대보증금 보증보험, 입주고객서비스 등",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w158"
+          ],
+          "text": "개인정보를",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w159"
+          ],
+          "text": "제공받는",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w160"
+          ],
+          "text": "자의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w161"
+          ],
+          "text": "개인정보",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w162"
+          ],
+          "text": "이용목적",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w163"
+          ],
+          "text": ":",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w164"
+          ],
+          "text": "임대주택의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w165"
+          ],
+          "text": "입주예정자",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w166"
+          ],
+          "text": "자격심사",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w167"
+          ],
+          "text": "및",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w168"
+          ],
+          "text": "당첨자",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w169"
+          ],
+          "text": "선정,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w170"
+          ],
+          "text": "임대차",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w171"
+          ],
+          "text": "계약",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w172"
+          ],
+          "text": "및",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w173"
+          ],
+          "text": "임대관리,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w174",
+            "w175"
+          ],
+          "text": "임대마케팅, 임대자계약신고,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w176"
+          ],
+          "text": "임대보증금",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w177",
+            "w178"
+          ],
+          "text": "보증보험, 입주고객서비스",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w179"
+          ],
+          "text": "등",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": 2.07,
+      "paragraphs": null
+    },
+    {
+      "id": "p14",
+      "bbox": [
+        432.72,
+        568.56,
+        503.76,
+        577.2
+      ],
+      "wordIds": [
+        "w203",
+        "w204",
+        "w205",
+        "w206"
+      ],
+      "text": "口 동의 口 미동의",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w203"
+          ],
+          "text": "口",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w204"
+          ],
+          "text": "동의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w205"
+          ],
+          "text": "口",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w206"
+          ],
+          "text": "미동의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p15",
+      "bbox": [
+        127.2,
+        569.04,
+        328.32,
+        577.92
+      ],
+      "wordIds": [
+        "w180",
+        "w181",
+        "w183",
+        "w184",
+        "w185",
+        "w186"
+      ],
+      "text": "본인 은 개인정보의 수집•이용목적 등에 동의합니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w180"
+          ],
+          "text": "본인",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w181"
+          ],
+          "text": "은",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.1,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w183"
+          ],
+          "text": "개인정보의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w184"
+          ],
+          "text": "수집•이용목적",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w185"
+          ],
+          "text": "등에",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w186"
+          ],
+          "text": "동의합니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p16",
+      "bbox": [
+        434.64,
+        592.56,
+        505.92,
+        601.2
+      ],
+      "wordIds": [
+        "w207",
+        "w208",
+        "w209",
+        "w210"
+      ],
+      "text": "口 동의 口 미동의",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w207"
+          ],
+          "text": "口",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w208"
+          ],
+          "text": "동의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w209"
+          ],
+          "text": "口",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w210"
+          ],
+          "text": "미동의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p17",
+      "bbox": [
+        118.56,
+        593.04,
+        364.8,
+        601.92
+      ],
+      "wordIds": [
+        "w187",
+        "w188",
+        "w189",
+        "w190",
+        "w191",
+        "w192",
+        "w193",
+        "w194"
+      ],
+      "text": "> 본인은 개인정보의 제3자에 대한 제공에 대하여 동의합니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w187"
+          ],
+          "text": ">",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w188",
+            "w189"
+          ],
+          "text": "본인은 개인정보의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w190"
+          ],
+          "text": "제3자에",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w191",
+            "w192"
+          ],
+          "text": "대한 제공에",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w193"
+          ],
+          "text": "대하여",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w194"
+          ],
+          "text": "동의합니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p18",
+      "bbox": [
+        434.4,
+        616.32,
+        505.44,
+        624.96
+      ],
+      "wordIds": [
+        "w211",
+        "w212",
+        "w213",
+        "w214"
+      ],
+      "text": "口 동의 口 미동의",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w211"
+          ],
+          "text": "口",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w212"
+          ],
+          "text": "동의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w213"
+          ],
+          "text": "口",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w214"
+          ],
+          "text": "미동의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p19",
+      "bbox": [
+        118.8,
+        616.8,
+        385.92,
+        625.92
+      ],
+      "wordIds": [
+        "w195",
+        "w196",
+        "w197",
+        "w198",
+        "w199",
+        "w200",
+        "w201",
+        "w202"
+      ],
+      "text": "> 본인은 본인의 고유식별정보를 수집하는 것에 대하여 동의합니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w195"
+          ],
+          "text": ">",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w196"
+          ],
+          "text": "본인은",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w197",
+            "w198"
+          ],
+          "text": "본인의 고유식별정보를",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w199"
+          ],
+          "text": "수집하는",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w200",
+            "w201"
+          ],
+          "text": "것에 대하여",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w202"
+          ],
+          "text": "동의합니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p20",
+      "bbox": [
+        118.8,
+        640.08,
+        512.4,
+        666.0
+      ],
+      "wordIds": [
+        "w215",
+        "w216",
+        "w217",
+        "w218",
+        "w219",
+        "w220",
+        "w221",
+        "w222",
+        "w223",
+        "w224",
+        "w225",
+        "w226",
+        "w227",
+        "w228",
+        "w229",
+        "w230",
+        "w231",
+        "w232",
+        "w233",
+        "w234",
+        "w235",
+        "w236",
+        "w237",
+        "w238"
+      ],
+      "text": "> 본인은 동의를 거부할 수 있다는 안내를 받았으며, 동의를 거부할 경우 본인의 임대주택 공급신 청접수를 거부하거나 임대자계약(갱신계약포함) 체결에 응하지 않는다는 것에 대하여 안내를 받았",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w215"
+          ],
+          "text": ">",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w216",
+            "w217"
+          ],
+          "text": "본인은 동의를",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w218"
+          ],
+          "text": "거부할",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w219",
+            "w220",
+            "w221"
+          ],
+          "text": "수 있다는 안내를",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w222"
+          ],
+          "text": "받았으며,",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w223"
+          ],
+          "text": "동의를",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w224"
+          ],
+          "text": "거부할",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w225"
+          ],
+          "text": "경우",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w226",
+            "w227",
+            "w228",
+            "w229",
+            "w230"
+          ],
+          "text": "본인의 임대주택 공급신 청접수를 거부하거나",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w231"
+          ],
+          "text": "임대자계약(갱신계약포함)",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w232",
+            "w233"
+          ],
+          "text": "체결에 응하지",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w234",
+            "w235"
+          ],
+          "text": "않는다는 것에",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w236"
+          ],
+          "text": "대하여",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w237",
+            "w238"
+          ],
+          "text": "안내를 받았",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.5,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": 1.98,
+      "paragraphs": null
+    },
+    {
+      "id": "p21",
+      "bbox": [
+        435.36,
+        672.24,
+        511.68,
+        680.88
+      ],
+      "wordIds": [
+        "w243",
+        "w244",
+        "w245",
+        "w246"
+      ],
+      "text": "口 동의 口 미동의",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w243"
+          ],
+          "text": "口",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w244"
+          ],
+          "text": "동의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w245"
+          ],
+          "text": "口",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w246"
+          ],
+          "text": "미동의",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.9,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p22",
+      "bbox": [
+        118.56,
+        673.44,
+        145.44,
+        681.84
+      ],
+      "wordIds": [
+        "w182"
+      ],
+      "text": "습니다.",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w182"
+          ],
+          "text": "습니다.",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p23",
+      "bbox": [
+        284.16,
+        713.28,
+        290.4,
+        721.2
+      ],
+      "wordIds": [
+        "w239"
+      ],
+      "text": "년",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w239"
+          ],
+          "text": "년",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.3,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p24",
+      "bbox": [
+        456.48,
+        736.32,
+        512.4,
+        745.44
+      ],
+      "wordIds": [
+        "w247",
+        "w248",
+        "w249"
+      ],
+      "text": "(서명 또는 인)",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w247"
+          ],
+          "text": "(서명",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.3,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w248"
+          ],
+          "text": "또는",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w249"
+          ],
+          "text": "인)",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.1,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p25",
+      "bbox": [
+        337.92,
+        736.56,
+        407.52,
+        745.2
+      ],
+      "wordIds": [
+        "w240",
+        "w241",
+        "w242"
+      ],
+      "text": "개인정보 제공자 :",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w240",
+            "w241"
+          ],
+          "text": "개인정보 제공자",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.7,
+          "font": null,
+          "bg": null
+        },
+        {
+          "wordIds": [
+            "w242"
+          ],
+          "text": ":",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 6.0,
+          "font": null,
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    }
+  ],
+  "readingOrder": [
+    "hd0",
+    "li1",
+    "p2",
+    "li3",
+    "p4",
+    "li5",
+    "p6",
+    "li7",
+    "p8",
+    "p9",
+    "p10",
+    "li11",
+    "p12",
+    "p13",
+    "p15",
+    "p17",
+    "p14",
+    "p16",
+    "p18",
+    "p19",
+    "p20",
+    "p22",
+    "p23",
+    "p21",
+    "p24",
+    "p25"
+  ],
+  "metrics": {
+    "ocrAvgConf": 0.8812,
+    "rulingCount": 4,
+    "tableCount": 0,
+    "wordCount": 250,
+    "occludedCharsFiltered": 0,
+    "invariantErrors": [],
+    "rulingsH": 2,
+    "rulingsV": 2,
+    "tableShapes": [],
+    "cellCount": 0,
+    "needsReviewCells": 0,
+    "headingCount": 1,
+    "captionCount": 0,
+    "noteCount": 0,
+    "headerFooterCount": 0,
+    "headingSummary": [
+      "H2:개인정보 활용 동의서"
+    ],
+    "headerTexts": [],
+    "blockCounts": {
+      "heading": 1,
+      "listItem": 5,
+      "paragraph": 20
+    }
+  }
+}

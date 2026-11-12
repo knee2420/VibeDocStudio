@@ -1,0 +1,842 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-vector",
+  "size": {
+    "width": 595.0,
+    "height": 841.0
+  },
+  "margins": {
+    "top": 89.2,
+    "right": 62.9,
+    "bottom": 249.8,
+    "left": 67.4
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "(뒤쪽)",
+      "bbox": [
+        512.24,
+        89.2,
+        532.11,
+        97.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 7.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 95.9,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "구분",
+      "bbox": [
+        77.24,
+        106.53,
+        97.63,
+        117.31
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 115.79,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w2",
+      "text": "근로자위원",
+      "bbox": [
+        167.31,
+        106.53,
+        217.32,
+        117.31
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 115.79,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w3",
+      "text": "서명",
+      "bbox": [
+        284.36,
+        106.53,
+        304.75,
+        117.31
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 115.79,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w4",
+      "text": "사용자위원",
+      "bbox": [
+        377.68,
+        106.53,
+        427.81,
+        117.31
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 115.79,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "서명",
+      "bbox": [
+        499.29,
+        106.53,
+        519.68,
+        117.31
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 115.79,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w6",
+      "text": "참석위원",
+      "bbox": [
+        67.4,
+        352.14,
+        107.58,
+        362.93
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 10.79,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 361.4,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "h",
+      "x0": 57.93,
+      "y0": 98.95,
+      "x1": 538.03,
+      "y1": 100.99,
+      "thickness": 2.04,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 123.89,
+      "x1": 538.03,
+      "y1": 124.25,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 591.01,
+      "x1": 538.03,
+      "y1": 591.38,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "h",
+      "x0": 57.33,
+      "y0": 778.25,
+      "x1": 538.03,
+      "y1": 780.29,
+      "thickness": 2.04,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "v",
+      "x0": 119.03,
+      "y0": 99.97,
+      "x1": 119.39,
+      "y1": 591.2,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "v",
+      "x0": 267.52,
+      "y0": 99.97,
+      "x1": 267.88,
+      "y1": 591.2,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "v",
+      "x0": 323.65,
+      "y0": 99.97,
+      "x1": 324.01,
+      "y1": 591.2,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    },
+    {
+      "orient": "v",
+      "x0": 483.88,
+      "y0": 99.97,
+      "x1": 484.24,
+      "y1": 591.2,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#5d5d5d"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "t0",
+      "kind": "table",
+      "bbox": [
+        119.21,
+        99.97,
+        484.06,
+        591.19
+      ],
+      "nRows": 2,
+      "nCols": 3,
+      "colXs": [
+        119.21,
+        267.7,
+        323.83,
+        484.06
+      ],
+      "rowYs": [
+        99.97,
+        124.07,
+        591.19
+      ],
+      "widthRatio": [
+        0.407,
+        0.1538,
+        0.4392
+      ],
+      "widthPt": 364.85,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            119.21,
+            99.97,
+            267.7,
+            124.07
+          ],
+          "wordIds": [
+            "w2"
+          ],
+          "text": "근로자위원",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 2.04,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            }
+          },
+          "padding": {
+            "t": 6.6,
+            "r": 12.0,
+            "b": 6.8,
+            "l": 12.0
+          },
+          "font": {
+            "family": "Dotum",
+            "color": "#000000",
+            "size": 10.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            267.7,
+            99.97,
+            323.83,
+            124.07
+          ],
+          "wordIds": [
+            "w3"
+          ],
+          "text": "서명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 2.04,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            }
+          },
+          "padding": {
+            "t": 6.6,
+            "r": 12.0,
+            "b": 6.8,
+            "l": 12.0
+          },
+          "font": {
+            "family": "Dotum",
+            "color": "#000000",
+            "size": 10.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            323.83,
+            99.97,
+            484.06,
+            124.07
+          ],
+          "wordIds": [
+            "w4"
+          ],
+          "text": "사용자위원",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 2.04,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            }
+          },
+          "padding": {
+            "t": 6.6,
+            "r": 12.0,
+            "b": 6.8,
+            "l": 12.0
+          },
+          "font": {
+            "family": "Dotum",
+            "color": "#000000",
+            "size": 10.8,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            119.21,
+            124.07,
+            267.7,
+            591.19
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c0",
+            "kind": "text",
+            "label": "근로자위원",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            267.7,
+            124.07,
+            323.83,
+            591.19
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c1",
+            "kind": "text",
+            "label": "서명",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            323.83,
+            124.07,
+            484.06,
+            591.19
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#5d5d5d"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c2",
+            "kind": "text",
+            "label": "사용자위원",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": null,
+      "imageFallbackSrc": null
+    },
+    {
+      "id": "p0",
+      "bbox": [
+        512.24,
+        89.2,
+        532.11,
+        97.0
+      ],
+      "wordIds": [
+        "w0"
+      ],
+      "text": "(뒤쪽)",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w0"
+          ],
+          "text": "(뒤쪽)",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 7.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p1",
+      "bbox": [
+        77.24,
+        106.53,
+        97.63,
+        117.31
+      ],
+      "wordIds": [
+        "w1"
+      ],
+      "text": "구분",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w1"
+          ],
+          "text": "구분",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 10.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p2",
+      "bbox": [
+        499.29,
+        106.53,
+        519.68,
+        117.31
+      ],
+      "wordIds": [
+        "w5"
+      ],
+      "text": "서명",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w5"
+          ],
+          "text": "서명",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 10.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    },
+    {
+      "id": "p3",
+      "bbox": [
+        67.4,
+        352.14,
+        107.58,
+        362.93
+      ],
+      "wordIds": [
+        "w6"
+      ],
+      "text": "참석위원",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w6"
+          ],
+          "text": "참석위원",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 10.8,
+          "font": "Dotum",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    }
+  ],
+  "readingOrder": [
+    "p0",
+    "t0",
+    "p1",
+    "p2",
+    "p3"
+  ],
+  "metrics": {
+    "ocrAvgConf": null,
+    "rulingCount": 8,
+    "tableCount": 1,
+    "wordCount": 7,
+    "occludedCharsFiltered": 0,
+    "invariantErrors": [],
+    "rulingsH": 4,
+    "rulingsV": 4,
+    "tableShapes": [
+      "t0:2x3(6)"
+    ],
+    "cellCount": 6,
+    "needsReviewCells": 0,
+    "headingCount": 0,
+    "captionCount": 0,
+    "noteCount": 0,
+    "headerFooterCount": 0,
+    "headingSummary": [],
+    "headerTexts": [],
+    "blockCounts": {
+      "table": 1,
+      "paragraph": 4
+    }
+  }
+}

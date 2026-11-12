@@ -1,2 +1,0 @@
-[console_scripts]
-pdf-vdoc-engine = pdf_vdoc_engine.cli:main

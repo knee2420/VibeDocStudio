@@ -69,7 +69,7 @@ export function findDoc(docId: string): VDocDocument | undefined {
 }
 
 const isEditableSlot = (slot: VDocSlot | undefined) =>
-  Boolean(slot) && slot!.role !== "boilerplate" && !slot!.constraints?.locked;
+  Boolean(slot) && !slot!.constraints?.locked;
 
 // --- 참조(칩) 만들기 ---------------------------------------------------------------------
 
@@ -329,7 +329,7 @@ function gridPositions(block: LayoutBlock): Map<string, string> {
 export function slotRangeContent(doc: VDocDocument, slotIds: string[], unitIds: string[] = slotIds): string {
   const wanted = new Set(unitIds);
   const lines = [
-    `사용자가 캔버스에서 함께 고른 요소 ${unitIds.length}개 (블록별 · 읽는 순서). [locked] · [boilerplate] 는 바꾸지 않는다.`,
+    `사용자가 캔버스에서 함께 고른 요소 ${unitIds.length}개 (블록별 · 읽는 순서). [locked] 는 바꾸지 않는다.`,
   ];
   for (const page of doc.pages) {
     for (const block of page.blocks) {
@@ -346,7 +346,7 @@ export function slotRangeContent(doc: VDocDocument, slotIds: string[], unitIds: 
         }
         const slot = doc.slots[unit.slotId ?? unit.unitId];
         if (!slot) continue;
-        const flags = [slot.role === "boilerplate" ? "boilerplate" : "", slot.constraints?.locked || block.locked ? "locked" : ""].filter(Boolean).join(",");
+        const flags = [slot.constraints?.locked || block.locked ? "locked" : ""].filter(Boolean).join(",");
         const html = slot.content.length > 1200 ? `${clipText(slot.content, 1200)}…` : slot.content;
         lines.push(`- ${pos.get(slot.slotId) ? `[${pos.get(slot.slotId)}] ` : ""}${slot.slotId}${flags ? ` [${flags}]` : ""} "${slot.label}": ${html || "(비어 있음)"}`);
       }
@@ -369,7 +369,7 @@ export function editableSlotIds(doc: VDocDocument, slotIds: string[]): string[] 
 // --- 본문 채우기 (보내기 직전) --------------------------------------------------------------
 
 function slotLine(slot: VDocSlot, maxHtml = 1500): string {
-  const flags = [slot.role !== "editable-slot" ? slot.role : "", slot.constraints?.locked ? "locked" : "", slot.constraints?.maxLines ? `maxLines=${slot.constraints.maxLines}` : ""]
+  const flags = [slot.role === "fillable-field" ? slot.role : "", slot.constraints?.locked ? "locked" : "", slot.constraints?.maxLines ? `maxLines=${slot.constraints.maxLines}` : ""]
     .filter(Boolean)
     .join(",");
   const html = slot.content.length > maxHtml ? `${clipText(slot.content, maxHtml)}…` : slot.content;

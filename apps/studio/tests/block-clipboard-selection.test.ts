@@ -43,8 +43,8 @@ function makeDoc(
       },
     ],
     slots: {
-      [`${pageId}_hdr`]: { slotId: `${pageId}_hdr`, label: "머리말", role: "boilerplate", content: "", backDataRefs: [] },
-      [`${pageId}_ftr`]: { slotId: `${pageId}_ftr`, label: "바닥글", role: "boilerplate", content: "", backDataRefs: [] },
+      [`${pageId}_hdr`]: { slotId: `${pageId}_hdr`, label: "머리말", role: "editable-slot", content: "", backDataRefs: [] },
+      [`${pageId}_ftr`]: { slotId: `${pageId}_ftr`, label: "바닥글", role: "editable-slot", content: "", backDataRefs: [] },
     },
   };
 }

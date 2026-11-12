@@ -6,6 +6,9 @@
              · 글 바꾸기 · 속성 · 옮기기 · 지우기 — 서버가 바로 저장한다 (화면이 열려 있지 않아도 된다)
   dc_outline 지금 문서의 구조 (쪽 → 블록 id · 종류 · 사진 · 글 앞부분)
   dc_check   배치 · 사진 · 빈 칸 점검 + 레퍼런스 뼈대(rf_skeleton)와의 차이
+  dc_source_pages  마운트된 서식 원문(hwpx)의 쪽 목록 — 쪽마다 첫 글 · 표 수 · 빈 칸 수
+  dc_import        서식 원문의 쪽들을 모양 그대로(표 병합 · 너비 · 테두리 · 글자 모양) 원문 쪽 하나 = 쪽 하나로 붙인다.
+                   서식은 에이전트가 dc_build 로 다시 그리지 않는다 — 옮기는 것은 코드(`hwpx_vdoc`)가 한다.
 
 구조(블록 · 쪽)까지 바꾸는 것은 에이전트가 만든 초안(`origin.createdBy == "agent"` 또는 `agentComposed`) · 지정된 빈 초안 문서만이다.
 이미 사람이 블록을 채운 문서는 지금처럼 칸 내용 변경안(slots.proposeBatch · wb_propose)으로만 고친다.
@@ -16,26 +19,52 @@ from __future__ import annotations
 import html as html_lib
 import json
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 from typing import Any, Callable, Optional
 
-from harness_kit import packs, patterns
-from harness_kit.text import html_to_text
-from harness_kit.vdoc_build import (
+import pymupdf
+from docstruct_engine import (
+    TableIR,
+    WindowsOcrAdapter,
+    apply_reread_patch,
+    build_doc_ir,
+    reread_plan,
+    verify_doc,
+)
+from docstruct_engine.cache import (
+    append_read_record,
+    doc_cache_dir,
+    file_src_hash,
+    load_page_ir,
+    read_records,
+    save_page_ir,
+)
+from docstruct_engine.ir.model import DocIR, PageIR, bbox_center, point_in_bbox
+from docstruct_engine.tables import reconcile_table, render_table_proposal_html
+from docstruct_engine.acquire import doc_text, hwpx
+from docstruct_engine.compile import docstruct_vdoc, hwpx_vdoc
+from docstruct_engine.compile.vdoc_build import (
     blank_page,
     block_slot_ids,
     make_block,
     media_sources,
     sanitize_html,
 )
+from harness_kit import packs, patterns
+from harness_kit.text import html_to_text
 
 #: dc_* 도구 명세 · 결과 글 — 하네스 editor 팩
 MSG = "editor:messages.json"
 DC_TOOL_SPECS: list[dict[str, Any]] = packs.tool_specs("editor", "tools.compose.json")
 
 API_BASE = os.environ.get("VIBE_API_BASE", "http://127.0.0.1:8090").rstrip("/")
+#: 원문 쪽을 서식 그대로 가져올 수 있는 형식 → 파서 (`dc_source_pages` · `dc_import`)
+IMPORTERS: dict[str, Callable[[str], Any]] = {".hwpx": hwpx.parse}
+DOCSTRUCT_EXTS = {".pdf", ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"}
 _IMG_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
 #: 블록 속성 중 dc_build props 로 바꿀 수 있는 것 (종류별)
 _PROPS: dict[str, set[str]] = {
@@ -77,12 +106,14 @@ class _Api:
 
 class DocTools:
     def __init__(self, store: Any, session_id: str, index: Any = None, api: Optional[_Api] = None,
-                 state: Optional[Callable[[], dict[str, Any]]] = None) -> None:
+                 state: Optional[Callable[[], dict[str, Any]]] = None,
+                 ocr_port: Optional[Any] = None) -> None:
         self.store = store
         self.session_id = session_id
         self.index = index
         self.api = api or _Api()
         self._state = state
+        self._ocr_port = ocr_port
 
     @staticmethod
     def handles(name: str) -> bool:
@@ -400,8 +431,8 @@ class DocTools:
                         sid = ids[0] if ids else ""
                     if sid not in slots:
                         raise ValueError(f"칸 {sid or '(없음)'} 이 없다.")
-                    if slots[sid].get("role") == "boilerplate":
-                        raise ValueError(f"칸 {sid} 은 고정 문구다.")
+                    if (slots[sid].get("constraints") or {}).get("locked"):
+                        raise ValueError(f"칸 {sid} 은 잠겨 있다.")
                     slots[sid] = {**slots[sid], "content": sanitize_html(op.get("html") or op.get("text") or "")}
                     touched.append(sid)
                     notes.append(f"글 {sid}")
@@ -546,4 +577,367 @@ class DocTools:
                     rows.append(packs.message(MSG, "compose.hintsHead"))
                     rows.extend(hints)
         rows.append(packs.message(MSG, "compose.checkTail"))
+        return "\n".join(rows)
+
+    # --- 서식 원문 가져오기 (hwpx → 쪽 · 표 그대로) ----------------------------------------------
+
+    def _get_ocr_port(self) -> Optional[Any]:
+        if self._ocr_port is not None:
+            return self._ocr_port
+        return WindowsOcrAdapter() if sys.platform == "win32" else None
+
+    def _resolve_mount_entry(self, path: str) -> Any:
+        raw = str(path or "").strip()
+        if not raw:
+            raise ValueError(packs.message(MSG, "import.noPath"))
+        entry = self.index.get(raw) if self.index is not None else None
+        if entry is None:
+            source = doc_text.source_of(raw)
+            entry = self.index.get(source) if (source and self.index is not None) else None
+        if entry is None:
+            raise ValueError(packs.message(MSG, "import.notMounted", path=raw))
+        return entry
+
+    def _source(self, path: str) -> tuple[str, Any]:
+        """마운트 안 서식 파일 → (절대 경로, 파싱한 문서)."""
+        entry = self._resolve_mount_entry(path)
+        ext = os.path.splitext(entry.abs_path)[1].lower()
+        if ext in IMPORTERS:
+            try:
+                return entry.abs_path, IMPORTERS[ext](entry.abs_path)
+            except Exception as exc:  # 손상 · 암호 · 형식 오류
+                raise ValueError(packs.message(MSG, "import.parseFailed", path=entry.rel, error=exc)) from exc
+        if ext in DOCSTRUCT_EXTS:
+            try:
+                doc_ir = build_doc_ir(
+                    entry.abs_path,
+                    cache_root=doc_text.derived_dir(),
+                    ocr_port=self._get_ocr_port(),
+                    render_png=True,
+                )
+                return entry.abs_path, doc_ir
+            except Exception as exc:
+                raise ValueError(packs.message(MSG, "import.parseFailed", path=entry.rel, error=exc)) from exc
+        supported = ", ".join(list(IMPORTERS) + sorted(DOCSTRUCT_EXTS))
+        raise ValueError(packs.message(MSG, "import.unsupported", path=entry.rel, kinds=supported))
+
+    def _docstruct_source(self, path: str, *, page_indices: Optional[list[int]] = None,
+                          force: bool = False) -> tuple[str, Path, DocIR]:
+        entry = self._resolve_mount_entry(path)
+        ext = os.path.splitext(entry.abs_path)[1].lower()
+        if ext not in DOCSTRUCT_EXTS:
+            raise ValueError(packs.message(MSG, "import.unsupported", path=entry.rel,
+                                           kinds=", ".join(sorted(DOCSTRUCT_EXTS))))
+        cache_root = doc_text.derived_dir()
+        src_hash = file_src_hash(entry.abs_path)
+        cache_dir = doc_cache_dir(cache_root, src_hash)
+        try:
+            doc_ir = build_doc_ir(
+                entry.abs_path,
+                page_indices=page_indices,
+                cache_root=cache_root,
+                ocr_port=self._get_ocr_port(),
+                force=force,
+                render_png=True,
+            )
+        except Exception as exc:
+            raise ValueError(packs.message(MSG, "import.parseFailed", path=entry.rel, error=exc)) from exc
+        return entry.abs_path, cache_dir, doc_ir
+
+    def _load_or_build_page(self, path: str, page_num: int) -> tuple[str, Path, PageIR]:
+        src, cache_dir, _ = self._docstruct_source(path, page_indices=[int(page_num)], force=False)
+        pir = load_page_ir(cache_dir, int(page_num))
+        if pir is None:
+            _, _, doc_ir = self._docstruct_source(path, page_indices=[int(page_num)], force=True)
+            pir = next((p for p in doc_ir.pages if p.pageIndex == int(page_num)), None)
+        if pir is None:
+            raise ValueError(packs.message(MSG, "import.noPages"))
+        return src, cache_dir, pir
+
+    def _table_reject_count(self, cache_dir: Path, page_num: int, table_id: str) -> int:
+        cnt = 0
+        for rec in read_records(cache_dir, page_num):
+            if rec.get("kind") == "table_propose" and rec.get("tableId") == table_id:
+                if rec.get("ok") and not rec.get("fallbackToImage"):
+                    cnt = 0
+                else:
+                    cnt = int(rec.get("rejectCount") or (cnt + 1))
+        return cnt
+
+    # --- PDF / Scan structure inspection & verify tools -------------------------------------------
+
+    def _dc_pdf_open(self, path: str = "", pages: Any = "", force: bool = False, **_: Any) -> str:
+        wanted = hwpx_vdoc.parse_numbers(pages) if pages else None
+        src, cache_dir, doc_ir = self._docstruct_source(path, page_indices=wanted, force=bool(force))
+        rows = [packs.message(MSG, "docstruct.opened", path=os.path.basename(src), count=len(doc_ir.pages),
+                              srcHash=doc_ir.srcHash, cacheDir=str(cache_dir))]
+        for p in doc_ir.pages:
+            tbls = [b for b in p.blocks if isinstance(b, TableIR)]
+            png = cache_dir / f"p{p.pageIndex}.png"
+            png_s = str(png) if png.is_file() else "-"
+            rows.append(packs.message(MSG, "docstruct.openPage", page=p.pageIndex, mode=p.sourceKind,
+                                      words=len(p.words), tables=len(tbls), blocks=len(p.blocks), png=png_s))
+            words_by_id = {w.id: w for w in p.words}
+            for tbl in tbls:
+                snippet = render_table_proposal_html(tbl, words_by_id, include_word_attrs=True)[:220]
+                rows.append(f"    table {tbl.id} ({tbl.nRows}x{tbl.nCols}, review={tbl.needsReview}): {snippet}")
+        return "\n".join(rows)
+
+    def _dc_pdf_words(self, path: str = "", page: int = 1, bbox: Optional[list[float]] = None, **_: Any) -> str:
+        src, _, pir = self._load_or_build_page(path, int(page))
+        words = list(pir.words)
+        if bbox and len(bbox) == 4:
+            bx = (float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3]))
+            words = [w for w in words if w.bbox is not None and point_in_bbox(bbox_center(w.bbox), bx, tol=1.5)]
+        rows = [packs.message(MSG, "docstruct.wordsHead", path=os.path.basename(src), page=pir.pageIndex, count=len(words))]
+        for w in words[:300]:
+            bxs = [round(v, 1) for v in w.bbox] if w.bbox else None
+            rows.append(f"  {w.id}: {w.text!r} bbox={bxs} conf={w.conf} src={w.src} review={w.needsReview}")
+        if len(words) > 300:
+            rows.append(f"  ... ({len(words) - 300} more; pass bbox=[x0,y0,x1,y1] to narrow)")
+        return "\n".join(rows)
+
+    def _dc_table_propose(self, path: str = "", page: int = 1, tableId: str = "", html: Optional[str] = None,
+                          fixes: Optional[list[dict[str, Any]]] = None, rejectCount: Optional[int] = None, **_: Any) -> str:
+        page_num = int(page)
+        src, cache_dir, pir = self._load_or_build_page(path, page_num)
+        prior_rejects = int(rejectCount) if rejectCount is not None else self._table_reject_count(cache_dir, page_num, tableId)
+        png_path = cache_dir / f"p{page_num}.png"
+        pdf_doc = pymupdf.open(src) if src.lower().endswith(".pdf") else None
+        try:
+            page_obj = pdf_doc[page_num - 1] if (pdf_doc is not None and 1 <= page_num <= len(pdf_doc)) else None
+            res = reconcile_table(
+                pir,
+                tableId,
+                html=html,
+                fixes=fixes,
+                reject_count=prior_rejects,
+                page_obj=page_obj,
+                page_png_path=png_path if png_path.is_file() else None,
+            )
+        finally:
+            if pdf_doc is not None:
+                pdf_doc.close()
+
+        append_read_record(
+            cache_dir,
+            page_num,
+            {
+                "kind": "table_propose",
+                "tableId": tableId,
+                "ok": res.ok,
+                "rejectCount": res.rejectCount,
+                "fallbackToImage": res.fallbackToImage,
+                "errors": res.errors,
+            },
+        )
+
+        if res.ok and res.page is not None:
+            save_page_ir(cache_dir, res.page)
+            assert res.table is not None
+            if res.fallbackToImage:
+                return packs.message(MSG, "docstruct.tableFallback", page=page_num, tableId=tableId,
+                                     errors="; ".join(res.errors))
+            return packs.message(MSG, "docstruct.tableOk", page=page_num, tableId=tableId,
+                                 rows=res.table.nRows, cols=res.table.nCols, needsReview=res.table.needsReview)
+
+        return packs.message(MSG, "docstruct.tableRejected", rejectCount=res.rejectCount, page=page_num,
+                             tableId=tableId, errors="; ".join(res.errors))
+
+    def _dc_blocks_annotate(self, path: str = "", page: int = 1, annotations: Optional[list[dict[str, Any]]] = None,
+                            readingOrder: Optional[list[str]] = None, fixes: Optional[list[dict[str, Any]]] = None,
+                            **_: Any) -> str:
+        page_num = int(page)
+        _, cache_dir, pir = self._load_or_build_page(path, page_num)
+        updated, res = apply_reread_patch(
+            pir,
+            block_annotations=annotations,
+            reading_order=readingOrder,
+            fixes=fixes,
+        )
+        append_read_record(
+            cache_dir,
+            page_num,
+            {
+                "kind": "blocks_annotate",
+                "ok": res.ok,
+                "errors": res.errors,
+            },
+        )
+        if not res.ok:
+            return packs.message(MSG, "docstruct.blocksRejected", page=page_num, errors="; ".join(res.errors))
+        save_page_ir(cache_dir, updated)
+        return packs.message(MSG, "docstruct.blocksOk", page=page_num, blocks=len(updated.blocks))
+
+    def _dc_verify(self, path: str = "", pages: Any = "", round: int = 1, sampleTables: bool = True, **_: Any) -> str:
+        wanted = hwpx_vdoc.parse_numbers(pages) if pages else None
+        src, cache_dir, doc_ir = self._docstruct_source(path, page_indices=wanted, force=False)
+        bundle = verify_doc(doc_ir)
+        tasks = reread_plan(
+            doc_ir,
+            round_num=int(round),
+            verification=bundle,
+            cache_dir=cache_dir,
+            sample_tables=bool(sampleTables),
+        )
+        if not bundle.pendingReads and not tasks:
+            return packs.message(MSG, "docstruct.verifyOk", path=os.path.basename(src), count=len(doc_ir.pages))
+        rows = [packs.message(MSG, "docstruct.verifyPending", path=os.path.basename(src),
+                              pendingCount=len(bundle.pendingReads), round=int(round))]
+        for t in tasks:
+            rows.append(packs.message(MSG, "docstruct.verifyTask", page=t.pageIndex, kind=t.kind,
+                                      blockId=t.blockId or "-", reasons=", ".join(t.reasons) or "-",
+                                      crop=t.cropPngPath or "-"))
+        return "\n".join(rows)
+
+    def _dc_source_pages(self, path: str = "", pages: Any = "", **_: Any) -> str:
+        src, parsed = self._source(path)
+        wanted = set(hwpx_vdoc.parse_numbers(pages)) if pages else None
+        if isinstance(parsed, DocIR):
+            rows = [packs.message(MSG, "import.pagesHead", path=os.path.basename(src), count=len(parsed.pages))]
+            for pg in parsed.pages:
+                if wanted is not None and pg.pageIndex not in wanted:
+                    continue
+                first_txt = next(
+                    (getattr(b, "text", None) for b in pg.blocks if getattr(b, "text", None)),
+                    "",
+                ) or ""
+                first_txt = " ".join(str(first_txt).split())[:32]
+                tbl_cnt = sum(1 for b in pg.blocks if isinstance(b, TableIR))
+                fill_cnt = sum(1 for b in pg.blocks if isinstance(b, TableIR) for c in b.cells if c.field is not None)
+                rows.append(
+                    f"p{pg.pageIndex}: \"{first_txt}\" · tables {tbl_cnt} · empty cells {fill_cnt} · [{pg.sourceKind}]"
+                )
+            rows.append(packs.message(MSG, "import.pagesTail"))
+            return "\n".join(rows)
+
+        rows = [packs.message(MSG, "import.pagesHead", path=os.path.basename(src), count=len(parsed.pages))]
+        for page in parsed.pages:
+            if wanted is None or page.number in wanted:
+                rows.append(f"p{page.number}: {hwpx_vdoc.page_summary(page)}")
+        rows.append(packs.message(MSG, "import.pagesTail"))
+        return "\n".join(rows)
+
+    def _prune_unused_slots(self, pages_list: list[dict[str, Any]], slots: dict[str, Any]) -> None:
+        used: set[str] = set()
+        for pg in pages_list:
+            for key in ("headerSlotId", "footerSlotId"):
+                if pg.get(key):
+                    used.add(str(pg[key]))
+            for blk in pg.get("blocks") or []:
+                used.update(block_slot_ids(blk))
+        for dead in [sid for sid in slots if sid not in used]:
+            slots.pop(dead, None)
+
+    def _dc_import(self, path: str = "", pages: Any = "", start_at: str = "", end_before: str = "",
+                   doc: str = "", **_: Any) -> str:
+        numbers = hwpx_vdoc.parse_numbers(pages)
+        if not numbers:
+            raise ValueError(packs.message(MSG, "import.noPages"))
+        if len(numbers) > 40:
+            raise ValueError(packs.message(MSG, "import.tooMany", count=len(numbers)))
+        src, parsed = self._source(path)
+        src_hash = parsed.srcHash if isinstance(parsed, DocIR) else file_src_hash(src)
+        data = self._load(doc)
+        self._require_agent_draft(data)
+        if (data.get("surface") or {}).get("kind", "paged") != "paged":
+            raise ValueError(packs.message(MSG, "import.notPaged"))
+        pages_list: list[dict[str, Any]] = data.setdefault("pages", [])
+        slots: dict[str, Any] = data.setdefault("slots", {})
+        # 빈 초안의 빈 첫 쪽은 원문 쪽으로 바꾼다
+        if self._is_empty_draft(data):
+            for pg in pages_list:
+                for key in ("headerSlotId", "footerSlotId"):
+                    slots.pop(str(pg.get(key) or ""), None)
+            pages_list.clear()
+        stamp = f"{int(time.time() * 1000) % 10_000_000:x}"
+        seq = [0]
+
+        def uid() -> str:
+            seq[0] += 1
+            return f"{stamp}{seq[0]:03d}"
+
+        if isinstance(parsed, DocIR):
+            sel_pages = [p for p in parsed.pages if p.pageIndex in set(numbers)]
+            by_idx = {p.pageIndex: p for p in sel_pages}
+            missing = [n for n in numbers if n not in by_idx]
+            if missing:
+                raise ValueError(packs.message(MSG, "import.noPages"))
+            ordered_ir = [by_idx[n] for n in numbers]
+            built_pages, built_slots, built_reports = docstruct_vdoc.doc_ir_pages_to_vdoc(
+                ordered_ir,
+                uid=uid,
+                first_page_number=len(pages_list) + 1,
+            )
+            built = type(
+                "BuiltPages",
+                (),
+                {"pages": built_pages, "slots": built_slots, "reports": built_reports},
+            )()
+        else:
+            built = hwpx_vdoc.build_pages(parsed, numbers, start_at=str(start_at or "").strip(),
+                                          end_before=str(end_before or "").strip(), uid=uid,
+                                          first_page_number=len(pages_list) + 1)
+
+        origin = data.setdefault("origin", {})
+        if str(origin.get("createdBy") or "") != "agent":
+            origin["agentComposed"] = True
+        imports_log: list[dict[str, Any]] = origin.setdefault("imports", [])
+
+        # Existing source page -> vdocPageId map for in-place replacement
+        existing_page_map: dict[int, str] = {}
+        for rec in imports_log:
+            rec_src = str(rec.get("source") or "")
+            rec_hash = str(rec.get("srcHash") or "")
+            if (rec_src and os.path.normcase(os.path.abspath(rec_src)) == os.path.normcase(os.path.abspath(src))) or (
+                rec_hash and rec_hash == src_hash
+            ):
+                for m in rec.get("pageMap") or []:
+                    if isinstance(m, dict) and m.get("sourcePage") is not None and m.get("vdocPageId"):
+                        existing_page_map[int(m["sourcePage"])] = str(m["vdocPageId"])
+
+        slots.update(built.slots)
+        replaced_any = False
+        imported_positions: list[int] = []
+        new_page_map: list[dict[str, Any]] = []
+
+        for pg, rep in zip(built.pages, built.reports):
+            src_pg_no = int(rep.source)
+            target_id = existing_page_map.get(src_pg_no)
+            replaced_idx = next(
+                (idx for idx, existing_pg in enumerate(pages_list) if str(existing_pg.get("pageId") or "") == target_id),
+                None,
+            ) if target_id else None
+            if replaced_idx is not None:
+                pages_list[replaced_idx] = pg
+                replaced_any = True
+                imported_positions.append(replaced_idx + 1)
+            else:
+                pages_list.append(pg)
+                imported_positions.append(len(pages_list))
+            new_page_map.append({"sourcePage": src_pg_no, "vdocPageId": pg["pageId"]})
+
+        if replaced_any:
+            self._prune_unused_slots(pages_list, slots)
+
+        for i, pg in enumerate(pages_list, start=1):
+            pg["pageNumber"] = i
+
+        imports_log.append(
+            {
+                "source": src,
+                "srcHash": src_hash,
+                "pages": numbers,
+                "pageMap": new_page_map,
+            }
+        )
+        saved = self._save(data, list(built.slots), "dc_import")
+        msg_key = "import.replaced" if replaced_any else "import.saved"
+        rows = [packs.message(MSG, msg_key, docId=saved.get("docId"), revision=saved.get("revision"),
+                              count=len(built.pages), path=os.path.basename(src))]
+        for pos, rep in zip(imported_positions, built.reports):
+            pictures = packs.message(MSG, "import.pictureNote", count=rep.pictures) if rep.pictures else ""
+            rows.append(packs.message(MSG, "import.pageLine", page=pos, source=rep.source, paras=rep.paragraphs,
+                                      tables=rep.tables, cells=rep.fill_cells, pictures=pictures))
+        rows.append(packs.message(MSG, "import.tail"))
         return "\n".join(rows)
