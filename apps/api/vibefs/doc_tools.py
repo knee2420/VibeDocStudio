@@ -19,6 +19,7 @@ from __future__ import annotations
 import html as html_lib
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -55,6 +56,7 @@ from docstruct_engine.compile.vdoc_build import (
     media_sources,
     reject_table_html,
     sanitize_html,
+    unstyled_marker_paragraphs,
 )
 from harness_kit import packs, patterns
 from harness_kit.text import html_to_text
@@ -527,7 +529,33 @@ class DocTools:
                     out.append(packs.message(MSG, "compose.hintLine", metric=key, theirs=a, mine=b, hint=way))
         return out
 
-    def _dc_check(self, doc: str = "", ref: str = "", **_: Any) -> str:
+    @staticmethod
+    def _ref_metrics(ref_dir: str, pages: str) -> tuple[dict[str, Any], str, str]:
+        """레퍼런스 지표: 추출본이 있으면 지정한 쪽 범위(예 '1-23')만 다시 잰다 — 사용자가 '23쪽까지'라고 했으면
+        붙임 서식까지 섞인 전체 값과 견주지 않는다. 추출본이 없으면 저장된 전체 측정값. (지표, 층위 세트, 범위 글)"""
+        try:
+            with open(os.path.join(ref_dir, "layers.json"), encoding="utf-8") as fh:
+                stored = json.load(fh)
+        except (OSError, ValueError):
+            stored = {}
+        set_name = stored.get("set") or "blog"
+        m = re.match(r"^\s*(\d+)\s*(?:-\s*(\d+))?\s*$", str(pages or ""))
+        try:
+            with open(os.path.join(ref_dir, "extraction.json"), encoding="utf-8") as fh:
+                ex = json.load(fh)
+        except (OSError, ValueError):
+            ex = {}
+        blocks = [b for b in ex.get("blocks") or [] if isinstance(b, dict)]
+        if blocks and (m or set_name == "document"):
+            lo, hi = (int(m.group(1)), int(m.group(2) or m.group(1))) if m else (1, 10 ** 6)
+            picked = [b for b in blocks if lo <= int(b.get("page") or 0) <= hi]
+            if picked:
+                kinds = sorted({str(b.get("kind") or "") for b in picked})
+                metrics = patterns.measure_all([str(b.get("html") or "") for b in picked], kinds, picked)
+                return metrics, set_name, (f"{lo}-{hi}쪽" if m else "")
+        return stored.get("metrics") or {}, set_name, ""
+
+    def _dc_check(self, doc: str = "", ref: str = "", pages: str = "", **_: Any) -> str:
         data = self._load(doc)
         slots = data.get("slots") or {}
         blocks: list[dict[str, Any]] = []
@@ -560,6 +588,9 @@ class DocTools:
         long_paras = [b["blockId"] for b in blocks if b.get("kind") == "text" and len(b["text"]) > 320]
         if long_paras:
             problems.append(packs.message(MSG, pm + "longParas", count=len(long_paras), ids=", ".join(long_paras[:6])))
+        unstyled = [b["blockId"] for b in blocks if b.get("kind") == "text" and unstyled_marker_paragraphs(b["html"])]
+        if unstyled:
+            problems.append(packs.message(MSG, pm + "unstyledMarkers", count=len(unstyled), ids=", ".join(unstyled[:6])))
         rows.append(packs.message(MSG, pm + "label") + ("; ".join(problems) if problems else packs.message(MSG, pm + "none")))
         state = self._wb_state()
         refs = [r for r in state.get("references") or [] if r.get("dir")]
@@ -567,15 +598,10 @@ class DocTools:
             refs = [r for r in refs if r.get("refId") == ref] or refs
         if refs:
             r = refs[0]
-            try:
-                with open(os.path.join(r["dir"], "layers.json"), encoding="utf-8") as fh:
-                    stored = json.load(fh)
-            except (OSError, ValueError):
-                stored = {}
-            theirs = stored.get("metrics") or {}
-            set_name = stored.get("set") or "blog"
+            theirs, set_name, scope = self._ref_metrics(r["dir"], pages)
             if theirs:
-                rows.append(packs.message(MSG, "compose.checkCompareHead", refId=r.get("refId")))
+                rows.append(packs.message(MSG, "compose.checkCompareHead", refId=r.get("refId"))
+                            + (packs.message(MSG, "compose.checkScope", scope=scope) if scope else ""))
                 rows.append(patterns.compare(theirs, mine, set_name, "레퍼런스", "내 문서"))
                 rows.append(packs.message(MSG, "compose.checkSignature", theirs=theirs.get("section_signature"),
                                           mine=mine.get("section_signature"), theirsPhoto=theirs.get("photo_signature"),

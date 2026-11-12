@@ -58,7 +58,8 @@
      "headings",
      "heading_levels",
      "tables",
-     "block_kinds"
+     "block_kinds",
+     "marker_scheme"
     ]
    },
    {

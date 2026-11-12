@@ -1,0 +1,313 @@
+{
+  "label": "s2-run1",
+  "doc": "vdoc-1a1d165c506-d359966d",
+  "title": "[입찰공고] 차세대 지능형 범용 문서 스캐폴딩 및 WYSIWYM 에디터 플랫폼(VibeDocStudio) 구축 제안요청서",
+  "ref": "ref-1a1cfbc6842-abd78415",
+  "pages": "1-23",
+  "session": "asst-21d3f28c0587",
+  "conversations": [
+    "768ae4cb-10a3-49c1-be08-115d26532b21"
+  ],
+  "metrics": {
+    "A1_table_blocks": 15,
+    "A2_long_paragraphs": 0,
+    "A4_req_ids_in_tables": 1.0,
+    "B1_marker_jaccard": 0.714,
+    "B2_styled_ratio": 0.964,
+    "B3_hanging_ratio": 0.868,
+    "C1_section_coverage": 0.714,
+    "C2_heading_scheme_jaccard": 0.5,
+    "C4_layer_gaps": 12,
+    "E1_genre_items": 0.0,
+    "D1_unsourced_values": 3,
+    "D2_reference_leaks": 2,
+    "D3_resource_files_read": 2
+  },
+  "stages": {
+    "S1_expressiveness": {
+      "pass": true,
+      "rows": [
+        {
+          "metric": "A1_table_blocks",
+          "label": "표 블록 수",
+          "value": 15,
+          "target": ">= 8",
+          "pass": true
+        },
+        {
+          "metric": "A2_long_paragraphs",
+          "label": "320자 넘는 문단 (납작해진 표 · 줄글 덩어리)",
+          "value": 0,
+          "target": "<= 2",
+          "pass": true
+        },
+        {
+          "metric": "A4_req_ids_in_tables",
+          "label": "요구사항 고유번호가 표(서식 카드) 안에 있는 비율",
+          "value": 1.0,
+          "target": ">= 0.9",
+          "pass": true
+        }
+      ]
+    },
+    "S2_typography": {
+      "pass": true,
+      "rows": [
+        {
+          "metric": "B1_marker_jaccard",
+          "label": "본문 글머리 기호 체계 일치 (레퍼런스 범위 대비)",
+          "value": 0.714,
+          "target": ">= 0.7",
+          "pass": true
+        },
+        {
+          "metric": "B2_styled_ratio",
+          "label": "이름 있는 문단 스타일이 붙은 문단 비율",
+          "value": 0.964,
+          "target": ">= 0.6",
+          "pass": true
+        },
+        {
+          "metric": "B3_hanging_ratio",
+          "label": "기호 문단 중 내어쓰기가 적용된 비율",
+          "value": 0.868,
+          "target": ">= 0.8",
+          "pass": true
+        }
+      ]
+    },
+    "S3_reference_structure": {
+      "pass": false,
+      "rows": [
+        {
+          "metric": "C1_section_coverage",
+          "label": "레퍼런스 범위의 장 · 절 제목을 내 문서가 갖춘 비율",
+          "value": 0.714,
+          "target": ">= 0.8",
+          "pass": false
+        },
+        {
+          "metric": "C2_heading_scheme_jaccard",
+          "label": "장 · 절 번호 체계 일치 (Ⅰ · 가. 등)",
+          "value": 0.5,
+          "target": ">= 0.8",
+          "pass": false
+        },
+        {
+          "metric": "C4_layer_gaps",
+          "label": "레퍼런스 범위 대비 30% 넘게 다른 층위 지표 수",
+          "value": 12,
+          "target": "<= 3",
+          "pass": false
+        },
+        {
+          "metric": "E1_genre_items",
+          "label": "요청 장르의 필수 구성 (있거나 빈칸으로 표시)",
+          "value": 0.0,
+          "target": ">= 0.8",
+          "pass": false
+        }
+      ]
+    },
+    "S4_provenance": {
+      "pass": false,
+      "rows": [
+        {
+          "metric": "D1_unsourced_values",
+          "label": "리소스에 없는 금액 · 기간 · 비율 · 공고번호",
+          "value": 3,
+          "target": "<= 0",
+          "pass": false
+        },
+        {
+          "metric": "D2_reference_leaks",
+          "label": "그중 레퍼런스에서 가져온 값",
+          "value": 2,
+          "target": "<= 0",
+          "pass": false
+        },
+        {
+          "metric": "D3_resource_files_read",
+          "label": "에이전트가 읽은 리소스 파일 수",
+          "value": 2,
+          "target": ">= 15",
+          "pass": false
+        }
+      ]
+    }
+  },
+  "details": {
+    "pages": 8,
+    "block_kinds": [
+      "heading",
+      "structured-table",
+      "text"
+    ],
+    "ref_markers": [
+      "box",
+      "circle",
+      "dash",
+      "hangul-dot",
+      "note",
+      "roman",
+      "star"
+    ],
+    "doc_markers": [
+      "box",
+      "circle",
+      "dash",
+      "hangul-dot",
+      "note"
+    ],
+    "ref_sections": [
+      "Ⅰ 사업 개요",
+      "가. 제안요청 개요",
+      "나. 추진배경 및 목적",
+      "다. 현황 및 개선 방안",
+      "라. 사업 범위",
+      "마. 기대 효과",
+      "Ⅱ 사업 추진 방안",
+      "가. 추진 내용",
+      "나. 추진 체계",
+      "다. 추진 일정",
+      "라. 추진 방안",
+      "Ⅲ 제안요청 내용",
+      "Ⅲ |",
+      "나. 상세요구사항"
+    ],
+    "covered_sections": [
+      "Ⅰ 사업 개요",
+      "가. 제안요청 개요",
+      "나. 추진배경 및 목적",
+      "다. 현황 및 개선 방안",
+      "라. 사업 범위",
+      "마. 기대 효과",
+      "Ⅱ 사업 추진 방안",
+      "다. 추진 일정",
+      "라. 추진 방안",
+      "Ⅲ 제안요청 내용"
+    ],
+    "ref_heading_scheme": [
+      "hangul-dot",
+      "roman"
+    ],
+    "doc_heading_scheme": [
+      "roman"
+    ],
+    "layer_gaps": [
+      {
+        "metric": "paragraphs",
+        "ref": 614,
+        "doc": 252
+      },
+      {
+        "metric": "bold_per_para",
+        "ref": 0.01,
+        "doc": 0.17
+      },
+      {
+        "metric": "bullet_ratio",
+        "ref": 0.23,
+        "doc": 0.06
+      },
+      {
+        "metric": "callouts",
+        "ref": 6,
+        "doc": 2
+      },
+      {
+        "metric": "tables",
+        "ref": 78,
+        "doc": 15
+      },
+      {
+        "metric": "source_marks",
+        "ref": 2,
+        "doc": 1
+      },
+      {
+        "metric": "meta_approval",
+        "ref": true,
+        "doc": false
+      },
+      {
+        "metric": "headings",
+        "ref": 30,
+        "doc": 0
+      },
+      {
+        "metric": "heading_levels",
+        "ref": [
+          1,
+          2,
+          3
+        ],
+        "doc": []
+      },
+      {
+        "metric": "tables",
+        "ref": 78,
+        "doc": 15
+      },
+      {
+        "metric": "block_kinds",
+        "ref": [
+          "heading",
+          "list",
+          "paragraph",
+          "table"
+        ],
+        "doc": [
+          "heading",
+          "structured-table",
+          "text"
+        ]
+      },
+      {
+        "metric": "emoji",
+        "ref": 22,
+        "doc": 9
+      }
+    ],
+    "genre": [
+      {
+        "id": "eligibility",
+        "label": "입찰 참가자격",
+        "present": false
+      },
+      {
+        "id": "schedule",
+        "label": "입찰 · 제출 일정",
+        "present": false
+      },
+      {
+        "id": "documents",
+        "label": "제출서류",
+        "present": false
+      },
+      {
+        "id": "award",
+        "label": "낙찰자 결정 · 평가 방법",
+        "present": false
+      },
+      {
+        "id": "contact",
+        "label": "문의처",
+        "present": false
+      }
+    ],
+    "unsourced_values": [
+      "185,000,000원",
+      "2개월",
+      "3개월"
+    ],
+    "reference_leaks": [
+      "2개월",
+      "3개월"
+    ],
+    "files_read": [
+      "C:\\망고독 관련 자료\\프로젝트_매니지먼트\\What-s-in-my-head\\1.🎯(Project) 프로젝트\\🐕망고독 R&D 프로젝트 관리\\🎯 (Outcome) 북극성 Outcome 정의 및 4대 리스크 스크리닝.md",
+      "C:\\망고독 관련 자료\\프로젝트_매니지먼트\\What-s-in-my-head\\1.🎯(Project) 프로젝트\\🛖Scaffold_Manager_프로토타입_구현\\스캐폴드 최소 Component 사양 뽑기.md"
+    ]
+  }
+}

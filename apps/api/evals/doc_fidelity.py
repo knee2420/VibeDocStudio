@@ -234,7 +234,15 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
 
     # A. 표현력
     table_blocks = [b for b in blocks if b["kind"] in TABLE_KINDS]
-    long_paras = sum(1 for b in blocks if b["kind"] == "text" for h in b["htmls"] if len(plain(h)) > 320)
+    # 문단 단위 — 한 칸에 이름 있는 문단 여러 개가 들어 있으면 각각 잰다 (<br> 로 붙은 줄은 한 문단으로 남는다)
+    long_paras = sum(
+        1
+        for b in blocks
+        if b["kind"] == "text"
+        for h in b["htmls"]
+        for para in (re.findall(r"<(?:p|li)\b[^>]*>.*?</(?:p|li)>", h, re.S) or [h])
+        if len(plain(para)) > 320
+    )
     req_all = _REQ_ID.findall(doc_text)
     req_in_tables = _REQ_ID.findall("\n".join(plain(h) for b in table_blocks for h in b["htmls"]))
     a4 = round(len(set(req_in_tables)) / len(set(req_all)), 3) if req_all else 0.0

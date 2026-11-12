@@ -49,6 +49,67 @@ def contains_table(raw: Any) -> bool:
     return bool(re.search(r"<\s*(table|tr|td|th)\b", str(raw or ""), re.I))
 
 
+# --- 이름 있는 문단 스타일 (editor 팩 paragraph-styles.json) ----------------------------------------
+
+_STYLE_CACHE: dict[str, Any] = {}
+
+
+def _paragraph_styles() -> tuple[set[str], list[tuple[str, re.Pattern[str]]]]:
+    """(쓸 수 있는 스타일 id, 첫머리 기호 → 스타일 자동 지정 규칙). 규칙은 레지스트리 순서대로 처음 맞는 것."""
+    if "ids" not in _STYLE_CACHE:
+        reg = packs.data("editor:paragraph-styles.json")
+        ids: set[str] = set()
+        rules: list[tuple[str, re.Pattern[str]]] = []
+        default = reg.get("default")
+        for set_name, s in (reg.get("sets") or {}).items():
+            for sid, spec in (s.get("styles") or {}).items():
+                ids.add(sid)
+                if set_name == default:
+                    rules += [(sid, re.compile(p)) for p in spec.get("match") or []]
+        _STYLE_CACHE["ids"], _STYLE_CACHE["rules"] = ids, rules
+    return _STYLE_CACHE["ids"], _STYLE_CACHE["rules"]
+
+
+_PARA = re.compile(r"<p((?:\s[^>]*)?)>(.*?)</p>", re.S)
+
+
+def _lead_text(inner: str) -> str:
+    return html_lib.unescape(re.sub(r"<[^>]+>", "", inner)).lstrip("  \t")
+
+
+def _style_for(inner: str) -> str | None:
+    text = _lead_text(inner)
+    for sid, rx in _paragraph_styles()[1]:
+        if rx.search(text):
+            return sid
+    return None
+
+
+def assign_paragraph_styles(body: str) -> str:
+    """스타일 없는 문단이 글머리 기호(❏ ○ - ※ 가. (1) …)로 시작하면 그 기호의 스타일을 붙인다 —
+    기호는 글자로 남고, 들여쓰기 · 내어쓰기 · 간격은 스타일(CSS)이 맡는다."""
+    def fix(m: re.Match[str]) -> str:
+        attrs, inner = m.group(1), m.group(2)
+        if "data-style=" in attrs:
+            return m.group(0)
+        # 한 문단에 <br> 로 이어 쓴 개조식 줄들은 줄마다 문단으로 나눠 단계별 스타일을 붙인다
+        parts = [p for p in re.split(r"<br\s*/?>", inner) if _lead_text(p).strip()]
+        if len(parts) > 1 and sum(1 for p in parts if _style_for(p)) >= len(parts) - 1:
+            out = []
+            for p in parts:
+                sid = _style_for(p)
+                out.append(f'<p{attrs} data-style="{sid}">{p.strip()}</p>' if sid else f"<p{attrs}>{p.strip()}</p>")
+            return "".join(out)
+        sid = _style_for(inner)
+        return f'<p{attrs} data-style="{sid}">{inner}</p>' if sid else m.group(0)
+    return _PARA.sub(fix, body)
+
+
+def unstyled_marker_paragraphs(html: str) -> int:
+    """글머리 기호로 시작하는데 스타일이 없는 문단 수 (점검용)."""
+    return sum(1 for m in _PARA.finditer(str(html or "")) if "data-style=" not in m.group(1) and _style_for(m.group(2)))
+
+
 def _clean_style(style: str) -> str:
     out = []
     for part in (style or "").split(";"):
@@ -104,6 +165,11 @@ class _Sanitizer(HTMLParser):
                 kept.append(f' href="{html_lib.escape(value or "", quote=True)}"')
             elif name.startswith("data-") and tag == "sup":
                 kept.append(f' {name}="{html_lib.escape(value or "", quote=True)}"')
+            elif name == "data-style" and tag == "p":
+                if (value or "") in _paragraph_styles()[0]:
+                    kept.append(f' data-style="{value}"')
+                else:
+                    _drop(f"data-style:{value}")
         if tag == "mark" and not any("style" in k for k in kept):
             kept.append(' style="background-color: #fff3a3"')
         self.out.append(f"<{tag}{''.join(kept)}>")
@@ -136,8 +202,16 @@ def sanitize_html(raw: str) -> str:
     if not text:
         return "<p></p>"
     if "<" not in text:
-        paras = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
-        return "".join(f"<p>{html_lib.escape(p).replace(chr(10), '<br>')}</p>" for p in paras) or "<p></p>"
+        # 맨 글자: 빈 줄은 문단을 나누고, 글머리 기호로 시작하는 줄은 줄마다 문단이 된다 (❏ · ○ · - 개조식)
+        paras: list[str] = []
+        for block in (p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()):
+            lines = [ln.strip() for ln in block.split("\n") if ln.strip()]
+            if len(lines) > 1 and sum(1 for ln in lines if _style_for(html_lib.escape(ln))) >= len(lines) - 1:
+                paras += lines
+            else:
+                paras.append(block)
+        body = "".join(f"<p>{html_lib.escape(p).replace(chr(10), '<br>')}</p>" for p in paras) or "<p></p>"
+        return assign_paragraph_styles(body)
     parser = _Sanitizer()
     parser.feed(text)
     parser.close()
@@ -146,7 +220,7 @@ def sanitize_html(raw: str) -> str:
     body = "".join(parser.out).strip()
     if not re.match(r"^<(p|ul|ol)[\s>]", body):
         body = f"<p>{body}</p>"
-    return body
+    return assign_paragraph_styles(body)
 
 
 def inline_text(raw: str) -> str:

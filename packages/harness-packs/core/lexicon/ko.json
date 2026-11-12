@@ -49,6 +49,16 @@
   "source": {
    "pattern": "출처|자료\\s*[:：]|Source|기준\\)|\\(\\d{4}[.\\-]\\d{1,2}"
   },
+  "markers": [
+    {"label": "box", "pattern": "^[❏□■◼]"},
+    {"label": "circle", "pattern": "^[○◦ㅇ●]"},
+    {"label": "dash", "pattern": "^[-–—]\\s"},
+    {"label": "dot", "pattern": "^[·∙•]"},
+    {"label": "note", "pattern": "^(※|\\*\\s)"},
+    {"label": "hangul-dot", "pattern": "^[가-하]\\.\\s"},
+    {"label": "paren", "pattern": "^(\\(\\d{1,2}\\)|\\d{1,2}\\)\\s)"},
+    {"label": "roman", "pattern": "^[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]"}
+  ],
   "conclusion": {
    "pattern": "결론|요약|핵심|따라서|제안|권고|해답|Answer|TL;?DR",
    "flags": "i"

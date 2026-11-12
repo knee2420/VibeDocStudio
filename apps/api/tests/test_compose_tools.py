@@ -229,3 +229,34 @@ def test_table_html_in_text_is_rejected_and_drops_are_reported() -> None:
     assert "img×1" in out and "font" not in out.split("정리됨")[-1]  # 지운 것은 보고하고, 무해한 껍데기는 조용히
     kinds = [b["kind"] for b in api.docs[doc_id]["pages"][0]["blocks"]]
     assert kinds == ["structured-table", "text"]
+
+
+def test_paragraph_styles_are_assigned_from_markers_and_allow_listed() -> None:
+    """개조식 기호(❏ ○ - ※ 가.)로 시작하는 문단은 레지스트리 규칙으로 스타일이 붙고, 모르는 스타일 id 는 지운다."""
+    html = sanitize_html("<p>❏ 사업 개요<br>○ 추진 배경 정리<br>- 세부 근거 하나</p><p>※ 주석</p><p data-style=\"zzz\">일반</p>")
+    assert '<p data-style="b1">❏ 사업 개요</p>' in html
+    assert '<p data-style="b2">○ 추진 배경 정리</p>' in html
+    assert '<p data-style="b3">- 세부 근거 하나</p>' in html
+    assert '<p data-style="note">※ 주석</p>' in html
+    assert 'data-style="zzz"' not in html
+    plain = sanitize_html("가. 제안요청 개요\n❏ 사업명 : 문서 플랫폼\n○ 기간 : [확인 필요]")
+    assert plain.count("<p") == 3 and 'data-style="sec"' in plain and 'data-style="b2"' in plain
+    kept = sanitize_html('<p data-style="lead">요약</p>')
+    assert 'data-style="lead"' in kept
+
+
+def test_marker_scheme_measure_and_range_scoped_check(tmp_path: Any) -> None:
+    m = patterns.measure(["<p>❏ 하나</p><p>❏ 둘</p><p>○ 셋</p><p>○ 넷</p><p>• 한 번</p>"])
+    assert m["marker_scheme"] == ["box", "circle"]  # 한 번 쓴 기호는 체계가 아니다
+    import json as _json
+    ref_dir = tmp_path / "ref"
+    ref_dir.mkdir()
+    blocks = [{"id": f"b{i}", "page": p, "kind": "paragraph", "html": h, "text": h}
+              for i, (p, h) in enumerate([(1, "<p>❏ 개요</p>"), (1, "<p>❏ 범위</p>"), (2, "<p>○ 근거</p>"), (2, "<p>○ 효과</p>"),
+                                          (30, "<p>• 붙임</p>"), (30, "<p>• 서약</p>")])]
+    (ref_dir / "extraction.json").write_text(_json.dumps({"blocks": blocks}), encoding="utf-8")
+    (ref_dir / "layers.json").write_text(_json.dumps({"set": "document", "metrics": {"marker_scheme": ["dot"]}}), encoding="utf-8")
+    scoped, set_name, scope = DocTools._ref_metrics(str(ref_dir), "1-23")
+    assert set_name == "document" and scope == "1-23쪽" and scoped["marker_scheme"] == ["box", "circle"]
+    whole, _, _ = DocTools._ref_metrics(str(ref_dir), "")
+    assert "dot" in whole["marker_scheme"]  # 범위가 없으면 전체 (붙임 서식까지)

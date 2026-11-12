@@ -40,6 +40,7 @@ def _lex() -> dict[str, Any]:
             "meta": {k: packs.compile_rx(v) for k, v in raw["meta"].items()},
             "callout": packs.compile_rx(raw["callout"]), "source": packs.compile_rx(raw["source"]),
             "conclusion": packs.compile_rx(raw["conclusion"]),
+            "markers": [(m["label"], packs.compile_rx(m)) for m in raw.get("markers") or []],
         }
         _compiled.clear()
         _compiled[id(raw)] = hit
@@ -72,6 +73,16 @@ def measure(htmls: Iterable[str], block_kinds: Optional[Iterable[str]] = None) -
                 endings[label] += 1
                 break
     total_chars = max(1, len(plain_text))
+    # 글머리 체계: 문단 첫머리 기호 종류를 처음 나온 순서대로 (2번 넘게 쓰인 것만 — 우연한 한 줄은 체계가 아니다)
+    marker_hits: dict[str, int] = {}
+    for line in paras + bullets:
+        text = line.replace("**", "").strip()
+        text = text[2:].strip() if text.startswith("- ") and len(text) > 2 and not text[2:3].isspace() else text
+        for label, rx in lex["markers"]:
+            if rx.search(text):
+                marker_hits[label] = marker_hits.get(label, 0) + 1
+                break
+    marker_scheme = [k for k, v in marker_hits.items() if v >= 2]
     tables = sum(h.count("<table") for h in htmls) + sum(1 for k in (block_kinds or []) if "table" in k or "grid" in k or "form" in k)
     first_lines = " ".join(lines[:3])
     m: dict[str, Any] = {
@@ -97,6 +108,7 @@ def measure(htmls: Iterable[str], block_kinds: Optional[Iterable[str]] = None) -
         "questions": plain_text.count("?"),
         "exclamations": plain_text.count("!"),
         "block_kinds": sorted(set(block_kinds or [])),
+        "marker_scheme": marker_scheme,
     }
     for key, rx in lex["meta"].items():
         m[key] = bool(rx.search(plain_text))

@@ -1,0 +1,24 @@
+{
+  "_doc": "이름 있는 문단 스타일 (한글 · 워드의 '스타일'). 칸 HTML 의 <p data-style=\"id\"> 로 붙는다. 백엔드(정리 · 도구 설명)와 프론트(편집기 · 캔버스 CSS)가 같은 파일을 읽는다. 기호는 글자로 남기고(검색 · 내보내기), 들여쓰기 · 내어쓰기 · 간격 · 크기는 스타일이 맡는다. match = 스타일이 없을 때 문단 첫머리 기호로 자동 지정하는 정규식(위에서부터 처음 맞는 것). 길이는 px 또는 em.",
+  "sets": {
+    "ko-public": {
+      "label": "공공 · 기관 문서 (제안요청서 · 공고 · 계획서 · 보고서의 한글 개조식)",
+      "styles": {
+        "body":    {"label": "본문",                   "fontSize": "15px", "lineHeight": "1.65", "spaceBefore": "2px",  "spaceAfter": "2px"},
+        "lead":    {"label": "요약 · 머리 문단",          "fontSize": "15px", "lineHeight": "1.65", "fontWeight": "600", "spaceBefore": "6px", "spaceAfter": "6px"},
+        "sec":     {"label": "절 제목 (가. 나. 다.)",      "marker": "가.",  "match": ["^[가-하]\\.\\s"], "fontSize": "17px", "fontWeight": "700", "lineHeight": "1.5", "spaceBefore": "14px", "spaceAfter": "6px"},
+        "sub":     {"label": "소절 제목 ((1) (2) · 1) 2))", "marker": "(1)", "match": ["^\\(\\d{1,2}\\)\\s", "^\\d{1,2}\\)\\s"], "fontSize": "16px", "fontWeight": "700", "lineHeight": "1.5", "indent": "8px", "spaceBefore": "10px", "spaceAfter": "4px"},
+        "b1":      {"label": "1수준 글머리 (❏)",          "marker": "❏",  "match": ["^[❏□■◼]"], "fontSize": "15.5px", "fontWeight": "600", "lineHeight": "1.6", "indent": "6px",  "hanging": "1.25em", "spaceBefore": "8px", "spaceAfter": "2px"},
+        "b2":      {"label": "2수준 글머리 (○)",          "marker": "○",  "match": ["^[○◦ㅇ●]"], "fontSize": "15px", "lineHeight": "1.65", "indent": "24px", "hanging": "1.15em", "spaceBefore": "3px", "spaceAfter": "1px"},
+        "b3":      {"label": "3수준 글머리 (-)",          "marker": "-",  "match": ["^[-–—]\\s"], "fontSize": "14.5px", "lineHeight": "1.6", "indent": "44px", "hanging": "0.9em",  "spaceBefore": "1px", "spaceAfter": "1px"},
+        "b4":      {"label": "4수준 글머리 (·)",          "marker": "·",  "match": ["^[·∙•]\\s?"], "fontSize": "14px", "lineHeight": "1.6", "indent": "62px", "hanging": "0.8em",  "spaceBefore": "0px", "spaceAfter": "0px"},
+        "note":    {"label": "주석 · 근거 (※ *)",         "marker": "※",  "match": ["^※", "^\\*\\s"], "fontSize": "13px", "lineHeight": "1.55", "color": "#444444", "indent": "24px", "hanging": "1.2em", "spaceBefore": "2px", "spaceAfter": "2px"},
+        "caption": {"label": "표 · 그림 제목 (<표 1>)",    "match": ["^[<〈]\\s?(표|그림)\\s?\\d"], "fontSize": "14px", "fontWeight": "700", "align": "center", "spaceBefore": "10px", "spaceAfter": "4px"},
+        "toc1":    {"label": "목차 장 (Ⅰ.)",             "fontSize": "15.5px", "fontWeight": "700", "lineHeight": "1.9", "spaceBefore": "6px"},
+        "toc2":    {"label": "목차 절 (가.)",             "fontSize": "14.5px", "lineHeight": "1.8", "indent": "22px"},
+        "meta":    {"label": "문서 메타 (공고번호 · 날짜 · 기관)", "fontSize": "14px", "lineHeight": "1.6", "color": "#333333"}
+      }
+    }
+  },
+  "default": "ko-public"
+}
