@@ -50,14 +50,12 @@ def test_seed_documents_use_registered_block_kinds() -> None:
 def test_server_code_only_emits_registered_block_kinds() -> None:
     kinds = _registered_kinds()
     pattern = re.compile(r'(?:"kind"\s*:\s*|kind=)"([a-z][a-z-]*)"')
-    surface_pattern = re.compile(r'"surface"\s*:\s*(?:[^\n]*\bor\s+)?\{[^}]*\}')
     unknown = set()
     for base in PY_SOURCES:
         for path in base.rglob("*.py"):
             if "reference" in path.relative_to(base).parts[:1]:
                 continue  # 레퍼런스의 kind(pdf · web · heading …)는 vdoc 블록이 아니다
-            source_text = surface_pattern.sub("", path.read_text(encoding="utf-8"))
-            for kind in pattern.findall(source_text):
+            for kind in pattern.findall(path.read_text(encoding="utf-8")):
                 if kind not in kinds:
                     unknown.add((path.relative_to(ROOT).as_posix(), kind))
     assert not unknown, f"서버 코드가 만드는 블록 종류가 프론트 규격에 없음: {sorted(unknown)}"

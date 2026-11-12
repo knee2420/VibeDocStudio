@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import pymupdf
+
 from docstruct_engine.acquire.words import extract_vector_words
 from docstruct_engine.blocks.markers import VisualLine, spans_from_words
 from docstruct_engine.blocks.text_join import (

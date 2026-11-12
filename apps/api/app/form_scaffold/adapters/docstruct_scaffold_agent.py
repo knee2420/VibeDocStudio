@@ -1,4 +1,4 @@
-"""`docstruct-engine` 기반 PDF/스캔 스캐폴딩 어댑터."""
+"""`docstruct-engine` + `harness_kit.docstruct_vdoc` 기반 PDF/스캔 스캐폴딩 어댑터."""
 from __future__ import annotations
 
 import logging
@@ -13,22 +13,23 @@ from typing import Any, Callable, Iterator, Optional
 
 import pymupdf
 from docstruct_engine.cache import save_page_ir
+from docstruct_engine.config import load_thresholds
+from docstruct_engine.ir.model import DocIR, PageIR, TableIR, bbox_center, point_in_bbox
+from docstruct_engine.reread import RereadTask, apply_reread_patch, reread_plan
+from docstruct_engine.telemetry import emit_stage_event, summarize_doc_metrics
+from docstruct_engine.verify import DocVerifyBundle, verify_doc
 from docstruct_engine.compile.docstruct_vdoc import (
     build_doc_ir_from_pdf_bytes,
     default_ocr_port,
     doc_ir_to_vdoc,
     finalize_vdoc_envelope,
 )
-from docstruct_engine.config import load_thresholds
-from docstruct_engine.ir.model import DocIR, PageIR, TableIR, bbox_center, point_in_bbox
-from docstruct_engine.reread import RereadTask, apply_reread_patch, reread_plan
-from docstruct_engine.telemetry import emit_stage_event, summarize_doc_metrics
-from docstruct_engine.verify import DocVerifyBundle, verify_doc
 
-from app.llm.adapters.agy_print import parse_json_text
 from app.llm.catalog import normalize_agy_model
 from app.llm.policy import CLI_PROVIDER, RuntimeExecutionPolicy
 from app.llm.ports import OneShotRunner
+
+from .agy_slot_refiner import _parse_json_payload
 
 logger = logging.getLogger(__name__)
 
@@ -510,7 +511,7 @@ class DocStructScaffoldAgent:
                         continue
 
                     raw_response = getattr(res, "response", None)
-                    parsed = raw_response if isinstance(raw_response, dict) else parse_json_text(str(raw_response or ""))
+                    parsed = raw_response if isinstance(raw_response, dict) else _parse_json_payload(str(raw_response or ""))
                     if not isinstance(parsed, dict):
                         error_ops += 1
                         _emit_task(
