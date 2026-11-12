@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   ArrowDown,
@@ -7,145 +7,152 @@ import {
   ChevronRight,
   CircleDot,
   Clock,
+  Component,
   Copy,
+  Eye,
+  EyeOff,
   FilePlus2,
   FolderTree,
-  Layers,
+  Hash,
   LayoutGrid,
   Loader2,
+  Lock,
   Pencil,
-  RefreshCw,
+  Table,
   Trash2,
+  Type,
+  Unlock,
 } from "lucide-react";
 
-import type { PagePendingState } from "@vibe/slot-canvas";
-import type { OutlinerNode } from "@vibe/vdoc-schema";
+import { documentSurface, type OutlinerNode, type WorkbenchPhase } from "@vibe/vdoc-schema";
 
+import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
+import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { attachable, outlineNodeRef, withPicked } from "@/features/ai-workspace";
+import { areSlotsLocked } from "@/features/layer-visibility";
+import { isDocumentTargetNode, isEditableOutlineNode, isPageTargetNode } from "@/features/edit-outline";
 import { DocumentSurfaceIcon, type DocumentSurfaceKind } from "@/shared/ui";
 
-/** 아웃라인 노드가 캔버스에서 가리키는 대상 (호버 강조에 쓴다). */
-export function outlineNodeTargetId(node: OutlinerNode): string {
-  return node.targetSlotId || node.targetBlockId || node.targetPageId || node.nodeId;
+import { outlineNodeTargetId, type RowSelection } from "../model/outlineSections";
+import type { RowHidden } from "../model/useLayerFlags";
+import type { OutlineRowActions } from "../model/useOutlineRowActions";
+import { ADD_PAGE_TRIGGER_ATTR } from "./AddPageFlow";
+
+/** 피그마 레이어 들여쓰기 (한 단계 24px, 6단계까지). */
+const INDENT_PX = 24;
+const MAX_INDENT_LEVELS = 6;
+const ICON = "w-3 h-3";
+
+const includesAny = (text: string, words: readonly string[]) => words.some((w) => text.includes(w));
+const SECTION_WORDS = ["섹션", "구역", "그리드"] as const;
+const TABLE_WORDS = ["표", "테이블", "매트릭스"] as const;
+const COMPONENT_WORDS = ["컴포넌트", "템플릿"] as const;
+
+type RowKind = "component" | "static" | undefined;
+
+function rowKind(node: OutlinerNode): RowKind {
+  if (node.zoomLevel === "slot" && includesAny(node.title.toLowerCase(), COMPONENT_WORDS)) return "component";
+  if (node.isStatic) return "static";
+  return undefined;
 }
 
-const NodeIcon: React.FC<{ node: OutlinerNode; docSurface?: DocumentSurfaceKind }> = ({ node, docSurface = "paged" }) => {
-  const cls = "w-3.5 h-3.5 text-slate-400 shrink-0";
-  if (node.zoomLevel === "project") return <FolderTree className={cls} />;
+/** 피그마 레이어 아이콘: Frame(#) · Section · Table · Component · Text. 페이지 행은 아이콘이 없다. */
+function nodeIcon(node: OutlinerNode, docSurface: DocumentSurfaceKind): React.ReactNode {
+  if (node.zoomLevel === "project") return <FolderTree className={ICON} />;
   if (node.zoomLevel === "document") {
-    return (
-      <DocumentSurfaceIcon
-        surface={docSurface}
-        className={`w-3.5 h-3.5 shrink-0 ${docSurface === "scroll" ? "text-emerald-600" : "text-sky-600"}`}
-      />
-    );
+    return <DocumentSurfaceIcon surface={docSurface} className={`${ICON} ${docSurface === "scroll" ? "text-emerald-500" : "text-[#0d99ff]"}`} />;
   }
-  if (node.zoomLevel === "page") return node.targetBlockId ? <LayoutGrid className={cls} /> : <Layers className={cls} />;
-  return node.isStatic ? (
-    <span className="w-1.5 h-1.5 rounded-full border border-slate-300 shrink-0 mx-1" />
-  ) : (
-    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0 mx-1" />
-  );
-};
-
-const hoverAction = "p-0.5 rounded hover:bg-slate-300/60 text-slate-400 hover:text-slate-700 cursor-pointer";
+  const title = node.title.toLowerCase();
+  if (node.zoomLevel === "page") {
+    if (!node.targetBlockId) return null;
+    if (includesAny(title, SECTION_WORDS)) return <LayoutGrid className={ICON} />;
+    if (includesAny(title, TABLE_WORDS)) return <Table className={ICON} />;
+    return <Hash className={ICON} />;
+  }
+  if (title.includes("표")) return <Table className={ICON} />;
+  if (rowKind(node) === "component") return <Component className={ICON} />;
+  return <Type className={ICON} />;
+}
 
 export interface OutlineNodeRowProps {
   node: OutlinerNode;
-  isSelected: boolean;
-  isHighlighted: boolean;
-  /** Ctrl/Shift+클릭으로 AI 첨부 묶음에 고른 노드. */
-  isPicked?: boolean;
-  /** 끌기 · 우클릭으로 Composer 에 첨부 (`attachable()`). */
-  attachProps?: Partial<Pick<React.HTMLAttributes<HTMLDivElement>, "draggable" | "onDragStart" | "onContextMenu">>;
+  actions: OutlineRowActions;
+  phase: WorkbenchPhase;
+  /** 선택 표시 (`on` 선택 · `child` 선택된 노드의 자손). */
+  sel?: RowSelection;
+  /** Documents & Pages 의 현재 페이지 (피그마 페이지 목록처럼 회색 바탕 + 굵게). */
+  isCurrent?: boolean;
+  /** 활성 문서 행 (굵게만). */
+  isStrong?: boolean;
   hasChildren: boolean;
-  isCollapsed: boolean;
-  /** 기획 노드의 구조 변경(이동 · 들여쓰기 · 삭제) 허용 여부 (1·2단계 전용). */
-  editable: boolean;
-  /** 문서 루트 노드 여부 (`+ 페이지` 메뉴 표시, 모든 단계 허용). */
-  canAddPage?: boolean;
-  /** 페이지 행 여부 (이름 변경 · 사본 만들기 · 페이지 삭제, 모든 단계 허용). */
-  canManagePage?: boolean;
-  /** 문서에 2페이지 이상 남아 있을 때만 페이지 삭제 허용. */
-  canDeletePage?: boolean;
-  /** 비동기 PDF 스캐폴딩 예약 페이지 상태 (현재 실행 중인 페이지만 스피너 회전). */
-  pendingState?: PagePendingState | null;
+  /** `node.targetDocId` 가 없을 때 쓰는 문서 (활성 문서). */
+  fallbackDocId: string;
+  /** 계층 절단 시 상위 레벨을 건너뛰는 들여쓰기 오프셋. */
+  depthOffset?: number;
   /** 현재 인라인 이름 편집 중일 때 초기 입력값 (undefined 면 일반 표시). */
   renamingInitialTitle?: string;
-  peekHandlers: Partial<Pick<React.HTMLAttributes<HTMLDivElement>, "onMouseEnter" | "onMouseMove" | "onMouseLeave">>;
-  onSelect: (e: React.MouseEvent) => void;
-  onKeyDown: (e: React.KeyboardEvent) => void;
-  onHoverChange: (hovering: boolean) => void;
-  onToggleCollapse: () => void;
-  onZoomIn: () => void;
-  onMove: (direction: -1 | 1) => void;
-  onDelete: () => void;
-  onOpenAddPageMenu?: (anchorEl: HTMLElement) => void;
-  onStartRename?: () => void;
-  onCommitRename?: (nextTitle: string) => void;
-  onCancelRename?: () => void;
-  onDuplicatePage?: () => void;
-  onDeletePage?: () => void;
-  /** 문서 지면 서식 (`paged`: A4 페이지 · `scroll`: 블로그 스크롤). */
-  docSurface?: DocumentSurfaceKind;
-  /** 문서 행 (이름 변경 · 복제 · 문서 삭제 아이콘). */
-  canManageDocument?: boolean;
-  /** 프로젝트 루트 행 (새 문서 메뉴 · 새로고침 아이콘 — 늘 보인다). */
-  isProjectRoot?: boolean;
-  onDuplicateDocument?: () => void;
-  onDeleteDocument?: () => void;
-  onOpenNewDocumentMenu?: (anchorEl: HTMLElement) => void;
-  onRefreshDocuments?: () => void;
+  /** 자물쇠가 잠그고 푸는 슬롯 (이 행 아래 전부). 비어 있으면 자물쇠를 보이지 않는다. */
+  lockSlotIds?: readonly string[];
+  /** 눈 아이콘 상태. */
+  hidden?: RowHidden;
 }
 
-/** Workflowy 식 아웃라인 한 줄: 접기 삼각형 · 수준 아이콘 · 제목(더블클릭/F2 편집) · 호버 동작. */
-export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
+/**
+ * 메모된 아웃라인 한 줄 (피그마 UI3 레이어 행 — 스타일은 `styles.css` 의 `.fig-row`).
+ *
+ * 선택 표시는 구역이 한 번에 계산해 `sel` 로 넘긴다. 접힘 · PDF 변환 상태 · 페이지 수 · 지면 서식 ·
+ * AI 칩 강조는 줄이 직접 구독한다 (값이 바뀐 줄만 다시 그린다). `node` 는 투영이 구조 공유로 유지한다.
+ */
+export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNodeRow({
   node,
-  isSelected,
-  isHighlighted,
-  isPicked,
-  attachProps,
+  actions,
+  phase,
+  sel,
+  isCurrent = false,
+  isStrong = false,
   hasChildren,
-  isCollapsed,
-  editable,
-  canAddPage = false,
-  canManagePage = false,
-  canDeletePage = true,
-  pendingState = null,
+  fallbackDocId,
+  depthOffset = 0,
   renamingInitialTitle,
-  peekHandlers,
-  onSelect,
-  onKeyDown,
-  onHoverChange,
-  onToggleCollapse,
-  onZoomIn,
-  onMove,
-  onDelete,
-  onOpenAddPageMenu,
-  onStartRename,
-  onCommitRename,
-  onCancelRename,
-  onDuplicatePage,
-  onDeletePage,
-  docSurface = "paged",
-  canManageDocument = false,
-  isProjectRoot = false,
-  onDuplicateDocument,
-  onDeleteDocument,
-  onOpenNewDocumentMenu,
-  onRefreshDocuments,
-}) => {
+  lockSlotIds,
+  hidden,
+}) {
+  const docId = node.targetDocId || fallbackDocId;
+  const isPageRow = isPageTargetNode(node);
+  const isDocRow = isDocumentTargetNode(node);
+  const targetId = outlineNodeTargetId(node);
+
+  // AI 칩 호버는 정확히 그 대상을 가리키는 행만 (사이드바 자체 호버는 CSS :hover 가 맡는다).
+  const isHighlighted = useWorkspaceSessionStore((s) => s.highlightedEntityId !== null && (s.highlightedEntityId === targetId || s.highlightedEntityId === node.nodeId));
+  const isCollapsed = useWorkspaceSessionStore((s) => hasChildren && s.collapsedNodeIds.includes(node.nodeId));
+  const pendingState = usePdfScaffoldJobStore((s) => (isPageRow && node.targetPageId ? (s.pageStatesByPageId[node.targetPageId] ?? null) : null));
+  const pageCount = useStudioDocumentStore((s) => (isPageRow ? (s.docs.find((d) => d.docId === docId)?.pages.length ?? 0) : 0));
+  const isLocked = useStudioDocumentStore((s) => (lockSlotIds?.length ? areSlotsLocked(s.docs.find((d) => d.docId === docId)?.slots ?? {}, lockSlotIds) : false));
+  const docSurface = useStudioDocumentStore((s): DocumentSurfaceKind =>
+    node.zoomLevel === "document" ? documentSurface(s.docs.find((d) => d.docId === node.targetDocId)).kind : "paged"
+  );
+
+  const bound = useMemo(
+    () => ({
+      attachProps: attachable(() => withPicked("outline", outlineNodeRef(node))),
+      peekHandlers: actions.peek(node),
+    }),
+    [node, actions]
+  );
+
   const isRenaming = renamingInitialTitle !== undefined;
   const [draft, setDraft] = useState(renamingInitialTitle ?? "");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (renamingInitialTitle !== undefined) {
-      setDraft(renamingInitialTitle);
-      window.setTimeout(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }, 0);
-    }
+    if (renamingInitialTitle === undefined) return;
+    setDraft(renamingInitialTitle);
+    const timer = window.setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [renamingInitialTitle]);
 
   const stop = (fn: () => void) => (e: React.MouseEvent) => {
@@ -156,82 +163,80 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
   const commitIfNeeded = () => {
     if (!isRenaming) return;
     const trimmed = draft.trim();
-    if (trimmed && trimmed !== renamingInitialTitle) {
-      onCommitRename?.(trimmed);
-    } else {
-      onCancelRename?.();
-    }
+    if (trimmed && trimmed !== renamingInitialTitle) actions.commitRename(node, trimmed);
+    else actions.cancelRename();
   };
 
-  const canRename = canManagePage || editable;
+  const editable = isEditableOutlineNode(node, phase);
+  const canRename = isPageRow || editable;
+  const canManageDocument = isDocRow && node.nodeId.startsWith("auto-doc-");
+  const isBusyPending = pendingState?.status === "queued" || pendingState?.status === "running";
+  const canDeletePage = pageCount > 1 && !isBusyPending;
+  const isPageOrDoc = node.zoomLevel === "project" || node.zoomLevel === "document" || (node.zoomLevel === "page" && !node.targetBlockId);
+  const level = Math.min(Math.max(0, node.depth - depthOffset), MAX_INDENT_LEVELS);
+  const { peekHandlers } = bound;
+
+  const statusIcon =
+    pendingState?.status === "running" ? (
+      <Loader2 data-testid={`outline-page-spinner-${node.nodeId}`} className={`${ICON} text-[#0d99ff] animate-spin`} />
+    ) : pendingState?.status === "queued" ? (
+      <Clock data-testid={`outline-page-queued-${node.nodeId}`} className={ICON} />
+    ) : pendingState?.status === "failed" || pendingState?.status === "cancelled" ? (
+      <AlertTriangle data-testid={`outline-page-failed-${node.nodeId}`} className={`${ICON} text-[#f24822]`} />
+    ) : null;
+  const icon = statusIcon ?? nodeIcon(node, docSurface);
 
   return (
     <div
       role="treeitem"
       tabIndex={0}
-      aria-selected={isSelected}
+      aria-selected={sel === "on" || isCurrent}
+      aria-expanded={hasChildren ? !isCollapsed : undefined}
       data-testid={`outline-node-row-${node.nodeId}`}
-      data-picked={isPicked ? "true" : undefined}
-      {...(isRenaming ? {} : attachProps)}
-      style={{ paddingLeft: `${Math.min(node.depth, 6) * 16 + 4}px` }}
-      onClick={onSelect}
+      data-node-id={node.nodeId}
+      data-sel={sel}
+      data-current={isCurrent || undefined}
+      data-strong={isStrong || undefined}
+      data-kind={rowKind(node)}
+      data-hl={isHighlighted || undefined}
+      data-hidden={hidden}
+      data-locked={isLocked || undefined}
+      {...(isRenaming ? {} : bound.attachProps)}
+      style={{ paddingLeft: 4 + level * INDENT_PX }}
+      className="fig-row"
+      onClick={(e) => actions.select(e, node)}
       onDoubleClick={(e) => {
         if (!canRename || isRenaming) return;
         e.stopPropagation();
-        onStartRename?.();
+        actions.startRename(node);
       }}
-      onKeyDown={onKeyDown}
+      onKeyDown={(e) => actions.keyDown(e, node)}
       onMouseEnter={(e) => {
-        onHoverChange(true);
+        actions.hover(node, true);
         peekHandlers.onMouseEnter?.(e);
       }}
       onMouseMove={peekHandlers.onMouseMove}
       onMouseLeave={(e) => {
-        onHoverChange(false);
+        actions.hover(node, false);
         peekHandlers.onMouseLeave?.(e);
       }}
-      className={`group relative flex items-center gap-1.5 h-7 px-1.5 rounded-md transition-colors cursor-pointer text-[13px] leading-none ${
-        isPicked ? "ring-1 ring-violet-400 bg-violet-50 text-violet-950 " : ""
-      }${
-        isSelected
-          ? "bg-slate-200/80 text-slate-950 font-medium"
-          : isHighlighted
-            ? "bg-slate-100 text-slate-900"
-            : "hover:bg-slate-100/70 text-slate-700"
-      }`}
     >
       {hasChildren ? (
         <button
           type="button"
           data-testid={`fold-toggle-${node.nodeId}`}
-          onClick={stop(onToggleCollapse)}
+          onClick={stop(() => actions.toggleCollapse(node))}
           title={isCollapsed ? "펼치기" : "접기"}
-          className="w-3.5 h-3.5 rounded hover:bg-slate-300/50 text-slate-400 hover:text-slate-700 flex items-center justify-center shrink-0 cursor-pointer transition-colors"
+          className="fig-row-chevron"
         >
-          {isCollapsed ? <ChevronRight className="w-3 h-3 fill-current" /> : <ChevronDown className="w-3 h-3 fill-current" />}
+          {isCollapsed ? <ChevronRight className="w-3 h-3" strokeWidth={1.75} /> : <ChevronDown className="w-3 h-3" strokeWidth={1.75} />}
         </button>
       ) : (
-        <span className="w-3.5 h-3.5 shrink-0" />
+        <span className="fig-row-chevron" aria-hidden />
       )}
 
-      {pendingState?.status === "running" ? (
-        <Loader2
-          data-testid={`outline-page-spinner-${node.nodeId}`}
-          className="w-3.5 h-3.5 text-emerald-600 animate-spin shrink-0"
-        />
-      ) : pendingState?.status === "queued" ? (
-        <Clock
-          data-testid={`outline-page-queued-${node.nodeId}`}
-          className="w-3.5 h-3.5 text-slate-400 shrink-0"
-        />
-      ) : pendingState?.status === "failed" || pendingState?.status === "cancelled" ? (
-        <AlertTriangle
-          data-testid={`outline-page-failed-${node.nodeId}`}
-          className="w-3.5 h-3.5 text-amber-500 shrink-0"
-        />
-      ) : (
-        <NodeIcon node={node} docSurface={docSurface} />
-      )}
+      {/* 페이지 행은 피그마처럼 아이콘 없이, 자리만 비워 문서 제목보다 한 단계(24px) 들어가게 맞춘다. */}
+      {(icon || isPageOrDoc) && <span className="fig-row-icon">{icon}</span>}
 
       {isRenaming ? (
         <input
@@ -249,188 +254,153 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
               commitIfNeeded();
             } else if (e.key === "Escape") {
               e.preventDefault();
-              onCancelRename?.();
+              actions.cancelRename();
             }
           }}
-          className="flex-1 min-w-0 h-5 px-1.5 rounded bg-white border border-emerald-500 text-xs text-slate-900 focus:outline-none"
+          className="flex-1 min-w-0 h-6 px-1.5 -ml-1.5 rounded-[3px] bg-white border border-[#0d99ff] text-[11px] font-normal text-black/90 outline-none"
         />
       ) : (
-        /* 고정 텍스트는 회색, 위치로 지은 이름은 ⚠ */
         <span
           data-testid={`outline-node-title-${node.nodeId}`}
           title={`${node.title}${
-            node.zoomLevel === "document"
-              ? `\n서식: ${docSurface === "scroll" ? "블로그 글 (스크롤)" : "A4 페이지 문서"}`
-              : ""
+            node.zoomLevel === "document" ? `\n서식: ${docSurface === "scroll" ? "블로그 글 (스크롤)" : "A4 페이지 문서"}` : ""
           }${node.summary ? `\n\n${node.summary}` : ""}${
             node.nameNeedsReview ? "\n\n⚠ 이름 확인 필요 (라벨을 찾지 못해 위치로 지은 이름)" : ""
           }${canRename ? "\n\n더블클릭 또는 F2: 이름 변경" : ""}`}
-          className={`truncate flex-1 min-w-0 ${node.isStatic ? "text-slate-400" : ""}`}
+          className="fig-row-label"
         >
           {node.title}
         </span>
       )}
 
-      {!isRenaming && node.nameNeedsReview && (
-        <span data-testid={`outline-node-review-${node.nodeId}`} title="이름 확인 필요" className="text-[11px] text-amber-500 shrink-0">
-          ⚠
-        </span>
-      )}
-
-      {!isRenaming && pendingState?.status === "running" && (
-        <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-semibold shrink-0">
-          {pendingState.iter ? `${pendingState.iter}회 검증` : "변환 중"}
-        </span>
-      )}
-
-      {!isRenaming && pendingState?.status === "queued" && (
-        <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200/80 text-[10px] font-medium shrink-0">
-          대기
-        </span>
-      )}
-
-      {!isRenaming && (pendingState?.status === "failed" || pendingState?.status === "cancelled") && (
-        <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px] font-medium shrink-0">
-          {pendingState.status === "cancelled" ? "중단" : "실패"}
-        </span>
-      )}
-
-      {!isRenaming && node.provenanceSourceProjectId && (
-        <span
-          title={`참조 출처: ${node.provenanceSourceProjectId}`}
-          className="text-[11px] text-blue-500/80 font-mono shrink-0 ml-1 hover:underline"
-        >
-          #참조
-        </span>
-      )}
-
-      {!isRenaming && isProjectRoot && (
-        <div className="flex items-center gap-0.5 shrink-0 ml-1" data-testid="project-root-doc-actions">
-          <button
-            type="button"
-            data-testid="outline-new-doc-menu-btn"
-            data-new-doc-trigger=""
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenNewDocumentMenu?.(e.currentTarget);
-            }}
-            title="새 문서 (A4 · 블로그 글 · 불러오기)"
-            className={hoverAction}
-          >
-            <FilePlus2 className="w-3.5 h-3.5" />
-          </button>
-          <button type="button" data-testid="outline-refresh-docs-btn" onClick={stop(() => onRefreshDocuments?.())} title="새로고침 (에이전트 · 다른 곳에서 만든 문서 반영)" className={hoverAction}>
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
-
       {!isRenaming && (
-        <div className="hidden group-hover:flex items-center gap-0.5 shrink-0 ml-1">
-          <button type="button" data-testid={`zoom-bullet-${node.nodeId}`} onClick={stop(onZoomIn)} title="Zoom-In" className={hoverAction}>
-            <CircleDot className="w-3 h-3" />
-          </button>
-
-          {canAddPage && onOpenAddPageMenu && (
-            <button
-              type="button"
-              data-testid={`add-page-menu-btn-${node.nodeId}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenAddPageMenu(e.currentTarget);
-              }}
-              title="페이지 추가 (기본 페이지 · PDF · 템플릿)"
-              className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 text-[10px] font-semibold cursor-pointer"
-            >
-              <FilePlus2 className="w-3 h-3" />
-              <span>+ 페이지</span>
-            </button>
+        <>
+          {node.nameNeedsReview && (
+            <span data-testid={`outline-node-review-${node.nodeId}`} title="이름 확인 필요" className="ml-1 text-[11px] text-amber-500 shrink-0">
+              ⚠
+            </span>
+          )}
+          {pendingState?.status === "running" && <span className="fig-badge">{pendingState.iter ? `${pendingState.iter}회 검증` : "변환 중"}</span>}
+          {pendingState?.status === "queued" && <span className="fig-badge">대기</span>}
+          {(pendingState?.status === "failed" || pendingState?.status === "cancelled") && (
+            <span className="fig-badge text-[#f24822]">{pendingState.status === "cancelled" ? "중단" : "실패"}</span>
+          )}
+          {node.provenanceSourceProjectId && (
+            <span title={`참조 출처: ${node.provenanceSourceProjectId}`} className="fig-badge">
+              참조
+            </span>
           )}
 
-          {canManageDocument && (
-            <>
-              <button type="button" data-testid={`rename-doc-btn-${node.nodeId}`} onClick={stop(() => onStartRename?.())} title="문서 이름 바꾸기 (F2 / 더블클릭)" className={hoverAction}>
-                <Pencil className="w-3 h-3" />
+          <div className="fig-row-actions">
+            {!isPageOrDoc && (
+              <button type="button" data-testid={`zoom-bullet-${node.nodeId}`} onClick={stop(() => actions.zoomIn(node))} title="이 엘리먼트 안으로 Zoom-In" className="fig-icon-btn">
+                <CircleDot className={ICON} />
               </button>
-              <button type="button" data-testid={`duplicate-doc-btn-${node.nodeId}`} onClick={stop(() => onDuplicateDocument?.())} title="문서 복제" className={hoverAction}>
-                <Copy className="w-3 h-3" />
-              </button>
-              <button
-                type="button"
-                data-testid={`delete-doc-btn-${node.nodeId}`}
-                onClick={stop(() => onDeleteDocument?.())}
-                title="문서 삭제"
-                className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-600 cursor-pointer"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </>
-          )}
+            )}
 
-          {canManagePage && (
-            <>
+            {isDocRow && (
               <button
                 type="button"
-                data-testid={`rename-page-btn-${node.nodeId}`}
-                onClick={stop(() => onStartRename?.())}
-                title="페이지 이름 변경 (F2 / 더블클릭)"
-                className={hoverAction}
+                {...ADD_PAGE_TRIGGER_ATTR}
+                data-testid={`add-page-menu-btn-${node.nodeId}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  actions.openAddPageMenu(node, e.currentTarget);
+                }}
+                title="페이지 추가 (기본 페이지 · PDF · 템플릿)"
+                className="fig-icon-btn"
               >
-                <Pencil className="w-3 h-3" />
+                <FilePlus2 className={ICON} />
               </button>
-              {!pendingState && (
+            )}
+
+            {canManageDocument && (
+              <>
+                <button type="button" data-testid={`rename-doc-btn-${node.nodeId}`} onClick={stop(() => actions.startRename(node))} title="문서 이름 바꾸기 (F2 / 더블클릭)" className="fig-icon-btn">
+                  <Pencil className={ICON} />
+                </button>
+                <button type="button" data-testid={`duplicate-doc-btn-${node.nodeId}`} onClick={stop(() => actions.duplicateDocument(node))} title="문서 복제" className="fig-icon-btn">
+                  <Copy className={ICON} />
+                </button>
+                <button type="button" data-testid={`delete-doc-btn-${node.nodeId}`} onClick={stop(() => actions.deleteDocument(node))} title="문서 삭제" className="fig-icon-btn fig-danger">
+                  <Trash2 className={ICON} />
+                </button>
+              </>
+            )}
+
+            {isPageRow && (
+              <>
+                <button type="button" data-testid={`rename-page-btn-${node.nodeId}`} onClick={stop(() => actions.startRename(node))} title="페이지 이름 변경 (F2 / 더블클릭)" className="fig-icon-btn">
+                  <Pencil className={ICON} />
+                </button>
+                {!pendingState && (
+                  <button type="button" data-testid={`duplicate-page-btn-${node.nodeId}`} onClick={stop(() => actions.duplicatePage(node))} title="페이지 사본 만들기" className="fig-icon-btn">
+                    <Copy className={ICON} />
+                  </button>
+                )}
                 <button
                   type="button"
-                  data-testid={`duplicate-page-btn-${node.nodeId}`}
-                  onClick={stop(() => onDuplicatePage?.())}
-                  title="페이지 사본 만들기"
-                  className={hoverAction}
+                  data-testid={`delete-page-btn-${node.nodeId}`}
+                  disabled={!canDeletePage}
+                  onClick={stop(() => {
+                    if (canDeletePage) actions.deletePage(node);
+                  })}
+                  title={canDeletePage ? "페이지 삭제 (Delete)" : isBusyPending ? "변환 중인 페이지는 삭제할 수 없습니다" : "마지막 1페이지는 삭제할 수 없습니다"}
+                  className="fig-icon-btn fig-danger"
                 >
-                  <Copy className="w-3 h-3" />
+                  <Trash2 className={ICON} />
+                </button>
+              </>
+            )}
+
+            {editable && (
+              <>
+                <button type="button" onClick={stop(() => actions.move(node, -1))} title="위로 이동" className="fig-icon-btn">
+                  <ArrowUp className={ICON} />
+                </button>
+                <button type="button" onClick={stop(() => actions.move(node, 1))} title="아래로 이동" className="fig-icon-btn">
+                  <ArrowDown className={ICON} />
+                </button>
+                {!isPageRow && (
+                  <button type="button" data-testid={`delete-outline-node-${node.nodeId}`} onClick={stop(() => actions.remove(node))} title="기획 노드 삭제" className="fig-icon-btn fig-danger">
+                    <Trash2 className={ICON} />
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* 피그마 자물쇠 · 눈: 호버 때 보이고, 잠금 · 숨김 상태면 늘 보인다. */}
+          {!isPageOrDoc && (
+            <div className="fig-row-toggles">
+              {Boolean(lockSlotIds?.length) && (
+                <button
+                  type="button"
+                  data-testid={`lock-toggle-${node.nodeId}`}
+                  data-on={isLocked || undefined}
+                  aria-pressed={isLocked}
+                  onClick={stop(() => actions.toggleLock(node, lockSlotIds!))}
+                  title={isLocked ? "잠금 해제 (편집 허용)" : "잠금 (캔버스에서 편집 막기)"}
+                  className="fig-icon-btn fig-row-toggle"
+                >
+                  {isLocked ? <Lock className={ICON} /> : <Unlock className={ICON} />}
                 </button>
               )}
               <button
                 type="button"
-                data-testid={`delete-page-btn-${node.nodeId}`}
-                disabled={!canDeletePage}
-                onClick={stop(() => {
-                  if (canDeletePage) onDeletePage?.();
-                })}
-                title={canDeletePage ? "페이지 삭제 (Delete)" : "마지막 1페이지는 삭제할 수 없습니다"}
-                className={`p-0.5 rounded ${
-                  canDeletePage
-                    ? "hover:bg-rose-100 text-slate-400 hover:text-rose-600 cursor-pointer"
-                    : "text-slate-300 cursor-not-allowed"
-                }`}
+                data-testid={`visibility-toggle-${node.nodeId}`}
+                data-on={hidden === "self" || undefined}
+                aria-pressed={hidden === "self"}
+                onClick={stop(() => actions.toggleHidden(node))}
+                title={hidden === "self" ? "보이기" : "캔버스에서 숨기기 (보기 전용 · 문서에는 남음)"}
+                className="fig-icon-btn fig-row-toggle"
               >
-                <Trash2 className="w-3 h-3" />
+                {hidden === "self" ? <EyeOff className={ICON} /> : <Eye className={ICON} />}
               </button>
-            </>
+            </div>
           )}
-
-          {editable && (
-            <>
-              <button type="button" onClick={stop(() => onMove(-1))} title="위로 이동" className={hoverAction}>
-                <ArrowUp className="w-3 h-3" />
-              </button>
-              <button type="button" onClick={stop(() => onMove(1))} title="아래로 이동" className={hoverAction}>
-                <ArrowDown className="w-3 h-3" />
-              </button>
-              {!canManagePage && (
-                <button
-                  type="button"
-                  data-testid={`delete-outline-node-${node.nodeId}`}
-                  onClick={stop(onDelete)}
-                  title="기획 노드 삭제"
-                  className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-600 cursor-pointer"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              )}
-            </>
-          )}
-        </div>
+        </>
       )}
     </div>
   );
-};
+});

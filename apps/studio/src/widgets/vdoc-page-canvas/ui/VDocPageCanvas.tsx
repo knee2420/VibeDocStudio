@@ -27,11 +27,17 @@ import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
 import { ReferenceSplitViewport } from "./ReferenceSplitViewport";
 import { SlotRangeAiBar } from "./SlotRangeAiBar";
+import { FigmaFloatingToolbar } from "./FigmaFloatingToolbar";
+import { HiddenLayersStyle } from "@/features/layer-visibility";
 
 /** 한 번에 DOM 에 올리는 페이지 수 (슬라이딩 윈도우). */
 const WINDOW_CHUNK_PAGES = 15;
 
-/** 아웃라인에서 가리키는 캔버스 대상(슬롯 · 블록)을 강조하는 스타일. */
+/**
+ * 아웃라인에서 가리키는 캔버스 대상(슬롯 · 블록)을 강조하는 스타일 (피그마 레이어 호버와 같은 파란 외곽선).
+ * 무한 pulse 애니메이션 · `transition: all` · 큰 그림자는 쓰지 않는다 — 사이드바에 마우스를 올려 두기만 해도
+ * 큰 블록을 매 프레임 다시 그려 캔버스 스크롤 · 선택이 끊겼다.
+ */
 const OutlineHoverHighlight: React.FC = () => {
   const targetId = useWorkspaceSessionStore((s) => s.hoveredOutlineTargetId);
   if (!targetId) return null;
@@ -40,11 +46,8 @@ const OutlineHoverHighlight: React.FC = () => {
     <style>{`
       [data-slot-id="${id}"],
       [data-block-id="${id}"] {
-        outline: 2px solid #059669 !important;
-        outline-offset: 3px !important;
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3) !important;
-        transition: all 0.15s ease-in-out !important;
-        animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+        outline: 1.5px solid #0d99ff !important;
+        outline-offset: 2px !important;
       }
     `}</style>
   );
@@ -272,6 +275,7 @@ export const VDocPageCanvas: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <OutlineHoverHighlight />
+      <HiddenLayersStyle />
       <div className="flex-1 flex overflow-hidden">
         <ReferenceSplitViewport />
         {currentPhase === "storylining" ? (
@@ -287,6 +291,7 @@ export const VDocPageCanvas: React.FC = () => {
         )}
       </div>
       {currentPhase === "drafting" && <SlotRangeAiBar />}
+      <FigmaFloatingToolbar />
       <AiStagingDrawer />
     </div>
   );

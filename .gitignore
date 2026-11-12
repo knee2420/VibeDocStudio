@@ -8,6 +8,7 @@ node_modules/
 venv/
 __pycache__/
 *.py[cod]
+*.egg-info/
 .pytest_cache/
 .pytest-tmp/
 *.pytest-tmp/
@@ -18,6 +19,7 @@ dist/
 build/
 .turbo/
 *.tsbuildinfo
+*.local-cache.*
 
 # Upstream Open-Source Clones (Read-Only Reference Warehouse)
 _upstreams/

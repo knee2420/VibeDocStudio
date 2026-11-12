@@ -31,6 +31,8 @@ export interface WorkspaceSessionState {
   selectedOutlinerNodeId: string | null;
   quickFilterQuery: string;
   collapsedNodeIds: string[];
+  /** 눈 아이콘으로 캔버스에서 숨긴 아웃라인 노드 (보기 전용 — 문서 · 내보내기에는 영향 없음, 세션 보관). */
+  hiddenNodeIds: string[];
   /** 아웃라인에서 가리키고 있는 캔버스 대상(슬롯 · 블록 · 페이지 · 노드 ID). */
   hoveredOutlineTargetId: string | null;
   /** AI 답변 · 첨부 칩이 가리키는 화면 요소 (페이지 · 블록 · 슬롯 · 참조 문서 id). 호버 동안만. */
@@ -45,8 +47,9 @@ export interface WorkspaceSessionState {
   setSelectedOutlinerNodeId: (nodeId: string | null) => void;
   setQuickFilterQuery: (query: string) => void;
   toggleNodeCollapse: (nodeId: string) => void;
-  collapseAllNodes: (nodeIds: string[]) => void;
-  expandAllNodes: () => void;
+  /** 주어진 노드들만 한꺼번에 접거나 편다 (다른 구역의 접힘 상태는 건드리지 않는다). */
+  setNodesCollapsed: (nodeIds: readonly string[], collapsed: boolean) => void;
+  toggleNodeHidden: (nodeId: string) => void;
   setHoveredOutlineTargetId: (id: string | null) => void;
   setHighlightedEntityId: (id: string | null) => void;
   toggleReference: (refId: string) => void;
@@ -62,11 +65,12 @@ export function parseReferenceIds(raw: string | null | undefined): string[] {
 }
 
 const SESSION_STORAGE_KEY_OUTLINER = "vdoc:outliner_collapsed_nodes";
+const SESSION_STORAGE_KEY_HIDDEN = "vdoc:outliner_hidden_nodes";
 
-const loadOutlinerCollapsedFromSession = (): string[] => {
+const loadOutlinerCollapsedFromSession = (key: string = SESSION_STORAGE_KEY_OUTLINER): string[] => {
   if (typeof window === "undefined" || !window.sessionStorage) return [];
   try {
-    const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY_OUTLINER);
+    const raw = window.sessionStorage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -75,10 +79,10 @@ const loadOutlinerCollapsedFromSession = (): string[] => {
   }
 };
 
-const saveOutlinerCollapsedToSession = (ids: string[]) => {
+const saveOutlinerCollapsedToSession = (ids: string[], key: string = SESSION_STORAGE_KEY_OUTLINER) => {
   if (typeof window === "undefined" || !window.sessionStorage) return;
   try {
-    window.sessionStorage.setItem(SESSION_STORAGE_KEY_OUTLINER, JSON.stringify(ids));
+    window.sessionStorage.setItem(key, JSON.stringify(ids));
   } catch {
     // quota exceeded 등 무시
   }
@@ -90,6 +94,7 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
   selectedOutlinerNodeId: null,
   quickFilterQuery: "",
   collapsedNodeIds: loadOutlinerCollapsedFromSession(),
+  hiddenNodeIds: loadOutlinerCollapsedFromSession(SESSION_STORAGE_KEY_HIDDEN),
   hoveredOutlineTargetId: null,
   highlightedEntityId: null,
   openReferenceIds: [],
@@ -110,8 +115,8 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
       selectedOutlinerNodeId: nodeId === PROJECT_ROOT_CRUMB_ID ? null : nodeId,
     }),
 
-  setSelectedOutlinerNodeId: (nodeId) => set({ selectedOutlinerNodeId: nodeId }),
-  setQuickFilterQuery: (query) => set({ quickFilterQuery: query }),
+  setSelectedOutlinerNodeId: (nodeId) => set((s) => (s.selectedOutlinerNodeId === nodeId ? s : { selectedOutlinerNodeId: nodeId })),
+  setQuickFilterQuery: (query) => set((s) => (s.quickFilterQuery === query ? s : { quickFilterQuery: query })),
 
   toggleNodeCollapse: (nodeId) =>
     set((s) => {
@@ -121,17 +126,28 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
       saveOutlinerCollapsedToSession(next);
       return { collapsedNodeIds: next };
     }),
-  collapseAllNodes: (nodeIds) => {
-    saveOutlinerCollapsedToSession(nodeIds);
-    set({ collapsedNodeIds: nodeIds });
-  },
-  expandAllNodes: () => {
-    saveOutlinerCollapsedToSession([]);
-    set({ collapsedNodeIds: [] });
-  },
+  toggleNodeHidden: (nodeId) =>
+    set((s) => {
+      const next = s.hiddenNodeIds.includes(nodeId) ? s.hiddenNodeIds.filter((id) => id !== nodeId) : [...s.hiddenNodeIds, nodeId];
+      saveOutlinerCollapsedToSession(next, SESSION_STORAGE_KEY_HIDDEN);
+      return { hiddenNodeIds: next };
+    }),
+  setNodesCollapsed: (nodeIds, collapsed) =>
+    set((s) => {
+      if (nodeIds.length === 0) return s;
+      const ids = new Set(s.collapsedNodeIds);
+      for (const id of nodeIds) {
+        if (collapsed) ids.add(id);
+        else ids.delete(id);
+      }
+      const next = [...ids];
+      saveOutlinerCollapsedToSession(next);
+      return { collapsedNodeIds: next };
+    }),
 
-  setHoveredOutlineTargetId: (id) => set({ hoveredOutlineTargetId: id }),
-  setHighlightedEntityId: (id) => set({ highlightedEntityId: id }),
+  // 호버는 초당 수십 번 들어온다. 값이 같으면 구독자(아웃라인 줄 · 캔버스)를 깨우지 않는다.
+  setHoveredOutlineTargetId: (id) => set((s) => (s.hoveredOutlineTargetId === id ? s : { hoveredOutlineTargetId: id })),
+  setHighlightedEntityId: (id) => set((s) => (s.highlightedEntityId === id ? s : { highlightedEntityId: id })),
 
   toggleReference: (docId) =>
     set((s) => ({
