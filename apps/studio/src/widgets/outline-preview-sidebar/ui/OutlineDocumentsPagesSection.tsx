@@ -10,7 +10,6 @@ import { isPageTargetNode } from "@/features/edit-outline";
 
 import { useSplitterDrag } from "../lib/useSplitterDrag";
 import { minDepth, selectPageTreeForZoom } from "../model/outlineSections";
-import { ADD_PAGE_TRIGGER_ATTR } from "./AddPageFlow";
 import { OutlineNodeRow } from "./OutlineNodeRow";
 import { AddNodeButton, type SectionProps } from "./outlineSectionParts";
 
@@ -26,10 +25,11 @@ export const DocumentsPagesSection: React.FC<
     allNodes: OutlinerNode[];
     /** 투영의 줌 루트 id. */
     zoomRootId: string;
-    onAddPage: (anchorEl: HTMLElement) => void;
+    /** 머리말 `+`: 새 문서 메뉴 (A4 · 블로그 글 · 불러오기). 페이지 추가는 문서 행의 버튼이 맡는다. */
+    onNewDocument: (anchorEl: HTMLElement) => void;
     onAddNode?: () => void;
   }
-> = ({ activeDocId, actions, phase, renaming, reportOrder, allNodes, zoomRootId, onAddPage, onAddNode }) => {
+> = ({ activeDocId, actions, phase, renaming, reportOrder, allNodes, zoomRootId, onNewDocument, onAddNode }) => {
   const [folded, setFolded] = useState(false);
   const collapsedNodeIds = useWorkspaceSessionStore((s) => s.collapsedNodeIds);
   const selectedNodeId = useWorkspaceSessionStore((s) => s.selectedOutlinerNodeId);
@@ -75,10 +75,10 @@ export const DocumentsPagesSection: React.FC<
         </button>
         <button
           type="button"
-          {...ADD_PAGE_TRIGGER_ATTR}
-          data-testid="pages-section-add-page-btn"
-          onClick={(e) => onAddPage(e.currentTarget)}
-          title="현재 문서에 페이지 추가"
+          data-new-doc-trigger=""
+          data-testid="outline-new-doc-menu-btn"
+          onClick={(e) => onNewDocument(e.currentTarget)}
+          title="새 문서 (A4 · 블로그 글 · 불러오기)"
           className="fig-icon-btn"
         >
           <Plus className="w-3.5 h-3.5" />
