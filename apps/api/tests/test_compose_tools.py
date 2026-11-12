@@ -190,3 +190,42 @@ def test_dc_use_switches_target_and_allows_building_in_empty_user_doc() -> None:
     assert f"docId={filled_id}" in switched
     with pytest.raises(ValueError):
         tools.call("dc_build", {"ops": [{"op": "add", "kind": "divider"}]})
+
+
+def test_table_block_builds_grid_form_and_spans() -> None:
+    """표 블록: 머리 행 · 라벨 열(서식 카드) · 병합 칸이 양식 가져오기와 같은 structured-table 모양으로."""
+    block, slots = make_block("table", {"rows": [["구분", "번호", "명칭"], [{"text": "보안", "rowSpan": 2}, "SER-001", "통합인증"], ["SER-002", "송수신 정보"]]}, "t1")
+    assert block["kind"] == "structured-table" and len(block["columnWidths"]) == 3
+    head = block["rows"][0]["cells"]
+    assert all(c.get("isHeader") for c in head)
+    second, third = block["rows"][1]["cells"], block["rows"][2]["cells"]
+    assert second[0]["rowSpan"] == 2 and len(second) == 3 and len(third) == 2  # 병합으로 찬 열은 비운다
+    assert all(c["slotId"] in slots for r in block["rows"] for c in r["cells"])
+
+    card, card_slots = make_block("table", {"fields": [["요구사항 고유번호", "ECR-001"], ["요구사항 명칭", "표준 준수"]], "widths": [1, 3]}, "t2")
+    labels = [r["cells"][0] for r in card["rows"]]
+    assert all(c.get("isHeader") and c.get("backgroundColor") for c in labels)
+    assert not card["rows"][0]["cells"][1].get("isHeader")
+    assert card["columnWidths"] == ["25.00%", "75.00%"]
+    assert "ECR-001" in card_slots[card["rows"][0]["cells"][1]["slotId"]]["content"]
+
+    with pytest.raises(ValueError):
+        make_block("table", {"rows": []}, "t3")
+
+
+def test_table_html_in_text_is_rejected_and_drops_are_reported() -> None:
+    tools, api = _tools()
+    tools.call("dc_new", {"title": "공고"})
+    doc_id = tools.store.state["docId"]
+    before = copy.deepcopy(api.docs[doc_id])
+    with pytest.raises(ValueError, match="table"):
+        tools.call("dc_build", {"ops": [{"op": "add", "kind": "text", "html": "<table><tr><td>사업명</td></tr></table>"}]})
+    assert api.docs[doc_id] == before  # 표를 줄글로 납작하게 만들어 저장하지 않는다
+    out = tools.call("dc_build", {"ops": [
+        {"op": "add", "kind": "table", "fields": [["사업명", "문서 플랫폼 구축"], ["사업기간", "[확인 필요]"]]},
+        {"op": "add", "kind": "text", "html": "<p>본문 <img src='x.png'> <font>글</font></p>"},
+    ]})
+    assert "TBL" in out or "structured-table" in out
+    assert "img×1" in out and "font" not in out.split("정리됨")[-1]  # 지운 것은 보고하고, 무해한 껍데기는 조용히
+    kinds = [b["kind"] for b in api.docs[doc_id]["pages"][0]["blocks"]]
+    assert kinds == ["structured-table", "text"]

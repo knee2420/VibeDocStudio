@@ -50,8 +50,10 @@ from docstruct_engine.compile import docstruct_vdoc, hwpx_vdoc
 from docstruct_engine.compile.vdoc_build import (
     blank_page,
     block_slot_ids,
+    drain_dropped,
     make_block,
     media_sources,
+    reject_table_html,
     sanitize_html,
 )
 from harness_kit import packs, patterns
@@ -376,6 +378,7 @@ class DocTools:
                         return pg, b, i
             raise ValueError(f"블록 {ref} 이 없다 — dc_outline 으로 id 를 본다.")
 
+        drain_dropped()  # 이전 호출의 찌꺼기를 비운다 — 이번 작업에서 지운 것만 보고한다
         for n, op in enumerate(ops, start=1):
             if not isinstance(op, dict):
                 raise ValueError(f"{n}번 작업이 객체가 아니다.")
@@ -433,6 +436,7 @@ class DocTools:
                         raise ValueError(f"칸 {sid or '(없음)'} 이 없다.")
                     if (slots[sid].get("constraints") or {}).get("locked"):
                         raise ValueError(f"칸 {sid} 은 잠겨 있다.")
+                    reject_table_html(op.get("html") or op.get("text"))
                     slots[sid] = {**slots[sid], "content": sanitize_html(op.get("html") or op.get("text") or "")}
                     touched.append(sid)
                     notes.append(f"글 {sid}")
@@ -446,6 +450,7 @@ class DocTools:
                             ids = block_slot_ids(b)
                             if not ids:
                                 raise ValueError(f"{b.get('kind')} 블록에는 글 칸이 없다.")
+                            reject_table_html(value)
                             slots[ids[0]] = {**slots[ids[0]], "content": sanitize_html(value) if b.get("kind") != "heading"
                                              else f"<p>{html_lib.escape(' '.join(str(value).split()))}</p>"}
                             touched.append(ids[0])
@@ -496,6 +501,9 @@ class DocTools:
         head = packs.message(MSG, "compose.saved", docId=saved.get("docId") or data.get("docId"),
                              revision=saved.get("revision"), count=len(ops),
                              notes=", ".join(notes[:12]) + (" …" if len(notes) > 12 else ""), aliases=alias_line)
+        dropped = drain_dropped()
+        if dropped:
+            head += packs.message(MSG, "compose.dropped", items=", ".join(f"{k}×{v}" for k, v in sorted(dropped.items())))
         return head + "\n" + self._outline(saved)
 
     @staticmethod
