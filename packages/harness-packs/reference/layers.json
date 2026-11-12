@@ -220,6 +220,13 @@
   "excludeApproach": 0.2,
   "excludeFloor": 0.35
  },
+ "kindAliases": {
+  "_doc": "블록 종류 이름 맞추기 — 레퍼런스 추출본(paragraph · list · table)과 문서(text · structured-table)가 같은 결정을 다른 이름으로 부른다. block_kinds 는 이 이름으로 잰다",
+  "paragraph": "text",
+  "list": "text",
+  "structured-table": "table",
+  "interactive-table": "table"
+ },
  "countMetrics": [
   "chars",
   "paragraphs",

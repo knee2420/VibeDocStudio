@@ -102,7 +102,35 @@ def assign_paragraph_styles(body: str) -> str:
             return "".join(out)
         sid = _style_for(inner)
         return f'<p{attrs} data-style="{sid}">{inner}</p>' if sid else m.group(0)
-    return _PARA.sub(fix, body)
+    return _PARA.sub(fix, _marker_lists_to_paragraphs(body))
+
+
+_LIST = re.compile(r"<(ul|ol)\b[^>]*>((?:(?!<(?:ul|ol)\b).)*?)</\1>", re.S | re.I)
+_LI = re.compile(r"<li\b[^>]*>(.*?)</li>", re.S | re.I)
+
+
+def _marker_lists_to_paragraphs(body: str) -> str:
+    """항목마다 글머리 기호(❏ ○ - …)를 글자로 단 목록(<ul><li>❏ …)은 문단으로 푼다 — 그대로 두면 목록 점과 기호가
+    겹치고 스타일(들여쓰기 · 내어쓰기)이 붙지 않는다. 안쪽 목록부터 풀어 단계 순서를 지킨다. 기호 없는 목록은 그대로."""
+    def flatten(m: re.Match[str]) -> str:
+        items = _LI.findall(m.group(2))
+        if not items:
+            return m.group(0)
+        heads = [re.split(r"(?=<p\b)", it, maxsplit=1) for it in items]
+        if not all(_style_for(h[0]) for h in heads if _lead_text(h[0]).strip()) or not any(
+                _lead_text(h[0]).strip() for h in heads):
+            return m.group(0)
+        out = []
+        for h in heads:
+            if _lead_text(h[0]).strip():
+                out.append(f"<p>{h[0].strip()}</p>")
+            if len(h) > 1:
+                out.append(h[1])
+        return "".join(out)
+    prev = None
+    while prev != body:
+        prev, body = body, _LIST.sub(flatten, body)
+    return body
 
 
 def unstyled_marker_paragraphs(html: str) -> int:

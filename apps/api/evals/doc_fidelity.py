@@ -55,18 +55,10 @@ def norm(s: str) -> str:
     return re.sub(r"[\s·.:()\[\]「」『』<>-]+", "", s).lower()
 
 
-_MARKERS: list[tuple[str, re.Pattern[str]]] = [
-    ("roman", re.compile(r"^[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]\s*\.?")),
-    ("hangul-dot", re.compile(r"^[가-하]\s*\.")),
-    ("num-dot", re.compile(r"^\d{1,2}\s*\.(?!\d)")),
-    ("paren", re.compile(r"^\(\s*[0-9가-하]\s*\)")),
-    ("box", re.compile(r"^[❏□■◼]")),
-    ("circle", re.compile(r"^[○◦ㅇ●]")),
-    ("dash", re.compile(r"^[-–—]\s")),
-    ("bullet", re.compile(r"^[•·∙]")),
-    ("note", re.compile(r"^※")),
-    ("star", re.compile(r"^\*\s")),
-]
+# 글머리 · 번호 기호는 dc_check 와 같은 어휘(core:lexicon measure.markers)로 잰다. 장 · 절 번호(sections.markers)는
+# C2(번호 체계)가 재므로 B1(글머리 체계)에서는 뺀다.
+_MARKERS: list[tuple[str, re.Pattern[str]]] = patterns.marker_patterns()
+_SECTION_MARKERS = set((patterns.packs.data(patterns.LEXICON)["measure"].get("sections") or {}).get("markers") or [])
 
 
 def marker_of(line: str) -> str | None:
@@ -74,6 +66,22 @@ def marker_of(line: str) -> str | None:
         if rx.match(line):
             return name
     return None
+
+
+_PARA_STYLES = patterns.packs.data("editor:paragraph-styles.json")
+_STYLE_SPECS = [(sid, spec) for st in (_PARA_STYLES.get("sets") or {}).values() for sid, spec in (st.get("styles") or {}).items()]
+_HANGING_IDS = {sid for sid, spec in _STYLE_SPECS if spec.get("hanging")}
+_STYLE_MATCH = [(sid, re.compile(rx)) for sid, spec in _STYLE_SPECS for rx in spec.get("match") or []]
+
+
+def _hanging_style_for(line: str) -> str | None:
+    sid = next((s for s, rx in _STYLE_MATCH if rx.search(line.lstrip())), None)
+    return sid if sid in _HANGING_IDS else None
+
+
+def bullet_of(line: str) -> str | None:
+    m = marker_of(line)
+    return m if m not in _SECTION_MARKERS else None
 
 
 def jaccard(a: Iterable[Any], b: Iterable[Any]) -> float:
@@ -200,7 +208,9 @@ def layer_gaps(ref_m: dict[str, Any], doc_m: dict[str, Any]) -> list[dict[str, A
     names: list[str] = []
     for layer in LAYERS["sets"]["document"]:
         names += list(layer.get("metrics") or [])
-    for k in names:
+    # 분량 지표(문단 수 · 표 수 …)는 결정이 아니라 분량의 차이 — 층위 레지스트리 countMetrics 를 dc_check 처럼 뺀다
+    counts = patterns.count_metrics()
+    for k in dict.fromkeys(n for n in names if n not in counts):
         a, b = ref_m.get(k), doc_m.get(k)
         if isinstance(a, bool) or isinstance(b, bool):
             if a != b:
@@ -252,8 +262,8 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
     toc_pages = {p for p in range(lo, hi + 1) if any("목 차" in str(b.get("text")) or "목차" == str(b.get("text")).strip() for b in ref_blocks if b.get("page") == p)}
     ref_body_lines = [ln.strip() for b in ref_blocks if b.get("page") not in toc_pages and b.get("kind") != "table"
                       for ln in str(b.get("text") or "").split("\n") if ln.strip()]
-    ref_markers = {m for m in (marker_of(ln) for ln in ref_body_lines) if m}
-    doc_markers = {m for m in (marker_of(ln) for ln in body) if m}
+    ref_markers = {m for m in (bullet_of(ln) for ln in ref_body_lines) if m}
+    doc_markers = {m for m in (bullet_of(ln) for ln in body) if m}
     marked_paras = 0
     styled = 0
     hanging = 0
@@ -267,42 +277,33 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
                 total_paras += 1
                 if re.search(r'data-style=|data-para-style=', attrs):
                     styled += 1
-                if marker_of(plain(inner)):
+                # 내어쓰기를 기대하는 문단 = 레지스트리에서 그 줄에 맞는 스타일이 hanging 을 가진 글머리 문단
+                # (가. · 1) 같은 제목형 번호 문단은 내어쓰기 대상이 아니다)
+                want = _hanging_style_for(plain(inner))
+                if want:
                     marked_paras += 1
-                    if re.search(r"text-indent:\s*-", attrs) or re.search(r'data-(?:para-)?style="[^"]*(?:b\d|marker|item|note)', attrs):
+                    sid = re.search(r'data-(?:para-)?style="([^"]+)"', attrs)
+                    if re.search(r"text-indent:\s*-", attrs) or (sid and sid.group(1) in _HANGING_IDS):
                         hanging += 1
 
-    # C. 레퍼런스 구조
-    ref_sections = []
-    for b in ref_blocks:
-        if b.get("page") in toc_pages:
-            continue
-        for ln in str(b.get("text") or "").split("\n"):
-            ln = ln.strip()
-            if marker_of(ln) in ("roman", "hangul-dot") and 2 <= len(ln) <= 40:
-                ref_sections.append(ln)
-    ref_sections = list(dict.fromkeys(ref_sections))
-    doc_cands = headings + [ln for ln in body if marker_of(ln) in ("roman", "hangul-dot", "num-dot")]
-
-    def strip_marker(s: str) -> str:
-        for _, rx in _MARKERS:
-            s = rx.sub("", s, count=1)
-        return s.strip()
-
-    covered = [s for s in ref_sections if any(dice(strip_marker(s), strip_marker(c)) >= 0.5 for c in doc_cands)]
-    c1 = round(len(covered) / len(ref_sections), 3) if ref_sections else 1.0
-    ref_head_scheme = {m for m in (marker_of(s) for s in ref_sections) if m}
-    doc_head_scheme = {m for m in (marker_of(h) for h in headings) if m in ("roman", "hangul-dot", "num-dot", "paren")}
+    # C. 레퍼런스 구조 — dc_check 와 같은 자(harness_kit.patterns.section_lines · skeleton_diff · genre_items)로 잰다
+    not_table = lambda k: "table" not in str(k or "")  # noqa: E731
+    ref_skel = patterns.section_lines((str(b.get("text") or ""), str(b.get("kind") or ""))
+                                      for b in ref_blocks if not_table(b.get("kind")))
+    doc_skel = patterns.section_lines(("\n".join(ln for h in b["htmls"] for ln in html_lines(h)), str(b["kind"]))
+                                      for b in blocks if not_table(b["kind"]))
+    skel = patterns.skeleton_diff(ref_skel, doc_skel)
+    ref_sections = [s["path"] + " " + s["title"] for s in ref_skel]
+    covered = [s["path"] + " " + s["title"] for s in skel["kept"]]
+    c1 = round(len(skel["kept"]) / skel["total"], 3) if skel["total"] else 1.0
+    ref_head_scheme = set(skel["theirs_scheme"])
+    doc_head_scheme = set(skel["mine_scheme"])
     ref_m = measure_layers([str(b.get("html") or "") for b in ref_blocks], [str(b.get("kind") or "") for b in ref_blocks])
     doc_m = measure_layers([h for b in blocks for h in b["htmls"]], [str(b["kind"]) for b in blocks])
     gaps = layer_gaps(ref_m, doc_m)
 
-    genre = TARGETS["genres"].get(args.genre) if args.genre else None
-    genre_rows = []
-    if genre:
-        flat = norm(doc_text)
-        for item in genre["items"]:
-            genre_rows.append({"id": item["id"], "label": item["label"], "present": any(norm(k) in flat for k in item["any"])})
+    genre = patterns.genre_of(doctype=args.genre) if args.genre else None
+    genre_rows = patterns.genre_items(genre, doc_text) if genre else []
     e1 = round(sum(r["present"] for r in genre_rows) / len(genre_rows), 3) if genre_rows else 1.0
 
     # D. 사실 근거

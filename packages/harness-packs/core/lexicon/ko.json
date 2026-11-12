@@ -50,15 +50,24 @@
    "pattern": "출처|자료\\s*[:：]|Source|기준\\)|\\(\\d{4}[.\\-]\\d{1,2}"
   },
   "markers": [
-    {"label": "box", "pattern": "^[❏□■◼]"},
-    {"label": "circle", "pattern": "^[○◦ㅇ●]"},
-    {"label": "dash", "pattern": "^[-–—]\\s"},
-    {"label": "dot", "pattern": "^[·∙•]"},
-    {"label": "note", "pattern": "^(※|\\*\\s)"},
-    {"label": "hangul-dot", "pattern": "^[가-하]\\.\\s"},
-    {"label": "paren", "pattern": "^(\\(\\d{1,2}\\)|\\d{1,2}\\)\\s)"},
-    {"label": "roman", "pattern": "^[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]"}
+    {"label": "box", "glyph": "❏", "pattern": "^[❏□■◼]"},
+    {"label": "circle", "glyph": "○", "pattern": "^[○◦ㅇ●]"},
+    {"label": "dash", "glyph": "-", "pattern": "^[-–—]\\s"},
+    {"label": "dot", "glyph": "·", "pattern": "^[·∙•]"},
+    {"label": "note", "glyph": "※", "pattern": "^(※|\\*\\s)"},
+    {"label": "hangul-dot", "glyph": "가.", "pattern": "^[가-하]\\.\\s"},
+    {"label": "paren", "glyph": "1)", "pattern": "^(\\(\\d{1,2}\\)|\\d{1,2}\\)\\s)"},
+    {"label": "roman", "glyph": "Ⅰ", "pattern": "^[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]"}
   ],
+  "sections": {
+    "_doc": "장 · 절 뼈대 — 번호 기호(markers 의 label)를 단계 순서대로. 목차 줄(점 리더)은 뼈대가 아니다. match = 제목이 같은 절로 볼 글자쌍 유사도",
+    "markers": ["roman", "hangul-dot"],
+    "leader": {"pattern": "[·.‥…]{5,}"},
+    "letter": {"pattern": "[가-힣A-Za-z]"},
+    "minLetters": 2,
+    "maxTitle": 40,
+    "match": 0.5
+  },
   "conclusion": {
    "pattern": "결론|요약|핵심|따라서|제안|권고|해답|Answer|TL;?DR",
    "flags": "i"

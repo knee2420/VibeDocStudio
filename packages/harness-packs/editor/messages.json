@@ -14,6 +14,17 @@
     "checkHead": "[점검] {docId} 「{title}」 — 블록 {blocks} · 사진 {photos}장 · 섹션 {sections}",
     "checkCompareHead": "레퍼런스 {refId} 와 층위별 차이 (같으면 '같음' · 15% 안쪽 차이는 같은 결정으로 본다):",
     "checkSignature": "레퍼런스 대표 섹션 모양: \"{theirs}\" · 내 문서: \"{mine}\" (사진 1장 · 묶음을 같이 보면 레퍼런스 \"{theirsPhoto}\" · 내 문서 \"{minePhoto}\")",
+    "skeleton": {
+      "head": "뼈대: 레퍼런스{scope} 장 · 절 {total}개 중 {kept}개 갖춤 (번호 체계 레퍼런스 {theirs} / 내 문서 {mine})",
+      "missing": "  빠진 절: {items}",
+      "renamed": "  같은 자리인데 제목이 다른 절 (레퍼런스 ← 내 문서): {items}",
+      "hint": "  서식 문서는 레퍼런스의 장 · 절(번호 · 단계 · 제목)이 뼈대다 — 의도한 차이가 아니면 그 자리 · 그 번호로 짓는다. 재료가 없는 절은 지우지 말고 제목과 빈칸 표시로 남긴다."
+    },
+    "genre": {
+      "head": "장르 '{label}' 필수 구성 {total}개 중 {have}개",
+      "missing": " · 빠짐: {items} — 리소스에 근거가 없으면 항목 제목과 '{placeholder}' 빈칸으로 둔다 (값을 지어내지 않는다)"
+    },
+    "markerHint": "- 글머리 단계: 레퍼런스는 {theirs} 를 쓰는데 내 문서에는 {missing} 가 없다 — 하위 항목 · 세부 · 참고를 그 기호로 한 단계씩 나눠 쓴다 (기호는 글자로 두면 단계 스타일은 자동)",
     "checkTail": "고칠 것이 있으면 dc_build(set · props · add · move · remove). 사실 근거는 리소스에서 읽은 줄 안에서만.",
     "problems": {
       "empty": "빈 칸 {count}개: {ids}",

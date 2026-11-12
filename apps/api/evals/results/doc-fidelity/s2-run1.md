@@ -13,16 +13,16 @@
 ## S2_typography — 통과
 | 지표 | 값 | 목표 | |
 |---|---|---|---|
-| 본문 글머리 기호 체계 일치 (레퍼런스 범위 대비) | 0.714 | >= 0.7 | ✅ |
+| 본문 글머리 기호 체계 일치 (레퍼런스 범위 대비) | 0.8 | >= 0.7 | ✅ |
 | 이름 있는 문단 스타일이 붙은 문단 비율 | 0.964 | >= 0.6 | ✅ |
-| 기호 문단 중 내어쓰기가 적용된 비율 | 0.868 | >= 0.8 | ✅ |
+| 기호 문단 중 내어쓰기가 적용된 비율 | 1.0 | >= 0.8 | ✅ |
 
 ## S3_reference_structure — 미달
 | 지표 | 값 | 목표 | |
 |---|---|---|---|
-| 레퍼런스 범위의 장 · 절 제목을 내 문서가 갖춘 비율 | 0.714 | >= 0.8 | ❌ |
-| 장 · 절 번호 체계 일치 (Ⅰ · 가. 등) | 0.5 | >= 0.8 | ❌ |
-| 레퍼런스 범위 대비 30% 넘게 다른 층위 지표 수 | 12 | <= 3 | ❌ |
+| 레퍼런스 범위의 장 · 절 제목을 내 문서가 갖춘 비율 | 0.857 | >= 0.8 | ✅ |
+| 장 · 절 번호 체계 일치 (Ⅰ · 가. 등) | 1.0 | >= 0.8 | ✅ |
+| 레퍼런스 범위 대비 30% 넘게 다른 층위 지표 수 | 6 | <= 3 | ❌ |
 | 요청 장르의 필수 구성 (있거나 빈칸으로 표시) | 0.0 | >= 0.8 | ❌ |
 
 ## S4_provenance — 미달
@@ -34,10 +34,10 @@
 
 ## 세부
 - 블록 종류: heading, structured-table, text
-- 글머리 기호: 레퍼런스 ['box', 'circle', 'dash', 'hangul-dot', 'note', 'roman', 'star'] · 문서 ['box', 'circle', 'dash', 'hangul-dot', 'note']
-- 장 · 절 번호: 레퍼런스 ['hangul-dot', 'roman'] · 문서 ['roman']
-- 레퍼런스 장 · 절 14개 중 갖춤 10개
-- 층위 차이: paragraphs, bold_per_para, bullet_ratio, callouts, tables, source_marks, meta_approval, headings, heading_levels, tables, block_kinds, emoji
+- 글머리 기호: 레퍼런스 ['box', 'circle', 'dash', 'note', 'paren'] · 문서 ['box', 'circle', 'dash', 'note']
+- 장 · 절 번호: 레퍼런스 ['hangul-dot', 'roman'] · 문서 ['hangul-dot', 'roman']
+- 레퍼런스 장 · 절 14개 중 갖춤 12개
+- 층위 차이: bold_per_para, bullet_ratio, callouts, source_marks, meta_approval, heading_levels
 - 장르 구성: ✗입찰 참가자격, ✗입찰 · 제출 일정, ✗제출서류, ✗낙찰자 결정 · 평가 방법, ✗문의처
 - 근거 없는 값: 185,000,000원, 2개월, 3개월 (레퍼런스에서 온 값: 2개월, 3개월)
 - 읽은 리소스 파일 2개

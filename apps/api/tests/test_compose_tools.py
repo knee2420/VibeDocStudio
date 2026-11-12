@@ -256,7 +256,77 @@ def test_marker_scheme_measure_and_range_scoped_check(tmp_path: Any) -> None:
                                           (30, "<p>• 붙임</p>"), (30, "<p>• 서약</p>")])]
     (ref_dir / "extraction.json").write_text(_json.dumps({"blocks": blocks}), encoding="utf-8")
     (ref_dir / "layers.json").write_text(_json.dumps({"set": "document", "metrics": {"marker_scheme": ["dot"]}}), encoding="utf-8")
-    scoped, set_name, scope = DocTools._ref_metrics(str(ref_dir), "1-23")
+    scoped, set_name, scope, _ = DocTools._ref_metrics(str(ref_dir), "1-23")
     assert set_name == "document" and scope == "1-23쪽" and scoped["marker_scheme"] == ["box", "circle"]
-    whole, _, _ = DocTools._ref_metrics(str(ref_dir), "")
+    whole, _, _, _ = DocTools._ref_metrics(str(ref_dir), "")
     assert "dot" in whole["marker_scheme"]  # 범위가 없으면 전체 (붙임 서식까지)
+
+
+def test_section_skeleton_diff_and_genre_items():
+    from harness_kit import patterns as P
+
+    ref = P.section_lines([
+        ("Ⅰ. 사업 개요····························3", "list"),  # 목차 줄(점 리더)은 뼈대가 아니다
+        ("Ⅰ 사업 개요", "paragraph"), ("가. 제안요청 개요", "list"), ("나. 추진배경 및 목적", "list"),
+        ("Ⅱ 사업 추진 방안", "paragraph"), ("가. 추진 내용", "list"), ("나. 추진 체계", "list"),
+        ("Ⅲ | ", "table"),  # 글자 없는 조각
+    ])
+    assert [s["path"] for s in ref] == ["Ⅰ", "Ⅰ/가", "Ⅰ/나", "Ⅱ", "Ⅱ/가", "Ⅱ/나"]
+    assert [s["level"] for s in ref] == [1, 2, 2, 1, 2, 2]
+    mine = P.section_lines([
+        ("Ⅰ. 사업 개요", "heading"), ("**가. 제안요청 개요**\n❏ 사업명", "text"),
+        ("Ⅱ. 사업 추진 방안", "heading"), ("가. 추진 내용 및 개발 방향", "text"), ("나. 예산 계획", "text"),
+    ])
+    d = P.skeleton_diff(ref, mine)
+    assert [s["path"] for s in d["missing"]] == ["Ⅰ/나"]
+    assert [(r["path"], m["title"]) for r, m in d["renamed"]] == [("Ⅱ/나", "예산 계획")]
+    assert len(d["kept"]) == 4 and d["theirs_scheme"] == d["mine_scheme"] == ["roman", "hangul-dot"]
+
+    g = P.genre_of("[입찰공고] 플랫폼 구축")
+    assert g and g["id"] == "bid-notice" and P.genre_of("여행 블로그") is None
+    rows = {r["id"]: r["present"] for r in P.genre_items(g, "입찰 참가자격: [확인 필요]\n문의처: 담당자")}
+    assert rows["eligibility"] and rows["contact"] and not rows["documents"]
+
+
+def test_block_kind_aliases_line_up_reference_and_document():
+    from harness_kit import patterns as P
+
+    ref = P.measure(["<p>a</p>"], ["paragraph", "list", "table", "heading"])
+    doc = P.measure(["<p>a</p>"], ["text", "structured-table", "heading"])
+    assert ref["block_kinds"] == doc["block_kinds"] == ["heading", "table", "text"]
+
+
+def test_rf_skeleton_lists_numbered_section_tree_in_page_range():
+    from vibefs.ref_tools import RefTools
+
+    blocks = [
+        {"page": 2, "kind": "list", "text": "가. 제안요청 개요··········3"},  # 목차
+        {"page": 4, "kind": "paragraph", "text": "Ⅰ 사업 개요"},
+        {"page": 4, "kind": "list", "text": "가. 제안요청 개요\n❏ 사업명 : 무엇\n※ 참고"},
+        {"page": 5, "kind": "table", "text": "구분 | 내용"},
+        {"page": 5, "kind": "list", "text": "나. 추진 체계\n◦ 역할"},
+        {"page": 30, "kind": "paragraph", "text": "Ⅴ 붙임"},
+    ]
+    rows = RefTools._section_tree(blocks, "1-23")
+    assert "1-23쪽" in rows[0] and "3개" in rows[0]
+    assert rows[1].startswith("Ⅰ. 사업 개요") and "(p4)" in rows[1]
+    assert rows[2].startswith("  가. 제안요청 개요") and "표 1" in rows[2] and "❏ ※" in rows[2]
+    assert rows[3].startswith("  나. 추진 체계") and "◦" in rows[3]
+    assert RefTools._section_tree([{"page": 1, "kind": "paragraph", "text": "그냥 글"}], "") == []
+
+
+def test_marker_lists_become_styled_paragraphs():
+    from docstruct_engine.compile.vdoc_build import assign_paragraph_styles
+
+    out = assign_paragraph_styles('<ul><li>❏ 첫째<ul><li>◦ 세부</li><li>- 더 세부</li></ul></li><li>❏ 둘째</li></ul>')
+    assert out == ('<p data-style="b1">❏ 첫째</p><p data-style="b2">◦ 세부</p>'
+                   '<p data-style="b3">- 더 세부</p><p data-style="b1">❏ 둘째</p>')
+    plain = '<ul><li>그냥 목록</li><li>둘째</li></ul>'
+    assert assign_paragraph_styles(plain) == plain  # 기호 없는 목록은 목록 그대로
+
+
+def test_marker_hint_names_missing_bullet_levels_with_glyphs():
+    hint = DocTools._marker_hint({"marker_scheme": ["roman", "box", "circle", "dash", "note"]},
+                                 {"marker_scheme": ["roman", "box", "circle"]})
+    assert len(hint) == 1 and "❏ ○ - ※" in hint[0] and hint[0].count("Ⅰ") == 0
+    assert DocTools._marker_hint({"marker_scheme": ["box"]}, {"marker_scheme": ["box", "dash"]}) == []

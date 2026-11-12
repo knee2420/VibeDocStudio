@@ -10,14 +10,14 @@
   ],
   "metrics": {
     "A1_table_blocks": 0,
-    "A2_long_paragraphs": 14,
+    "A2_long_paragraphs": 9,
     "A4_req_ids_in_tables": 0.0,
-    "B1_marker_jaccard": 0.5,
+    "B1_marker_jaccard": 0.4,
     "B2_styled_ratio": 0.0,
     "B3_hanging_ratio": 0.0,
-    "C1_section_coverage": 0.714,
-    "C2_heading_scheme_jaccard": 0.333,
-    "C4_layer_gaps": 12,
+    "C1_section_coverage": 0.357,
+    "C2_heading_scheme_jaccard": 1.0,
+    "C4_layer_gaps": 7,
     "E1_genre_items": 0.0,
     "D1_unsourced_values": 6,
     "D2_reference_leaks": 2,
@@ -37,7 +37,7 @@
         {
           "metric": "A2_long_paragraphs",
           "label": "320자 넘는 문단 (납작해진 표 · 줄글 덩어리)",
-          "value": 14,
+          "value": 9,
           "target": "<= 2",
           "pass": false
         },
@@ -56,7 +56,7 @@
         {
           "metric": "B1_marker_jaccard",
           "label": "본문 글머리 기호 체계 일치 (레퍼런스 범위 대비)",
-          "value": 0.5,
+          "value": 0.4,
           "target": ">= 0.7",
           "pass": false
         },
@@ -82,21 +82,21 @@
         {
           "metric": "C1_section_coverage",
           "label": "레퍼런스 범위의 장 · 절 제목을 내 문서가 갖춘 비율",
-          "value": 0.714,
+          "value": 0.357,
           "target": ">= 0.8",
           "pass": false
         },
         {
           "metric": "C2_heading_scheme_jaccard",
           "label": "장 · 절 번호 체계 일치 (Ⅰ · 가. 등)",
-          "value": 0.333,
+          "value": 1.0,
           "target": ">= 0.8",
-          "pass": false
+          "pass": true
         },
         {
           "metric": "C4_layer_gaps",
           "label": "레퍼런스 범위 대비 30% 넘게 다른 층위 지표 수",
-          "value": 12,
+          "value": 7,
           "target": "<= 3",
           "pass": false
         },
@@ -148,60 +148,45 @@
       "box",
       "circle",
       "dash",
-      "hangul-dot",
       "note",
-      "roman",
-      "star"
+      "paren"
     ],
     "doc_markers": [
       "dash",
-      "hangul-dot",
-      "note",
-      "num-dot",
-      "roman"
+      "note"
     ],
     "ref_sections": [
       "Ⅰ 사업 개요",
-      "가. 제안요청 개요",
-      "나. 추진배경 및 목적",
-      "다. 현황 및 개선 방안",
-      "라. 사업 범위",
-      "마. 기대 효과",
+      "Ⅰ/가 제안요청 개요",
+      "Ⅰ/나 추진배경 및 목적",
+      "Ⅰ/다 현황 및 개선 방안",
+      "Ⅰ/라 사업 범위",
+      "Ⅰ/마 기대 효과",
       "Ⅱ 사업 추진 방안",
-      "가. 추진 내용",
-      "나. 추진 체계",
-      "다. 추진 일정",
-      "라. 추진 방안",
+      "Ⅱ/가 추진 내용",
+      "Ⅱ/나 추진 체계",
+      "Ⅱ/다 추진 일정",
+      "Ⅱ/라 추진 방안",
       "Ⅲ 제안요청 내용",
-      "Ⅲ |",
-      "나. 상세요구사항"
+      "Ⅲ/가 제안요청 개요",
+      "Ⅲ/나 상세요구사항"
     ],
     "covered_sections": [
       "Ⅰ 사업 개요",
-      "가. 제안요청 개요",
-      "나. 추진배경 및 목적",
-      "다. 현황 및 개선 방안",
-      "라. 사업 범위",
-      "마. 기대 효과",
       "Ⅱ 사업 추진 방안",
-      "라. 추진 방안",
+      "Ⅱ/라 추진 방안",
       "Ⅲ 제안요청 내용",
-      "나. 상세요구사항"
+      "Ⅲ/나 상세요구사항"
     ],
     "ref_heading_scheme": [
       "hangul-dot",
       "roman"
     ],
     "doc_heading_scheme": [
-      "num-dot",
+      "hangul-dot",
       "roman"
     ],
     "layer_gaps": [
-      {
-        "metric": "paragraphs",
-        "ref": 614,
-        "doc": 280
-      },
       {
         "metric": "bold_per_para",
         "ref": 0.01,
@@ -218,11 +203,6 @@
         "doc": 1.18
       },
       {
-        "metric": "tables",
-        "ref": 78,
-        "doc": 0
-      },
-      {
         "metric": "source_marks",
         "ref": 2,
         "doc": 1
@@ -231,11 +211,6 @@
         "metric": "meta_version",
         "ref": true,
         "doc": false
-      },
-      {
-        "metric": "headings",
-        "ref": 30,
-        "doc": 0
       },
       {
         "metric": "heading_levels",
@@ -247,28 +222,18 @@
         "doc": []
       },
       {
-        "metric": "tables",
-        "ref": 78,
-        "doc": 0
-      },
-      {
         "metric": "block_kinds",
         "ref": [
           "heading",
-          "list",
-          "paragraph",
-          "table"
+          "table",
+          "text"
         ],
         "doc": [
           "callout-box",
+          "divider",
           "heading",
           "text"
         ]
-      },
-      {
-        "metric": "emoji",
-        "ref": 22,
-        "doc": 5
       }
     ],
     "genre": [
