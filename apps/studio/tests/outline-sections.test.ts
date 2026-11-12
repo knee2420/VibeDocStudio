@@ -132,3 +132,22 @@ describe("자물쇠 대상 슬롯 (행 아래 전부)", () => {
     assert.deepEqual(map.get("doc"), ["s1", "s2", "s3"]);
   });
 });
+
+describe("캔버스 → 사이드바 따라가기", () => {
+  it("따라갈 대상: 단일 슬롯 → 범위 첫 슬롯 → 블록 → 표 전체 선택", async () => {
+    const { canvasSelectionTarget } = await import("../src/widgets/outline-preview-sidebar/model/useRevealCanvasSelection");
+    const base = { selectedSlotId: null, slotRange: null, selectedBlockId: null, tableSelection: null };
+    assert.deepEqual(canvasSelectionTarget({ ...base, selectedSlotId: "s1" }), { kind: "slot", id: "s1" });
+    assert.deepEqual(canvasSelectionTarget({ ...base, slotRange: { unitIds: ["s2", "s3"], slotIds: ["s2", "s3"], source: "drag" } }), { kind: "slot", id: "s2" });
+    assert.deepEqual(canvasSelectionTarget({ ...base, selectedBlockId: "b2" }), { kind: "block", id: "b2" });
+    assert.equal(canvasSelectionTarget(base), null);
+  });
+
+  it("대상 노드와 펼쳐야 할 조상 (가까운 것부터)", async () => {
+    const { ancestorIds, findTargetNode } = await import("../src/widgets/outline-preview-sidebar/model/useRevealCanvasSelection");
+    const slot = findTargetNode(nodes, { kind: "slot", id: "s3" })!;
+    assert.equal(slot.nodeId, "s3");
+    assert.equal(findTargetNode(nodes, { kind: "block", id: "b1" })?.nodeId, "b1");
+    assert.deepEqual(ancestorIds(nodes, slot), ["b2", "p2", "doc"]);
+  });
+});

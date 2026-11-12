@@ -21,11 +21,14 @@ export type LeftPanelTab = "outliner" | "assets" | "reference-manager";
 export type RefPlacement = "left-tab" | "split" | "closed";
 
 export const SIDEBAR_WIDTH = { default: 320, min: 250, max: 650 } as const;
+/** 좌측 사이드바의 Documents & Pages 목록 높이 (Elements 와의 경계를 끌어 조절). */
+export const PAGES_PANE_HEIGHT = { default: 248, min: 64, max: 900 } as const;
 export const REFERENCE_SPLIT_WIDTH = { default: 520, min: 360, max: 1000 } as const;
 export const RIGHT_SIDEBAR_WIDTH = { default: 420, min: 320, max: 960 } as const;
 export const RM_SPLIT_WIDTH = { default: 460, min: 320, max: 800 } as const;
 
 const SIDEBAR_WIDTH_KEY = "vdoc-sidebar-width";
+const PAGES_PANE_HEIGHT_KEY = "vdoc-pages-pane-height";
 const REFERENCE_SPLIT_WIDTH_KEY = "vdoc-ref-split-width";
 const RIGHT_SIDEBAR_WIDTH_KEY = "vdoc-right-sidebar-width";
 const RM_SPLIT_WIDTH_KEY = "vdoc-rm-split-width";
@@ -58,6 +61,7 @@ export interface WorkspaceLayoutState {
   rightSidebarOpen: boolean;
   rightPanelTab: RightPanelTab;
   sidebarWidth: number;
+  pagesPaneHeight: number;
   rightSidebarWidth: number;
   referenceSplitWidth: number;
   /** Resource Manager 배치 위치 */
@@ -95,6 +99,8 @@ export interface WorkspaceLayoutState {
   setRefSplitCollapsed: (collapsed: boolean) => void;
   setSidebarWidth: (width: number) => void;
   resetSidebarWidth: () => void;
+  setPagesPaneHeight: (height: number) => void;
+  resetPagesPaneHeight: () => void;
   setRightSidebarWidth: (width: number) => void;
   resetRightSidebarWidth: () => void;
   setReferenceSplitWidth: (width: number) => void;
@@ -119,6 +125,7 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   refViewerOpen: loadRefViewerOpenFromSession(),
   refSplitCollapsed: false,
   sidebarWidth: clamp(readStoredNumber(SIDEBAR_WIDTH_KEY, SIDEBAR_WIDTH.default), SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max),
+  pagesPaneHeight: clamp(readStoredNumber(PAGES_PANE_HEIGHT_KEY, PAGES_PANE_HEIGHT.default), PAGES_PANE_HEIGHT.min, PAGES_PANE_HEIGHT.max),
   rightSidebarWidth: clamp(
     readStoredNumber(RIGHT_SIDEBAR_WIDTH_KEY, RIGHT_SIDEBAR_WIDTH.default),
     RIGHT_SIDEBAR_WIDTH.min,
@@ -202,6 +209,14 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
     set({ sidebarWidth: next });
   },
   resetSidebarWidth: () => get().setSidebarWidth(SIDEBAR_WIDTH.default),
+
+  setPagesPaneHeight: (height) => {
+    const next = Math.round(clamp(height, PAGES_PANE_HEIGHT.min, PAGES_PANE_HEIGHT.max));
+    if (next === get().pagesPaneHeight) return;
+    writeStoredValue(PAGES_PANE_HEIGHT_KEY, next);
+    set({ pagesPaneHeight: next });
+  },
+  resetPagesPaneHeight: () => get().setPagesPaneHeight(PAGES_PANE_HEIGHT.default),
 
   setRightSidebarWidth: (width) => {
     const next = clamp(width, RIGHT_SIDEBAR_WIDTH.min, RIGHT_SIDEBAR_WIDTH.max);

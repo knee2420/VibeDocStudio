@@ -368,3 +368,26 @@
 .fig-row-toggle[data-on="true"] { color: var(--fig-text); }
 .fig-row[data-hidden] .fig-row-label,
 .fig-row[data-hidden] .fig-row-icon { opacity: 0.5; }
+
+/* Documents & Pages ↔ Elements 경계: 아래쪽 1px 선 위에 6px 끌기 영역, 호버 · 끄는 중에는 파란 선. */
+.fig-splitter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 7px;
+  z-index: 20;
+  cursor: row-resize;
+}
+.fig-splitter::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 3px;
+  height: 1px;
+  background: transparent;
+  transition: background-color 0.1s;
+}
+.fig-splitter:hover::after,
+.fig-splitter:active::after { background: var(--fig-brand); height: 2px; top: 2px; }

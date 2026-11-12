@@ -10,6 +10,7 @@ import { documentLifecycle } from "@/features/manage-documents";
 import { useOutlineProjection } from "@/features/zoom-hierarchy";
 
 import { useOutlineRowActions, type RenameState } from "../model/useOutlineRowActions";
+import { useRevealCanvasSelection } from "../model/useRevealCanvasSelection";
 import { AddPageFlow, type AddPageFlowHandle } from "./AddPageFlow";
 import { ElementsSection } from "./OutlineElementsSection";
 import { DocumentsPagesSection } from "./OutlineDocumentsPagesSection";
@@ -20,6 +21,8 @@ export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId
   const phase = useWorkspaceSessionStore((s) => s.currentPhase);
   const [isAllMode, setIsAllMode] = useState(false);
   const [renaming, setRenaming] = useState<RenameState | null>(null);
+  // 캔버스에서 고른 엘리먼트로 사이드바가 따라간다 (현재 페이지 · 접힌 조상 펼치기 · 줌 넓히기).
+  useRevealCanvasSelection();
 
   const addPageFlow = useRef<AddPageFlowHandle>(null);
   const order = useRef<{ pages: readonly OutlinerNode[]; elements: readonly OutlinerNode[] }>({ pages: [], elements: [] });

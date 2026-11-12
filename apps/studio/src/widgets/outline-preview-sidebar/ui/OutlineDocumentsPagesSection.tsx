@@ -1,12 +1,14 @@
-import React, { useLayoutEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 
 import type { OutlinerNode } from "@vibe/vdoc-schema";
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { isPageTargetNode } from "@/features/edit-outline";
 
+import { useSplitterDrag } from "../lib/useSplitterDrag";
 import { minDepth, selectPageTreeNodes } from "../model/outlineSections";
 import { ADD_PAGE_TRIGGER_ATTR } from "./AddPageFlow";
 import { OutlineNodeRow } from "./OutlineNodeRow";
@@ -15,6 +17,7 @@ import { AddNodeButton, type SectionProps } from "./outlineSectionParts";
 /**
  * Documents & Pages 구역 (피그마 `페이지` 목록): 문서 · 페이지. 줌 · Elements 검색과 무관하게 늘 전체를 보여준다.
  * 현재 페이지는 피그마처럼 회색 바탕 + 굵게, 활성 문서는 굵게 표시한다.
+ * 아래 경계를 끌어 높이를 바꾼다 (더블클릭: 기본 높이). 현재 페이지가 바뀌면 그 행이 보이게 스크롤한다.
  */
 export const DocumentsPagesSection: React.FC<
   SectionProps & {
@@ -32,8 +35,25 @@ export const DocumentsPagesSection: React.FC<
   const depthOffset = useMemo(() => minDepth(nodes), [nodes]);
   useLayoutEffect(() => reportOrder(folded ? [] : nodes), [folded, nodes, reportOrder]);
 
+  const paneHeight = useWorkspaceLayoutStore((s) => s.pagesPaneHeight);
+  const treeRef = useRef<HTMLDivElement>(null);
+  const onSplitterDown = useSplitterDrag(
+    () => treeRef.current?.clientHeight ?? paneHeight,
+    (h) => useWorkspaceLayoutStore.getState().setPagesPaneHeight(h)
+  );
+
+  // 캔버스에서 다른 페이지의 엘리먼트를 고르면 현재 페이지가 바뀐다 → 그 페이지 행이 보이게.
+  const currentNodeId = useMemo(
+    () => nodes.find((n) => isPageTargetNode(n) && n.targetPageId === activePageId && (n.targetDocId || activeDocId) === activeDocId)?.nodeId,
+    [nodes, activePageId, activeDocId]
+  );
+  useEffect(() => {
+    if (!currentNodeId) return;
+    treeRef.current?.querySelector(`[data-node-id="${CSS.escape(currentNodeId)}"]`)?.scrollIntoView({ block: "nearest" });
+  }, [currentNodeId, folded]);
+
   return (
-    <div className="shrink-0 border-b border-[var(--fig-border)]">
+    <div className="relative shrink-0 border-b border-[var(--fig-border)]">
       <div className="fig-section-header">
         <button
           type="button"
@@ -59,7 +79,13 @@ export const DocumentsPagesSection: React.FC<
       </div>
 
       {!folded && (
-        <div role="tree" aria-label="Documents & Pages Tree" className="pb-2 max-h-[248px] overflow-y-auto overflow-x-hidden">
+        <div
+          ref={treeRef}
+          role="tree"
+          aria-label="Documents & Pages Tree"
+          style={{ maxHeight: paneHeight }}
+          className="pb-2 overflow-y-auto overflow-x-hidden"
+        >
           {nodes.map((node) => {
             const isPage = isPageTargetNode(node);
             const isCurrent = isPage && node.targetPageId === activePageId && (node.targetDocId || activeDocId) === activeDocId;
@@ -81,6 +107,19 @@ export const DocumentsPagesSection: React.FC<
           })}
           {onAddNode && <AddNodeButton onClick={onAddNode} />}
         </div>
+      )}
+
+      {!folded && (
+        <div
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label="Documents & Pages · Elements 경계 (끌어서 높이 조절)"
+          data-testid="pages-elements-splitter"
+          title="끌어서 높이 조절 · 더블클릭: 기본 높이"
+          onMouseDown={onSplitterDown}
+          onDoubleClick={() => useWorkspaceLayoutStore.getState().resetPagesPaneHeight()}
+          className="fig-splitter"
+        />
       )}
     </div>
   );
