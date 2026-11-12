@@ -25,6 +25,8 @@ from .model import (
     FieldBlock,
     FigureBlock,
     HeadingBlock,
+    LineGroupBlock,
+    LineGroupSegment,
     ListItemBlock,
     NoteBlock,
     PageIR,

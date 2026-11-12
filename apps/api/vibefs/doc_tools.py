@@ -431,8 +431,8 @@ class DocTools:
                         sid = ids[0] if ids else ""
                     if sid not in slots:
                         raise ValueError(f"칸 {sid or '(없음)'} 이 없다.")
-                    if slots[sid].get("role") == "boilerplate":
-                        raise ValueError(f"칸 {sid} 은 고정 문구다.")
+                    if (slots[sid].get("constraints") or {}).get("locked"):
+                        raise ValueError(f"칸 {sid} 은 잠겨 있다.")
                     slots[sid] = {**slots[sid], "content": sanitize_html(op.get("html") or op.get("text") or "")}
                     touched.append(sid)
                     notes.append(f"글 {sid}")

@@ -1,0 +1,6861 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-vector",
+  "size": {
+    "width": 595.2,
+    "height": 841.92
+  },
+  "margins": {
+    "top": 84.3,
+    "right": 72.3,
+    "bottom": 70.3,
+    "left": 72.5
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "문서분류",
+      "bbox": [
+        389.93,
+        87.14,
+        430.25,
+        97.22
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 95.78,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "인사/노무",
+      "bbox": [
+        460.99,
+        87.14,
+        506.11,
+        97.22
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 95.78,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w2",
+      "text": "페이지번호",
+      "bbox": [
+        384.89,
+        102.73,
+        435.04,
+        112.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 111.38,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w3",
+      "text": "1/1페이지",
+      "bbox": [
+        460.99,
+        102.73,
+        506.11,
+        112.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 111.38,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w4",
+      "text": "노사",
+      "bbox": [
+        192.31,
+        106.49,
+        228.31,
+        124.49
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 18.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 121.94,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "협의회회의록",
+      "bbox": [
+        237.46,
+        106.49,
+        345.46,
+        124.49
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 18.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 121.94,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w6",
+      "text": "작",
+      "bbox": [
+        389.93,
+        117.85,
+        400.01,
+        127.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.5,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w7",
+      "text": "성",
+      "bbox": [
+        405.05,
+        117.85,
+        415.13,
+        127.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.5,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w8",
+      "text": "자",
+      "bbox": [
+        420.17,
+        117.85,
+        430.25,
+        127.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.5,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w9",
+      "text": "작성일자",
+      "bbox": [
+        389.93,
+        133.49,
+        430.25,
+        143.56
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 142.13,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w10",
+      "text": "20...",
+      "bbox": [
+        450.91,
+        133.49,
+        516.19,
+        143.56
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 142.13,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w11",
+      "text": "회의일자",
+      "bbox": [
+        99.65,
+        174.28,
+        139.97,
+        184.37
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 182.93,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w12",
+      "text": "회의장소",
+      "bbox": [
+        317.88,
+        174.28,
+        358.2,
+        184.37
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 182.93,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w13",
+      "text": "회의시간",
+      "bbox": [
+        99.65,
+        203.57,
+        139.97,
+        213.65
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 212.21,
+      "lineHint": 6,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w14",
+      "text": "구",
+      "bbox": [
+        317.88,
+        203.57,
+        327.96,
+        213.65
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 212.21,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w15",
+      "text": "분",
+      "bbox": [
+        348.14,
+        203.57,
+        358.22,
+        213.65
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 212.21,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w16",
+      "text": "회의안건",
+      "bbox": [
+        127.97,
+        243.18,
+        168.29,
+        253.26
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 251.83,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w17",
+      "text": "협의결과",
+      "bbox": [
+        277.08,
+        243.18,
+        317.4,
+        253.26
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 251.83,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w18",
+      "text": "비",
+      "bbox": [
+        429.29,
+        243.18,
+        439.37,
+        253.26
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 251.83,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w19",
+      "text": "고",
+      "bbox": [
+        454.51,
+        243.18,
+        464.59,
+        253.26
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 251.83,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w20",
+      "text": "참석대상",
+      "bbox": [
+        123.17,
+        547.58,
+        163.49,
+        557.65
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 556.22,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w21",
+      "text": "회사측",
+      "bbox": [
+        280.68,
+        547.58,
+        310.92,
+        557.65
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 556.22,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w22",
+      "text": "근로자측",
+      "bbox": [
+        426.41,
+        547.58,
+        466.73,
+        557.65
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 556.22,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w23",
+      "text": "참",
+      "bbox": [
+        88.61,
+        556.7,
+        98.69,
+        566.78
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 565.34,
+      "lineHint": 9,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w24",
+      "text": "석",
+      "bbox": [
+        88.61,
+        569.93,
+        98.69,
+        580.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 578.57,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w25",
+      "text": "참",
+      "bbox": [
+        123.17,
+        575.93,
+        133.25,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w26",
+      "text": "석",
+      "bbox": [
+        138.29,
+        575.93,
+        148.37,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w27",
+      "text": "자",
+      "bbox": [
+        153.43,
+        575.93,
+        163.51,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w28",
+      "text": "직",
+      "bbox": [
+        232.9,
+        575.93,
+        242.98,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w29",
+      "text": "위",
+      "bbox": [
+        248.02,
+        575.93,
+        258.1,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w30",
+      "text": "성",
+      "bbox": [
+        283.08,
+        575.93,
+        293.16,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w31",
+      "text": "명",
+      "bbox": [
+        298.2,
+        575.93,
+        308.28,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w32",
+      "text": "서",
+      "bbox": [
+        333.5,
+        575.93,
+        343.58,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w33",
+      "text": "명",
+      "bbox": [
+        348.62,
+        575.93,
+        358.7,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w34",
+      "text": "직",
+      "bbox": [
+        383.69,
+        575.93,
+        393.77,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w35",
+      "text": "위",
+      "bbox": [
+        398.81,
+        575.93,
+        408.89,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w36",
+      "text": "성",
+      "bbox": [
+        434.09,
+        575.93,
+        444.17,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w37",
+      "text": "명",
+      "bbox": [
+        449.23,
+        575.93,
+        459.31,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w38",
+      "text": "서",
+      "bbox": [
+        484.27,
+        575.93,
+        494.35,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w39",
+      "text": "명",
+      "bbox": [
+        499.39,
+        575.93,
+        509.47,
+        586.01
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.57,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w40",
+      "text": "현",
+      "bbox": [
+        88.61,
+        582.88,
+        98.69,
+        592.97
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 591.53,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w41",
+      "text": "황",
+      "bbox": [
+        88.61,
+        595.85,
+        98.69,
+        605.93
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 604.49,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w42",
+      "text": "불",
+      "bbox": [
+        123.17,
+        604.73,
+        133.25,
+        614.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 613.37,
+      "lineHint": 14,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w43",
+      "text": "참",
+      "bbox": [
+        138.29,
+        604.73,
+        148.37,
+        614.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 613.37,
+      "lineHint": 14,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w44",
+      "text": "자",
+      "bbox": [
+        153.43,
+        604.73,
+        163.51,
+        614.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 613.37,
+      "lineHint": 14,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w45",
+      "text": "불",
+      "bbox": [
+        88.61,
+        659.7,
+        98.69,
+        669.78
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 668.35,
+      "lineHint": 15,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w46",
+      "text": "참",
+      "bbox": [
+        88.61,
+        672.9,
+        98.69,
+        682.98
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 681.55,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w47",
+      "text": "내",
+      "bbox": [
+        88.61,
+        685.86,
+        98.69,
+        695.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 694.51,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w48",
+      "text": "역",
+      "bbox": [
+        88.61,
+        698.82,
+        98.69,
+        708.9
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 707.47,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w49",
+      "text": "주식회사",
+      "bbox": [
+        72.5,
+        761.49,
+        112.82,
+        771.57
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 770.14,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w50",
+      "text": "○○○○",
+      "bbox": [
+        117.65,
+        761.49,
+        157.73,
+        771.57
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 770.14,
+      "lineHint": 19,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w51",
+      "text": "A4(210x297mm)",
+      "bbox": [
+        457.87,
+        761.49,
+        522.91,
+        771.57
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 10.08,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 770.14,
+      "lineHint": 19,
+      "spaceBefore": true,
+      "trailingSpace": true
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "h",
+      "x0": 72.26,
+      "y0": 83.54,
+      "x1": 521.74,
+      "y1": 84.98,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 375.5,
+      "y0": 99.14,
+      "x1": 521.74,
+      "y1": 100.58,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 374.78,
+      "y0": 114.74,
+      "x1": 523.18,
+      "y1": 115.46,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 374.78,
+      "y0": 130.37,
+      "x1": 523.18,
+      "y1": 131.09,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.26,
+      "y0": 146.21,
+      "x1": 521.74,
+      "y1": 147.65,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 74.18,
+      "y0": 163.49,
+      "x1": 522.7,
+      "y1": 164.93,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.74,
+      "y0": 193.49,
+      "x1": 522.7,
+      "y1": 194.21,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 75.62,
+      "y0": 223.27,
+      "x1": 522.7,
+      "y1": 224.71,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.74,
+      "y0": 233.11,
+      "x1": 522.7,
+      "y1": 234.55,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.74,
+      "y0": 261.67,
+      "x1": 522.7,
+      "y1": 262.39,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.74,
+      "y0": 534.38,
+      "x1": 522.7,
+      "y1": 535.82,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.74,
+      "y0": 537.5,
+      "x1": 522.7,
+      "y1": 538.94,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 114.05,
+      "y0": 566.3,
+      "x1": 522.7,
+      "y1": 567.05,
+      "thickness": 0.74,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 114.05,
+      "y0": 595.13,
+      "x1": 522.7,
+      "y1": 595.85,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.74,
+      "y0": 623.93,
+      "x1": 522.7,
+      "y1": 624.65,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 220.42,
+      "y0": 647.93,
+      "x1": 522.7,
+      "y1": 649.37,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 219.7,
+      "y0": 671.95,
+      "x1": 522.7,
+      "y1": 672.67,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 219.7,
+      "y0": 695.95,
+      "x1": 522.7,
+      "y1": 696.67,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 219.7,
+      "y0": 720.19,
+      "x1": 522.7,
+      "y1": 720.91,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 74.18,
+      "y0": 744.22,
+      "x1": 522.7,
+      "y1": 745.66,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 72.26,
+      "y0": 84.98,
+      "x1": 73.7,
+      "y1": 146.21,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 72.74,
+      "y0": 163.49,
+      "x1": 74.18,
+      "y1": 224.71,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 72.74,
+      "y0": 234.55,
+      "x1": 74.18,
+      "y1": 745.66,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 113.33,
+      "y0": 538.94,
+      "x1": 114.77,
+      "y1": 745.66,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 162.07,
+      "y0": 84.98,
+      "x1": 162.79,
+      "y1": 146.21,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 164.95,
+      "y0": 164.93,
+      "x1": 166.39,
+      "y1": 224.71,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 172.15,
+      "y0": 538.94,
+      "x1": 172.87,
+      "y1": 624.65,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 219.7,
+      "y0": 538.94,
+      "x1": 220.42,
+      "y1": 744.22,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 221.62,
+      "y0": 234.55,
+      "x1": 222.34,
+      "y1": 534.38,
+      "thickness": 0.72,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 269.88,
+      "y0": 566.3,
+      "x1": 270.6,
+      "y1": 744.22,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 297.96,
+      "y0": 163.49,
+      "x1": 299.4,
+      "y1": 224.71,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 320.28,
+      "y0": 566.3,
+      "x1": 321.72,
+      "y1": 745.66,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 370.46,
+      "y0": 234.55,
+      "x1": 372.14,
+      "y1": 745.66,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 374.78,
+      "y0": 83.54,
+      "x1": 376.22,
+      "y1": 147.65,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 376.94,
+      "y0": 163.49,
+      "x1": 378.38,
+      "y1": 224.71,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 420.89,
+      "y0": 566.3,
+      "x1": 421.61,
+      "y1": 744.22,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 444.19,
+      "y0": 84.98,
+      "x1": 444.91,
+      "y1": 146.21,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 471.07,
+      "y0": 566.3,
+      "x1": 471.79,
+      "y1": 744.22,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 521.74,
+      "y0": 83.54,
+      "x1": 523.18,
+      "y1": 147.65,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 521.26,
+      "y0": 164.93,
+      "x1": 522.7,
+      "y1": 744.22,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "t0",
+      "kind": "table",
+      "bbox": [
+        72.98,
+        84.26,
+        522.46,
+        146.93
+      ],
+      "nRows": 4,
+      "nCols": 4,
+      "colXs": [
+        72.98,
+        162.43,
+        375.5,
+        444.55,
+        522.46
+      ],
+      "rowYs": [
+        84.26,
+        99.86,
+        115.1,
+        130.73,
+        146.93
+      ],
+      "widthRatio": [
+        0.199,
+        0.474,
+        0.1536,
+        0.1733
+      ],
+      "widthPt": 449.48,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 4,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            72.98,
+            84.26,
+            162.43,
+            146.93
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r0c0",
+            "kind": "text",
+            "label": "r1c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 1,
+          "rs": 4,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            162.43,
+            84.26,
+            375.5,
+            146.93
+          ],
+          "wordIds": [
+            "w4",
+            "w5"
+          ],
+          "text": "노사 협의회회의록",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 18.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            375.5,
+            84.26,
+            444.55,
+            99.86
+          ],
+          "wordIds": [
+            "w0"
+          ],
+          "text": "문서분류",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            444.55,
+            84.26,
+            522.46,
+            99.86
+          ],
+          "wordIds": [
+            "w1"
+          ],
+          "text": "인사/노무",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            375.5,
+            99.86,
+            444.55,
+            115.1
+          ],
+          "wordIds": [
+            "w2"
+          ],
+          "text": "페이지번호",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            444.55,
+            99.86,
+            522.46,
+            115.1
+          ],
+          "wordIds": [
+            "w3"
+          ],
+          "text": "1/1페이지",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            375.5,
+            115.1,
+            444.55,
+            130.73
+          ],
+          "wordIds": [
+            "w6",
+            "w7",
+            "w8"
+          ],
+          "text": "작 성 자",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            444.55,
+            115.1,
+            522.46,
+            130.73
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c3",
+            "kind": "text",
+            "label": "작 성 자",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            375.5,
+            130.73,
+            444.55,
+            146.93
+          ],
+          "wordIds": [
+            "w9"
+          ],
+          "text": "작성일자",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            444.55,
+            130.73,
+            522.46,
+            146.93
+          ],
+          "wordIds": [
+            "w10"
+          ],
+          "text": "20...",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": null,
+      "imageFallbackSrc": null,
+      "spaceBeforePt": 0.0
+    },
+    {
+      "id": "t1",
+      "kind": "table",
+      "bbox": [
+        73.46,
+        164.21,
+        521.98,
+        744.94
+      ],
+      "nRows": 14,
+      "nCols": 12,
+      "colXs": [
+        73.46,
+        114.05,
+        165.67,
+        172.51,
+        221.98,
+        270.24,
+        298.68,
+        321.0,
+        371.3,
+        377.66,
+        421.25,
+        471.43,
+        521.98
+      ],
+      "rowYs": [
+        164.21,
+        193.85,
+        223.99,
+        233.83,
+        262.03,
+        535.1,
+        538.22,
+        566.67,
+        595.49,
+        624.29,
+        648.65,
+        672.31,
+        696.31,
+        720.55,
+        744.94
+      ],
+      "widthRatio": [
+        0.0905,
+        0.1151,
+        0.0153,
+        0.1103,
+        0.1076,
+        0.0634,
+        0.0498,
+        0.1121,
+        0.0142,
+        0.0972,
+        0.1119,
+        0.1127
+      ],
+      "widthPt": 448.52,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "th",
+          "bbox": [
+            73.46,
+            164.21,
+            165.67,
+            193.85
+          ],
+          "wordIds": [
+            "w11"
+          ],
+          "text": "회의일자",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 2,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            165.67,
+            164.21,
+            298.68,
+            193.85
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r0c2",
+            "kind": "text",
+            "label": "회의일자",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 6,
+          "rs": 1,
+          "cs": 3,
+          "role": "th",
+          "bbox": [
+            298.68,
+            164.21,
+            377.66,
+            193.85
+          ],
+          "wordIds": [
+            "w12"
+          ],
+          "text": "회의장소",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 9,
+          "rs": 1,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            377.66,
+            164.21,
+            521.98,
+            193.85
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r0c9",
+            "kind": "text",
+            "label": "회의장소",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            73.46,
+            193.85,
+            165.67,
+            223.99
+          ],
+          "wordIds": [
+            "w13"
+          ],
+          "text": "회의시간",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 2,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            165.67,
+            193.85,
+            298.68,
+            223.99
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r1c2",
+            "kind": "text",
+            "label": "회의시간",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 6,
+          "rs": 1,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            298.68,
+            193.85,
+            377.66,
+            223.99
+          ],
+          "wordIds": [
+            "w14",
+            "w15"
+          ],
+          "text": "구 분",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 9,
+          "rs": 1,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            377.66,
+            193.85,
+            521.98,
+            223.99
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r1c9",
+            "kind": "text",
+            "label": "구 분",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "rs": 1,
+          "cs": 12,
+          "role": "td",
+          "bbox": [
+            73.46,
+            223.99,
+            521.98,
+            233.83
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r2c0",
+            "kind": "text",
+            "label": "회의일자",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 0,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            73.46,
+            233.83,
+            221.98,
+            262.03
+          ],
+          "wordIds": [
+            "w16"
+          ],
+          "text": "회의안건",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 4,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            221.98,
+            233.83,
+            371.3,
+            262.03
+          ],
+          "wordIds": [
+            "w17"
+          ],
+          "text": "협의결과",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 8,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            371.3,
+            233.83,
+            521.98,
+            262.03
+          ],
+          "wordIds": [
+            "w18",
+            "w19"
+          ],
+          "text": "비 고",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 0,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            73.46,
+            262.03,
+            221.98,
+            535.1
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r4c0",
+            "kind": "text",
+            "label": "회의일자",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 4,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            221.98,
+            262.03,
+            371.3,
+            535.1
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r4c4",
+            "kind": "text",
+            "label": "r5c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 8,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            371.3,
+            262.03,
+            521.98,
+            535.1
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r4c8",
+            "kind": "text",
+            "label": "r5c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 0,
+          "rs": 1,
+          "cs": 8,
+          "role": "td",
+          "bbox": [
+            73.46,
+            535.1,
+            371.3,
+            538.22
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r5c0",
+            "kind": "text",
+            "label": "회의일자",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 8,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            371.3,
+            535.1,
+            521.98,
+            538.22
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r5c8",
+            "kind": "text",
+            "label": "r6c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 0,
+          "rs": 3,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            73.46,
+            538.22,
+            114.05,
+            624.29
+          ],
+          "wordIds": [
+            "w23",
+            "w24",
+            "w40",
+            "w41"
+          ],
+          "text": "참\n석\n현\n황",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.28,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            114.05,
+            538.22,
+            172.51,
+            566.67
+          ],
+          "wordIds": [
+            "w20"
+          ],
+          "text": "참석대상",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            172.51,
+            538.22,
+            221.98,
+            566.67
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r6c3",
+            "kind": "text",
+            "label": "참석대상",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 4,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            221.98,
+            538.22,
+            371.3,
+            566.67
+          ],
+          "wordIds": [
+            "w21"
+          ],
+          "text": "회사측",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 8,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            371.3,
+            538.22,
+            521.98,
+            566.67
+          ],
+          "wordIds": [
+            "w22"
+          ],
+          "text": "근로자측",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            114.05,
+            566.67,
+            172.51,
+            595.49
+          ],
+          "wordIds": [
+            "w25",
+            "w26",
+            "w27"
+          ],
+          "text": "참 석 자",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            172.51,
+            566.67,
+            221.98,
+            595.49
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r7c3",
+            "kind": "text",
+            "label": "참 석 자",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            221.98,
+            566.67,
+            270.24,
+            595.49
+          ],
+          "wordIds": [
+            "w28",
+            "w29"
+          ],
+          "text": "직 위",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            270.24,
+            566.67,
+            321.0,
+            595.49
+          ],
+          "wordIds": [
+            "w30",
+            "w31"
+          ],
+          "text": "성 명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            321.0,
+            566.67,
+            371.3,
+            595.49
+          ],
+          "wordIds": [
+            "w32",
+            "w33"
+          ],
+          "text": "서 명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 8,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            371.3,
+            566.67,
+            421.25,
+            595.49
+          ],
+          "wordIds": [
+            "w34",
+            "w35"
+          ],
+          "text": "직 위",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 10,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            421.25,
+            566.67,
+            471.43,
+            595.49
+          ],
+          "wordIds": [
+            "w36",
+            "w37"
+          ],
+          "text": "성 명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 11,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            471.43,
+            566.67,
+            521.98,
+            595.49
+          ],
+          "wordIds": [
+            "w38",
+            "w39"
+          ],
+          "text": "서 명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            114.05,
+            595.49,
+            172.51,
+            624.29
+          ],
+          "wordIds": [
+            "w42",
+            "w43",
+            "w44"
+          ],
+          "text": "불 참 자",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            172.51,
+            595.49,
+            221.98,
+            624.29
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r8c3",
+            "kind": "text",
+            "label": "불 참 자",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            221.98,
+            595.49,
+            270.24,
+            624.29
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r8c4",
+            "kind": "text",
+            "label": "r9c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            270.24,
+            595.49,
+            321.0,
+            624.29
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r8c5",
+            "kind": "text",
+            "label": "r9c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            321.0,
+            595.49,
+            371.3,
+            624.29
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r8c7",
+            "kind": "text",
+            "label": "r9c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 8,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            371.3,
+            595.49,
+            421.25,
+            624.29
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r8c8",
+            "kind": "text",
+            "label": "r9c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 10,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            421.25,
+            595.49,
+            471.43,
+            624.29
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r8c10",
+            "kind": "text",
+            "label": "r9c11",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 11,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            471.43,
+            595.49,
+            521.98,
+            624.29
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r8c11",
+            "kind": "text",
+            "label": "r9c12",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 0,
+          "rs": 5,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            73.46,
+            624.29,
+            114.05,
+            744.94
+          ],
+          "wordIds": [
+            "w45",
+            "w46",
+            "w47",
+            "w48"
+          ],
+          "text": "불\n참\n내\n역",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F2F2F2",
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 10.1,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.28,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 1,
+          "rs": 5,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            114.05,
+            624.29,
+            221.98,
+            744.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r9c1",
+            "kind": "text",
+            "label": "불 참 내 역",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            221.98,
+            624.29,
+            270.24,
+            648.65
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r9c4",
+            "kind": "text",
+            "label": "r10c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            270.24,
+            624.29,
+            321.0,
+            648.65
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r9c5",
+            "kind": "text",
+            "label": "r10c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            321.0,
+            624.29,
+            371.3,
+            648.65
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r9c7",
+            "kind": "text",
+            "label": "r10c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 8,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            371.3,
+            624.29,
+            421.25,
+            648.65
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r9c8",
+            "kind": "text",
+            "label": "r10c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 10,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            421.25,
+            624.29,
+            471.43,
+            648.65
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r9c10",
+            "kind": "text",
+            "label": "r10c11",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 11,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            471.43,
+            624.29,
+            521.98,
+            648.65
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r9c11",
+            "kind": "text",
+            "label": "r10c12",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            221.98,
+            648.65,
+            270.24,
+            672.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r10c4",
+            "kind": "text",
+            "label": "r11c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            270.24,
+            648.65,
+            321.0,
+            672.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r10c5",
+            "kind": "text",
+            "label": "r11c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            321.0,
+            648.65,
+            371.3,
+            672.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r10c7",
+            "kind": "text",
+            "label": "r11c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 8,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            371.3,
+            648.65,
+            421.25,
+            672.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r10c8",
+            "kind": "text",
+            "label": "r11c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 10,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            421.25,
+            648.65,
+            471.43,
+            672.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r10c10",
+            "kind": "text",
+            "label": "r11c11",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 11,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            471.43,
+            648.65,
+            521.98,
+            672.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r10c11",
+            "kind": "text",
+            "label": "r11c12",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            221.98,
+            672.31,
+            270.24,
+            696.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r11c4",
+            "kind": "text",
+            "label": "r12c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            270.24,
+            672.31,
+            321.0,
+            696.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r11c5",
+            "kind": "text",
+            "label": "r12c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            321.0,
+            672.31,
+            371.3,
+            696.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r11c7",
+            "kind": "text",
+            "label": "r12c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 8,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            371.3,
+            672.31,
+            421.25,
+            696.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r11c8",
+            "kind": "text",
+            "label": "r12c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 10,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            421.25,
+            672.31,
+            471.43,
+            696.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r11c10",
+            "kind": "text",
+            "label": "r12c11",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 11,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            471.43,
+            672.31,
+            521.98,
+            696.31
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r11c11",
+            "kind": "text",
+            "label": "r12c12",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 12,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            221.98,
+            696.31,
+            270.24,
+            720.55
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r12c4",
+            "kind": "text",
+            "label": "r13c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 12,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            270.24,
+            696.31,
+            321.0,
+            720.55
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r12c5",
+            "kind": "text",
+            "label": "r13c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 12,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            321.0,
+            696.31,
+            371.3,
+            720.55
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r12c7",
+            "kind": "text",
+            "label": "r13c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 12,
+          "c": 8,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            371.3,
+            696.31,
+            421.25,
+            720.55
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r12c8",
+            "kind": "text",
+            "label": "r13c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 12,
+          "c": 10,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            421.25,
+            696.31,
+            471.43,
+            720.55
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r12c10",
+            "kind": "text",
+            "label": "r13c11",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 12,
+          "c": 11,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            471.43,
+            696.31,
+            521.98,
+            720.55
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r12c11",
+            "kind": "text",
+            "label": "r13c12",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 13,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            221.98,
+            720.55,
+            270.24,
+            744.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r13c4",
+            "kind": "text",
+            "label": "r14c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 13,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            270.24,
+            720.55,
+            321.0,
+            744.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r13c5",
+            "kind": "text",
+            "label": "r14c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 13,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            321.0,
+            720.55,
+            371.3,
+            744.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r13c7",
+            "kind": "text",
+            "label": "r14c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 13,
+          "c": 8,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            371.3,
+            720.55,
+            421.25,
+            744.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r13c8",
+            "kind": "text",
+            "label": "r14c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 13,
+          "c": 10,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            421.25,
+            720.55,
+            471.43,
+            744.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r13c10",
+            "kind": "text",
+            "label": "r14c11",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 13,
+          "c": 11,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            471.43,
+            720.55,
+            521.98,
+            744.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r13c11",
+            "kind": "text",
+            "label": "r14c12",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": null,
+      "imageFallbackSrc": null,
+      "spaceBeforePt": 17.28
+    },
+    {
+      "id": "fig0",
+      "kind": "figure",
+      "bbox": [
+        92.9,
+        90.0,
+        143.05,
+        141.1
+      ],
+      "figureKind": "photo",
+      "keepText": false,
+      "alt": "figure_1",
+      "src": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFBQUGBgYHCQ4JCQgICRINDQoOFRIWFhUSFBQXGiEcFxgfGRQUHScdHyIjJSUlFhwpLCgkKyEkJST/2wBDAQYGBgkICREJCREkGBQYJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCT/wAARCABrAGoDASIAAhEBAxEB/8QAHAAAAgMBAQEBAAAAAAAAAAAABQYABAcDAQII/8QAPxAAAQMEAAMFBgQEAQ0AAAAAAQIDBAAFBhEHEiETIjFBURRhcYGRoRUjMrEIFkLBkjM0NVJiY3SCstLh8PH/xAAZAQACAwEAAAAAAAAAAAAAAAADBAACBQH/xAAtEQACAgECBQMEAQUBAAAAAAABAgADESExBBITQVEiMpFhcaHBgRQzUrHR8P/aAAwDAQACEQMRAD8A/VNSpUqSSVPCqtyucW0xlSJbqW0JG+p8aSHb9f8AMHS1ZG1QoW9GQsdVD3eFFrpL67DzBvYF07xyn36221JVKltN68t7NAH+JdpSrljNPyz/ALtJ/vXxB4dWuNqRdnTNf83HlDX3omxOx2A+I0bsA6OnK0N6+lFC1DYFvxKFrDvgQMeJwCtDH7mR692urfE2DsCTAmRQfNad6+lMLV9gvSHWG3UksgFwg9E7qlNyCwl72ea43zHw509D8/CujkOnTPzOeoa887W7LbNc+kea2T6K2D96LpUlY2kgj1FK0zCscvae1joaQ74hxgjYoO5GyjDFdqy8q529PihXVaRVekj6IcHwZ3qMvuGn0mhVKDY9lMDIWOZhfI8Oi2l9FJNGaAylThoZWDDIkqVKlVnZKpXi7R7LBclyFAJQNgb6k+gq4pQSkqJ0AN1nklLmeZQY+z+FwFd7R6OK/wDSKNTWGOW2G8HY5UYG5n1a7RMzmWLtd+dq3hW2Ip6bHqaKZNm1qw6MIjCUKeA0hlvwT8fSpmWaRMQZZjtoC3FdOzT00ms9ulktmYOLuNln8stzvLjSF9d+gJNO1V9QhrRhO0Vd+QFU1bvB83LMhzG4phtPOJDqtBtvYAHvq7dLhGwyKq2QFh66rGn5Pjye4H612Yhr4e2ByZIa3dZe20dN9mPX7mkJbqnnFOuLK3FnalE7JNaVaK/tHpH5iTsU39x/EfMNdccxy+OrWpTikAlRPU9TQuz3iPeI6bNeTvfSPI80K8gT6eFX8PX2eK3pX+wkfc0j76jR0R4VErDM/wB/1IzlVWHjPvmHXNcdElxtSDtPU8qx5H31o+I8VY9yKId2AaeV0Dn9KqU4kF/OMcDYaUblB0ELI1zo9N/AVwjYpbbClMvIpie0T3kxWVbVvy3rwoVq1WDlsHq+m8JW1iHKe36zRsgxEB0XuwqDEtHfKUHuujx8qM4zkbN9idfy5LXcdaV0II91JuH8S2bhdBAktdgwQEMbV8gDRDL7a7YLg1ktsBCUkCQ2nwUn118BWc9TZ6Vu/Y/qOK646ibd4+VKq2u4NXSCzLZUClxIPSrVIkYODGgc6wBm93NosL7iD+a4ORA95rO8lyG48OsWtUO0Nt/il1c5O1d8EEje/P0ppz4Gde7LbR1Cne0UPUaNKPHflRdMWbHTUsdP+U1ocOowqHvk/G0S4hj6mHbAiDxCt2e40/Eu2Vy4UlM13sk9grfXW/DQ1RfDbeq4X1lIWtDbX5i1JOtADf8AamL+J3/QOO/8af8AooXi6/w3H7tch0WpAZSfmN/Y1pVWl+HDdzpEWrCXlew1lm98Q5b92kBLLEmCFFKEOJB6eu9VRN9x6b/ndoUyfMtKNJlvYvGV3j8Gx9krcT/lXj4N+806r/h9yVDBcRf2VSgN8m+6T9Ks/QqwpODOK1tmSoyI04s5j5sF2Uwh8R+QdolXz1rrSy3kuPwAPY7J2qh4KdUf/NAI+UTcFt95xzIITibi6EBgpHR3qdH4Vex7gtlOS21FznXFFvS8OZto+IHv6UPFaczWNodtd5fnZ8Kg1G/0hq3cR7j+JxkFqPGiKWELQ0kDoTrx1QvN7eqBf3drWtDwDqCok9Fdf71XY4IZkuRLbdujTbcUBbbnksdfDp49KDR5eU55KYx2G128+CtbL0wjoEpOhv5D0q6GoNzVkY7yjtZy8rg57Tq24tlxLiFFKknYI8q3rDLs3l+LFmRpTiU9k4D9B+1ZQr+HzJExy4i/smUBvk33d/SrXCa+XHEsvdxfJEGNIdHcKugcPlr47oPFtXfWTWckawvD89TgOMAzQuHsldvlz7E+rqw4VN7/ANU7P96eaQ7mn8N4jQn09Eymyg+87SKfKyeJ1IfyJpU6Ar4iRfO9xItCD1SGN/PaqSuPSVfzDjKv6PaQPno06ZUr2PNrLMUNJUOy3/iNJvHlB/HMYc30MoD7Gm6PfWfof3FeI9j/AHH6nz/EyguWTG0J8VTtD/DXK54tcbXgrzB7PtOdbitKHhoe/wB1O/FDhyviNbLdFbmpiKiOl7mUCd7TrypKe4D5EYq2l5g4poAnkIVo9Kvw/EIKlUtjB8Sl1L9RmC5yJa4CQWrbw9uF8CEmW4XVlfnpKdgVnFuzbLvboOXm5OqizLgYxYJGgNp2NfBVaDwWu8KDFvGBTJSO3YddQhSjoLSRy9PpQqDwCvLGQMsOzmhY40kyUJA94OvsKKHRbLDb38+IIo7Vp0+3+43cU8ft98uOM3F1kBftAJPmobToH4UN495Hd7cLTY7O+qGJayFuJ6dBrQoVxz4hRbddbNbLW4lbkF8OvBB2AnY7v2NNt2jYnxlxyI7LnJjOtd9J5whbSumx1+FAQFBXZYPTrDOQ5sSs+rSU+CuS3S8Y7dbfdXlSXrepbYfV4qHUa+Wq84TQ2rNieQZA2hJkOSpRPqezWrVH8EtWO49abhaLE8ZHYIKnnyoK51EHzHzpP4OZLBuLN/xKW+ltZlSC2lR1zhalb1VX9QsKjTI+JZPSawx1wfmZ/bMzy1q8xcndujzkV+cWSySNcnPrl18OlaLxuabZGO5Q0gIksvN6I8SFEHX2oJbuAd7j5M17ROZVZmJJkJGj1HNzctE+K1yYyXKLDh1rPtAbdQqRydQ2Eka38jTDPW1qmvsDn7RdVdamFnfGPvG7JXi7eMUkeCnVNk/PRp/pBvrYVlmPW9I2YqQoj0CdU/VnX+1Pt+5pVe5v/don8SoK3bYzcGt9pCcDo19P70OzfFGOI+JRpUd8szY47aO8g/pVrX7bp6nRETojsdwbS4kpIpKwuaqx3KTjU48oSSY5V/Un0/er1OeTK7rr/EpYg5sNs0wlybnbDiml5lckqSdEFxXT71fsLOcX64CCc7nslaToqWog9N68afeKWGrgTFXaI3uO6drAH6TSFb5bkKexIZ2VoWDoeJrbrKW18yAfEyXQ1vysT8mA5WMyrfcHXPbnk3Vl0qVJ2eYq9aKKyvP3GPZV5C52ZGi4CebXx3T9lGJTb/JYvVuj8rcxAU6Fd3kV4ndClYOqKNzrpBY9wdST+9QW1OAXxmdNLqTy5xExeDOuWFeRNqVLmQpCXX+0O+2BUOh+hp+tud8Lb/bW2btbk2yXyjtEtsFJ356OqN2azQG8QuLLVxQtK1gKd13R1+NJUjhw1NBXGet8rz6LTzGgsUtJDkjB07S4Rq8FADkaw5N4pYdjVmfsmEQXZUuUlSByNEaUrpsnXXxrN38YmWssOmSYt3BL6nmjogq66PwrRMPw5GMNyr9cLelsRklLQ5OpUd6P11SnLmLny3pTh2t1ZUfmaJw6IrEJqO58mUu5mAL/AMDxOCss4gLjmKcgcCCOXtATza+O61LgfhLVphv3+bt6dIJ/Pc/Vrrv60l4jjT+SXVthCT2IO3Fa6AVsOU3JrGLA3boQHtLqQyyhPiSRrdL8awGKaxgneH4VD/dfYQfjwN+zebdd7aijsUHy663+1PtAcMsYslnQ2ofnO/mOE+p6/wB6PVkcQ4Z8DYaTSqUhddzJSxmmMruzKJ0Elu4RTztEf1e4/emepVEco3MJd1DDBirYb5Hyi3uW26NJbmoHI8wsdd+opeveLtYXDXMtNpTOdUSSpfe7P5daZMoxE3RxFwtzpi3BrqlafBfuNDbbnDsBwW3J4/s736e1I7i6crJ91W3dYs4Gz79jEWzZvKuch+2Xp7sY8ocqVN9zs1eXhr3Ur320SrNPXGlKW4N7Q4okhafIitqu2B49lCPaY5S04rqHWfOqB4bvyrcq2zpCX2kb7B4/rR7vhTlfGVKcjTyIs/DWMMHXwYnY+B/IF06f1j96BYnjsm+TOZDq48RnvvPBRSEgf/K0rH+H0uLYZlqluAB10EKHmkGudywu7yo4tFtQ3Bt6OilgkKc+NdHFKCwU7neToNhSRtFm+cR3mJiINtQ2/b44DZDoB7XXQnrurdvxW157H9rhx3rfJBHPpP5Z9dUw2XhLaraEvXJ4yFJ6lJ6JojcsytNjQLfaGUSZP6UNMjwPvoTXL7eGBz5lxW29x08SxEiWfh5ZSSpIUBsk/qWr0objVomZFdjkV3QUJSdRmT4BPrr5Cvuy4tcL1NF3yQ7UOrUXfdQPLf2p3QhLaQlCQlIGgBSdlnJkA5Y7n/kZRObBIwBsJ7UqVKUjElSpUqSSVTuNohXVotS46HUn1HWrlSugkHInCM7xGf4eSYLhesd1eiejRO0/sa9S/nNtIC47E8DzTvr+1PFSj/1LH3AGC6IHtOIjnKcySSP5UUfeCP8Aur1d0zadpLdqbh781k9Puad6lTrr2QfmTpH/ACMRDhl+vCua8XpaUHxaZ8D9RTHZsUtdjQPZo6e083FdSaMVKq97sMdpZalU57yVKlSgwklSpUqST//Z",
+      "captionBlockId": null,
+      "needsReview": false,
+      "spaceBeforePt": 0.0
+    },
+    {
+      "id": "lg0",
+      "kind": "line-group",
+      "bbox": [
+        72.5,
+        761.49,
+        522.91,
+        771.57
+      ],
+      "wordIds": [
+        "w49",
+        "w50",
+        "w51"
+      ],
+      "text": "주식회사 ○○○○   A4(210x297mm)",
+      "segments": [
+        {
+          "id": "lg0_s0",
+          "bbox": [
+            72.5,
+            761.49,
+            157.73,
+            771.57
+          ],
+          "wordIds": [
+            "w49",
+            "w50"
+          ],
+          "text": "주식회사 ○○○○",
+          "align": "left",
+          "widthRatio": 0.855,
+          "fontSizePt": 10.1,
+          "fontFamily": "GulimChe",
+          "bold": false,
+          "color": "#000000",
+          "spans": [
+            {
+              "wordIds": [
+                "w49",
+                "w50"
+              ],
+              "text": "주식회사 ○○○○",
+              "bold": false,
+              "italic": false,
+              "underline": false,
+              "color": "#000000",
+              "size": 10.1,
+              "font": "GulimChe",
+              "bg": null
+            }
+          ]
+        },
+        {
+          "id": "lg0_s1",
+          "bbox": [
+            457.87,
+            761.49,
+            522.91,
+            771.57
+          ],
+          "wordIds": [
+            "w51"
+          ],
+          "text": "A4(210x297mm)",
+          "align": "right",
+          "widthRatio": 0.145,
+          "fontSizePt": 10.1,
+          "fontFamily": "GulimChe",
+          "bold": false,
+          "color": "#000000",
+          "spans": [
+            {
+              "wordIds": [
+                "w51"
+              ],
+              "text": "A4(210x297mm)",
+              "bold": false,
+              "italic": false,
+              "underline": false,
+              "color": "#000000",
+              "size": 10.1,
+              "font": "GulimChe",
+              "bg": null
+            }
+          ]
+        }
+      ],
+      "layoutMode": "columns",
+      "lineHeight": 1.25,
+      "spaceBeforePt": 16.55,
+      "needsReview": false
+    }
+  ],
+  "readingOrder": [
+    "t0",
+    "fig0",
+    "t1",
+    "lg0"
+  ],
+  "pageBgColor": null,
+  "metrics": {
+    "ocrAvgConf": null,
+    "rulingCount": 40,
+    "tableCount": 2,
+    "wordCount": 52,
+    "occludedCharsFiltered": 0,
+    "ocrFixes": [],
+    "layoutDefaults": {
+      "font": "GulimChe",
+      "sizePt": 10.1,
+      "linePct": 125
+    },
+    "invariantErrors": [],
+    "rulingsH": 20,
+    "rulingsV": 20,
+    "tableShapes": [
+      "t0:4x4(10)",
+      "t1:14x12(70)"
+    ],
+    "cellCount": 80,
+    "needsReviewCells": 0,
+    "headingCount": 0,
+    "captionCount": 0,
+    "noteCount": 0,
+    "headerFooterCount": 0,
+    "headingSummary": [],
+    "headerTexts": [],
+    "blockCounts": {
+      "table": 2,
+      "figure": 1,
+      "line-group": 1
+    }
+  }
+}

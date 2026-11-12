@@ -12,7 +12,7 @@ export const sectionBlock = defineBlockKind<SectionBlockDef>({
   outline: (b, ctx) => {
     const heading = ctx.doc.slots[b.headingSlotId];
     const title = ctx.tidyName(ctx.plainText(heading?.content)).slice(0, 60) || ctx.blockTitle || "구획";
-    if (!heading || heading.role === "boilerplate") {
+    if (!heading) {
       // 제목이 고정 텍스트면 구획 = 본문 한 칸이다.
       ctx.emitSlot(ctx.pageNode, b.bodySlotId, { title, needsReview: false });
       return;

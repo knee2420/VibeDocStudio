@@ -42,13 +42,48 @@
    "_{2,}\\s*년\\s*[\\d_\\s]*월\\s*[\\d_\\s]*일",
    "\\d{4}[./-]\\s*[\\s_]{2,}[./-]\\s*[\\s_]{2,}"
   ],
-  "sign": [
-   "\\(\\s*(?:서명|인|날인)\\s*\\)",
-   "(?:서명\\s*및\\s*날인|서명\\s*또는\\s*인|신청인|작성자|대표자|확인자)\\s*[:：]?\\s*(?:\\(\\s*(?:인|서명)\\s*\\))?$"
-  ],
+   "sign": [
+    "\\(\\s*(?:서명(?:\\s*(?:및|또는)\\s*(?:인|날인))?|인|날인)\\s*\\)",
+    "(?:서명\\s*(?:및|또는)\\s*(?:인|날인)|신청인|작성자|대표자|확인자)\\s*[:：]?\\s*(?:\\(\\s*(?:인|서명)\\s*\\))?$"
+   ],
   "underlineRun": "_{3,}|\\.{5,}|─{3,}",
   "checkboxGlyphs": ["□", "☐", "☑", "☒", "✔", "✓", "■"]
  },
  "emptyCellPlaceholders": ["", "-", "—", "/", "해당없음", "해당 없음", "없음", "미작성"],
- "ocrNumericPattern": "^[\\d\\s.,:%+\\-/~()₩$원개년월일호명건]+$"
+ "ocrNumericPattern": "^[\\d\\s.,:%+\\-/~()₩$원개년월일호명건]+$",
+ "fontAliases": {
+  "gulim": "'Gulim', '굴림', 'Malgun Gothic', sans-serif",
+  "gulimche": "'GulimChe', '굴림체', 'Gulim', monospace",
+  "dotum": "'Dotum', '돋움', 'Malgun Gothic', sans-serif",
+  "batang": "'Batang', '바탕', 'NanumMyeongjo', serif",
+  "batangche": "'BatangChe', '바탕체', 'Batang', serif",
+  "malgun gothic": "'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', sans-serif",
+  "nanumgothic": "'NanumGothic', '나눔고딕', 'Malgun Gothic', sans-serif",
+  "nanummyeongjo": "'NanumMyeongjo', '나눔명조', 'Batang', serif",
+  "hy신명조": "'HY신명조', 'Batang', serif",
+  "함초롬바탕": "'HCR Batang', '함초롬바탕', 'Batang', serif",
+  "함초롬돋움": "'HCR Dotum', '함초롬돋움', 'Dotum', 'Malgun Gothic', sans-serif"
+ },
+ "lineGroup": {
+  "minGapRatio": 2.2,
+  "sameBaselineTolPt": 2.5
+ },
+ "tocLeader": {
+  "leaderPattern": "(?:\\.{3,}|…{2,}|-{4,}|_{4,}|·{3,})",
+  "pageNumPattern": "(?:^|\\s)(?:\\d{1,4}|-\\s*\\d+\\s*-)\\s*$"
+ },
+ "runningHeader": {
+  "topRatio": 0.14,
+  "bottomRatio": 0.12,
+  "minPageFraction": 0.5,
+  "minPages": 2
+ },
+ "scanFontScale": 0.85,
+ "scanBoxFontScale": 0.72,
+ "ocrConfusions": [
+  {"wrong": "\\b제\\s*([0-9oOlI]+)\\s*조", "kind": "article_zero_oh"},
+  {"wrong": "원(\\s|$)", "right": "원\\1"},
+  {"from": "AI", "to": "시", "when": "ko_context"},
+  {"from": "Ⅹ", "to": "X", "when": "roman_or_latin"}
+ ]
 }

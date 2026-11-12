@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from statistics import median
+import re
 from typing import Any, Literal, Optional, Union
 
 from ..config import load_registry, load_thresholds
@@ -11,6 +12,8 @@ from ..ir.model import (
     FieldBlock,
     FigureBlock,
     HeadingBlock,
+    LineGroupBlock,
+    LineGroupSegment,
     ListItemBlock,
     NoteBlock,
     ParagraphBlock,
@@ -25,9 +28,257 @@ from .markers import (
     group_words_into_lines,
     spans_from_words,
 )
-from .text_join import join_lines_smart
+from .text_join import join_lines_smart, join_words_smart
 
-TextOrFieldBlock = Union[HeadingBlock, ParagraphBlock, ListItemBlock, CaptionBlock, NoteBlock, FieldBlock]
+TextOrFieldBlock = Union[HeadingBlock, ParagraphBlock, ListItemBlock, CaptionBlock, NoteBlock, FieldBlock, LineGroupBlock]
+
+
+_LG_INLINE_OPEN_RE = re.compile(r"[\(\[]\s*$")
+_LG_INLINE_CLOSE_RE = re.compile(r"^\s*[\)\]]")
+
+
+def _build_line_group_block(
+    seg_lines: list[VisualLine],
+    *,
+    block_id: str,
+    layout_mode: Literal["columns", "toc"],
+    page_width: float,
+    body_size: float,
+) -> LineGroupBlock:
+    seg_lines = sorted(seg_lines, key=lambda s: s.bbox[0])
+    total_x0 = min(s.bbox[0] for s in seg_lines)
+    total_x1 = max(s.bbox[2] for s in seg_lines)
+    total_span = max(page_width * 0.6, total_x1 - total_x0, 40.0)
+    segments: list[LineGroupSegment] = []
+    all_wids: list[str] = []
+
+    for idx, sl in enumerate(seg_lines):
+        next_x0 = seg_lines[idx + 1].bbox[0] if idx + 1 < len(seg_lines) else max(total_x1, sl.bbox[2])
+        slot_w = (next_x0 - sl.bbox[0]) if idx + 1 < len(seg_lines) else (sl.bbox[2] - sl.bbox[0])
+        if idx == len(seg_lines) - 1 and sl.bbox[0] > total_x0 + total_span * 0.45:
+            ratio = max(0.12, min(0.85, (total_x1 - sl.bbox[0]) / total_span))
+        else:
+            ratio = max(0.12, min(0.85, slot_w / total_span))
+
+        seg_align: Literal["left", "center", "right"] = "left"
+        if idx == len(seg_lines) - 1 and (sl.bbox[2] >= page_width * 0.72 or layout_mode == "toc"):
+            seg_align = "right"
+        elif idx > 0 and idx == len(seg_lines) - 1 and sl.bbox[0] > total_x0 + total_span * 0.6:
+            seg_align = "right"
+
+        words = list(sl.words)
+        wids = [w.id for w in words]
+        all_wids.extend(wids)
+        sizes = [float(w.size) for w in words if w.size is not None and float(w.size) > 0]
+        f_sz = round(float(median(sizes)), 1) if sizes else round(float(sl.font_size or body_size), 1)
+        fonts = [str(w.font).strip() for w in words if w.font]
+        colors = [str(w.color).strip() for w in words if w.color]
+        segments.append(
+            LineGroupSegment(
+                id=f"{block_id}_s{idx}",
+                bbox=sl.bbox,
+                wordIds=wids,
+                text=sl.text,
+                align=seg_align,
+                widthRatio=round(ratio, 3),
+                fontSizePt=f_sz,
+                fontFamily=fonts[0] if fonts else None,
+                bold=sl.bold,
+                color=colors[0] if colors else None,
+                spans=list(sl.spans),
+            )
+        )
+
+    norm_sum = sum(s.widthRatio for s in segments) or 1.0
+    for s in segments:
+        s.widthRatio = round(max(0.08, s.widthRatio / norm_sum), 3)
+
+    return LineGroupBlock(
+        id=block_id,
+        bbox=_union_bboxes([s.bbox for s in seg_lines]),
+        wordIds=all_wids,
+        text="   ".join(s.text for s in segments),
+        segments=segments,
+        layoutMode=layout_mode,
+        lineHeight=1.25,
+    )
+
+
+def _extract_line_groups(
+    lines: list[VisualLine],
+    *,
+    page_width: float,
+    body_size: float,
+    registry: dict[str, Any],
+    matcher: Optional[PatternMatcher] = None,
+    toc_only: bool = False,
+    id_prefix: str = "lg",
+) -> tuple[list[LineGroupBlock], set[int]]:
+    """Detect TOC dot-leader lines and same-baseline multi-column line groups."""
+    if not lines:
+        return [], set()
+
+    lg_cfg = registry.get("lineGroup") or {}
+    same_tol = float(lg_cfg.get("sameBaselineTolPt", 2.5))
+    min_gap_ratio = float(lg_cfg.get("minGapRatio", 2.2))
+
+    toc_cfg = registry.get("tocLeader") or {}
+    leader_re = re.compile(str(toc_cfg.get("leaderPattern") or r"(?:\.{3,}|…{2,}|-{4,}|_{4,}|·{3,})"))
+    page_num_re = re.compile(str(toc_cfg.get("pageNumPattern") or r"(?:^|\s)(?:\d{1,4}|-\s*\d+\s*-)\s*$"))
+
+    # Group line indices into baseline bands preserving original indices
+    indexed = sorted(enumerate(lines), key=lambda pair: (pair[1].baseline, pair[1].bbox[0]))
+    clusters: list[list[tuple[int, VisualLine]]] = []
+    anchors: list[float] = []
+    for idx, ln in indexed:
+        if not clusters or abs(ln.baseline - anchors[-1]) > same_tol:
+            clusters.append([(idx, ln)])
+            anchors.append(ln.baseline)
+        else:
+            clusters[-1].append((idx, ln))
+            anchors[-1] = sum(item[1].baseline for item in clusters[-1]) / len(clusters[-1])
+
+    paired_indices: set[int] = {
+        idx
+        for cl in clusters
+        if len(cl) >= 2
+        for idx, _ in cl
+    }
+
+    cand_rows: list[tuple[list[int], list[VisualLine], Literal["columns", "toc"], bool]] = []
+    for cl in clusters:
+        cl.sort(key=lambda item: item[1].bbox[0])
+        if len(cl) == 1:
+            raw_idx, ln = cl[0]
+            # Check if a single fused TOC VisualLine contains dot leaders + page number
+            if leader_re.search(ln.text) and page_num_re.search(ln.text) and len(ln.words) >= 2:
+                last_w = ln.words[-1]
+                if page_num_re.search(last_w.text) and last_w.bbox is not None:
+                    left_words = ln.words[:-1]
+                    lx0 = min(w.bbox[0] for w in left_words if w.bbox)
+                    ly0 = min(w.bbox[1] for w in left_words if w.bbox)
+                    lx1 = max(w.bbox[2] for w in left_words if w.bbox)
+                    ly1 = max(w.bbox[3] for w in left_words if w.bbox)
+                    left_vl = VisualLine(
+                        words=left_words,
+                        bbox=(round(lx0, 2), round(ly0, 2), round(lx1, 2), round(ly1, 2)),
+                        text=join_words_smart(left_words),
+                        baseline=ln.baseline,
+                        font_size=ln.font_size,
+                        bold=ln.bold,
+                        spans=spans_from_words(left_words, default_size=ln.font_size),
+                    )
+                    right_vl = VisualLine(
+                        words=[last_w],
+                        bbox=last_w.bbox,
+                        text=last_w.text.strip(),
+                        baseline=ln.baseline,
+                        font_size=ln.font_size,
+                        bold=ln.bold,
+                        spans=spans_from_words([last_w], default_size=ln.font_size),
+                    )
+                    cand_rows.append(([raw_idx], [left_vl, right_vl], "toc", False))
+            continue
+
+        segs = [item[1] for item in cl]
+        indices = [item[0] for item in cl]
+        x0 = min(s.bbox[0] for s in segs)
+        x1 = max(s.bbox[2] for s in segs)
+        full_text = "   ".join(s.text for s in segs)
+        is_toc = bool(leader_re.search(full_text) and page_num_re.search(full_text))
+        if toc_only and not is_toc:
+            continue
+
+        med_fs = max(8.0, float(median([s.font_size for s in segs])))
+        min_gap = max(24.0, med_fs * min_gap_ratio)
+
+        if not is_toc:
+            if any(
+                (_LG_INLINE_OPEN_RE.search(a.text) and _LG_INLINE_CLOSE_RE.search(b.text))
+                or (b.bbox[0] - a.bbox[2]) < min_gap
+                for a, b in zip(segs, segs[1:])
+            ):
+                continue
+            if len(segs) <= 3 and (x1 - x0) < 150.0 and all(len(s.text.strip()) == 1 for s in segs):
+                continue
+            # Do not steal a single aligned row out of a 2-column vertical list or vertical continuation block
+            if matcher is not None and any(matcher.match_list_marker(s.text) is not None for s in segs):
+                continue
+            has_col_cont = any(
+                other_idx not in paired_indices
+                and other_idx not in indices
+                and 0.5 < (other_ln.baseline - s.baseline) <= max(28.0, body_size * 2.6)
+                and other_ln.bbox[0] <= s.bbox[2] + 20.0
+                and other_ln.bbox[2] >= s.bbox[0] - 12.0
+                and (other_ln.bbox[2] - other_ln.bbox[0]) < page_width * 0.45
+                for s in segs
+                for other_idx, other_ln in enumerate(lines)
+            )
+            if has_col_cont:
+                continue
+
+        # Heuristic to distinguish 2-col wrapped continuous prose from structured kv/meta/TOC pairs
+        has_structured_cue = (
+            is_toc
+            or any(":" in s.text or "：" in s.text or "|" in s.text for s in segs)
+            or all((s.bbox[2] - s.bbox[0]) < page_width * 0.36 for s in segs)
+        )
+        cand_rows.append((indices, segs, "toc" if is_toc else "columns", not has_structured_cue))
+
+    # Drop long runs (>= 4 consecutive rows) of unstructured prose-like 2-column bands
+    out_blocks: list[LineGroupBlock] = []
+    consumed: set[int] = set()
+    i = 0
+    while i < len(cand_rows):
+        j = i
+        if cand_rows[i][3]:
+            while (
+                j < len(cand_rows)
+                and cand_rows[j][3]
+                and (j == i or abs(cand_rows[j][1][0].baseline - cand_rows[j - 1][1][0].baseline) <= body_size * 2.8)
+            ):
+                j += 1
+            if (j - i) >= 4:
+                i = j
+                continue
+        idxs, seg_list, mode, _ = cand_rows[i]
+        out_blocks.append(
+            _build_line_group_block(
+                seg_list,
+                block_id=f"{id_prefix}{len(out_blocks)}",
+                layout_mode=mode,
+                page_width=page_width,
+                body_size=body_size,
+            )
+        )
+        consumed.update(idxs)
+        i += 1
+    return out_blocks, consumed
+
+
+def _block_geometry_meta(lines: list[VisualLine], fallback_size: float) -> dict[str, Any]:
+    """Compute fontSizePt, fontFamily, lineCount, linePitchPt, and lineHeight from VisualLines."""
+    words = [w for ln in lines for w in ln.words]
+    sizes = [float(w.size) for w in words if w.size is not None and float(w.size) > 0]
+    font_sz = round(float(median(sizes)), 1) if sizes else round(float(fallback_size), 1)
+    fonts = [str(w.font).strip() for w in words if w.font]
+    font_fam = fonts[0] if fonts else None
+    pitches = [
+        b.baseline - a.baseline
+        for a, b in zip(lines, lines[1:])
+        if b.baseline > a.baseline and (b.baseline - a.baseline) <= max(30.0, font_sz * 2.8)
+    ]
+    pitch = round(float(median(pitches)), 2) if pitches else None
+    lh = round(pitch / max(6.0, font_sz), 2) if pitch is not None else None
+    if lh is not None and not (0.95 <= lh <= 2.4):
+        lh = None
+    return {
+        "lineCount": len(lines),
+        "linePitchPt": pitch,
+        "lineHeight": lh,
+        "fontSizePt": font_sz,
+        "fontFamily": font_fam,
+    }
 
 
 def _union_bboxes(boxes: list[BBox]) -> BBox:
@@ -218,21 +469,46 @@ def reflow_non_table_blocks(
         if (b[2] - b[0]) >= page_width * 0.45
     ]
 
-    # First extract standalone form fields before paragraph reflow so field lines never merge into prose
-    fields, consumed_indices, _ = detect_field_blocks(
+    # First extract TOC dot-leader rows before field detection (so dot leaders aren't captured as underline fields),
+    # then extract standalone form fields, then same-baseline multi-column line groups.
+    toc_blocks, toc_consumed = _extract_line_groups(
         lines,
+        page_width=page_width,
+        body_size=body_size,
+        registry=reg,
+        toc_only=True,
+        id_prefix="lgtoc",
+    )
+    lines_after_toc = [ln for idx, ln in enumerate(lines) if idx not in toc_consumed]
+
+    fields, consumed_indices, _ = detect_field_blocks(
+        lines_after_toc,
         rulings,
         table_boxes=table_boxes,
         body_size=body_size,
         registry=reg,
     )
-    remaining_lines = [ln for idx, ln in enumerate(lines) if idx not in consumed_indices]
-    if not remaining_lines:
-        return list(fields)
-
+    remaining_lines = [ln for idx, ln in enumerate(lines_after_toc) if idx not in consumed_indices]
     matcher = PatternMatcher(registry=reg, thresholds=th)
+    lg_blocks, lg_consumed = _extract_line_groups(
+        remaining_lines,
+        page_width=page_width,
+        body_size=body_size,
+        registry=reg,
+        matcher=matcher,
+        id_prefix="lg",
+    )
+    if lg_consumed:
+        remaining_lines = [ln for idx, ln in enumerate(remaining_lines) if idx not in lg_consumed]
+
     merge_gap_ratio = float(th.get("paragraphMergeGapRatio", 1.85))
     hanging_min = float(th.get("hangingIndentMinPt", 4.0))
+
+    text_blocks: list[TextOrFieldBlock] = list(toc_blocks) + list(lg_blocks)
+    if not remaining_lines:
+        combined: list[TextOrFieldBlock] = list(fields) + text_blocks
+        _link_captions(combined, tables, figures)
+        return combined
 
     col_x0_global = min([ln.bbox[0] for ln in remaining_lines] + [b[0] for b in table_boxes])
     col_x1_global = max([ln.bbox[2] for ln in remaining_lines] + [b[2] for b in table_boxes])
@@ -246,7 +522,6 @@ def reflow_non_table_blocks(
     normal_gap = median(line_gaps) if line_gaps else body_size * 0.35
     max_merge_gap = max(body_size * 0.7, normal_gap * merge_gap_ratio)
 
-    text_blocks: list[TextOrFieldBlock] = []
     seq = 0
 
     for band in _detect_vertical_bands(remaining_lines, obstacle_boxes):
@@ -288,6 +563,7 @@ def reflow_non_table_blocks(
                             note_lines.append(nxt)
                             j += 1
                     note_words = [w for it in note_lines for w in it.words]
+                    note_meta = _block_geometry_meta(note_lines, body_size)
                     text_blocks.append(
                         NoteBlock(
                             id=f"nt{seq}",
@@ -297,6 +573,7 @@ def reflow_non_table_blocks(
                             align=ln_align,
                             spans=spans_from_words(note_words, default_size=body_size),
                             noteKind=note_kind,
+                            **note_meta,
                         )
                     )
                     seq += 1
@@ -304,6 +581,7 @@ def reflow_non_table_blocks(
                     continue
 
                 if matcher.match_caption(ln.text):
+                    cap_meta = _block_geometry_meta([ln], body_size)
                     text_blocks.append(
                         CaptionBlock(
                             id=f"cap{seq}",
@@ -312,6 +590,7 @@ def reflow_non_table_blocks(
                             text=ln.text,
                             align=ln_align,
                             spans=ln.spans,
+                            **cap_meta,
                         )
                     )
                     seq += 1
@@ -325,6 +604,7 @@ def reflow_non_table_blocks(
                     page_margins_x=(col_x0_global, col_x1_global),
                 )
                 if h_level is not None:
+                    hd_meta = _block_geometry_meta([ln], body_size)
                     text_blocks.append(
                         HeadingBlock(
                             id=f"hd{seq}",
@@ -334,6 +614,7 @@ def reflow_non_table_blocks(
                             text=ln.text,
                             align=ln_align,
                             spans=ln.spans,
+                            **hd_meta,
                         )
                     )
                     seq += 1
@@ -371,6 +652,7 @@ def reflow_non_table_blocks(
                         j += 1
 
                     all_words = [w for it in item_lines for w in it.words]
+                    li_meta = _block_geometry_meta(item_lines, body_size)
                     hang = max(0.0, round(second_word_x0 - marker_x0, 2)) if len(item_lines) > 1 and second_word_x0 - marker_x0 >= hanging_min else 0.0
                     indent_lvl = max(0, int(round(max(0.0, marker_x0 - frame_x0) / 14.0)))
                     text_blocks.append(
@@ -385,6 +667,7 @@ def reflow_non_table_blocks(
                             text=join_lines_smart(item_lines, newline=False),
                             align="left",
                             spans=spans_from_words(all_words, default_size=body_size),
+                            **li_meta,
                         )
                     )
                     seq += 1
@@ -422,7 +705,7 @@ def reflow_non_table_blocks(
 
                 all_words = [w for it in para_lines for w in it.words]
                 pb_bbox = _union_bboxes([it.bbox for it in para_lines])
-                avg_lh = round((para_lines[1].baseline - para_lines[0].baseline) / max(8.0, body_size), 2) if len(para_lines) > 1 else None
+                pb_meta = _block_geometry_meta(para_lines, body_size)
                 text_blocks.append(
                     ParagraphBlock(
                         id=f"p{seq}",
@@ -430,8 +713,8 @@ def reflow_non_table_blocks(
                         wordIds=[w.id for w in all_words],
                         text=join_lines_smart(para_lines, newline=False),
                         align=ln_align,
-                        lineHeight=avg_lh if avg_lh and 0.9 <= avg_lh <= 2.5 else None,
                         spans=spans_from_words(all_words, default_size=body_size),
+                        **pb_meta,
                     )
                 )
                 seq += 1

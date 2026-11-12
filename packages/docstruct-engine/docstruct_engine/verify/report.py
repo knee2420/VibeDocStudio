@@ -6,6 +6,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field
 
 from ..ir.validate import ValidationResult
+from .layout_checks import LayoutPageReport
 
 
 class PageVerifyReport(BaseModel):
@@ -22,6 +23,7 @@ class PageVerifyReport(BaseModel):
     validation: ValidationResult
     missingLineBoxes: list[tuple[float, float, float, float]] = Field(default_factory=list)
     gateFailures: list[str] = Field(default_factory=list)
+    layoutReport: Optional[LayoutPageReport] = None
 
 
 class EvalReport(BaseModel):

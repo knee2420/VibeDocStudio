@@ -183,16 +183,15 @@ export function isSlotEmpty(slot: Pick<VDocSlot, "content" | "constraints">): bo
   return false;
 }
 
-export type SlotFillState = "fixed" | "locked" | "empty" | "staged" | "ai-draft" | "filled" | "verified";
+export type SlotFillState = "locked" | "empty" | "staged" | "ai-draft" | "filled" | "verified";
 
 /**
  * 슬롯의 채움 상태 (Phase 3 진행률 · 빈 칸 지도의 단위).
- * - fixed: 고정 문구(boilerplate) — 채울 대상이 아님 · locked: 잠긴 칸
+ * - locked: 잠긴 칸 · empty: 비어 있음
  * - staged: 승인 대기 변경안이 있다 · ai-draft: AI 가 쓴 뒤 사람이 검증하지 않았다
  * - verified: 사람이 확인했다 (AI 가 썼어도)
  */
 export function slotFillState(slot: VDocSlot, stagedSlotIds?: ReadonlySet<string>): SlotFillState {
-  if (slot.role === "boilerplate") return "fixed";
   if (slot.constraints?.locked) return "locked";
   if (stagedSlotIds?.has(slot.slotId)) return "staged";
   if (isSlotEmpty(slot)) return "empty";
@@ -215,7 +214,7 @@ export function fillProgress(slots: VDocSlot[], stagedSlotIds?: ReadonlySet<stri
   const out: FillProgress = { total: 0, empty: 0, staged: 0, aiDraft: 0, filled: 0, verified: 0 };
   for (const slot of slots) {
     const state = slotFillState(slot, stagedSlotIds);
-    if (state === "fixed" || state === "locked") continue;
+    if (state === "locked") continue;
     out.total++;
     if (state === "empty") out.empty++;
     else if (state === "staged") out.staged++;

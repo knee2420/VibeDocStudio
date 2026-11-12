@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+import re
 from typing import Any, Literal, Optional
 
 import pymupdf
@@ -290,6 +291,17 @@ def _pymupdf_text_fallback(
         total = max(1, len(extracted) * col_count)
         if non_empty / total < 0.45:
             continue
+        # Reject TOC dot-leader two-column lists mistaken for borderless tables
+        if col_count == 2 and extracted:
+            toc_rows = sum(
+                1
+                for r in extracted
+                if len(r) >= 2
+                and re.search(r"(?:\.{3,}|…{2,}|-{4,}|·{3,})", str(r[0] or ""))
+                and re.search(r"^\s*(?:\d{1,4}|-\s*\d+\s*-)\s*$", str(r[-1] or ""))
+            )
+            if toc_rows >= max(2, int(len(extracted) * 0.4)):
+                continue
         # Ensure columns don't slice right through single vector words (prose leakage guard)
         col_xs = [round(bx[0], 2)]
         first_cells = rows[0].cells if rows else []

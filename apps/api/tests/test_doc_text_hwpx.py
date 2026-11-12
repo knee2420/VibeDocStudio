@@ -202,7 +202,7 @@ def test_build_pages_keeps_form_table_shape(tmp_path: Path) -> None:
     assert first["borderBottom"] == "2px dashed #000000" and first["backgroundColor"] == "#E5E5E5"
     assert first["vAlign"] == "middle" and first["padding"] == "1.9px 6.8px 1.9px 6.8px"
     roles = {result.slots[c["slotId"]]["role"] for c in row1["cells"][1:]}
-    assert roles == {"editable-slot"} and result.slots[first["slotId"]]["role"] == "boilerplate"
+    assert roles == {"editable-slot"} and result.slots[first["slotId"]]["role"] == "editable-slot"
     assert result.reports[0].tables == 1 and result.reports[0].fill_cells == 3
     title = result.slots[page["blocks"][0]["slotId"]]["content"]
     assert title == '<p><strong><span style="font-size: 20px">[붙임 4호 서식]</span></strong></p>'

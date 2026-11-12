@@ -42,15 +42,15 @@ def assemble_webpage_vdoc(
             hdr_id,
             f"{pno}페이지 머리글",
             f"<p>{html_lib.escape(hdr_text)}</p>",
-            role="boilerplate",
-            constraints={"locked": True, "fontSize": "11px", "color": "#64748b"},
+            role="editable-slot",
+            constraints={"fontSize": "11px", "color": "#64748b"},
         )
         slots[ftr_id] = make_slot(
             ftr_id,
             f"{pno}페이지 바닥글",
             f"<p>- {pno} -</p>",
-            role="boilerplate",
-            constraints={"locked": True, "fontSize": "11px", "color": "#94a3b8", "align": "center"},
+            role="editable-slot",
+            constraints={"fontSize": "11px", "color": "#94a3b8", "align": "center"},
         )
 
         blocks_out: list[dict[str, Any]] = []

@@ -91,13 +91,13 @@ export function patchSlotConstraints(
   );
 }
 
-/** 잠그면 고정 문구(boilerplate)가 되고, 풀면 다시 편집 슬롯이 된다. */
+/** 슬롯 잠금(`constraints.locked`)을 전환한다. (역할은 편집 가능 슬롯으로 유지한다.) */
 export function toggleSlotLock(doc: VDocDocument, slotId: string): VDocDocument {
   return updateSlot(doc, slotId, (slot) => {
     const locked = Boolean(slot.constraints?.locked);
     return {
       ...slot,
-      role: locked ? "editable-slot" : "boilerplate",
+      role: (slot.role as string) === "boilerplate" ? "editable-slot" : slot.role,
       constraints: { ...slot.constraints, locked: !locked },
     };
   });
@@ -138,5 +138,9 @@ export function getSlotBackdata(doc: VDocDocument, slot: VDocSlot): BackdataChun
 /** 문서를 열었을 때 먼저 고를 편집 슬롯 (고정 문구가 아닌 첫 슬롯). */
 export function findFirstEditableSlotId(doc: VDocDocument | undefined): string | null {
   if (!doc) return null;
-  return Object.values(doc.slots).find((s) => s.role !== "boilerplate")?.slotId ?? null;
+  return (
+    Object.values(doc.slots).find((s) => !s.constraints?.locked)?.slotId ??
+    Object.values(doc.slots)[0]?.slotId ??
+    null
+  );
 }

@@ -1,0 +1,2353 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-vector",
+  "size": {
+    "width": 595.0,
+    "height": 841.0
+  },
+  "margins": {
+    "top": 39.5,
+    "right": 29.6,
+    "bottom": 621.8,
+    "left": 29.1
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "표준임대차계약서",
+      "bbox": [
+        200.3,
+        39.49,
+        350.93,
+        59.51
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "NanumGothicExtra",
+      "size": 20.02,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 55.5,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "◆",
+      "bbox": [
+        35.02,
+        70.21,
+        44.98,
+        80.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 9.95,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 78.76,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w2",
+      "text": "임대주택의",
+      "bbox": [
+        50.13,
+        70.21,
+        100.38,
+        80.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 9.95,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 78.76,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w3",
+      "text": "표시",
+      "bbox": [
+        105.54,
+        70.21,
+        125.57,
+        80.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 9.95,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 78.76,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w4",
+      "text": "주택",
+      "bbox": [
+        35.02,
+        91.17,
+        53.01,
+        100.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.9,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "소재지",
+      "bbox": [
+        56.01,
+        91.17,
+        83.0,
+        100.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.9,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w6",
+      "text": "서울특별시",
+      "bbox": [
+        94.27,
+        91.17,
+        139.25,
+        100.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.9,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w7",
+      "text": "강동구",
+      "bbox": [
+        142.25,
+        91.17,
+        169.23,
+        100.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.9,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w8",
+      "text": "올림픽로78길",
+      "bbox": [
+        172.22,
+        91.17,
+        227.52,
+        100.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.9,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w9",
+      "text": "60,",
+      "bbox": [
+        230.51,
+        91.17,
+        243.83,
+        100.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.9,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w10",
+      "text": "104동",
+      "bbox": [
+        246.83,
+        91.17,
+        271.29,
+        100.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.9,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w11",
+      "text": "910호",
+      "bbox": [
+        274.29,
+        91.17,
+        298.75,
+        100.16
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.9,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w12",
+      "text": "주택",
+      "bbox": [
+        39.58,
+        112.87,
+        57.57,
+        121.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 120.59,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w13",
+      "text": "유형",
+      "bbox": [
+        60.57,
+        112.87,
+        78.56,
+        121.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 120.59,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w14",
+      "text": "아파트[]",
+      "bbox": [
+        94.27,
+        113.71,
+        139.31,
+        122.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 121.43,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w15",
+      "text": "연립주택[]",
+      "bbox": [
+        161.79,
+        113.71,
+        215.82,
+        122.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 121.43,
+      "lineHint": 3,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w16",
+      "text": "다세대주택[]",
+      "bbox": [
+        241.91,
+        112.87,
+        307.94,
+        121.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 120.59,
+      "lineHint": 3,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w17",
+      "text": "다가구주택[]",
+      "bbox": [
+        331.14,
+        112.87,
+        397.16,
+        121.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 120.59,
+      "lineHint": 3,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w18",
+      "text": "그밖의",
+      "bbox": [
+        422.65,
+        113.71,
+        449.64,
+        122.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 121.43,
+      "lineHint": 3,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w19",
+      "text": "주택[√]",
+      "bbox": [
+        452.63,
+        113.71,
+        490.24,
+        122.7
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Dotum",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 121.43,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w20",
+      "text": "임대",
+      "bbox": [
+        39.82,
+        162.37,
+        57.93,
+        171.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 170.09,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w21",
+      "text": "주",
+      "bbox": [
+        92.47,
+        160.81,
+        101.47,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w22",
+      "text": "소",
+      "bbox": [
+        119.45,
+        160.81,
+        128.44,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w23",
+      "text": "경기도",
+      "bbox": [
+        155.8,
+        160.81,
+        183.02,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w24",
+      "text": "안양시",
+      "bbox": [
+        187.69,
+        160.81,
+        214.92,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w25",
+      "text": "동안구",
+      "bbox": [
+        219.6,
+        160.81,
+        246.83,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w26",
+      "text": "학의로",
+      "bbox": [
+        251.5,
+        160.81,
+        278.73,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w27",
+      "text": "282,",
+      "bbox": [
+        283.41,
+        160.81,
+        301.58,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w28",
+      "text": "A동",
+      "bbox": [
+        306.19,
+        160.81,
+        319.75,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w29",
+      "text": "2005호(관양동,",
+      "bbox": [
+        324.43,
+        160.81,
+        388.17,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w30",
+      "text": "금강펜테리움IT타워)",
+      "bbox": [
+        392.79,
+        160.81,
+        479.32,
+        169.81
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 168.53,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w31",
+      "text": "대리",
+      "bbox": [
+        39.82,
+        171.36,
+        57.93,
+        180.35
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 179.09,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w32",
+      "text": "(인)",
+      "bbox": [
+        539.59,
+        171.58,
+        552.94,
+        179.61
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "NanumGothic",
+      "size": 8.03,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 178.01,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w33",
+      "text": "인",
+      "bbox": [
+        48.94,
+        180.35,
+        57.93,
+        189.35
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 188.08,
+      "lineHint": 6,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w34",
+      "text": "법인등록번호",
+      "bbox": [
+        81.92,
+        181.07,
+        135.89,
+        190.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 188.79,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w35",
+      "text": "134111-0229943",
+      "bbox": [
+        155.68,
+        181.07,
+        218.64,
+        190.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 188.79,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w36",
+      "text": "전화",
+      "bbox": [
+        239.39,
+        181.07,
+        257.38,
+        190.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 188.79,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w37",
+      "text": "1566-3733",
+      "bbox": [
+        279.45,
+        181.9,
+        315.61,
+        189.93
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 8.03,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 188.79,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w38",
+      "text": "성명",
+      "bbox": [
+        339.05,
+        181.07,
+        357.05,
+        190.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 188.79,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w39",
+      "text": "우리레오PMC주식회사",
+      "bbox": [
+        368.68,
+        181.07,
+        460.19,
+        190.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Gulim",
+      "size": 8.99,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 188.79,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": null
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "h",
+      "x0": 28.31,
+      "y0": 86.36,
+      "x1": 566.57,
+      "y1": 86.48,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 28.31,
+      "y0": 106.5,
+      "x1": 565.73,
+      "y1": 106.62,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 29.03,
+      "y0": 129.04,
+      "x1": 565.73,
+      "y1": 129.16,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 29.03,
+      "y0": 156.01,
+      "x1": 565.73,
+      "y1": 156.13,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 68.0,
+      "y0": 175.43,
+      "x1": 531.32,
+      "y1": 175.55,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 29.03,
+      "y0": 194.97,
+      "x1": 565.73,
+      "y1": 195.09,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 28.31,
+      "y0": 201.68,
+      "x1": 565.73,
+      "y1": 201.8,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 28.61,
+      "y0": 86.78,
+      "x1": 29.57,
+      "y1": 202.1,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 68.42,
+      "y0": 155.59,
+      "x1": 68.54,
+      "y1": 195.38,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 89.42,
+      "y0": 87.5,
+      "x1": 89.53,
+      "y1": 128.74,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 149.38,
+      "y0": 155.59,
+      "x1": 149.5,
+      "y1": 195.38,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 237.05,
+      "y0": 175.85,
+      "x1": 237.17,
+      "y1": 195.38,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 259.48,
+      "y0": 175.85,
+      "x1": 259.6,
+      "y1": 195.38,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 334.44,
+      "y0": 175.12,
+      "x1": 334.56,
+      "y1": 195.38,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 361.43,
+      "y0": 175.85,
+      "x1": 361.55,
+      "y1": 195.38,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 530.9,
+      "y0": 155.59,
+      "x1": 531.01,
+      "y1": 195.38,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 565.31,
+      "y0": 86.78,
+      "x1": 565.43,
+      "y1": 202.1,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "t0",
+      "kind": "table",
+      "bbox": [
+        29.09,
+        86.42,
+        565.37,
+        201.74
+      ],
+      "nRows": 6,
+      "nCols": 9,
+      "colXs": [
+        29.09,
+        68.48,
+        89.47,
+        149.44,
+        237.11,
+        259.54,
+        334.5,
+        361.49,
+        530.95,
+        565.37
+      ],
+      "rowYs": [
+        86.42,
+        106.56,
+        129.1,
+        156.07,
+        175.49,
+        195.03,
+        201.74
+      ],
+      "widthRatio": [
+        0.0735,
+        0.0391,
+        0.1118,
+        0.1635,
+        0.0418,
+        0.1398,
+        0.0503,
+        0.316,
+        0.0642
+      ],
+      "widthPt": 536.28,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "th",
+          "bbox": [
+            29.09,
+            86.42,
+            89.47,
+            106.56
+          ],
+          "wordIds": [
+            "w4",
+            "w5"
+          ],
+          "text": "주택 소재지",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#C0DCC0",
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Dotum",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 2,
+          "rs": 1,
+          "cs": 7,
+          "role": "th",
+          "bbox": [
+            89.47,
+            86.42,
+            565.37,
+            106.56
+          ],
+          "wordIds": [
+            "w6",
+            "w7",
+            "w8",
+            "w9",
+            "w10",
+            "w11"
+          ],
+          "text": "서울특별시 강동구 올림픽로78길 60, 104동 910호",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 4.8
+          },
+          "font": {
+            "family": "Gulim",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            29.09,
+            106.56,
+            89.47,
+            129.1
+          ],
+          "wordIds": [
+            "w12",
+            "w13"
+          ],
+          "text": "주택 유형",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#C0DCC0",
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Dotum",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 2,
+          "rs": 1,
+          "cs": 7,
+          "role": "td",
+          "bbox": [
+            89.47,
+            106.56,
+            565.37,
+            129.1
+          ],
+          "wordIds": [
+            "w14",
+            "w15",
+            "w16",
+            "w17",
+            "w18",
+            "w19"
+          ],
+          "text": "아파트[] 연립주택[] 다세대주택[] 다가구주택[] 그밖의 주택[√]",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 4.8
+          },
+          "font": {
+            "family": "Dotum",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "rs": 1,
+          "cs": 9,
+          "role": "td",
+          "bbox": [
+            29.09,
+            129.1,
+            565.37,
+            156.07
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c0",
+            "kind": "text",
+            "label": "주택 소재지",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 0,
+          "rs": 2,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            29.09,
+            156.07,
+            68.48,
+            195.03
+          ],
+          "wordIds": [
+            "w20",
+            "w31",
+            "w33"
+          ],
+          "text": "임대\n대리\n인",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#C0DCC0",
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.05,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            68.48,
+            156.07,
+            149.44,
+            175.49
+          ],
+          "wordIds": [
+            "w21",
+            "w22"
+          ],
+          "text": "주 소",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#C0DCC0",
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Gulim",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 3,
+          "rs": 1,
+          "cs": 5,
+          "role": "td",
+          "bbox": [
+            149.44,
+            156.07,
+            530.95,
+            175.49
+          ],
+          "wordIds": [
+            "w23",
+            "w24",
+            "w25",
+            "w26",
+            "w27",
+            "w28",
+            "w29",
+            "w30"
+          ],
+          "text": "경기도 안양시 동안구 학의로 282, A동 2005호(관양동, 금강펜테리움IT타워)",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 6.4
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 8,
+          "rs": 2,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            530.95,
+            156.07,
+            565.37,
+            195.03
+          ],
+          "wordIds": [
+            "w32"
+          ],
+          "text": "(인)",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "NanumGothic",
+            "color": "#000000",
+            "size": 8.0,
+            "bold": true,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r3c8",
+            "kind": "sign",
+            "label": "r4c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            68.48,
+            175.49,
+            149.44,
+            195.03
+          ],
+          "wordIds": [
+            "w34"
+          ],
+          "text": "법인등록번호",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#C0DCC0",
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Gulim",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            149.44,
+            175.49,
+            237.11,
+            195.03
+          ],
+          "wordIds": [
+            "w35"
+          ],
+          "text": "134111-0229943",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 6.2
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            237.11,
+            175.49,
+            259.54,
+            195.03
+          ],
+          "wordIds": [
+            "w36"
+          ],
+          "text": "전화",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": "#F0FBFF",
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 2.3
+          },
+          "font": {
+            "family": "Gulim",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 5,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            259.54,
+            175.49,
+            334.5,
+            195.03
+          ],
+          "wordIds": [
+            "w37"
+          ],
+          "text": "1566-3733",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 8.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 6,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            334.5,
+            175.49,
+            361.49,
+            195.03
+          ],
+          "wordIds": [
+            "w38"
+          ],
+          "text": "성명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": "#F0FBFF",
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Gulim",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            361.49,
+            175.49,
+            530.95,
+            195.03
+          ],
+          "wordIds": [
+            "w39"
+          ],
+          "text": "우리레오PMC주식회사",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 7.2
+          },
+          "font": {
+            "family": "Gulim",
+            "color": "#000000",
+            "size": 9.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 0,
+          "rs": 1,
+          "cs": 9,
+          "role": "td",
+          "bbox": [
+            29.09,
+            195.03,
+            565.37,
+            201.74
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c0",
+            "kind": "text",
+            "label": "주택 소재지",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": null,
+      "imageFallbackSrc": null,
+      "spaceBeforePt": 6.26
+    },
+    {
+      "id": "fig0",
+      "kind": "figure",
+      "bbox": [
+        463.67,
+        198.26,
+        563.34,
+        219.24
+      ],
+      "figureKind": "photo",
+      "keepText": false,
+      "alt": "figure_1",
+      "src": "data:image/jpeg;base64,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",
+      "captionBlockId": null,
+      "needsReview": false,
+      "spaceBeforePt": 0.0
+    },
+    {
+      "id": "hd0",
+      "bbox": [
+        200.3,
+        39.49,
+        350.93,
+        59.51
+      ],
+      "wordIds": [
+        "w0"
+      ],
+      "text": "표준임대차계약서",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w0"
+          ],
+          "text": "표준임대차계약서",
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 20.0,
+          "font": "NanumGothicExtra",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "lineCount": 1,
+      "linePitchPt": null,
+      "lineHeight": null,
+      "spaceBeforePt": 0.0,
+      "fontSizePt": 20.0,
+      "fontFamily": "NanumGothicExtra",
+      "kind": "heading",
+      "level": 1
+    },
+    {
+      "id": "li1",
+      "bbox": [
+        35.02,
+        70.21,
+        125.57,
+        80.16
+      ],
+      "wordIds": [
+        "w1",
+        "w2",
+        "w3"
+      ],
+      "text": "◆ 임대주택의 표시",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w1",
+            "w2",
+            "w3"
+          ],
+          "text": "◆ 임대주택의 표시",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 9.9,
+          "font": "GulimChe",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "lineCount": 1,
+      "linePitchPt": null,
+      "lineHeight": null,
+      "spaceBeforePt": 10.7,
+      "fontSizePt": 9.9,
+      "fontFamily": "GulimChe",
+      "kind": "listItem",
+      "marker": "◆",
+      "markerKind": "bullet",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    }
+  ],
+  "readingOrder": [
+    "hd0",
+    "li1",
+    "t0",
+    "fig0"
+  ],
+  "pageBgColor": null,
+  "metrics": {
+    "ocrAvgConf": null,
+    "rulingCount": 17,
+    "tableCount": 1,
+    "wordCount": 40,
+    "occludedCharsFiltered": 0,
+    "ocrFixes": [],
+    "layoutDefaults": {
+      "font": "GulimChe",
+      "sizePt": 9.9,
+      "linePct": 209
+    },
+    "invariantErrors": [],
+    "rulingsH": 7,
+    "rulingsV": 10,
+    "tableShapes": [
+      "t0:6x9(16)"
+    ],
+    "cellCount": 16,
+    "needsReviewCells": 0,
+    "headingCount": 1,
+    "captionCount": 0,
+    "noteCount": 0,
+    "headerFooterCount": 0,
+    "headingSummary": [
+      "H1:표준임대차계약서"
+    ],
+    "headerTexts": [],
+    "blockCounts": {
+      "table": 1,
+      "figure": 1,
+      "heading": 1,
+      "listItem": 1
+    }
+  }
+}

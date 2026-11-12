@@ -5,7 +5,7 @@ import html as html_lib
 import logging
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import median
@@ -14,6 +14,7 @@ from typing import Any, Callable, Optional, Union
 from docstruct_engine import build_doc_ir
 from docstruct_engine.acquire.ocr import WindowsOcrAdapter
 from docstruct_engine.cache import doc_cache_dir, file_src_hash
+from docstruct_engine.config import load_registry
 from docstruct_engine.ir.model import (
     BorderEdge,
     CaptionBlock,
@@ -22,6 +23,7 @@ from docstruct_engine.ir.model import (
     FieldBlock,
     FigureBlock,
     HeadingBlock,
+    LineGroupBlock,
     ListItemBlock,
     NoteBlock,
     PageIR,
@@ -49,6 +51,8 @@ class CompiledPageReport:
     pictures: int = 0
     headers_isolated: int = 0
     cell_paragraphs_merged: int = 0
+    blockMap: dict[str, str] = field(default_factory=dict)
+    slotMap: dict[str, list[str]] = field(default_factory=dict)
 
 
 def _labels() -> dict[str, str]:
@@ -60,6 +64,13 @@ def _font_stack(family: str) -> str:
     clean = (family or "").strip().strip("'\"")
     if not clean:
         return "'Malgun Gothic', sans-serif"
+    aliases = (load_registry().get("fontAliases") or {}) if callable(load_registry) else {}
+    low = clean.lower()
+    if low in aliases:
+        return str(aliases[low])
+    for k, stack in aliases.items():
+        if k in low:
+            return str(stack)
     return f"'{clean}', 'Malgun Gothic', sans-serif"
 
 
@@ -172,6 +183,8 @@ def _spans_to_inline_html(
     block_text: str,
     spans: list[Span],
     words_by_id: dict[str, Word],
+    *,
+    base_size_pt: float = 10.0,
 ) -> str:
     if not spans:
         return "<br>".join(html_lib.escape(seg) for seg in (block_text or "").splitlines()) or ""
@@ -185,7 +198,7 @@ def _spans_to_inline_html(
             continue
         inner = "<br>".join(html_lib.escape(seg) for seg in txt.split("\n"))
         styles: list[str] = []
-        if sp.size and abs(sp.size - 10.0) >= 0.5:
+        if sp.size and abs(sp.size - base_size_pt) >= 0.8:
             styles.append(f"font-size: {round(sp.size * PX_PER_PT)}px")
         if sp.color and sp.color.upper() != "#000000":
             styles.append(f"color: {sp.color}")
@@ -366,16 +379,45 @@ def _cell_html_and_meta(
         cell_words = [words_by_id[wid] for wid in cell.wordIds if wid in words_by_id]
         if cell_words:
             first_w = cell_words[0]
-            size_pt = float(first_w.size or size_pt)
-            family = first_w.font or family
-            bold = all(bool(w.bold) for w in cell_words)
-            if first_w.color and all(w.color == first_w.color for w in cell_words):
+            if font is None or font.size is None:
+                size_pt = float(first_w.size or size_pt)
+            if not family:
+                family = first_w.font or ""
+            if font is None or font.bold is None:
+                bold = all(bool(w.bold) for w in cell_words)
+            if (font is None or not font.color) and first_w.color and all(w.color == first_w.color for w in cell_words):
                 color = first_w.color
             para_groups, merged_lines = _group_cell_lines_into_paragraphs(cell_words, cell.bbox)
             if stats_out is not None and merged_lines > 0:
                 stats_out["cell_paragraphs_merged"] = stats_out.get("cell_paragraphs_merged", 0) + merged_lines
             if para_groups:
-                content_html = "".join(f"<p>{html_lib.escape(join_words_smart(pg))}</p>" for pg in para_groups)
+                cell_sizes = [round(float(w.size), 1) for w in cell_words if w.size is not None and w.size >= 5.0]
+                mixed_sizes = bool(cell_sizes and (max(cell_sizes) - min(cell_sizes)) >= 0.8)
+                if mixed_sizes:
+                    pg_htmls: list[str] = []
+                    for pg in para_groups:
+                        runs: list[tuple[Optional[float], list[Word]]] = []
+                        for pw_tok in pg:
+                            wsz = round(float(pw_tok.size), 1) if pw_tok.size else None
+                            if runs and (
+                                runs[-1][0] == wsz
+                                or (runs[-1][0] is not None and wsz is not None and abs(runs[-1][0] - wsz) < 0.8)
+                            ):
+                                runs[-1][1].append(pw_tok)
+                            else:
+                                runs.append((wsz, [pw_tok]))
+                        chunks: list[str] = []
+                        for r_idx, (rsz, rwds) in enumerate(runs):
+                            seg_txt = html_lib.escape(join_words_smart(rwds))
+                            if r_idx > 0:
+                                seg_txt = " " + seg_txt
+                            if rsz is not None and abs(rsz - size_pt) >= 0.8:
+                                seg_txt = f'<span style="font-size: {round(rsz * PX_PER_PT)}px">{seg_txt}</span>'
+                            chunks.append(seg_txt)
+                        pg_htmls.append(f"<p>{''.join(chunks)}</p>")
+                    content_html = "".join(pg_htmls)
+                else:
+                    content_html = "".join(f"<p>{html_lib.escape(join_words_smart(pg))}</p>" for pg in para_groups)
             else:
                 content_html = f"<p>{html_lib.escape(join_words_smart(cell_words))}</p>"
             return content_html, size_pt, family, color, lh, ("bold" if bold else "normal")
@@ -464,7 +506,7 @@ def _render_table_block(
             )
             if is_editable:
                 fill_cells += 1
-            slot_role = "editable-slot" if is_editable else "boilerplate"
+            slot_role = "editable-slot"
             slot_label = (
                 lbls["cellLabel"].format(r=cell.r + 1, c=cell.c + 1)
                 if not plain_txt
@@ -480,8 +522,12 @@ def _render_table_block(
                 "content": content_html,
                 "backDataRefs": [],
             }
+            cell_cons: dict[str, Any] = {"fontSize": _pt_px_round1(size_pt)}
+            if family:
+                cell_cons["fontFamily"] = _font_stack(family)
             if cell.needsReview:
-                slot_entry["constraints"] = {"needsReview": True}
+                cell_cons["needsReview"] = True
+            slot_entry["constraints"] = cell_cons
             slots[slot_id] = slot_entry
 
             pad = cell.padding
@@ -567,10 +613,11 @@ def _render_flow_text_block(
         if not title_text and txt:
             title_text = txt
 
+        item_base_fs = float(getattr(item, "fontSizePt", None) or 10.0)
         if isinstance(item, ListItemBlock):
             pad_px = round((item.indentLevel * 12.0 + item.hangingIndentPt) * PX_PER_PT, 1)
             hang_px = round(max(item.hangingIndentPt, 8.0 if item.marker else 0.0) * PX_PER_PT, 1)
-            body_html = _spans_to_inline_html(txt, item.spans, words_by_id)
+            body_html = _spans_to_inline_html(txt, item.spans, words_by_id, base_size_pt=item_base_fs)
             if item.marker and not txt.startswith(item.marker):
                 body_html = f"{html_lib.escape(item.marker)} {body_html}".strip()
             style_parts: list[str] = []
@@ -581,17 +628,17 @@ def _render_flow_text_block(
             style_attr = f' style="{"; ".join(style_parts)}"' if style_parts else ""
             html_parts.append(f"<p{style_attr}>{body_html}</p>")
         elif isinstance(item, CaptionBlock):
-            inner = _spans_to_inline_html(txt, item.spans, words_by_id)
+            inner = _spans_to_inline_html(txt, item.spans, words_by_id, base_size_pt=item_base_fs)
             align_s = f'text-align: {item.align}; ' if item.align else ""
             html_parts.append(f'<p style="{align_s}font-size: 12px">{inner}</p>')
         elif isinstance(item, NoteBlock):
-            inner = _spans_to_inline_html(txt, item.spans, words_by_id)
+            inner = _spans_to_inline_html(txt, item.spans, words_by_id, base_size_pt=item_base_fs)
             html_parts.append(f'<p style="font-size: 11px; color: #555555">{inner}</p>')
         else:
             if item.html:
                 html_parts.append(item.html if item.html.lstrip().startswith("<p") else f"<p>{item.html}</p>")
             else:
-                inner = _spans_to_inline_html(txt, item.spans, words_by_id)
+                inner = _spans_to_inline_html(txt, item.spans, words_by_id, base_size_pt=item_base_fs)
                 block_align = first_align or "left"
                 if item.align and item.align != block_align:
                     html_parts.append(f'<p style="text-align: {item.align}">{inner}</p>')
@@ -599,24 +646,49 @@ def _render_flow_text_block(
                     html_parts.append(f"<p>{inner}</p>")
 
     slot_id = f"s_tx_{bid}"
+    constraints: dict[str, Any] = {}
+    if needs_review:
+        constraints["needsReview"] = True
+    first = group[0] if group else None
+    if first is not None:
+        fs_pt = getattr(first, "fontSizePt", None)
+        if fs_pt is None and getattr(first, "spans", None):
+            sizes = [float(s.size) for s in first.spans if getattr(s, "size", None)]
+            if sizes:
+                fs_pt = sizes[0]
+        if fs_pt is not None:
+            constraints["fontSize"] = _pt_px_round1(float(fs_pt))
+        lh = getattr(first, "lineHeight", None)
+        lc = getattr(first, "lineCount", None)
+        if lh is not None:
+            constraints["lineHeight"] = _fmt_line_height(float(lh))
+        elif lc == 1:
+            constraints["lineHeight"] = "1.25"
+        ff = getattr(first, "fontFamily", None)
+        if ff:
+            constraints["fontFamily"] = _font_stack(str(ff))
+
     slot_entry: dict[str, Any] = {
         "slotId": slot_id,
         "label": lbls["bodyLabel"],
-        "role": "boilerplate",
+        "role": "editable-slot",
         "content": "".join(html_parts) or "<p></p>",
         "backDataRefs": [],
     }
-    if needs_review:
-        slot_entry["constraints"] = {"needsReview": True}
+    if constraints:
+        slot_entry["constraints"] = constraints
     slots[slot_id] = slot_entry
 
-    return {
+    out_blk: dict[str, Any] = {
         "blockId": f"b_tx_{bid}",
         "kind": "text",
         "title": _clip_title(title_text) or lbls["bodyLabel"],
         "slotId": slot_id,
         "align": first_align or "left",
     }
+    if first is not None and float(getattr(first, "spaceBeforePt", 0.0) or 0.0) > 0.3:
+        out_blk["spaceBefore"] = round(float(first.spaceBeforePt) * PX_PER_PT, 1)
+    return out_blk
 
 
 def doc_ir_pages_to_vdoc(
@@ -648,19 +720,22 @@ def doc_ir_pages_to_vdoc(
 
         defaults = (page.metrics or {}).get("layoutDefaults") or {}
         if page.margins is not None:
-            pg_dict["layout"] = {
+            layout_dict: dict[str, Any] = {
                 "margin": {
                     "left": round(page.margins.left * PX_PER_PT, 1),
                     "right": round(page.margins.right * PX_PER_PT, 1),
                     "top": round(page.margins.top * PX_PER_PT, 1),
                     "bottom": round(page.margins.bottom * PX_PER_PT, 1),
                 },
-                "blockGap": BLOCK_GAP,
+                "blockGap": 0 if page.sourceKind != "hwpx" else BLOCK_GAP,
                 "fontFamily": _font_stack(str(defaults.get("font") or "")),
                 "fontSize": _pt_px_round1(float(defaults.get("sizePt") or 10.0)),
-                "lineHeight": _fmt_line_height(float(defaults.get("linePct") or 160) / 100.0),
+                "lineHeight": _fmt_line_height(float(defaults.get("linePct") or 135) / 100.0),
                 "exactText": True,
             }
+            if page.pageBgColor:
+                layout_dict["background"] = page.pageBgColor
+            pg_dict["layout"] = layout_dict
 
         slots_out.update(pg_slots)
         words_by_id = {w.id: w for w in page.words}
@@ -693,7 +768,7 @@ def doc_ir_pages_to_vdoc(
                     slot_obj: dict[str, Any] = {
                         "slotId": slot_id,
                         "label": lbls["bodyLabel"],
-                        "role": "boilerplate",
+                        "role": "editable-slot",
                         "content": html_content,
                         "backDataRefs": [],
                     }
@@ -722,6 +797,8 @@ def doc_ir_pages_to_vdoc(
                         slots=slots_out,
                         stats_out=tbl_stats,
                     )
+                    if float(getattr(blk, "spaceBeforePt", 0.0) or 0.0) > 0.3:
+                        t_block["spaceBefore"] = round(float(blk.spaceBeforePt) * PX_PER_PT, 1)
                     vdoc_blocks.append(t_block)
                     report.tables += 1
                     report.fill_cells += fills
@@ -742,46 +819,86 @@ def doc_ir_pages_to_vdoc(
                         else pg_dict.get("footerSlotId", f"{pg_id}_footer")
                     )
                     txt = _block_plain_text(blk, words_by_id).strip()
+                    img_src = getattr(blk, "imageSrc", None)
+                    chrome_fs = getattr(blk, "fontSizePt", None) or (
+                        blk.spans[0].size if blk.spans and blk.spans[0].size else None
+                    )
+                    if chrome_fs is None and getattr(blk, "wordIds", None):
+                        wsz = [
+                            float(words_by_id[w].size)
+                            for w in blk.wordIds
+                            if w in words_by_id and words_by_id[w].size is not None
+                        ]
+                        if wsz:
+                            chrome_fs = wsz[0]
+                    parts_html: list[str] = []
+                    if img_src:
+                        parts_html.append(f'<img src="{html_lib.escape(str(img_src))}" alt="logo" />')
                     if txt:
-                        inner = _spans_to_inline_html(txt, blk.spans, words_by_id)
-                        p_html = f"<p>{inner}</p>"
+                        parts_html.append(
+                            _spans_to_inline_html(
+                                txt,
+                                blk.spans,
+                                words_by_id,
+                                base_size_pt=float(chrome_fs or 10.0),
+                            )
+                        )
+                    if parts_html:
+                        p_html = f"<p>{' '.join(parts_html)}</p>"
+                        chrome_cons: dict[str, Any] = {}
+                        if chrome_fs is not None:
+                            chrome_cons["fontSize"] = _pt_px_round1(float(chrome_fs))
+                        if getattr(blk, "fontFamily", None):
+                            chrome_cons["fontFamily"] = _font_stack(str(blk.fontFamily))
                         cur_slot = slots_out.get(slot_key)
                         if cur_slot is not None:
                             prev = cur_slot.get("content") or ""
                             cur_slot["content"] = f"{prev}{p_html}" if prev else p_html
+                            if chrome_cons:
+                                cur_cons = cur_slot.setdefault("constraints", {})
+                                for ck, cv in chrome_cons.items():
+                                    cur_cons.setdefault(ck, cv)
                         else:
-                            slots_out[slot_key] = {
+                            chrome_slot: dict[str, Any] = {
                                 "slotId": slot_key,
                                 "label": lbls.get(
                                     "headerLabel" if blk.noteKind == "header" else "footerLabel",
                                     blk.noteKind,
                                 ),
-                                "role": "boilerplate",
+                                "role": "editable-slot",
                                 "content": p_html,
                                 "backDataRefs": [],
                             }
+                            if chrome_cons:
+                                chrome_slot["constraints"] = chrome_cons
+                            slots_out[slot_key] = chrome_slot
                         pg_dict["hideHeaderFooter"] = False
                         report.headers_isolated += 1
                     idx += 1
                     continue
                 if isinstance(blk, flow_kinds):
-                    group: list[Any] = []
-                    while (
-                        idx < len(ordered_blocks)
-                        and isinstance(ordered_blocks[idx], flow_kinds)
-                        and not _is_chrome_note(ordered_blocks[idx])
-                    ):
-                        group.append(ordered_blocks[idx])
-                        idx += 1
-                    vdoc_blocks.append(
-                        _render_flow_text_block(
-                            group,
-                            bid=uid(),
-                            words_by_id=words_by_id,
-                            lbls=lbls,
-                            slots=slots_out,
-                        )
+                    # WP1 (S3): emit 1 IR block = 1 text block, grouping ONLY contiguous ListItemBlocks with same markerKind
+                    group: list[Any] = [blk]
+                    idx += 1
+                    if isinstance(blk, ListItemBlock):
+                        while (
+                            idx < len(ordered_blocks)
+                            and isinstance(ordered_blocks[idx], ListItemBlock)
+                            and ordered_blocks[idx].markerKind == blk.markerKind
+                        ):
+                            group.append(ordered_blocks[idx])
+                            idx += 1
+                    flow_vblock = _render_flow_text_block(
+                        group,
+                        bid=uid(),
+                        words_by_id=words_by_id,
+                        lbls=lbls,
+                        slots=slots_out,
                     )
+                    for gblk in group:
+                        report.blockMap[gblk.id] = flow_vblock["blockId"]
+                        report.slotMap.setdefault(gblk.id, []).append(flow_vblock["slotId"])
+                    vdoc_blocks.append(flow_vblock)
                     report.paragraphs += len(group)
                     continue
 
@@ -790,14 +907,32 @@ def doc_ir_pages_to_vdoc(
                     bid = uid()
                     slot_id = f"s_hd_{bid}"
                     txt = _block_plain_text(blk, words_by_id)
-                    inner = _spans_to_inline_html(txt, blk.spans, words_by_id)
-                    slots_out[slot_id] = {
+                    hd_fs = blk.fontSizePt or (blk.spans[0].size if blk.spans and blk.spans[0].size else None)
+                    inner = _spans_to_inline_html(
+                        txt,
+                        blk.spans,
+                        words_by_id,
+                        base_size_pt=float(hd_fs or 10.0),
+                    )
+                    hd_cons: dict[str, Any] = {}
+                    if hd_fs is not None:
+                        hd_cons["fontSize"] = _pt_px_round1(float(hd_fs))
+                    if blk.lineHeight is not None:
+                        hd_cons["lineHeight"] = _fmt_line_height(float(blk.lineHeight))
+                    else:
+                        hd_cons["lineHeight"] = "1.2"
+                    if blk.fontFamily:
+                        hd_cons["fontFamily"] = _font_stack(blk.fontFamily)
+                    hd_slot: dict[str, Any] = {
                         "slotId": slot_id,
                         "label": lbls.get("headingLabel", lbls["bodyLabel"]),
-                        "role": "boilerplate",
+                        "role": "editable-slot",
                         "content": f"<p>{inner}</p>",
                         "backDataRefs": [],
                     }
+                    if hd_cons:
+                        hd_slot["constraints"] = hd_cons
+                    slots_out[slot_id] = hd_slot
                     hd: dict[str, Any] = {
                         "blockId": f"b_hd_{bid}",
                         "kind": "heading",
@@ -807,7 +942,11 @@ def doc_ir_pages_to_vdoc(
                     }
                     if blk.align:
                         hd["align"] = blk.align
+                    if float(getattr(blk, "spaceBeforePt", 0.0) or 0.0) > 0.3:
+                        hd["spaceBefore"] = round(float(blk.spaceBeforePt) * PX_PER_PT, 1)
                     vdoc_blocks.append(hd)
+                    report.blockMap[blk.id] = hd["blockId"]
+                    report.slotMap.setdefault(blk.id, []).append(slot_id)
                     report.paragraphs += 1
                 elif isinstance(blk, TableIR):
                     table_no += 1
@@ -821,7 +960,13 @@ def doc_ir_pages_to_vdoc(
                         slots=slots_out,
                         stats_out=tbl_stats,
                     )
+                    if float(getattr(blk, "spaceBeforePt", 0.0) or 0.0) > 0.3:
+                        t_block["spaceBefore"] = round(float(blk.spaceBeforePt) * PX_PER_PT, 1)
                     vdoc_blocks.append(t_block)
+                    report.blockMap[blk.id] = t_block["blockId"]
+                    t_slots = [c["slotId"] for r in (t_block.get("rows") or []) for c in (r.get("cells") or []) if c.get("slotId")]
+                    if t_slots:
+                        report.slotMap[blk.id] = t_slots
                     if t_block.get("kind") == "image":
                         report.pictures += 1
                     else:
@@ -842,7 +987,10 @@ def doc_ir_pages_to_vdoc(
                         fig_dict["width"] = f"{max(24, round((blk.bbox[2] - blk.bbox[0]) * PX_PER_PT))}px"
                     if blk.needsReview:
                         fig_dict["needsReview"] = True
+                    if float(getattr(blk, "spaceBeforePt", 0.0) or 0.0) > 0.3:
+                        fig_dict["spaceBefore"] = round(float(blk.spaceBeforePt) * PX_PER_PT, 1)
                     vdoc_blocks.append(fig_dict)
+                    report.blockMap[blk.id] = fig_dict["blockId"]
                     report.pictures += 1
                 elif isinstance(blk, FieldBlock):
                     bid = uid()
@@ -861,17 +1009,72 @@ def doc_ir_pages_to_vdoc(
                         "content": f"<p>{html_lib.escape(blk.placeholder or txt)}</p>",
                         "backDataRefs": [],
                     }
-                    vdoc_blocks.append(
-                        {
-                            "blockId": f"b_fld_{bid}",
-                            "kind": "fillable-group",
-                            "slotId": slot_id,
-                            "fieldType": field_type_map.get(blk.fieldKind, "text-area"),
-                            "assigneeName": blk.assigneeName or lbls.get("defaultAssignee", ""),
-                            "title": _clip_title(blk.label or txt or lbls.get("fieldLabel", lbls["bodyLabel"])),
-                        }
-                    )
+                    fld_dict = {
+                        "blockId": f"b_fld_{bid}",
+                        "kind": "fillable-group",
+                        "slotId": slot_id,
+                        "fieldType": field_type_map.get(blk.fieldKind, "text-area"),
+                        "assigneeName": blk.assigneeName or lbls.get("defaultAssignee", ""),
+                        "title": _clip_title(blk.label or txt or lbls.get("fieldLabel", lbls["bodyLabel"])),
+                    }
+                    if float(getattr(blk, "spaceBeforePt", 0.0) or 0.0) > 0.3:
+                        fld_dict["spaceBefore"] = round(float(blk.spaceBeforePt) * PX_PER_PT, 1)
+                    vdoc_blocks.append(fld_dict)
+                    report.blockMap[blk.id] = fld_dict["blockId"]
+                    report.slotMap.setdefault(blk.id, []).append(slot_id)
                     report.fill_cells += 1
+                elif isinstance(blk, LineGroupBlock):
+                    bid = uid()
+                    cols_out: list[dict[str, Any]] = []
+                    widths_out: list[str] = []
+                    seg_slot_ids: list[str] = []
+                    segs = blk.segments or []
+                    for s_idx, seg in enumerate(segs):
+                        seg_sid = f"s_lg_{bid}_{s_idx}"
+                        raw_txt = seg.text.strip()
+                        if blk.layoutMode == "toc" and s_idx < len(segs) - 1:
+                            raw_txt = re.sub(r"\s*[\.…·\-_]{4,}\s*$", "", raw_txt).strip() or raw_txt
+                        seg_inner = html_lib.escape(raw_txt)
+                        if seg.bold:
+                            seg_inner = f"<strong>{seg_inner}</strong>"
+                        p_style = f' style="text-align:{seg.align}"' if seg.align != "left" else ""
+                        seg_cons: dict[str, Any] = {}
+                        if seg.fontSizePt is not None:
+                            seg_cons["fontSize"] = _pt_px_round1(float(seg.fontSizePt))
+                        seg_cons["lineHeight"] = _fmt_line_height(float(blk.lineHeight or 1.25))
+                        if seg.fontFamily:
+                            seg_cons["fontFamily"] = _font_stack(seg.fontFamily)
+                        if seg.bold:
+                            seg_cons["fontWeight"] = "700"
+                        seg_slot: dict[str, Any] = {
+                            "slotId": seg_sid,
+                            "label": lbls["bodyLabel"],
+                            "role": "editable-slot",
+                            "content": f"<p{p_style}>{seg_inner}</p>",
+                            "backDataRefs": [],
+                        }
+                        if seg_cons:
+                            seg_slot["constraints"] = seg_cons
+                        slots_out[seg_sid] = seg_slot
+                        cols_out.append({"slotId": seg_sid})
+                        widths_out.append(f"{max(10, round(seg.widthRatio * 100))}fr")
+                        seg_slot_ids.append(seg_sid)
+                    lg_title = " | ".join(s.text for s in segs if s.text) or (blk.text or "")
+                    lg_dict: dict[str, Any] = {
+                        "blockId": f"b_lg_{bid}",
+                        "kind": "columns-grid",
+                        "title": _clip_title(lg_title) or "Line Group",
+                        "widths": widths_out or ["1fr", "1fr"],
+                        "cardStyle": "plain",
+                        "gap": 8,
+                        "columns": cols_out,
+                    }
+                    if float(getattr(blk, "spaceBeforePt", 0.0) or 0.0) > 0.3:
+                        lg_dict["spaceBefore"] = round(float(blk.spaceBeforePt) * PX_PER_PT, 1)
+                    vdoc_blocks.append(lg_dict)
+                    report.blockMap[blk.id] = lg_dict["blockId"]
+                    report.slotMap[blk.id] = seg_slot_ids
+                    report.paragraphs += max(1, len(segs))
 
         report.cell_paragraphs_merged = tbl_stats.get("cell_paragraphs_merged", 0)
         pg_dict["blocks"] = vdoc_blocks

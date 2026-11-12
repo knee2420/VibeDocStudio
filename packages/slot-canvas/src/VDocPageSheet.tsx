@@ -467,6 +467,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     minWidth: pageDims.width,
     maxWidth: pageDims.width,
     minHeight: pageDims.height,
+    backgroundColor: layout?.background ?? undefined,
     fontFamily: layout?.fontFamily,
     fontSize: layout?.fontSize,
     color: layout?.color,
@@ -777,6 +778,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
               <div
                 key={block.blockId}
                 data-flow-block-index={bIdx}
+                style={block.spaceBefore !== undefined ? { marginTop: block.spaceBefore } : undefined}
                 className={`transition-all duration-200 ease-out ${
                   isCurrentBlockActive ? "my-4 relative z-20" : "my-0"
                 } ${draggingBlockId === block.blockId ? "opacity-40" : "opacity-100"}`}

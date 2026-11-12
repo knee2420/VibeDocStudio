@@ -650,7 +650,7 @@ def test_assistant_emits_ready_workbench_proposals_even_without_references(tmp_p
                 "pages": [{"pageId": "p1", "blocks": [{"blockId": "b1", "kind": "text", "slotId": "s1"}]}],
                 "slots": {
                     "s1": {"slotId": "s1", "label": "요약", "role": "editable-slot", "content": "<p>기존 문장</p>"},
-                    "s_lock": {"slotId": "s_lock", "label": "고정", "role": "boilerplate", "content": "<p>머리글</p>"},
+                    "s_lock": {"slotId": "s_lock", "label": "잠금", "role": "editable-slot", "content": "<p>머리글</p>", "constraints": {"locked": True}},
                 },
             },
             ensure_ascii=False,

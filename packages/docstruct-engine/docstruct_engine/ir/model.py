@@ -220,6 +220,7 @@ class TableIR(BaseModel):
     needsReview: bool = False
     rawHtml: Optional[str] = None
     imageFallbackSrc: Optional[str] = None
+    spaceBeforePt: float = 0.0
 
     @model_validator(mode="after")
     def _check_bbox(self) -> "TableIR":
@@ -239,6 +240,12 @@ class _TextBlockBase(BaseModel):
     align: Optional[Literal["left", "center", "right", "justify"]] = None
     spans: list[Span] = Field(default_factory=list)
     needsReview: bool = False
+    lineCount: Optional[int] = None
+    linePitchPt: Optional[float] = None
+    lineHeight: Optional[float] = None
+    spaceBeforePt: float = 0.0
+    fontSizePt: Optional[float] = None
+    fontFamily: Optional[str] = None
 
     @model_validator(mode="after")
     def _check_bbox(self) -> "_TextBlockBase":
@@ -274,6 +281,39 @@ class CaptionBlock(_TextBlockBase):
 class NoteBlock(_TextBlockBase):
     kind: Literal["note"] = "note"
     noteKind: Literal["footnote", "annotation", "header", "footer"] = "annotation"
+    imageSrc: Optional[str] = None
+
+
+class LineGroupSegment(BaseModel):
+    id: str
+    bbox: BBox
+    wordIds: list[str] = Field(default_factory=list)
+    text: str = ""
+    align: Literal["left", "center", "right"] = "left"
+    widthRatio: float = Field(default=0.5, gt=0.0, le=1.0)
+    fontSizePt: Optional[float] = None
+    fontFamily: Optional[str] = None
+    bold: bool = False
+    color: Optional[str] = None
+    spans: list[Span] = Field(default_factory=list)
+
+
+class LineGroupBlock(BaseModel):
+    id: str
+    kind: Literal["line-group"] = "line-group"
+    bbox: Optional[BBox] = None
+    wordIds: list[str] = Field(default_factory=list)
+    text: Optional[str] = None
+    segments: list[LineGroupSegment] = Field(default_factory=list)
+    layoutMode: Literal["columns", "toc"] = "columns"
+    lineHeight: Optional[float] = None
+    spaceBeforePt: float = 0.0
+    needsReview: bool = False
+
+    @model_validator(mode="after")
+    def _check_bbox(self) -> "LineGroupBlock":
+        self.bbox = _validate_bbox(self.bbox)
+        return self
 
 
 class FigureBlock(BaseModel):
@@ -286,6 +326,7 @@ class FigureBlock(BaseModel):
     src: Optional[str] = None
     captionBlockId: Optional[str] = None
     needsReview: bool = False
+    spaceBeforePt: float = 0.0
 
     @model_validator(mode="after")
     def _check_bbox(self) -> "FigureBlock":
@@ -309,6 +350,7 @@ BlockIR = Annotated[
         ListItemBlock,
         CaptionBlock,
         NoteBlock,
+        LineGroupBlock,
         FigureBlock,
         FieldBlock,
     ],
@@ -338,6 +380,7 @@ class PageIR(BaseModel):
     rulings: list[Ruling] = Field(default_factory=list)
     blocks: list[BlockIR] = Field(default_factory=list)
     readingOrder: list[str] = Field(default_factory=list)
+    pageBgColor: Optional[str] = None
     metrics: Optional[dict[str, Any]] = None
 
 

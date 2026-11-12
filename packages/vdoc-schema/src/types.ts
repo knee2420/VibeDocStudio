@@ -6,7 +6,7 @@
 
 import type { EvidenceLink, EvidenceLocator } from "./evidence";
 
-export type SlotRole = "boilerplate" | "editable-slot" | "fillable-field";
+export type SlotRole = "editable-slot" | "fillable-field";
 
 export interface SlotConstraints {
   maxLines?: number;
@@ -181,6 +181,8 @@ export interface VDocPageLayout {
   fontSize?: string;
   color?: string;
   lineHeight?: string;
+  /** Full-page background fill color (e.g. '#f2f6fb') recovered from imported layouts. */
+  background?: string;
   /**
    * Typeset like a PDF: no kerning or ligatures, no editor minimum heights, so text runs and
    * paragraph boxes land on the coordinates of the source document.

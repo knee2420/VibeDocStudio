@@ -56,8 +56,8 @@ const makeDoc = (docId = "vdoc-test-1"): VDocDocument => ({
     s_extra: { slotId: "s_extra", label: "보조", role: "editable-slot", content: "<p>보조 문단</p>", backDataRefs: [] },
     s_lock: {
       slotId: "s_lock",
-      label: "고정 머리글",
-      role: "boilerplate",
+      label: "잠금 머리글",
+      role: "editable-slot",
       content: "<p>고정</p>",
       backDataRefs: [],
       constraints: { locked: true },
@@ -81,7 +81,7 @@ const makeProposal = (overrides?: Partial<WorkbenchProposal>): WorkbenchProposal
         s_hd: "바뀐 소제목 1안",
         s_body: "<p>바뀐 본문 1안</p>",
         s_extra: "<p>보조 문단</p>", // 원문 동일 → 건너뜀
-        s_lock: "<p>무시돼야 함</p>", // 잠금/boilerplate → 건너뜀
+        s_lock: "<p>무시돼야 함</p>", // 잠금(locked) → 건너뜀
         s_missing: "<p>없는 슬롯</p>", // 미존재 → 건너뜀
       },
     },

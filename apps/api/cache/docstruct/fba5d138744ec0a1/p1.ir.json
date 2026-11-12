@@ -1,0 +1,5550 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-vector",
+  "size": {
+    "width": 595.0,
+    "height": 842.0
+  },
+  "margins": {
+    "top": 56.6,
+    "right": 65.8,
+    "bottom": 61.5,
+    "left": 58.1
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "제()회",
+      "bbox": [
+        164.76,
+        56.6,
+        241.68,
+        75.08
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 18.0,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 72.24,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "학급",
+      "bbox": [
+        268.44,
+        56.6,
+        304.68,
+        75.02
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 18.0,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 72.24,
+      "lineHint": 0,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w2",
+      "text": "어린이",
+      "bbox": [
+        313.44,
+        56.6,
+        367.68,
+        75.02
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 18.0,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 72.24,
+      "lineHint": 0,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w3",
+      "text": "회의록",
+      "bbox": [
+        376.44,
+        56.6,
+        430.68,
+        75.02
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 18.0,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 72.24,
+      "lineHint": 0,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w4",
+      "text": "초",
+      "bbox": [
+        89.04,
+        87.23,
+        102.0,
+        100.32
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.4,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "등",
+      "bbox": [
+        108.48,
+        87.23,
+        121.44,
+        100.32
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.4,
+      "lineHint": 1,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w6",
+      "text": "학",
+      "bbox": [
+        128.04,
+        87.23,
+        141.0,
+        100.32
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.4,
+      "lineHint": 1,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w7",
+      "text": "교",
+      "bbox": [
+        147.48,
+        87.23,
+        160.44,
+        100.32
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.4,
+      "lineHint": 1,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w8",
+      "text": "제",
+      "bbox": [
+        367.8,
+        87.23,
+        380.76,
+        100.32
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.4,
+      "lineHint": 1,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w9",
+      "text": "학년",
+      "bbox": [
+        400.32,
+        87.23,
+        426.24,
+        100.32
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.4,
+      "lineHint": 1,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w10",
+      "text": "반",
+      "bbox": [
+        445.68,
+        87.23,
+        458.64,
+        100.32
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 98.4,
+      "lineHint": 1,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w11",
+      "text": "199 년 월 일 요일 날씨( ) 기록자 :",
+      "bbox": [
+        75.6,
+        115.66,
+        94.28,
+        127.78
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.0,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w12",
+      "text": "",
+      "bbox": [
+        105.0,
+        115.66,
+        115.8,
+        127.78
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.0,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w13",
+      "text": "",
+      "bbox": [
+        148.2,
+        115.66,
+        159.0,
+        127.78
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.0,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w14",
+      "text": "",
+      "bbox": [
+        196.8,
+        115.66,
+        207.6,
+        127.78
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.0,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w15",
+      "text": "",
+      "bbox": [
+        240.0,
+        115.66,
+        261.6,
+        127.78
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.0,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w16",
+      "text": "날씨(        )",
+      "bbox": [
+        288.6,
+        115.66,
+        366.93,
+        127.78
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.0,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w17",
+      "text": "기록자 :",
+      "bbox": [
+        404.76,
+        115.66,
+        446.17,
+        127.78
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.0,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w18",
+      "text": "실",
+      "bbox": [
+        357.6,
+        144.89,
+        366.72,
+        154.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 9.53,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 153.48,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w19",
+      "text": "1.",
+      "bbox": [
+        392.52,
+        151.61,
+        401.1,
+        161.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 9.53,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 160.2,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w20",
+      "text": "주",
+      "bbox": [
+        70.32,
+        163.9,
+        81.12,
+        176.02
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 174.24,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w21",
+      "text": "생",
+      "bbox": [
+        86.52,
+        163.9,
+        97.32,
+        176.02
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 174.24,
+      "lineHint": 5,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w22",
+      "text": "활",
+      "bbox": [
+        102.72,
+        163.9,
+        113.52,
+        176.02
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 174.24,
+      "lineHint": 5,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w23",
+      "text": "목",
+      "bbox": [
+        118.92,
+        163.9,
+        129.72,
+        176.02
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 174.24,
+      "lineHint": 5,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w24",
+      "text": "표",
+      "bbox": [
+        135.12,
+        163.9,
+        145.92,
+        176.02
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 174.24,
+      "lineHint": 5,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w25",
+      "text": "천",
+      "bbox": [
+        357.6,
+        174.89,
+        366.72,
+        184.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 9.53,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 183.48,
+      "lineHint": 6,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w26",
+      "text": "2.",
+      "bbox": [
+        392.52,
+        181.61,
+        401.1,
+        191.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 9.53,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 190.2,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w27",
+      "text": "사",
+      "bbox": [
+        357.6,
+        204.89,
+        366.72,
+        214.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 9.53,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 213.48,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w28",
+      "text": "3.",
+      "bbox": [
+        392.52,
+        211.61,
+        401.1,
+        221.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 9.53,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 220.2,
+      "lineHint": 9,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w29",
+      "text": "생활목표",
+      "bbox": [
+        69.84,
+        224.69,
+        105.96,
+        234.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 9.53,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 233.28,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w30",
+      "text": "선정이유",
+      "bbox": [
+        110.28,
+        224.69,
+        146.4,
+        234.76
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 9.53,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 233.28,
+      "lineHint": 10,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w31",
+      "text": "항",
+      "bbox": [
+        357.6,
+        234.89,
+        366.72,
+        244.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 9.53,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 243.48,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w32",
+      "text": "각",
+      "bbox": [
+        192.72,
+        263.31,
+        206.16,
+        278.46
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 14.2,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 276.24,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w33",
+      "text": "부",
+      "bbox": [
+        219.6,
+        263.31,
+        233.04,
+        278.46
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 14.2,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 276.24,
+      "lineHint": 12,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w34",
+      "text": "별",
+      "bbox": [
+        246.48,
+        263.31,
+        259.92,
+        278.46
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 14.2,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 276.24,
+      "lineHint": 12,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w35",
+      "text": "활",
+      "bbox": [
+        300.36,
+        263.31,
+        313.8,
+        278.46
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 14.2,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 276.24,
+      "lineHint": 12,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w36",
+      "text": "동",
+      "bbox": [
+        327.24,
+        263.31,
+        340.68,
+        278.46
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 14.2,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 276.24,
+      "lineHint": 12,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w37",
+      "text": "사",
+      "bbox": [
+        354.12,
+        263.31,
+        367.56,
+        278.46
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 14.2,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 276.24,
+      "lineHint": 12,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w38",
+      "text": "항",
+      "bbox": [
+        381.12,
+        263.31,
+        394.56,
+        278.46
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 14.2,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 276.24,
+      "lineHint": 12,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w39",
+      "text": "모듬(부서)",
+      "bbox": [
+        74.64,
+        289.91,
+        130.17,
+        303.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 301.08,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w40",
+      "text": "반",
+      "bbox": [
+        217.44,
+        289.91,
+        229.2,
+        303.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 301.08,
+      "lineHint": 13,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w41",
+      "text": "성",
+      "bbox": [
+        264.12,
+        289.91,
+        275.88,
+        303.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 301.08,
+      "lineHint": 13,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w42",
+      "text": "계",
+      "bbox": [
+        408.6,
+        289.91,
+        420.36,
+        303.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 301.08,
+      "lineHint": 13,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w43",
+      "text": "획",
+      "bbox": [
+        455.4,
+        289.91,
+        467.16,
+        303.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 301.08,
+      "lineHint": 13,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w44",
+      "text": "총",
+      "bbox": [
+        69.96,
+        312.58,
+        82.92,
+        325.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 323.76,
+      "lineHint": 14,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w45",
+      "text": "무",
+      "bbox": [
+        95.88,
+        312.58,
+        108.84,
+        325.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 323.76,
+      "lineHint": 14,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w46",
+      "text": "부",
+      "bbox": [
+        121.8,
+        312.58,
+        134.76,
+        325.68
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 323.76,
+      "lineHint": 14,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w47",
+      "text": "생",
+      "bbox": [
+        69.96,
+        341.03,
+        82.92,
+        354.12
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 352.2,
+      "lineHint": 15,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w48",
+      "text": "활",
+      "bbox": [
+        95.88,
+        341.03,
+        108.84,
+        354.12
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 352.2,
+      "lineHint": 15,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w49",
+      "text": "부",
+      "bbox": [
+        121.8,
+        341.03,
+        134.76,
+        354.12
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 352.2,
+      "lineHint": 15,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w50",
+      "text": "미",
+      "bbox": [
+        69.96,
+        370.91,
+        82.92,
+        384.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 382.08,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w51",
+      "text": "화",
+      "bbox": [
+        95.88,
+        370.91,
+        108.84,
+        384.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 382.08,
+      "lineHint": 16,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w52",
+      "text": "부",
+      "bbox": [
+        121.8,
+        370.91,
+        134.76,
+        384.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 382.08,
+      "lineHint": 16,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w53",
+      "text": "체",
+      "bbox": [
+        69.96,
+        400.79,
+        82.92,
+        413.88
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 411.96,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w54",
+      "text": "육",
+      "bbox": [
+        95.88,
+        400.79,
+        108.84,
+        413.88
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 411.96,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w55",
+      "text": "부",
+      "bbox": [
+        121.8,
+        400.79,
+        134.76,
+        413.88
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 411.96,
+      "lineHint": 17,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w56",
+      "text": "학",
+      "bbox": [
+        69.96,
+        430.54,
+        82.92,
+        443.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 441.72,
+      "lineHint": 18,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w57",
+      "text": "습",
+      "bbox": [
+        95.88,
+        430.54,
+        108.84,
+        443.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 441.72,
+      "lineHint": 18,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w58",
+      "text": "부",
+      "bbox": [
+        121.8,
+        430.54,
+        134.76,
+        443.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 441.72,
+      "lineHint": 18,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w59",
+      "text": "봉",
+      "bbox": [
+        69.96,
+        460.43,
+        82.92,
+        473.52
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 471.6,
+      "lineHint": 19,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w60",
+      "text": "사",
+      "bbox": [
+        95.88,
+        460.43,
+        108.84,
+        473.52
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 471.6,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w61",
+      "text": "부",
+      "bbox": [
+        121.8,
+        460.43,
+        134.76,
+        473.52
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 471.6,
+      "lineHint": 19,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w62",
+      "text": "기",
+      "bbox": [
+        69.96,
+        490.31,
+        82.92,
+        503.4
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 501.48,
+      "lineHint": 20,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w63",
+      "text": "타",
+      "bbox": [
+        121.8,
+        490.31,
+        134.76,
+        503.4
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.96,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 501.48,
+      "lineHint": 20,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w64",
+      "text": "봉사 어린이 후보 :",
+      "bbox": [
+        153.48,
+        513.1,
+        175.08,
+        525.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 523.44,
+      "lineHint": 21,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w65",
+      "text": "",
+      "bbox": [
+        180.48,
+        513.1,
+        212.88,
+        525.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 523.44,
+      "lineHint": 21,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w66",
+      "text": "",
+      "bbox": [
+        218.28,
+        513.1,
+        248.96,
+        525.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 523.44,
+      "lineHint": 21,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w67",
+      "text": "봉사",
+      "bbox": [
+        70.32,
+        526.19,
+        93.72,
+        539.28
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 537.36,
+      "lineHint": 22,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w68",
+      "text": "어린이",
+      "bbox": [
+        99.48,
+        526.19,
+        134.64,
+        539.28
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 537.36,
+      "lineHint": 22,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w69",
+      "text": "봉사 어린이 :",
+      "bbox": [
+        153.48,
+        531.1,
+        175.08,
+        543.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 541.44,
+      "lineHint": 23,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w70",
+      "text": "",
+      "bbox": [
+        180.48,
+        531.1,
+        221.96,
+        543.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 541.44,
+      "lineHint": 23,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w71",
+      "text": "우수 모둠 후보 :",
+      "bbox": [
+        153.48,
+        555.1,
+        175.08,
+        567.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 565.44,
+      "lineHint": 24,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w72",
+      "text": "",
+      "bbox": [
+        180.48,
+        555.1,
+        202.08,
+        567.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 565.44,
+      "lineHint": 24,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w73",
+      "text": "",
+      "bbox": [
+        207.48,
+        555.1,
+        238.16,
+        567.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 565.44,
+      "lineHint": 24,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w74",
+      "text": "우수",
+      "bbox": [
+        61.56,
+        569.62,
+        84.96,
+        582.72
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 580.8,
+      "lineHint": 25,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w75",
+      "text": "활동",
+      "bbox": [
+        90.72,
+        569.62,
+        114.12,
+        582.72
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 580.8,
+      "lineHint": 25,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w76",
+      "text": "모둠",
+      "bbox": [
+        119.88,
+        569.62,
+        143.4,
+        582.72
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 580.8,
+      "lineHint": 25,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w77",
+      "text": "우수 모둠 :",
+      "bbox": [
+        153.48,
+        573.1,
+        175.08,
+        585.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 583.44,
+      "lineHint": 25,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w78",
+      "text": "",
+      "bbox": [
+        180.48,
+        573.1,
+        211.16,
+        585.22
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "Malgun Gothic",
+      "size": 11.38,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 583.44,
+      "lineHint": 25,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w79",
+      "text": "기",
+      "bbox": [
+        61.56,
+        614.03,
+        73.32,
+        627.12
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 625.2,
+      "lineHint": 26,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w80",
+      "text": "타",
+      "bbox": [
+        84.84,
+        614.03,
+        96.6,
+        627.12
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 625.2,
+      "lineHint": 26,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w81",
+      "text": "사",
+      "bbox": [
+        108.24,
+        614.03,
+        120.0,
+        627.12
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 625.2,
+      "lineHint": 26,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w82",
+      "text": "항",
+      "bbox": [
+        131.64,
+        614.03,
+        143.4,
+        627.12
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 625.2,
+      "lineHint": 26,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w83",
+      "text": "건",
+      "bbox": [
+        61.56,
+        656.62,
+        73.32,
+        669.72
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 667.8,
+      "lineHint": 27,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w84",
+      "text": "의",
+      "bbox": [
+        84.84,
+        656.62,
+        96.6,
+        669.72
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 667.8,
+      "lineHint": 27,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w85",
+      "text": "사",
+      "bbox": [
+        108.24,
+        656.62,
+        120.0,
+        669.72
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 667.8,
+      "lineHint": 27,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w86",
+      "text": "항",
+      "bbox": [
+        131.64,
+        656.62,
+        143.4,
+        669.72
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 667.8,
+      "lineHint": 27,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w87",
+      "text": "전",
+      "bbox": [
+        61.56,
+        697.9,
+        73.32,
+        711.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 709.08,
+      "lineHint": 28,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w88",
+      "text": "체",
+      "bbox": [
+        84.84,
+        697.9,
+        96.6,
+        711.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 709.08,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w89",
+      "text": "반",
+      "bbox": [
+        108.24,
+        697.9,
+        120.0,
+        711.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 709.08,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w90",
+      "text": "성",
+      "bbox": [
+        131.64,
+        697.9,
+        143.4,
+        711.0
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 709.08,
+      "lineHint": 28,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w91",
+      "text": "선",
+      "bbox": [
+        61.56,
+        746.15,
+        73.32,
+        759.24
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 757.32,
+      "lineHint": 29,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w92",
+      "text": "생",
+      "bbox": [
+        79.08,
+        746.15,
+        90.84,
+        759.24
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 757.32,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w93",
+      "text": "님",
+      "bbox": [
+        96.6,
+        746.15,
+        108.36,
+        759.24
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 757.32,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w94",
+      "text": "말",
+      "bbox": [
+        114.12,
+        746.15,
+        125.88,
+        759.24
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 757.32,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w95",
+      "text": "씀",
+      "bbox": [
+        131.64,
+        746.15,
+        143.4,
+        759.24
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 12.35,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 757.32,
+      "lineHint": 29,
+      "spaceBefore": false,
+      "trailingSpace": null
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 107.7,
+      "x1": 529.8,
+      "y1": 108.78,
+      "thickness": 1.08,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 134.7,
+      "x1": 529.8,
+      "y1": 135.78,
+      "thickness": 1.08,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 204.3,
+      "x1": 337.92,
+      "y1": 205.38,
+      "thickness": 1.08,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 253.86,
+      "x1": 528.72,
+      "y1": 255.3,
+      "thickness": 0.36,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 287.1,
+      "x1": 529.8,
+      "y1": 287.46,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 305.58,
+      "x1": 529.8,
+      "y1": 305.94,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 332.58,
+      "x1": 529.8,
+      "y1": 332.94,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 362.46,
+      "x1": 529.8,
+      "y1": 362.82,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 392.22,
+      "x1": 529.8,
+      "y1": 392.58,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 422.1,
+      "x1": 529.8,
+      "y1": 422.46,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 451.98,
+      "x1": 529.8,
+      "y1": 452.34,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 481.74,
+      "x1": 529.8,
+      "y1": 482.1,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 511.02,
+      "x1": 529.8,
+      "y1": 512.46,
+      "thickness": 0.36,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 553.62,
+      "x1": 529.8,
+      "y1": 553.98,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 58.68,
+      "y0": 597.9,
+      "x1": 528.72,
+      "y1": 599.34,
+      "thickness": 0.36,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 642.54,
+      "x1": 529.8,
+      "y1": 642.9,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 683.7,
+      "x1": 529.8,
+      "y1": 684.06,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 724.86,
+      "x1": 529.8,
+      "y1": 725.22,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 57.6,
+      "y0": 779.94,
+      "x1": 529.8,
+      "y1": 781.02,
+      "thickness": 1.08,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 57.54,
+      "y0": 108.24,
+      "x1": 58.62,
+      "y1": 780.48,
+      "thickness": 1.08,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 146.58,
+      "y0": 287.28,
+      "x1": 146.94,
+      "y1": 780.48,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 157.86,
+      "y0": 135.24,
+      "x1": 158.22,
+      "y1": 254.64,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 337.5,
+      "y0": 135.24,
+      "x1": 337.86,
+      "y1": 254.64,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 346.26,
+      "y0": 287.28,
+      "x1": 346.62,
+      "y1": 511.08,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 386.34,
+      "y0": 135.24,
+      "x1": 386.7,
+      "y1": 253.92,
+      "thickness": 0.36,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 528.66,
+      "y0": 108.24,
+      "x1": 529.74,
+      "y1": 780.48,
+      "thickness": 1.08,
+      "style": "solid",
+      "color": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "t0",
+      "kind": "table",
+      "bbox": [
+        58.08,
+        108.24,
+        529.2,
+        780.48
+      ],
+      "nRows": 18,
+      "nCols": 4,
+      "colXs": [
+        58.08,
+        158.04,
+        346.44,
+        386.52,
+        529.2
+      ],
+      "rowYs": [
+        108.24,
+        135.24,
+        204.84,
+        254.58,
+        287.28,
+        305.76,
+        332.76,
+        362.64,
+        392.4,
+        422.28,
+        452.16,
+        481.92,
+        511.74,
+        553.8,
+        598.62,
+        642.72,
+        683.88,
+        725.04,
+        780.48
+      ],
+      "widthRatio": [
+        0.2122,
+        0.3999,
+        0.0851,
+        0.3029
+      ],
+      "widthPt": 471.12,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            58.08,
+            108.24,
+            529.2,
+            135.24
+          ],
+          "wordIds": [
+            "w11",
+            "w12",
+            "w13",
+            "w14",
+            "w15",
+            "w16",
+            "w17"
+          ],
+          "text": "199 년 월 일 요일 날씨( ) 기록자 : 날씨(        ) 기록자 :",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.4,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            135.24,
+            158.04,
+            204.84
+          ],
+          "wordIds": [
+            "w20",
+            "w21",
+            "w22",
+            "w23",
+            "w24"
+          ],
+          "text": "주 생 활 목 표",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.4,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            158.04,
+            135.24,
+            346.44,
+            204.84
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c1",
+            "kind": "text",
+            "label": "r2c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 2,
+          "rs": 2,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            346.44,
+            135.24,
+            386.52,
+            254.58
+          ],
+          "wordIds": [
+            "w18",
+            "w25",
+            "w27",
+            "w31"
+          ],
+          "text": "실\n천\n사\n항",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 9.5,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 3,
+          "rs": 2,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.52,
+            135.24,
+            529.2,
+            254.58
+          ],
+          "wordIds": [
+            "w19",
+            "w26",
+            "w28"
+          ],
+          "text": "1.\n2.\n3.",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 8.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 6.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 9.5,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            204.84,
+            158.04,
+            254.58
+          ],
+          "wordIds": [
+            "w29",
+            "w30"
+          ],
+          "text": "생활목표 선정이유",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 9.5,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            158.04,
+            204.84,
+            346.44,
+            254.58
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c1",
+            "kind": "text",
+            "label": "r3c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 0,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            58.08,
+            254.58,
+            529.2,
+            287.28
+          ],
+          "wordIds": [
+            "w32",
+            "w33",
+            "w34",
+            "w35",
+            "w36",
+            "w37",
+            "w38"
+          ],
+          "text": "각 부 별 활 동 사 항",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 14.2,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            287.28,
+            158.04,
+            305.76
+          ],
+          "wordIds": [
+            "w39"
+          ],
+          "text": "모듬(부서)",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.3,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            158.04,
+            287.28,
+            386.52,
+            305.76
+          ],
+          "wordIds": [
+            "w40",
+            "w41"
+          ],
+          "text": "반 성",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.3,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.52,
+            287.28,
+            529.2,
+            305.76
+          ],
+          "wordIds": [
+            "w42",
+            "w43"
+          ],
+          "text": "계 획",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.3,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            305.76,
+            158.04,
+            332.76
+          ],
+          "wordIds": [
+            "w44",
+            "w45",
+            "w46"
+          ],
+          "text": "총 무 부",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 13.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            158.04,
+            305.76,
+            386.52,
+            332.76
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c1",
+            "kind": "text",
+            "label": "r6c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.52,
+            305.76,
+            529.2,
+            332.76
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c3",
+            "kind": "text",
+            "label": "r6c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            332.76,
+            158.04,
+            362.64
+          ],
+          "wordIds": [
+            "w47",
+            "w48",
+            "w49"
+          ],
+          "text": "생 활 부",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 13.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            158.04,
+            332.76,
+            386.52,
+            362.64
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c1",
+            "kind": "text",
+            "label": "r7c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.52,
+            332.76,
+            529.2,
+            362.64
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c3",
+            "kind": "text",
+            "label": "r7c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            362.64,
+            158.04,
+            392.4
+          ],
+          "wordIds": [
+            "w50",
+            "w51",
+            "w52"
+          ],
+          "text": "미 화 부",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 13.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            158.04,
+            362.64,
+            386.52,
+            392.4
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c1",
+            "kind": "text",
+            "label": "r8c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.52,
+            362.64,
+            529.2,
+            392.4
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c3",
+            "kind": "text",
+            "label": "r8c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            392.4,
+            158.04,
+            422.28
+          ],
+          "wordIds": [
+            "w53",
+            "w54",
+            "w55"
+          ],
+          "text": "체 육 부",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 13.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            158.04,
+            392.4,
+            386.52,
+            422.28
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c1",
+            "kind": "text",
+            "label": "r9c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.52,
+            392.4,
+            529.2,
+            422.28
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c3",
+            "kind": "text",
+            "label": "r9c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            422.28,
+            158.04,
+            452.16
+          ],
+          "wordIds": [
+            "w56",
+            "w57",
+            "w58"
+          ],
+          "text": "학 습 부",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 13.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            158.04,
+            422.28,
+            386.52,
+            452.16
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r9c1",
+            "kind": "text",
+            "label": "r10c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.52,
+            422.28,
+            529.2,
+            452.16
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r9c3",
+            "kind": "text",
+            "label": "r10c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            452.16,
+            158.04,
+            481.92
+          ],
+          "wordIds": [
+            "w59",
+            "w60",
+            "w61"
+          ],
+          "text": "봉 사 부",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 13.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            158.04,
+            452.16,
+            386.52,
+            481.92
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r10c1",
+            "kind": "text",
+            "label": "r11c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.52,
+            452.16,
+            529.2,
+            481.92
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r10c3",
+            "kind": "text",
+            "label": "r11c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            481.92,
+            158.04,
+            511.74
+          ],
+          "wordIds": [
+            "w62",
+            "w63"
+          ],
+          "text": "기 타",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 13.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 1,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            158.04,
+            481.92,
+            386.52,
+            511.74
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r11c1",
+            "kind": "text",
+            "label": "r12c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.52,
+            481.92,
+            529.2,
+            511.74
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r11c3",
+            "kind": "text",
+            "label": "r12c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 12,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            511.74,
+            158.04,
+            553.8
+          ],
+          "wordIds": [
+            "w67",
+            "w68"
+          ],
+          "text": "봉사 어린이",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.3,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 12,
+          "c": 1,
+          "rs": 1,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            158.04,
+            511.74,
+            529.2,
+            553.8
+          ],
+          "wordIds": [
+            "w64",
+            "w65",
+            "w66",
+            "w69",
+            "w70"
+          ],
+          "text": "봉사 어린이 후보 :\n봉사 어린이 :",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.4,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.55,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 13,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            553.8,
+            158.04,
+            598.62
+          ],
+          "wordIds": [
+            "w74",
+            "w75",
+            "w76"
+          ],
+          "text": "우수 활동 모둠",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.3,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 13,
+          "c": 1,
+          "rs": 1,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            158.04,
+            553.8,
+            529.2,
+            598.62
+          ],
+          "wordIds": [
+            "w71",
+            "w72",
+            "w73",
+            "w77",
+            "w78"
+          ],
+          "text": "우수 모둠 후보 :\n우수 모둠 :",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.4,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.55,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 14,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            598.62,
+            158.04,
+            642.72
+          ],
+          "wordIds": [
+            "w79",
+            "w80",
+            "w81",
+            "w82"
+          ],
+          "text": "기 타 사 항",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.3,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 14,
+          "c": 1,
+          "rs": 1,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            158.04,
+            598.62,
+            529.2,
+            642.72
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r14c1",
+            "kind": "text",
+            "label": "r15c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 15,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            642.72,
+            158.04,
+            683.88
+          ],
+          "wordIds": [
+            "w83",
+            "w84",
+            "w85",
+            "w86"
+          ],
+          "text": "건 의 사 항",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.3,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 15,
+          "c": 1,
+          "rs": 1,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            158.04,
+            642.72,
+            529.2,
+            683.88
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r15c1",
+            "kind": "text",
+            "label": "r16c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 16,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            683.88,
+            158.04,
+            725.04
+          ],
+          "wordIds": [
+            "w87",
+            "w88",
+            "w89",
+            "w90"
+          ],
+          "text": "전 체 반 성",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.3,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 16,
+          "c": 1,
+          "rs": 1,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            158.04,
+            683.88,
+            529.2,
+            725.04
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r16c1",
+            "kind": "text",
+            "label": "r17c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 17,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            58.08,
+            725.04,
+            158.04,
+            780.48
+          ],
+          "wordIds": [
+            "w91",
+            "w92",
+            "w93",
+            "w94",
+            "w95"
+          ],
+          "text": "선 생 님 말 씀",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.5
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 12.3,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 17,
+          "c": 1,
+          "rs": 1,
+          "cs": 3,
+          "role": "td",
+          "bbox": [
+            158.04,
+            725.04,
+            529.2,
+            780.48
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.36,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 1.08,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "none",
+              "width": 0.0,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r17c1",
+            "kind": "text",
+            "label": "r18c2",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": "<table><tbody><tr><td colspan=\"4\" data-word-ids=\"w11,w12,w13,w14,w15,w16,w17\"><span data-w=\"w11\">199</span> <span data-w=\"w12\">년</span> <span data-w=\"w13\">월</span> <span data-w=\"w14\">일</span> <span data-w=\"w15\">요일</span> <span data-w=\"w16\">날씨( )</span> <span data-w=\"w17\">기록자 :</span></td></tr><tr><td data-word-ids=\"w20,w21,w22,w23,w24\"><span data-w=\"w20\">주</span> <span data-w=\"w21\">생</span> <span data-w=\"w22\">활</span> <span data-w=\"w23\">목</span> <span data-w=\"w24\">표</span></td><td></td><td rowspan=\"2\" data-word-ids=\"w18,w25,w27,w31\"><span data-w=\"w18\">실</span><br><span data-w=\"w25\">천</span><br><span data-w=\"w27\">사</span><br><span data-w=\"w31\">항</span></td><td rowspan=\"2\" data-word-ids=\"w19,w26,w28\"><span data-w=\"w19\">1.</span><br><br><span data-w=\"w26\">2.</span><br><br><span data-w=\"w28\">3.</span></td></tr><tr><td data-word-ids=\"w29,w30\"><span data-w=\"w29\">생활목표</span> <span data-w=\"w30\">선정이유</span></td><td></td></tr><tr><td colspan=\"4\" data-word-ids=\"w32,w33,w34,w35,w36,w37,w38\"><span data-w=\"w32\">각</span> <span data-w=\"w33\">부</span> <span data-w=\"w34\">별</span> <span data-w=\"w35\">활</span> <span data-w=\"w36\">동</span> <span data-w=\"w37\">사</span> <span data-w=\"w38\">항</span></td></tr><tr><td data-word-ids=\"w39\"><span data-w=\"w39\">모듬(부서)</span></td><td colspan=\"2\" data-word-ids=\"w40,w41\"><span data-w=\"w40\">반</span> <span data-w=\"w41\">성</span></td><td data-word-ids=\"w42,w43\"><span data-w=\"w42\">계</span> <span data-w=\"w43\">획</span></td></tr><tr><td data-word-ids=\"w44,w45,w46\"><span data-w=\"w44\">총</span> <span data-w=\"w45\">무</span> <span data-w=\"w46\">부</span></td><td colspan=\"2\"></td><td></td></tr><tr><td data-word-ids=\"w47,w48,w49\"><span data-w=\"w47\">생</span> <span data-w=\"w48\">활</span> <span data-w=\"w49\">부</span></td><td colspan=\"2\"></td><td></td></tr><tr><td data-word-ids=\"w50,w51,w52\"><span data-w=\"w50\">미</span> <span data-w=\"w51\">화</span> <span data-w=\"w52\">부</span></td><td colspan=\"2\"></td><td></td></tr><tr><td data-word-ids=\"w53,w54,w55\"><span data-w=\"w53\">체</span> <span data-w=\"w54\">육</span> <span data-w=\"w55\">부</span></td><td colspan=\"2\"></td><td></td></tr><tr><td data-word-ids=\"w56,w57,w58\"><span data-w=\"w56\">학</span> <span data-w=\"w57\">습</span> <span data-w=\"w58\">부</span></td><td colspan=\"2\"></td><td></td></tr><tr><td data-word-ids=\"w59,w60,w61\"><span data-w=\"w59\">봉</span> <span data-w=\"w60\">사</span> <span data-w=\"w61\">부</span></td><td colspan=\"2\"></td><td></td></tr><tr><td data-word-ids=\"w62,w63\"><span data-w=\"w62\">기</span> <span data-w=\"w63\">타</span></td><td colspan=\"2\"></td><td></td></tr><tr><td data-word-ids=\"w67,w68\"><span data-w=\"w67\">봉사</span> <span data-w=\"w68\">어린이</span></td><td colspan=\"3\" data-word-ids=\"w64,w65,w66,w69,w70\"><span data-w=\"w64\">봉사</span> <span data-w=\"w65\">어린이</span> <span data-w=\"w66\">후보 :</span><br><span data-w=\"w69\">봉사</span> <span data-w=\"w70\">어린이 :</span></td></tr><tr><td data-word-ids=\"w74,w75,w76\"><span data-w=\"w74\">우수</span> <span data-w=\"w75\">활동</span> <span data-w=\"w76\">모둠</span></td><td colspan=\"3\" data-word-ids=\"w71,w72,w73,w77,w78\"><span data-w=\"w71\">우수</span> <span data-w=\"w72\">모둠</span> <span data-w=\"w73\">후보 :</span><br><span data-w=\"w77\">우수</span> <span data-w=\"w78\">모둠 :</span></td></tr><tr><td data-word-ids=\"w79,w80,w81,w82\"><span data-w=\"w79\">기</span> <span data-w=\"w80\">타</span> <span data-w=\"w81\">사</span> <span data-w=\"w82\">항</span></td><td colspan=\"3\"></td></tr><tr><td data-word-ids=\"w83,w84,w85,w86\"><span data-w=\"w83\">건</span> <span data-w=\"w84\">의</span> <span data-w=\"w85\">사</span> <span data-w=\"w86\">항</span></td><td colspan=\"3\"></td></tr><tr><td data-word-ids=\"w87,w88,w89,w90\"><span data-w=\"w87\">전</span> <span data-w=\"w88\">체</span> <span data-w=\"w89\">반</span> <span data-w=\"w90\">성</span></td><td colspan=\"3\"></td></tr><tr><td data-word-ids=\"w91,w92,w93,w94,w95\"><span data-w=\"w91\">선</span> <span data-w=\"w92\">생</span> <span data-w=\"w93\">님</span> <span data-w=\"w94\">말</span> <span data-w=\"w95\">씀</span></td><td colspan=\"3\"></td></tr></tbody></table>",
+      "imageFallbackSrc": null,
+      "spaceBeforePt": 0.0
+    },
+    {
+      "id": "lg0",
+      "kind": "line-group",
+      "bbox": [
+        89.04,
+        87.23,
+        458.64,
+        100.32
+      ],
+      "wordIds": [
+        "w4",
+        "w5",
+        "w6",
+        "w7",
+        "w8",
+        "w9",
+        "w10"
+      ],
+      "text": "초 등 학 교 제 학년 반",
+      "segments": [
+        {
+          "id": "lg0_s0",
+          "bbox": [
+            89.04,
+            87.23,
+            160.44,
+            100.32
+          ],
+          "wordIds": [
+            "w4",
+            "w5",
+            "w6",
+            "w7"
+          ],
+          "text": "초 등 학 교",
+          "align": "left",
+          "widthRatio": 0.754,
+          "fontSizePt": 13.0,
+          "fontFamily": "Malgun Gothic",
+          "bold": false,
+          "color": "#000000",
+          "spans": [
+            {
+              "wordIds": [
+                "w4",
+                "w5",
+                "w6",
+                "w7"
+              ],
+              "text": "초 등 학 교",
+              "bold": false,
+              "italic": false,
+              "underline": false,
+              "color": "#000000",
+              "size": 13.0,
+              "font": "Malgun Gothic",
+              "bg": null
+            }
+          ]
+        },
+        {
+          "id": "lg0_s1",
+          "bbox": [
+            367.8,
+            87.23,
+            458.64,
+            100.32
+          ],
+          "wordIds": [
+            "w8",
+            "w9",
+            "w10"
+          ],
+          "text": "제 학년 반",
+          "align": "right",
+          "widthRatio": 0.246,
+          "fontSizePt": 13.0,
+          "fontFamily": "Malgun Gothic",
+          "bold": false,
+          "color": "#000000",
+          "spans": [
+            {
+              "wordIds": [
+                "w8",
+                "w9",
+                "w10"
+              ],
+              "text": "제 학년 반",
+              "bold": false,
+              "italic": false,
+              "underline": false,
+              "color": "#000000",
+              "size": 13.0,
+              "font": "Malgun Gothic",
+              "bg": null
+            }
+          ]
+        }
+      ],
+      "layoutMode": "columns",
+      "lineHeight": 1.25,
+      "spaceBeforePt": 12.15,
+      "needsReview": false
+    },
+    {
+      "id": "hd0",
+      "bbox": [
+        164.76,
+        56.6,
+        430.68,
+        75.08
+      ],
+      "wordIds": [
+        "w0",
+        "w1",
+        "w2",
+        "w3"
+      ],
+      "text": "제()회 학급 어린이 회의록",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w0",
+            "w1",
+            "w2",
+            "w3"
+          ],
+          "text": "제()회 학급 어린이 회의록",
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 18.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "lineCount": 1,
+      "linePitchPt": null,
+      "lineHeight": null,
+      "spaceBeforePt": 0.0,
+      "fontSizePt": 18.0,
+      "fontFamily": "Malgun Gothic",
+      "kind": "heading",
+      "level": 1
+    }
+  ],
+  "readingOrder": [
+    "hd0",
+    "lg0",
+    "t0"
+  ],
+  "pageBgColor": null,
+  "metrics": {
+    "ocrAvgConf": null,
+    "rulingCount": 26,
+    "tableCount": 1,
+    "wordCount": 96,
+    "occludedCharsFiltered": 0,
+    "ocrFixes": [],
+    "layoutDefaults": {
+      "font": "Malgun Gothic",
+      "sizePt": 18.0,
+      "linePct": 125
+    },
+    "invariantErrors": [],
+    "rulingsH": 19,
+    "rulingsV": 7,
+    "tableShapes": [
+      "t0:18x6(44)"
+    ],
+    "cellCount": 44,
+    "needsReviewCells": 0,
+    "headingCount": 1,
+    "captionCount": 0,
+    "noteCount": 0,
+    "headerFooterCount": 0,
+    "headingSummary": [
+      "H1:제()회 학급 어린이 회의록"
+    ],
+    "headerTexts": [],
+    "blockCounts": {
+      "table": 1,
+      "line-group": 1,
+      "heading": 1
+    }
+  }
+}

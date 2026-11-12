@@ -1,6 +1,7 @@
 """`docstruct-engine` + `harness_kit.docstruct_vdoc` 기반 PDF/스캔 스캐폴딩 어댑터."""
 from __future__ import annotations
 
+import json
 import logging
 import re
 import shutil
@@ -29,7 +30,26 @@ from app.llm.catalog import normalize_agy_model
 from app.llm.policy import CLI_PROVIDER, RuntimeExecutionPolicy
 from app.llm.ports import OneShotRunner
 
-from .agy_slot_refiner import _parse_json_payload
+def _parse_json_payload(raw: str) -> Optional[dict[str, Any]]:
+    text = (raw or "").strip()
+    if not text:
+        return None
+    fenced = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
+    if fenced:
+        text = fenced.group(1).strip()
+    try:
+        obj = json.loads(text)
+        return obj if isinstance(obj, dict) else None
+    except Exception:
+        start = text.find("{")
+        end = text.rfind("}")
+        if start >= 0 and end > start:
+            try:
+                obj = json.loads(text[start : end + 1])
+                return obj if isinstance(obj, dict) else None
+            except Exception:
+                return None
+    return None
 
 logger = logging.getLogger(__name__)
 
@@ -753,9 +773,37 @@ class DocStructScaffoldAgent:
             doc_metrics["pageRulingF1"] = {str(p.pageIndex): round(p.rulingLineF1, 4) for p in bundle.report.pages}
             doc_metrics["vdocBlocks"] = checked_blocks
             doc_metrics["vdocSlots"] = checked_slots
+
+            layout_reports = [p.layoutReport for p in bundle.report.pages if p.layoutReport is not None]
+            layout_summary = (
+                (bundle.report.summary.get("docMetrics") or {}).get("layoutSummary")
+                if bundle.report.summary
+                else None
+            )
+            span_score: Optional[float] = None
+            if layout_reports:
+                from docstruct_engine.verify.layout_checks import summarize_layout_suite
+
+                layout_summary = layout_summary or summarize_layout_suite(layout_reports)
+                doc_metrics["layoutSummary"] = layout_summary
+                per_page_scores = [
+                    (
+                        (1.0 if lr.l1OverflowPx <= 2.0 else 0.0)
+                        + lr.l2TableCellLineMatch
+                        + lr.l3LineGroupF1
+                        + lr.l4FontSizeMatch
+                        + lr.l5SpacingMatch
+                        + max(0.0, 1.0 - lr.l6PhotoTextPollution)
+                        + lr.l7RowHeightMatch
+                    )
+                    / 7.0
+                    for lr in layout_reports
+                ]
+                span_score = round(sum(per_page_scores) / len(per_page_scores), 4)
+
             emit_stage_event("compile_vdoc", metrics=doc_metrics, cache_dir=cache_dir)
             logger.info(
-                "[DocStructScaffoldAgent] completed docId=%s mode=%s verdict=%s blocks=%d slots=%d tables=%d pending=%d",
+                "[DocStructScaffoldAgent] completed docId=%s mode=%s verdict=%s blocks=%d slots=%d tables=%d pending=%d spanScore=%s",
                 doc_id,
                 mode,
                 verdict,
@@ -763,7 +811,14 @@ class DocStructScaffoldAgent:
                 checked_slots,
                 doc_metrics["totalTables"],
                 doc_metrics["pendingReadCount"],
+                span_score,
             )
+            best_summary: dict[str, Any] = {
+                "verdict": verdict,
+                "spanScore": span_score,
+            }
+            if layout_summary is not None:
+                best_summary["layout"] = layout_summary
             agent_run: dict[str, Any] = {
                 "status": "completed" if checked_blocks > 0 else "empty_blocks",
                 "engine": "docstruct-engine",
@@ -775,10 +830,7 @@ class DocStructScaffoldAgent:
                 "sourceKinds": [p.sourceKind for p in doc_ir.pages],
                 "metrics": doc_metrics,
                 "rereadSummary": reread_summary,
-                "best": {
-                    "verdict": verdict,
-                    "spanScore": None,
-                },
+                "best": best_summary,
                 "warnings": warnings,
             }
             return vdoc_doc, checked_blocks, checked_slots, agent_run

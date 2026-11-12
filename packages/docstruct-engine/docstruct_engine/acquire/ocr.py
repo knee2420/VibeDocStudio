@@ -4,9 +4,12 @@ from __future__ import annotations
 import json
 import re
 import shutil
+import statistics
 import subprocess
 from pathlib import Path
 from typing import Any, Optional
+
+from PIL import Image
 
 from ..config import load_registry
 from ..ir.model import BBox, Word, bbox_iou
@@ -51,6 +54,33 @@ def _scale_box(w_dict: dict[str, Any], sx: float, sy: float) -> BBox:
     x1 = max(x0 + 0.5, round((float(w_dict["x"]) + float(w_dict["w"])) * sx, 2))
     y1 = max(y0 + 0.5, round((float(w_dict["y"]) + float(w_dict["h"])) * sy, 2))
     return (x0, y0, x1, y1)
+
+
+def _measure_word_ink_height_pt(gray: Any, wd: dict[str, Any], sy: float) -> Optional[float]:
+    """Measure tight vertical dark-ink span inside an OCR word pixel box in pt."""
+    if gray is None:
+        return None
+    gw, gh = gray.size
+    x0 = max(0, min(gw, int(round(float(wd["x"])))))
+    y0 = max(0, min(gh, int(round(float(wd["y"])))))
+    x1 = max(x0, min(gw, int(round(float(wd["x"]) + float(wd["w"])))))
+    y1 = max(y0, min(gh, int(round(float(wd["y"]) + float(wd["h"])))))
+    cw, ch = x1 - x0, y1 - y0
+    if cw < 2 or ch < 2:
+        return None
+    raw = gray.crop((x0, y0, x1, y1)).tobytes()
+    first_y = -1
+    last_y = -1
+    for ry in range(ch):
+        row = raw[ry * cw : (ry + 1) * cw]
+        dark = sum(1 for v in row if v < 195)
+        if 0 < dark < cw * 0.92:
+            if first_y < 0:
+                first_y = ry
+            last_y = ry
+    if first_y < 0:
+        return None
+    return (last_y - first_y + 1) * sy
 
 
 def _is_suspicious_token(text: str) -> bool:
@@ -115,56 +145,95 @@ class WindowsOcrAdapter:
             except Exception:
                 secondary_words = []
 
+        gray_img: Optional[Image.Image] = None
+        if image_path.is_file():
+            try:
+                gray_img = Image.open(image_path).convert("L")
+            except Exception:
+                gray_img = None
+
+        scan_scale = float(self.registry.get("scanFontScale", 0.85))
+        box_scale = float(self.registry.get("scanBoxFontScale", 0.72))
+
         words_out: list[Word] = []
         seq = 0
-        for line_idx, ln in enumerate(primary.get("lines") or []):
-            for wd in ln.get("words") or []:
-                txt = str(wd.get("text") or "").strip()
-                if not txt:
+        try:
+            for line_idx, ln in enumerate(primary.get("lines") or []):
+                raw_wds = [
+                    (str(wd.get("text") or "").strip(), wd)
+                    for wd in (ln.get("words") or [])
+                    if str(wd.get("text") or "").strip()
+                ]
+                if not raw_wds:
                     continue
-                bx = _scale_box(wd, sx, sy)
-                est_pt = round(max(6.0, (bx[3] - bx[1]) * 0.8), 1)
-                conf = 0.88
-
-                # If suspicious or mostly ASCII/digits, cross-check against en-US pass
-                is_asciiish = all(ord(ch) < 128 for ch in txt)
-                suspicious = _is_suspicious_token(txt)
-                if secondary_words and (suspicious or is_asciiish or bool(self._num_re.match(txt))):
-                    best_sec = max(
-                        ((st, bbox_iou(bx, sbx)) for st, sbx in secondary_words),
-                        key=lambda item: item[1],
-                        default=("", 0.0),
-                    )
-                    if best_sec[1] >= 0.45:
-                        sec_txt = best_sec[0]
-                        if suspicious and not _is_suspicious_token(sec_txt):
-                            txt = sec_txt
-                            conf = 0.78
-                        elif sec_txt == txt:
-                            conf = 0.94
-                        elif is_asciiish and any(c.isdigit() for c in sec_txt) and not any(c.isdigit() for c in txt):
-                            txt = sec_txt
-                            conf = 0.72
-                        elif is_asciiish and sec_txt != txt:
-                            conf = 0.60
-
-                if _is_suspicious_token(txt):
-                    conf = min(conf, 0.50)
-
-                words_out.append(
-                    Word(
-                        id=f"w{seq}",
-                        text=txt,
-                        bbox=bx,
-                        conf=round(conf, 3),
-                        src="ocr",
-                        size=est_pt,
-                        needsReview=conf < 0.65,
-                        baseline=round(bx[3], 2),
-                        lineHint=line_idx,
-                    )
+                ink_vals: list[Optional[float]] = [
+                    _measure_word_ink_height_pt(gray_img, wd, sy) for _, wd in raw_wds
+                ]
+                multi_inks = [
+                    iv for (txt, _), iv in zip(raw_wds, ink_vals) if iv is not None and len(txt) >= 2
+                ]
+                any_inks = [iv for iv in ink_vals if iv is not None]
+                line_ink_pt = (
+                    float(statistics.median(multi_inks))
+                    if multi_inks
+                    else (float(max(any_inks)) if any_inks else None)
                 )
-                seq += 1
+
+                for (txt, wd), word_ink in zip(raw_wds, ink_vals):
+                    bx = _scale_box(wd, sx, sy)
+                    if line_ink_pt is not None:
+                        eff_ink = (
+                            word_ink
+                            if word_ink is not None and len(txt) >= 2 and abs(word_ink - line_ink_pt) > line_ink_pt * 0.25
+                            else line_ink_pt
+                        )
+                        est_pt = round(max(6.0, eff_ink * scan_scale), 1)
+                    else:
+                        est_pt = round(max(6.0, (bx[3] - bx[1]) * box_scale), 1)
+                    conf = 0.88
+
+                    # If suspicious or mostly ASCII/digits, cross-check against en-US pass
+                    is_asciiish = all(ord(ch) < 128 for ch in txt)
+                    suspicious = _is_suspicious_token(txt)
+                    if secondary_words and (suspicious or is_asciiish or bool(self._num_re.match(txt))):
+                        best_sec = max(
+                            ((st, bbox_iou(bx, sbx)) for st, sbx in secondary_words),
+                            key=lambda item: item[1],
+                            default=("", 0.0),
+                        )
+                        if best_sec[1] >= 0.45:
+                            sec_txt = best_sec[0]
+                            if suspicious and not _is_suspicious_token(sec_txt):
+                                txt = sec_txt
+                                conf = 0.78
+                            elif sec_txt == txt:
+                                conf = 0.94
+                            elif is_asciiish and any(c.isdigit() for c in sec_txt) and not any(c.isdigit() for c in txt):
+                                txt = sec_txt
+                                conf = 0.72
+                            elif is_asciiish and sec_txt != txt:
+                                conf = 0.60
+
+                    if _is_suspicious_token(txt):
+                        conf = min(conf, 0.50)
+
+                    words_out.append(
+                        Word(
+                            id=f"w{seq}",
+                            text=txt,
+                            bbox=bx,
+                            conf=round(conf, 3),
+                            src="ocr",
+                            size=est_pt,
+                            needsReview=conf < 0.65,
+                            baseline=round(bx[3], 2),
+                            lineHint=line_idx,
+                        )
+                    )
+                    seq += 1
+        finally:
+            if gray_img is not None:
+                gray_img.close()
 
         return words_out
 

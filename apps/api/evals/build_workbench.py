@@ -84,16 +84,16 @@ SUMMARY_NOW = (
 
 def build_report() -> None:
     slots = [
-        slot("r_title", "문서 제목", "<h1>2025 Q1 온보딩 개선 운영 보고서</h1>", role="boilerplate"),
+        slot("r_title", "문서 제목", "<h1>2025 Q1 온보딩 개선 운영 보고서</h1>"),
         slot("r_meta", "문서 정보", "<p></p>"),
         slot("r_summary", "요약", SUMMARY_NOW, originalContent=SUMMARY_ORIG, isEdited=True),
-        slot("r_dec_h1", "표 머리 · 항목", "<p>항목</p>", role="boilerplate"),
-        slot("r_dec_h2", "표 머리 · 결정", "<p>결정</p>", role="boilerplate"),
-        slot("r_dec_pricing_k", "요금제 · 항목", "<p>요금제</p>", role="boilerplate"),
+        slot("r_dec_h1", "표 머리 · 항목", "<p>항목</p>"),
+        slot("r_dec_h2", "표 머리 · 결정", "<p>결정</p>"),
+        slot("r_dec_pricing_k", "요금제 · 항목", "<p>요금제</p>"),
         slot("r_dec_pricing", "요금제 · 결정", "<p>월 정액제를 유지한다.</p>"),
-        slot("r_dec_onb_k", "온보딩 · 항목", "<p>온보딩</p>", role="boilerplate"),
+        slot("r_dec_onb_k", "온보딩 · 항목", "<p>온보딩</p>"),
         slot("r_dec_onb", "온보딩 · 결정", "<p>첫 화면에서 템플릿을 먼저 제시한다.</p>"),
-        slot("r_dec_next_k", "다음 결정 · 항목", "<p>외부 검색</p>", role="boilerplate"),
+        slot("r_dec_next_k", "다음 결정 · 항목", "<p>외부 검색</p>"),
         slot("r_dec_next", "다음 결정 · 결정", "<p></p>"),
         slot("r_metric_table", "지표 표",
              "<table><tr><th>지표</th><th>값</th></tr><tr><td>첫 문서 완성 평균</td><td>47분</td></tr>"
@@ -104,7 +104,7 @@ def build_report() -> None:
              "기존 사용자는 빈 문서에서 시작하는 습관이 남아 있어 전환이 느렸다. 이 차이는 다음 분기 온보딩 설계에서 반드시 다뤄야 한다.</p>",
              constraints={"maxChars": 80}),
         slot("r_next_plan", "다음 분기 계획", "<p>외부 검색 API 도입 여부를 결정하고, 온보딩 측정을 30명으로 늘린다.</p>"),
-        slot("r_next_owner", "담당", "<p>PM 서민규</p>", role="boilerplate"),
+        slot("r_next_owner", "담당", "<p>PM 서민규</p>"),
     ]
     pages = [
         page("rp1", "요약", [text_block("rb_title", "r_title"), text_block("rb_meta", "r_meta", "문서 정보"),

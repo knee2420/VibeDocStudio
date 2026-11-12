@@ -1,0 +1,5753 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-vector",
+  "size": {
+    "width": 595.2,
+    "height": 841.92
+  },
+  "margins": {
+    "top": 98.4,
+    "right": 75.9,
+    "bottom": 98.8,
+    "left": 72.3
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "공사",
+      "bbox": [
+        214.66,
+        111.29,
+        250.66,
+        129.29
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 18.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.74,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "관계자",
+      "bbox": [
+        259.78,
+        111.29,
+        313.78,
+        129.29
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 18.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.74,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w2",
+      "text": "회의록",
+      "bbox": [
+        322.68,
+        111.29,
+        376.9,
+        129.29
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 18.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 126.74,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w3",
+      "text": "공사명:",
+      "bbox": [
+        78.5,
+        138.9,
+        122.69,
+        149.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 148.37,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w4",
+      "text": "○○○○",
+      "bbox": [
+        128.21,
+        138.9,
+        172.12,
+        149.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Batang",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 148.37,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "페이지:",
+      "bbox": [
+        430.73,
+        138.9,
+        474.67,
+        149.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 148.37,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w6",
+      "text": "/",
+      "bbox": [
+        491.23,
+        138.9,
+        496.75,
+        149.94
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 148.37,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w7",
+      "text": "회의제목",
+      "bbox": [
+        74.9,
+        172.02,
+        119.06,
+        183.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 181.49,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w8",
+      "text": "기",
+      "bbox": [
+        295.32,
+        172.02,
+        306.36,
+        183.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 181.49,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w9",
+      "text": "록",
+      "bbox": [
+        311.88,
+        172.02,
+        322.92,
+        183.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 181.49,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w10",
+      "text": "자",
+      "bbox": [
+        328.46,
+        172.02,
+        339.5,
+        183.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 181.49,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w11",
+      "text": "(인)",
+      "bbox": [
+        486.67,
+        172.02,
+        508.78,
+        183.06
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 181.49,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w12",
+      "text": "회의장소",
+      "bbox": [
+        74.9,
+        200.82,
+        119.06,
+        211.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 210.29,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w13",
+      "text": "회의일시",
+      "bbox": [
+        295.32,
+        200.82,
+        339.48,
+        211.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 210.29,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w14",
+      "text": "20",
+      "bbox": [
+        359.42,
+        200.82,
+        370.46,
+        211.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 210.29,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w15",
+      "text": "년",
+      "bbox": [
+        381.5,
+        200.82,
+        392.54,
+        211.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 210.29,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w16",
+      "text": "월",
+      "bbox": [
+        409.13,
+        200.82,
+        420.17,
+        211.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 210.29,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w17",
+      "text": "일:",
+      "bbox": [
+        436.73,
+        200.82,
+        464.11,
+        211.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 210.29,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w18",
+      "text": "∼:",
+      "bbox": [
+        475.15,
+        200.82,
+        502.75,
+        211.86
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Batang",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 210.29,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w19",
+      "text": "소",
+      "bbox": [
+        94.36,
+        228.92,
+        105.41,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w20",
+      "text": "속",
+      "bbox": [
+        110.93,
+        228.92,
+        121.97,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w21",
+      "text": "직",
+      "bbox": [
+        149.59,
+        228.92,
+        160.63,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w22",
+      "text": "위",
+      "bbox": [
+        166.15,
+        228.92,
+        177.19,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w23",
+      "text": "성",
+      "bbox": [
+        194.23,
+        228.92,
+        205.27,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w24",
+      "text": "명",
+      "bbox": [
+        216.34,
+        228.92,
+        227.38,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w25",
+      "text": "서",
+      "bbox": [
+        248.98,
+        228.92,
+        260.02,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w26",
+      "text": "명",
+      "bbox": [
+        271.08,
+        228.92,
+        282.12,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w27",
+      "text": "소",
+      "bbox": [
+        320.28,
+        228.92,
+        331.32,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w28",
+      "text": "속",
+      "bbox": [
+        336.86,
+        228.92,
+        347.9,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w29",
+      "text": "직위",
+      "bbox": [
+        379.1,
+        228.92,
+        401.18,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w30",
+      "text": "성",
+      "bbox": [
+        415.37,
+        228.92,
+        426.41,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w31",
+      "text": "명",
+      "bbox": [
+        437.45,
+        228.92,
+        448.49,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w32",
+      "text": "서",
+      "bbox": [
+        473.23,
+        228.92,
+        484.27,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w33",
+      "text": "명",
+      "bbox": [
+        495.31,
+        228.92,
+        506.35,
+        239.96
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.39,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w34",
+      "text": "회의내용:",
+      "bbox": [
+        78.5,
+        390.49,
+        133.73,
+        401.53
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 399.96,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w35",
+      "text": "○○○○주식회사",
+      "bbox": [
+        253.54,
+        732.08,
+        341.88,
+        743.12
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Batang",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 741.55,
+      "lineHint": 6,
+      "spaceBefore": null,
+      "trailingSpace": true
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 97.7,
+      "x1": 520.06,
+      "y1": 99.14,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 164.45,
+      "x1": 520.06,
+      "y1": 165.17,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 193.49,
+      "x1": 520.06,
+      "y1": 194.21,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 222.55,
+      "x1": 520.06,
+      "y1": 223.27,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 249.67,
+      "x1": 520.06,
+      "y1": 250.39,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 276.55,
+      "x1": 520.06,
+      "y1": 277.27,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 303.68,
+      "x1": 520.06,
+      "y1": 304.42,
+      "thickness": 0.74,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 330.58,
+      "x1": 520.06,
+      "y1": 331.3,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 357.7,
+      "x1": 520.06,
+      "y1": 358.42,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 384.58,
+      "x1": 520.06,
+      "y1": 385.3,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 410.64,
+      "x1": 520.06,
+      "y1": 411.48,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 434.88,
+      "x1": 520.06,
+      "y1": 435.72,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 459.36,
+      "x1": 520.06,
+      "y1": 460.2,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 483.62,
+      "x1": 520.06,
+      "y1": 484.46,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 508.1,
+      "x1": 520.06,
+      "y1": 508.94,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 532.58,
+      "x1": 520.06,
+      "y1": 533.42,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 556.82,
+      "x1": 520.06,
+      "y1": 557.66,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 581.33,
+      "x1": 520.06,
+      "y1": 582.17,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 605.57,
+      "x1": 520.06,
+      "y1": 606.41,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 630.05,
+      "x1": 520.06,
+      "y1": 630.89,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 654.31,
+      "x1": 520.06,
+      "y1": 655.15,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 678.79,
+      "x1": 520.06,
+      "y1": 679.63,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 71.54,
+      "y0": 703.27,
+      "x1": 520.06,
+      "y1": 704.11,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.98,
+      "y0": 727.87,
+      "x1": 520.06,
+      "y1": 729.31,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 71.54,
+      "y0": 99.14,
+      "x1": 72.98,
+      "y1": 729.31,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 120.77,
+      "y0": 165.17,
+      "x1": 121.49,
+      "y1": 222.55,
+      "thickness": 0.72,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 143.57,
+      "y0": 223.27,
+      "x1": 144.29,
+      "y1": 385.3,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 182.47,
+      "y0": 223.27,
+      "x1": 183.19,
+      "y1": 384.58,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 238.42,
+      "y0": 223.27,
+      "x1": 239.14,
+      "y1": 384.58,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 291.48,
+      "y0": 165.17,
+      "x1": 292.2,
+      "y1": 384.58,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 341.9,
+      "y0": 165.17,
+      "x1": 342.62,
+      "y1": 222.55,
+      "thickness": 0.72,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 375.98,
+      "y0": 223.27,
+      "x1": 376.7,
+      "y1": 384.58,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 403.61,
+      "y0": 223.27,
+      "x1": 404.33,
+      "y1": 384.58,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 459.55,
+      "y0": 223.27,
+      "x1": 460.27,
+      "y1": 384.58,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 518.62,
+      "y0": 99.14,
+      "x1": 520.06,
+      "y1": 727.87,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "t0",
+      "kind": "table",
+      "bbox": [
+        72.26,
+        98.42,
+        519.34,
+        728.59
+      ],
+      "nRows": 23,
+      "nCols": 10,
+      "colXs": [
+        72.26,
+        121.13,
+        143.93,
+        182.83,
+        238.78,
+        291.84,
+        342.26,
+        376.34,
+        403.97,
+        459.91,
+        519.34
+      ],
+      "rowYs": [
+        98.42,
+        164.81,
+        193.85,
+        222.91,
+        250.03,
+        276.91,
+        304.05,
+        330.94,
+        358.06,
+        384.94,
+        411.06,
+        435.3,
+        459.78,
+        484.04,
+        508.52,
+        533.0,
+        557.24,
+        581.75,
+        605.99,
+        630.47,
+        654.73,
+        679.21,
+        703.69,
+        728.59
+      ],
+      "widthRatio": [
+        0.1093,
+        0.051,
+        0.087,
+        0.1251,
+        0.1187,
+        0.1128,
+        0.0762,
+        0.0618,
+        0.1251,
+        0.1329
+      ],
+      "widthPt": 447.08,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            98.42,
+            519.34,
+            164.81
+          ],
+          "wordIds": [
+            "w0",
+            "w1",
+            "w2",
+            "w3",
+            "w4",
+            "w5",
+            "w6"
+          ],
+          "text": "공사 관계자 회의록\n공사명: ○○○○ 페이지: /",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 6.2
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 14.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.55,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            72.26,
+            164.81,
+            121.13,
+            193.85
+          ],
+          "wordIds": [
+            "w7"
+          ],
+          "text": "회의제목",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 2.6
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 1,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            121.13,
+            164.81,
+            291.84,
+            193.85
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c1",
+            "kind": "text",
+            "label": "회의제목",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 5,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            291.84,
+            164.81,
+            342.26,
+            193.85
+          ],
+          "wordIds": [
+            "w8",
+            "w9",
+            "w10"
+          ],
+          "text": "기 록 자",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 6,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            342.26,
+            164.81,
+            519.34,
+            193.85
+          ],
+          "wordIds": [
+            "w11"
+          ],
+          "text": "(인)",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c6",
+            "kind": "sign",
+            "label": "기 록 자",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            72.26,
+            193.85,
+            121.13,
+            222.91
+          ],
+          "wordIds": [
+            "w12"
+          ],
+          "text": "회의장소",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 7.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 2.6
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 1,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            121.13,
+            193.85,
+            291.84,
+            222.91
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r2c1",
+            "kind": "text",
+            "label": "회의장소",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 5,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            291.84,
+            193.85,
+            342.26,
+            222.91
+          ],
+          "wordIds": [
+            "w13"
+          ],
+          "text": "회의일시",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 7.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 6,
+          "rs": 1,
+          "cs": 4,
+          "role": "td",
+          "bbox": [
+            342.26,
+            193.85,
+            519.34,
+            222.91
+          ],
+          "wordIds": [
+            "w14",
+            "w15",
+            "w16",
+            "w17",
+            "w18"
+          ],
+          "text": "20 년 월 일: ∼:",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 7.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            72.26,
+            222.91,
+            143.93,
+            250.03
+          ],
+          "wordIds": [
+            "w19",
+            "w20"
+          ],
+          "text": "소 속",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            143.93,
+            222.91,
+            182.83,
+            250.03
+          ],
+          "wordIds": [
+            "w21",
+            "w22"
+          ],
+          "text": "직 위",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            182.83,
+            222.91,
+            238.78,
+            250.03
+          ],
+          "wordIds": [
+            "w23",
+            "w24"
+          ],
+          "text": "성 명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            238.78,
+            222.91,
+            291.84,
+            250.03
+          ],
+          "wordIds": [
+            "w25",
+            "w26"
+          ],
+          "text": "서 명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            291.84,
+            222.91,
+            376.34,
+            250.03
+          ],
+          "wordIds": [
+            "w27",
+            "w28"
+          ],
+          "text": "소 속",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            376.34,
+            222.91,
+            403.97,
+            250.03
+          ],
+          "wordIds": [
+            "w29"
+          ],
+          "text": "직위",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 2.8
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 8,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            403.97,
+            222.91,
+            459.91,
+            250.03
+          ],
+          "wordIds": [
+            "w30",
+            "w31"
+          ],
+          "text": "성 명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 9,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            459.91,
+            222.91,
+            519.34,
+            250.03
+          ],
+          "wordIds": [
+            "w32",
+            "w33"
+          ],
+          "text": "서 명",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.0,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            72.26,
+            250.03,
+            143.93,
+            276.91
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r4c0",
+            "kind": "text",
+            "label": "r5c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            143.93,
+            250.03,
+            182.83,
+            276.91
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r4c2",
+            "kind": "text",
+            "label": "r5c3",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            182.83,
+            250.03,
+            238.78,
+            276.91
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r4c3",
+            "kind": "text",
+            "label": "r5c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            238.78,
+            250.03,
+            291.84,
+            276.91
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r4c4",
+            "kind": "text",
+            "label": "r5c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            291.84,
+            250.03,
+            376.34,
+            276.91
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r4c5",
+            "kind": "text",
+            "label": "r5c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            376.34,
+            250.03,
+            403.97,
+            276.91
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r4c7",
+            "kind": "text",
+            "label": "r5c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 8,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            403.97,
+            250.03,
+            459.91,
+            276.91
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r4c8",
+            "kind": "text",
+            "label": "r5c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 9,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            459.91,
+            250.03,
+            519.34,
+            276.91
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r4c9",
+            "kind": "text",
+            "label": "r5c10",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            72.26,
+            276.91,
+            143.93,
+            304.05
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c0",
+            "kind": "text",
+            "label": "r6c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            143.93,
+            276.91,
+            182.83,
+            304.05
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c2",
+            "kind": "text",
+            "label": "r6c3",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            182.83,
+            276.91,
+            238.78,
+            304.05
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c3",
+            "kind": "text",
+            "label": "r6c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            238.78,
+            276.91,
+            291.84,
+            304.05
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c4",
+            "kind": "text",
+            "label": "r6c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            291.84,
+            276.91,
+            376.34,
+            304.05
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c5",
+            "kind": "text",
+            "label": "r6c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            376.34,
+            276.91,
+            403.97,
+            304.05
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c7",
+            "kind": "text",
+            "label": "r6c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 8,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            403.97,
+            276.91,
+            459.91,
+            304.05
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c8",
+            "kind": "text",
+            "label": "r6c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 9,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            459.91,
+            276.91,
+            519.34,
+            304.05
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r5c9",
+            "kind": "text",
+            "label": "r6c10",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            72.26,
+            304.05,
+            143.93,
+            330.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c0",
+            "kind": "text",
+            "label": "r7c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            143.93,
+            304.05,
+            182.83,
+            330.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c2",
+            "kind": "text",
+            "label": "r7c3",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            182.83,
+            304.05,
+            238.78,
+            330.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c3",
+            "kind": "text",
+            "label": "r7c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            238.78,
+            304.05,
+            291.84,
+            330.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c4",
+            "kind": "text",
+            "label": "r7c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            291.84,
+            304.05,
+            376.34,
+            330.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c5",
+            "kind": "text",
+            "label": "r7c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            376.34,
+            304.05,
+            403.97,
+            330.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c7",
+            "kind": "text",
+            "label": "r7c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 8,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            403.97,
+            304.05,
+            459.91,
+            330.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c8",
+            "kind": "text",
+            "label": "r7c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 6,
+          "c": 9,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            459.91,
+            304.05,
+            519.34,
+            330.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.74,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r6c9",
+            "kind": "text",
+            "label": "r7c10",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            72.26,
+            330.94,
+            143.93,
+            358.06
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c0",
+            "kind": "text",
+            "label": "r8c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            143.93,
+            330.94,
+            182.83,
+            358.06
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c2",
+            "kind": "text",
+            "label": "r8c3",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            182.83,
+            330.94,
+            238.78,
+            358.06
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c3",
+            "kind": "text",
+            "label": "r8c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            238.78,
+            330.94,
+            291.84,
+            358.06
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c4",
+            "kind": "text",
+            "label": "r8c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            291.84,
+            330.94,
+            376.34,
+            358.06
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c5",
+            "kind": "text",
+            "label": "r8c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            376.34,
+            330.94,
+            403.97,
+            358.06
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c7",
+            "kind": "text",
+            "label": "r8c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 8,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            403.97,
+            330.94,
+            459.91,
+            358.06
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c8",
+            "kind": "text",
+            "label": "r8c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 7,
+          "c": 9,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            459.91,
+            330.94,
+            519.34,
+            358.06
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r7c9",
+            "kind": "text",
+            "label": "r8c10",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            72.26,
+            358.06,
+            143.93,
+            384.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c0",
+            "kind": "text",
+            "label": "r9c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            143.93,
+            358.06,
+            182.83,
+            384.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c2",
+            "kind": "text",
+            "label": "r9c3",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            182.83,
+            358.06,
+            238.78,
+            384.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c3",
+            "kind": "text",
+            "label": "r9c4",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 4,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            238.78,
+            358.06,
+            291.84,
+            384.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c4",
+            "kind": "text",
+            "label": "r9c5",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 5,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            291.84,
+            358.06,
+            376.34,
+            384.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c5",
+            "kind": "text",
+            "label": "r9c6",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 7,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            376.34,
+            358.06,
+            403.97,
+            384.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c7",
+            "kind": "text",
+            "label": "r9c8",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 8,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            403.97,
+            358.06,
+            459.91,
+            384.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c8",
+            "kind": "text",
+            "label": "r9c9",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 8,
+          "c": 9,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            459.91,
+            358.06,
+            519.34,
+            384.94
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r8c9",
+            "kind": "text",
+            "label": "r9c10",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 9,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            384.94,
+            519.34,
+            411.06
+          ],
+          "wordIds": [
+            "w34"
+          ],
+          "text": "회의내용:",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 6.2
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 10,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            411.06,
+            519.34,
+            435.3
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r10c0",
+            "kind": "text",
+            "label": "r11c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 11,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            435.3,
+            519.34,
+            459.78
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r11c0",
+            "kind": "text",
+            "label": "r12c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 12,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            459.78,
+            519.34,
+            484.04
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r12c0",
+            "kind": "text",
+            "label": "r13c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 13,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            484.04,
+            519.34,
+            508.52
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r13c0",
+            "kind": "text",
+            "label": "r14c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 14,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            508.52,
+            519.34,
+            533.0
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r14c0",
+            "kind": "text",
+            "label": "r15c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 15,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            533.0,
+            519.34,
+            557.24
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r15c0",
+            "kind": "text",
+            "label": "r16c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 16,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            557.24,
+            519.34,
+            581.75
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r16c0",
+            "kind": "text",
+            "label": "r17c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 17,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            581.75,
+            519.34,
+            605.99
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r17c0",
+            "kind": "text",
+            "label": "r18c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 18,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            605.99,
+            519.34,
+            630.47
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r18c0",
+            "kind": "text",
+            "label": "r19c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 19,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            630.47,
+            519.34,
+            654.73
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r19c0",
+            "kind": "text",
+            "label": "r20c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 20,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            654.73,
+            519.34,
+            679.21
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r20c0",
+            "kind": "text",
+            "label": "r21c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 21,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            679.21,
+            519.34,
+            703.69
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r21c0",
+            "kind": "text",
+            "label": "r22c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 22,
+          "c": 0,
+          "rs": 1,
+          "cs": 10,
+          "role": "td",
+          "bbox": [
+            72.26,
+            703.69,
+            519.34,
+            728.59
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": null,
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r22c0",
+            "kind": "text",
+            "label": "r23c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": null,
+      "imageFallbackSrc": null,
+      "spaceBeforePt": 0.0
+    },
+    {
+      "id": "li0",
+      "bbox": [
+        253.54,
+        732.08,
+        341.88,
+        743.12
+      ],
+      "wordIds": [
+        "w35"
+      ],
+      "text": "○○○○주식회사",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w35"
+          ],
+          "text": "○○○○주식회사",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.0,
+          "font": "Batang",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "lineCount": 1,
+      "linePitchPt": null,
+      "lineHeight": null,
+      "spaceBeforePt": 3.49,
+      "fontSizePt": 11.0,
+      "fontFamily": "Batang",
+      "kind": "listItem",
+      "marker": "○",
+      "markerKind": "bullet",
+      "indentLevel": 13,
+      "hangingIndentPt": 0.0
+    }
+  ],
+  "readingOrder": [
+    "t0",
+    "li0"
+  ],
+  "pageBgColor": null,
+  "metrics": {
+    "ocrAvgConf": null,
+    "rulingCount": 35,
+    "tableCount": 1,
+    "wordCount": 36,
+    "occludedCharsFiltered": 0,
+    "ocrFixes": [],
+    "layoutDefaults": {
+      "font": "GulimChe",
+      "sizePt": 11.0,
+      "linePct": 135
+    },
+    "invariantErrors": [],
+    "rulingsH": 24,
+    "rulingsV": 11,
+    "tableShapes": [
+      "t0:23x10(71)"
+    ],
+    "cellCount": 71,
+    "needsReviewCells": 0,
+    "headingCount": 0,
+    "captionCount": 0,
+    "noteCount": 0,
+    "headerFooterCount": 0,
+    "headingSummary": [],
+    "headerTexts": [],
+    "blockCounts": {
+      "table": 1,
+      "listItem": 1
+    }
+  }
+}

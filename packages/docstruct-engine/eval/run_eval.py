@@ -216,6 +216,134 @@ def run_eval(
     return 1 if any(not r.passed for r in reports) else 0
 
 
+def run_layout_eval(
+    *,
+    paths_file: Path,
+    doc_filter: Optional[set[str]] = None,
+    page_filter: Optional[list[int]] = None,
+    include_fixtures: bool = True,
+    render: bool = False,
+    save_baseline: Optional[Path] = None,
+    compare_path: Optional[Path] = None,
+    strict_layout: bool = False,
+) -> int:
+    _bootstrap_paths()
+    import tempfile
+
+    from docstruct_engine import build_doc_ir
+    from docstruct_engine.compile.docstruct_vdoc import default_ocr_port, doc_ir_to_vdoc
+    from docstruct_engine.verify.layout_checks import (
+        LayoutPageReport,
+        evaluate_page_layout,
+        format_layout_comparison,
+        summarize_layout_suite,
+    )
+    from docstruct_engine.verify.layout_measure import check_cdp_available, probe_vdoc_dom
+    from docstruct_engine.verify.layout_truth import extract_doc_layout_truth
+
+    manifest = json.loads((EVAL_DIR / "manifest.json").read_text(encoding="utf-8"))
+    thresholds = load_thresholds()
+    local_paths: dict[str, str] = {}
+    if paths_file.is_file():
+        local_paths = json.loads(paths_file.read_text(encoding="utf-8"))
+
+    cdp_ok = False
+    if render:
+        cdp_ok = check_cdp_available()
+        if not cdp_ok:
+            print("[WARN] --render skipped: CDP server not reachable at http://127.0.0.1:9222", file=sys.stderr)
+
+    doc_targets: list[tuple[str, Path]] = []
+    for entry in manifest.get("docs", []):
+        doc_id = entry["docId"]
+        if doc_filter and doc_id not in doc_filter:
+            continue
+        raw_path = str(local_paths.get(doc_id) or "").strip()
+        if not raw_path or raw_path.startswith("<path/to/"):
+            continue
+        dp = Path(raw_path)
+        if dp.is_file() and dp.suffix.lower() == ".pdf":
+            doc_targets.append((doc_id, dp))
+
+    tmp_ctx: Optional[tempfile.TemporaryDirectory[str]] = None
+    if include_fixtures:
+        tests_dir = PKG_ROOT / "tests"
+        if str(tests_dir.parent) not in sys.path:
+            sys.path.insert(0, str(tests_dir.parent))
+        from tests.fixtures.layout import ALL_FIXTURE_NAMES, build_layout_fixture
+
+        tmp_ctx = tempfile.TemporaryDirectory(prefix="docstruct_layout_fx_")
+        fx_dir = Path(tmp_ctx.name)
+        for name in ALL_FIXTURE_NAMES:
+            if doc_filter and name not in doc_filter:
+                continue
+            doc_targets.append((f"fx:{name}", build_layout_fixture(name, fx_dir)))
+
+    all_reports: list[LayoutPageReport] = []
+    per_doc_summaries: dict[str, Any] = {}
+    try:
+        bg_cover = float((thresholds.get("layout") or {}).get("pageBgCoverRatio", 0.75))
+        ocr_port = default_ocr_port()
+        for label, doc_path in doc_targets:
+            doc_ir = build_doc_ir(str(doc_path), page_indices=page_filter, ocr_port=ocr_port, render_png=False)
+            truths = extract_doc_layout_truth(str(doc_path), page_indices=page_filter, bg_cover_ratio=bg_cover)
+            vdoc, compiled_reports = doc_ir_to_vdoc(doc_ir, title=doc_ir.title)
+            vdoc_pages = vdoc["pages"]
+            vdoc_slots = vdoc["slots"]
+
+            doc_reports: list[LayoutPageReport] = []
+            for p_idx, (pir, truth, vpg, crep) in enumerate(zip(doc_ir.pages, truths, vdoc_pages, compiled_reports)):
+                dom_m = probe_vdoc_dom(page_number=p_idx + 1) if cdp_ok else None
+                lrep = evaluate_page_layout(
+                    truth,
+                    pir,
+                    vpg,
+                    vdoc_slots,
+                    compiled_report=crep,
+                    measured_dom=dom_m,
+                    thresholds=thresholds,
+                )
+                doc_reports.append(lrep)
+                all_reports.append(lrep)
+                status = "PASS" if lrep.ok else f"FAIL({lrep.firstFailingStage})"
+                reasons = ", ".join(lrep.reasons) if lrep.reasons else "-"
+                print(
+                    f"[{label} p{lrep.pageIndex}] {status} | "
+                    f"L1_ov={lrep.l1OverflowPx:.1f} L2={lrep.l2TableCellLineMatch:.2f} "
+                    f"L3={l3_s(lrep.l3LineGroupF1)} L4={lrep.l4FontSizeMatch:.2f} "
+                    f"L5={lrep.l5SpacingMatch:.2f} L6={lrep.l6PhotoTextPollution:.2f} "
+                    f"L7={lrep.l7RowHeightMatch:.2f} | {reasons}"
+                )
+            per_doc_summaries[label] = summarize_layout_suite(doc_reports)
+    finally:
+        if tmp_ctx is not None:
+            tmp_ctx.cleanup()
+
+    suite_summary = summarize_layout_suite(all_reports)
+    print("\n=== Layout Summary ===")
+    print(json.dumps(suite_summary, indent=2))
+
+    if save_baseline is not None:
+        save_baseline.parent.mkdir(parents=True, exist_ok=True)
+        payload = {"summary": suite_summary, "docs": per_doc_summaries}
+        save_baseline.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"Saved layout baseline -> {save_baseline}")
+
+    if compare_path is not None and compare_path.is_file():
+        base_data = json.loads(compare_path.read_text(encoding="utf-8"))
+        base_summary = base_data.get("summary") or base_data
+        print("\n=== Baseline vs Current ===")
+        print(format_layout_comparison(base_summary, suite_summary))
+
+    if strict_layout and suite_summary.get("okPages", 0) < suite_summary.get("pages", 0):
+        return 1
+    return 0
+
+
+def l3_s(v: float) -> str:
+    return f"{v:.2f}"
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Run DocStruct evaluation suite")
     parser.add_argument("--paths", type=Path, default=EVAL_DIR / "paths.local.json")
@@ -224,7 +352,23 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--draft-gold", action="store_true", help="Emit unverified draft gold IRs to eval/drafts")
     parser.add_argument("--render", action="store_true", help="Run optional CDP render visual diff if available")
     parser.add_argument("--strict", action="store_true", help="Fail if any manifest doc is skipped or failed")
+    parser.add_argument("--layout", action="store_true", help="Run C0..C3 layout fidelity suite")
+    parser.add_argument("--no-fixtures", action="store_true", help="Skip synthetic layout fixtures in --layout")
+    parser.add_argument("--save-baseline", type=Path, help="Write --layout summary JSON")
+    parser.add_argument("--compare", type=Path, help="Compare --layout summary against baseline JSON")
+    parser.add_argument("--strict-layout", action="store_true", help="Exit 1 if any layout page fails")
     args = parser.parse_args(argv)
+    if args.layout:
+        return run_layout_eval(
+            paths_file=args.paths,
+            doc_filter=set(args.docs) if args.docs else None,
+            page_filter=args.pages,
+            include_fixtures=not args.no_fixtures,
+            render=args.render,
+            save_baseline=args.save_baseline,
+            compare_path=args.compare,
+            strict_layout=args.strict_layout,
+        )
     return run_eval(
         paths_file=args.paths,
         doc_filter=set(args.docs) if args.docs else None,

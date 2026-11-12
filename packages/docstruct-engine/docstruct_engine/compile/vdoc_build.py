@@ -159,8 +159,8 @@ def blank_page(page_id: str, page_number: int, *, surface: str = "paged", surfac
         page["hideHeaderFooter"] = True
         page["layout"] = {"margin": dict(spec["margin"]), "blockGap": spec["blockGap"], "fontSize": "15px", "lineHeight": "1.8"}
     slots = {
-        header_id: {"slotId": header_id, "label": _label("header"), "role": "boilerplate", "content": "", "backDataRefs": []},
-        footer_id: {"slotId": footer_id, "label": _label("footer"), "role": "boilerplate", "content": "", "backDataRefs": []},
+        header_id: {"slotId": header_id, "label": _label("header"), "role": "editable-slot", "content": "", "backDataRefs": []},
+        footer_id: {"slotId": footer_id, "label": _label("footer"), "role": "editable-slot", "content": "", "backDataRefs": []},
     }
     return page, slots
 

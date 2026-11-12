@@ -135,7 +135,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
   {
     ...clientTool("document.getOutline"),
     describe: (args: { pageId?: string }) => (args.pageId ? `페이지 ${args.pageId} 구조 읽기` : "문서 구조 읽기"),
-    run: (args: { pageId?: string; includeBoilerplate?: boolean }, ctx?: ToolRunContext) => {
+    run: (args: { pageId?: string; includeLocked?: boolean; includeBoilerplate?: boolean }, ctx?: ToolRunContext) => {
       const doc = activeDoc();
       const scope = toolScope(doc, ctx);
       if (scope && args.pageId && scopeHidesPage(doc, scope, args.pageId)) {
@@ -148,6 +148,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
           ? `${doc.title} (docId=${doc.docId}) · 고칠 범위: ${scope.label} — 범위 밖은 [범위밖] (읽기만)`
           : `${doc.title} (docId=${doc.docId}, ${doc.pages.length}p)`,
       ];
+      const showLocked = Boolean(args.includeLocked ?? args.includeBoilerplate);
       let hidden = 0;
       for (const page of pages) {
         lines.push(`# ${page.pageId} ${page.pageLabel}${scope && !scopeAllowsPage(doc, scope, page.pageId) ? " [범위밖]" : ""}`);
@@ -155,18 +156,18 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
           const slots = getBlockSlotIds(block)
             .map((id) => doc.slots[id])
             .filter((slot) => Boolean(slot) && !scopeHidesSlot(doc, scope, slot.slotId));
-          const shown = slots.filter((slot) => args.includeBoilerplate || (slot.role !== "boilerplate" && !slot.constraints?.locked));
+          const shown = slots.filter((slot) => showLocked || !slot.constraints?.locked);
           hidden += slots.length - shown.length;
           if (shown.length === 0) continue;
           lines.push(`- ${block.blockId} (${block.kind})`);
           for (const slot of shown) {
-            const flags = [slot.role !== "editable-slot" ? slot.role : "", slot.constraints?.locked ? "locked" : ""].filter(Boolean).join(",");
+            const flags = [slot.role === "fillable-field" ? slot.role : "", slot.constraints?.locked ? "locked" : ""].filter(Boolean).join(",");
             const outside = scope && !scopeAllowsSlot(doc, scope, slot.slotId) ? " [범위밖]" : "";
             lines.push(`  - ${slot.slotId}${flags ? ` [${flags}]` : ""}${outside} ${slot.label} — ${htmlToPlain(slot.content, 50)}`);
           }
         }
       }
-      if (hidden) lines.push(`(고정 문구 · 잠긴 슬롯 ${hidden}개 생략 — includeBoilerplate=true 로 포함)`);
+      if (hidden) lines.push(`(잠긴 슬롯 ${hidden}개 생략 — includeLocked=true 로 포함)`);
       return lines.join("\n");
     },
   },
@@ -200,7 +201,6 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
       const doc = activeDoc();
       const slot = requireSlot(doc, args.slotId);
       if (slot.constraints?.locked) throw new Error(`잠긴 슬롯입니다: ${slot.label}`);
-      if (slot.role === "boilerplate") throw new Error(`고정 문구 슬롯은 바꿀 수 없습니다: ${slot.label}`);
       if (typeof args.html !== "string" || !args.html.trim()) throw new Error("html 이 비어 있습니다.");
       const change: StagedAiChange = buildSlotHtmlChange(doc, slot, args.html, {
         source: "AI Composer",
@@ -226,7 +226,6 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
         const slot = doc.slots[change?.slotId];
         if (!slot) skipped.push({ slotId: String(change?.slotId), why: "없는 슬롯" });
         else if (slot.constraints?.locked) skipped.push({ slotId: slot.slotId, why: "잠김" });
-        else if (slot.role === "boilerplate") skipped.push({ slotId: slot.slotId, why: "고정 문구" });
         else if (typeof change.html !== "string" || !change.html.trim()) skipped.push({ slotId: slot.slotId, why: "빈 html" });
         else if (change.html.trim() === slot.content.trim()) skipped.push({ slotId: slot.slotId, why: "변경 없음" });
         else
@@ -361,7 +360,7 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
         .map((id) => doc.slots[id])
         .filter(Boolean)
         .map((slot) => ({ slotId: slot.slotId, label: slot.label, state: slotFillState(slot, staged), maxLines: slot.constraints?.maxLines }))
-        .filter((r) => r.state !== "fixed" && r.state !== "locked" && (!args.state || r.state === args.state));
+        .filter((r) => r.state !== "locked" && (!args.state || r.state === args.state));
       return { scope, count: rows.length, progress: fillProgress(ids.map((id) => doc.slots[id]).filter(Boolean), staged), slots: rows.slice(0, 120) };
     },
   },

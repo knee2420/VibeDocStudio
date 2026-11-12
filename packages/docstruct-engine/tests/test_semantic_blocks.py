@@ -191,3 +191,58 @@ def test_telemetry_semantic_metrics(caplog) -> None:
     assert dm["totalHeadings"] == 1
     assert dm["totalCaptions"] == 1
     assert dm["totalHeaderFooters"] == 1
+
+
+def test_kv_form_table_row0_sign_field_and_no_boilerplate() -> None:
+    from docstruct_engine.compile.docstruct_vdoc import doc_ir_pages_to_vdoc
+    from docstruct_engine.ir.model import CellFont
+    from docstruct_engine.tables.props import enrich_table_properties
+
+    tbl = TableIR(
+        id="t_broker",
+        kind="table",
+        bbox=(40.0, 200.0, 550.0, 320.0),
+        nRows=3,
+        nCols=3,
+        colXs=[40.0, 130.0, 230.0, 550.0],
+        rowYs=[200.0, 240.0, 280.0, 320.0],
+        cells=[
+            CellIR(r=0, c=0, rs=3, cs=1, bbox=(40.0, 200.0, 130.0, 320.0), bg="#e9eef5", text="개업공인중개사", align="center"),
+            CellIR(r=0, c=1, bbox=(130.0, 200.0, 230.0, 240.0), bg="#e9eef5", font=CellFont(bold=True), text="사무소 명칭", align="center"),
+            CellIR(r=0, c=2, bbox=(230.0, 200.0, 550.0, 240.0), bg=None, text="", align="left"),
+            CellIR(r=1, c=0, continued=True, bbox=(40.0, 240.0, 130.0, 280.0)),
+            CellIR(r=1, c=1, bbox=(130.0, 240.0, 230.0, 280.0), bg=None, text="대표자 성명", align="center"),
+            CellIR(r=1, c=2, bbox=(230.0, 240.0, 550.0, 280.0), bg=None, text="(서명 및 인)", align="left"),
+            CellIR(r=2, c=0, continued=True, bbox=(40.0, 280.0, 130.0, 320.0)),
+            CellIR(r=2, c=1, bbox=(130.0, 280.0, 230.0, 320.0), bg=None, text="사무소 소재지", align="center"),
+            CellIR(r=2, c=2, bbox=(230.0, 280.0, 550.0, 320.0), bg=None, text="", align="left"),
+        ],
+    )
+    enrich_table_properties(tbl, words_by_id={}, rulings=[])
+    by_rc = {(c.r, c.c): c for c in tbl.cells}
+
+    assert by_rc[(0, 2)].role != "th"
+    assert by_rc[(0, 2)].field is not None and by_rc[(0, 2)].field.label == "사무소 명칭"
+    assert by_rc[(1, 2)].field is not None
+    assert by_rc[(1, 2)].field.kind == "sign"
+    assert by_rc[(1, 2)].field.label == "대표자 성명"
+    assert by_rc[(2, 2)].field is not None and by_rc[(2, 2)].field.label == "사무소 소재지"
+
+    page = PageIR(
+        pageIndex=1,
+        sourceKind="pdf-vector",
+        size=PageSize(width=595.0, height=841.0),
+        words=[],
+        rulings=[],
+        blocks=[
+            HeadingBlock(id="hd_1", bbox=(40, 170, 300, 190), level=2, text="2. 공인중개사"),
+            tbl,
+            ParagraphBlock(id="p_1", bbox=(40, 340, 550, 360), text="참고 조항"),
+        ],
+    )
+    pages_out, slots_out, _ = doc_ir_pages_to_vdoc([page], uid=lambda: "u1")
+    assert pages_out
+    assert all(s.get("role") != "boilerplate" for s in slots_out.values())
+    assert slots_out["s_tc_u1_0_2"]["label"] == "사무소 명칭"
+    assert slots_out["s_tc_u1_1_2"]["label"] == "대표자 성명"
+    assert slots_out["s_tc_u1_2_2"]["label"] == "사무소 소재지"

@@ -1,0 +1,2874 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-vector",
+  "size": {
+    "width": 595.2,
+    "height": 841.92
+  },
+  "margins": {
+    "top": 98.4,
+    "right": 72.7,
+    "bottom": 97.9,
+    "left": 73.0
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "제○회",
+      "bbox": [
+        176.71,
+        116.36,
+        230.74,
+        134.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 18.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 131.81,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "INS-2010",
+      "bbox": [
+        240.1,
+        116.36,
+        310.79,
+        134.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 18.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 131.81,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w2",
+      "text": "회의",
+      "bbox": [
+        319.56,
+        116.36,
+        355.56,
+        134.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 18.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 131.81,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w3",
+      "text": "의사록",
+      "bbox": [
+        364.7,
+        116.36,
+        418.7,
+        134.36
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 18.0,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 131.81,
+      "lineHint": 0,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w4",
+      "text": "20",
+      "bbox": [
+        432.41,
+        160.74,
+        443.45,
+        171.78
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 170.21,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "년",
+      "bbox": [
+        454.27,
+        160.74,
+        465.31,
+        171.78
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 170.21,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w6",
+      "text": "월",
+      "bbox": [
+        481.39,
+        160.74,
+        492.43,
+        171.78
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 170.21,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w7",
+      "text": "일",
+      "bbox": [
+        508.54,
+        160.74,
+        519.58,
+        171.78
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 170.21,
+      "lineHint": 1,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w8",
+      "text": "정보시스템부",
+      "bbox": [
+        377.9,
+        177.78,
+        443.42,
+        188.82
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 187.25,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w9",
+      "text": "부장",
+      "bbox": [
+        448.75,
+        177.78,
+        470.83,
+        188.82
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 187.25,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w10",
+      "text": "○",
+      "bbox": [
+        476.11,
+        177.78,
+        487.15,
+        188.82
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 187.25,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w11",
+      "text": "○",
+      "bbox": [
+        492.43,
+        177.78,
+        503.47,
+        188.82
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 187.25,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w12",
+      "text": "○",
+      "bbox": [
+        508.54,
+        177.78,
+        519.58,
+        188.82
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 187.25,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w13",
+      "text": "일",
+      "bbox": [
+        95.57,
+        214.75,
+        106.6,
+        225.8
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 224.23,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w14",
+      "text": "시",
+      "bbox": [
+        117.41,
+        214.75,
+        128.45,
+        225.8
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 224.23,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w15",
+      "text": "20",
+      "bbox": [
+        153.91,
+        214.75,
+        164.95,
+        225.8
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 224.23,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w16",
+      "text": "년",
+      "bbox": [
+        175.75,
+        214.75,
+        186.79,
+        225.8
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 224.23,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w17",
+      "text": "월",
+      "bbox": [
+        202.87,
+        214.75,
+        213.91,
+        225.8
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 224.23,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w18",
+      "text": "일",
+      "bbox": [
+        230.02,
+        214.75,
+        241.06,
+        225.8
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 224.23,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w19",
+      "text": "오전",
+      "bbox": [
+        262.42,
+        214.75,
+        284.26,
+        225.8
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 224.23,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w20",
+      "text": "10：00∼12：00",
+      "bbox": [
+        289.8,
+        214.75,
+        366.14,
+        225.8
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 224.23,
+      "lineHint": 3,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w21",
+      "text": "장",
+      "bbox": [
+        95.57,
+        260.36,
+        106.6,
+        271.4
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 269.83,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w22",
+      "text": "소",
+      "bbox": [
+        117.41,
+        260.36,
+        128.45,
+        271.4
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 269.83,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w23",
+      "text": "INS-2010",
+      "bbox": [
+        153.91,
+        260.36,
+        197.83,
+        271.4
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 269.83,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w24",
+      "text": "전용",
+      "bbox": [
+        203.11,
+        260.36,
+        224.95,
+        271.4
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 269.83,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w25",
+      "text": "회의실",
+      "bbox": [
+        230.26,
+        260.36,
+        263.14,
+        271.4
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 269.83,
+      "lineHint": 4,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w26",
+      "text": "출석자",
+      "bbox": [
+        95.57,
+        305.99,
+        128.44,
+        317.03
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 315.46,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w27",
+      "text": "정보시스템부 전원, 품질보증부장•차장, 담당 이사",
+      "bbox": [
+        153.91,
+        305.99,
+        219.42,
+        317.03
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 315.46,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w28",
+      "text": "",
+      "bbox": [
+        224.74,
+        305.99,
+        252.1,
+        317.03
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 315.46,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w29",
+      "text": "품질보증부장•차장,",
+      "bbox": [
+        257.38,
+        305.54,
+        355.34,
+        317.72
+      ],
+      "conf": 0.95,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 315.46,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w30",
+      "text": "",
+      "bbox": [
+        360.62,
+        305.99,
+        382.46,
+        317.03
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 315.46,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w31",
+      "text": "",
+      "bbox": [
+        387.77,
+        305.99,
+        409.61,
+        317.03
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 315.46,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w32",
+      "text": "의 사 1. 추진방침 설명 새로이 정보시스템부가 발족되고 INS-2010을 금년 중에 정착시키기 위한 계획•절차의 설명이 있었다(내용은 비밀 취급이므로 기록 생략). 2. 결정사항 품질 방침의 심의 확인 각 부문의 키맨으로 하여금 INS-2010의 품질 내용을 습득하게 하기 위 한 강좌개설 앞으로의 교육•계몽 방침을 각자가 연구하여 다음번 회의시에 제출한 다. 다음번 회의는 ○○월 ○○일 ○○시에 개최키로 한다. (이하 생략)",
+      "bbox": [
+        81.62,
+        337.67,
+        92.66,
+        348.71
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 347.14,
+      "lineHint": 6,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w33",
+      "text": "",
+      "bbox": [
+        97.97,
+        337.67,
+        109.01,
+        348.71
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 347.14,
+      "lineHint": 6,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w34",
+      "text": "",
+      "bbox": [
+        108.77,
+        383.05,
+        119.81,
+        394.09
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 392.52,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w35",
+      "text": "",
+      "bbox": [
+        125.09,
+        383.05,
+        169.01,
+        394.09
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 392.52,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w36",
+      "text": "",
+      "bbox": [
+        174.07,
+        383.05,
+        196.15,
+        394.09
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 392.52,
+      "lineHint": 7,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w37",
+      "text": "",
+      "bbox": [
+        108.77,
+        405.61,
+        141.65,
+        416.65
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 415.08,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w38",
+      "text": "",
+      "bbox": [
+        148.87,
+        405.61,
+        225.18,
+        416.65
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 415.08,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w39",
+      "text": "",
+      "bbox": [
+        232.42,
+        405.61,
+        276.1,
+        416.65
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 415.08,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w40",
+      "text": "",
+      "bbox": [
+        283.32,
+        405.61,
+        338.06,
+        416.65
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 415.08,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w41",
+      "text": "",
+      "bbox": [
+        345.02,
+        405.61,
+        367.1,
+        416.65
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 415.08,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w42",
+      "text": "",
+      "bbox": [
+        374.3,
+        405.61,
+        396.14,
+        416.65
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 415.08,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w43",
+      "text": "",
+      "bbox": [
+        403.37,
+        405.61,
+        457.85,
+        416.65
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 415.08,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w44",
+      "text": "",
+      "bbox": [
+        465.07,
+        405.61,
+        486.91,
+        416.65
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 415.08,
+      "lineHint": 8,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w45",
+      "text": "계획•절차의",
+      "bbox": [
+        108.77,
+        425.08,
+        168.53,
+        437.26
+      ],
+      "conf": 0.95,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 435.0,
+      "lineHint": 9,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w46",
+      "text": "",
+      "bbox": [
+        173.83,
+        425.53,
+        206.71,
+        436.57
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 435.0,
+      "lineHint": 9,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w47",
+      "text": "",
+      "bbox": [
+        211.78,
+        425.53,
+        282.82,
+        436.57
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 435.0,
+      "lineHint": 9,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w48",
+      "text": "",
+      "bbox": [
+        288.12,
+        425.53,
+        309.96,
+        436.57
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 435.0,
+      "lineHint": 9,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w49",
+      "text": "",
+      "bbox": [
+        315.24,
+        425.53,
+        369.95,
+        436.57
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 435.0,
+      "lineHint": 9,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w50",
+      "text": "",
+      "bbox": [
+        375.26,
+        425.53,
+        397.1,
+        436.57
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 435.0,
+      "lineHint": 9,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w51",
+      "text": "",
+      "bbox": [
+        402.41,
+        425.53,
+        435.29,
+        436.57
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 435.0,
+      "lineHint": 9,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w52",
+      "text": "",
+      "bbox": [
+        108.77,
+        470.67,
+        119.81,
+        481.71
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 480.14,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w53",
+      "text": "",
+      "bbox": [
+        125.09,
+        470.67,
+        169.01,
+        481.71
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 480.14,
+      "lineHint": 10,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w54",
+      "text": "",
+      "bbox": [
+        125.09,
+        493.47,
+        146.93,
+        504.51
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 502.94,
+      "lineHint": 11,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w55",
+      "text": "",
+      "bbox": [
+        152.23,
+        493.47,
+        185.11,
+        504.51
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 502.94,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w56",
+      "text": "",
+      "bbox": [
+        190.39,
+        493.47,
+        212.23,
+        504.51
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 502.94,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w57",
+      "text": "",
+      "bbox": [
+        217.54,
+        493.47,
+        239.62,
+        504.51
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 502.94,
+      "lineHint": 11,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w58",
+      "text": "",
+      "bbox": [
+        125.09,
+        516.03,
+        136.13,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w59",
+      "text": "",
+      "bbox": [
+        142.13,
+        516.03,
+        175.01,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w60",
+      "text": "",
+      "bbox": [
+        181.27,
+        516.03,
+        224.95,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w61",
+      "text": "",
+      "bbox": [
+        231.22,
+        516.03,
+        263.86,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w62",
+      "text": "",
+      "bbox": [
+        270.12,
+        516.03,
+        324.84,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w63",
+      "text": "",
+      "bbox": [
+        330.86,
+        516.03,
+        352.94,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w64",
+      "text": "",
+      "bbox": [
+        358.94,
+        516.03,
+        391.81,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w65",
+      "text": "",
+      "bbox": [
+        398.09,
+        516.03,
+        441.76,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w66",
+      "text": "",
+      "bbox": [
+        448.03,
+        516.03,
+        469.87,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w67",
+      "text": "",
+      "bbox": [
+        476.11,
+        516.03,
+        487.15,
+        527.07
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 525.5,
+      "lineHint": 12,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w68",
+      "text": "",
+      "bbox": [
+        125.81,
+        535.95,
+        136.85,
+        546.99
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 545.42,
+      "lineHint": 13,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w69",
+      "text": "",
+      "bbox": [
+        142.13,
+        535.95,
+        186.05,
+        546.99
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 545.42,
+      "lineHint": 13,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w70",
+      "text": "",
+      "bbox": [
+        125.09,
+        558.54,
+        168.77,
+        569.58
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 568.01,
+      "lineHint": 14,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w71",
+      "text": "교육•계몽",
+      "bbox": [
+        175.99,
+        558.08,
+        224.71,
+        570.27
+      ],
+      "conf": 0.95,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 568.01,
+      "lineHint": 14,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w72",
+      "text": "",
+      "bbox": [
+        231.94,
+        558.54,
+        264.82,
+        569.58
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 568.01,
+      "lineHint": 14,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w73",
+      "text": "",
+      "bbox": [
+        272.04,
+        558.54,
+        304.92,
+        569.58
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 568.01,
+      "lineHint": 14,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w74",
+      "text": "",
+      "bbox": [
+        312.12,
+        558.54,
+        355.79,
+        569.58
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 568.01,
+      "lineHint": 14,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w75",
+      "text": "",
+      "bbox": [
+        363.02,
+        558.54,
+        395.9,
+        569.58
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 568.01,
+      "lineHint": 14,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w76",
+      "text": "",
+      "bbox": [
+        403.13,
+        558.54,
+        447.04,
+        569.58
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 568.01,
+      "lineHint": 14,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w77",
+      "text": "",
+      "bbox": [
+        454.27,
+        558.54,
+        486.91,
+        569.58
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 568.01,
+      "lineHint": 14,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w78",
+      "text": "",
+      "bbox": [
+        126.05,
+        578.46,
+        142.61,
+        589.5
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 587.93,
+      "lineHint": 15,
+      "spaceBefore": null,
+      "trailingSpace": true
+    },
+    {
+      "id": "w79",
+      "text": "",
+      "bbox": [
+        125.09,
+        601.02,
+        157.97,
+        612.06
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 610.49,
+      "lineHint": 16,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w80",
+      "text": "",
+      "bbox": [
+        163.27,
+        601.02,
+        195.91,
+        612.06
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 610.49,
+      "lineHint": 16,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w81",
+      "text": "",
+      "bbox": [
+        201.19,
+        601.02,
+        234.1,
+        612.06
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 610.49,
+      "lineHint": 16,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w82",
+      "text": "",
+      "bbox": [
+        239.38,
+        601.02,
+        272.26,
+        612.06
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 610.49,
+      "lineHint": 16,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w83",
+      "text": "",
+      "bbox": [
+        277.56,
+        601.02,
+        321.24,
+        612.06
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 610.49,
+      "lineHint": 16,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w84",
+      "text": "",
+      "bbox": [
+        326.54,
+        601.02,
+        370.22,
+        612.06
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 610.49,
+      "lineHint": 16,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w85",
+      "text": "",
+      "bbox": [
+        375.5,
+        601.02,
+        402.89,
+        612.06
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 610.49,
+      "lineHint": 16,
+      "spaceBefore": true,
+      "trailingSpace": true
+    },
+    {
+      "id": "w86",
+      "text": "",
+      "bbox": [
+        108.77,
+        623.82,
+        136.37,
+        634.86
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 633.29,
+      "lineHint": 17,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w87",
+      "text": "",
+      "bbox": [
+        141.41,
+        623.82,
+        169.03,
+        634.86
+      ],
+      "conf": 1.0,
+      "src": "vlm",
+      "font": "GulimChe",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 633.29,
+      "lineHint": 17,
+      "spaceBefore": true,
+      "trailingSpace": true
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "h",
+      "x0": 72.26,
+      "y0": 97.7,
+      "x1": 521.74,
+      "y1": 99.14,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.26,
+      "y0": 151.97,
+      "x1": 523.18,
+      "y1": 152.69,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.26,
+      "y0": 197.33,
+      "x1": 523.18,
+      "y1": 198.05,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.26,
+      "y0": 242.95,
+      "x1": 523.18,
+      "y1": 243.67,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.26,
+      "y0": 288.55,
+      "x1": 523.18,
+      "y1": 289.27,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.26,
+      "y0": 334.18,
+      "x1": 523.18,
+      "y1": 334.9,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 73.7,
+      "y0": 743.26,
+      "x1": 521.74,
+      "y1": 744.7,
+      "thickness": 1.44,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 72.26,
+      "y0": 99.14,
+      "x1": 73.7,
+      "y1": 744.7,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 150.31,
+      "y0": 198.05,
+      "x1": 151.03,
+      "y1": 334.9,
+      "thickness": 0.72,
+      "style": "dashed",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 521.74,
+      "y0": 97.7,
+      "x1": 523.18,
+      "y1": 744.7,
+      "thickness": 1.44,
+      "style": "dashed",
+      "color": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "t0",
+      "kind": "table",
+      "bbox": [
+        72.98,
+        98.42,
+        522.46,
+        743.98
+      ],
+      "nRows": 6,
+      "nCols": 2,
+      "colXs": [
+        72.98,
+        150.67,
+        522.46
+      ],
+      "rowYs": [
+        98.42,
+        152.33,
+        197.69,
+        243.31,
+        288.91,
+        334.54,
+        743.98
+      ],
+      "widthRatio": [
+        0.1728,
+        0.8272
+      ],
+      "widthPt": 449.48,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "th",
+          "bbox": [
+            72.98,
+            98.42,
+            522.46,
+            152.33
+          ],
+          "wordIds": [
+            "w0",
+            "w1",
+            "w2",
+            "w3"
+          ],
+          "text": "제○회 INS-2010 회의 의사록",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 18.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            72.98,
+            152.33,
+            522.46,
+            197.69
+          ],
+          "wordIds": [
+            "w4",
+            "w5",
+            "w6",
+            "w7",
+            "w8",
+            "w9",
+            "w10",
+            "w11",
+            "w12"
+          ],
+          "text": "20 년 월 일\n정보시스템부 부장 ○ ○ ○",
+          "html": null,
+          "paragraphs": null,
+          "align": "right",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 2.9,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.55,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            72.98,
+            197.69,
+            150.67,
+            243.31
+          ],
+          "wordIds": [
+            "w13",
+            "w14"
+          ],
+          "text": "일 시",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            150.67,
+            197.69,
+            522.46,
+            243.31
+          ],
+          "wordIds": [
+            "w15",
+            "w16",
+            "w17",
+            "w18",
+            "w19",
+            "w20"
+          ],
+          "text": "20 년 월 일 오전 10：00∼12：00",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.2
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            72.98,
+            243.31,
+            150.67,
+            288.91
+          ],
+          "wordIds": [
+            "w21",
+            "w22"
+          ],
+          "text": "장 소",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 3,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            150.67,
+            243.31,
+            522.46,
+            288.91
+          ],
+          "wordIds": [
+            "w23",
+            "w24",
+            "w25"
+          ],
+          "text": "INS-2010 전용 회의실",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.2
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            72.98,
+            288.91,
+            150.67,
+            334.54
+          ],
+          "wordIds": [
+            "w26"
+          ],
+          "text": "출석자",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 1.5
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 4,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            150.67,
+            288.91,
+            522.46,
+            334.54
+          ],
+          "wordIds": [
+            "w27",
+            "w28",
+            "w29",
+            "w30",
+            "w31"
+          ],
+          "text": "정보시스템부 전원, 품질보증부장•차장, 담당 이사 품질보증부장•차장,",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 1.5,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 3.2
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.2,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 5,
+          "c": 0,
+          "rs": 1,
+          "cs": 2,
+          "role": "td",
+          "bbox": [
+            72.98,
+            334.54,
+            522.46,
+            743.98
+          ],
+          "wordIds": [
+            "w32",
+            "w33",
+            "w34",
+            "w35",
+            "w36",
+            "w37",
+            "w38",
+            "w39",
+            "w40",
+            "w41",
+            "w42",
+            "w43",
+            "w44",
+            "w45",
+            "w46",
+            "w47",
+            "w48",
+            "w49",
+            "w50",
+            "w51",
+            "w52",
+            "w53",
+            "w54",
+            "w55",
+            "w56",
+            "w57",
+            "w58",
+            "w59",
+            "w60",
+            "w61",
+            "w62",
+            "w63",
+            "w64",
+            "w65",
+            "w66",
+            "w67",
+            "w68",
+            "w69",
+            "w70",
+            "w71",
+            "w72",
+            "w73",
+            "w74",
+            "w75",
+            "w76",
+            "w77",
+            "w78",
+            "w79",
+            "w80",
+            "w81",
+            "w82",
+            "w83",
+            "w84",
+            "w85",
+            "w86",
+            "w87"
+          ],
+          "text": "의 사 1. 추진방침 설명 새로이 정보시스템부가 발족되고 INS-2010을 금년 중에 정착시키기 위한 계획•절차의 설명이 있었다(내용은 비밀 취급이므로 기록 생략). 2. 결정사항 품질 방침의 심의 확인 각 부문의 키맨으로 하여금 INS-2010의 품질 내용을 습득하게 하기 위 한 강좌개설 앞으로의 교육•계몽 방침을 각자가 연구하여 다음번 회의시에 제출한 다. 다음번 회의는 ○○월 ○○일 ○○시에 개최키로 한다. (이하 생략) 계획•절차의 교육•계몽",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "dashed",
+              "width": 0.72,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 1.44,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "dashed",
+              "width": 1.44,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.1,
+            "r": 1.5,
+            "b": 1.5,
+            "l": 8.0
+          },
+          "font": {
+            "family": "GulimChe",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": 1.55,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": "<table><thead><tr><th colspan=\"2\" data-word-ids=\"w0,w1,w2,w3\"><span data-w=\"w0\">제○회</span> <span data-w=\"w1\">INS-2010</span> <span data-w=\"w2\">회의</span> <span data-w=\"w3\">의사록</span></th></tr></thead><tbody><tr><td colspan=\"2\" data-word-ids=\"w4,w5,w6,w7,w8,w9,w10,w11,w12\"><span data-w=\"w4\">20</span> <span data-w=\"w5\">년</span> <span data-w=\"w6\">월</span> <span data-w=\"w7\">일</span> <span data-w=\"w8\">정보시스템부</span> <span data-w=\"w9\">부장</span> <span data-w=\"w10\">○</span> <span data-w=\"w11\">○</span> <span data-w=\"w12\">○</span></td></tr><tr><td data-word-ids=\"w13,w14\"><span data-w=\"w13\">일</span> <span data-w=\"w14\">시</span></td><td data-word-ids=\"w15,w16,w17,w18,w19,w20\"><span data-w=\"w15\">20</span> <span data-w=\"w16\">년</span> <span data-w=\"w17\">월</span> <span data-w=\"w18\">일</span> <span data-w=\"w19\">오전</span> <span data-w=\"w20\">10：00∼12：00</span></td></tr><tr><td data-word-ids=\"w21,w22\"><span data-w=\"w21\">장</span> <span data-w=\"w22\">소</span></td><td data-word-ids=\"w23,w24,w25\"><span data-w=\"w23\">INS-2010</span> <span data-w=\"w24\">전용</span> <span data-w=\"w25\">회의실</span></td></tr><tr><td data-word-ids=\"w26\"><span data-w=\"w26\">출석자</span></td><td data-word-ids=\"w27,w28,w29,w30,w31\"><span data-w=\"w27\">정보시스템부</span> <span data-w=\"w28\">전원,</span> <span data-w=\"w29\">품질보증부장•차장,</span> <span data-w=\"w30\">담당</span> <span data-w=\"w31\">이사</span></td></tr><tr><td colspan=\"2\" data-word-ids=\"w32,w33,w34,w35,w36,w37,w38,w39,w40,w41,w42,w43,w44,w45,w46,w47,w48,w49,w50,w51,w52,w53,w54,w55,w56,w57,w58,w59,w60,w61,w62,w63,w64,w65,w66,w67,w68,w69,w70,w71,w72,w73,w74,w75,w76,w77,w78,w79,w80,w81,w82,w83,w84,w85,w86,w87\"><span data-w=\"w32\">의</span> <span data-w=\"w33\">사</span> <span data-w=\"w34\">1.</span> <span data-w=\"w35\">추진방침</span> <span data-w=\"w36\">설명</span> <span data-w=\"w37\">새로이</span> <span data-w=\"w38\">정보시스템부가</span> <span data-w=\"w39\">발족되고</span> <span data-w=\"w40\">INS-2010을</span> <span data-w=\"w41\">금년</span> <span data-w=\"w42\">중에</span> <span data-w=\"w43\">정착시키기</span> <span data-w=\"w44\">위한</span> <span data-w=\"w45\">계획•절차의</span> <span data-w=\"w46\">설명이</span> <span data-w=\"w47\">있었다(내용은</span> <span data-w=\"w48\">비밀</span> <span data-w=\"w49\">취급이므로</span> <span data-w=\"w50\">기록</span> <span data-w=\"w51\">생략).</span> <span data-w=\"w52\">2.</span> <span data-w=\"w53\">결정사항</span> <span data-w=\"w54\">품질</span> <span data-w=\"w55\">방침의</span> <span data-w=\"w56\">심의</span> <span data-w=\"w57\">확인</span> <span data-w=\"w58\">각</span> <span data-w=\"w59\">부문의</span> <span data-w=\"w60\">키맨으로</span> <span data-w=\"w61\">하여금</span> <span data-w=\"w62\">INS-2010의</span> <span data-w=\"w63\">품질</span> <span data-w=\"w64\">내용을</span> <span data-w=\"w65\">습득하게</span> <span data-w=\"w66\">하기</span> <span data-w=\"w67\">위</span> <span data-w=\"w68\">한</span> <span data-w=\"w69\">강좌개설</span> <span data-w=\"w70\">앞으로의</span> <span data-w=\"w71\">교육•계몽</span> <span data-w=\"w72\">방침을</span> <span data-w=\"w73\">각자가</span> <span data-w=\"w74\">연구하여</span> <span data-w=\"w75\">다음번</span> <span data-w=\"w76\">회의시에</span> <span data-w=\"w77\">제출한</span> <span data-w=\"w78\">다.</span> <span data-w=\"w79\">다음번</span> <span data-w=\"w80\">회의는</span> <span data-w=\"w81\">○○월</span> <span data-w=\"w82\">○○일</span> <span data-w=\"w83\">○○시에</span> <span data-w=\"w84\">개최키로</span> <span data-w=\"w85\">한다.</span> <span data-w=\"w86\">(이하</span> <span data-w=\"w87\">생략)</span></td></tr></tbody></table>",
+      "imageFallbackSrc": null,
+      "spaceBeforePt": 0.0
+    }
+  ],
+  "readingOrder": [
+    "t0"
+  ],
+  "pageBgColor": null,
+  "metrics": {
+    "ocrAvgConf": null,
+    "rulingCount": 10,
+    "tableCount": 1,
+    "wordCount": 88,
+    "occludedCharsFiltered": 0,
+    "ocrFixes": [],
+    "layoutDefaults": {
+      "font": "GulimChe",
+      "sizePt": 11.0,
+      "linePct": 135
+    },
+    "invariantErrors": [],
+    "rulingsH": 7,
+    "rulingsV": 3,
+    "tableShapes": [
+      "t0:6x2(9)"
+    ],
+    "cellCount": 9,
+    "needsReviewCells": 2,
+    "headingCount": 0,
+    "captionCount": 0,
+    "noteCount": 0,
+    "headerFooterCount": 0,
+    "headingSummary": [],
+    "headerTexts": [],
+    "blockCounts": {
+      "table": 1
+    }
+  }
+}

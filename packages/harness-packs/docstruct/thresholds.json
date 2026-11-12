@@ -26,6 +26,21 @@
  "maxRereadRounds": 2,
  "maxTableRejects": 2,
  "borderColorDiffTol": 24,
- "verifySampleMaxTables": 1
+ "verifySampleMaxTables": 1,
+ "layout": {
+  "cellPaddingMinPt": 1.5,
+  "cellPaddingMaxRatio": 0.25,
+  "pageBgCoverRatio": 0.75,
+  "pageOverflowTolerancePx": 2.0,
+  "lineHeightDeviationMax": 0.15,
+  "l1OverflowMaxPages": 0,
+  "l2TableLineMatchMin": 0.90,
+  "l3LineGroupF1Min": 0.95,
+  "l4FontSizeMatchMin": 0.95,
+  "l4ScanFontSizeMatchMin": 0.90,
+  "l5SpacingMatchMin": 0.90,
+  "l6PhotoContamMaxRatio": 0.0,
+  "l7RowHeightMatchMin": 0.90
+ }
 }
 

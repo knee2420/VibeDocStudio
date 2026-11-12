@@ -111,6 +111,71 @@
           "title": "Needsreview",
           "type": "boolean"
         },
+        "lineCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linecount"
+        },
+        "linePitchPt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linepitchpt"
+        },
+        "lineHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lineheight"
+        },
+        "spaceBeforePt": {
+          "default": 0.0,
+          "title": "Spacebeforept",
+          "type": "number"
+        },
+        "fontSizePt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontsizept"
+        },
+        "fontFamily": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontfamily"
+        },
         "kind": {
           "const": "caption",
           "default": "caption",
@@ -661,6 +726,71 @@
           "title": "Needsreview",
           "type": "boolean"
         },
+        "lineCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linecount"
+        },
+        "linePitchPt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linepitchpt"
+        },
+        "lineHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lineheight"
+        },
+        "spaceBeforePt": {
+          "default": 0.0,
+          "title": "Spacebeforept",
+          "type": "number"
+        },
+        "fontSizePt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontsizept"
+        },
+        "fontFamily": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontfamily"
+        },
         "kind": {
           "const": "field",
           "default": "field",
@@ -791,6 +921,11 @@
           "default": false,
           "title": "Needsreview",
           "type": "boolean"
+        },
+        "spaceBeforePt": {
+          "default": 0.0,
+          "title": "Spacebeforept",
+          "type": "number"
         }
       },
       "required": [
@@ -882,6 +1017,71 @@
           "title": "Needsreview",
           "type": "boolean"
         },
+        "lineCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linecount"
+        },
+        "linePitchPt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linepitchpt"
+        },
+        "lineHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lineheight"
+        },
+        "spaceBeforePt": {
+          "default": 0.0,
+          "title": "Spacebeforept",
+          "type": "number"
+        },
+        "fontSizePt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontsizept"
+        },
+        "fontFamily": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontfamily"
+        },
         "kind": {
           "const": "heading",
           "default": "heading",
@@ -900,6 +1100,221 @@
         "id"
       ],
       "title": "HeadingBlock",
+      "type": "object"
+    },
+    "LineGroupBlock": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "line-group",
+          "default": "line-group",
+          "title": "Kind",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/LineGroupSegment"
+          },
+          "title": "Segments",
+          "type": "array"
+        },
+        "layoutMode": {
+          "default": "columns",
+          "enum": [
+            "columns",
+            "toc"
+          ],
+          "title": "Layoutmode",
+          "type": "string"
+        },
+        "lineHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lineheight"
+        },
+        "spaceBeforePt": {
+          "default": 0.0,
+          "title": "Spacebeforept",
+          "type": "number"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "LineGroupBlock",
+      "type": "object"
+    },
+    "LineGroupSegment": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "bbox": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Bbox",
+          "type": "array"
+        },
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        },
+        "align": {
+          "default": "left",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ],
+          "title": "Align",
+          "type": "string"
+        },
+        "widthRatio": {
+          "default": 0.5,
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "Widthratio",
+          "type": "number"
+        },
+        "fontSizePt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontsizept"
+        },
+        "fontFamily": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontfamily"
+        },
+        "bold": {
+          "default": false,
+          "title": "Bold",
+          "type": "boolean"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Spans",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "bbox"
+      ],
+      "title": "LineGroupSegment",
       "type": "object"
     },
     "ListItemBlock": {
@@ -984,6 +1399,71 @@
           "default": false,
           "title": "Needsreview",
           "type": "boolean"
+        },
+        "lineCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linecount"
+        },
+        "linePitchPt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linepitchpt"
+        },
+        "lineHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lineheight"
+        },
+        "spaceBeforePt": {
+          "default": 0.0,
+          "title": "Spacebeforept",
+          "type": "number"
+        },
+        "fontSizePt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontsizept"
+        },
+        "fontFamily": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontfamily"
         },
         "kind": {
           "const": "listItem",
@@ -1112,6 +1592,71 @@
           "title": "Needsreview",
           "type": "boolean"
         },
+        "lineCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linecount"
+        },
+        "linePitchPt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linepitchpt"
+        },
+        "lineHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lineheight"
+        },
+        "spaceBeforePt": {
+          "default": 0.0,
+          "title": "Spacebeforept",
+          "type": "number"
+        },
+        "fontSizePt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontsizept"
+        },
+        "fontFamily": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontfamily"
+        },
         "kind": {
           "const": "note",
           "default": "note",
@@ -1128,6 +1673,18 @@
           ],
           "title": "Notekind",
           "type": "string"
+        },
+        "imageSrc": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Imagesrc"
         }
       },
       "required": [
@@ -1195,6 +1752,7 @@
                 "field": "#/$defs/FieldBlock",
                 "figure": "#/$defs/FigureBlock",
                 "heading": "#/$defs/HeadingBlock",
+                "line-group": "#/$defs/LineGroupBlock",
                 "listItem": "#/$defs/ListItemBlock",
                 "note": "#/$defs/NoteBlock",
                 "paragraph": "#/$defs/ParagraphBlock",
@@ -1222,6 +1780,9 @@
                 "$ref": "#/$defs/NoteBlock"
               },
               {
+                "$ref": "#/$defs/LineGroupBlock"
+              },
+              {
                 "$ref": "#/$defs/FigureBlock"
               },
               {
@@ -1238,6 +1799,18 @@
           },
           "title": "Readingorder",
           "type": "array"
+        },
+        "pageBgColor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pagebgcolor"
         },
         "metrics": {
           "anyOf": [
@@ -1390,6 +1963,71 @@
           "title": "Needsreview",
           "type": "boolean"
         },
+        "lineCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linecount"
+        },
+        "linePitchPt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linepitchpt"
+        },
+        "lineHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lineheight"
+        },
+        "spaceBeforePt": {
+          "default": 0.0,
+          "title": "Spacebeforept",
+          "type": "number"
+        },
+        "fontSizePt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontsizept"
+        },
+        "fontFamily": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fontfamily"
+        },
         "kind": {
           "const": "paragraph",
           "default": "paragraph",
@@ -1407,18 +2045,6 @@
           ],
           "default": null,
           "title": "Html"
-        },
-        "lineHeight": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Lineheight"
         },
         "paragraphs": {
           "anyOf": [
@@ -1746,6 +2372,11 @@
           ],
           "default": null,
           "title": "Imagefallbacksrc"
+        },
+        "spaceBeforePt": {
+          "default": 0.0,
+          "title": "Spacebeforept",
+          "type": "number"
         }
       },
       "required": [
