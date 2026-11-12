@@ -20,7 +20,7 @@ import sys
 import traceback
 from typing import Optional
 
-from harness_kit import packs
+from harness_kit import doc_text, packs
 
 from .index import _roots, _walk_files, norm
 from .store import WorkspaceStore
@@ -202,6 +202,18 @@ def _resolve_shot_file(raw: str, shot_dirs: list[str]) -> Optional[str]:
     return hits[0] if len(hits) == 1 else None
 
 
+def _allow_read(target: str, raw: str) -> dict:
+    """마운트 안 파일 읽기 허용. 압축 서식(hwpx 등)은 렌더한 텍스트 캐시로 돌린다 (agy 는 압축을 풀 수 없다)."""
+    if doc_text.convertible(target):
+        derived = doc_text.derived_path(target)
+        if not derived:
+            return {"decision": "deny", "reason": _msg("convertFailed", path=raw)}
+        return {"decision": "allow", "overwrite": {"Path": derived}, "_fixed": True}
+    if os.path.isabs(raw) and norm(raw) == norm(target):
+        return {"decision": "allow"}
+    return {"decision": "allow", "overwrite": {"Path": target}, "_fixed": True}
+
+
 def decide(payload: dict, store: WorkspaceStore) -> dict:
     call = payload.get("toolCall") or {}
     name = str(call.get("name") or "")
@@ -237,11 +249,19 @@ def decide(payload: dict, store: WorkspaceStore) -> dict:
     mounted = Mounted(mount.items, roots=getattr(mount, "roots", None))
     if not raw:
         return {"decision": "deny", "reason": _msg("noPath")}
-    if os.path.isabs(raw) and mounted.contains(raw) and os.path.isfile(raw):
+    # 앞서 돌려 준 렌더 캐시 파일을 다시 읽는 경우 — 원본이 마운트 안이면 그대로 허용
+    source = doc_text.source_of(raw) if os.path.isabs(raw) else None
+    if source and mounted.contains(source):
         return {"decision": "allow"}
+    # docstruct PNG 캐시(derived_dir()/docstruct/<srcHash>/*.png) 읽기 허용
+    docstruct_cache = os.path.join(doc_text.derived_dir(), "docstruct")
+    if raw and os.path.isabs(raw) and _inside(raw, docstruct_cache) and raw.lower().endswith(".png") and os.path.isfile(raw):
+        return {"decision": "allow"}
+    if os.path.isabs(raw) and mounted.contains(raw) and os.path.isfile(raw):
+        return _allow_read(raw, raw)
     fixed = mounted.resolve(raw)
     if fixed:
-        return {"decision": "allow", "overwrite": {"Path": fixed}, "_fixed": True}
+        return _allow_read(fixed, raw)
     inside = os.path.isabs(raw) and mounted.contains(raw)
     if inside or not os.path.isabs(raw):
         # 마운트 안(또는 상대 경로)인데 파일이 없다 — 모델이 경로를 추측했거나 다시 쓰다 틀렸다. 실제 후보를 알려 준다.
@@ -271,6 +291,8 @@ def main(argv: list[str] | None = None) -> int:
         try:
             if name == "read_file":
                 path = str(args.get("Path") or "")
+                # 렌더 캐시로 돌린 읽기는 원본 파일의 읽은 범위로 남긴다 (색인 줄 번호 = 렌더 줄 번호)
+                path = doc_text.source_of(path) or path
                 if path and not (os.path.isabs(path) and _inside(path, AGY_HOME)):
                     mount = store.mount_for(conv or None)
                     if not _resolve_shot_file(path, _ref_shot_dirs(store, conv, mount)):

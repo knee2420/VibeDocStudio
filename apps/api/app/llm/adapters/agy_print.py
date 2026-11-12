@@ -78,23 +78,57 @@ def run_agy_print(
             except subprocess.TimeoutExpired:
                 tree.kill()
                 stdout, stderr = tree.proc.communicate()
-                return OneShotResult(ok=False, error=f"timeout {timeout_seconds}s", duration_seconds=time.monotonic() - started)
+                elapsed = time.monotonic() - started
+                logger.warning(
+                    "[agy_print] timeout model=%s timeoutS=%d durationS=%.2f",
+                    model,
+                    timeout_seconds,
+                    elapsed,
+                )
+                return OneShotResult(ok=False, error=f"timeout {timeout_seconds}s", duration_seconds=elapsed)
         duration = time.monotonic() - started
         env = _envelope(stdout)
         if env is None:
-            return OneShotResult(ok=False, error=(stderr or stdout or f"exit {tree.proc.returncode}")[:800], duration_seconds=duration)
+            err = (stderr or stdout or f"exit {tree.proc.returncode}")[:800]
+            logger.warning(
+                "[agy_print] missing_envelope model=%s rc=%s durationS=%.2f err=%s",
+                model,
+                tree.proc.returncode,
+                duration,
+                err[:200],
+            )
+            return OneShotResult(ok=False, error=err, duration_seconds=duration)
         usage = env.get("usage") or {}
         resp = env.get("response")
         text = resp if isinstance(resp, str) else json.dumps(resp, ensure_ascii=False) if resp is not None else ""
         status = str(env.get("status", "")).upper()
+        ok = status in ("SUCCESS", "OK", "")
+        result_duration = float(env.get("duration_seconds") or duration)
+        num_turns = int(env.get("num_turns") or 0)
+        usage_map = {
+            k: int(usage.get(k) or 0)
+            for k in ("input_tokens", "output_tokens", "thinking_tokens", "cache_read_tokens", "total_tokens")
+        }
+        error_msg = "" if ok else str(env.get("error") or status)
+        log_fn = logger.info if ok else logger.warning
+        log_fn(
+            "[agy_print] model=%s status=%s durationS=%.2f turns=%d inTok=%d outTok=%d thinkTok=%d",
+            model,
+            status or "OK",
+            result_duration,
+            num_turns,
+            usage_map["input_tokens"],
+            usage_map["output_tokens"],
+            usage_map["thinking_tokens"],
+        )
         return OneShotResult(
-            ok=status in ("SUCCESS", "OK", ""),
+            ok=ok,
             response=resp,
             text=text,
-            error="" if status in ("SUCCESS", "OK", "") else str(env.get("error") or status),
-            duration_seconds=float(env.get("duration_seconds") or duration),
-            num_turns=int(env.get("num_turns") or 0),
-            usage={k: int(usage.get(k) or 0) for k in ("input_tokens", "output_tokens", "thinking_tokens", "cache_read_tokens", "total_tokens")},
+            error=error_msg,
+            duration_seconds=result_duration,
+            num_turns=num_turns,
+            usage=usage_map,
             conversation_id=str(env.get("conversation_id") or ""),
         )
     finally:

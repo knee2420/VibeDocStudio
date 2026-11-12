@@ -1,0 +1,10 @@
+{
+ "name": "docstruct",
+ "version": "1.0.0",
+ "description": "문서 구조 복원(DocIR) — 한국어 서식 분류 레지스트리, 품질 임계값, VLM 표·블록 프롬프트",
+ "dependsOn": [
+  "core"
+ ],
+ "prompts": "prompts.json"
+}
+

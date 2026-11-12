@@ -185,6 +185,11 @@
   min-height: 0;
 }
 
+/* 원문 조판(서식 가져오기 · PDF)은 문단 간격이 줄 간격에 들어 있다 — 편집기 문단 여백을 더하지 않는다. */
+[data-exact-layout] .vdoc-tiptap-slot p {
+  margin-bottom: 0;
+}
+
 /* 슬롯 범위 선택 드래그 중: 편집기 글자 선택 · 캐럿을 멈춘다 (useCanvasRangeSelection). */
 .vdoc-range-dragging,
 .vdoc-range-dragging * {

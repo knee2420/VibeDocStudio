@@ -327,4 +327,9 @@ def block_slot_ids(block: dict[str, Any]) -> list[str]:
         if isinstance(col, dict) and col.get("slotId"):
             ids.append(col["slotId"])
     ids += [s for s in block.get("slotIds") or [] if isinstance(s, str)]
+    # 표 (structured-table) — 칸마다 슬롯
+    for row in block.get("rows") or []:
+        for cell in (row or {}).get("cells") or []:
+            if isinstance(cell, dict) and isinstance(cell.get("slotId"), str):
+                ids.append(cell["slotId"])
     return ids

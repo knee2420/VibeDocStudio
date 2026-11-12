@@ -1,6 +1,6 @@
 """마운트된 리소스 폴더의 색인 — 파일 목록 · 줄 수 · frontmatter · 제목 · 위키링크 · 동일본.
 
-표준 라이브러리만 쓴다. API 프로세스와 agy 가 띄우는 MCP 서버(`vibefs_server.py`) · 훅(`hook.py`)이
+표준 라이브러리와 harness_kit 만 쓴다. API 프로세스와 agy 가 띄우는 MCP 서버(`vibefs_server.py`) · 훅(`hook.py`)이
 같은 코드를 쓰기 때문이다 (그 둘은 `app` 패키지를 import 하지 않는 독립 스크립트로 돈다).
 """
 from __future__ import annotations
@@ -11,6 +11,8 @@ import os
 import re
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional
+
+from harness_kit import doc_text
 
 #: agy `read_file` 이 줄 범위 없이 불렸을 때 보여 주는 줄 수 (agy 1.5.3 실측: "Showing lines 1-800 of N")
 READ_WINDOW = 800
@@ -273,13 +275,18 @@ class WorkspaceIndex:
         entry = FileEntry(abs_path=os.path.abspath(path), rel="", key=key, resource_id=resource_id, title=title,
                           size=st.st_size, mtime=st.st_mtime)
         ext = os.path.splitext(path)[1].lower()
-        text = _read_text(path) if ext in TEXT_EXTS else None
+        # 압축 서식(hwpx 등)은 렌더 캐시를 본문으로 본다 — 훅이 read_file 을 같은 캐시로 돌린다
+        derived = doc_text.derived_path(path) if doc_text.convertible(path) else None
+        if derived:
+            text = _read_text(derived)
+        else:
+            text = _read_text(path) if ext in TEXT_EXTS else None
         if text is not None:
             entry.is_text = True
             entry.text_lines = text.splitlines()
             entry.lines = len(entry.text_lines)
             entry.md5 = hashlib.md5(text.encode("utf-8")).hexdigest()
-            if ext in (".md", ".markdown", ".mdx", ".txt"):
+            if derived or ext in (".md", ".markdown", ".mdx", ".txt"):
                 entry.frontmatter, entry.fm_end = parse_frontmatter(entry.text_lines)
                 in_code = False
                 for no, line in enumerate(entry.text_lines, 1):

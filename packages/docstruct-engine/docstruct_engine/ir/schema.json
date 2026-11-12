@@ -1,0 +1,1992 @@
+{
+  "$defs": {
+    "BorderEdge": {
+      "properties": {
+        "style": {
+          "default": "solid",
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted",
+            "double",
+            "none"
+          ],
+          "title": "Style",
+          "type": "string"
+        },
+        "width": {
+          "default": 1.0,
+          "title": "Width",
+          "type": "number"
+        },
+        "color": {
+          "default": "#000000",
+          "title": "Color",
+          "type": "string"
+        }
+      },
+      "title": "BorderEdge",
+      "type": "object"
+    },
+    "CaptionBlock": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "align": {
+          "anyOf": [
+            {
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Align"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        },
+        "kind": {
+          "const": "caption",
+          "default": "caption",
+          "title": "Kind",
+          "type": "string"
+        },
+        "targetBlockId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Targetblockid"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "CaptionBlock",
+      "type": "object"
+    },
+    "CellBorders": {
+      "properties": {
+        "top": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BorderEdge"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "right": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BorderEdge"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "bottom": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BorderEdge"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "left": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BorderEdge"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "CellBorders",
+      "type": "object"
+    },
+    "CellFieldMeta": {
+      "properties": {
+        "fieldId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fieldid"
+        },
+        "kind": {
+          "default": "text",
+          "enum": [
+            "text",
+            "date",
+            "sign",
+            "check",
+            "choice"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "default": "",
+          "title": "Label",
+          "type": "string"
+        },
+        "placeholder": {
+          "default": "",
+          "title": "Placeholder",
+          "type": "string"
+        },
+        "assigneeName": {
+          "default": "",
+          "title": "Assigneename",
+          "type": "string"
+        }
+      },
+      "title": "CellFieldMeta",
+      "type": "object"
+    },
+    "CellFont": {
+      "properties": {
+        "family": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Family"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Size"
+        },
+        "bold": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bold"
+        },
+        "italic": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Italic"
+        },
+        "underline": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Underline"
+        }
+      },
+      "title": "CellFont",
+      "type": "object"
+    },
+    "CellIR": {
+      "properties": {
+        "r": {
+          "minimum": 0,
+          "title": "R",
+          "type": "integer"
+        },
+        "c": {
+          "minimum": 0,
+          "title": "C",
+          "type": "integer"
+        },
+        "rs": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Rs",
+          "type": "integer"
+        },
+        "cs": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Cs",
+          "type": "integer"
+        },
+        "role": {
+          "default": "td",
+          "enum": [
+            "th",
+            "td"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "html": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Html"
+        },
+        "paragraphs": {
+          "anyOf": [
+            {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paragraphs"
+        },
+        "align": {
+          "anyOf": [
+            {
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Align"
+        },
+        "valign": {
+          "anyOf": [
+            {
+              "enum": [
+                "top",
+                "middle",
+                "bottom"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valign"
+        },
+        "bg": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bg"
+        },
+        "borders": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CellBorders"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "padding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CellPadding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "font": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CellFont"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lineHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lineheight"
+        },
+        "nested": {
+          "items": {
+            "$ref": "#/$defs/TableIR"
+          },
+          "title": "Nested",
+          "type": "array"
+        },
+        "continued": {
+          "default": false,
+          "title": "Continued",
+          "type": "boolean"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CellFieldMeta"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "conf": {
+          "default": 1.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Conf",
+          "type": "number"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "r",
+        "c"
+      ],
+      "title": "CellIR",
+      "type": "object"
+    },
+    "CellPadding": {
+      "properties": {
+        "t": {
+          "default": 0.0,
+          "title": "T",
+          "type": "number"
+        },
+        "r": {
+          "default": 0.0,
+          "title": "R",
+          "type": "number"
+        },
+        "b": {
+          "default": 0.0,
+          "title": "B",
+          "type": "number"
+        },
+        "l": {
+          "default": 0.0,
+          "title": "L",
+          "type": "number"
+        }
+      },
+      "title": "CellPadding",
+      "type": "object"
+    },
+    "FieldBlock": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "align": {
+          "anyOf": [
+            {
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Align"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        },
+        "kind": {
+          "const": "field",
+          "default": "field",
+          "title": "Kind",
+          "type": "string"
+        },
+        "fieldKind": {
+          "default": "line",
+          "enum": [
+            "date",
+            "sign",
+            "box",
+            "line"
+          ],
+          "title": "Fieldkind",
+          "type": "string"
+        },
+        "label": {
+          "default": "",
+          "title": "Label",
+          "type": "string"
+        },
+        "assigneeName": {
+          "default": "",
+          "title": "Assigneename",
+          "type": "string"
+        },
+        "placeholder": {
+          "default": "",
+          "title": "Placeholder",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "FieldBlock",
+      "type": "object"
+    },
+    "FigureBlock": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "figure",
+          "default": "figure",
+          "title": "Kind",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "figureKind": {
+          "default": "photo",
+          "enum": [
+            "photo",
+            "chart",
+            "diagram",
+            "stamp",
+            "signature",
+            "formula"
+          ],
+          "title": "Figurekind",
+          "type": "string"
+        },
+        "keepText": {
+          "default": false,
+          "title": "Keeptext",
+          "type": "boolean"
+        },
+        "alt": {
+          "default": "",
+          "title": "Alt",
+          "type": "string"
+        },
+        "src": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Src"
+        },
+        "captionBlockId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Captionblockid"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "FigureBlock",
+      "type": "object"
+    },
+    "HeadingBlock": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "align": {
+          "anyOf": [
+            {
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Align"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        },
+        "kind": {
+          "const": "heading",
+          "default": "heading",
+          "title": "Kind",
+          "type": "string"
+        },
+        "level": {
+          "default": 1,
+          "maximum": 6,
+          "minimum": 1,
+          "title": "Level",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "HeadingBlock",
+      "type": "object"
+    },
+    "ListItemBlock": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "align": {
+          "anyOf": [
+            {
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Align"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        },
+        "kind": {
+          "const": "listItem",
+          "default": "listItem",
+          "title": "Kind",
+          "type": "string"
+        },
+        "marker": {
+          "default": "",
+          "title": "Marker",
+          "type": "string"
+        },
+        "markerKind": {
+          "default": "bullet",
+          "enum": [
+            "bullet",
+            "number",
+            "korean",
+            "paren",
+            "circled",
+            "alpha",
+            "custom"
+          ],
+          "title": "Markerkind",
+          "type": "string"
+        },
+        "indentLevel": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Indentlevel",
+          "type": "integer"
+        },
+        "hangingIndentPt": {
+          "default": 0.0,
+          "minimum": 0.0,
+          "title": "Hangingindentpt",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "ListItemBlock",
+      "type": "object"
+    },
+    "NoteBlock": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "align": {
+          "anyOf": [
+            {
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Align"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        },
+        "kind": {
+          "const": "note",
+          "default": "note",
+          "title": "Kind",
+          "type": "string"
+        },
+        "noteKind": {
+          "default": "annotation",
+          "enum": [
+            "footnote",
+            "annotation",
+            "header",
+            "footer"
+          ],
+          "title": "Notekind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "NoteBlock",
+      "type": "object"
+    },
+    "PageIR": {
+      "properties": {
+        "version": {
+          "default": "1.0",
+          "title": "Version",
+          "type": "string"
+        },
+        "pageIndex": {
+          "minimum": 1,
+          "title": "Pageindex",
+          "type": "integer"
+        },
+        "sourceKind": {
+          "enum": [
+            "pdf-vector",
+            "pdf-scan",
+            "pdf-hybrid",
+            "hwpx",
+            "image"
+          ],
+          "title": "Sourcekind",
+          "type": "string"
+        },
+        "size": {
+          "$ref": "#/$defs/PageSize"
+        },
+        "margins": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PageMargins"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "words": {
+          "items": {
+            "$ref": "#/$defs/Word"
+          },
+          "title": "Words",
+          "type": "array"
+        },
+        "rulings": {
+          "items": {
+            "$ref": "#/$defs/Ruling"
+          },
+          "title": "Rulings",
+          "type": "array"
+        },
+        "blocks": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "caption": "#/$defs/CaptionBlock",
+                "field": "#/$defs/FieldBlock",
+                "figure": "#/$defs/FigureBlock",
+                "heading": "#/$defs/HeadingBlock",
+                "listItem": "#/$defs/ListItemBlock",
+                "note": "#/$defs/NoteBlock",
+                "paragraph": "#/$defs/ParagraphBlock",
+                "table": "#/$defs/TableIR"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TableIR"
+              },
+              {
+                "$ref": "#/$defs/HeadingBlock"
+              },
+              {
+                "$ref": "#/$defs/ParagraphBlock"
+              },
+              {
+                "$ref": "#/$defs/ListItemBlock"
+              },
+              {
+                "$ref": "#/$defs/CaptionBlock"
+              },
+              {
+                "$ref": "#/$defs/NoteBlock"
+              },
+              {
+                "$ref": "#/$defs/FigureBlock"
+              },
+              {
+                "$ref": "#/$defs/FieldBlock"
+              }
+            ]
+          },
+          "title": "Blocks",
+          "type": "array"
+        },
+        "readingOrder": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Readingorder",
+          "type": "array"
+        },
+        "metrics": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metrics"
+        }
+      },
+      "required": [
+        "pageIndex",
+        "sourceKind",
+        "size"
+      ],
+      "title": "PageIR",
+      "type": "object"
+    },
+    "PageMargins": {
+      "properties": {
+        "top": {
+          "default": 0.0,
+          "title": "Top",
+          "type": "number"
+        },
+        "right": {
+          "default": 0.0,
+          "title": "Right",
+          "type": "number"
+        },
+        "bottom": {
+          "default": 0.0,
+          "title": "Bottom",
+          "type": "number"
+        },
+        "left": {
+          "default": 0.0,
+          "title": "Left",
+          "type": "number"
+        }
+      },
+      "title": "PageMargins",
+      "type": "object"
+    },
+    "PageSize": {
+      "properties": {
+        "width": {
+          "exclusiveMinimum": 0.0,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0.0,
+          "title": "Height",
+          "type": "number"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "title": "PageSize",
+      "type": "object"
+    },
+    "ParagraphBlock": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "align": {
+          "anyOf": [
+            {
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Align"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        },
+        "kind": {
+          "const": "paragraph",
+          "default": "paragraph",
+          "title": "Kind",
+          "type": "string"
+        },
+        "html": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Html"
+        },
+        "lineHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lineheight"
+        },
+        "paragraphs": {
+          "anyOf": [
+            {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paragraphs"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "ParagraphBlock",
+      "type": "object"
+    },
+    "Ruling": {
+      "properties": {
+        "orient": {
+          "enum": [
+            "h",
+            "v"
+          ],
+          "title": "Orient",
+          "type": "string"
+        },
+        "x0": {
+          "title": "X0",
+          "type": "number"
+        },
+        "y0": {
+          "title": "Y0",
+          "type": "number"
+        },
+        "x1": {
+          "title": "X1",
+          "type": "number"
+        },
+        "y1": {
+          "title": "Y1",
+          "type": "number"
+        },
+        "thickness": {
+          "default": 0.75,
+          "title": "Thickness",
+          "type": "number"
+        },
+        "style": {
+          "default": "solid",
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted",
+            "double",
+            "none"
+          ],
+          "title": "Style",
+          "type": "string"
+        },
+        "color": {
+          "default": "#000000",
+          "title": "Color",
+          "type": "string"
+        }
+      },
+      "required": [
+        "orient",
+        "x0",
+        "y0",
+        "x1",
+        "y1"
+      ],
+      "title": "Ruling",
+      "type": "object"
+    },
+    "Span": {
+      "properties": {
+        "wordIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Wordids",
+          "type": "array"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "bold": {
+          "default": false,
+          "title": "Bold",
+          "type": "boolean"
+        },
+        "italic": {
+          "default": false,
+          "title": "Italic",
+          "type": "boolean"
+        },
+        "underline": {
+          "default": false,
+          "title": "Underline",
+          "type": "boolean"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Size"
+        },
+        "font": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Font"
+        },
+        "bg": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bg"
+        }
+      },
+      "title": "Span",
+      "type": "object"
+    },
+    "TableIR": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "table",
+          "default": "table",
+          "title": "Kind",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "nRows": {
+          "minimum": 1,
+          "title": "Nrows",
+          "type": "integer"
+        },
+        "nCols": {
+          "minimum": 1,
+          "title": "Ncols",
+          "type": "integer"
+        },
+        "colXs": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Colxs",
+          "type": "array"
+        },
+        "rowYs": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Rowys",
+          "type": "array"
+        },
+        "widthRatio": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Widthratio"
+        },
+        "widthPt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Widthpt"
+        },
+        "borderRules": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Borderrules"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "cells": {
+          "items": {
+            "$ref": "#/$defs/CellIR"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "repeatHeader": {
+          "default": false,
+          "title": "Repeatheader",
+          "type": "boolean"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        },
+        "rawHtml": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rawhtml"
+        },
+        "imageFallbackSrc": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Imagefallbacksrc"
+        }
+      },
+      "required": [
+        "id",
+        "nRows",
+        "nCols"
+      ],
+      "title": "TableIR",
+      "type": "object"
+    },
+    "Word": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "conf": {
+          "default": 1.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Conf",
+          "type": "number"
+        },
+        "src": {
+          "default": "vec",
+          "enum": [
+            "vec",
+            "ocr",
+            "vlm",
+            "hwpx"
+          ],
+          "title": "Src",
+          "type": "string"
+        },
+        "font": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Font"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Size"
+        },
+        "bold": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bold"
+        },
+        "italic": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Italic"
+        },
+        "underline": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Underline"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "needsReview": {
+          "default": false,
+          "title": "Needsreview",
+          "type": "boolean"
+        },
+        "baseline": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline"
+        },
+        "lineHint": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linehint"
+        },
+        "spaceBefore": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spacebefore"
+        },
+        "trailingSpace": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trailingspace"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "Word",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "version": {
+      "default": "1.0",
+      "title": "Version",
+      "type": "string"
+    },
+    "docId": {
+      "default": "",
+      "title": "Docid",
+      "type": "string"
+    },
+    "title": {
+      "default": "",
+      "title": "Title",
+      "type": "string"
+    },
+    "srcHash": {
+      "default": "",
+      "title": "Srchash",
+      "type": "string"
+    },
+    "sourcePath": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sourcepath"
+    },
+    "pages": {
+      "items": {
+        "$ref": "#/$defs/PageIR"
+      },
+      "title": "Pages",
+      "type": "array"
+    }
+  },
+  "title": "DocIR",
+  "type": "object"
+}

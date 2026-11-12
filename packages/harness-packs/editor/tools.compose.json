@@ -57,5 +57,153 @@
     "doc": {"type": "string", "description": "docId (생략하면 작업대 문서)"}
    }
   }
+ },
+ {
+  "name": "dc_source_pages",
+  "description": "마운트된 서식 원문(hwpx · pdf)의 쪽 목록: 쪽마다 첫 글 · 표 수 · 빈 칸 수. 원문 서식(제안요청서 · 신청서 · 양식)을 '그대로' 가져와 달라는 요청에서 가져올 쪽 번호를 고를 때 먼저 부른다. 쪽 번호는 read_file 로 보는 렌더 텍스트의 <!-- page N --> 와 같다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "path": {"type": "string", "description": "마운트 안 서식 파일 경로 (ws_glob 결과 그대로)"},
+    "pages": {"type": "string", "description": "특정 쪽만 (예: \"20-30\") — 생략하면 전부"}
+   },
+   "required": ["path"]
+  }
+ },
+ {
+  "name": "dc_import",
+  "description": "서식 원문(hwpx · pdf)의 쪽들을 모양 그대로 지금 초안에 붙인다: 원문 쪽 하나 = 쪽 하나, 표의 병합 · 열 너비 · 테두리 · 배경 · 글자 크기/굵기 · 여백까지. 원문 서식을 옮기는 요청에서는 dc_build 로 표 · 글을 다시 쓰지 말고 이것을 쓴다. 같은 원문의 같은 쪽을 다시 가져오면 제자리(in-place) 교체한다. 에이전트 초안 · 빈 지정 문서(paged)에만. 빈 초안의 빈 첫 쪽은 대체된다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "path": {"type": "string", "description": "마운트 안 서식 파일 경로"},
+    "pages": {"type": "string", "description": "원문 쪽 번호 (예: \"24-26, 35-48\") — 순서대로 붙는다"},
+    "start_at": {"type": "string", "description": "첫 쪽을 이 글이 있는 문단 · 표부터 (앞 장의 끝이 같은 쪽에 있을 때)"},
+    "end_before": {"type": "string", "description": "마지막 쪽을 이 글이 있는 문단 · 표 앞에서 멈춘다"},
+    "doc": {"type": "string", "description": "docId (생략하면 작업대 문서)"}
+   },
+   "required": ["path", "pages"]
+  }
+ },
+ {
+  "name": "dc_pdf_open",
+  "description": "PDF/스캔/이미지 문서를 열어 쪽별 모드(vector · scan · hybrid) · 초벌 PageIR · 페이지 PNG 캐시 경로를 준비한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "path": {"type": "string", "description": "마운트 안 PDF 또는 이미지 파일 경로"},
+    "pages": {"type": "string", "description": "선택한 쪽 번호 (생략 시 전체)"},
+    "force": {"type": "boolean", "description": "true 면 캐시를 무시하고 다시 분석한다"}
+   },
+   "required": ["path"]
+  }
+ },
+ {
+  "name": "dc_pdf_words",
+  "description": "PDF/스캔 쪽에서 추출된 단어 토큰(wordId · text · bbox · conf)을 조회한다. 표/블록 fixes 대상을 고를 때 먼저 확인한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "path": {"type": "string", "description": "마운트 안 PDF 또는 이미지 파일 경로"},
+    "page": {"type": "integer", "description": "1-based 원문 쪽 번호"},
+    "bbox": {
+     "type": "array",
+     "items": {"type": "number"},
+     "description": "조회할 영역 [x0, y0, x1, y1] (pt 단위, 생략 시 전체 쪽)"
+    }
+   },
+   "required": ["path", "page"]
+  }
+ },
+ {
+  "name": "dc_table_propose",
+  "description": "표(tableId)에 대한 검수 결과 HTML(<table>...) 또는 셀 내 연속 wordIds text fixes 를 반영·검증한다. 2회 거절 시 이미지 폴백으로 안전 종료한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "path": {"type": "string", "description": "마운트 안 PDF 또는 이미지 파일 경로"},
+    "page": {"type": "integer", "description": "1-based 원문 쪽 번호"},
+    "tableId": {"type": "string", "description": "대상 표 ID (예: \"t0\")"},
+    "html": {"type": "string", "description": "수정한 표 HTML 문자열"},
+    "fixes": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "wordIds": {"type": "array", "items": {"type": "string"}},
+       "text": {"type": "string"}
+      },
+      "required": ["wordIds", "text"]
+     },
+     "description": "셀 내 읽기 순서 연속 wordIds 단어 교정 목록"
+    },
+    "rejectCount": {"type": "integer", "description": "누적 거절 횟수(선택)"}
+   },
+   "required": ["path", "page", "tableId"]
+  }
+ },
+ {
+  "name": "dc_blocks_annotate",
+  "description": "비표 블록(제목 · 리스트 · 캡션 · 각주 · 그림 keepText) 분류 · readingOrder 및 블록 내 연속 wordIds fixes 를 반영·검증한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "path": {"type": "string", "description": "마운트 안 PDF 또는 이미지 파일 경로"},
+    "page": {"type": "integer", "description": "1-based 원문 쪽 번호"},
+    "annotations": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "blockId": {"type": "string"},
+       "kind": {"type": "string"},
+       "level": {"type": "integer"},
+       "figureKind": {"type": "string"},
+       "keepText": {"type": "boolean"},
+       "alt": {"type": "string"},
+       "noteKind": {"type": "string"},
+       "targetBlockId": {"type": "string"},
+       "marker": {"type": "string"},
+       "markerKind": {"type": "string"},
+       "text": {"type": "string"}
+      },
+      "required": ["blockId"]
+     },
+     "description": "수정할 블록 분류 목록"
+    },
+    "readingOrder": {
+     "type": "array",
+     "items": {"type": "string"},
+     "description": "전체 blockId 읽기 순서 순열"
+    },
+    "fixes": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "wordIds": {"type": "array", "items": {"type": "string"}},
+       "text": {"type": "string"}
+      },
+      "required": ["wordIds", "text"]
+     },
+     "description": "비표 블록 내 읽기 순서 연속 wordIds 단어 교정 목록"
+    }
+   },
+   "required": ["path", "page"]
+  }
+ },
+ {
+  "name": "dc_verify",
+  "description": "DocIR 불변식(#1~#6) · 괘선 F1 · OCR 신뢰도를 검사하고 재읽기 대기열(pendingReads)과 크롭 경로를 반환한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "path": {"type": "string", "description": "마운트 안 PDF 또는 이미지 파일 경로"},
+    "pages": {"type": "string", "description": "검사할 쪽 번호 (생략 시 전체)"},
+    "round": {"type": "integer", "description": "재읽기 라운드 번호 (기본 1, 최대 2)"},
+    "sampleTables": {"type": "boolean", "description": "round 1 표본 검수 크롭 포함 여부"}
+   },
+   "required": ["path"]
+  }
  }
 ]

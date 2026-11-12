@@ -152,3 +152,23 @@ def test_non_rectangular_l_shape_component_decomposes_into_disjoint_rectangles()
     assert (len(tbl["row_ys"]) - 1, len(tbl["col_xs"]) - 1) == (2, 2)
     assert sum(c["row_span"] * c["col_span"] for c in tbl["cells"]) == 4
     assert max(c["row_span"] * c["col_span"] for c in tbl["cells"]) <= 2
+
+
+def test_extract_drawings_keeps_stroke_borders_for_white_filled_rects() -> None:
+    import pymupdf
+    from pdf_fidelity_engine.extract.raw_truth import extract_drawings
+
+    doc = pymupdf.open()
+    page = doc.new_page(width=400, height=300)
+    # Typical PDF table box drawn as white fill + black stroke ('fs' operator)
+    page.draw_rect(pymupdf.Rect(40, 40, 240, 120), color=(0.0, 0.0, 0.0), fill=(1.0, 1.0, 1.0), width=0.5)
+    page.draw_line((40, 80), (240, 80), color=(0.0, 0.0, 0.0), width=0.5)
+    page.draw_line((120, 40), (120, 120), color=(0.0, 0.0, 0.0), width=0.5)
+    rules, fills = extract_drawings(page)
+    doc.close()
+
+    assert fills == []  # pure white background should not become a colored cell fill
+    tables = detect_tables(rules)
+    assert len(tables) == 1
+    assert (len(tables[0]["row_ys"]) - 1, len(tables[0]["col_xs"]) - 1) == (2, 2)
+    assert len(tables[0]["cells"]) == 4

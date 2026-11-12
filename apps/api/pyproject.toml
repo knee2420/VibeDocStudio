@@ -11,6 +11,7 @@ dependencies = [
     "pdf-vdoc-engine",
     "pdf-fidelity-engine",
     "webpage-fidelity-engine",
+    "docstruct-engine",
     "agent-core",
 ]
 
@@ -20,6 +21,7 @@ pythonpath = [
     "../../packages/pdf-vdoc-engine",
     "../../packages/pdf-fidelity-engine",
     "../../packages/webpage-fidelity-engine",
+    "../../packages/docstruct-engine",
     "../../packages/agent-core",
     "../../packages/harness-kit",
 ]
@@ -35,7 +37,7 @@ select = ["E4", "E7", "E9", "F", "I"]
 "main.py" = ["E402"]
 
 [tool.importlinter]
-root_packages = ["app", "harness_kit", "pdf_vdoc_engine", "pdf_fidelity_engine", "webpage_fidelity_engine", "vibefs"]
+root_packages = ["app", "harness_kit", "pdf_vdoc_engine", "pdf_fidelity_engine", "webpage_fidelity_engine", "docstruct_engine", "vibefs"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
@@ -342,4 +344,16 @@ forbidden_modules = [
     "pdf_vdoc_engine",
     "app.documents",
     "app.catalog",
+]
+
+[[tool.importlinter.contracts]]
+name = "DocStruct Engine is host independent"
+type = "forbidden"
+source_modules = [
+    "docstruct_engine",
+]
+forbidden_modules = [
+    "app",
+    "vibefs",
+    "harness_kit",
 ]

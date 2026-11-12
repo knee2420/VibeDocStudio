@@ -1,0 +1,46 @@
+{
+ "version": "1.0",
+ "docs": [
+  {
+   "docId": "lease-910",
+   "sourceKind": "pdf-vector",
+   "focus": ["dashed_rulings", "merged_grid", "fillable_fields", "checkboxes"]
+  },
+  {
+   "docId": "welfare-minutes",
+   "sourceKind": "pdf-vector",
+   "focus": ["multi_page_tables", "list_markers", "reading_order"]
+  },
+  {
+   "docId": "kids-council",
+   "sourceKind": "pdf-vector",
+   "focus": ["hanging_indent", "korean_markers", "mixed_blocks"]
+  },
+  {
+   "docId": "review-minutes",
+   "sourceKind": "pdf-vector",
+   "focus": ["headers_notes", "multi_row_span", "typography"]
+  },
+  {
+   "docId": "daily-minutes",
+   "sourceKind": "pdf-vector",
+   "focus": ["table_grid", "date_sign_fields", "cell_props"]
+  },
+  {
+   "docId": "brochure-scan-a",
+   "sourceKind": "pdf-scan",
+   "focus": ["ocr_ko", "scan_rulings", "figures"]
+  },
+  {
+   "docId": "brochure-scan-b",
+   "sourceKind": "pdf-scan",
+   "focus": ["ocr_ko", "columns_order", "figures"]
+  },
+  {
+   "docId": "rfp-hwpx",
+   "sourceKind": "hwpx",
+   "focus": ["hwpx_parity", "nested_tables", "continued_rows"]
+  }
+ ]
+}
+

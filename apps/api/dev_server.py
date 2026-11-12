@@ -33,6 +33,7 @@ WATCH_DIRS = [
     HERE / "main.py",
     ENGINE_SRC / "pdf_vdoc_engine",
     HERE.parents[1] / "packages" / "webpage-fidelity-engine" / "webpage_fidelity_engine",
+    HERE.parents[1] / "packages" / "docstruct-engine" / "docstruct_engine",
     HERE.parents[1] / "packages" / "harness-kit" / "harness_kit",
 ]
 GRACEFUL_SECONDS = 8

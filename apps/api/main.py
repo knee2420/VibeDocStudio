@@ -5,7 +5,14 @@ import sys
 from pathlib import Path
 
 _PACKAGES = Path(__file__).resolve().parents[2] / "packages"
-for _src in (_PACKAGES / "pdf-vdoc-engine", _PACKAGES / "webpage-fidelity-engine", _PACKAGES / "harness-kit"):
+for _src in (
+    _PACKAGES / "pdf-vdoc-engine",
+    _PACKAGES / "pdf-fidelity-engine",
+    _PACKAGES / "webpage-fidelity-engine",
+    _PACKAGES / "docstruct-engine",
+    _PACKAGES / "agent-core",
+    _PACKAGES / "harness-kit",
+):
     if str(_src) not in sys.path:
         sys.path.insert(0, str(_src))
 

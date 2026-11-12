@@ -31,11 +31,16 @@ def test_scaffold_pdf_endpoint() -> None:
     assert data["docId"].startswith("vdoc-")
     assert data["title"] == "학술정보운영위원회 규정"
     assert data["totalPages"] >= 1
-    assert data["checkedBlocks"] >= 10
-    assert data["checkedSlots"] >= 10
+    assert data["checkedBlocks"] >= 3
+    assert data["checkedSlots"] >= 5
+    assert isinstance(data.get("agentRun"), dict)
+    assert data["agentRun"].get("engine") == "docstruct-engine"
 
     vdoc = data["document"]
     assert "pages" in vdoc and len(vdoc["pages"]) >= 1
+    slots_text = " ".join(s.get("content", "") for s in vdoc.get("slots", {}).values())
+    assert "학술정보운영위원회 규정" in slots_text
+    assert "제 1 조" in slots_text
     page1 = vdoc["pages"][0]
     page_w = page1.get("pageRect", {}).get("width", 794.0)
 

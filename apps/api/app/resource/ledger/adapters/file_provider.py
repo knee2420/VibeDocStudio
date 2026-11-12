@@ -17,7 +17,7 @@ def deterministic_resource_id(prefix: str, path: Path) -> str:
 
 # 지원 및 텍스트 파싱 가능한 확장자
 SUPPORTED_EXTENSIONS = {
-    ".pdf", ".md", ".txt", ".json", ".csv", ".yaml", ".yml",
+    ".pdf", ".hwpx", ".md", ".txt", ".json", ".csv", ".yaml", ".yml",
     ".png", ".jpg", ".jpeg", ".webp", ".svg",
     ".ts", ".tsx", ".js", ".jsx", ".py", ".html"
 }
@@ -99,6 +99,8 @@ class FileDirectoryProvider(ResourceProvider):
                 snippet = ""
         elif ext == ".pdf":
             snippet = f"PDF 문서: {file_path.name}"
+        elif ext == ".hwpx":
+            snippet = f"한글(HWPX) 문서: {file_path.name}"
 
         if snippet:
             sectors.append(ResourceSector(

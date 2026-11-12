@@ -69,7 +69,8 @@ def extract_drawings(page: pymupdf.Page) -> tuple[list[dict[str, Any]], list[dic
         fill, stroke = d.get("fill"), d.get("color")
         is_dashed = bool(d.get("dashes") and not str(d.get("dashes")).startswith("[]"))
 
-        if fill and all(c > 0.98 for c in fill[:3]) and not stroke:
+        is_white_fill = bool(fill and all(c > 0.98 for c in fill[:3]))
+        if is_white_fill and not stroke:
             continue
 
         line_items = [it for it in d["items"] if it[0] == "l"]
@@ -99,40 +100,46 @@ def extract_drawings(page: pymupdf.Page) -> tuple[list[dict[str, Any]], list[dic
             continue
 
         if fill and min(w, h) <= 4 * PX:
-            rules.append(
-                {
-                    "x": _r(x),
-                    "y": _r(y),
-                    "x1": _r(x1),
-                    "y1": _r(y1),
-                    "thickness": _r(min(w, h)),
-                    "orient": "h" if w >= h else "v",
-                    "color": _hex_color(fill),
-                }
-            )
-        elif fill:
-            fills.append({"x": _r(x), "y": _r(y), "x1": _r(x1), "y1": _r(y1), "color": _hex_color(fill)})
-        elif stroke:
-            width = (d.get("width") or 1) * PX
-            hw = width / 2
-            for sx, sy, sx1, sy1, orient in (
-                (x, y - hw, x1, y + hw, "h"),
-                (x, y1 - hw, x1, y1 + hw, "h"),
-                (x - hw, y, x + hw, y1, "v"),
-                (x1 - hw, y, x1 + hw, y1, "v"),
-            ):
+            if not is_white_fill:
                 rules.append(
                     {
-                        "x": _r(sx),
-                        "y": _r(sy),
-                        "x1": _r(sx1),
-                        "y1": _r(sy1),
-                        "thickness": _r(width),
-                        "orient": orient,
-                        "color": _hex_color(stroke),
-                        **({"dashed": True} if is_dashed else {}),
+                        "x": _r(x),
+                        "y": _r(y),
+                        "x1": _r(x1),
+                        "y1": _r(y1),
+                        "thickness": _r(min(w, h)),
+                        "orient": "h" if w >= h else "v",
+                        "color": _hex_color(fill),
                     }
                 )
+        elif fill and not is_white_fill:
+            fills.append({"x": _r(x), "y": _r(y), "x1": _r(x1), "y1": _r(y1), "color": _hex_color(fill)})
+
+        if stroke:
+            width = (d.get("width") or 1) * PX
+            hw = width / 2
+            re_rects = [it[1] for it in d["items"] if it[0] == "re" and len(it) > 1]
+            target_rects = re_rects if len(re_rects) > 1 else [rect]
+            for tr in target_rects:
+                tx, ty, tx1, ty1 = tr.x0 * PX, tr.y0 * PX, tr.x1 * PX, tr.y1 * PX
+                for sx, sy, sx1, sy1, orient in (
+                    (tx, ty - hw, tx1, ty + hw, "h"),
+                    (tx, ty1 - hw, tx1, ty1 + hw, "h"),
+                    (tx - hw, ty, tx + hw, ty1, "v"),
+                    (tx1 - hw, ty, tx1 + hw, ty1, "v"),
+                ):
+                    rules.append(
+                        {
+                            "x": _r(sx),
+                            "y": _r(sy),
+                            "x1": _r(sx1),
+                            "y1": _r(sy1),
+                            "thickness": _r(width),
+                            "orient": orient,
+                            "color": _hex_color(stroke),
+                            **({"dashed": True} if is_dashed else {}),
+                        }
+                    )
     return rules, fills
 
 
