@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 from docstruct_engine.config import load_thresholds
 from docstruct_engine.verify import verify_doc
-from harness_kit.docstruct_vdoc import (
+from docstruct_engine.compile.docstruct_vdoc import (
     build_doc_ir_from_pdf_bytes,
     default_ocr_port,
     doc_ir_to_vdoc,

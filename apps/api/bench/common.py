@@ -7,7 +7,7 @@ from pathlib import Path
 
 API_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = API_ROOT.parents[1]
-for extra in (API_ROOT, REPO_ROOT / "packages" / "agent-core", REPO_ROOT / "packages" / "pdf-vdoc-engine",
+for extra in (API_ROOT, REPO_ROOT / "packages" / "agent-core", REPO_ROOT / "packages" / "docstruct-engine",
               REPO_ROOT / "packages" / "harness-kit"):
     if str(extra) not in sys.path:
         sys.path.insert(0, str(extra))

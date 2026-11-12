@@ -11,6 +11,7 @@ from PIL import Image
 from pydantic import BaseModel, Field
 
 from ..acquire.figures import crop_bbox_jpeg_data_uri
+from ..blocks.text_join import join_words_smart
 from ..config import load_thresholds
 from ..ir.model import (
     BBox,
@@ -23,8 +24,7 @@ from ..ir.model import (
     point_in_bbox,
 )
 from ..ir.validate import validate_page_ir
-from ..blocks.text_join import join_words_smart
-from .assign import join_words_to_text, sort_words_reading_order
+from .assign import sort_words_reading_order
 from .html_io import ParsedTableGrid, validate_table_html_grid
 from .props import enrich_table_properties
 

@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional
 
-from harness_kit import doc_text
+from docstruct_engine.acquire import doc_text
 
 #: agy `read_file` 이 줄 범위 없이 불렸을 때 보여 주는 줄 수 (agy 1.5.3 실측: "Showing lines 1-800 of N")
 READ_WINDOW = 800

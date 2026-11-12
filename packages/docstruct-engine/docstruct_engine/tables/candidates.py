@@ -1,16 +1,30 @@
 """Candidate table region detection from vector/scan rulings and aligned word grids."""
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Any, Literal, Optional
 
 import pymupdf
-from pdf_fidelity_engine.extract.char_normalizer import PX
-from pdf_fidelity_engine.layout.table_grid import detect_tables
-from pdf_vdoc_engine.measure.vector_grid_extractor import cluster_coordinates
 from pydantic import BaseModel, Field
 
+from ..acquire.pdf import PX
 from ..config import load_thresholds
 from ..ir.model import BBox, Ruling, Word, bbox_iou, point_in_bbox
+from .grid_detect import detect_tables
+
+
+def cluster_coordinates(values: Iterable[float], tolerance_pt: float = 1.8) -> tuple[float, ...]:
+    """가까운 X 또는 Y 좌표들을 허용 오차(기본 ±1.8pt) 이내에서 하나의 격자선으로 병합한다."""
+    sorted_vals = sorted(float(v) for v in values)
+    if not sorted_vals:
+        return ()
+    clusters: list[list[float]] = [[sorted_vals[0]]]
+    for val in sorted_vals[1:]:
+        if abs(val - clusters[-1][-1]) <= tolerance_pt:
+            clusters[-1].append(val)
+        else:
+            clusters.append([val])
+    return tuple(round(sum(group) / len(group), 2) for group in clusters)
 
 
 class CandidateCell(BaseModel):

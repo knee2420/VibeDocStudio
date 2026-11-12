@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 fidelity_core.py
-시각 일치도 도구(01 · 02 · 03)가 함께 쓰는 호환 Re-export 래퍼 (`pdf-fidelity-engine` 위임).
+시각 일치도 도구(01 · 02 · 03)가 함께 쓰는 공용 래퍼 (`docstruct-engine` + 로컬 parity 모듈).
 """
 from __future__ import annotations
 
@@ -10,18 +10,22 @@ import importlib
 import sys
 from pathlib import Path
 
-_PKG_DIR = Path(__file__).resolve().parents[4] / "pdf-fidelity-engine"
+_TOOL_DIR = Path(__file__).resolve().parent
+if str(_TOOL_DIR) not in sys.path:
+    sys.path.insert(0, str(_TOOL_DIR))
+
+_PKG_DIR = Path(__file__).resolve().parents[4] / "docstruct-engine"
 if _PKG_DIR.is_dir() and str(_PKG_DIR) not in sys.path:
     sys.path.insert(0, str(_PKG_DIR))
 
-from pdf_fidelity_engine.fonts.metrics import (  # noqa: E402
+from docstruct_engine.acquire.pdf.metrics import (  # noqa: E402
     PX_PER_PT,
     FontMetrics,
     parse_font_map,
     pick_font,
     solve_token_spacing,
 )
-from pdf_fidelity_engine.verify.image_parity import (  # noqa: E402
+from image_parity import (  # noqa: E402
     color_distance,
     image_metrics,
     parse_css_color,

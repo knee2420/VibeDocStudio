@@ -4,7 +4,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pymupdf
-
 from docstruct_engine.build import build_doc_ir, build_page_ir
 from docstruct_engine.ir.model import (
     CaptionBlock,

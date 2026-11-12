@@ -11,7 +11,7 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from typing import Any
 
-from harness_kit.vdoc_build import blank_page
+from docstruct_engine.compile.vdoc_build import blank_page
 
 from .errors import VDocSlotNotFoundError
 

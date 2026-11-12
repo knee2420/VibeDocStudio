@@ -1,2 +1,0 @@
-[console_scripts]
-pdf-fidelity = pdf_fidelity_engine.cli:main

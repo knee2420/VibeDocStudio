@@ -5,6 +5,9 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+from docstruct_engine.acquire import hwpx
+from docstruct_engine.acquire import hwpx_ir as docstruct_hwpx
+from docstruct_engine.compile import docstruct_vdoc, hwpx_vdoc
 from docstruct_engine.ir import (
     CellFieldMeta,
     CellIR,
@@ -21,7 +24,6 @@ from docstruct_engine.ir import (
     Word,
     validate_page_ir,
 )
-from harness_kit import docstruct_hwpx, docstruct_vdoc, hwpx, hwpx_vdoc
 
 
 def _sample_hwpx_file(tmp_dir: Path) -> Path:

@@ -45,15 +45,17 @@ from docstruct_engine.cache import (
 )
 from docstruct_engine.ir.model import DocIR, PageIR, bbox_center, point_in_bbox
 from docstruct_engine.tables import reconcile_table, render_table_proposal_html
-from harness_kit import doc_text, docstruct_vdoc, hwpx, hwpx_vdoc, packs, patterns
-from harness_kit.text import html_to_text
-from harness_kit.vdoc_build import (
+from docstruct_engine.acquire import doc_text, hwpx
+from docstruct_engine.compile import docstruct_vdoc, hwpx_vdoc
+from docstruct_engine.compile.vdoc_build import (
     blank_page,
     block_slot_ids,
     make_block,
     media_sources,
     sanitize_html,
 )
+from harness_kit import packs, patterns
+from harness_kit.text import html_to_text
 
 #: dc_* 도구 명세 · 결과 글 — 하네스 editor 팩
 MSG = "editor:messages.json"

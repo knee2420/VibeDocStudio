@@ -7,8 +7,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from PIL import Image, ImageDraw, ImageFont
-
 from docstruct_engine.acquire.ocr import WindowsOcrAdapter
 from docstruct_engine.ir.model import (
     CellIR,
@@ -23,6 +21,7 @@ from docstruct_engine.ir.model import (
 )
 from docstruct_engine.reread import apply_reread_patch, reread_plan
 from docstruct_engine.verify import verify_doc, verify_page
+from PIL import Image, ImageDraw, ImageFont
 
 
 def _corrupted_and_clean_doc(tmp_path: Path) -> tuple[DocIR, Path]:

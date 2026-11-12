@@ -1,19 +1,20 @@
-"""Vector word extraction in upright PyMuPDF pt coordinates, reusing pdf_fidelity_engine."""
+"""Vector word extraction in upright PyMuPDF pt coordinates."""
 from __future__ import annotations
 
 import re
 from typing import Any, Optional
 
 import pymupdf
-from pdf_fidelity_engine.extract.char_normalizer import (
+
+from ..ir.model import BBox, Ruling, Word
+from .pdf import (
     PX,
     atoms_from_rawdict,
     deduplicate_faux_bold,
+    font_family,
+    inspect_page_fonts,
     is_cjk_garbled_token,
 )
-from pdf_fidelity_engine.fonts.registry import font_family, inspect_page_fonts
-
-from ..ir.model import BBox, Ruling, Word
 
 _NO_SPACE_BEFORE = frozenset({",", ".", ":", ";", ")", "]", "}", "%", "?", "!"})
 _NO_SPACE_AFTER = frozenset({"(", "[", "{"})

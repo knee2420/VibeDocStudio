@@ -20,7 +20,8 @@ import sys
 import traceback
 from typing import Optional
 
-from harness_kit import doc_text, packs
+from docstruct_engine.acquire import doc_text
+from harness_kit import packs
 
 from .index import _roots, _walk_files, norm
 from .store import WorkspaceStore

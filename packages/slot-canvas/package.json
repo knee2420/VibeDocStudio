@@ -11,7 +11,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit",
-    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/block-views.test.tsx"
+    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/block-views.test.tsx tests/windowed-page-chunker.test.tsx"
   },
   "dependencies": {
     "@vibe/ai-composer": "workspace:*",

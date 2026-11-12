@@ -13,7 +13,7 @@ if not __package__:
     _PKGS = _HERE.parents[3] / "packages"
     # vibefs 패키지가 든 폴더 · 하네스/문서엔진 패키지 — 격리 모드(-I)에서 직접 경로 등록
     _extra = [str(_HERE.parents[1])]
-    for _pkg in ("harness-kit", "docstruct-engine", "pdf-fidelity-engine", "pdf-vdoc-engine"):
+    for _pkg in ("harness-kit", "docstruct-engine"):
         _p = _PKGS / _pkg
         if _p.is_dir():
             _extra.append(str(_p))

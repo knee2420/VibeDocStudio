@@ -1,3 +1,5 @@
+import { VDOC_REVEAL_PAGE_EVENT } from "@vibe/slot-canvas";
+
 /**
  * 캔버스 DOM 을 다루는 명령형 동작은 여기 한 곳에만 둔다.
  * 모델 훅은 "어디로 보내라"만 말하고, 어떻게 스크롤 · 강조하는지는 모른다.
@@ -13,6 +15,9 @@ function afterRender(run: () => void): void {
 
 /** 캔버스의 페이지 시트로 스크롤 (`VDocPageSheet` 의 `id="vdoc-page-{pageId}"`). */
 export function scrollToCanvasPage(pageId: string): void {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(VDOC_REVEAL_PAGE_EVENT, { detail: { pageId } }));
+  }
   afterRender(() => {
     document.getElementById(`vdoc-page-${pageId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   });

@@ -4,7 +4,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pymupdf
-
 from docstruct_engine.acquire import (
     classify_page_mode,
     extract_vector_rulings_and_fills,

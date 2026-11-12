@@ -6,7 +6,6 @@ import logging
 from pathlib import Path
 
 import pymupdf
-
 from docstruct_engine.build import build_doc_ir
 from docstruct_engine.cache import doc_cache_dir, file_src_hash
 from docstruct_engine.ir.model import Ruling

@@ -4,11 +4,9 @@ from __future__ import annotations
 from typing import Any
 
 import pymupdf
-from pdf_fidelity_engine.extract.char_normalizer import PX
-from pdf_fidelity_engine.extract.raw_truth import extract_drawings
-from pdf_fidelity_engine.layout.rule_stitcher import stitch_dashed_rules
 
 from ..ir.model import BBox, Ruling
+from .pdf import PX, extract_drawings, stitch_dashed_rules
 
 
 def _rot_rect_pt(bx_px: tuple[float, float, float, float], rot_mat: pymupdf.Matrix, page_rect: pymupdf.Rect, rot: int) -> BBox:

@@ -8,9 +8,9 @@ from typing import Any
 
 import pymupdf
 import pytest
+from docstruct_engine.acquire import doc_text
 from docstruct_engine.cache import doc_cache_dir, file_src_hash, load_page_ir
 from docstruct_engine.ir.model import ParagraphBlock, TableIR, Word
-from harness_kit import doc_text
 
 from tests.test_compose_tools import FakeApi, FakeStore
 from vibefs.doc_tools import DocTools

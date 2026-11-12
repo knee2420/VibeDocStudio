@@ -1,0 +1,1868 @@
+{
+  "version": "1.0",
+  "pageIndex": 1,
+  "sourceKind": "pdf-vector",
+  "size": {
+    "width": 595.0,
+    "height": 842.0
+  },
+  "margins": {
+    "top": 99.0,
+    "right": 70.6,
+    "bottom": 94.2,
+    "left": 72.2
+  },
+  "words": [
+    {
+      "id": "w0",
+      "text": "산업안전협의체",
+      "bbox": [
+        203.04,
+        98.96,
+        329.28,
+        117.38
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 18.0,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 114.6,
+      "lineHint": 0,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w1",
+      "text": "회의록",
+      "bbox": [
+        338.16,
+        98.96,
+        392.4,
+        117.38
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 18.0,
+      "bold": true,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 114.6,
+      "lineHint": 0,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w2",
+      "text": "1.",
+      "bbox": [
+        73.68,
+        140.48,
+        84.72,
+        151.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 150.0,
+      "lineHint": 1,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w3",
+      "text": "협의일시:",
+      "bbox": [
+        90.24,
+        140.48,
+        145.2,
+        151.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 150.0,
+      "lineHint": 1,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w4",
+      "text": "담",
+      "bbox": [
+        395.76,
+        143.36,
+        406.8,
+        154.52
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 152.88,
+      "lineHint": 2,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w5",
+      "text": "당",
+      "bbox": [
+        412.08,
+        143.36,
+        423.12,
+        154.52
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 152.88,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w6",
+      "text": "과",
+      "bbox": [
+        441.36,
+        143.36,
+        452.4,
+        154.52
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 152.88,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w7",
+      "text": "장",
+      "bbox": [
+        457.68,
+        143.36,
+        468.72,
+        154.52
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 152.88,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w8",
+      "text": "소",
+      "bbox": [
+        486.72,
+        143.36,
+        497.76,
+        154.52
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 152.88,
+      "lineHint": 2,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w9",
+      "text": "장",
+      "bbox": [
+        503.28,
+        143.36,
+        514.32,
+        154.52
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 152.88,
+      "lineHint": 2,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w10",
+      "text": "결",
+      "bbox": [
+        366.96,
+        147.2,
+        378.0,
+        158.35
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 156.72,
+      "lineHint": 3,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w11",
+      "text": "2.",
+      "bbox": [
+        73.68,
+        162.32,
+        84.72,
+        173.48
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 171.84,
+      "lineHint": 4,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w12",
+      "text": "협의장소:",
+      "bbox": [
+        90.24,
+        162.32,
+        145.2,
+        173.48
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 171.84,
+      "lineHint": 4,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w13",
+      "text": "3.",
+      "bbox": [
+        73.68,
+        184.4,
+        84.72,
+        195.56
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.92,
+      "lineHint": 5,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w14",
+      "text": "참석인원:",
+      "bbox": [
+        90.24,
+        184.4,
+        145.2,
+        195.56
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 193.92,
+      "lineHint": 5,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w15",
+      "text": "재",
+      "bbox": [
+        366.96,
+        182.48,
+        378.0,
+        193.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 192.0,
+      "lineHint": 5,
+      "spaceBefore": true,
+      "trailingSpace": null
+    },
+    {
+      "id": "w16",
+      "text": "4.",
+      "bbox": [
+        73.68,
+        206.48,
+        84.72,
+        217.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 216.0,
+      "lineHint": 6,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w17",
+      "text": "세부사항",
+      "bbox": [
+        90.24,
+        206.48,
+        134.16,
+        217.64
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 216.0,
+      "lineHint": 6,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w18",
+      "text": "■",
+      "bbox": [
+        79.2,
+        229.04,
+        90.24,
+        240.19
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.56,
+      "lineHint": 7,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w19",
+      "text": "협의안건",
+      "bbox": [
+        95.52,
+        229.04,
+        139.68,
+        240.19
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 238.56,
+      "lineHint": 7,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w20",
+      "text": "■",
+      "bbox": [
+        79.2,
+        396.32,
+        90.24,
+        407.47
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 405.84,
+      "lineHint": 8,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w21",
+      "text": "협의내용",
+      "bbox": [
+        95.52,
+        396.32,
+        139.68,
+        407.47
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 405.84,
+      "lineHint": 8,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w22",
+      "text": "■",
+      "bbox": [
+        79.2,
+        575.12,
+        90.24,
+        586.28
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.64,
+      "lineHint": 9,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w23",
+      "text": "협의된",
+      "bbox": [
+        95.52,
+        575.12,
+        128.64,
+        586.28
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.64,
+      "lineHint": 9,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w24",
+      "text": "내용에",
+      "bbox": [
+        134.16,
+        575.12,
+        167.04,
+        586.28
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.64,
+      "lineHint": 9,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w25",
+      "text": "대한",
+      "bbox": [
+        172.56,
+        575.12,
+        194.64,
+        586.28
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.64,
+      "lineHint": 9,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w26",
+      "text": "세부실천계획(육하원칙)",
+      "bbox": [
+        199.92,
+        575.12,
+        321.12,
+        586.28
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 584.64,
+      "lineHint": 9,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w27",
+      "text": "작성일자:20",
+      "bbox": [
+        370.56,
+        736.64,
+        436.56,
+        747.79
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 746.16,
+      "lineHint": 10,
+      "spaceBefore": null,
+      "trailingSpace": null
+    },
+    {
+      "id": "w28",
+      "text": "년",
+      "bbox": [
+        452.88,
+        736.64,
+        463.92,
+        747.79
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 746.16,
+      "lineHint": 10,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w29",
+      "text": "월",
+      "bbox": [
+        480.48,
+        736.64,
+        491.52,
+        747.79
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 746.16,
+      "lineHint": 10,
+      "spaceBefore": false,
+      "trailingSpace": null
+    },
+    {
+      "id": "w30",
+      "text": "일",
+      "bbox": [
+        513.36,
+        736.64,
+        524.4,
+        747.79
+      ],
+      "conf": 1.0,
+      "src": "vec",
+      "font": "Malgun Gothic",
+      "size": 11.04,
+      "bold": false,
+      "italic": false,
+      "underline": null,
+      "color": "#000000",
+      "needsReview": false,
+      "baseline": 746.16,
+      "lineHint": 10,
+      "spaceBefore": false,
+      "trailingSpace": null
+    }
+  ],
+  "rulings": [
+    {
+      "orient": "h",
+      "x0": 358.56,
+      "y0": 136.44,
+      "x1": 523.44,
+      "y1": 136.68,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 386.64,
+      "y0": 161.64,
+      "x1": 523.44,
+      "y1": 161.88,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 358.56,
+      "y0": 204.36,
+      "x1": 523.44,
+      "y1": 204.6,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.24,
+      "y0": 221.4,
+      "x1": 523.44,
+      "y1": 221.64,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.24,
+      "y0": 388.68,
+      "x1": 523.44,
+      "y1": 388.92,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.24,
+      "y0": 555.72,
+      "x1": 523.44,
+      "y1": 555.96,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "h",
+      "x0": 72.24,
+      "y0": 728.52,
+      "x1": 523.44,
+      "y1": 728.76,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 72.12,
+      "y0": 221.52,
+      "x1": 72.36,
+      "y1": 728.64,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 358.44,
+      "y0": 136.56,
+      "x1": 358.68,
+      "y1": 204.48,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 386.52,
+      "y0": 136.56,
+      "x1": 386.76,
+      "y1": 204.48,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 432.12,
+      "y0": 136.56,
+      "x1": 432.36,
+      "y1": 204.48,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 477.72,
+      "y0": 136.56,
+      "x1": 477.96,
+      "y1": 204.48,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 523.32,
+      "y0": 136.56,
+      "x1": 523.56,
+      "y1": 204.48,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    },
+    {
+      "orient": "v",
+      "x0": 523.32,
+      "y0": 221.52,
+      "x1": 523.56,
+      "y1": 728.64,
+      "thickness": 0.25,
+      "style": "solid",
+      "color": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "t0",
+      "kind": "table",
+      "bbox": [
+        358.56,
+        136.56,
+        523.44,
+        204.48
+      ],
+      "nRows": 2,
+      "nCols": 4,
+      "colXs": [
+        358.56,
+        386.64,
+        432.24,
+        477.84,
+        523.44
+      ],
+      "rowYs": [
+        136.56,
+        161.76,
+        204.48
+      ],
+      "widthRatio": [
+        0.1703,
+        0.2766,
+        0.2766,
+        0.2766
+      ],
+      "widthPt": 164.88,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 2,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            358.56,
+            136.56,
+            386.64,
+            204.48
+          ],
+          "wordIds": [
+            "w10",
+            "w15"
+          ],
+          "text": "결\n재",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 10.6,
+            "r": 8.6,
+            "b": 10.8,
+            "l": 8.4
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            386.64,
+            136.56,
+            432.24,
+            161.76
+          ],
+          "wordIds": [
+            "w4",
+            "w5"
+          ],
+          "text": "담 당",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.8,
+            "r": 9.1,
+            "b": 7.2,
+            "l": 9.1
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            432.24,
+            136.56,
+            477.84,
+            161.76
+          ],
+          "wordIds": [
+            "w6",
+            "w7"
+          ],
+          "text": "과 장",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.8,
+            "r": 9.1,
+            "b": 7.2,
+            "l": 9.1
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 0,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "th",
+          "bbox": [
+            477.84,
+            136.56,
+            523.44,
+            161.76
+          ],
+          "wordIds": [
+            "w8",
+            "w9"
+          ],
+          "text": "소 장",
+          "html": null,
+          "paragraphs": null,
+          "align": "center",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 6.8,
+            "r": 9.1,
+            "b": 7.2,
+            "l": 8.9
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": null,
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 1,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            386.64,
+            161.76,
+            432.24,
+            204.48
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c1",
+            "kind": "text",
+            "label": "담 당",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 2,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            432.24,
+            161.76,
+            477.84,
+            204.48
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c2",
+            "kind": "text",
+            "label": "과 장",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 3,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            477.84,
+            161.76,
+            523.44,
+            204.48
+          ],
+          "wordIds": [],
+          "text": "",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "middle",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 3.0,
+            "r": 4.0,
+            "b": 3.0,
+            "l": 4.0
+          },
+          "font": null,
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t0_r1c3",
+            "kind": "text",
+            "label": "소 장",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": null,
+      "imageFallbackSrc": null
+    },
+    {
+      "id": "t1",
+      "kind": "table",
+      "bbox": [
+        72.24,
+        221.52,
+        523.44,
+        728.64
+      ],
+      "nRows": 3,
+      "nCols": 1,
+      "colXs": [
+        72.24,
+        523.44
+      ],
+      "rowYs": [
+        221.52,
+        388.8,
+        555.84,
+        728.64
+      ],
+      "widthRatio": [
+        1.0
+      ],
+      "widthPt": 451.2,
+      "borderRules": null,
+      "title": null,
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            72.24,
+            221.52,
+            523.44,
+            388.8
+          ],
+          "wordIds": [
+            "w18",
+            "w19"
+          ],
+          "text": "■ 협의안건",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 7.5,
+            "r": 12.0,
+            "b": 12.0,
+            "l": 7.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r0c0",
+            "kind": "check",
+            "label": "r1c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            72.24,
+            388.8,
+            523.44,
+            555.84
+          ],
+          "wordIds": [
+            "w20",
+            "w21"
+          ],
+          "text": "■ 협의내용",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 7.5,
+            "r": 12.0,
+            "b": 12.0,
+            "l": 7.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r1c0",
+            "kind": "check",
+            "label": "r2c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "rs": 1,
+          "cs": 1,
+          "role": "td",
+          "bbox": [
+            72.24,
+            555.84,
+            523.44,
+            728.64
+          ],
+          "wordIds": [
+            "w22",
+            "w23",
+            "w24",
+            "w25",
+            "w26"
+          ],
+          "text": "■ 협의된 내용에 대한 세부실천계획(육하원칙)",
+          "html": null,
+          "paragraphs": null,
+          "align": "left",
+          "valign": "top",
+          "bg": null,
+          "borders": {
+            "top": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "right": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "bottom": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            },
+            "left": {
+              "style": "solid",
+              "width": 0.25,
+              "color": "#000000"
+            }
+          },
+          "padding": {
+            "t": 12.0,
+            "r": 12.0,
+            "b": 12.0,
+            "l": 7.0
+          },
+          "font": {
+            "family": "Malgun Gothic",
+            "color": "#000000",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "underline": null
+          },
+          "lineHeight": null,
+          "nested": [],
+          "continued": false,
+          "field": {
+            "fieldId": "t1_r2c0",
+            "kind": "check",
+            "label": "r3c1",
+            "placeholder": "",
+            "assigneeName": ""
+          },
+          "conf": 1.0,
+          "needsReview": false
+        }
+      ],
+      "repeatHeader": false,
+      "needsReview": false,
+      "rawHtml": null,
+      "imageFallbackSrc": null
+    },
+    {
+      "id": "hd0",
+      "bbox": [
+        203.04,
+        98.96,
+        392.4,
+        117.38
+      ],
+      "wordIds": [
+        "w0",
+        "w1"
+      ],
+      "text": "산업안전협의체 회의록",
+      "align": "center",
+      "spans": [
+        {
+          "wordIds": [
+            "w0",
+            "w1"
+          ],
+          "text": "산업안전협의체 회의록",
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 18.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "heading",
+      "level": 1
+    },
+    {
+      "id": "li1",
+      "bbox": [
+        73.68,
+        140.48,
+        145.2,
+        151.64
+      ],
+      "wordIds": [
+        "w2",
+        "w3"
+      ],
+      "text": "1. 협의일시:",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w2",
+            "w3"
+          ],
+          "text": "1. 협의일시:",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "listItem",
+      "marker": "1.",
+      "markerKind": "number",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    },
+    {
+      "id": "li2",
+      "bbox": [
+        73.68,
+        162.32,
+        145.2,
+        173.48
+      ],
+      "wordIds": [
+        "w11",
+        "w12"
+      ],
+      "text": "2. 협의장소:",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w11",
+            "w12"
+          ],
+          "text": "2. 협의장소:",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "listItem",
+      "marker": "2.",
+      "markerKind": "number",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    },
+    {
+      "id": "li3",
+      "bbox": [
+        73.68,
+        184.4,
+        145.2,
+        195.56
+      ],
+      "wordIds": [
+        "w13",
+        "w14"
+      ],
+      "text": "3. 참석인원:",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w13",
+            "w14"
+          ],
+          "text": "3. 참석인원:",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "listItem",
+      "marker": "3.",
+      "markerKind": "number",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    },
+    {
+      "id": "li4",
+      "bbox": [
+        73.68,
+        206.48,
+        134.16,
+        217.64
+      ],
+      "wordIds": [
+        "w16",
+        "w17"
+      ],
+      "text": "4. 세부사항",
+      "align": "left",
+      "spans": [
+        {
+          "wordIds": [
+            "w16",
+            "w17"
+          ],
+          "text": "4. 세부사항",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "listItem",
+      "marker": "4.",
+      "markerKind": "number",
+      "indentLevel": 0,
+      "hangingIndentPt": 0.0
+    },
+    {
+      "id": "p5",
+      "bbox": [
+        370.56,
+        736.64,
+        524.4,
+        747.79
+      ],
+      "wordIds": [
+        "w27",
+        "w28",
+        "w29",
+        "w30"
+      ],
+      "text": "작성일자:20 년 월 일",
+      "align": "right",
+      "spans": [
+        {
+          "wordIds": [
+            "w27",
+            "w28",
+            "w29",
+            "w30"
+          ],
+          "text": "작성일자:20 년 월 일",
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "#000000",
+          "size": 11.0,
+          "font": "Malgun Gothic",
+          "bg": null
+        }
+      ],
+      "needsReview": false,
+      "kind": "paragraph",
+      "html": null,
+      "lineHeight": null,
+      "paragraphs": null
+    }
+  ],
+  "readingOrder": [
+    "hd0",
+    "t0",
+    "li1",
+    "li2",
+    "li3",
+    "li4",
+    "t1",
+    "p5"
+  ],
+  "metrics": {
+    "ocrAvgConf": null,
+    "rulingCount": 14,
+    "tableCount": 2,
+    "wordCount": 31,
+    "occludedCharsFiltered": 0,
+    "invariantErrors": [],
+    "rulingsH": 7,
+    "rulingsV": 7,
+    "tableShapes": [
+      "t0:2x4(7)",
+      "t1:3x1(3)"
+    ],
+    "cellCount": 10,
+    "needsReviewCells": 0,
+    "headingCount": 1,
+    "captionCount": 0,
+    "noteCount": 0,
+    "headerFooterCount": 0,
+    "headingSummary": [
+      "H1:산업안전협의체 회의록"
+    ],
+    "headerTexts": [],
+    "blockCounts": {
+      "table": 2,
+      "heading": 1,
+      "listItem": 4,
+      "paragraph": 1
+    }
+  }
+}

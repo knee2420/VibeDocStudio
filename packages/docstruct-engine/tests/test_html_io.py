@@ -3,8 +3,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PIL import Image
-
 from docstruct_engine.ir.model import CellIR, PageIR, PageSize, Ruling, TableIR, Word
 from docstruct_engine.ir.validate import validate_page_ir
 from docstruct_engine.tables.html_io import (
@@ -15,6 +13,7 @@ from docstruct_engine.tables.reconcile import (
     reconcile_table,
     validate_and_apply_word_fixes,
 )
+from PIL import Image
 
 
 def _sample_page() -> PageIR:

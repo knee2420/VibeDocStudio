@@ -19,8 +19,6 @@ PACKAGES_ROOT = PKG_ROOT.parent
 def _bootstrap_paths() -> None:
     for pkg in (
         PKG_ROOT,
-        PACKAGES_ROOT / "pdf-fidelity-engine",
-        PACKAGES_ROOT / "pdf-vdoc-engine",
         PACKAGES_ROOT / "harness-kit",
     ):
         if pkg.is_dir() and str(pkg) not in sys.path:
@@ -166,12 +164,8 @@ def run_eval(
         # Build PageIR(s)
         pages: list[PageIR] = []
         if doc_path.suffix.lower() == ".hwpx":
-            try:
-                from harness_kit import docstruct_hwpx
-            except ImportError as exc:
-                print(f"[SKIP] {doc_id}: harness_kit not importable ({exc})")
-                skipped += 1
-                continue
+            from docstruct_engine.acquire import hwpx_ir as docstruct_hwpx
+
             doc_ir = docstruct_hwpx.hwpx_to_doc_ir(str(doc_path))
             pages = doc_ir.pages
         else:

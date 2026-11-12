@@ -20,7 +20,8 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Iterable, Optional
 
-from harness_kit import doc_text, packs
+from docstruct_engine.acquire import doc_text
+from harness_kit import packs
 
 from .contracts import ScopeProfile, SourceDoc
 

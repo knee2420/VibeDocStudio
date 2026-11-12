@@ -8,8 +8,6 @@ dependencies = [
     "uvicorn[standard]>=0.32.0",
     "pydantic>=2.9.0",
     "dependency-injector>=4.42.0",
-    "pdf-vdoc-engine",
-    "pdf-fidelity-engine",
     "webpage-fidelity-engine",
     "docstruct-engine",
     "agent-core",
@@ -18,8 +16,6 @@ dependencies = [
 [tool.pytest.ini_options]
 pythonpath = [
     ".",
-    "../../packages/pdf-vdoc-engine",
-    "../../packages/pdf-fidelity-engine",
     "../../packages/webpage-fidelity-engine",
     "../../packages/docstruct-engine",
     "../../packages/agent-core",
@@ -37,7 +33,7 @@ select = ["E4", "E7", "E9", "F", "I"]
 "main.py" = ["E402"]
 
 [tool.importlinter]
-root_packages = ["app", "harness_kit", "pdf_vdoc_engine", "pdf_fidelity_engine", "webpage_fidelity_engine", "docstruct_engine", "vibefs"]
+root_packages = ["app", "harness_kit", "webpage_fidelity_engine", "docstruct_engine", "vibefs"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
@@ -85,7 +81,6 @@ source_modules = [
     "app.authoring.use_cases",
     "app.catalog.use_cases",
     "app.documents.use_cases",
-    "app.form_scaffold.agents",
     "app.form_scaffold.use_cases",
     "app.projects.use_cases",
     "app.reference.use_cases",
@@ -95,49 +90,6 @@ source_modules = [
 ]
 forbidden_modules = [
     "app.llm.adapters",
-]
-
-[[tool.importlinter.contracts]]
-name = "Pdf VDoc Engine is independent"
-type = "forbidden"
-source_modules = [
-    "pdf_vdoc_engine",
-]
-forbidden_modules = [
-    "app.assistant",
-    "app.authoring",
-    "app.catalog",
-    "app.documents",
-    "app.form_scaffold",
-    "app.projects",
-    "app.reference",
-    "app.resource",
-    "app.core",
-    "app.llm",
-    "app.bootstrap",
-    "vibefs",
-]
-
-[[tool.importlinter.contracts]]
-name = "Pdf Fidelity Engine is independent"
-type = "forbidden"
-source_modules = [
-    "pdf_fidelity_engine",
-]
-forbidden_modules = [
-    "app.assistant",
-    "app.authoring",
-    "app.catalog",
-    "app.documents",
-    "app.form_scaffold",
-    "app.projects",
-    "app.reference",
-    "app.resource",
-    "app.core",
-    "app.llm",
-    "app.bootstrap",
-    "harness_kit",
-    "vibefs",
 ]
 
 [[tool.importlinter.contracts]]
@@ -331,7 +283,7 @@ source_modules = [
 forbidden_modules = [
     "app",
     "vibefs",
-    "pdf_vdoc_engine",
+    "docstruct_engine",
 ]
 
 [[tool.importlinter.contracts]]
@@ -341,7 +293,7 @@ source_modules = [
     "app.reference",
 ]
 forbidden_modules = [
-    "pdf_vdoc_engine",
+    "docstruct_engine.compile",
     "app.documents",
     "app.catalog",
 ]

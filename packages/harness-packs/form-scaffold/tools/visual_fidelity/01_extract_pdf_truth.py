@@ -3,7 +3,7 @@
 """
 01_extract_pdf_truth.py
 원본 PDF 1페이지에서 정규화 정답 좌표(`truth.json`) 및 비교용 래스터 PNG 를 생성한다.
-실제 추출·Faux-Bold 제거·역행 문자 재정렬·점선 선분 탐지 로직은 `pdf_fidelity_engine` 에 위임한다.
+실제 추출·Faux-Bold 제거·역행 문자 재정렬·점선 선분 탐지 로직은 `docstruct_engine.acquire.pdf` 에 위임한다.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fidelity_core as core  # noqa: E402
-from pdf_fidelity_engine.extract.raw_truth import extract_page_truth  # noqa: E402
+from docstruct_engine.acquire.pdf import extract_page_truth  # noqa: E402
 
 
 def main() -> None:
@@ -47,6 +47,7 @@ def main() -> None:
             pdf_label_path=args.pdf,
             font_map=font_map,
             render_rasters=True,
+            noise_floor_fn=core.image_metrics,
         )
     except ValueError as exc:
         print(f"[ERROR] {exc}", file=sys.stderr)

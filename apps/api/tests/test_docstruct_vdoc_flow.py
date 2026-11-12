@@ -12,7 +12,7 @@ from docstruct_engine.ir.model import (
     TableIR,
     Word,
 )
-from harness_kit.docstruct_vdoc import doc_ir_pages_to_vdoc
+from docstruct_engine.compile.docstruct_vdoc import doc_ir_pages_to_vdoc
 
 
 def _w(
@@ -114,7 +114,7 @@ def test_header_footer_isolation_align_preserve_and_cell_para_merge(caplog) -> N
         ],
     )
 
-    with caplog.at_level(logging.INFO, logger="harness_kit.docstruct_vdoc"):
+    with caplog.at_level(logging.INFO, logger="docstruct_engine.compile.docstruct_vdoc"):
         pages_out, slots_out, reports = doc_ir_pages_to_vdoc([p1, p2], uid=_uid_factory())
 
     assert pages_out[0]["hideHeaderFooter"] is False

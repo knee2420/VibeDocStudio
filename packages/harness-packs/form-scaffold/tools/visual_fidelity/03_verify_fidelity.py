@@ -3,7 +3,7 @@
 """
 03_verify_fidelity.py
 `truth.json` 과 `measure.json` 을 대조해 시각 일치도를 PASS/FAIL 판정한다.
-실제 검증 로직은 `pdf_fidelity_engine.verify.image_parity.verify_fidelity` 에 위임한다.
+실제 검증 로직은 로컬 `image_parity.verify_fidelity` 에 위임한다.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fidelity_core as _core  # noqa: E402, F401
-from pdf_fidelity_engine.verify.image_parity import verify_fidelity  # noqa: E402
+from image_parity import verify_fidelity  # noqa: E402
 
 
 def main() -> None:

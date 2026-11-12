@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 
 import pymupdf
-
 from docstruct_engine.acquire.words import extract_vector_words
 from docstruct_engine.blocks.markers import VisualLine, spans_from_words
 from docstruct_engine.blocks.text_join import (
@@ -157,7 +156,7 @@ def test_korean_continuation_joins_and_negative_guards() -> None:
 
 
 def test_spans_from_words_and_vdoc_inline_html_no_space_across_style_flip() -> None:
-    from harness_kit.docstruct_vdoc import doc_ir_pages_to_vdoc
+    from docstruct_engine.compile.docstruct_vdoc import doc_ir_pages_to_vdoc
 
     w1 = _make_word("w1", "임대보증금", (50.0, 40.0, 100.0, 50.0), bold=True, font="MalgunGothicBold")
     w2 = _make_word("w2", "은", (104.0, 40.0, 114.0, 50.0), bold=False, font="MalgunGothic", space_before=False)

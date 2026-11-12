@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from harness_kit import doc_text, hwpx, hwpx_vdoc
+from docstruct_engine.acquire import doc_text, hwpx
+from docstruct_engine.compile import hwpx_vdoc
 
 from app.resource.index.pipeline.contracts import ScopeProfile
 from app.resource.index.pipeline.ingest import ingest_sources
