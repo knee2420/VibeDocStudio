@@ -330,3 +330,56 @@ def test_marker_hint_names_missing_bullet_levels_with_glyphs():
                                  {"marker_scheme": ["roman", "box", "circle"]})
     assert len(hint) == 1 and "❏ ○ - ※" in hint[0] and hint[0].count("Ⅰ") == 0
     assert DocTools._marker_hint({"marker_scheme": ["box"]}, {"marker_scheme": ["box", "dash"]}) == []
+
+
+def test_provenance_rows_flag_values_missing_from_read_lines(tmp_path):
+    import json as _json
+    src = tmp_path / "note.md"
+    src.write_text("예산 1.85억원\n기간 3개월로 잡는다\n", encoding="utf-8")
+    ref_dir = tmp_path / "ref"
+    ref_dir.mkdir()
+    (ref_dir / "extraction.json").write_text(_json.dumps({"blocks": [{"text": "사업예산 65,000,000원 · 4개월"}]}), encoding="utf-8")
+    tools, _ = _tools({"references": [{"refId": "r1", "dir": str(ref_dir)}]})
+    tools._reads = lambda: [{"path": str(src), "start": 1, "end": 2}]
+    other = tmp_path / "plan.md"
+    other.write_text("# 일정\n착수 후 4개월 안에 끝낸다\n", encoding="utf-8")
+    from types import SimpleNamespace
+    tools.index = SimpleNamespace(text_files=lambda: [SimpleNamespace(rel="plan.md", text_lines=other.read_text(encoding="utf-8").splitlines())])
+    rows = tools._provenance_rows("사업비 1.85억원 · 기간 3개월 · 착수 4개월 · 공고 제2026-11호", "r1")
+    text = "\n".join(rows)
+    assert "리소스 1개" in rows[0] and "1.85억원" not in "\n".join(rows[1:])
+    assert "4개월 → plan.md:L2" in text  # 리소스에는 있는데 아직 안 읽음 → 그 줄
+    assert "제2026-11호" in next(r for r in rows if "어느 리소스에도" in r)  # 어디에도 없음 → 빈칸
+    assert "레퍼런스에서 온 값: 4개월" in text
+    assert tools._provenance_rows("숫자 없는 글", "r1") == []
+
+
+def test_set_rebuilds_table_in_place_and_refuses_empty_text() -> None:
+    tools, api = _tools()
+    tools.call("dc_new", {"title": "공고", "surface": "paged", "genre": "document"})
+    doc_id = tools.store.state["docId"]
+    tools.call("dc_build", {"ops": [
+        {"op": "add", "kind": "heading", "text": "Ⅳ. 입찰 안내"},
+        {"op": "add", "kind": "table", "fields": [["참가자격", "등록 업체"]], "as": "$t"},
+        {"op": "add", "kind": "text", "text": "끝"},
+    ]})
+    blocks = api.docs[doc_id]["pages"][0]["blocks"]
+    tid = blocks[1]["blockId"]
+    out = tools.call("dc_build", {"ops": [{"op": "set", "block": tid, "kind": "table", "header": "col",
+                                           "fields": [["참가자격", "등록 업체"], ["제출서류", "[확인 필요]"], ["문의처", "[확인 필요]"]]}]})
+    doc = api.docs[doc_id]
+    blocks = doc["pages"][0]["blocks"]
+    assert [b["kind"] for b in blocks] == ["heading", "structured-table", "text"]  # 같은 자리
+    assert blocks[1]["blockId"] == tid and len(blocks[1]["rows"]) == 3 and "다시 지음" in out
+    cells = " ".join(str(doc["slots"][c["slotId"]]["content"]) for r in blocks[1]["rows"] for c in r["cells"])
+    assert "제출서류" in cells and "문의처" in cells
+    with pytest.raises(ValueError, match="글"):
+        tools.call("dc_build", {"ops": [{"op": "set", "block": blocks[2]["blockId"]}]})
+
+
+def test_provenance_absent_values_name_their_blocks(tmp_path):
+    tools, _ = _tools({"references": []})
+    tools._reads = lambda: []
+    blocks = [{"blockId": "b_tbl_1", "text": "사업예산 | 350,000,000원"}, {"blockId": "b_tx_2", "text": "끝"}]
+    rows = tools._provenance_rows("사업예산 | 350,000,000원\n끝", "", blocks)
+    assert any("350,000,000원 (b_tbl_1)" in r for r in rows)

@@ -189,11 +189,7 @@ def files_read(conv_ids: list[str], root: Path) -> list[str]:
 
 # --- 지표 ----------------------------------------------------------------------
 
-_VALUE = re.compile(
-    r"(\d{1,3}(?:,\d{3})+\s*원|\d+(?:\.\d+)?\s*(?:억|천만|백만|만)\s*원?|\d+\s*개월|\d+(?:\.\d+)?\s*%|제\s*\d{4}\s*-\s*\d+\s*호)"
-)
 _REQ_ID = re.compile(r"\b[A-Z]{2,4}-\d{2,3}\b")
-
 
 def value_key(v: str) -> str:
     return re.sub(r"\s+", "", v)
@@ -307,11 +303,9 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
     e1 = round(sum(r["present"] for r in genre_rows) / len(genre_rows), 3) if genre_rows else 1.0
 
     # D. 사실 근거
-    corpus = re.sub(r"\s+", "", resource_corpus(root))
-    ref_text = re.sub(r"\s+", "", load_ref_all_text(args.ref))
-    values = sorted({value_key(v) for v in _VALUE.findall(doc_text)})
-    unsourced = [v for v in values if v not in corpus]
-    leaks = [v for v in unsourced if v in ref_text]
+    # 값 = dc_check 와 같은 어휘(measure.factValue). 채점 말뭉치는 리소스 전체(에이전트가 읽었든 안 읽었든)
+    unsourced, leaks = patterns.unsourced_values(doc_text, resource_corpus(root), load_ref_all_text(args.ref))
+    unsourced, leaks = sorted(unsourced), sorted(leaks)
     session, convs = run_for_doc(args.doc)
     read = files_read(convs, root)
 

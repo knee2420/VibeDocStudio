@@ -58,6 +58,22 @@ def title_similarity(a: str, b: str) -> float:
     return 2 * len(x & y) / (len(x) + len(y)) if x and y else 0.0
 
 
+def fact_values(text: str) -> list[str]:
+    """근거가 있어야 하는 값(금액 · 기간 · 비율 · 공고번호 — 어휘 `measure.factValue`)을 공백 없이, 나온 순서대로."""
+    raw = packs.data(LEXICON)["measure"].get("factValue")
+    if not raw:
+        return []
+    return list(dict.fromkeys(re.sub(r"\s+", "", m.group(0)) for m in packs.compile_rx(raw).finditer(text or "")))
+
+
+def unsourced_values(text: str, corpus: str, reference: str = "") -> tuple[list[str], list[str]]:
+    """글의 근거 값 중 말뭉치(읽은 원천 줄)에 없는 것과, 그중 레퍼런스 글에 있는 것(누출)."""
+    flat = re.sub(r"\s+", "", corpus or "")
+    ref_flat = re.sub(r"\s+", "", reference or "")
+    missing = [v for v in fact_values(text) if v not in flat]
+    return missing, [v for v in missing if ref_flat and v in ref_flat]
+
+
 def marker_patterns() -> list[tuple[str, "re.Pattern[str]"]]:
     """글머리 · 번호 기호 (label, 정규식) — 어휘 `measure.markers`."""
     return list(_lex()["markers"])
