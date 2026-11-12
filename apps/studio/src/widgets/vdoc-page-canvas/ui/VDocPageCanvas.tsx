@@ -27,6 +27,7 @@ import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
 import { ReferenceSplitViewport } from "./ReferenceSplitViewport";
 import { SlotRangeAiBar } from "./SlotRangeAiBar";
+import { FigmaFloatingToolbar } from "./FigmaFloatingToolbar";
 
 /** 한 번에 DOM 에 올리는 페이지 수 (슬라이딩 윈도우). */
 const WINDOW_CHUNK_PAGES = 15;
@@ -287,6 +288,7 @@ export const VDocPageCanvas: React.FC = () => {
         )}
       </div>
       {currentPhase === "drafting" && <SlotRangeAiBar />}
+      <FigmaFloatingToolbar />
       <AiStagingDrawer />
     </div>
   );

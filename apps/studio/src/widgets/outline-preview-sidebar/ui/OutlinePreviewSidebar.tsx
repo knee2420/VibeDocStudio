@@ -2,27 +2,39 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpLeft,
   BookOpen,
+  ChevronDown,
   ChevronLeft,
-  FolderTree,
+  ChevronRight,
   ChevronsDownUp,
   ChevronsUpDown,
+  Copy,
   FilePlus2,
+  FileText,
   FileUp,
+  FolderTree,
   Globe,
   Layers,
   LayoutGrid,
   MoreHorizontal,
   Plus,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 
-import { documentSurface, PROJECT_ROOT_CRUMB_ID, type OutlinerNode, type WorkbenchPhase } from "@vibe/vdoc-schema";
+import {
+  collectDescendantIds,
+  documentSurface,
+  PROJECT_ROOT_CRUMB_ID,
+  type OutlinerNode,
+  type WorkbenchPhase,
+} from "@vibe/vdoc-schema";
 import type { PagePendingState } from "@vibe/slot-canvas";
 
 import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
+import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import { useProjectStore } from "@/entities/vdoc-project";
+import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachable, outlineNodeRef, useAttachPickStore, withPicked } from "@/features/ai-workspace";
@@ -40,12 +52,13 @@ import {
   type TemplateSourceKind,
 } from "@/features/insert-template-pages";
 import { DocumentImportDialog, documentLifecycle } from "@/features/manage-documents";
-import { usePageMutations } from "@/features/mutate-document-pages";
+import { pageMutations, usePageMutations } from "@/features/mutate-document-pages";
 import { resolvePeekTarget, usePeekTrigger, type PeekHandlers } from "@/features/peek-page";
 import { useFractalZoomNavigation, useOutlineSelector } from "@/features/zoom-hierarchy";
-import { useDragResize } from "@/shared/lib";
-import { CollapsedPanelRail, EmptyStateCard, type DocumentSurfaceKind } from "@/shared/ui";
+import { useDragResize, scrollToCanvasPage } from "@/shared/lib";
+import { CollapsedPanelRail, DocumentSurfaceIcon, EmptyStateCard, type DocumentSurfaceKind } from "@/shared/ui";
 
+import { FigmaAssetsSidebarPanel } from "./FigmaAssetsSidebarPanel";
 import { NewDocumentMenu } from "./NewDocumentMenu";
 import { OutlineNodeRow, outlineNodeTargetId } from "./OutlineNodeRow";
 import { ReferenceDeckSection } from "./ReferenceDeckSection";
@@ -74,6 +87,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
   const leftPanelTab = useWorkspaceLayoutStore((s) => s.leftPanelTab);
   const setLeftPanelTab = useWorkspaceLayoutStore((s) => s.setLeftPanelTab);
   const refPlacement = useWorkspaceLayoutStore((s) => s.refPlacement);
+  const [activeFigmaTab, setActiveFigmaTab] = useState<"layers" | "assets" | "reference">("layers");
   const { onResizeStart } = useDragResize({ axis: "x", size: sidebarWidth, onResize: setSidebarWidth });
   const visibleNodeCount = useOutlineSelector((p) => p.visibleNodes.length);
 
@@ -83,7 +97,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
     return (
       <CollapsedPanelRail
         side="left"
-        label="Outline & References"
+        label="Layers & Assets"
         badgeCount={visibleNodeCount}
         tone="sky"
         onExpand={() => setLeftSidebarOpen(true)}
@@ -96,14 +110,14 @@ export const OutlinePreviewSidebar: React.FC = () => {
     <aside
       data-testid="project-outliner-sidebar"
       style={{ width: `${sidebarWidth}px` }}
-      className="relative bg-[#fafafa] border-r border-slate-200/90 flex flex-col shrink-0 select-none overflow-hidden transition-[width] duration-75 text-slate-700"
+      className="relative bg-white border-r border-[#e5e5e5] flex flex-col shrink-0 select-none overflow-hidden transition-[width] duration-75 text-slate-800"
     >
       <div
         data-testid="sidebar-resize-handle"
         onMouseDown={onResizeStart}
         onDoubleClick={resetSidebarWidth}
         title={`드래그하여 너비 조절 · 더블클릭 시 기본 너비(${SIDEBAR_WIDTH.default}px) 복원`}
-        className="absolute right-0 top-0 bottom-0 w-1.5 hover:w-2 cursor-col-resize hover:bg-slate-400/40 active:bg-slate-500/60 transition-all z-30"
+        className="absolute right-0 top-0 bottom-0 w-1.5 hover:w-2 cursor-col-resize hover:bg-[#0d99ff]/30 active:bg-[#0d99ff]/50 transition-all z-30"
       />
 
       {activeActivityTab === "source-control" ? (
@@ -112,43 +126,66 @@ export const OutlinePreviewSidebar: React.FC = () => {
         <TemplateHubSidebarPanel />
       ) : (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          {/* 상단 탭 바: 아웃라이너 ↔ 레퍼런스 매니저 */}
-          <div className="px-2 py-1.5 bg-slate-100/90 border-b border-slate-200/90 flex items-center justify-between shrink-0 select-none">
-            <div className="flex items-center gap-1">
+          {/* 피그마 상단 탭 바: Layers ↔ Assets ↔ (Reference) */}
+          <div className="px-3 pt-2 bg-white border-b border-[#e5e5e5] flex items-center justify-between shrink-0 select-none">
+            <div className="flex items-center gap-4 text-xs font-sans">
               <button
                 type="button"
-                data-testid="left-tab-outliner"
-                onClick={() => setLeftPanelTab("outliner")}
-                className={leftTabClass(leftPanelTab === "outliner", "text-sky-900")}
+                data-testid="figma-tab-layers"
+                onClick={() => setActiveFigmaTab("layers")}
+                className={`pb-2 border-b-2 font-medium cursor-pointer transition-colors ${
+                  activeFigmaTab === "layers"
+                    ? "border-[#0d99ff] text-[#0d99ff] font-semibold"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
               >
-                <FolderTree className="w-3.5 h-3.5 text-sky-600" />
-                <span>아웃라이너</span>
+                Layers
               </button>
+
+              <button
+                type="button"
+                data-testid="figma-tab-assets"
+                onClick={() => setActiveFigmaTab("assets")}
+                className={`pb-2 border-b-2 font-medium cursor-pointer transition-colors ${
+                  activeFigmaTab === "assets"
+                    ? "border-[#0d99ff] text-[#0d99ff] font-semibold"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Assets
+              </button>
+
               {refPlacement !== "split" && (
                 <button
                   type="button"
-                  data-testid="left-tab-reference-manager"
-                  onClick={() => setLeftPanelTab("reference-manager")}
-                  className={leftTabClass(leftPanelTab === "reference-manager", "text-amber-900")}
+                  data-testid="figma-tab-reference"
+                  onClick={() => setActiveFigmaTab("reference")}
+                  className={`pb-2 border-b-2 font-medium cursor-pointer transition-colors ${
+                    activeFigmaTab === "reference"
+                      ? "border-amber-600 text-amber-700 font-semibold"
+                      : "border-transparent text-slate-400 hover:text-slate-700"
+                  }`}
                 >
-                  <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-                  <span>레퍼런스</span>
+                  Reference
                 </button>
               )}
             </div>
+
             <button
               type="button"
               data-testid="collapse-left-sidebar-btn"
               onClick={() => setLeftSidebarOpen(false)}
-              className="p-1 rounded hover:bg-slate-200/60 text-slate-400 hover:text-slate-700 cursor-pointer"
+              className="p-1 mb-1.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
               title="좌측 패널 접기"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {leftPanelTab === "outliner" ? (
+          {activeFigmaTab === "layers" ? (
             <OutlineExplorer activeDocId={activeDocId} />
+          ) : activeFigmaTab === "assets" ? (
+            <FigmaAssetsSidebarPanel />
           ) : (
             <ReferenceManagerWidget isSplit={false} />
           )}
@@ -179,6 +216,18 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
   const highlightedEntityId = useWorkspaceSessionStore((s) => s.highlightedEntityId);
   const pickedOutline = useAttachPickStore((s) => s.picked.outline);
   const pickAnchor = React.useRef<string | null>(null);
+
+  const activeDocTitle = useStudioDocumentStore((s) => s.docs.find((d) => d.docId === activeDocId)?.title ?? "");
+  const activePageId = useStudioDocumentStore((s) => s.activePageId);
+  const activePageLabel = useStudioDocumentStore((s) => {
+    const doc = s.docs.find((d) => d.docId === activeDocId);
+    return doc?.pages.find((p) => p.pageId === activePageId)?.pageLabel ?? "";
+  });
+  const project = useProjectStore(selectActiveProject);
+  const projectTitle = project?.title || "2026 엔터프라이즈 문서 거버넌스 & 제안 패키지 (통합 스토리라인)";
+
+  const [isAllMode, setIsAllMode] = useState(false);
+  const [docsFolded, setDocsFolded] = useState(false);
 
   const [renaming, setRenaming] = useState<{ nodeId: string; initialTitle: string } | null>(null);
   const [importOpen, setImportOpen] = useState(false);
@@ -360,6 +409,8 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
   const handlers: RowHandlers = {
     select: (e, node) => {
       if (pickOrSelect(e, node)) return;
+      if (node.targetDocId) useStudioDocumentStore.getState().setActiveDocId(node.targetDocId);
+      if (node.targetPageId) useStudioDocumentStore.getState().setActivePageId(node.targetPageId);
       handleSelectOutlineNode(node);
       setPreviewDocId(null);
     },
@@ -426,15 +477,128 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
     []
   );
 
+  const openAddPageMenuForCurrentDoc = (anchorEl: HTMLElement) => {
+    const rect = anchorEl.getBoundingClientRect();
+    const top = Math.min(rect.bottom + 4, Math.max(8, window.innerHeight - 250));
+    const left = Math.min(rect.left, Math.max(8, window.innerWidth - 260));
+    setAddPageMenu({ docId: activeDocId, top, left });
+  };
+
+  // 1. 상단: DOCUMENTS & PAGES (트리 파일트리 형식 - Document 와 Page 까지만 표시)
+  const docPageNodes = useMemo(() => {
+    if (isAllMode) return [];
+    return projection.visibleNodes.filter((node) => {
+      if (node.zoomLevel === "project") return false;
+      return node.zoomLevel === "document" || (node.zoomLevel === "page" && !node.targetBlockId);
+    });
+  }, [projection.visibleNodes, isAllMode]);
+
+  // 2. 하단: ELEMENTS (현재 활성 페이지의 내부 블록/슬롯/엘리먼트만 렌더링 - 상단 접힘 상태와 무관하게 allNodes 에서 투영)
+  const elementNodes = useMemo(() => {
+    if (isAllMode) {
+      if (quickFilterQuery.trim()) {
+        const query = quickFilterQuery.toLowerCase();
+        return projection.visibleNodes.filter((node) =>
+          node.title.toLowerCase().includes(query) ||
+          node.summary.toLowerCase().includes(query)
+        );
+      }
+      return projection.visibleNodes;
+    }
+
+    if (!activeDocId) return [];
+
+    // 1) activeDocId와 activePageId에 속하는 엘리먼트 노드만 선별 (allNodes 기준)
+    const rawPageNodes = projection.allNodes.filter((node) => {
+      const isThisDoc =
+        node.targetDocId === activeDocId || node.nodeId.startsWith(`auto-doc-${activeDocId}`);
+      if (!isThisDoc) return false;
+
+      // 프로젝트, 문서 노드 제외
+      if (node.zoomLevel === "project" || node.zoomLevel === "document") return false;
+      // 순수 페이지 컨테이너 노드(블록/슬롯이 없는 페이지 루트) 제외
+      if (node.zoomLevel === "page" && !node.targetBlockId && !node.targetSlotId) return false;
+
+      // activePageId가 지정되어 있다면 해당 페이지의 노드만 일치
+      if (activePageId && node.targetPageId) {
+        if (node.targetPageId !== activePageId) return false;
+      }
+
+      return true;
+    });
+
+    if (rawPageNodes.length === 0) return [];
+
+    // 2) 검색어가 있는 경우 검색어 필터링
+    const filterText = quickFilterQuery.trim().toLowerCase();
+    if (filterText) {
+      return rawPageNodes.filter(
+        (n) =>
+          n.title.toLowerCase().includes(filterText) ||
+          n.summary.toLowerCase().includes(filterText)
+      );
+    }
+
+    // 3) 하단 패널 내부의 접힘(collapsed) 처리:
+    // rawPageNodes에 속한 블록/구역 노드들에 대해서만 자손 숨김 적용
+    const pageCollapsedIds = collapsedNodeIds.filter((id) =>
+      rawPageNodes.some((n) => n.nodeId === id)
+    );
+    if (pageCollapsedIds.length > 0) {
+      const hiddenDescendants = collectDescendantIds(rawPageNodes, pageCollapsedIds);
+      return rawPageNodes.filter((n) => !hiddenDescendants.has(n.nodeId));
+    }
+
+    return rawPageNodes;
+  }, [projection.allNodes, projection.visibleNodes, isAllMode, activeDocId, activePageId, quickFilterQuery, collapsedNodeIds]);
+
+  const elementMinDepth = useMemo(() => {
+    if (elementNodes.length === 0) return 0;
+    return Math.min(...elementNodes.map((n) => n.depth));
+  }, [elementNodes]);
+
+  const hasChildrenInPage = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    for (const n of projection.allNodes) {
+      if (n.parentId) {
+        map[n.parentId] = true;
+      }
+    }
+    return map;
+  }, [projection.allNodes]);
+
+  const openNewDocPrompt = () => {
+    const title = window.prompt("새 문서 제목을 입력하세요:", "새 문서");
+    if (!title) return;
+    void documentLifecycle().createDocument({ title: title.trim(), surface: "paged" });
+  };
+
   return (
     <>
-      <div className="px-3 py-2 flex items-center justify-between gap-1.5 shrink-0 bg-white border-b border-slate-200/80">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-[13px] font-semibold text-slate-800 tracking-tight truncate">Home</span>
-          <span className="text-[11px] text-slate-400 font-mono tabular-nums">({projection.visibleNodes.length})</span>
+      {/* 1. 최상단: 프로젝트 제목 + ALL 버튼 + 프리뷰 버튼 */}
+      <div className="px-3 py-2 bg-slate-50 border-b border-[#e5e5e5] flex items-center justify-between gap-1.5 shrink-0 select-none">
+        <div className="flex items-center gap-1.5 min-w-0" title={projectTitle}>
+          <FolderTree className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+          <span className="text-[12px] font-bold text-slate-800 tracking-tight truncate">
+            {projectTitle}
+          </span>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            data-testid="all-tree-toggle-btn"
+            onClick={() => setIsAllMode(!isAllMode)}
+            title={isAllMode ? "도큐먼트 분할 모드로 전환" : "프로젝트 전체 파일트리 아웃라인 보기 (All Mode)"}
+            className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer transition-colors shadow-2xs ${
+              isAllMode
+                ? "bg-[#0d99ff] text-white"
+                : "bg-white hover:bg-slate-200/70 text-slate-600 border border-slate-200/90"
+            }`}
+          >
+            All
+          </button>
+
           <button
             type="button"
             data-testid="pageview-toggle-btn"
@@ -442,26 +606,121 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
             title={pagePreviewOpen ? "페이지 프리뷰 패널 닫기" : "페이지 프리뷰 패널(Document preview) 열기"}
             className={`p-1 rounded cursor-pointer transition-all flex items-center gap-1 text-[11px] font-semibold ${
               pagePreviewOpen
-                ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300 font-bold px-1.5 shadow-2xs"
+                ? "bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-1.5 shadow-2xs"
                 : "hover:bg-slate-200/70 text-slate-500 hover:text-slate-800 border border-transparent"
             }`}
           >
             <LayoutGrid className="w-3.5 h-3.5 text-current" />
-            {pagePreviewOpen && <span className="text-[10px]">Preview</span>}
           </button>
+        </div>
+      </div>
 
+      {/* 2. 상단: 페이지 섹션 (피그마 스타일) */}
+      {!isAllMode && (
+        <div className="border-b border-[#e5e5e5] bg-white shrink-0 select-none font-sans">
+          <div className="px-3 py-1.5 flex items-center justify-between bg-white border-b border-[#e5e5e5]">
+            <button
+              type="button"
+              onClick={() => setDocsFolded(!docsFolded)}
+              className="flex items-center gap-1.5 text-[11px] font-bold text-[#1e1e1e] hover:text-[#000000] cursor-pointer"
+            >
+              {docsFolded ? <ChevronRight className="w-3 h-3 text-[#8c8c8c]" /> : <ChevronDown className="w-3 h-3 text-[#8c8c8c]" />}
+              <span>페이지</span>
+              <span className="text-[10px] text-[#8c8c8c] font-normal font-sans">({docPageNodes.length})</span>
+            </button>
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={(e) => openAddPageMenuForCurrentDoc(e.currentTarget)}
+                title="페이지 추가"
+                className="p-1 rounded hover:bg-black/[0.05] text-[#8c8c8c] hover:text-[#1e1e1e] cursor-pointer transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {!docsFolded && (
+            <div
+              role="tree"
+              aria-label="Documents & Pages Tree"
+              className="py-0.5 space-y-0 max-h-56 overflow-y-auto overflow-x-hidden bg-white"
+            >
+              {docPageNodes.map((node) => {
+                const docId = node.targetDocId || activeDocId;
+                const pendingState =
+                  node.zoomLevel === "page" && !node.targetBlockId && node.targetPageId
+                    ? (pageStatesByPageId[node.targetPageId] ?? null)
+                    : null;
+                const isSelected =
+                  node.zoomLevel === "document"
+                    ? node.targetDocId === activeDocId
+                    : (node.targetPageId === activePageId && (node.targetDocId === activeDocId || !node.targetDocId)) ||
+                      selectedOutlinerNodeId === node.nodeId;
+                return (
+                  <OutlineTreeRow
+                    key={node.nodeId}
+                    node={node}
+                    phase={currentPhase}
+                    pageCount={pageCountsByDocId.get(docId) ?? 0}
+                    docSurface={
+                      node.zoomLevel === "document"
+                        ? surfacesByDocId.get(node.targetDocId ?? "") ?? "paged"
+                        : undefined
+                    }
+                    depthOffset={1}
+                    isSelected={isSelected}
+                    isHighlighted={isHighlighted(node)}
+                    isPicked={Boolean(
+                      pickedOutline?.some((r) => r.id === outlineNodeTargetId(node) || r.id === node.nodeId)
+                    )}
+                    hasChildren={node.zoomLevel === "document"}
+                    isCollapsed={node.zoomLevel === "document" ? collapsedNodeIds.includes(node.nodeId) : false}
+                    pendingState={pendingState}
+                    renamingInitialTitle={renaming?.nodeId === node.nodeId ? renaming.initialTitle : undefined}
+                    actions={rowActions}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 3. 하단: 레이어 섹션 (피그마 스타일) */}
+      <div className="px-3 py-1.5 flex items-center justify-between gap-1.5 shrink-0 bg-white border-b border-[#e5e5e5]">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-[11px] font-bold text-[#1e1e1e]">
+            {isAllMode ? "전체 아웃라인" : "레이어"}
+          </span>
+          {!isAllMode && activePageLabel && (
+            <span
+              className="text-[10px] px-1.5 py-0.5 rounded bg-black/[0.04] text-[#666666] font-normal truncate max-w-[140px]"
+              title={activePageLabel}
+            >
+              {activePageLabel}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-0.5 shrink-0">
           <button
             type="button"
             data-testid="toggle-collapse-all-btn"
             onClick={() => (isAnyCollapsed ? expandAllNodes() : collapseAllNodes(allParentIds))}
             title={isAnyCollapsed ? "모두 펼치기" : "모두 접기"}
-            className={headerButton}
+            className="p-1 rounded hover:bg-black/[0.05] text-[#8c8c8c] hover:text-[#1e1e1e] cursor-pointer transition-colors"
           >
             {isAnyCollapsed ? <ChevronsUpDown className="w-3.5 h-3.5" /> : <ChevronsDownUp className="w-3.5 h-3.5" />}
           </button>
 
           <div className="relative">
-            <button type="button" onClick={() => setMoreMenuOpen(!moreMenuOpen)} title="더보기" className={headerButton}>
+            <button
+              type="button"
+              onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+              title="더보기"
+              className="p-1 rounded hover:bg-black/[0.05] text-[#8c8c8c] hover:text-[#1e1e1e] cursor-pointer transition-colors"
+            >
               <MoreHorizontal className="w-3.5 h-3.5" />
             </button>
             {moreMenuOpen && (
@@ -481,20 +740,10 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
               </div>
             )}
           </div>
-
-          <button
-            type="button"
-            data-testid="collapse-left-sidebar-btn"
-            onClick={() => setLeftSidebarOpen(false)}
-            className={headerButton}
-            title="사이드바 접기"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
-      <div className="px-2.5 py-1.5 bg-white/40 border-b border-slate-200/40 shrink-0">
+      <div className="px-2.5 py-1.5 bg-white border-b border-[#e5e5e5] shrink-0">
         <div className="relative flex items-center">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 pointer-events-none" />
           <input
@@ -502,8 +751,8 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
             data-testid="outliner-quick-filter-input"
             value={quickFilterQuery}
             onChange={(e) => setQuickFilterQuery(e.target.value)}
-            placeholder="Search nodes..."
-            className="w-full pl-7 pr-6 py-1 rounded-md bg-slate-100/70 hover:bg-slate-100 focus:bg-white text-xs text-slate-800 placeholder:text-slate-400 border border-transparent focus:border-slate-300 focus:outline-none transition-colors"
+            placeholder={isAllMode ? "Search all nodes..." : "Search pages & elements..."}
+            className="w-full pl-7 pr-6 py-1 rounded-md bg-slate-100 hover:bg-slate-200/70 focus:bg-white text-xs text-slate-800 placeholder:text-slate-400 border border-transparent focus:border-[#0d99ff] focus:outline-none transition-colors"
           />
           {quickFilterQuery && (
             <button
@@ -545,21 +794,19 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
 
       <div
         role="tree"
-        aria-label="Workflowy Outliner Tree"
-        className="p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden flex-1 min-h-0"
+        aria-label={isAllMode ? "Project All Tree" : "Elements Tree"}
+        className="py-0.5 space-y-0 overflow-y-auto overflow-x-hidden flex-1 min-h-0 bg-white"
       >
-        {projection.visibleNodes.length === 0 ? (
-          <EmptyStateCard
-            testId="outliner-empty-filter-state"
-            title="검색된 노드가 없습니다"
-            description={`"${quickFilterQuery}"에 일치하는 항목이 없습니다.`}
-            actionLabel="필터 초기화"
-            onAction={() => setQuickFilterQuery("")}
-            secondaryActionLabel={currentPhase !== "drafting" ? "+ 새 노드 추가" : undefined}
-            onSecondaryAction={currentPhase !== "drafting" ? addNode : undefined}
-          />
+        {elementNodes.length === 0 ? (
+          <div className="p-6 text-center text-slate-400 text-xs">
+            <Layers className="w-8 h-8 text-slate-300 mx-auto mb-2 opacity-60" />
+            <p className="font-medium text-slate-600 mb-1">
+              {isAllMode ? "표시할 노드가 없습니다." : "현재 페이지에 표시할 엘리먼트가 없습니다."}
+            </p>
+            <p className="text-[11px] text-slate-400">캔버스에서 블록을 작성하거나 Assets 탭을 확인하세요.</p>
+          </div>
         ) : (
-          projection.visibleNodes.map((node) => {
+          elementNodes.map((node) => {
             const docId = node.targetDocId || activeDocId;
             const pendingState =
               node.zoomLevel === "page" && !node.targetBlockId && node.targetPageId
@@ -572,10 +819,11 @@ const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => 
                 phase={currentPhase}
                 pageCount={pageCountsByDocId.get(docId) ?? 0}
                 docSurface={node.zoomLevel === "document" ? (surfacesByDocId.get(node.targetDocId ?? "") ?? "paged") : undefined}
+                depthOffset={isAllMode ? 0 : elementMinDepth}
                 isSelected={selectedOutlinerNodeId === node.nodeId || projection.rootNodeId === node.nodeId}
                 isHighlighted={isHighlighted(node)}
                 isPicked={Boolean(pickedOutline?.some((r) => r.id === outlineNodeTargetId(node) || r.id === node.nodeId))}
-                hasChildren={Boolean(projection.hasChildrenMap[node.nodeId])}
+                hasChildren={isAllMode ? Boolean(projection.hasChildrenMap[node.nodeId]) : Boolean(hasChildrenInPage[node.nodeId])}
                 isCollapsed={collapsedNodeIds.includes(node.nodeId)}
                 pendingState={pendingState}
                 renamingInitialTitle={renaming?.nodeId === node.nodeId ? renaming.initialTitle : undefined}
@@ -713,6 +961,7 @@ interface OutlineTreeRowProps {
   phase: WorkbenchPhase;
   pageCount: number;
   docSurface?: DocumentSurfaceKind;
+  depthOffset?: number;
   isSelected: boolean;
   isHighlighted: boolean;
   isPicked: boolean;
@@ -732,6 +981,7 @@ const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
   phase,
   pageCount,
   docSurface,
+  depthOffset = 0,
   isSelected,
   isHighlighted,
   isPicked,
@@ -779,6 +1029,7 @@ const OutlineTreeRow = React.memo<OutlineTreeRowProps>(function OutlineTreeRow({
       canManagePage={isPageTargetNode(node)}
       canManageDocument={isDocumentTargetNode(node) && node.nodeId.startsWith("auto-doc-")}
       docSurface={docSurface}
+      depthOffset={depthOffset}
       isProjectRoot={node.zoomLevel === "project" && node.parentId === null}
       canDeletePage={pageCount > 1 && !isBusyPending}
       pendingState={pendingState}

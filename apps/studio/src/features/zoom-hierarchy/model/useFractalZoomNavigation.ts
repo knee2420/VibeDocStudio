@@ -217,12 +217,16 @@ export function useFractalZoomNavigation() {
  * - 줌 루트가 가리키는 문서가 활성 문서와 다르면 활성 문서를 맞춘다
  */
 export function useZoomHierarchySync(): void {
-  // 페이지 최상위에서 도는 훅이라 원시값 하나만 구독한다.
+  const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
   const zoomedDocId = useOutlineSelector((p) => p.allNodes.find((n) => n.nodeId === p.rootNodeId)?.targetDocId ?? null);
+
   useEffect(() => {
-    const documents = useStudioDocumentStore.getState();
-    if (zoomedDocId && zoomedDocId !== documents.activeDocId) documents.setActiveDocId(zoomedDocId);
-  }, [zoomedDocId]);
+    // 줌 루트의 문서와 활성 문서가 다르면, 사용자가 전환한 활성 문서를 존중하여 줌을 프로젝트 루트로 맞춘다.
+    // 이전 문서를 강제로 다시 불러오는 역방향 핑퐁 루프를 방지한다.
+    if (zoomedDocId && activeDocId && zoomedDocId !== activeDocId) {
+      useWorkspaceSessionStore.getState().zoomIntoNode(PROJECT_ROOT_CRUMB_ID);
+    }
+  }, [activeDocId, zoomedDocId]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {

@@ -5,10 +5,7 @@
   "activePhase": "drafting",
   "docIds": [
     "vdoc_meeting_minutes_1028",
-    "vdoc-1a1c8b1a2b3-6dcc5fc9",
-    "vdoc-1a1c8b7e23d-fe519ff1",
-    "vdoc-1a1c8d2fc3d-157163ca",
-    "vdoc-1a1c947341b-9c211a00"
+    "vdoc-1a1ca15d374-e5c758db"
   ],
   "storylineNodes": [
     {
@@ -74,6 +71,38 @@
       "provenanceSourceProjectId": null,
       "provenanceSourceNodeId": null,
       "aiStatus": "idle"
+    },
+    {
+      "nodeId": "node-1a1ca34365b-a30d9852",
+      "parentId": "node-proj-root",
+      "depth": 1,
+      "zoomLevel": "page",
+      "title": "뉴욕 여행 지도 맨해튼 구역 및 구역별 가볼만한곳 추천 리스트 모음집 (긴글 주의)",
+      "summary": "레퍼런스 \"뉴욕 여행 지도 맨해튼 구역 및 구역별 가볼만한곳 추천 리스트 모음집 (긴글 주의)\" 1쪽의 구성을 따른 섹션",
+      "targetDocId": "vdoc_meeting_minutes_1028",
+      "targetPageId": null,
+      "targetBlockId": null,
+      "targetSlotId": null,
+      "recommendedTemplateId": "section-block",
+      "provenanceSourceProjectId": "ref:ref-1a1ca19c9b0-7285d940",
+      "provenanceSourceNodeId": "b1",
+      "aiStatus": "idle"
+    },
+    {
+      "nodeId": "node-1a1ca343d2d-cfebccfb",
+      "parentId": "node-proj-root",
+      "depth": 1,
+      "zoomLevel": "page",
+      "title": "Chelsea6. 첼시",
+      "summary": "레퍼런스 \"뉴욕 여행 지도 맨해튼 구역 및 구역별 가볼만한곳 추천 리스트 모음집 (긴글 주의)\" 1쪽의 구성을 따른 섹션",
+      "targetDocId": "vdoc_meeting_minutes_1028",
+      "targetPageId": null,
+      "targetBlockId": null,
+      "targetSlotId": null,
+      "recommendedTemplateId": "section-block",
+      "provenanceSourceProjectId": "ref:ref-1a1ca19c9b0-7285d940",
+      "provenanceSourceNodeId": "b62",
+      "aiStatus": "idle"
     }
   ],
   "provenanceLineage": [
@@ -118,5 +147,5 @@
       "clonedAt": "2026-11-03T12:25:23Z"
     }
   ],
-  "updatedAt": "2026-11-11T08:33:12Z"
+  "updatedAt": "2026-11-12T05:28:16Z"
 }

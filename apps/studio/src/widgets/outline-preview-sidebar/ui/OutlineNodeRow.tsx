@@ -7,15 +7,23 @@ import {
   ChevronRight,
   CircleDot,
   Clock,
+  Component,
   Copy,
+  Eye,
+  EyeOff,
   FilePlus2,
   FolderTree,
+  Hash,
   Layers,
   LayoutGrid,
   Loader2,
+  Lock,
   Pencil,
   RefreshCw,
+  Table,
   Trash2,
+  Type,
+  Unlock,
 } from "lucide-react";
 
 import type { PagePendingState } from "@vibe/slot-canvas";
@@ -28,23 +36,42 @@ export function outlineNodeTargetId(node: OutlinerNode): string {
   return node.targetSlotId || node.targetBlockId || node.targetPageId || node.nodeId;
 }
 
+/** 피그마 스타일 레이어 아이콘: Section / Frame / Group / Component / Text / Table */
 const NodeIcon: React.FC<{ node: OutlinerNode; docSurface?: DocumentSurfaceKind }> = ({ node, docSurface = "paged" }) => {
-  const cls = "w-3.5 h-3.5 text-slate-400 shrink-0";
-  if (node.zoomLevel === "project") return <FolderTree className={cls} />;
+  const cls = "w-3.5 h-3.5 shrink-0";
+  if (node.zoomLevel === "project") return <FolderTree className={`${cls} text-[#8c8c8c]`} />;
   if (node.zoomLevel === "document") {
     return (
       <DocumentSurfaceIcon
         surface={docSurface}
-        className={`w-3.5 h-3.5 shrink-0 ${docSurface === "scroll" ? "text-emerald-600" : "text-sky-600"}`}
+        className={`${cls} ${docSurface === "scroll" ? "text-emerald-500" : "text-[#0d99ff]"}`}
       />
     );
   }
-  if (node.zoomLevel === "page") return node.targetBlockId ? <LayoutGrid className={cls} /> : <Layers className={cls} />;
-  return node.isStatic ? (
-    <span className="w-1.5 h-1.5 rounded-full border border-slate-300 shrink-0 mx-1" />
-  ) : (
-    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0 mx-1" />
-  );
+  if (node.zoomLevel === "page") {
+    if (node.targetBlockId) {
+      const titleLower = node.title.toLowerCase();
+      if (titleLower.includes("섹션") || titleLower.includes("구역") || titleLower.includes("그리드")) {
+        return <LayoutGrid className={`${cls} text-[#8c8c8c]`} />;
+      }
+      if (titleLower.includes("표") || titleLower.includes("테이블") || titleLower.includes("매트릭스")) {
+        return <Table className={`${cls} text-[#8c8c8c]`} />;
+      }
+      return <Hash className={`${cls} text-[#8c8c8c] stroke-[2]`} />;
+    }
+    // 피그마는 Pages 목록의 페이지 앞에 아이콘이 없음 (완전 텍스트만 표시)
+    return null;
+  }
+
+  // 슬롯 및 하위 콘텐츠 (Figma Component, Text, Table)
+  const titleLower = node.title.toLowerCase();
+  if (titleLower.includes("표") || titleLower.includes("[표]")) {
+    return <Table className={`${cls} text-[#8c8c8c]`} />;
+  }
+  if (node.isStatic || titleLower.includes("컴포넌트") || titleLower.includes("템플릿")) {
+    return <Component className={`${cls} text-[#7b61ff]`} />;
+  }
+  return <Type className={`${cls} text-[#8c8c8c] stroke-[1.8]`} />;
 };
 
 const hoverAction = "p-0.5 rounded hover:bg-slate-300/60 text-slate-400 hover:text-slate-700 cursor-pointer";
@@ -87,6 +114,8 @@ export interface OutlineNodeRowProps {
   onDeletePage?: () => void;
   /** 문서 지면 서식 (`paged`: A4 페이지 · `scroll`: 블로그 스크롤). */
   docSurface?: DocumentSurfaceKind;
+  /** 계층 절단 시 상위 레벨을 건너뛰는 들여쓰기 오프셋 (기본 0). */
+  depthOffset?: number;
   /** 문서 행 (이름 변경 · 복제 · 문서 삭제 아이콘). */
   canManageDocument?: boolean;
   /** 프로젝트 루트 행 (새 문서 메뉴 · 새로고침 아이콘 — 늘 보인다). */
@@ -127,6 +156,7 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
   onDuplicatePage,
   onDeletePage,
   docSurface = "paged",
+  depthOffset = 0,
   canManageDocument = false,
   isProjectRoot = false,
   onDuplicateDocument,
@@ -164,6 +194,20 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
   };
 
   const canRename = canManagePage || editable;
+  const isPageOrDoc =
+    node.zoomLevel === "project" ||
+    node.zoomLevel === "document" ||
+    (node.zoomLevel === "page" && !node.targetBlockId);
+
+  const isComponent =
+    node.isStatic ||
+    node.title.toLowerCase().includes("컴포넌트") ||
+    node.title.toLowerCase().includes("템플릿");
+
+  const [isVisible, setIsVisible] = useState(true);
+  const [isLocked, setIsLocked] = useState(false);
+  const figAction =
+    "p-0.5 rounded hover:bg-black/[0.06] text-[#8c8c8c] hover:text-[#1e1e1e] cursor-pointer transition-colors";
 
   return (
     <div
@@ -173,7 +217,7 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
       data-testid={`outline-node-row-${node.nodeId}`}
       data-picked={isPicked ? "true" : undefined}
       {...(isRenaming ? {} : attachProps)}
-      style={{ paddingLeft: `${Math.min(node.depth, 6) * 16 + 4}px` }}
+      style={{ paddingLeft: `${Math.min(Math.max(0, node.depth - depthOffset), 6) * 12 + 6}px` }}
       onClick={onSelect}
       onDoubleClick={(e) => {
         if (!canRename || isRenaming) return;
@@ -190,15 +234,21 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
         onHoverChange(false);
         peekHandlers.onMouseLeave?.(e);
       }}
-      className={`group relative flex items-center gap-1.5 h-7 px-1.5 rounded-md transition-colors cursor-pointer text-[13px] leading-none ${
+      className={`group relative flex items-center gap-1.5 h-[28px] mx-1 px-1.5 rounded-[4px] select-none outline-none focus:outline-none focus:ring-0 ring-0 border-none transition-colors cursor-pointer text-[11.5px] leading-tight font-sans ${
         isPicked ? "ring-1 ring-violet-400 bg-violet-50 text-violet-950 " : ""
       }${
         isSelected
-          ? "bg-slate-200/80 text-slate-950 font-medium"
+          ? isPageOrDoc
+            ? "bg-black/[0.06] text-[#000000] font-semibold"
+            : isComponent
+              ? "bg-black/[0.05] text-[#7b61ff] font-medium"
+              : "bg-[#0d99ff]/12 text-[#1e1e1e] font-medium"
           : isHighlighted
-            ? "bg-slate-100 text-slate-900"
-            : "hover:bg-slate-100/70 text-slate-700"
-      }`}
+            ? "bg-black/[0.04] text-[#000000]"
+            : isComponent
+              ? "hover:bg-black/[0.035] text-[#7b61ff]"
+              : "hover:bg-black/[0.035] text-[#333333]"
+      } ${!isVisible ? "opacity-35" : ""}`}
     >
       {hasChildren ? (
         <button
@@ -206,12 +256,16 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
           data-testid={`fold-toggle-${node.nodeId}`}
           onClick={stop(onToggleCollapse)}
           title={isCollapsed ? "펼치기" : "접기"}
-          className="w-3.5 h-3.5 rounded hover:bg-slate-300/50 text-slate-400 hover:text-slate-700 flex items-center justify-center shrink-0 cursor-pointer transition-colors"
+          className="w-3 h-3 rounded flex items-center justify-center shrink-0 cursor-pointer transition-colors text-[#8c8c8c] hover:text-[#1e1e1e]"
         >
-          {isCollapsed ? <ChevronRight className="w-3 h-3 fill-current" /> : <ChevronDown className="w-3 h-3 fill-current" />}
+          {isCollapsed ? (
+            <ChevronRight className="w-2.5 h-2.5 stroke-[2] text-current" />
+          ) : (
+            <ChevronDown className="w-2.5 h-2.5 stroke-[2] text-current" />
+          )}
         </button>
       ) : (
-        <span className="w-3.5 h-3.5 shrink-0" />
+        <span className="w-3 h-3 shrink-0" />
       )}
 
       {pendingState?.status === "running" ? (
@@ -252,10 +306,10 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
               onCancelRename?.();
             }
           }}
-          className="flex-1 min-w-0 h-5 px-1.5 rounded bg-white border border-emerald-500 text-xs text-slate-900 focus:outline-none"
+          className="flex-1 min-w-0 h-5 px-1.5 rounded bg-white border border-[#0d99ff] text-xs text-slate-900 focus:outline-none"
         />
       ) : (
-        /* 고정 텍스트는 회색, 위치로 지은 이름은 ⚠ */
+        /* 피그마 레이어 타이틀 */
         <span
           data-testid={`outline-node-title-${node.nodeId}`}
           title={`${node.title}${
@@ -265,7 +319,7 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
           }${node.summary ? `\n\n${node.summary}` : ""}${
             node.nameNeedsReview ? "\n\n⚠ 이름 확인 필요 (라벨을 찾지 못해 위치로 지은 이름)" : ""
           }${canRename ? "\n\n더블클릭 또는 F2: 이름 변경" : ""}`}
-          className={`truncate flex-1 min-w-0 ${node.isStatic ? "text-slate-400" : ""}`}
+          className={`truncate flex-1 min-w-0 ${node.isStatic ? "text-[#8c8c8c]" : ""}`}
         >
           {node.title}
         </span>
@@ -298,7 +352,7 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
       {!isRenaming && node.provenanceSourceProjectId && (
         <span
           title={`참조 출처: ${node.provenanceSourceProjectId}`}
-          className="text-[11px] text-blue-500/80 font-mono shrink-0 ml-1 hover:underline"
+          className="text-[10px] text-blue-500/80 font-mono shrink-0 ml-1 hover:underline"
         >
           #참조
         </span>
@@ -326,9 +380,23 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
       )}
 
       {!isRenaming && (
-        <div className="hidden group-hover:flex items-center gap-0.5 shrink-0 ml-1">
-          <button type="button" data-testid={`zoom-bullet-${node.nodeId}`} onClick={stop(onZoomIn)} title="Zoom-In" className={hoverAction}>
-            <CircleDot className="w-3 h-3" />
+        <div className={`items-center gap-0.5 shrink-0 ml-1 ${isSelected || isLocked || !isVisible ? "flex" : "hidden group-hover:flex"}`}>
+          {/* 피그마 레이어 잠금 / 눈 아이콘 (피그마 전용) */}
+          <button
+            type="button"
+            title={isLocked ? "레이어 잠금 해제" : "레이어 잠금"}
+            onClick={stop(() => setIsLocked(!isLocked))}
+            className={figAction}
+          >
+            {isLocked ? <Lock className="w-3 h-3 text-[#1e1e1e]" /> : <Unlock className="w-3 h-3" />}
+          </button>
+          <button
+            type="button"
+            title={isVisible ? "레이어 숨기기" : "레이어 보이기"}
+            onClick={stop(() => setIsVisible(!isVisible))}
+            className={figAction}
+          >
+            {isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3 text-amber-500" />}
           </button>
 
           {canAddPage && onOpenAddPageMenu && (
@@ -339,21 +407,17 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
                 e.stopPropagation();
                 onOpenAddPageMenu(e.currentTarget);
               }}
-              title="페이지 추가 (기본 페이지 · PDF · 템플릿)"
-              className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 text-[10px] font-semibold cursor-pointer"
+              title="페이지 추가"
+              className={figAction}
             >
               <FilePlus2 className="w-3 h-3" />
-              <span>+ 페이지</span>
             </button>
           )}
 
           {canManageDocument && (
             <>
-              <button type="button" data-testid={`rename-doc-btn-${node.nodeId}`} onClick={stop(() => onStartRename?.())} title="문서 이름 바꾸기 (F2 / 더블클릭)" className={hoverAction}>
+              <button type="button" data-testid={`rename-doc-btn-${node.nodeId}`} onClick={stop(() => onStartRename?.())} title="이름 바꾸기" className={figAction}>
                 <Pencil className="w-3 h-3" />
-              </button>
-              <button type="button" data-testid={`duplicate-doc-btn-${node.nodeId}`} onClick={stop(() => onDuplicateDocument?.())} title="문서 복제" className={hoverAction}>
-                <Copy className="w-3 h-3" />
               </button>
               <button
                 type="button"
@@ -373,22 +437,11 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
                 type="button"
                 data-testid={`rename-page-btn-${node.nodeId}`}
                 onClick={stop(() => onStartRename?.())}
-                title="페이지 이름 변경 (F2 / 더블클릭)"
-                className={hoverAction}
+                title="이름 바꾸기"
+                className={figAction}
               >
                 <Pencil className="w-3 h-3" />
               </button>
-              {!pendingState && (
-                <button
-                  type="button"
-                  data-testid={`duplicate-page-btn-${node.nodeId}`}
-                  onClick={stop(() => onDuplicatePage?.())}
-                  title="페이지 사본 만들기"
-                  className={hoverAction}
-                >
-                  <Copy className="w-3 h-3" />
-                </button>
-              )}
               <button
                 type="button"
                 data-testid={`delete-page-btn-${node.nodeId}`}
@@ -396,7 +449,7 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
                 onClick={stop(() => {
                   if (canDeletePage) onDeletePage?.();
                 })}
-                title={canDeletePage ? "페이지 삭제 (Delete)" : "마지막 1페이지는 삭제할 수 없습니다"}
+                title={canDeletePage ? "페이지 삭제" : "마지막 1페이지는 삭제할 수 없습니다"}
                 className={`p-0.5 rounded ${
                   canDeletePage
                     ? "hover:bg-rose-100 text-slate-400 hover:text-rose-600 cursor-pointer"
@@ -410,10 +463,10 @@ export const OutlineNodeRow: React.FC<OutlineNodeRowProps> = ({
 
           {editable && (
             <>
-              <button type="button" onClick={stop(() => onMove(-1))} title="위로 이동" className={hoverAction}>
+              <button type="button" onClick={stop(() => onMove(-1))} title="위로 이동" className={figAction}>
                 <ArrowUp className="w-3 h-3" />
               </button>
-              <button type="button" onClick={stop(() => onMove(1))} title="아래로 이동" className={hoverAction}>
+              <button type="button" onClick={stop(() => onMove(1))} title="아래로 이동" className={figAction}>
                 <ArrowDown className="w-3 h-3" />
               </button>
               {!canManagePage && (
