@@ -45,8 +45,8 @@ export interface WorkspaceSessionState {
   setSelectedOutlinerNodeId: (nodeId: string | null) => void;
   setQuickFilterQuery: (query: string) => void;
   toggleNodeCollapse: (nodeId: string) => void;
-  collapseAllNodes: (nodeIds: string[]) => void;
-  expandAllNodes: () => void;
+  /** 주어진 노드들만 한꺼번에 접거나 편다 (다른 구역의 접힘 상태는 건드리지 않는다). */
+  setNodesCollapsed: (nodeIds: readonly string[], collapsed: boolean) => void;
   setHoveredOutlineTargetId: (id: string | null) => void;
   setHighlightedEntityId: (id: string | null) => void;
   toggleReference: (refId: string) => void;
@@ -110,8 +110,8 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
       selectedOutlinerNodeId: nodeId === PROJECT_ROOT_CRUMB_ID ? null : nodeId,
     }),
 
-  setSelectedOutlinerNodeId: (nodeId) => set({ selectedOutlinerNodeId: nodeId }),
-  setQuickFilterQuery: (query) => set({ quickFilterQuery: query }),
+  setSelectedOutlinerNodeId: (nodeId) => set((s) => (s.selectedOutlinerNodeId === nodeId ? s : { selectedOutlinerNodeId: nodeId })),
+  setQuickFilterQuery: (query) => set((s) => (s.quickFilterQuery === query ? s : { quickFilterQuery: query })),
 
   toggleNodeCollapse: (nodeId) =>
     set((s) => {
@@ -121,17 +121,22 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
       saveOutlinerCollapsedToSession(next);
       return { collapsedNodeIds: next };
     }),
-  collapseAllNodes: (nodeIds) => {
-    saveOutlinerCollapsedToSession(nodeIds);
-    set({ collapsedNodeIds: nodeIds });
-  },
-  expandAllNodes: () => {
-    saveOutlinerCollapsedToSession([]);
-    set({ collapsedNodeIds: [] });
-  },
+  setNodesCollapsed: (nodeIds, collapsed) =>
+    set((s) => {
+      if (nodeIds.length === 0) return s;
+      const ids = new Set(s.collapsedNodeIds);
+      for (const id of nodeIds) {
+        if (collapsed) ids.add(id);
+        else ids.delete(id);
+      }
+      const next = [...ids];
+      saveOutlinerCollapsedToSession(next);
+      return { collapsedNodeIds: next };
+    }),
 
-  setHoveredOutlineTargetId: (id) => set({ hoveredOutlineTargetId: id }),
-  setHighlightedEntityId: (id) => set({ highlightedEntityId: id }),
+  // 호버는 초당 수십 번 들어온다. 값이 같으면 구독자(아웃라인 줄 · 캔버스)를 깨우지 않는다.
+  setHoveredOutlineTargetId: (id) => set((s) => (s.hoveredOutlineTargetId === id ? s : { hoveredOutlineTargetId: id })),
+  setHighlightedEntityId: (id) => set((s) => (s.highlightedEntityId === id ? s : { highlightedEntityId: id })),
 
   toggleReference: (docId) =>
     set((s) => ({

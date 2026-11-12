@@ -23,9 +23,9 @@ export const FigmaFloatingToolbar: React.FC = () => {
   return (
     <div
       data-testid="figma-floating-toolbar"
-      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 select-none animate-in fade-in slide-in-from-bottom-2 duration-200"
+      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 select-none"
     >
-      <div className="flex items-center gap-0.5 bg-[#2c2c2c]/95 backdrop-blur-md text-white/90 p-1 rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.35)] border border-white/10 text-xs font-sans">
+      <div className="flex items-center gap-0.5 bg-[#2c2c2c] text-white/90 p-1 rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.35)] border border-white/10 text-xs font-sans">
         {/* 1. 피그마 / Vibe 메인 로고 드롭다운 버튼 */}
         <button
           type="button"

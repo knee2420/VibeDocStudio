@@ -1,7 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useImperativeHandle, useRef, useState } from "react";
 import { FolderInput } from "lucide-react";
 
+import { DocumentImportDialog, documentLifecycle } from "@/features/manage-documents";
 import { PagedDocumentIcon, ScrollDocumentIcon } from "@/shared/ui";
+
+import { popoverAnchorBelow, usePopoverDismiss } from "../lib/usePopoverDismiss";
 
 export interface NewDocumentMenuProps {
   anchor: { top: number; left: number } | null;
@@ -44,7 +47,7 @@ const NEW_DOCUMENT_OPTIONS: ReadonlyArray<{
 ];
 
 /**
- * 프로젝트 루트의 `새 문서` 아이콘 클릭 시 열리는 3옵션 팝오버 메뉴.
+ * 사이드바 머리말의 `새 문서` 아이콘 클릭 시 열리는 3옵션 팝오버 메뉴.
  * 아웃라이너 트리의 `overflow` 클리핑을 피하기 위해 `fixed` 뷰포트 좌표로 띄운다.
  */
 export const NewDocumentMenu: React.FC<NewDocumentMenuProps> = ({
@@ -55,25 +58,8 @@ export const NewDocumentMenu: React.FC<NewDocumentMenuProps> = ({
   onClose,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!anchor) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const target = e.target as Element | null;
-      // 트리거 버튼 재클릭은 버튼 쪽 토글 핸들러가 처리한다.
-      if (menuRef.current?.contains(target) || target?.closest?.("[data-new-doc-trigger]")) return;
-      onClose();
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [anchor, onClose]);
+  // 트리거 버튼 재클릭은 버튼 쪽 토글 핸들러가 처리한다.
+  usePopoverDismiss(menuRef, anchor !== null, onClose, "[data-new-doc-trigger]");
 
   if (!anchor) return null;
 
@@ -121,3 +107,44 @@ export const NewDocumentMenu: React.FC<NewDocumentMenuProps> = ({
   );
 };
 
+
+export interface NewDocumentFlowHandle {
+  /** `anchorEl` 아래에 새 문서 메뉴를 열거나 닫는다. */
+  toggle: (anchorEl: HTMLElement) => void;
+}
+
+const reportError = (err: unknown) => window.alert(String(err));
+
+function createDocumentBySurface(surface: "paged" | "scroll"): void {
+  const isScroll = surface === "scroll";
+  const title = window.prompt(isScroll ? "새 블로그 글 제목" : "새 문서 제목", isScroll ? "새 글" : "새 문서");
+  if (title === null) return;
+  void documentLifecycle()
+    .createDocument({ title: title.trim() || "새 문서", surface })
+    .catch(reportError);
+}
+
+/** 새 문서 메뉴 + 문서 불러오기 대화상자. 메뉴 상태가 아웃라인 트리를 다시 그리지 않도록 따로 둔다. */
+export const NewDocumentFlow: React.FC<{ ref?: React.Ref<NewDocumentFlowHandle> }> = ({ ref }) => {
+  const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+
+  useImperativeHandle(
+    ref,
+    () => ({ toggle: (anchorEl) => setAnchor((prev) => (prev ? null : popoverAnchorBelow(anchorEl, 190))) }),
+    []
+  );
+
+  return (
+    <>
+      <NewDocumentMenu
+        anchor={anchor}
+        onCreatePaged={() => createDocumentBySurface("paged")}
+        onCreateScroll={() => createDocumentBySurface("scroll")}
+        onImportDocuments={() => setImportOpen(true)}
+        onClose={() => setAnchor(null)}
+      />
+      <DocumentImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
+    </>
+  );
+};

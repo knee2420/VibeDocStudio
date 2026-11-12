@@ -30,7 +30,7 @@ const EMPTY_PROJECT: VProjectManifest = {
  * 아웃라인 투영은 아웃라이너 · 브레드크럼 · 캔버스가 함께 쓴다. 입력이 같으면 한 번만 계산하도록
  * 마지막 입력/결과를 모듈에 기억한다 (소비자마다 `useMemo` 를 두면 같은 트리를 세 번 만든다).
  */
-type ProjectionInputs = [VProjectManifest, VDocDocument[], string, string, string[]];
+type ProjectionInputs = [VProjectManifest, VDocDocument[], string];
 let lastInputs: ProjectionInputs | null = null;
 let lastProjection: FractalOutlineProjection | null = null;
 
@@ -86,15 +86,16 @@ function shareStructure(prev: FractalOutlineProjection | null, next: FractalOutl
 /**
  * 지금 스토어 상태의 아웃라인 투영 (렌더 밖에서도 부를 수 있다).
  * 입력이 같으면 캐시를 돌려주고, 바뀌어도 달라진 노드만 새 객체가 된다 (`shareStructure`).
+ *
+ * 검색어 · 접힘은 투영에 넣지 않는다. 사이드바의 페이지 · 레이어 구역이 각자 다르게 적용하고
+ * (`widgets/outline-preview-sidebar/model/outlineSections`), 넣으면 검색 한 글자 · 접기 한 번마다
+ * 전체 트리를 다시 만들고 캔버스까지 깨운다. `visibleNodes` 는 줌 범위만 반영한다.
  */
 export function getOutlineProjection(): FractalOutlineProjection {
-  const session = useWorkspaceSessionStore.getState();
   return projectOutline(
     selectActiveProject(useProjectStore.getState()) ?? EMPTY_PROJECT,
     useStudioDocumentStore.getState().docs,
-    session.zoomRootNodeId,
-    session.quickFilterQuery,
-    session.collapsedNodeIds
+    useWorkspaceSessionStore.getState().zoomRootNodeId
   );
 }
 
@@ -115,7 +116,7 @@ export function useOutlineSelector<T>(select: (projection: FractalOutlineProject
   return useSyncExternalStore(subscribeOutlineInputs, () => select(getOutlineProjection()));
 }
 
-/** 현재 줌 · 필터 · 접힘 상태의 아웃라인 투영 (읽기 전용). 투영 내용이 실제로 바뀔 때만 다시 그린다. */
+/** 현재 줌 상태의 아웃라인 투영 (읽기 전용). 투영 내용이 실제로 바뀔 때만 다시 그린다. */
 export function useOutlineProjection(): FractalOutlineProjection {
   return useSyncExternalStore(subscribeOutlineInputs, getOutlineProjection);
 }
@@ -124,21 +125,22 @@ export function useOutlineProjection(): FractalOutlineProjection {
 function focusNodeOnCanvas(node: OutlinerNode): void {
   const documents = useStudioDocumentStore.getState();
   const selection = useSlotSelectionStore.getState();
-  if (node.targetDocId) documents.setActiveDocId(node.targetDocId);
-  if (node.targetPageId) {
-    documents.setActivePageId(node.targetPageId);
-    scrollToCanvasPage(node.targetPageId);
-  }
+  // 같은 문서를 다시 고르면 활성 페이지가 첫 페이지로 튀었다가 돌아오며 캔버스 창이 두 번 바뀐다.
+  if (node.targetDocId && node.targetDocId !== documents.activeDocId) documents.setActiveDocId(node.targetDocId);
+  if (node.targetPageId) documents.setActivePageId(node.targetPageId);
+  // 스크롤은 한 번만: 요소가 있으면 요소로, 없으면 페이지로 (두 부드러운 스크롤이 겹치면 끊긴다).
+  const fallbackPageId = node.targetPageId ?? null;
   if (node.targetSlotId) {
     selection.setSelectedSlotId(node.targetSlotId);
-    revealCanvasElement({ slotId: node.targetSlotId });
+    revealCanvasElement({ slotId: node.targetSlotId, fallbackPageId });
   } else if (node.targetBlockId) {
     // 블록 · 구역 · 행 컨테이너 노드는 해당 블록을 선택하고 테두리 링을 강조한다.
     selection.setSelectedBlockId(node.targetBlockId);
-    revealCanvasElement({ blockId: node.targetBlockId });
+    revealCanvasElement({ blockId: node.targetBlockId, fallbackPageId });
   } else {
     // 페이지나 문서 전체 조망으로 돌아올 때는 블록 선택 및 디밍을 즉시 해제
     selection.clearSelection();
+    if (node.targetPageId) scrollToCanvasPage(node.targetPageId);
   }
 }
 
