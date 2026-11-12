@@ -4,13 +4,17 @@ import assert from "node:assert/strict";
 import type { OutlinerNode } from "@vibe/vdoc-schema";
 
 import {
+  compactCrumbs,
   computeRowSelection,
   filterLayerNodes,
+  isolatedPageOf,
   normalizeQuery,
   parentIdsWithin,
   selectAllModeNodes,
   selectPageLayerNodes,
+  selectPageTreeForZoom,
   selectPageTreeNodes,
+  zoomTargetOnSelect,
 } from "../src/widgets/outline-preview-sidebar/model/outlineSections";
 
 const node = (n: Partial<OutlinerNode> & Pick<OutlinerNode, "nodeId" | "zoomLevel">): OutlinerNode => ({
@@ -149,5 +153,101 @@ describe("캔버스 → 사이드바 따라가기", () => {
     assert.equal(slot.nodeId, "s3");
     assert.equal(findTargetNode(nodes, { kind: "block", id: "b1" })?.nodeId, "b1");
     assert.deepEqual(ancestorIds(nodes, slot), ["b2", "p2", "doc"]);
+  });
+});
+
+describe("줌 — 페이지 격리 · 선택", () => {
+  const byId = (id: string) => nodes.find((n) => n.nodeId === id)!;
+
+  it("페이지 · 블록 · 슬롯 줌은 그 페이지를 격리하고, 문서 줌 · 줌 없음은 격리하지 않는다", () => {
+    assert.deepEqual(isolatedPageOf(byId("p1")), { docId: "d1", pageId: "p1" });
+    assert.deepEqual(isolatedPageOf(byId("b2")), { docId: "d1", pageId: "p2" });
+    assert.deepEqual(isolatedPageOf(byId("s1")), { docId: "d1", pageId: "p1" });
+    assert.equal(isolatedPageOf(byId("doc")), null);
+    assert.equal(isolatedPageOf(undefined), null);
+  });
+
+  it("페이지 격리 중 같은 문서의 다른 페이지 행을 고르면 그 페이지로 줌을 옮긴다", () => {
+    assert.equal(zoomTargetOnSelect(byId("p2"), byId("p1"), "d1")?.nodeId, "p2");
+    assert.equal(zoomTargetOnSelect(byId("p1"), byId("s3"), "d1")?.nodeId, "p1");
+  });
+
+  it("같은 페이지 · 페이지가 아닌 행 · 격리 아님 · 다른 문서면 그냥 선택한다", () => {
+    assert.equal(zoomTargetOnSelect(byId("p1"), byId("p1"), "d1"), null);
+    assert.equal(zoomTargetOnSelect(byId("p1"), byId("b1"), "d1"), null);
+    assert.equal(zoomTargetOnSelect(byId("b2"), byId("p1"), "d1"), null);
+    assert.equal(zoomTargetOnSelect(byId("doc"), byId("p1"), "d1"), null);
+    assert.equal(zoomTargetOnSelect(byId("p2"), byId("doc"), "d1"), null);
+    assert.equal(zoomTargetOnSelect(byId("p2"), undefined, "d1"), null);
+    const otherDocPage = node({ nodeId: "q1", zoomLevel: "page", targetDocId: "d2", targetPageId: "q1" });
+    assert.equal(zoomTargetOnSelect(otherDocPage, byId("p1"), "d1"), null);
+  });
+});
+
+describe("브레드크럼 줄이기", () => {
+  const kinds = (items: ReturnType<typeof compactCrumbs<string>>) =>
+    items.map((i) => (i.kind === "crumb" ? i.crumb : `[${i.hidden.join(",")}]`));
+
+  it("칸 수가 한도 안이면 그대로", () => {
+    assert.deepEqual(kinds(compactCrumbs(["home", "doc", "page"])), ["home", "doc", "page"]);
+    assert.deepEqual(kinds(compactCrumbs(["home", "doc", "page", "blk"])), ["home", "doc", "page", "blk"]);
+  });
+
+  it("넘치면 Home · 접힌 중간 · 마지막 두 칸", () => {
+    assert.deepEqual(kinds(compactCrumbs(["home", "doc", "page", "blk", "slot"])), ["home", "[doc,page]", "blk", "slot"]);
+  });
+});
+
+describe("Documents & Pages — 줌 범위 (Workflowy, 페이지 수준까지)", () => {
+  const byId = (id: string) => nodes.find((n) => n.nodeId === id)!;
+  const view = (zoomId?: string, collapsed: string[] = []) => ids(selectPageTreeForZoom(nodes, collapsed, zoomId ? byId(zoomId) : undefined));
+
+  it("줌 없음: 전체 목록", () => {
+    assert.deepEqual(view(), ["doc", "p1", "p2"]);
+  });
+
+  it("문서 줌: 그 문서와 페이지들만", () => {
+    const other = node({ nodeId: "doc2", zoomLevel: "document", depth: 1, targetDocId: "d2" });
+    const otherPage = node({ nodeId: "q1", zoomLevel: "page", depth: 2, parentId: "doc2", targetDocId: "d2", targetPageId: "q1" });
+    assert.deepEqual(ids(selectPageTreeForZoom([...nodes, other, otherPage], [], byId("doc"))), ["doc", "p1", "p2"]);
+  });
+
+  it("페이지 줌: 그 페이지만", () => {
+    assert.deepEqual(view("p2"), ["p2"]);
+  });
+
+  it("엘리먼트 줌: 페이지 줌과 같다 — 그 엘리먼트의 페이지만 (전체 목록으로 풀리지 않는다)", () => {
+    assert.deepEqual(view("s1"), ["p1"]);
+    assert.deepEqual(view("b2"), ["p2"]);
+  });
+
+  it("문서를 접은 상태는 줌에서도 그대로", () => {
+    assert.deepEqual(view("doc", ["doc"]), ["doc"]);
+  });
+});
+
+describe("엘리먼트 줌 — 캔버스 초점 (같은 페이지의 다른 최상위 블록만 흐리게)", () => {
+  it("슬롯 · 블록 줌이면 그 최상위 블록만 두고 같은 페이지의 다른 블록을 흐리게", async () => {
+    const { zoomFocusDimBlockIds } = await import("../src/features/zoom-hierarchy/model/zoomFocus");
+    const b1b = node({ nodeId: "b1b", zoomLevel: "page", depth: 3, parentId: "p1", targetDocId: "d1", targetPageId: "p1", targetBlockId: "b1b" });
+    const all = [...nodes, b1b];
+    assert.deepEqual(zoomFocusDimBlockIds(all, "s1"), ["b1b"]);
+    assert.deepEqual(zoomFocusDimBlockIds(all, "b1"), ["b1b"]);
+    assert.deepEqual(zoomFocusDimBlockIds(all, "b1b"), ["b1"]);
+  });
+
+  it("슬롯 하나짜리 블록(페이지 바로 아래 슬롯 행)도 같은 페이지의 블록으로 흐리게", async () => {
+    const { zoomFocusDimBlockIds } = await import("../src/features/zoom-hierarchy/model/zoomFocus");
+    const callout = node({ nodeId: "c1", zoomLevel: "slot", depth: 3, parentId: "p1", targetDocId: "d1", targetPageId: "p1", targetBlockId: "bc", targetSlotId: "sc" });
+    const all = [...nodes, callout];
+    assert.deepEqual(zoomFocusDimBlockIds(all, "s1"), ["bc"]);
+    assert.deepEqual(zoomFocusDimBlockIds(all, "c1"), ["b1"]);
+  });
+
+  it("문서 · 페이지 줌, 없는 노드면 흐리게 하지 않는다", async () => {
+    const { zoomFocusDimBlockIds } = await import("../src/features/zoom-hierarchy/model/zoomFocus");
+    assert.deepEqual(zoomFocusDimBlockIds(nodes, "doc"), []);
+    assert.deepEqual(zoomFocusDimBlockIds(nodes, "p1"), []);
+    assert.deepEqual(zoomFocusDimBlockIds(nodes, "nope"), []);
   });
 });

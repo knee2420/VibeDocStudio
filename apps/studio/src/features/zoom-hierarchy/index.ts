@@ -7,3 +7,4 @@ export {
   useZoomHierarchySync,
 } from "./model/useFractalZoomNavigation";
 export { OutlineBreadcrumbBar } from "./ui/OutlineBreadcrumbBar";
+export { ZoomFocusStyle } from "./ui/ZoomFocusStyle";

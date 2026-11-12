@@ -126,6 +126,8 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
   // AI 칩 호버는 정확히 그 대상을 가리키는 행만 (사이드바 자체 호버는 CSS :hover 가 맡는다).
   const isHighlighted = useWorkspaceSessionStore((s) => s.highlightedEntityId !== null && (s.highlightedEntityId === targetId || s.highlightedEntityId === node.nodeId));
   const isCollapsed = useWorkspaceSessionStore((s) => hasChildren && s.collapsedNodeIds.includes(node.nodeId));
+  // 문서 · 페이지 행의 줌 토글 상태 (이 행으로 줌했는가).
+  const isZoomRoot = useWorkspaceSessionStore((s) => (isDocRow || isPageRow) && s.zoomRootNodeId === node.nodeId);
   const pendingState = usePdfScaffoldJobStore((s) => (isPageRow && node.targetPageId ? (s.pageStatesByPageId[node.targetPageId] ?? null) : null));
   const pageCount = useStudioDocumentStore((s) => (isPageRow ? (s.docs.find((d) => d.docId === docId)?.pages.length ?? 0) : 0));
   const isLocked = useStudioDocumentStore((s) => (lockSlotIds?.length ? areSlotsLocked(s.docs.find((d) => d.docId === docId)?.slots ?? {}, lockSlotIds) : false));
@@ -369,6 +371,29 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
               </>
             )}
           </div>
+
+          {/* 문서 · 페이지 줌 토글: 호버 때 보이고, 이 행으로 줌한 동안은 늘 보인다. 다시 누르면 한 단계 위로. */}
+          {(isDocRow || isPageRow) && (
+            <div className="fig-row-toggles">
+              <button
+                type="button"
+                data-testid={`zoom-bullet-${node.nodeId}`}
+                data-on={isZoomRoot || undefined}
+                aria-pressed={isZoomRoot}
+                onClick={stop(() => actions.toggleZoom(node))}
+                title={
+                  isZoomRoot
+                    ? "집중 보기 중 · 누르면 상위로 Zoom-Out (Alt+↑)"
+                    : isPageRow
+                      ? "이 페이지만 보기 (Zoom-In)"
+                      : "이 문서 안으로 Zoom-In"
+                }
+                className={`fig-icon-btn fig-row-toggle${isZoomRoot ? " !text-[var(--fig-brand)]" : ""}`}
+              >
+                <CircleDot className={ICON} strokeWidth={isZoomRoot ? 2.5 : 2} />
+              </button>
+            </div>
+          )}
 
           {/* 피그마 자물쇠 · 눈: 호버 때 보이고, 잠금 · 숨김 상태면 늘 보인다. */}
           {!isPageOrDoc && (

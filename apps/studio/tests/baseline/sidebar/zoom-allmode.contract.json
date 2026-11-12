@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "url": "/?phase=drafting&zoom=project-root&doc=vdoc_meeting_minutes_1028",
+    "viewport": "1920x1080",
+    "capturedAt": "2026-11-12T15:33:22.997Z",
+    "note": "열어야 보이는 메뉴 항목은 포함하지 않음",
+    "source": "integrate/sidebar-update + 문서·페이지 줌 토글 · 사이드바 브레드크럼 (작업 트리), All Mode"
+  },
+  "rowKinds": {
+    "block": {
+      "rows": 222,
+      "actions": {
+        "fold": 99,
+        "lock": 99,
+        "visibility": 222,
+        "zoom-in": 222
+      }
+    },
+    "document": {
+      "rows": 9,
+      "actions": {
+        "add-page": 9,
+        "delete": 8,
+        "duplicate": 8,
+        "fold": 9,
+        "rename": 8,
+        "zoom-in": 9
+      }
+    },
+    "page": {
+      "rows": 91,
+      "actions": {
+        "delete": 91,
+        "duplicate": 91,
+        "fold": 91,
+        "rename": 91,
+        "zoom-in": 91
+      }
+    },
+    "project": {
+      "rows": 1,
+      "actions": {
+        "fold": 1
+      }
+    },
+    "row": {
+      "rows": 6,
+      "actions": {
+        "fold": 6,
+        "lock": 6,
+        "visibility": 6,
+        "zoom-in": 6
+      }
+    },
+    "section": {
+      "rows": 6,
+      "actions": {
+        "fold": 6,
+        "lock": 6,
+        "visibility": 6,
+        "zoom-in": 6
+      }
+    },
+    "slot": {
+      "rows": 2236,
+      "actions": {
+        "fold": 188,
+        "lock": 2236,
+        "visibility": 2236,
+        "zoom-in": 2236
+      }
+    }
+  },
+  "sidebarTestIds": [
+    "add-page-menu-btn-{node}",
+    "all-tree-toggle-btn",
+    "collapse-left-sidebar-btn",
+    "delete-doc-btn-{node}",
+    "delete-page-btn-{node}",
+    "duplicate-doc-btn-{node}",
+    "duplicate-page-btn-{node}",
+    "figma-tab-assets",
+    "figma-tab-layers",
+    "figma-tab-reference",
+    "fold-toggle-{node}",
+    "lock-toggle-{node}",
+    "outline-node-review-{node}",
+    "outline-node-row-{node}",
+    "outline-node-title-{node}",
+    "outline-pdf-template-input",
+    "outline-refresh-docs-btn",
+    "outliner-quick-filter-input",
+    "pageview-toggle-btn",
+    "project-root-doc-actions",
+    "rename-doc-btn-{node}",
+    "rename-page-btn-{node}",
+    "sidebar-resize-handle",
+    "toggle-collapse-all-btn",
+    "visibility-toggle-{node}",
+    "zoom-bullet-{node}"
+  ],
+  "sidebarButtonTitles": [
+    "Documents & Pages · Elements 분할 보기로 전환",
+    "더보기",
+    "모두 접기",
+    "새로고침 (에이전트 · 다른 곳에서 만든 문서 반영)",
+    "좌측 패널 접기",
+    "페이지 프리뷰 패널(Document preview) 열기"
+  ]
+}

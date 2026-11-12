@@ -1,12 +1,11 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpLeft, BookOpen, ChevronsDownUp, ChevronsUpDown, Layers, MoreHorizontal, Search, X } from "lucide-react";
+import { BookOpen, ChevronsDownUp, ChevronsUpDown, Layers, MoreHorizontal, Search, X } from "lucide-react";
 
-import { PROJECT_ROOT_CRUMB_ID, type OutlinerNode } from "@vibe/vdoc-schema";
+import type { OutlinerNode } from "@vibe/vdoc-schema";
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
-import { outlineCommands } from "@/features/zoom-hierarchy";
 
 import { usePopoverDismiss } from "../lib/usePopoverDismiss";
 import {
@@ -33,8 +32,6 @@ export const ElementsSection: React.FC<
     scopedNodes: OutlinerNode[];
     hasChildrenMap: Record<string, boolean>;
     rootNodeId: string;
-    isZoomedIn: boolean;
-    parentZoomTitle: string | null;
     onAddNode?: () => void;
   }
 > = ({
@@ -48,8 +45,6 @@ export const ElementsSection: React.FC<
   scopedNodes,
   hasChildrenMap,
   rootNodeId,
-  isZoomedIn,
-  parentZoomTitle,
   onAddNode,
 }) => {
   const rawQuery = useWorkspaceSessionStore((s) => s.quickFilterQuery);
@@ -171,30 +166,6 @@ export const ElementsSection: React.FC<
           </button>
         )}
       </label>
-
-      {isZoomedIn && (
-        <div className="fig-row shrink-0 !h-7 text-black/50" style={{ paddingLeft: 4 }}>
-          <button
-            type="button"
-            data-testid="outliner-zoom-out-btn"
-            onClick={outlineCommands.zoomOutOneLevel}
-            className="flex items-center gap-1 min-w-0 flex-1 hover:text-black/90"
-            title="상위로 Zoom-Out (Alt+Up)"
-          >
-            <ArrowUpLeft className="w-3 h-3 shrink-0" />
-            <span className="truncate">{parentZoomTitle || "Home"}</span>
-          </button>
-          <button
-            type="button"
-            data-testid="outliner-zoom-root-btn"
-            onClick={() => outlineCommands.breadcrumbClick(PROJECT_ROOT_CRUMB_ID)}
-            className="shrink-0 px-1.5 hover:text-black/90"
-            title="최상위 Home 복귀"
-          >
-            Home
-          </button>
-        </div>
-      )}
 
       <div
         ref={treeRef}

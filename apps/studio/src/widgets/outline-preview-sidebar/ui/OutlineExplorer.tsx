@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from "react";
 import { LayoutGrid, RefreshCw } from "lucide-react";
 
-import { PROJECT_ROOT_CRUMB_ID, type OutlinerNode } from "@vibe/vdoc-schema";
+import type { OutlinerNode } from "@vibe/vdoc-schema";
 
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
@@ -14,6 +14,7 @@ import { useRevealCanvasSelection } from "../model/useRevealCanvasSelection";
 import { AddPageFlow, type AddPageFlowHandle } from "./AddPageFlow";
 import { ElementsSection } from "./OutlineElementsSection";
 import { DocumentsPagesSection } from "./OutlineDocumentsPagesSection";
+import { OutlineZoomBreadcrumb } from "./OutlineZoomBreadcrumb";
 
 /** 아웃라이너 본체: 머리말 · Documents & Pages 구역 · Elements 구역 · 페이지 추가 흐름. (새 문서는 상단 파일 메뉴) */
 export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => {
@@ -46,10 +47,13 @@ export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId
         onToggleAllMode={() => setIsAllMode((v) => !v)}
       />
 
+      <OutlineZoomBreadcrumb />
+
       {!isAllMode && (
         <DocumentsPagesSection
           {...shared}
           allNodes={projection.allNodes}
+          zoomRootId={projection.rootNodeId}
           reportOrder={reportPages}
           onAddPage={(el) => addPageFlow.current?.toggle(activeDocId, el)}
           onAddNode={phase !== "drafting" ? addNode : undefined}
@@ -63,8 +67,6 @@ export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId
         scopedNodes={projection.visibleNodes}
         hasChildrenMap={projection.hasChildrenMap}
         rootNodeId={projection.rootNodeId}
-        isZoomedIn={projection.rootNodeId !== PROJECT_ROOT_CRUMB_ID && projection.activeZoomLevel !== "project"}
-        parentZoomTitle={projection.parentZoomTitle}
         reportOrder={reportElements}
         onAddNode={isAllMode && phase !== "drafting" ? addNode : undefined}
       />

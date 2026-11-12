@@ -17,9 +17,9 @@ import { documentLifecycle } from "@/features/manage-documents";
 import { pageMutations } from "@/features/mutate-document-pages";
 import { resolvePeekTarget, usePeekTrigger, type PeekHandlers } from "@/features/peek-page";
 import { toggleSlotsLocked } from "@/features/layer-visibility";
-import { outlineCommands } from "@/features/zoom-hierarchy";
+import { getOutlineProjection, outlineCommands } from "@/features/zoom-hierarchy";
 
-import { outlineNodeTargetId } from "./outlineSections";
+import { outlineNodeTargetId, zoomTargetOnSelect } from "./outlineSections";
 
 export { outlineNodeTargetId };
 
@@ -29,6 +29,8 @@ export interface OutlineRowActions {
   hover: (node: OutlinerNode, hovering: boolean) => void;
   toggleCollapse: (node: OutlinerNode) => void;
   zoomIn: (node: OutlinerNode) => void;
+  /** 문서 · 페이지 행의 줌 토글: 이 노드로 줌했으면 한 단계 위로 (Alt+↑ 와 같다), 아니면 이 노드로 Zoom-In. */
+  toggleZoom: (node: OutlinerNode) => void;
   move: (node: OutlinerNode, direction: -1 | 1) => void;
   remove: (node: OutlinerNode) => void;
   openAddPageMenu: (node: OutlinerNode, anchorEl: HTMLElement) => void;
@@ -127,15 +129,29 @@ export function useOutlineRowActions({ activeDocId, getVisibleOrder, setRenaming
   const handlers: Omit<OutlineRowActions, "peek"> = {
     select: (e, node) => {
       if (pickOrSelect(e, node)) return;
+      const session = useWorkspaceSessionStore.getState();
+      session.setPreviewDocId(null);
+      // 한 페이지만 보는 중에 다른 페이지를 고르면 줌을 그 페이지로 옮긴다 (그냥 선택하면 캔버스에 안 보인다).
+      const projection = getOutlineProjection();
+      const zoomRoot = projection.allNodes.find((n) => n.nodeId === projection.rootNodeId);
+      const zoomTarget = zoomTargetOnSelect(node, zoomRoot, activeDocId);
+      if (zoomTarget) {
+        session.setSelectedOutlinerNodeId(zoomTarget.nodeId);
+        outlineCommands.zoomIntoNode(zoomTarget);
+        return;
+      }
       // 활성 문서 · 페이지 · 캔버스 선택은 selectNode 가 함께 맞춘다.
       outlineCommands.selectNode(node);
-      useWorkspaceSessionStore.getState().setPreviewDocId(null);
     },
     keyDown: (e, node) => editing.handleNodeKeyDown(e, node),
     hover: (node, hovering) =>
       useWorkspaceSessionStore.getState().setHoveredOutlineTargetId(hovering ? outlineNodeTargetId(node) : null),
     toggleCollapse: (node) => useWorkspaceSessionStore.getState().toggleNodeCollapse(node.nodeId),
     zoomIn: (node) => outlineCommands.zoomIntoNode(node),
+    toggleZoom: (node) => {
+      if (useWorkspaceSessionStore.getState().zoomRootNodeId === node.nodeId) outlineCommands.zoomOutOneLevel();
+      else outlineCommands.zoomIntoNode(node);
+    },
     move: (node, direction) => void editing.moveNode(node, direction),
     remove: (node) => void editing.deleteNode(node),
     openAddPageMenu: (node, anchorEl) => openAddPageMenu(docIdOf(node), anchorEl),
@@ -181,6 +197,7 @@ export function useOutlineRowActions({ activeDocId, getVisibleOrder, setRenaming
       hover: (node, hovering) => latest.current.hover(node, hovering),
       toggleCollapse: (node) => latest.current.toggleCollapse(node),
       zoomIn: (node) => latest.current.zoomIn(node),
+      toggleZoom: (node) => latest.current.toggleZoom(node),
       move: (node, direction) => latest.current.move(node, direction),
       remove: (node) => latest.current.remove(node),
       openAddPageMenu: (node, anchorEl) => latest.current.openAddPageMenu(node, anchorEl),

@@ -17,7 +17,7 @@ import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { pageMutations } from "@/features/mutate-document-pages";
 import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes";
-import { getOutlineProjection, outlineCommands, useOutlineSelector } from "@/features/zoom-hierarchy";
+import { getOutlineProjection, outlineCommands, useOutlineSelector, ZoomFocusStyle } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
 
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
@@ -276,6 +276,7 @@ export const VDocPageCanvas: React.FC = () => {
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <OutlineHoverHighlight />
       <HiddenLayersStyle />
+      <ZoomFocusStyle />
       <div className="flex-1 flex overflow-hidden">
         <ReferenceSplitViewport />
         {currentPhase === "storylining" ? (

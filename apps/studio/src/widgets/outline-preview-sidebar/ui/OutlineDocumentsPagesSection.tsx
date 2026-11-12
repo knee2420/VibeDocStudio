@@ -9,29 +9,36 @@ import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { isPageTargetNode } from "@/features/edit-outline";
 
 import { useSplitterDrag } from "../lib/useSplitterDrag";
-import { minDepth, selectPageTreeNodes } from "../model/outlineSections";
+import { minDepth, selectPageTreeForZoom } from "../model/outlineSections";
 import { ADD_PAGE_TRIGGER_ATTR } from "./AddPageFlow";
 import { OutlineNodeRow } from "./OutlineNodeRow";
 import { AddNodeButton, type SectionProps } from "./outlineSectionParts";
 
 /**
- * Documents & Pages 구역 (피그마 `페이지` 목록): 문서 · 페이지. 줌 · Elements 검색과 무관하게 늘 전체를 보여준다.
+ * Documents & Pages 구역 (피그마 `페이지` 목록): 문서 · 페이지. Elements 검색과는 무관하다.
+ * 줌은 Workflowy 처럼 페이지 수준까지 따른다 (`selectPageTreeForZoom`): 문서 줌 → 그 문서 · 페이지들,
+ * 페이지 줌 · 엘리먼트 줌 → 그 페이지만.
  * 현재 페이지는 피그마처럼 회색 바탕 + 굵게, 활성 문서는 굵게 표시한다.
  * 아래 경계를 끌어 높이를 바꾼다 (더블클릭: 기본 높이). 현재 페이지가 바뀌면 그 행이 보이게 스크롤한다.
  */
 export const DocumentsPagesSection: React.FC<
   SectionProps & {
     allNodes: OutlinerNode[];
+    /** 투영의 줌 루트 id. */
+    zoomRootId: string;
     onAddPage: (anchorEl: HTMLElement) => void;
     onAddNode?: () => void;
   }
-> = ({ activeDocId, actions, phase, renaming, reportOrder, allNodes, onAddPage, onAddNode }) => {
+> = ({ activeDocId, actions, phase, renaming, reportOrder, allNodes, zoomRootId, onAddPage, onAddNode }) => {
   const [folded, setFolded] = useState(false);
   const collapsedNodeIds = useWorkspaceSessionStore((s) => s.collapsedNodeIds);
   const selectedNodeId = useWorkspaceSessionStore((s) => s.selectedOutlinerNodeId);
   const activePageId = useStudioDocumentStore((s) => s.activePageId);
 
-  const nodes = useMemo(() => selectPageTreeNodes(allNodes, collapsedNodeIds), [allNodes, collapsedNodeIds]);
+  const nodes = useMemo(
+    () => selectPageTreeForZoom(allNodes, collapsedNodeIds, allNodes.find((n) => n.nodeId === zoomRootId)),
+    [allNodes, collapsedNodeIds, zoomRootId]
+  );
   const depthOffset = useMemo(() => minDepth(nodes), [nodes]);
   useLayoutEffect(() => reportOrder(folded ? [] : nodes), [folded, nodes, reportOrder]);
 

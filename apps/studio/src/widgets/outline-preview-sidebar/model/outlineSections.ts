@@ -74,6 +74,32 @@ export function selectPageTreeNodes(allNodes: OutlinerNode[], collapsedIds: read
   return pageTree.filter((n) => !hidden.has(n.nodeId));
 }
 
+/**
+ * Documents & Pages 의 줌 규칙 (Workflowy 처럼 줌한 노드가 목록의 뿌리가 된다). 이 구역은 페이지 수준까지만
+ * 따라간다:
+ * - 줌 없음 · 프로젝트 줌: 전체 목록
+ * - 문서 줌: 그 문서와 그 페이지들만
+ * - 페이지 줌: 그 페이지만
+ * - 엘리먼트(블록 · 구역 · 슬롯) 줌: 페이지 줌과 같다 — 그 엘리먼트의 페이지만 (더 깊은 줌은 Elements · 캔버스가 맡는다)
+ * 문서를 접은 상태(`collapsedIds`)는 어느 경우에나 그대로 반영한다.
+ */
+export function selectPageTreeForZoom(allNodes: OutlinerNode[], collapsedIds: readonly string[], zoomRoot: OutlinerNode | undefined): OutlinerNode[] {
+  const base = selectPageTreeNodes(allNodes, collapsedIds);
+  if (!zoomRoot || zoomRoot.zoomLevel === "project") return base;
+
+  if (zoomRoot.zoomLevel === "document" && isPageTreeNode(zoomRoot)) {
+    const subtree = collectSubtreeIds(allNodes, zoomRoot.nodeId);
+    return base.filter((n) => subtree.has(n.nodeId));
+  }
+
+  const isolated = isolatedPageOf(zoomRoot);
+  if (!isolated) return base;
+  const page = base.find(
+    (n) => n.zoomLevel === "page" && isPageTreeNode(n) && n.targetPageId === isolated.pageId && (n.targetDocId ?? null) === isolated.docId
+  );
+  return page ? [page] : base;
+}
+
 export interface LayerScope {
   docId: string;
   pageId: string;
@@ -98,6 +124,45 @@ export function filterLayerNodes(layers: OutlinerNode[], query: string, collapse
 /** All 모드: 줌 범위(`visibleNodes`) 전체에 검색 · 접힘. */
 export function selectAllModeNodes(scopedNodes: OutlinerNode[], query: string, collapsedIds: readonly string[]): OutlinerNode[] {
   return applyQueryAndCollapse(scopedNodes, query, collapsedIds);
+}
+
+/**
+ * 지금 줌이 캔버스를 한 페이지로 격리하는가 (페이지 · 블록 · 슬롯 줌). 격리된 페이지를 돌려준다.
+ * `VDocPageCanvas` 의 격리 조건(줌 수준이 프로젝트 · 문서가 아니고 대상 페이지가 있음)과 같다.
+ */
+export function isolatedPageOf(zoomRoot: OutlinerNode | undefined): { docId: string | null; pageId: string } | null {
+  if (!zoomRoot || zoomRoot.zoomLevel === "project" || zoomRoot.zoomLevel === "document" || !zoomRoot.targetPageId) return null;
+  return { docId: zoomRoot.targetDocId ?? null, pageId: zoomRoot.targetPageId };
+}
+
+/**
+ * 페이지 격리 중에 같은 문서의 다른 페이지 행을 고르면 줌을 그 페이지로 옮긴다 — 옮기지 않으면 캔버스가
+ * 고른 페이지를 그리지 않는다. 옮길 필요가 없으면 null (그냥 선택). 다른 문서의 페이지는 문서 전환이
+ * 줌을 풀어 주므로 여기서 다루지 않는다.
+ */
+export function zoomTargetOnSelect(node: OutlinerNode, zoomRoot: OutlinerNode | undefined, activeDocId: string): OutlinerNode | null {
+  const isolated = isolatedPageOf(zoomRoot);
+  if (!isolated) return null;
+  const isPageRow = node.zoomLevel === "page" && Boolean(node.targetPageId) && !node.targetBlockId && !node.targetSlotId;
+  if (!isPageRow) return null;
+  if ((node.targetDocId || activeDocId) !== (isolated.docId || activeDocId)) return null;
+  return node.targetPageId === isolated.pageId ? null : node;
+}
+
+/** 브레드크럼 표시 항목: 경로 한 칸, 또는 접힌 중간 경로. */
+export type CrumbItem<T> = { kind: "crumb"; crumb: T } | { kind: "gap"; hidden: T[] };
+
+/**
+ * 좁은 사이드바용 경로 줄이기: `maxVisible` 칸을 넘으면 첫 칸(Home) · 접힌 중간 · 마지막 `maxVisible - 2` 칸.
+ */
+export function compactCrumbs<T>(crumbs: readonly T[], maxVisible = 4): CrumbItem<T>[] {
+  if (crumbs.length <= maxVisible) return crumbs.map((crumb) => ({ kind: "crumb", crumb }));
+  const tailCount = Math.max(1, maxVisible - 2);
+  return [
+    { kind: "crumb", crumb: crumbs[0] },
+    { kind: "gap", hidden: crumbs.slice(1, crumbs.length - tailCount) },
+    ...crumbs.slice(crumbs.length - tailCount).map((crumb): CrumbItem<T> => ({ kind: "crumb", crumb })),
+  ];
 }
 
 /** 아웃라인 노드가 캔버스에서 가리키는 대상 (호버 강조 · 첨부 묶음 판정에 쓴다). */
