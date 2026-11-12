@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "source": "integrate/sidebar-update fa68425 (main + feat/sidebar-update), 기본 보기",
+    "url": "/?phase=drafting&zoom=project-root&doc=vdoc_meeting_minutes_1028",
+    "viewport": "1920x1080",
+    "capturedAt": "2026-11-12T15:16:00Z",
+    "scenario": "main.perf.json 과 같은 6번 클릭",
+    "caveat": "main.perf.json 과 같다 (패널 숨김, dev 빌드, CPU 만 유효). 기본 보기의 사이드바가 활성 페이지의 엘리먼트만 그려서 행 수가 main 의 약 2,500 개에서 약 120 개로 줄었다 — CPU 감소의 대부분은 이 차이로 보인다. 긴 작업이 4개뿐인 것은 나머지 2번 클릭이 50ms 미만이었기 때문."
+  },
+  "longtaskMs": [109, 62, 79, 61],
+  "pointerdownProcessingMs": [107, 61, 0, 73, 59]
+}
