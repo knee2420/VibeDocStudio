@@ -9,7 +9,7 @@
     "preview": "vite preview --port 5180",
     "typecheck": "tsc --noEmit",
     "lint": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\oxlint.CMD -c .oxlintrc.json src",
-    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/undo-coalesce.test.ts tests/shortcut-guards.test.ts tests/pdf-placeholder-hydration.test.ts tests/block-clipboard-selection.test.ts tests/url-template-import.test.ts tests/workbenchProposalStaging.test.ts"
+    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/undo-coalesce.test.ts tests/shortcut-guards.test.ts tests/pdf-placeholder-hydration.test.ts tests/block-clipboard-selection.test.ts tests/url-template-import.test.ts tests/workbenchProposalStaging.test.ts tests/outline-sections.test.ts"
   },
   "dependencies": {
     "@vibe/agent-core": "workspace:*",
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",

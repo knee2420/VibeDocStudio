@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "url": "/?phase=drafting&zoom=project-root&doc=vdoc_meeting_minutes_1028",
+    "viewport": "1920x1080",
+    "capturedAt": "2026-11-12T15:11:02.644Z",
+    "note": "열어야 보이는 메뉴 항목은 포함하지 않음",
+    "source": "origin/main 76cb5ad (sessionStorage 비운 첫 로드, 접힘 없음)"
+  },
+  "rowKinds": {
+    "block": {
+      "rows": 222,
+      "actions": {
+        "fold": 99,
+        "zoom-in": 222
+      }
+    },
+    "document": {
+      "rows": 9,
+      "actions": {
+        "add-page": 9,
+        "delete": 8,
+        "duplicate": 8,
+        "fold": 9,
+        "rename": 8,
+        "zoom-in": 9
+      }
+    },
+    "page": {
+      "rows": 91,
+      "actions": {
+        "delete": 91,
+        "duplicate": 91,
+        "fold": 91,
+        "rename": 91,
+        "zoom-in": 91
+      }
+    },
+    "project": {
+      "rows": 1,
+      "actions": {
+        "fold": 1,
+        "new-doc-menu": 1,
+        "refresh-docs": 1,
+        "zoom-in": 1
+      }
+    },
+    "row": {
+      "rows": 6,
+      "actions": {
+        "fold": 6,
+        "zoom-in": 6
+      }
+    },
+    "section": {
+      "rows": 6,
+      "actions": {
+        "fold": 6,
+        "zoom-in": 6
+      }
+    },
+    "slot": {
+      "rows": 2234,
+      "actions": {
+        "fold": 188,
+        "zoom-in": 2234
+      }
+    }
+  },
+  "sidebarTestIds": [
+    "add-page-menu-btn-{node}",
+    "collapse-left-sidebar-btn",
+    "delete-doc-btn-{node}",
+    "delete-page-btn-{node}",
+    "duplicate-doc-btn-{node}",
+    "duplicate-page-btn-{node}",
+    "fold-toggle-{node}",
+    "left-tab-outliner",
+    "left-tab-reference-manager",
+    "outline-new-doc-menu-btn",
+    "outline-node-review-{node}",
+    "outline-node-row-{node}",
+    "outline-node-title-{node}",
+    "outline-pdf-template-input",
+    "outline-refresh-docs-btn",
+    "outliner-quick-filter-input",
+    "pageview-toggle-btn",
+    "project-root-doc-actions",
+    "rename-doc-btn-{node}",
+    "rename-page-btn-{node}",
+    "sidebar-resize-handle",
+    "toggle-collapse-all-btn",
+    "zoom-bullet-{node}"
+  ],
+  "sidebarButtonTitles": [
+    "더보기",
+    "모두 접기",
+    "사이드바 접기",
+    "좌측 패널 접기",
+    "페이지 프리뷰 패널(Document preview) 열기"
+  ]
+}

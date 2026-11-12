@@ -23,8 +23,12 @@ export function scrollToCanvasPage(pageId: string): void {
   });
 }
 
-/** 블록 또는 슬롯 요소로 스크롤하고 잠깐 테두리 링을 띄운다. */
-export function revealCanvasElement(target: { blockId?: string; slotId?: string }): void {
+/**
+ * 블록 또는 슬롯 요소로 스크롤하고 잠깐 테두리 링을 띄운다.
+ * 요소가 아직 화면(페이지 창)에 없으면 `fallbackPageId` 페이지로만 스크롤한다 — 페이지 스크롤과
+ * 요소 스크롤을 연달아 부르면 두 부드러운 스크롤이 서로 끊어 먹어 화면이 뚝뚝 끊긴다.
+ */
+export function revealCanvasElement(target: { blockId?: string; slotId?: string; fallbackPageId?: string | null }): void {
   const selector = target.slotId
     ? `[data-slot-id="${CSS.escape(target.slotId)}"]`
     : target.blockId
@@ -33,7 +37,12 @@ export function revealCanvasElement(target: { blockId?: string; slotId?: string 
   if (!selector) return;
   afterRender(() => {
     const el = document.querySelector(selector);
-    if (!el) return;
+    if (!el) {
+      if (target.fallbackPageId) {
+        document.getElementById(`vdoc-page-${target.fallbackPageId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      return;
+    }
     el.scrollIntoView({ behavior: "smooth", block: "center" });
     el.classList.add(...FLASH_CLASSES);
     window.setTimeout(() => el.classList.remove(...FLASH_CLASSES), FLASH_MS);

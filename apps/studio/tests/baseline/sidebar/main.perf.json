@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "source": "origin/main 76cb5ad",
+    "url": "/?phase=drafting&zoom=project-root&doc=vdoc_meeting_minutes_1028",
+    "viewport": "1920x1080",
+    "capturedAt": "2026-11-12T15:13:00Z",
+    "scenario": "캔버스 1쪽에서 슬롯 6번 클릭 (meta_card → exec_summary → th1 → th3 → action_items → meta_card), 클릭 간 1.5초",
+    "caveat": "브라우저 패널이 숨겨진 상태에서 측정. 메인 스레드 긴 작업(CPU)은 유효하지만, 프레임 간격 · 화면 표시 지연은 이 값으로 판단할 수 없다. Vite dev 빌드."
+  },
+  "longtaskMs": [199, 129, 92, 121, 191, 168],
+  "pointerdownProcessingMs": [180, 114, 0, 9, 179]
+}

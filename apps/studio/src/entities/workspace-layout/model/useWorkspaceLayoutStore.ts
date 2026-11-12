@@ -14,20 +14,21 @@ export type RightPanelTab = "composer" | "blockbox" | "inspector" | "resource-ma
 /** Resource Manager 도킹 및 배치 위치 */
 export type RmPlacement = "right-tab" | "between-split" | "left-dock" | "closed";
 
-/** 좌측 사이드바(탐색기) 내부 탭: 아웃라이너 vs 레퍼런스 매니저 */
-export type LeftPanelTab = "outliner" | "reference-manager";
+/** 좌측 사이드바(탐색기) 내부 탭: 레이어(아웃라이너) · 에셋 · 레퍼런스 매니저 */
+export type LeftPanelTab = "outliner" | "assets" | "reference-manager";
 
 /** Reference Manager 도킹 및 배치 위치: 좌측 탭 모드 vs 에디터 독립 스플릿 vs 닫힘 */
 export type RefPlacement = "left-tab" | "split" | "closed";
 
 export const SIDEBAR_WIDTH = { default: 320, min: 250, max: 650 } as const;
-export const REFERENCE_DECK_HEIGHT = { default: 140, min: 50 } as const;
+/** 좌측 사이드바의 Documents & Pages 목록 높이 (Elements 와의 경계를 끌어 조절). */
+export const PAGES_PANE_HEIGHT = { default: 248, min: 64, max: 900 } as const;
 export const REFERENCE_SPLIT_WIDTH = { default: 520, min: 360, max: 1000 } as const;
 export const RIGHT_SIDEBAR_WIDTH = { default: 420, min: 320, max: 960 } as const;
 export const RM_SPLIT_WIDTH = { default: 460, min: 320, max: 800 } as const;
 
 const SIDEBAR_WIDTH_KEY = "vdoc-sidebar-width";
-const DECK_HEIGHT_KEY = "vdoc-ref-deck-height";
+const PAGES_PANE_HEIGHT_KEY = "vdoc-pages-pane-height";
 const REFERENCE_SPLIT_WIDTH_KEY = "vdoc-ref-split-width";
 const RIGHT_SIDEBAR_WIDTH_KEY = "vdoc-right-sidebar-width";
 const RM_SPLIT_WIDTH_KEY = "vdoc-rm-split-width";
@@ -52,10 +53,6 @@ const saveRefViewerOpenToSession = (open: boolean) => {
   }
 };
 
-function maxDeckHeight(): number {
-  return typeof window === "undefined" ? 500 : Math.max(300, Math.floor(window.innerHeight * 0.75));
-}
-
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 export interface WorkspaceLayoutState {
@@ -64,8 +61,8 @@ export interface WorkspaceLayoutState {
   rightSidebarOpen: boolean;
   rightPanelTab: RightPanelTab;
   sidebarWidth: number;
+  pagesPaneHeight: number;
   rightSidebarWidth: number;
-  referenceDeckHeight: number;
   referenceSplitWidth: number;
   /** Resource Manager 배치 위치 */
   rmPlacement: RmPlacement;
@@ -102,10 +99,10 @@ export interface WorkspaceLayoutState {
   setRefSplitCollapsed: (collapsed: boolean) => void;
   setSidebarWidth: (width: number) => void;
   resetSidebarWidth: () => void;
+  setPagesPaneHeight: (height: number) => void;
+  resetPagesPaneHeight: () => void;
   setRightSidebarWidth: (width: number) => void;
   resetRightSidebarWidth: () => void;
-  setReferenceDeckHeight: (height: number) => void;
-  resetReferenceDeckHeight: () => void;
   setReferenceSplitWidth: (width: number) => void;
   resetReferenceSplitWidth: () => void;
   setPagePreviewOpen: (open: boolean) => void;
@@ -128,15 +125,11 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   refViewerOpen: loadRefViewerOpenFromSession(),
   refSplitCollapsed: false,
   sidebarWidth: clamp(readStoredNumber(SIDEBAR_WIDTH_KEY, SIDEBAR_WIDTH.default), SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max),
+  pagesPaneHeight: clamp(readStoredNumber(PAGES_PANE_HEIGHT_KEY, PAGES_PANE_HEIGHT.default), PAGES_PANE_HEIGHT.min, PAGES_PANE_HEIGHT.max),
   rightSidebarWidth: clamp(
     readStoredNumber(RIGHT_SIDEBAR_WIDTH_KEY, RIGHT_SIDEBAR_WIDTH.default),
     RIGHT_SIDEBAR_WIDTH.min,
     RIGHT_SIDEBAR_WIDTH.max
-  ),
-  referenceDeckHeight: clamp(
-    readStoredNumber(DECK_HEIGHT_KEY, REFERENCE_DECK_HEIGHT.default),
-    REFERENCE_DECK_HEIGHT.min,
-    maxDeckHeight()
   ),
   referenceSplitWidth: clamp(
     readStoredNumber(REFERENCE_SPLIT_WIDTH_KEY, REFERENCE_SPLIT_WIDTH.default),
@@ -217,6 +210,14 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   },
   resetSidebarWidth: () => get().setSidebarWidth(SIDEBAR_WIDTH.default),
 
+  setPagesPaneHeight: (height) => {
+    const next = Math.round(clamp(height, PAGES_PANE_HEIGHT.min, PAGES_PANE_HEIGHT.max));
+    if (next === get().pagesPaneHeight) return;
+    writeStoredValue(PAGES_PANE_HEIGHT_KEY, next);
+    set({ pagesPaneHeight: next });
+  },
+  resetPagesPaneHeight: () => get().setPagesPaneHeight(PAGES_PANE_HEIGHT.default),
+
   setRightSidebarWidth: (width) => {
     const next = clamp(width, RIGHT_SIDEBAR_WIDTH.min, RIGHT_SIDEBAR_WIDTH.max);
     writeStoredValue(RIGHT_SIDEBAR_WIDTH_KEY, next);
@@ -224,12 +225,6 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   },
   resetRightSidebarWidth: () => get().setRightSidebarWidth(RIGHT_SIDEBAR_WIDTH.default),
 
-  setReferenceDeckHeight: (height) => {
-    const next = clamp(height, REFERENCE_DECK_HEIGHT.min, maxDeckHeight());
-    writeStoredValue(DECK_HEIGHT_KEY, next);
-    set({ referenceDeckHeight: next });
-  },
-  resetReferenceDeckHeight: () => get().setReferenceDeckHeight(REFERENCE_DECK_HEIGHT.default),
 
   setReferenceSplitWidth: (width) => {
     const next = clamp(width, REFERENCE_SPLIT_WIDTH.min, REFERENCE_SPLIT_WIDTH.max);
