@@ -9,15 +9,19 @@ import {
   Clock,
   Component,
   Copy,
+  Eye,
+  EyeOff,
   FilePlus2,
   FolderTree,
   Hash,
   LayoutGrid,
   Loader2,
+  Lock,
   Pencil,
   Table,
   Trash2,
   Type,
+  Unlock,
 } from "lucide-react";
 
 import { documentSurface, type OutlinerNode, type WorkbenchPhase } from "@vibe/vdoc-schema";
@@ -26,10 +30,12 @@ import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachable, outlineNodeRef, withPicked } from "@/features/ai-workspace";
+import { areSlotsLocked } from "@/features/layer-visibility";
 import { isDocumentTargetNode, isEditableOutlineNode, isPageTargetNode } from "@/features/edit-outline";
 import { DocumentSurfaceIcon, type DocumentSurfaceKind } from "@/shared/ui";
 
 import { outlineNodeTargetId, type RowSelection } from "../model/outlineSections";
+import type { RowHidden } from "../model/useLayerFlags";
 import type { OutlineRowActions } from "../model/useOutlineRowActions";
 import { ADD_PAGE_TRIGGER_ATTR } from "./AddPageFlow";
 
@@ -86,6 +92,10 @@ export interface OutlineNodeRowProps {
   depthOffset?: number;
   /** 현재 인라인 이름 편집 중일 때 초기 입력값 (undefined 면 일반 표시). */
   renamingInitialTitle?: string;
+  /** 자물쇠가 잠그고 푸는 슬롯 (이 행 아래 전부). 비어 있으면 자물쇠를 보이지 않는다. */
+  lockSlotIds?: readonly string[];
+  /** 눈 아이콘 상태. */
+  hidden?: RowHidden;
 }
 
 /**
@@ -105,6 +115,8 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
   fallbackDocId,
   depthOffset = 0,
   renamingInitialTitle,
+  lockSlotIds,
+  hidden,
 }) {
   const docId = node.targetDocId || fallbackDocId;
   const isPageRow = isPageTargetNode(node);
@@ -116,6 +128,7 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
   const isCollapsed = useWorkspaceSessionStore((s) => hasChildren && s.collapsedNodeIds.includes(node.nodeId));
   const pendingState = usePdfScaffoldJobStore((s) => (isPageRow && node.targetPageId ? (s.pageStatesByPageId[node.targetPageId] ?? null) : null));
   const pageCount = useStudioDocumentStore((s) => (isPageRow ? (s.docs.find((d) => d.docId === docId)?.pages.length ?? 0) : 0));
+  const isLocked = useStudioDocumentStore((s) => (lockSlotIds?.length ? areSlotsLocked(s.docs.find((d) => d.docId === docId)?.slots ?? {}, lockSlotIds) : false));
   const docSurface = useStudioDocumentStore((s): DocumentSurfaceKind =>
     node.zoomLevel === "document" ? documentSurface(s.docs.find((d) => d.docId === node.targetDocId)).kind : "paged"
   );
@@ -186,6 +199,8 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
       data-strong={isStrong || undefined}
       data-kind={rowKind(node)}
       data-hl={isHighlighted || undefined}
+      data-hidden={hidden}
+      data-locked={isLocked || undefined}
       {...(isRenaming ? {} : bound.attachProps)}
       style={{ paddingLeft: 4 + level * INDENT_PX }}
       className="fig-row"
@@ -354,6 +369,36 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
               </>
             )}
           </div>
+
+          {/* 피그마 자물쇠 · 눈: 호버 때 보이고, 잠금 · 숨김 상태면 늘 보인다. */}
+          {!isPageOrDoc && (
+            <div className="fig-row-toggles">
+              {Boolean(lockSlotIds?.length) && (
+                <button
+                  type="button"
+                  data-testid={`lock-toggle-${node.nodeId}`}
+                  data-on={isLocked || undefined}
+                  aria-pressed={isLocked}
+                  onClick={stop(() => actions.toggleLock(node, lockSlotIds!))}
+                  title={isLocked ? "잠금 해제 (편집 허용)" : "잠금 (캔버스에서 편집 막기)"}
+                  className="fig-icon-btn fig-row-toggle"
+                >
+                  {isLocked ? <Lock className={ICON} /> : <Unlock className={ICON} />}
+                </button>
+              )}
+              <button
+                type="button"
+                data-testid={`visibility-toggle-${node.nodeId}`}
+                data-on={hidden === "self" || undefined}
+                aria-pressed={hidden === "self"}
+                onClick={stop(() => actions.toggleHidden(node))}
+                title={hidden === "self" ? "보이기" : "캔버스에서 숨기기 (보기 전용 · 문서에는 남음)"}
+                className="fig-icon-btn fig-row-toggle"
+              >
+                {hidden === "self" ? <EyeOff className={ICON} /> : <Eye className={ICON} />}
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

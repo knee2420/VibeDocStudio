@@ -17,6 +17,7 @@ import {
   selectAllModeNodes,
   selectPageLayerNodes,
 } from "../model/outlineSections";
+import { useLayerFlags } from "../model/useLayerFlags";
 import { useRowSelection } from "../model/useRowSelection";
 import { OutlineNodeRow } from "./OutlineNodeRow";
 import { AddNodeButton, type SectionProps } from "./outlineSectionParts";
@@ -78,6 +79,7 @@ export const ElementsSection: React.FC<
     return parentIds.some((id) => collapsed.has(id));
   }, [parentIds, collapsedNodeIds]);
   const selection = useRowSelection(nodes);
+  const { lockSlotIds, hidden } = useLayerFlags(baseNodes, nodes);
   useLayoutEffect(() => reportOrder(nodes), [nodes, reportOrder]);
 
   // 캔버스에서 고른 엘리먼트가 목록 밖이면 보이도록 스크롤 (피그마처럼). 이미 보이면 움직이지 않는다.
@@ -231,6 +233,8 @@ export const ElementsSection: React.FC<
               sel={selection.get(node.nodeId)}
               hasChildren={Boolean(hasChildrenMap[node.nodeId])}
               renamingInitialTitle={renaming?.nodeId === node.nodeId ? renaming.initialTitle : undefined}
+              lockSlotIds={lockSlotIds.get(node.nodeId)}
+              hidden={hidden.get(node.nodeId)}
             />
           ))
         )}

@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import { FilePlus2, LayoutGrid, RefreshCw } from "lucide-react";
+import { LayoutGrid, RefreshCw } from "lucide-react";
 
 import { PROJECT_ROOT_CRUMB_ID, type OutlinerNode } from "@vibe/vdoc-schema";
 
@@ -11,11 +11,10 @@ import { useOutlineProjection } from "@/features/zoom-hierarchy";
 
 import { useOutlineRowActions, type RenameState } from "../model/useOutlineRowActions";
 import { AddPageFlow, type AddPageFlowHandle } from "./AddPageFlow";
-import { NewDocumentFlow, type NewDocumentFlowHandle } from "./NewDocumentMenu";
 import { ElementsSection } from "./OutlineElementsSection";
 import { DocumentsPagesSection } from "./OutlineDocumentsPagesSection";
 
-/** 아웃라이너 본체: 머리말 · Documents & Pages 구역 · Elements 구역 · 페이지 추가/새 문서 흐름. */
+/** 아웃라이너 본체: 머리말 · Documents & Pages 구역 · Elements 구역 · 페이지 추가 흐름. (새 문서는 상단 파일 메뉴) */
 export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => {
   const projection = useOutlineProjection();
   const phase = useWorkspaceSessionStore((s) => s.currentPhase);
@@ -23,7 +22,6 @@ export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId
   const [renaming, setRenaming] = useState<RenameState | null>(null);
 
   const addPageFlow = useRef<AddPageFlowHandle>(null);
-  const newDocFlow = useRef<NewDocumentFlowHandle>(null);
   const order = useRef<{ pages: readonly OutlinerNode[]; elements: readonly OutlinerNode[] }>({ pages: [], elements: [] });
   const reportPages = useCallback((nodes: readonly OutlinerNode[]) => void (order.current.pages = nodes), []);
   const reportElements = useCallback((nodes: readonly OutlinerNode[]) => void (order.current.elements = nodes), []);
@@ -43,7 +41,6 @@ export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId
       <ExplorerHeader
         isAllMode={isAllMode}
         onToggleAllMode={() => setIsAllMode((v) => !v)}
-        onOpenNewDocumentMenu={(el) => newDocFlow.current?.toggle(el)}
       />
 
       {!isAllMode && (
@@ -70,17 +67,15 @@ export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId
       />
 
       <AddPageFlow ref={addPageFlow} />
-      <NewDocumentFlow ref={newDocFlow} />
     </>
   );
 };
 
-/** 머리말: 프로젝트 제목 · 새 문서 · 새로고침 · All 모드 · 페이지 프리뷰. */
+/** 머리말: 프로젝트 제목 · 새로고침 · All 모드 · 페이지 프리뷰. */
 const ExplorerHeader: React.FC<{
   isAllMode: boolean;
   onToggleAllMode: () => void;
-  onOpenNewDocumentMenu: (anchorEl: HTMLElement) => void;
-}> = ({ isAllMode, onToggleAllMode, onOpenNewDocumentMenu }) => {
+}> = ({ isAllMode, onToggleAllMode }) => {
   const projectTitle = useProjectStore((s) => selectActiveProject(s)?.title) || "프로젝트";
   const pagePreviewOpen = useWorkspaceLayoutStore((s) => s.pagePreviewOpen);
   const togglePagePreview = useWorkspaceLayoutStore((s) => s.togglePagePreview);
@@ -92,16 +87,6 @@ const ExplorerHeader: React.FC<{
       </span>
 
       <div className="flex items-center shrink-0" data-testid="project-root-doc-actions">
-        <button
-          type="button"
-          data-testid="outline-new-doc-menu-btn"
-          data-new-doc-trigger=""
-          onClick={(e) => onOpenNewDocumentMenu(e.currentTarget)}
-          title="새 문서 (A4 · 블로그 글 · 불러오기)"
-          className="fig-icon-btn"
-        >
-          <FilePlus2 className="w-3.5 h-3.5" />
-        </button>
         <button
           type="button"
           data-testid="outline-refresh-docs-btn"

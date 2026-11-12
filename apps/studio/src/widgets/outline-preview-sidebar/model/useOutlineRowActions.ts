@@ -16,6 +16,7 @@ import {
 import { documentLifecycle } from "@/features/manage-documents";
 import { pageMutations } from "@/features/mutate-document-pages";
 import { resolvePeekTarget, usePeekTrigger, type PeekHandlers } from "@/features/peek-page";
+import { toggleSlotsLocked } from "@/features/layer-visibility";
 import { outlineCommands } from "@/features/zoom-hierarchy";
 
 import { outlineNodeTargetId } from "./outlineSections";
@@ -38,6 +39,10 @@ export interface OutlineRowActions {
   deletePage: (node: OutlinerNode) => void;
   duplicateDocument: (node: OutlinerNode) => void;
   deleteDocument: (node: OutlinerNode) => void;
+  /** 피그마 눈: 캔버스에서 숨기기 · 보이기 (보기 전용). */
+  toggleHidden: (node: OutlinerNode) => void;
+  /** 피그마 자물쇠: 이 행 아래 슬롯 전부 잠금 · 해제 (문서에 저장, Undo 가능). */
+  toggleLock: (node: OutlinerNode, slotIds: readonly string[]) => void;
   /** 피크 핸들러 — 문서 목록은 호버 순간에 읽는다 (문서 구독으로 트리 전체가 다시 그려지지 않게). */
   peek: (node: OutlinerNode) => PeekHandlers;
 }
@@ -160,6 +165,8 @@ export function useOutlineRowActions({ activeDocId, getVisibleOrder, setRenaming
       if (!window.confirm(`「${node.title}」 문서를 지웁니다. 되돌릴 수 없습니다.`)) return;
       void documentLifecycle().deleteDocument(node.targetDocId).catch(reportError);
     },
+    toggleHidden: (node) => useWorkspaceSessionStore.getState().toggleNodeHidden(node.nodeId),
+    toggleLock: (node, slotIds) => toggleSlotsLocked(docIdOf(node), slotIds),
   };
 
   const latest = useRef(handlers);
@@ -184,6 +191,8 @@ export function useOutlineRowActions({ activeDocId, getVisibleOrder, setRenaming
       deletePage: (node) => latest.current.deletePage(node),
       duplicateDocument: (node) => latest.current.duplicateDocument(node),
       deleteDocument: (node) => latest.current.deleteDocument(node),
+      toggleHidden: (node) => latest.current.toggleHidden(node),
+      toggleLock: (node, slotIds) => latest.current.toggleLock(node, slotIds),
       // 피크 대상(문서 · 첫 페이지)은 마우스 이벤트 순간에 스토어에서 읽는다.
       peek: (node) =>
         peekTrigger(() => {

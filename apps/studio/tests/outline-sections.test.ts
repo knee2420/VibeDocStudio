@@ -121,3 +121,14 @@ describe("선택 표시 (캔버스 ↔ 사이드바)", () => {
     assert.deepEqual([...sel], [["s1", "on"]]);
   });
 });
+
+describe("자물쇠 대상 슬롯 (행 아래 전부)", () => {
+  it("블록은 자기 슬롯 전부, 슬롯은 자기 하나, 페이지는 그 페이지 슬롯 전부", async () => {
+    const { collectSubtreeSlotIds } = await import("../src/features/layer-visibility/model/layerVisibility");
+    const map = collectSubtreeSlotIds(nodes);
+    assert.deepEqual(map.get("b1"), ["s1", "s2"]);
+    assert.deepEqual(map.get("s2"), ["s2"]);
+    assert.deepEqual(map.get("p2"), ["s3"]);
+    assert.deepEqual(map.get("doc"), ["s1", "s2", "s3"]);
+  });
+});

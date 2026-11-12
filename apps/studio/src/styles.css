@@ -358,3 +358,13 @@
   cursor: default;
 }
 .fig-menu-item:hover { background: var(--fig-brand); }
+
+/* 피그마 자물쇠 · 눈: 호버 때만, 켜진 상태(잠금 · 숨김)면 늘 보인다. 숨긴 행은 이름 · 아이콘을 흐리게. */
+.fig-row-toggles { display: flex; align-items: center; flex-shrink: 0; }
+.fig-row-toggles .fig-icon-btn { width: 20px; height: 20px; }
+.fig-row-toggle { visibility: hidden; }
+.fig-row:hover .fig-row-toggle,
+.fig-row-toggle[data-on="true"] { visibility: visible; }
+.fig-row-toggle[data-on="true"] { color: var(--fig-text); }
+.fig-row[data-hidden] .fig-row-label,
+.fig-row[data-hidden] .fig-row-icon { opacity: 0.5; }

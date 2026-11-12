@@ -28,6 +28,7 @@ import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
 import { ReferenceSplitViewport } from "./ReferenceSplitViewport";
 import { SlotRangeAiBar } from "./SlotRangeAiBar";
 import { FigmaFloatingToolbar } from "./FigmaFloatingToolbar";
+import { HiddenLayersStyle } from "@/features/layer-visibility";
 
 /** 한 번에 DOM 에 올리는 페이지 수 (슬라이딩 윈도우). */
 const WINDOW_CHUNK_PAGES = 15;
@@ -274,6 +275,7 @@ export const VDocPageCanvas: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <OutlineHoverHighlight />
+      <HiddenLayersStyle />
       <div className="flex-1 flex overflow-hidden">
         <ReferenceSplitViewport />
         {currentPhase === "storylining" ? (
