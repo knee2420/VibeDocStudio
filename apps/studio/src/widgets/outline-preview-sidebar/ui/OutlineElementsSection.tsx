@@ -79,8 +79,9 @@ export const ElementsSection: React.FC<
   const diffStatusMap = useFigmaDiffStatusMap(allNodes);
   useLayoutEffect(() => reportOrder(nodes), [nodes, reportOrder]);
 
-  // 캔버스에서 고른 엘리먼트가 목록 밖이면 보이도록 스크롤 (피그마처럼). 이미 보이면 움직이지 않는다.
+  // 캔버스에서 고른 엘리먼트로 목록 밖이면 보이도록 스크롤 (피그마처럼). 이미 보이면 움직이지 않는다.
   const treeRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
   const firstSelectedId = useMemo(() => {
     for (const [id, state] of selection) if (state === "on") return id;
     return null;
@@ -89,6 +90,56 @@ export const ElementsSection: React.FC<
     if (!firstSelectedId) return;
     treeRef.current?.querySelector(`[data-node-id="${CSS.escape(firstSelectedId)}"]`)?.scrollIntoView({ block: "nearest" });
   }, [firstSelectedId]);
+
+  // VS Code / Antigravity Sticky Scroll: 통합 트리(All Mode)에서 스크롤 시 현재 문서·페이지 행까지만 상단 고정
+  const ROW_HEIGHT = 27;
+  const stickyTrails = useMemo(() => {
+    if (!isAllMode || nodes.length === 0) return [] as Array<Array<{ node: OutlinerNode; index: number }>>;
+    let currentDoc: { node: OutlinerNode; index: number } | null = null;
+    let currentPage: { node: OutlinerNode; index: number } | null = null;
+    return nodes.map((node, index) => {
+      if (node.zoomLevel === "document") {
+        currentDoc = { node, index };
+        currentPage = null;
+        return [];
+      }
+      if (node.zoomLevel === "page" && !node.targetBlockId) {
+        currentPage = { node, index };
+        return currentDoc ? [currentDoc] : [];
+      }
+      if (currentDoc && node.depth <= currentDoc.node.depth) {
+        currentDoc = null;
+        currentPage = null;
+      } else if (currentPage && node.depth <= currentPage.node.depth) {
+        currentPage = null;
+      }
+      const trail: Array<{ node: OutlinerNode; index: number }> = [];
+      if (currentDoc) trail.push(currentDoc);
+      if (currentPage) trail.push(currentPage);
+      return trail;
+    });
+  }, [isAllMode, nodes]);
+
+  const stickyNodes = useMemo(() => {
+    if (!isAllMode || scrollTop <= 2 || nodes.length === 0) return [] as OutlinerNode[];
+    let k = 0;
+    let resolved: OutlinerNode[] = [];
+    for (let pass = 0; pass < 3; pass++) {
+      const targetIdx = Math.min(nodes.length - 1, Math.floor((scrollTop + k * ROW_HEIGHT + 2) / ROW_HEIGHT));
+      const trail = stickyTrails[targetIdx] ?? [];
+      const next: OutlinerNode[] = [];
+      for (const item of trail) {
+        const slotTop = item.index * ROW_HEIGHT;
+        if (scrollTop > slotTop + 2) {
+          next.push(item.node);
+        }
+      }
+      resolved = next;
+      if (next.length === k) break;
+      k = next.length;
+    }
+    return resolved;
+  }, [isAllMode, scrollTop, nodes, stickyTrails]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -174,8 +225,33 @@ export const ElementsSection: React.FC<
         role="tree"
         aria-label={isAllMode ? "Project All Tree" : "Elements Tree"}
         aria-multiselectable
-        className="pb-2 overflow-y-auto overflow-x-hidden flex-1 min-h-0"
+        onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+        className="pb-2 overflow-y-auto overflow-x-hidden flex-1 min-h-0 relative"
       >
+        {stickyNodes.length > 0 && (
+          <div
+            data-testid="outline-sticky-scroll"
+            style={{ marginBottom: -(stickyNodes.length * ROW_HEIGHT) }}
+            className="sticky top-0 z-20 bg-white/95 backdrop-blur-xs border-b border-slate-200/90 shadow-[0_2px_6px_rgba(15,23,42,0.06)]"
+          >
+            {stickyNodes.map((node) => (
+              <OutlineNodeRow
+                key={`sticky-${node.nodeId}`}
+                node={node}
+                actions={actions}
+                phase={phase}
+                fallbackDocId={activeDocId}
+                depthOffset={depthOffset}
+                sel={selection.get(node.nodeId)}
+                hasChildren={Boolean(hasChildrenMap[node.nodeId])}
+                renamingInitialTitle={renaming?.nodeId === node.nodeId ? renaming.initialTitle : undefined}
+                lockSlotIds={lockSlotIds.get(node.nodeId)}
+                hidden={hidden.get(node.nodeId)}
+                diffState={diffStatusMap[node.nodeId]}
+              />
+            ))}
+          </div>
+        )}
         {nodes.length === 0 ? (
           <div data-testid={query ? "outliner-empty-filter-state" : "outliner-empty-state"} className="px-4 py-8 text-center text-black/50">
             <Layers className="w-6 h-6 mx-auto mb-2 text-black/20" strokeWidth={1.5} />
