@@ -132,7 +132,8 @@ export function buildProjectFractalTree(
       blockId: string,
       slotId: string,
       name: OutlineName,
-      isStatic = false
+      isStatic = false,
+      blockKind?: string
     ): OutlinerNode | undefined => {
       const slot = doc.slots[slotId];
       const key = `${doc.docId}\u0000${slotId}`;
@@ -145,6 +146,7 @@ export function buildProjectFractalTree(
           parentId: parent.nodeId,
           targetPageId: story.targetPageId ?? page.pageId,
           targetBlockId: blockId,
+          recommendedTemplateId: story.recommendedTemplateId ?? blockKind ?? parent.recommendedTemplateId ?? undefined,
         });
       }
       return emit({
@@ -158,6 +160,7 @@ export function buildProjectFractalTree(
         targetPageId: page.pageId,
         targetSlotId: slotId,
         targetBlockId: blockId,
+        recommendedTemplateId: blockKind ?? parent.recommendedTemplateId ?? undefined,
         aiStatus: slot.isEdited ? "applied" : "idle",
         ...(isStatic ? { isStatic: true } : {}),
         ...(name.needsReview ? { nameNeedsReview: true } : {}),
@@ -204,11 +207,12 @@ export function buildProjectFractalTree(
       parent: OutlinerNode,
       page: VDocPage,
       blockId: string,
-      entries: { slotId: string; name: OutlineName; isStatic?: boolean }[]
+      entries: { slotId: string; name: OutlineName; isStatic?: boolean }[],
+      blockKind?: string
     ) => {
       const named = dedupeNames(entries.map((e) => ({ ...e, title: e.name.title })));
       for (const e of named) {
-        emitSlot(parent, page, blockId, e.slotId, { ...e.name, title: e.title }, e.isStatic);
+        emitSlot(parent, page, blockId, e.slotId, { ...e.name, title: e.title }, e.isStatic, blockKind);
       }
     };
 
@@ -366,9 +370,9 @@ export function buildProjectFractalTree(
         pageNode,
         blockNodeId,
         blockTitle,
-        emitSlot: (parent, slotId, name, isStatic) => emitSlot(parent, page, blk.blockId, slotId, name, isStatic),
+        emitSlot: (parent, slotId, name, isStatic) => emitSlot(parent, page, blk.blockId, slotId, name, isStatic, blk.kind),
         emitContainer: (parent, nodeId, title, summary, needsReview) => emitContainer(parent, nodeId, page, blk, title, summary, needsReview),
-        emitSlotGroup: (parent, entries) => emitSlotGroup(parent, page, blk.blockId, entries),
+        emitSlotGroup: (parent, entries) => emitSlotGroup(parent, page, blk.blockId, entries, blk.kind),
         emitStatic: (title, summary) =>
           emit({
             nodeId: blockNodeId,
@@ -380,6 +384,7 @@ export function buildProjectFractalTree(
             targetDocId: doc.docId,
             targetPageId: page.pageId,
             targetBlockId: blk.blockId,
+            recommendedTemplateId: blk.kind,
             aiStatus: "idle",
             isStatic: true,
           }),

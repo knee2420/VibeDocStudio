@@ -19,6 +19,7 @@ import { pageMutations } from "@/features/mutate-document-pages";
 import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes";
 import { getOutlineProjection, outlineCommands, useOutlineSelector, ZoomFocusStyle } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
+import { CanvasDiffTabBar, SideBySideDiffCanvas, useActiveDiffStore } from "@/features/document-diff";
 
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
 import { AiStagingDrawer } from "./AiStagingDrawer";
@@ -266,20 +267,24 @@ const DraftingCanvas: React.FC = () => {
   );
 };
 
-/** 중앙 작업 영역: 단계별 작업대 + 왼쪽 참조 작업창 + 하단 AI 변경안 서랍. */
+/** 중앙 작업 영역: 단계별 작업대 + 왼쪽 참조 작업창 + 하단 AI 변경안 서랍 + Side-by-Side Diff 캔버스. */
 export const VDocPageCanvas: React.FC = () => {
   const hasDocument = useStudioDocumentStore((s) => Boolean(selectActiveDocument(s)));
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
+  const activeDiff = useActiveDiffStore((s) => s.activeDiff);
   if (!hasDocument) return null;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
+      <CanvasDiffTabBar />
       <OutlineHoverHighlight />
       <HiddenLayersStyle />
       <ZoomFocusStyle />
       <div className="flex-1 flex overflow-hidden">
         <ReferenceSplitViewport />
-        {currentPhase === "storylining" ? (
+        {activeDiff ? (
+          <SideBySideDiffCanvas activeDiff={activeDiff} />
+        ) : currentPhase === "storylining" ? (
           <main className="flex-1 overflow-y-auto">
             <Phase1StorylineWorkbench />
           </main>
@@ -291,9 +296,9 @@ export const VDocPageCanvas: React.FC = () => {
           <DraftingCanvas />
         )}
       </div>
-      {currentPhase === "drafting" && <SlotRangeAiBar />}
-      <FigmaFloatingToolbar />
-      <AiStagingDrawer />
+      {!activeDiff && currentPhase === "drafting" && <SlotRangeAiBar />}
+      {!activeDiff && <FigmaFloatingToolbar />}
+      {!activeDiff && <AiStagingDrawer />}
     </div>
   );
 };

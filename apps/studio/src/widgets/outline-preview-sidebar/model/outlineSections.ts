@@ -11,9 +11,10 @@ import { collectDescendantIds, collectSubtreeIds, type OutlinerNode } from "@vib
  * 같이 걸러지고, 엘리먼트 안으로 줌하면 Documents & Pages 목록이 통째로 사라졌다.
  */
 
-/** 문서 · 페이지 컨테이너 행 (블록 · 슬롯을 가리키지 않는 행). */
+/** 문서 · 페이지 컨테이너 행 (블록 · 슬롯을 가리키지 않는 행). 참조(#참조) 노드나 대상 페이지가 없는 노드는 제외된다. */
 export function isPageTreeNode(node: OutlinerNode): boolean {
-  return node.zoomLevel === "document" || (node.zoomLevel === "page" && !node.targetBlockId && !node.targetSlotId);
+  if (node.provenanceSourceProjectId) return false;
+  return node.zoomLevel === "document" || (node.zoomLevel === "page" && Boolean(node.targetPageId) && !node.targetBlockId && !node.targetSlotId);
 }
 
 /** 페이지 안의 블록 · 구역 · 슬롯 행. */

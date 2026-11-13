@@ -2,7 +2,7 @@ import React from "react";
 import { ChevronLeft } from "lucide-react";
 
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import { SIDEBAR_WIDTH, useWorkspaceLayoutStore, type LeftPanelTab } from "@/entities/workspace-layout";
+import { SIDEBAR_WIDTH, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useOutlineSelector } from "@/features/zoom-hierarchy";
 import { useDragResize } from "@/shared/lib";
 import { CollapsedPanelRail } from "@/shared/ui";
@@ -13,15 +13,8 @@ import { OutlineExplorer } from "./OutlineExplorer";
 import { SourceControlSidebarPanel } from "./SourceControlSidebarPanel";
 import { TemplateHubSidebarPanel } from "./TemplateHubSidebarPanel";
 
-const TABS: ReadonlyArray<{ id: LeftPanelTab; label: string; testId: string }> = [
-  { id: "outliner", label: "Layers", testId: "figma-tab-layers" },
-  { id: "assets", label: "Assets", testId: "figma-tab-assets" },
-  { id: "reference-manager", label: "Reference", testId: "figma-tab-reference" },
-];
-
 /**
- * 좌측 사이드바: 활성 도구 탭에 따라 탐색기(Layers · Assets · Reference) · 변경안 검토 · 템플릿 허브를 보여준다.
- * 탐색기 탭은 레이아웃 스토어(`leftPanelTab`)가 정한다 — AI Composer 의 참조 칩 · 핀 이동이 `reference-manager` 로 연다.
+ * 좌측 사이드바: 최좌측 액티비티 바 탭(Layers · Source Control · Assets · Reference · Template Hub)에 따라 패널을 전환한다.
  */
 export const OutlinePreviewSidebar: React.FC = () => {
   // 문서 객체를 구독하면 타이핑마다 사이드바 전체가 다시 그려진다. ID 만 본다.
@@ -32,9 +25,6 @@ export const OutlinePreviewSidebar: React.FC = () => {
   const setSidebarWidth = useWorkspaceLayoutStore((s) => s.setSidebarWidth);
   const resetSidebarWidth = useWorkspaceLayoutStore((s) => s.resetSidebarWidth);
   const activeActivityTab = useWorkspaceLayoutStore((s) => s.activeActivityTab);
-  const storedTab = useWorkspaceLayoutStore((s) => s.leftPanelTab);
-  const setLeftPanelTab = useWorkspaceLayoutStore((s) => s.setLeftPanelTab);
-  const refPlacement = useWorkspaceLayoutStore((s) => s.refPlacement);
   const { onResizeStart } = useDragResize({ axis: "x", size: sidebarWidth, onResize: setSidebarWidth });
   const visibleNodeCount = useOutlineSelector((p) => p.visibleNodes.length);
 
@@ -52,10 +42,6 @@ export const OutlinePreviewSidebar: React.FC = () => {
       />
     );
   }
-
-  // 레퍼런스를 에디터 스플릿으로 띄운 동안에는 탭을 숨기므로 레이어로 돌아간다.
-  const tabs = refPlacement === "split" ? TABS.filter((t) => t.id !== "reference-manager") : TABS;
-  const activeTab = tabs.some((t) => t.id === storedTab) ? storedTab : "outliner";
 
   return (
     <aside
@@ -75,25 +61,10 @@ export const OutlinePreviewSidebar: React.FC = () => {
         <SourceControlSidebarPanel />
       ) : activeActivityTab === "template-hub" ? (
         <TemplateHubSidebarPanel />
-      ) : (
+      ) : activeActivityTab === "assets" ? (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <div className="h-10 pl-2 pr-2 border-b border-[var(--fig-border)] flex items-center justify-between shrink-0">
-            <div role="tablist" className="flex items-center">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === tab.id}
-                  data-testid={tab.testId}
-                  onClick={() => setLeftPanelTab(tab.id)}
-                  className="fig-tab"
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
+          <div className="h-10 pl-3 pr-2 border-b border-[var(--fig-border)] flex items-center justify-between shrink-0">
+            <span className="text-xs font-semibold text-slate-800">Assets</span>
             <button
               type="button"
               data-testid="collapse-left-sidebar-btn"
@@ -104,15 +75,26 @@ export const OutlinePreviewSidebar: React.FC = () => {
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
           </div>
-
-          {activeTab === "outliner" ? (
-            <OutlineExplorer activeDocId={activeDocId} />
-          ) : activeTab === "assets" ? (
-            <FigmaAssetsSidebarPanel />
-          ) : (
-            <ReferenceManagerWidget isSplit={false} />
-          )}
+          <FigmaAssetsSidebarPanel />
         </div>
+      ) : activeActivityTab === "reference" ? (
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="h-10 pl-3 pr-2 border-b border-[var(--fig-border)] flex items-center justify-between shrink-0">
+            <span className="text-xs font-semibold text-slate-800">Reference</span>
+            <button
+              type="button"
+              data-testid="collapse-left-sidebar-btn"
+              onClick={() => setLeftSidebarOpen(false)}
+              className="fig-icon-btn"
+              title="좌측 패널 접기"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <ReferenceManagerWidget isSplit={false} />
+        </div>
+      ) : (
+        <OutlineExplorer activeDocId={activeDocId} />
       )}
     </aside>
   );

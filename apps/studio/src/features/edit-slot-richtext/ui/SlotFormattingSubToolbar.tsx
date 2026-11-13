@@ -60,6 +60,8 @@ type Editor = NonNullable<ReturnType<typeof useActiveSlotEditorStore.getState>["
 
 export interface SlotFormattingSubToolbarProps {
   onTableCommand?: (pageId: string, blockId: string, sectionId: string | null, cmd: TableCommand) => void;
+  phaseStepper?: React.ReactNode;
+  showFormattingControls?: boolean;
 }
 
 /** Runs `fn` on the selection, or on the whole slot when the caret has no selection. */
@@ -93,7 +95,11 @@ function currentFontSizePt(editor: Editor | null): number {
  * yesform-parity formatting toolbar. Context-aware: inside a table cell it leads with
  * 표 편집 (borders, line colour, line style) and 칸 배경색, like editor.yesform.com.
  */
-export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> = ({ onTableCommand }) => {
+export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> = ({
+  onTableCommand,
+  phaseStepper,
+  showFormattingControls = true,
+}) => {
   const doc = useStudioDocumentStore(selectActiveDocument);
   const mode = useStudioDocumentStore((s) => s.mode);
   const toggleMode = useStudioDocumentStore((s) => s.toggleMode);
@@ -181,6 +187,15 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
         </ToolButton>
         <ToolDivider />
 
+        {phaseStepper && (
+          <>
+            <div className="shrink-0">{phaseStepper}</div>
+            {showFormattingControls && <ToolDivider />}
+          </>
+        )}
+
+        {showFormattingControls && (
+          <>
         <BlockControlsGroup />
         {tableTarget && mode === "Editing" && (
           <>
@@ -442,6 +457,8 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
         >
           <Braces className="w-3.5 h-3.5" /> 변수
         </ToolButton>
+          </>
+        )}
       </div>
 
       {currentSlot && (

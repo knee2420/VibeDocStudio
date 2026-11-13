@@ -14,9 +14,13 @@ import {
   FilePlus2,
   FolderTree,
   Hash,
+  Image as ImageIcon,
+  Images,
   LayoutGrid,
   Loader2,
   Lock,
+  Minus,
+  MessageSquare,
   Pencil,
   Table,
   Trash2,
@@ -37,7 +41,9 @@ import { DocumentSurfaceIcon, type DocumentSurfaceKind } from "@/shared/ui";
 import { outlineNodeTargetId, type RowSelection } from "../model/outlineSections";
 import type { RowHidden } from "../model/useLayerFlags";
 import type { OutlineRowActions } from "../model/useOutlineRowActions";
+import type { NodeDiffState } from "../model/useFigmaDiffStatus";
 import { ADD_PAGE_TRIGGER_ATTR } from "./AddPageFlow";
+import { FigmaDiffBadge } from "./FigmaDiffBadge";
 
 /** 피그마 레이어 들여쓰기 (한 단계 24px, 6단계까지). */
 const INDENT_PX = 24;
@@ -48,30 +54,101 @@ const includesAny = (text: string, words: readonly string[]) => words.some((w) =
 const SECTION_WORDS = ["섹션", "구역", "그리드"] as const;
 const TABLE_WORDS = ["표", "테이블", "매트릭스"] as const;
 const COMPONENT_WORDS = ["컴포넌트", "템플릿"] as const;
+const IMAGE_WORDS = ["이미지", "사진", "image", "photo", "스카이라인", "전경", "일몰", "갤러리"] as const;
+const DIVIDER_WORDS = ["구분선", "divider"] as const;
+const CALLOUT_WORDS = ["안내 상자", "콜아웃", "callout", "안내문"] as const;
 
 type RowKind = "component" | "static" | undefined;
 
-function rowKind(node: OutlinerNode): RowKind {
-  if (node.zoomLevel === "slot" && includesAny(node.title.toLowerCase(), COMPONENT_WORDS)) return "component";
+function rowKind(node: OutlinerNode, blockKind?: string): RowKind {
+  const kind = (node.recommendedTemplateId || blockKind || "").toLowerCase();
+  if (kind === "component" || includesAny(node.title.toLowerCase(), COMPONENT_WORDS)) return "component";
   if (node.isStatic) return "static";
   return undefined;
 }
 
-/** 피그마 레이어 아이콘: Frame(#) · Section · Table · Component · Text. 페이지 행은 아이콘이 없다. */
-function nodeIcon(node: OutlinerNode, docSurface: DocumentSurfaceKind): React.ReactNode {
+/** 피그마 레이어 아이콘:
+ * - Image (ImageIcon / Images): 이미지 블록, 사진 묶음, 이미지 슬롯
+ * - Text (Type): 일반 본문 텍스트, 제목(Heading)
+ * - Divider (Minus): 구분선
+ * - Callout (MessageSquare): 안내 상자
+ * - Table (Table): 표
+ * - Section / Grid (LayoutGrid): 다단 그리드, 섹션
+ * - Frame (Hash): 복합 서식 프레임, 페이지 컨테이너
+ * - Component (Component): 컴포넌트 마스터 / 템플릿
+ * 페이지 행은 피그마 페이지 목록처럼 아이콘이 없다.
+ */
+function nodeIcon(node: OutlinerNode, docSurface: DocumentSurfaceKind, blockKind?: string): React.ReactNode {
   if (node.zoomLevel === "project") return <FolderTree className={ICON} />;
   if (node.zoomLevel === "document") {
     return <DocumentSurfaceIcon surface={docSurface} className={`${ICON} ${docSurface === "scroll" ? "text-emerald-500" : "text-[#0d99ff]"}`} />;
   }
+
+  // 페이지 행은 피그마 페이지 목록처럼 아이콘이 없다
+  if (node.zoomLevel === "page" && !node.targetBlockId) {
+    return null;
+  }
+
   const title = node.title.toLowerCase();
-  if (node.zoomLevel === "page") {
-    if (!node.targetBlockId) return null;
-    if (includesAny(title, SECTION_WORDS)) return <LayoutGrid className={ICON} />;
-    if (includesAny(title, TABLE_WORDS)) return <Table className={ICON} />;
+  const kind = (node.recommendedTemplateId || blockKind || "").toLowerCase();
+
+  // 1. 이미지 (피그마 Image 아이콘)
+  if (
+    kind === "image" ||
+    title === "이미지" ||
+    title.includes("사진 묶음") ||
+    (kind === "columns-grid" && title.includes("사진")) ||
+    node.nodeId.includes("blk_img") ||
+    node.targetBlockId?.startsWith("b_img_") ||
+    node.targetBlockId?.startsWith("blk_img_") ||
+    includesAny(title, IMAGE_WORDS)
+  ) {
+    return title.includes("묶음") ? <Images className={ICON} /> : <ImageIcon className={ICON} />;
+  }
+
+  // 2. 구분선 (피그마 Line / Vector 스타일의 Minus 아이콘)
+  if (
+    kind === "divider" ||
+    node.targetBlockId?.startsWith("b_hr_") ||
+    node.targetBlockId?.includes("divider") ||
+    includesAny(title, DIVIDER_WORDS)
+  ) {
+    return <Minus className={ICON} />;
+  }
+
+  // 3. 안내 상자 / 콜아웃
+  if (
+    kind === "callout-box" ||
+    kind === "callout" ||
+    node.targetBlockId?.startsWith("b_box_") ||
+    includesAny(title, CALLOUT_WORDS)
+  ) {
+    return <MessageSquare className={ICON} />;
+  }
+
+  // 4. 표 / 테이블 / 매트릭스
+  if (
+    kind === "table" ||
+    kind === "structured-table" ||
+    includesAny(title, TABLE_WORDS)
+  ) {
+    return <Table className={ICON} />;
+  }
+
+  // 5. 복합 서식 프레임 / 섹션 / 그리드 컨테이너 (피그마 Frame #)
+  if (node.zoomLevel === "page" && node.targetBlockId) {
+    if (includesAny(title, SECTION_WORDS) || kind === "columns-grid") {
+      return <LayoutGrid className={ICON} />;
+    }
     return <Hash className={ICON} />;
   }
-  if (title.includes("표")) return <Table className={ICON} />;
-  if (rowKind(node) === "component") return <Component className={ICON} />;
+
+  // 6. 컴포넌트 (피그마 Component ❖ 아이콘)
+  if (kind === "component" || includesAny(title, COMPONENT_WORDS)) {
+    return <Component className={ICON} />;
+  }
+
+  // 7. 기본값: 피그마 텍스트 'T' (Type) 아이콘 (제목, 본문 텍스트 등)
   return <Type className={ICON} />;
 }
 
@@ -96,6 +173,8 @@ export interface OutlineNodeRowProps {
   lockSlotIds?: readonly string[];
   /** 눈 아이콘 상태. */
   hidden?: RowHidden;
+  /** 안티그래비티 (VS Code Git 트리) 스타일 변경 상태 (U / M 또는 상위 도트 ●). */
+  diffState?: NodeDiffState;
 }
 
 /**
@@ -117,6 +196,7 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
   renamingInitialTitle,
   lockSlotIds,
   hidden,
+  diffState,
 }) {
   const docId = node.targetDocId || fallbackDocId;
   const isPageRow = isPageTargetNode(node);
@@ -131,9 +211,18 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
   const pendingState = usePdfScaffoldJobStore((s) => (isPageRow && node.targetPageId ? (s.pageStatesByPageId[node.targetPageId] ?? null) : null));
   const pageCount = useStudioDocumentStore((s) => (isPageRow ? (s.docs.find((d) => d.docId === docId)?.pages.length ?? 0) : 0));
   const isLocked = useStudioDocumentStore((s) => (lockSlotIds?.length ? areSlotsLocked(s.docs.find((d) => d.docId === docId)?.slots ?? {}, lockSlotIds) : false));
+  const doc = useStudioDocumentStore((s) => s.docs.find((d) => d.docId === docId));
   const docSurface = useStudioDocumentStore((s): DocumentSurfaceKind =>
     node.zoomLevel === "document" ? documentSurface(s.docs.find((d) => d.docId === node.targetDocId)).kind : "paged"
   );
+  const blockKind = useMemo(() => {
+    if (!node.targetBlockId || !doc) return undefined;
+    for (const page of doc.pages) {
+      const blk = page.blocks.find((b) => b.blockId === node.targetBlockId);
+      if (blk) return blk.kind;
+    }
+    return undefined;
+  }, [doc, node.targetBlockId]);
 
   const bound = useMemo(
     () => ({
@@ -186,7 +275,7 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
     ) : pendingState?.status === "failed" || pendingState?.status === "cancelled" ? (
       <AlertTriangle data-testid={`outline-page-failed-${node.nodeId}`} className={`${ICON} text-[#f24822]`} />
     ) : null;
-  const icon = statusIcon ?? nodeIcon(node, docSurface);
+  const icon = statusIcon ?? nodeIcon(node, docSurface, blockKind);
 
   return (
     <div
@@ -199,7 +288,8 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
       data-sel={sel}
       data-current={isCurrent || undefined}
       data-strong={isStrong || undefined}
-      data-kind={rowKind(node)}
+      data-kind={rowKind(node, blockKind)}
+      data-diff={diffState?.kind}
       data-hl={isHighlighted || undefined}
       data-hidden={hidden}
       data-locked={isLocked || undefined}
@@ -292,6 +382,7 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
               참조
             </span>
           )}
+          <FigmaDiffBadge diffState={diffState} />
 
           <div className="fig-row-actions">
             {!isPageOrDoc && (

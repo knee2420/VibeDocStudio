@@ -41,6 +41,7 @@ export interface StudioDocumentState {
   activePageId: string;
   mode: "Editing" | "Viewing";
   persistedDocIds: ReadonlySet<string>;
+  committedPageIds: ReadonlySet<string>;
   saveState: Record<string, DocumentSaveState>;
   lastError: string | null;
 
@@ -63,6 +64,10 @@ export interface StudioDocumentState {
   forgetDocument: (docId: string) => void;
   /** 서버에 저장되는 새 작업 문서 (PDF 가져오기 · .vdoc 파일 열기). */
   addDocument: (doc: VDocDocument) => Promise<void>;
+  /** 데모용 Git Commit & Push: 현재 문서의 모든 변경점(isEdited, 신규 페이지)을 기준점(Base)으로 확정해 비운다. */
+  commitDocChanges: (docId: string) => void;
+  /** 데모용 Git Commit & Push: 작업 공간의 모든 문서/페이지 변경점을 기준점(Base)으로 확정해 비운다. */
+  commitAllDocChanges: () => void;
   dismissError: () => void;
 }
 
@@ -73,6 +78,29 @@ const pendingNotes = new Map<string, ChangeNote[]>();
 /** 비동기로 수화된 예약 페이지 ID (문서별) — 이전 스냅샷 restore() 가 비동기 결과를 지우지 않게 보호한다. */
 const asyncHydratedPages = new Map<string, Set<string>>();
 
+
+const COMMITTED_PAGES_KEY = "vdoc-committed-pages";
+
+function loadCommittedPageIds(): Set<string> {
+  try {
+    const raw = typeof window !== "undefined" ? window.localStorage.getItem(COMMITTED_PAGES_KEY) : null;
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? new Set(parsed.filter((x): x is string => typeof x === "string")) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveCommittedPageIds(ids: ReadonlySet<string>) {
+  try {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(COMMITTED_PAGES_KEY, JSON.stringify(Array.from(ids)));
+    }
+  } catch {
+    // ignore storage quota errors
+  }
+}
 
 export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => {
   const replaceDoc = (doc: VDocDocument) =>
@@ -152,6 +180,7 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
     activePageId: "",
     mode: "Editing",
     persistedDocIds: new Set<string>(),
+    committedPageIds: loadCommittedPageIds(),
     saveState: {},
     lastError: null,
 
@@ -270,6 +299,66 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
       get().upsertDocument(doc);
       set((s) => ({ persistedDocIds: new Set([...s.persistedDocIds, doc.docId]) }));
       await saveNow(doc.docId);
+    },
+
+    commitDocChanges: (docId) => {
+      const targetDoc = get().docs.find((d) => d.docId === docId);
+      if (!targetDoc) return;
+
+      const nextCommitted = new Set(get().committedPageIds);
+      for (const page of targetDoc.pages) {
+        nextCommitted.add(page.pageId);
+      }
+      saveCommittedPageIds(nextCommitted);
+      set({ committedPageIds: nextCommitted });
+
+      get().updateDoc(
+        docId,
+        (prev) => {
+          const nextSlots: Record<string, VDocSlot> = {};
+          for (const [sid, slot] of Object.entries(prev.slots)) {
+            nextSlots[sid] = {
+              ...slot,
+              isEdited: false,
+              originalContent: slot.content,
+            };
+          }
+          return { ...prev, slots: nextSlots };
+        },
+        { history: false, label: "Commit & Push (기준점 확정)" },
+      );
+    },
+
+    commitAllDocChanges: () => {
+      const allDocs = get().docs;
+      const nextCommitted = new Set(get().committedPageIds);
+      for (const d of allDocs) {
+        for (const page of d.pages) {
+          nextCommitted.add(page.pageId);
+        }
+      }
+      saveCommittedPageIds(nextCommitted);
+      set({ committedPageIds: nextCommitted });
+
+      for (const d of allDocs) {
+        const hasEditedSlot = Object.values(d.slots).some((s) => s.isEdited);
+        if (!hasEditedSlot) continue;
+        get().updateDoc(
+          d.docId,
+          (prev) => {
+            const nextSlots: Record<string, VDocSlot> = {};
+            for (const [sid, slot] of Object.entries(prev.slots)) {
+              nextSlots[sid] = {
+                ...slot,
+                isEdited: false,
+                originalContent: slot.content,
+              };
+            }
+            return { ...prev, slots: nextSlots };
+          },
+          { history: false, label: "Commit & Push (전체 기준점 확정)" },
+        );
+      }
     },
 
     dismissError: () => set({ lastError: null }),

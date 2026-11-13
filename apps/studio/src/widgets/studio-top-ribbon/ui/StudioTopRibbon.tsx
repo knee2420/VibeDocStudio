@@ -29,7 +29,6 @@ import { ImportPdfButton } from "@/features/import-pdf-form";
 import { OutlineBreadcrumbBar } from "@/features/zoom-hierarchy";
 import { useHistoryStore } from "@/shared/lib";
 
-import { ExecutionPhaseStepper } from "./ExecutionPhaseStepper";
 import { ScaffoldJobStatusPill } from "./ScaffoldJobStatusPill";
 import { ShortcutHelpPopover } from "./ShortcutHelpPopover";
 
@@ -266,11 +265,6 @@ export const StudioTopRibbon: React.FC = () => {
         {/* Left: 4-Level Fractal Breadcrumb Bar */}
         <div className="flex items-center min-w-0">
           <OutlineBreadcrumbBar />
-        </div>
-
-        {/* Center: Reversible 3-Phase Stepper */}
-        <div className="flex items-center gap-2 shrink-0">
-          <ExecutionPhaseStepper />
         </div>
 
         {/* Right: Unified Undo/Redo & Split View Toggle */}

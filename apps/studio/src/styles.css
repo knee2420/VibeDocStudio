@@ -327,6 +327,50 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+ * 안티그래비티 (VS Code Git 트리) 스타일 데코레이터
+ * - Added: 신규 요소 및 상위 컨테이너 초록색 텍스트 (#2ea043) + 우측 'U' / 도트(●)
+ * - Edited: 수정 요소 및 상위 컨테이너 골드/앰버 텍스트 (#d97706) + 우측 'M' / 도트(●)
+ * ─────────────────────────────────────────────────────────────────────────── */
+.fig-row[data-diff="added"] .fig-row-label {
+  color: #2ea043 !important;
+  font-weight: 500;
+}
+.fig-row[data-diff="edited"] .fig-row-label {
+  color: #d97706 !important;
+  font-weight: 500;
+}
+
+.fig-git-letter {
+  flex-shrink: 0;
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+.fig-git-letter.fig-git-added {
+  color: #2ea043;
+}
+.fig-git-letter.fig-git-edited {
+  color: #d97706;
+}
+
+.fig-git-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 6px;
+  display: inline-block;
+}
+.fig-git-dot.fig-git-added {
+  background-color: #2ea043;
+}
+.fig-git-dot.fig-git-edited {
+  background-color: #d97706;
+}
+
 .fig-search {
   height: 28px;
   margin: 0 8px 4px;

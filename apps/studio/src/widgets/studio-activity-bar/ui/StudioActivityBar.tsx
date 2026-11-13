@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, FolderTree, GitBranch, HelpCircle, Settings } from "lucide-react";
+import { BookOpen, FolderTree, GitBranch, HelpCircle, LayoutGrid, Library, Settings } from "lucide-react";
 
 import { useAiStagingStore } from "@/entities/ai-staging";
 import { useWorkspaceLayoutStore, type ActivityBarTab } from "@/entities/workspace-layout";
@@ -8,7 +8,7 @@ import { StudioAgentSettingsButton } from "@/features/agent-settings";
 const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNode; testId: string }> = [
   {
     id: "explorer",
-    label: "프로젝트 아웃라이너 (Explorer)",
+    label: "Layers · 프로젝트 아웃라이너 (Explorer)",
     icon: <FolderTree className="w-5 h-5" />,
     testId: "activity-tab-explorer",
   },
@@ -17,6 +17,18 @@ const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNod
     label: "Staged AI 변경안 검토 & 되돌리기 이력",
     icon: <GitBranch className="w-5 h-5" />,
     testId: "activity-tab-source-control",
+  },
+  {
+    id: "assets",
+    label: "에셋 (Assets)",
+    icon: <LayoutGrid className="w-5 h-5" />,
+    testId: "activity-tab-assets",
+  },
+  {
+    id: "reference",
+    label: "레퍼런스 (Reference)",
+    icon: <Library className="w-5 h-5" />,
+    testId: "activity-tab-reference",
   },
   {
     id: "template-hub",

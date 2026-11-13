@@ -6,7 +6,7 @@ import { readStoredNumber, writeStoredValue } from "@/shared/lib";
  * 스튜디오 화면 배치 (패널 열림 · 크기 · 활성 도구 탭 · 팝오버).
  * 문서나 작업 위치와 무관한 순수 UI 상태이며, 패널 크기만 브라우저에 기억한다.
  */
-export type ActivityBarTab = "explorer" | "source-control" | "template-hub";
+export type ActivityBarTab = "explorer" | "source-control" | "assets" | "reference" | "template-hub";
 
 /** 오른쪽 작업 패널의 탭. AI Composer 가 기본이다. */
 export type RightPanelTab = "composer" | "blockbox" | "inspector" | "resource-manager";
@@ -165,19 +165,27 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
       set({ rmPlacement: placement });
     }
   },
-  setLeftPanelTab: (tab) => set({ leftPanelTab: tab }),
+  setLeftPanelTab: (tab) =>
+    set({
+      leftPanelTab: tab,
+      leftSidebarOpen: true,
+      activeActivityTab:
+        tab === "assets" ? "assets" : tab === "reference-manager" ? "reference" : "explorer",
+    }),
   setRefPlacement: (placement) => {
-    const { leftPanelTab } = get();
+    const { leftPanelTab, activeActivityTab } = get();
     if (placement === "split") {
       set({
         refPlacement: placement,
         leftPanelTab: leftPanelTab === "reference-manager" ? "outliner" : leftPanelTab,
+        activeActivityTab: activeActivityTab === "reference" ? "explorer" : activeActivityTab,
       });
     } else if (placement === "left-tab") {
       set({
         refPlacement: placement,
         leftSidebarOpen: true,
         leftPanelTab: "reference-manager",
+        activeActivityTab: "reference",
       });
     } else {
       set({ refPlacement: placement });
@@ -188,11 +196,12 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
     set({ refViewerOpen: open });
   },
   openReferenceSplit: () => {
-    const { leftPanelTab } = get();
+    const { leftPanelTab, activeActivityTab } = get();
     set({
       refPlacement: "split",
       refSplitCollapsed: false,
       leftPanelTab: leftPanelTab === "reference-manager" ? "outliner" : leftPanelTab,
+      activeActivityTab: activeActivityTab === "reference" ? "explorer" : activeActivityTab,
     });
   },
   setRefSplitCollapsed: (collapsed) => set({ refSplitCollapsed: collapsed }),

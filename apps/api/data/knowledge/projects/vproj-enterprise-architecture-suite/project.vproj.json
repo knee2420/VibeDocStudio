@@ -5,17 +5,8 @@
   "activePhase": "drafting",
   "docIds": [
     "vdoc_meeting_minutes_1028",
-    "vdoc-1a1c8b1a2b3-6dcc5fc9",
-    "vdoc-1a1c8b7e23d-fe519ff1",
-    "vdoc-1a1c8d2fc3d-157163ca",
-    "vdoc-1a1c947341b-9c211a00",
-    "vdoc-1a1ca72f5bb-01075094",
-    "vdoc-1a1cb9f37b7-67da12d1",
-    "vdoc-1a1cd8f1a4b-64b4e9b1",
-    "vdoc-1a1cf98c1da-592bc214",
-    "vdoc-1a1cfbc25a0-c8e38e06",
-    "vdoc-1a1d088026d-c0c06018",
-    "vdoc-1a1d2b536c3-4adc54af"
+    "vdoc-1a1ca15d374-e5c758db",
+    "vdoc-1a1d2db6530-eb650220"
   ],
   "storylineNodes": [
     {
@@ -125,5 +116,5 @@
       "clonedAt": "2026-11-03T12:25:23Z"
     }
   ],
-  "updatedAt": "2026-11-13T02:20:53Z"
+  "updatedAt": "2026-11-13T05:18:05Z"
 }

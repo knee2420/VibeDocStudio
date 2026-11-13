@@ -52,6 +52,15 @@ describe("페이지 구역", () => {
   it("레이어 접힘은 페이지 목록에 영향이 없다", () => {
     assert.deepEqual(ids(selectPageTreeNodes(nodes, ["b1", "b2"])), ["doc", "p1", "p2"]);
   });
+
+  it("참조 노드 및 미할당 노드는 페이지 목록에서 제외된다", () => {
+    const mixedNodes: OutlinerNode[] = [
+      ...nodes,
+      node({ nodeId: "ref-node", zoomLevel: "page", depth: 1, provenanceSourceProjectId: "ref:123", targetDocId: "d1" }),
+      node({ nodeId: "unassigned-page", zoomLevel: "page", depth: 1, targetDocId: "d1", targetPageId: null }),
+    ];
+    assert.deepEqual(ids(selectPageTreeNodes(mixedNodes, [])), ["doc", "p1", "p2"]);
+  });
 });
 
 describe("레이어 구역", () => {

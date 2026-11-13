@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronsDownUp, ChevronsUpDown, Plus } from "lucide-react";
 
 import type { OutlinerNode } from "@vibe/vdoc-schema";
 
@@ -10,6 +10,8 @@ import { isPageTargetNode } from "@/features/edit-outline";
 
 import { useSplitterDrag } from "../lib/useSplitterDrag";
 import { minDepth, selectPageTreeForZoom } from "../model/outlineSections";
+import { useFigmaDiffStatusMap } from "../model/useFigmaDiffStatus";
+import { ADD_PAGE_TRIGGER_ATTR } from "./AddPageFlow";
 import { OutlineNodeRow } from "./OutlineNodeRow";
 import { AddNodeButton, type SectionProps } from "./outlineSectionParts";
 
@@ -23,23 +25,47 @@ import { AddNodeButton, type SectionProps } from "./outlineSectionParts";
 export const DocumentsPagesSection: React.FC<
   SectionProps & {
     allNodes: OutlinerNode[];
+    hasChildrenMap?: Record<string, boolean>;
     /** 투영의 줌 루트 id. */
     zoomRootId: string;
-    /** 머리말 `+`: 새 문서 메뉴 (A4 · 블로그 글 · 불러오기). 페이지 추가는 문서 행의 버튼이 맡는다. */
-    onNewDocument: (anchorEl: HTMLElement) => void;
+    /** 머리말 `+`: 현재 활성 문서에 페이지를 추가하는 출처 팝오버를 연다 (기본 페이지 · PDF · 템플릿 · URL). */
+    onAddPage: (anchorEl: HTMLElement) => void;
     onAddNode?: () => void;
   }
-> = ({ activeDocId, actions, phase, renaming, reportOrder, allNodes, zoomRootId, onNewDocument, onAddNode }) => {
+> = ({ activeDocId, actions, phase, renaming, reportOrder, allNodes, hasChildrenMap, zoomRootId, onAddPage, onAddNode }) => {
   const [folded, setFolded] = useState(false);
   const collapsedNodeIds = useWorkspaceSessionStore((s) => s.collapsedNodeIds);
+  const setNodesCollapsed = useWorkspaceSessionStore((s) => s.setNodesCollapsed);
   const selectedNodeId = useWorkspaceSessionStore((s) => s.selectedOutlinerNodeId);
   const activePageId = useStudioDocumentStore((s) => s.activePageId);
+
+  // 접힘 전의 전체 문서·페이지 목록
+  const baseNodes = useMemo(
+    () => selectPageTreeForZoom(allNodes, [], allNodes.find((n) => n.nodeId === zoomRootId)),
+    [allNodes, zoomRootId]
+  );
+  // 접기/펴기 대상 부모 노드 (문서 행 및 자식이 있는 페이지 행)
+  const parentIds = useMemo(() => {
+    const ids: string[] = [];
+    for (const n of baseNodes) {
+      if (n.zoomLevel === "document" || (hasChildrenMap && hasChildrenMap[n.nodeId])) {
+        ids.push(n.nodeId);
+      }
+    }
+    return ids;
+  }, [baseNodes, hasChildrenMap]);
+
+  const isAnyCollapsed = useMemo(() => {
+    const collapsed = new Set(collapsedNodeIds);
+    return parentIds.some((id) => collapsed.has(id));
+  }, [parentIds, collapsedNodeIds]);
 
   const nodes = useMemo(
     () => selectPageTreeForZoom(allNodes, collapsedNodeIds, allNodes.find((n) => n.nodeId === zoomRootId)),
     [allNodes, collapsedNodeIds, zoomRootId]
   );
   const depthOffset = useMemo(() => minDepth(nodes), [nodes]);
+  const diffStatusMap = useFigmaDiffStatusMap(allNodes);
   useLayoutEffect(() => reportOrder(folded ? [] : nodes), [folded, nodes, reportOrder]);
 
   const paneHeight = useWorkspaceLayoutStore((s) => s.pagesPaneHeight);
@@ -73,16 +99,30 @@ export const DocumentsPagesSection: React.FC<
           <span className="fig-section-meta">{nodes.length}</span>
           {folded ? <ChevronRight className="w-3 h-3 text-black/50" /> : <ChevronDown className="w-3 h-3 text-black/50" />}
         </button>
-        <button
-          type="button"
-          data-new-doc-trigger=""
-          data-testid="outline-new-doc-menu-btn"
-          onClick={(e) => onNewDocument(e.currentTarget)}
-          title="새 문서 (A4 · 블로그 글 · 불러오기)"
-          className="fig-icon-btn"
-        >
-          <Plus className="w-3.5 h-3.5" />
-        </button>
+
+        <div className="flex items-center shrink-0">
+          <button
+            type="button"
+            data-testid="toggle-collapse-all-pages-btn"
+            disabled={parentIds.length === 0}
+            onClick={() => setNodesCollapsed(parentIds, !isAnyCollapsed)}
+            title={isAnyCollapsed ? "모두 펼치기" : "모두 접기"}
+            className="fig-icon-btn"
+          >
+            {isAnyCollapsed ? <ChevronsUpDown className="w-3.5 h-3.5" /> : <ChevronsDownUp className="w-3.5 h-3.5" />}
+          </button>
+
+          <button
+            type="button"
+            {...ADD_PAGE_TRIGGER_ATTR}
+            data-testid="outline-add-page-btn"
+            onClick={(e) => onAddPage(e.currentTarget)}
+            title="페이지 추가 출처 (기본 페이지 · PDF · 템플릿 · URL)"
+            className="fig-icon-btn"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {!folded && (
@@ -109,6 +149,7 @@ export const DocumentsPagesSection: React.FC<
                 sel={!isPage && node.zoomLevel !== "document" && selectedNodeId === node.nodeId ? "on" : undefined}
                 hasChildren={node.zoomLevel === "document"}
                 renamingInitialTitle={renaming?.nodeId === node.nodeId ? renaming.initialTitle : undefined}
+                diffState={diffStatusMap[node.nodeId]}
               />
             );
           })}

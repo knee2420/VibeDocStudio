@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronRight, GitCommit, RefreshCw, RotateCcw, Sparkles, User } from "lucide-react";
 
-import { htmlToSummary } from "@vibe/vdoc-schema";
-
 import { useSlotSelectionStore } from "@/entities/slot";
 import type { RevisionEntry } from "@/entities/vdoc-document";
+import { useActiveDiffStore } from "@/features/document-diff";
 import { revealCanvasElement } from "@/shared/lib";
 
 import { restoreSlots, useRevisions } from "../model/useRevisions";
@@ -35,18 +34,46 @@ const AuthorBadge: React.FC<{ entry: Pick<RevisionEntry, "author" | "harnessId">
 const EntryRow: React.FC<{ entry: RevisionEntry; docId: string; compact?: boolean }> = ({ entry, docId, compact }) => {
   const [open, setOpen] = useState(false);
   const selectSlot = useSlotSelectionStore((s) => s.setSelectedSlotId);
+  const openDiff = useActiveDiffStore((s) => s.openDiff);
+  const activeDiff = useActiveDiffStore((s) => s.activeDiff);
+  const isDiffActive = activeDiff?.type === "revision" && activeDiff.revisionRev === entry.rev;
+
+  const showDiff = (targetSlotId?: string) => {
+    openDiff({
+      type: "revision",
+      revisionRev: entry.rev,
+      slotId: targetSlotId,
+      label: `${entry.label} (r${entry.rev})`,
+      beforeSlots: Object.fromEntries(entry.slots.map((s) => [s.slotId, s.before])),
+      afterSlots: Object.fromEntries(entry.slots.map((s) => [s.slotId, s.after])),
+      changedSlotIds: entry.slots.map((s) => s.slotId),
+    });
+  };
+
   return (
-    <div className="rounded border border-slate-200 bg-white">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="w-full flex items-center gap-1.5 px-2 py-1 text-left cursor-pointer hover:bg-slate-50">
-        {open ? <ChevronDown className="w-3 h-3 text-slate-400" /> : <ChevronRight className="w-3 h-3 text-slate-400" />}
-        <AuthorBadge entry={entry} />
-        <span className="truncate text-[11px] text-slate-700 flex-1" title={entry.label}>
-          {compact ? entry.slots.map((s) => s.label).join(", ") || entry.label : entry.label}
-        </span>
+    <div className={`rounded border bg-white transition ${isDiffActive ? "border-[#0d99ff] ring-1 ring-[#0d99ff]" : "border-slate-200"}`}>
+      <div className={`w-full flex items-center gap-1.5 px-2 py-1 text-left cursor-pointer hover:bg-slate-50 ${isDiffActive ? "bg-sky-50/50" : ""}`}>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="p-0.5 text-slate-400 hover:text-slate-700 cursor-pointer shrink-0"
+          title={open ? "접기" : "슬롯별 변경 세부 접기/펴기"}
+        >
+          {open ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+        </button>
+
+        <div onClick={() => showDiff()} className="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer">
+          <AuthorBadge entry={entry} />
+          <span className="truncate text-[11px] text-slate-700 flex-1 font-medium hover:text-[#0d99ff]" title={`${entry.label} - 클릭 시 중앙 화면에서 전체 문맥 Diff 비교`}>
+            {compact ? entry.slots.map((s) => s.label).join(", ") || entry.label : entry.label}
+          </span>
+        </div>
+
         <span className="text-[9.5px] text-slate-400 shrink-0 font-mono">
           r{entry.rev} · {ago(entry.at)}
         </span>
-      </button>
+      </div>
+
       {open && (
         <div className="px-2 pb-2 space-y-1.5">
           {entry.slots.map((change) => (
@@ -57,8 +84,10 @@ const EntryRow: React.FC<{ entry: RevisionEntry; docId: string; compact?: boolea
                   onClick={() => {
                     selectSlot(change.slotId);
                     revealCanvasElement({ slotId: change.slotId });
+                    showDiff(change.slotId);
                   }}
-                  className="font-semibold text-slate-800 hover:text-violet-700 truncate cursor-pointer"
+                  className="font-semibold text-slate-800 hover:text-[#0d99ff] truncate cursor-pointer flex-1 text-left"
+                  title="클릭 시 캔버스 위치 이동 및 중앙 화면 Diff 비교"
                 >
                   {change.label}
                 </button>
@@ -71,8 +100,6 @@ const EntryRow: React.FC<{ entry: RevisionEntry; docId: string; compact?: boolea
                   <RotateCcw className="w-2.5 h-2.5" /> 복원
                 </button>
               </div>
-              <div className="mt-0.5 px-1.5 py-0.5 rounded bg-rose-50/70 text-rose-900 line-clamp-2">{htmlToSummary(change.before, 140) || "(빈 칸)"}</div>
-              <div className="mt-0.5 px-1.5 py-0.5 rounded bg-emerald-50/80 text-emerald-950 line-clamp-3">{htmlToSummary(change.after, 200) || "(빈 칸)"}</div>
             </div>
           ))}
           {entry.variables.length > 0 && (
