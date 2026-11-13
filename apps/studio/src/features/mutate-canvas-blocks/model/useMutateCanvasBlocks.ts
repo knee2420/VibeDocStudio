@@ -32,6 +32,7 @@ import {
   type VDocSlot,
 } from "@vibe/vdoc-schema";
 
+import { useAssetLibraryStore } from "@/entities/asset-library";
 import { useBlockClipboardStore, useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 
@@ -298,6 +299,22 @@ export function useMutateCanvasBlocks() {
       kind: InsertableBlockKind | string,
       flowGaps?: readonly FlowGap[]
     ) => {
+      if (typeof kind === "string" && kind.startsWith("section-asset:")) {
+        const sectionId = kind.slice("section-asset:".length);
+        const doc = selectActiveDocument(useStudioDocumentStore.getState());
+        const page = doc?.pages.find((p) => p.pageId === pageId);
+        if (page && sectionId) {
+          const placed = insertAtY(
+            page,
+            y,
+            { blockId: "__tmp__", kind: "text", slotIds: [] } as unknown as LayoutBlock,
+            { flowGaps },
+          );
+          useAssetLibraryStore.getState().insertSectionIntoPage(sectionId, pageId, placed.atIndex);
+        }
+        return;
+      }
+
       let focusSlotId: string | undefined;
       let createdBlockId: string | null = null;
       apply((doc) => {

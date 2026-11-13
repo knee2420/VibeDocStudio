@@ -62,17 +62,32 @@ export const gridView = defineBlockView<ColumnsGridBlockDef>({
                 {...ctx.unitAttrs(`${block.blockId}:col${cIdx}`, "media")}
                 className={`flex py-1 ${col.image.align === "right" ? "justify-end" : col.image.align === "center" ? "justify-center" : "justify-start"}`}
               >
-                <img
-                  src={resolveMediaSrc(col.image.src)}
-                  alt={col.image.alt || "Image"}
-                  draggable={false}
-                  style={{
-                    width: col.image.width || "auto",
-                    height: col.image.height || "auto",
-                    maxHeight: col.image.maxHeight || "90px",
-                    objectFit: col.image.objectFit || "contain",
-                  }}
-                />
+                {resolveMediaSrc(col.image.src) ? (
+                  <img
+                    src={resolveMediaSrc(col.image.src)}
+                    alt={col.image.alt || "Image"}
+                    draggable={false}
+                    style={{
+                      width: col.image.width || "auto",
+                      height: col.image.height || "auto",
+                      maxHeight: col.image.maxHeight || "90px",
+                      objectFit: col.image.objectFit || "contain",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: col.image.width || "100%",
+                      height: col.image.height || col.image.maxHeight || "90px",
+                      backgroundImage:
+                        "repeating-conic-gradient(#e5e7eb 0% 25%, #f8fafc 0% 50%)",
+                      backgroundSize: "12px 12px",
+                    }}
+                    className="w-full rounded border border-dashed border-slate-300 flex items-center justify-center text-[11px] text-slate-400 select-none"
+                  >
+                    이미지
+                  </div>
+                )}
               </div>
             ) : col.slotId ? (
               ctx.renderSlot(col.slotId)

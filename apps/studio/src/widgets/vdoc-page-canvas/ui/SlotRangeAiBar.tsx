@@ -8,6 +8,7 @@ import {
   GitPullRequestDraft,
   GripVertical,
   Languages,
+  LayoutGrid,
   Loader2,
   MessageSquareShare,
   Minimize2,
@@ -22,8 +23,10 @@ import {
 import { useInlineAiRun, useRegistryList } from "@vibe/ai-react";
 import { findBlock, getBlockUnits, type VDocDocument } from "@vibe/vdoc-schema";
 
+import { useAssetLibraryStore } from "@/entities/asset-library";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useKeyLayer } from "@/features/command-bus";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import {
@@ -402,6 +405,26 @@ export const SlotRangeAiBar: React.FC = () => {
               <button type="button" data-testid="slot-range-copy" onClick={copy} className={BUTTON} title="복사 (Ctrl+C)">
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <ClipboardCopy className="w-3.5 h-3.5 text-gray-500" />}
                 {copied ? "복사됨" : "복사"}
+              </button>
+              <button
+                type="button"
+                data-testid="slot-range-wrap-section"
+                onClick={() => {
+                  const doc = selectActiveDocument(useStudioDocumentStore.getState());
+                  if (!doc) return;
+                  const created = useAssetLibraryStore.getState().createSectionFromSelection(doc, range.unitIds);
+                  if (created) {
+                    const layout = useWorkspaceLayoutStore.getState();
+                    layout.setLeftSidebarOpen(true);
+                    layout.setActiveActivityTab("assets");
+                  }
+                  useSlotSelectionStore.getState().setSlotRange(null);
+                  setLevel("icon");
+                }}
+                className={BUTTON}
+                title="선택 영역을 새 섹션으로 묶어 Assets에 추가 (Wrap in new section)"
+              >
+                <LayoutGrid className="w-3.5 h-3.5 text-[#0d99ff]" /> Wrap in new section
               </button>
               {canDeleteRange && (
                 <>

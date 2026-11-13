@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { BookOpen, FolderTree, GitBranch, HelpCircle, LayoutGrid, Library, Settings } from "lucide-react";
 
+import { getBlockSlotIds, type StagedSlotHtmlChange } from "@vibe/vdoc-schema";
+
 import { useAiStagingStore } from "@/entities/ai-staging";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore, type ActivityBarTab } from "@/entities/workspace-layout";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
 
@@ -49,7 +52,36 @@ export const StudioActivityBar: React.FC = () => {
   const toggleActivityTab = useWorkspaceLayoutStore((s) => s.toggleActivityTab);
   const shortcutHelpOpen = useWorkspaceLayoutStore((s) => s.shortcutHelpOpen);
   const setShortcutHelpOpen = useWorkspaceLayoutStore((s) => s.setShortcutHelpOpen);
-  const stagingCount = useAiStagingStore((s) => s.queue.length);
+  const stagingQueue = useAiStagingStore((s) => s.queue);
+  const activeDoc = useStudioDocumentStore(selectActiveDocument);
+  const committedPageIds = useStudioDocumentStore((s) => s.committedPageIds);
+
+  const sourceControlCount = useMemo(() => {
+    if (!activeDoc) return stagingQueue.length;
+    const stagedSlotIds = new Set(
+      stagingQueue
+        .filter((d): d is StagedSlotHtmlChange => d.targetKind === "slot-html")
+        .map((d) => d.payload.slotId),
+    );
+    let pageChanges = 0;
+    for (const page of activeDoc.pages) {
+      const isAddedPage = page.pageLabel.includes("새 페이지") && !committedPageIds.has(page.pageId);
+      if (isAddedPage) {
+        pageChanges++;
+        continue;
+      }
+      const blockSlots = page.blocks.flatMap((b) => getBlockSlotIds(b));
+      const allSlotIds = [
+        ...blockSlots,
+        ...(page.headerSlotId ? [page.headerSlotId] : []),
+        ...(page.footerSlotId ? [page.footerSlotId] : []),
+      ];
+      if (allSlotIds.some((sid) => Boolean(activeDoc.slots[sid]?.isEdited) || stagedSlotIds.has(sid))) {
+        pageChanges++;
+      }
+    }
+    return Math.max(pageChanges, stagingQueue.length);
+  }, [activeDoc, committedPageIds, stagingQueue]);
 
   return (
     <aside
@@ -60,7 +92,7 @@ export const StudioActivityBar: React.FC = () => {
       <div className="w-full flex flex-col items-center space-y-1">
         {NAV_ITEMS.map((item) => {
           const isActive = leftSidebarOpen && activeTab === item.id;
-          const badge = item.id === "source-control" ? stagingCount : 0;
+          const badge = item.id === "source-control" ? sourceControlCount : 0;
           return (
             <button
               key={item.id}
@@ -73,7 +105,10 @@ export const StudioActivityBar: React.FC = () => {
               {isActive && <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-[#0d99ff] rounded-r" />}
               {item.icon}
               {badge > 0 && (
-                <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-amber-500 text-slate-950 font-mono font-bold text-[9px] flex items-center justify-center">
+                <span
+                  data-testid="source-control-badge"
+                  className="absolute bottom-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-[#0078d4] text-white font-sans font-semibold text-[9.5px] leading-none flex items-center justify-center border border-[#f6f6f6] shadow-2xs"
+                >
                   {badge}
                 </span>
               )}

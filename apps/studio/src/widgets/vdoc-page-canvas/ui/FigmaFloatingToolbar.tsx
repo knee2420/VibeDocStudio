@@ -20,20 +20,11 @@ import {
 
 import type { WorkbenchPhase } from "@vibe/vdoc-schema";
 
+import { useAssetLibraryStore, type FloatingToolId } from "@/entities/asset-library";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useSwitchWorkbenchPhase } from "@/features/switch-workbench-phase";
 
-export type FigmaToolId =
-  | "select"
-  | "hand"
-  | "frame"
-  | "section"
-  | "rectangle"
-  | "pen"
-  | "text"
-  | "resources"
-  | "comment"
-  | "ai";
+export type FigmaToolId = FloatingToolId;
 
 const PHASE_MODES: ReadonlyArray<{
   id: WorkbenchPhase;
@@ -66,7 +57,8 @@ const PHASE_MODES: ReadonlyArray<{
 ];
 
 export const FigmaFloatingToolbar: React.FC = () => {
-  const [activeTool, setActiveTool] = useState<FigmaToolId>("select");
+  const activeTool = useAssetLibraryStore((s) => s.activeTool);
+  const setActiveTool = useAssetLibraryStore((s) => s.setActiveTool);
   const [frameDropdown, setFrameDropdown] = useState(false);
   const [shapeDropdown, setShapeDropdown] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);

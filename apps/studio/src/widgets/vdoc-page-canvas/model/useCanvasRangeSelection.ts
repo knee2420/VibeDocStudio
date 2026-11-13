@@ -10,7 +10,10 @@
  */
 import { useEffect } from "react";
 
+import { useAssetLibraryStore } from "@/entities/asset-library";
 import { useSlotSelectionStore, type SlotRangeSelection } from "@/entities/slot";
+import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { studioKeyLayers } from "@/features/command-bus";
 
 const DRAG_THRESHOLD = 4;
@@ -215,10 +218,25 @@ export function useCanvasRangeSelection(getMain: () => HTMLElement | null): void
         // AI 바는 손을 뗀 자리 옆에 뜬다 (텍스트 선택 버블과 같은 방식).
         const store = useSlotSelectionStore.getState();
         if (store.slotRange && main) {
-          store.setSlotRange({
-            ...store.slotRange,
-            endPoint: { x: drag.lastX, y: drag.lastY, scrollTop: main.scrollTop, scrollLeft: main.scrollLeft },
-          });
+          const assetStore = useAssetLibraryStore.getState();
+          if (assetStore.activeTool === "section" && store.slotRange.unitIds.length > 0) {
+            const activeDoc = selectActiveDocument(useStudioDocumentStore.getState());
+            if (activeDoc) {
+              const created = assetStore.createSectionFromSelection(activeDoc, store.slotRange.unitIds);
+              if (created) {
+                const layout = useWorkspaceLayoutStore.getState();
+                layout.setLeftSidebarOpen(true);
+                layout.setActiveActivityTab("assets");
+              }
+            }
+            assetStore.setActiveTool("select");
+            store.setSlotRange(null);
+          } else {
+            store.setSlotRange({
+              ...store.slotRange,
+              endPoint: { x: drag.lastX, y: drag.lastY, scrollTop: main.scrollTop, scrollLeft: main.scrollLeft },
+            });
+          }
         }
       }
       drag = null;
