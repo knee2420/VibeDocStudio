@@ -6,14 +6,14 @@ import type { TableBorderMode } from "@vibe/vdoc-schema";
 
 const MENU_SHADOW = "0px 4px 12px 0px rgba(47,44,44,0.1)";
 
-/** 32×32 toolbar button (yesform: `h-8 min-w-8 rounded-[6px]`, active `#f3f3f3`). Keeps editor focus. */
+/** 28×28 compact toolbar button. Keeps editor focus. */
 export const ToolButton: React.FC<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }
 > = ({ active, className = "", children, ...rest }) => (
   <button
     type="button"
     onMouseDown={(e) => e.preventDefault()}
-    className={`flex h-8 min-w-8 shrink-0 items-center justify-center rounded-[6px] px-1 text-gray-800 transition-colors hover:bg-neutral-100 active:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer ${
+    className={`flex h-7 min-w-7 shrink-0 items-center justify-center rounded-[6px] px-1 text-gray-800 transition-colors hover:bg-neutral-100 active:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer ${
       active ? "bg-[#f3f3f3]" : ""
     } ${className}`}
     {...rest}

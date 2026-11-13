@@ -1,5 +1,5 @@
 import React from "react";
-import { FileEdit, GitBranch, LayoutTemplate, Repeat } from "lucide-react";
+import { FileEdit, GitBranch, LayoutTemplate } from "lucide-react";
 
 import type { WorkbenchPhase } from "@vibe/vdoc-schema";
 
@@ -65,13 +65,6 @@ export const ExecutionPhaseStepper: React.FC = () => {
           </button>
         );
       })}
-      <span
-        title="Phase 1 ↔ Phase 2 ↔ Phase 3 간 언제든 데이터 손실 없이 양방향 왕복이 가능합니다."
-        className="hidden xl:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 bg-emerald-50 rounded-md border border-emerald-200 ml-1"
-      >
-        <Repeat className="w-3 h-3" />
-        가역 전환
-      </span>
     </div>
   );
 };

@@ -176,6 +176,37 @@
   display: none;
 }
 
+/* Global sleek scrollbars: hidden by default, subtle pill appears on area hover */
+*:not(.no-scrollbar)::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*:not(.no-scrollbar)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*:not(.no-scrollbar)::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*:not(.no-scrollbar)::-webkit-scrollbar-button {
+  display: none;
+}
+
+*:not(.no-scrollbar)::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+*:not(.no-scrollbar):hover::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.28);
+}
+
+*:not(.no-scrollbar)::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}
+
 /* Exact-typesetting pages (page.layout.exactText): no editor minimum heights or paragraph defaults. */
 [data-exact-layout] .vdoc-tiptap-slot {
   min-height: 0 !important;
@@ -203,20 +234,20 @@
  * 이어진 선택 행은 하나의 띠처럼 붙고(가운데 모서리 없음), 동작 아이콘은 호버 · 선택 때만 보인다.
  * ─────────────────────────────────────────────────────────────────────────── */
 .fig-panel {
-  --fig-text: rgba(0, 0, 0, 0.9);
-  --fig-text-secondary: rgba(0, 0, 0, 0.5);
-  --fig-text-tertiary: rgba(0, 0, 0, 0.3);
+  --fig-text: rgba(15, 23, 42, 0.9);
+  --fig-text-secondary: rgba(15, 23, 42, 0.56);
+  --fig-text-tertiary: rgba(15, 23, 42, 0.35);
   --fig-border: #e6e6e6;
-  --fig-hover: #f5f5f5;
+  --fig-hover: #f1f5f9;
   --fig-selected: #e5f4ff;
   --fig-selected-hover: #d6eeff;
   --fig-selected-child: #f2f9ff;
   --fig-brand: #0d99ff;
   --fig-component: #9747ff;
-  font-family: "Inter", "Pretendard", -apple-system, "Segoe UI", system-ui, sans-serif;
-  font-size: 11px;
-  line-height: 16px;
-  letter-spacing: 0.005em;
+  font-family: "Pretendard", "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 12.5px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
   color: var(--fig-text);
   -webkit-font-smoothing: antialiased;
 }
@@ -266,8 +297,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  height: 32px;
-  margin: 0 8px;
+  height: 27px;
+  margin: 0 6px;
   padding-right: 4px;
   border-radius: 5px;
   color: var(--fig-text);

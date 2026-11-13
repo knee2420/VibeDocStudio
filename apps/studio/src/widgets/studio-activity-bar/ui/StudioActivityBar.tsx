@@ -39,8 +39,8 @@ const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNod
 ];
 
 const iconButton = (active: boolean) =>
-  `relative w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer transition ${
-    active ? "bg-slate-800 text-white shadow-xs" : "hover:bg-slate-800/60 hover:text-slate-200"
+  `relative w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer transition ${
+    active ? "bg-slate-200/90 text-slate-900" : "text-slate-500 hover:bg-slate-200/60 hover:text-slate-900"
   }`;
 
 export const StudioActivityBar: React.FC = () => {
@@ -55,7 +55,7 @@ export const StudioActivityBar: React.FC = () => {
     <aside
       aria-label="글로벌 도구 모드 전환 액티비티 바"
       data-testid="studio-activity-bar"
-      className="w-12 bg-slate-900 border-r border-slate-800 flex flex-col items-center py-2 shrink-0 z-30 select-none text-slate-400 justify-between"
+      className="w-11 bg-[#f6f6f6] border-r border-slate-200/80 flex flex-col items-center py-2 shrink-0 z-30 select-none text-slate-500 justify-between"
     >
       <div className="w-full flex flex-col items-center space-y-1">
         {NAV_ITEMS.map((item) => {
@@ -70,10 +70,10 @@ export const StudioActivityBar: React.FC = () => {
               title={item.label}
               className={iconButton(isActive)}
             >
-              {isActive && <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-[#248567] rounded-r" />}
+              {isActive && <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-[#0d99ff] rounded-r" />}
               {item.icon}
               {badge > 0 && (
-                <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 rounded-full bg-amber-500 text-slate-950 font-mono font-bold text-[9px] flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-amber-500 text-slate-950 font-mono font-bold text-[9px] flex items-center justify-center">
                   {badge}
                 </span>
               )}

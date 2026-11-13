@@ -18,7 +18,7 @@ import { DocumentPreviewPanel, OutlinePreviewSidebar } from "@/widgets/outline-p
 import { ResourceManagerSplitViewport, ResourcePreviewHost } from "@/widgets/resource-manager";
 import { SlotInspectorDrawer } from "@/widgets/slot-inspector-drawer";
 import { StudioActivityBar } from "@/widgets/studio-activity-bar";
-import { ExecutionPhaseStepper, StudioTopRibbon } from "@/widgets/studio-top-ribbon";
+import { PageTabBar, StudioTopRibbon } from "@/widgets/studio-top-ribbon";
 import { VDocPageCanvas } from "@/widgets/vdoc-page-canvas";
 
 /** 전역 부작용(URL · 단축키 · 줌 위계)은 여기서 한 번씩만 건다. */
@@ -55,19 +55,17 @@ const StudioWorkspace: React.FC = () => {
       <div className="flex-1 flex overflow-hidden relative">
         <StudioActivityBar />
         <DocumentPreviewPanel />
+        <OutlinePreviewSidebar />
 
-        {/* 중앙 에디터 작업 공간: 상단 서식 툴바 + (좌측 아웃라이너 | 중앙 캔버스) */}
+        {/* 중앙 에디터 작업 공간: 페이지 탭바 + 서식 툴바 + 중앙 캔버스 (좌/우 사이드바 사이에만 배치) */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <SlotFormattingSubToolbar
-            onTableCommand={blocks.runTableCommand}
-            phaseStepper={<ExecutionPhaseStepper />}
-            showFormattingControls={currentPhase === "drafting"}
-          />
+          <PageTabBar />
 
-          <div className="flex-1 flex overflow-hidden relative">
-            <OutlinePreviewSidebar />
-            <VDocPageCanvas />
-          </div>
+          {currentPhase === "drafting" && (
+            <SlotFormattingSubToolbar onTableCommand={blocks.runTableCommand} />
+          )}
+
+          <VDocPageCanvas />
         </div>
 
         {/* 에디터 캔버스와 Composer 사이에 도킹되는 원문 뷰어 스플릿 패널 */}

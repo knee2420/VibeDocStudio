@@ -45,10 +45,10 @@ import type { NodeDiffState } from "../model/useFigmaDiffStatus";
 import { ADD_PAGE_TRIGGER_ATTR } from "./AddPageFlow";
 import { FigmaDiffBadge } from "./FigmaDiffBadge";
 
-/** 피그마 레이어 들여쓰기 (한 단계 24px, 6단계까지). */
-const INDENT_PX = 24;
+/** 옵시디언/피그마 레이어 들여쓰기 (한 단계 18px, 6단계까지). */
+const INDENT_PX = 18;
 const MAX_INDENT_LEVELS = 6;
-const ICON = "w-3 h-3";
+const ICON = "w-3.5 h-3.5";
 
 const includesAny = (text: string, words: readonly string[]) => words.some((w) => text.includes(w));
 const SECTION_WORDS = ["섹션", "구역", "그리드"] as const;
@@ -313,6 +313,15 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
         peekHandlers.onMouseLeave?.(e);
       }}
     >
+      {level > 0 &&
+        Array.from({ length: level }, (_, d) => (
+          <span
+            key={d}
+            aria-hidden
+            style={{ left: 11 + d * INDENT_PX }}
+            className="pointer-events-none absolute top-0 bottom-0 w-px bg-slate-200/90"
+          />
+        ))}
       {hasChildren ? (
         <button
           type="button"
@@ -349,7 +358,7 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
               actions.cancelRename();
             }
           }}
-          className="flex-1 min-w-0 h-6 px-1.5 -ml-1.5 rounded-[3px] bg-white border border-[#0d99ff] text-[11px] font-normal text-black/90 outline-none"
+          className="flex-1 min-w-0 h-5 px-1.5 -ml-1.5 rounded-[3px] bg-white border border-[#0d99ff] text-[12.5px] font-normal text-slate-900 outline-none"
         />
       ) : (
         <span

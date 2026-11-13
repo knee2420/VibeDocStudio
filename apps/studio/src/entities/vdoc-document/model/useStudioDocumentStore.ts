@@ -24,6 +24,12 @@ import { ApiError } from "@/shared/api";
  */
 export type DocumentSaveState = "saved" | "dirty" | "saving" | "error" | "conflict";
 
+export type StudioTab =
+  | { kind: "page"; key: string; docId: string; pageId: string }
+  | { kind: "new-tab"; key: string };
+
+const pageTabKey = (docId: string, pageId: string) => `${docId}:${pageId}`;
+
 export interface UpdateDocOptions {
   history?: boolean;
   label?: string;
@@ -37,6 +43,8 @@ export interface UpdateDocOptions {
 
 export interface StudioDocumentState {
   docs: VDocDocument[];
+  openTabs: StudioTab[];
+  activeTabKey: string;
   activeDocId: string;
   activePageId: string;
   mode: "Editing" | "Viewing";
@@ -49,6 +57,9 @@ export interface StudioDocumentState {
   hydrate: (docIds: string[], preferredActiveDocId?: string | null) => Promise<void>;
   setActiveDocId: (docId: string) => void;
   setActivePageId: (pageId: string) => void;
+  openNewTab: () => void;
+  selectTab: (key: string) => void;
+  closeTab: (key: string) => void;
   setMode: (mode: "Editing" | "Viewing") => void;
   toggleMode: () => void;
   updateCurrentDoc: (updater: (prev: VDocDocument) => VDocDocument, opts?: UpdateDocOptions) => void;
@@ -176,6 +187,8 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
 
   return {
     docs: [],
+    openTabs: [],
+    activeTabKey: "",
     activeDocId: "",
     activePageId: "",
     mode: "Editing",
@@ -193,24 +206,123 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
         loaded.find((d) => d.docId === preferredActiveDocId) ??
         loaded.find((d) => d.docId === get().activeDocId) ??
         loaded[0];
+      const activePageId = active?.pages[0]?.pageId ?? "";
+      const loadedDocMap = new Map(loaded.map((d) => [d.docId, d]));
+      const keptTabs = get().openTabs.filter((t) => {
+        if (t.kind === "new-tab") return true;
+        const d = loadedDocMap.get(t.docId);
+        return Boolean(d && d.pages.some((p) => p.pageId === t.pageId));
+      });
+      const initialKey = active && activePageId ? pageTabKey(active.docId, activePageId) : "";
+      const openTabs =
+        initialKey && !keptTabs.some((t) => t.key === initialKey)
+          ? [...keptTabs, { kind: "page" as const, key: initialKey, docId: active!.docId, pageId: activePageId }]
+          : keptTabs;
+      const activeTabKey = get().activeTabKey && openTabs.some((t) => t.key === get().activeTabKey)
+        ? get().activeTabKey
+        : initialKey;
       set({
         docs: loaded,
+        openTabs,
+        activeTabKey,
         persistedDocIds: new Set(loaded.map((d) => d.docId)),
         saveState: Object.fromEntries(loaded.map((d) => [d.docId, "saved" as const])),
         activeDocId: active?.docId ?? "",
-        activePageId: active?.pages[0]?.pageId ?? "",
+        activePageId,
         lastError: failed > 0 ? `문서 ${failed}개를 불러오지 못했습니다.` : null,
       });
     },
 
     setActiveDocId: (docId) => {
-      // 문서 이력은 문서 세션 단위다. 다른 문서로 가면 이전 문서의 되돌리기 항목을 비운다.
       if (docId !== get().activeDocId) useHistoryStore.getState().clearScope("document");
       const target = get().docs.find((d) => d.docId === docId) ?? get().docs[0];
-      set({ activeDocId: docId, activePageId: target?.pages[0]?.pageId ?? "" });
+      const pageId = target?.pages[0]?.pageId ?? "";
+      const key = docId && pageId ? pageTabKey(docId, pageId) : "";
+      set((s) => ({
+        activeDocId: docId,
+        activePageId: pageId,
+        activeTabKey: key || s.activeTabKey,
+        openTabs:
+          key && !s.openTabs.some((t) => t.key === key)
+            ? [...s.openTabs, { kind: "page", key, docId, pageId }]
+            : s.openTabs,
+      }));
     },
 
-    setActivePageId: (pageId) => set({ activePageId: pageId }),
+    setActivePageId: (pageId) => {
+      if (!pageId) return;
+      const { docs, activeDocId, openTabs } = get();
+      const ownerDoc = docs.find((d) => d.pages.some((p) => p.pageId === pageId)) ?? docs.find((d) => d.docId === activeDocId);
+      const docId = ownerDoc?.docId ?? activeDocId;
+      if (!docId) {
+        set({ activePageId: pageId });
+        return;
+      }
+      if (docId !== activeDocId) useHistoryStore.getState().clearScope("document");
+      const key = pageTabKey(docId, pageId);
+      const exists = openTabs.some((t) => t.key === key);
+      set({
+        activeDocId: docId,
+        activePageId: pageId,
+        activeTabKey: key,
+        openTabs: exists ? openTabs : [...openTabs, { kind: "page", key, docId, pageId }],
+      });
+    },
+
+    openNewTab: () => {
+      set((s) => {
+        const exists = s.openTabs.some((t) => t.kind === "new-tab");
+        return {
+          activeTabKey: "new-tab",
+          openTabs: exists ? s.openTabs : [...s.openTabs, { kind: "new-tab", key: "new-tab" }],
+        };
+      });
+    },
+
+    selectTab: (key) => {
+      const tab = get().openTabs.find((t) => t.key === key);
+      if (!tab) return;
+      if (tab.kind === "new-tab") {
+        set({ activeTabKey: key });
+        return;
+      }
+      if (tab.docId !== get().activeDocId) useHistoryStore.getState().clearScope("document");
+      set({
+        activeTabKey: key,
+        activeDocId: tab.docId,
+        activePageId: tab.pageId,
+      });
+    },
+
+    closeTab: (key) => {
+      const { openTabs, activeTabKey } = get();
+      const idx = openTabs.findIndex((t) => t.key === key);
+      if (idx === -1) return;
+      const nextTabs = openTabs.filter((t) => t.key !== key);
+      if (nextTabs.length === 0) {
+        set({
+          openTabs: [{ kind: "new-tab", key: "new-tab" }],
+          activeTabKey: "new-tab",
+        });
+        return;
+      }
+      if (key === activeTabKey) {
+        const fallback = nextTabs[Math.max(0, idx - 1)] ?? nextTabs[0];
+        if (fallback.kind === "new-tab") {
+          set({ openTabs: nextTabs, activeTabKey: fallback.key });
+        } else {
+          if (fallback.docId !== get().activeDocId) useHistoryStore.getState().clearScope("document");
+          set({
+            openTabs: nextTabs,
+            activeTabKey: fallback.key,
+            activeDocId: fallback.docId,
+            activePageId: fallback.pageId,
+          });
+        }
+      } else {
+        set({ openTabs: nextTabs });
+      }
+    },
     setMode: (mode) => set({ mode }),
     toggleMode: () => set((s) => ({ mode: s.mode === "Editing" ? "Viewing" : "Editing" })),
 
@@ -262,10 +374,17 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
     upsertDocument: (doc) =>
       set((s) => {
         const exists = s.docs.some((d) => d.docId === doc.docId);
+        const firstPageId = doc.pages[0]?.pageId ?? "";
+        const key = firstPageId ? pageTabKey(doc.docId, firstPageId) : "";
         return {
           docs: exists ? s.docs.map((d) => (d.docId === doc.docId ? doc : d)) : [...s.docs, doc],
+          openTabs:
+            key && !s.openTabs.some((t) => t.key === key)
+              ? [...s.openTabs, { kind: "page", key, docId: doc.docId, pageId: firstPageId }]
+              : s.openTabs,
+          activeTabKey: key || s.activeTabKey,
           activeDocId: doc.docId,
-          activePageId: doc.pages[0]?.pageId ?? "",
+          activePageId: firstPageId,
         };
       }),
 

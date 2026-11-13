@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import { ChevronLeft, LayoutGrid, RefreshCw } from "lucide-react";
+import { LayoutGrid, RefreshCw } from "lucide-react";
 
 import type { OutlinerNode } from "@vibe/vdoc-schema";
 
@@ -77,6 +77,7 @@ export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId
   );
 };
 
+/** 머리말: 옵시디언 스타일 심플 도구 막대 (새로고침 · All 모드 · 페이지 프리뷰 · 접기). */
 /** 머리말: 프로젝트 제목 · 새로고침 · All 모드 · 페이지 프리뷰. */
 const ExplorerHeader: React.FC<{
   isAllMode: boolean;
@@ -85,15 +86,14 @@ const ExplorerHeader: React.FC<{
   const projectTitle = useProjectStore((s) => selectActiveProject(s)?.title) || "프로젝트";
   const pagePreviewOpen = useWorkspaceLayoutStore((s) => s.pagePreviewOpen);
   const togglePagePreview = useWorkspaceLayoutStore((s) => s.togglePagePreview);
-  const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
 
   return (
-    <div className="h-12 pl-4 pr-2 border-b border-[var(--fig-border)] flex items-center justify-between gap-2 shrink-0">
-      <span className="min-w-0 truncate text-[13px] font-semibold" title={projectTitle}>
+    <div className="h-10 pl-3 pr-2 border-b border-[var(--fig-border)] flex items-center justify-between gap-2 shrink-0">
+      <span className="min-w-0 truncate text-[12.5px] font-semibold text-slate-800" title={projectTitle}>
         {projectTitle}
       </span>
 
-      <div className="flex items-center shrink-0" data-testid="project-root-doc-actions">
+      <div className="flex items-center gap-0.5 shrink-0" data-testid="project-root-doc-actions">
         <button
           type="button"
           data-testid="outline-refresh-docs-btn"
@@ -122,15 +122,6 @@ const ExplorerHeader: React.FC<{
           className="fig-icon-btn"
         >
           <LayoutGrid className="w-3.5 h-3.5" />
-        </button>
-        <button
-          type="button"
-          data-testid="collapse-left-sidebar-btn"
-          onClick={() => setLeftSidebarOpen(false)}
-          className="fig-icon-btn"
-          title="좌측 패널 접기"
-        >
-          <ChevronLeft className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

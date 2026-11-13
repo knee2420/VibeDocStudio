@@ -29,6 +29,7 @@ import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
 import { ReferenceSplitViewport } from "./ReferenceSplitViewport";
 import { SlotRangeAiBar } from "./SlotRangeAiBar";
 import { FigmaFloatingToolbar } from "./FigmaFloatingToolbar";
+import { NewTabPagePicker } from "./NewTabPagePicker";
 import { HiddenLayersStyle } from "@/features/layer-visibility";
 
 /** 한 번에 DOM 에 올리는 페이지 수 (슬라이딩 윈도우). */
@@ -270,9 +271,12 @@ const DraftingCanvas: React.FC = () => {
 /** 중앙 작업 영역: 단계별 작업대 + 왼쪽 참조 작업창 + 하단 AI 변경안 서랍 + Side-by-Side Diff 캔버스. */
 export const VDocPageCanvas: React.FC = () => {
   const hasDocument = useStudioDocumentStore((s) => Boolean(selectActiveDocument(s)));
+  const activeTabKey = useStudioDocumentStore((s) => s.activeTabKey);
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const activeDiff = useActiveDiffStore((s) => s.activeDiff);
   if (!hasDocument) return null;
+
+  const isNewTab = !activeDiff && activeTabKey === "new-tab";
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -284,6 +288,8 @@ export const VDocPageCanvas: React.FC = () => {
         <ReferenceSplitViewport />
         {activeDiff ? (
           <SideBySideDiffCanvas activeDiff={activeDiff} />
+        ) : isNewTab ? (
+          <NewTabPagePicker />
         ) : currentPhase === "storylining" ? (
           <main className="flex-1 overflow-y-auto">
             <Phase1StorylineWorkbench />
@@ -296,9 +302,9 @@ export const VDocPageCanvas: React.FC = () => {
           <DraftingCanvas />
         )}
       </div>
-      {!activeDiff && currentPhase === "drafting" && <SlotRangeAiBar />}
-      {!activeDiff && <FigmaFloatingToolbar />}
-      {!activeDiff && <AiStagingDrawer />}
+      {!activeDiff && !isNewTab && currentPhase === "drafting" && <SlotRangeAiBar />}
+      {!activeDiff && !isNewTab && <FigmaFloatingToolbar />}
+      {!activeDiff && !isNewTab && <AiStagingDrawer />}
     </div>
   );
 };

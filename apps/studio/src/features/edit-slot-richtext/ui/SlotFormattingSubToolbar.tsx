@@ -6,7 +6,6 @@ import {
   ArrowUpDown,
   Bold,
   Braces,
-  Eye,
   Highlighter,
   IndentDecrease,
   IndentIncrease,
@@ -20,12 +19,10 @@ import {
   Paperclip,
   PenLine,
   Plus,
-  Redo2,
   Sparkles,
   Strikethrough,
   Table,
   Underline as UnderlineIcon,
-  Undo2,
 } from "lucide-react";
 
 import {
@@ -42,7 +39,6 @@ import { TABLE_LINE_STYLES, type TableCommand } from "@vibe/vdoc-schema";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
-import { useHistoryStore } from "@/shared/lib";
 
 import { useTableEditTarget } from "../model/useTableEditTarget";
 import { BlockControlsGroup } from "./BlockControlsGroup";
@@ -60,8 +56,6 @@ type Editor = NonNullable<ReturnType<typeof useActiveSlotEditorStore.getState>["
 
 export interface SlotFormattingSubToolbarProps {
   onTableCommand?: (pageId: string, blockId: string, sectionId: string | null, cmd: TableCommand) => void;
-  phaseStepper?: React.ReactNode;
-  showFormattingControls?: boolean;
 }
 
 /** Runs `fn` on the selection, or on the whole slot when the caret has no selection. */
@@ -95,18 +89,9 @@ function currentFontSizePt(editor: Editor | null): number {
  * yesform-parity formatting toolbar. Context-aware: inside a table cell it leads with
  * 표 편집 (borders, line colour, line style) and 칸 배경색, like editor.yesform.com.
  */
-export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> = ({
-  onTableCommand,
-  phaseStepper,
-  showFormattingControls = true,
-}) => {
+export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> = ({ onTableCommand }) => {
   const doc = useStudioDocumentStore(selectActiveDocument);
   const mode = useStudioDocumentStore((s) => s.mode);
-  const toggleMode = useStudioDocumentStore((s) => s.toggleMode);
-  const undoHistory = useHistoryStore((s) => s.undo);
-  const redoHistory = useHistoryStore((s) => s.redo);
-  const canUndoDoc = useHistoryStore((s) => s.past.length > 0);
-  const canRedoDoc = useHistoryStore((s) => s.future.length > 0);
   const activeEditor = useActiveSlotEditorStore((s) => s.activeEditor);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
   const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
@@ -132,11 +117,6 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
     return style.css === "hidden" ? "hidden" : `${style.css} ${lineColor}`;
   };
 
-  // 슬롯 편집기가 되돌릴 것이 없으면 공용 이력(블록 이동 · 표 편집 · 잠금 등)을 되돌린다.
-  // Ctrl+Z 단축키는 command-bus 의 전역 처리기 하나만 담당한다.
-  const undo = () => (editor?.can().undo() ? editor.chain().focus().undo().run() : void undoHistory());
-  const redo = () => (editor?.can().redo() ? editor.chain().focus().redo().run() : void redoHistory());
-
   const sizePt = currentFontSizePt(editor);
   const setSize = (pt: number) => {
     if (!editor) return;
@@ -155,47 +135,9 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
   return (
     <div
       data-keep-table-selection
-      className="h-12 bg-white border-b border-slate-200 px-3 flex items-center justify-between text-xs shrink-0 z-10 gap-3"
+      className="min-h-10 py-1 bg-white border-b border-slate-200 px-2.5 flex flex-wrap items-center justify-between text-xs shrink-0 z-10 gap-x-2 gap-y-1"
     >
-      <div className="flex min-w-0 items-center gap-[5px] overflow-x-auto no-scrollbar">
-        <button
-          type="button"
-          onClick={toggleMode}
-          className={`inline-flex shrink-0 items-center gap-1.5 px-2.5 h-8 rounded-md font-semibold transition cursor-pointer ${
-            mode === "Editing"
-              ? "bg-emerald-50 text-[#248567] border border-emerald-200"
-              : "bg-slate-100 text-slate-700 border border-slate-300"
-          }`}
-        >
-          {mode === "Editing" ? (
-            <>
-              <PenLine className="w-3.5 h-3.5" /> 편집
-            </>
-          ) : (
-            <>
-              <Eye className="w-3.5 h-3.5" /> 보기
-            </>
-          )}
-        </button>
-
-        <ToolDivider />
-        <ToolButton title="실행 취소 (Ctrl+Z)" onClick={undo} disabled={!editor?.can().undo() && !canUndoDoc}>
-          <Undo2 className="w-4 h-4" />
-        </ToolButton>
-        <ToolButton title="다시 실행 (Ctrl+Y)" onClick={redo} disabled={!editor?.can().redo() && !canRedoDoc}>
-          <Redo2 className="w-4 h-4" />
-        </ToolButton>
-        <ToolDivider />
-
-        {phaseStepper && (
-          <>
-            <div className="shrink-0">{phaseStepper}</div>
-            {showFormattingControls && <ToolDivider />}
-          </>
-        )}
-
-        {showFormattingControls && (
-          <>
+      <div className="flex min-w-0 flex-wrap items-center gap-[2px]">
         <BlockControlsGroup />
         {tableTarget && mode === "Editing" && (
           <>
@@ -256,7 +198,7 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
           </>
         )}
 
-        <ToolPopover title="글꼴" disabled={!editable} caret width={168} trigger={<span className="w-[78px] truncate text-left text-[13px]">{fontLabel}</span>}>
+        <ToolPopover title="글꼴" disabled={!editable} caret width={168} trigger={<span className="w-[62px] truncate text-left text-[12px]">{fontLabel}</span>}>
           {(close) => (
             <div className="max-h-[420px] overflow-y-auto">
               {FONT_PRESETS.map((f) => (
@@ -293,7 +235,7 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
               (e.target as HTMLInputElement).blur();
             }
           }}
-          className="h-8 w-10 shrink-0 rounded-[6px] border border-gray-200 bg-transparent text-center text-[13px] text-gray-800 focus:outline-none disabled:opacity-40"
+          className="h-7 w-8 shrink-0 rounded-[6px] border border-gray-200 bg-transparent text-center text-[12px] text-gray-800 focus:outline-none disabled:opacity-40"
         />
         <ToolButton title="글자 크게" disabled={!editable} onClick={() => setSize(sizePt + 1)}>
           <Plus className="w-3.5 h-3.5" />
@@ -453,18 +395,16 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
             if (!firstVariable) return;
             editor?.chain().focus().insertContent({ type: "variableChip", attrs: { variableName: firstVariable } }).run();
           }}
-          className="gap-1 px-2 text-[12px] text-amber-900"
+          className="text-amber-900"
         >
-          <Braces className="w-3.5 h-3.5" /> 변수
+          <Braces className="w-3.5 h-3.5" />
         </ToolButton>
-          </>
-        )}
       </div>
 
       {currentSlot && (
-        <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-slate-600">
+        <div className="ml-auto flex shrink-0 items-center gap-1 text-[11px] text-slate-600">
           {currentSlot.constraints?.locked && <Lock className="w-3 h-3 text-amber-500" />}
-          <span className="max-w-[180px] truncate font-medium text-slate-800" title={currentSlot.slotId}>
+          <span className="max-w-[96px] truncate font-medium text-slate-800" title={currentSlot.label}>
             {currentSlot.label}
           </span>
           {currentSlot.backDataRefs.length > 0 && (
@@ -472,7 +412,7 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
               type="button"
               onClick={() => openRightPanel("inspector")}
               title="연결된 백데이터 원문 보기"
-              className="inline-flex items-center gap-0.5 rounded bg-slate-100 px-1.5 py-0.5 font-semibold hover:bg-slate-200 cursor-pointer"
+              className="inline-flex h-7 items-center gap-0.5 rounded-md bg-slate-100 px-1.5 font-semibold hover:bg-slate-200 cursor-pointer"
             >
               <Paperclip className="w-3 h-3" />
               {currentSlot.backDataRefs.length}
@@ -482,9 +422,9 @@ export const SlotFormattingSubToolbar: React.FC<SlotFormattingSubToolbarProps> =
             type="button"
             onClick={() => toggleComposerForSlot(currentSlot.slotId)}
             title="이 슬롯에 AI Composer 열기 (Ctrl+K)"
-            className="inline-flex items-center gap-1 rounded-md bg-amber-400 px-2 py-1 font-semibold text-slate-950 hover:bg-amber-300 cursor-pointer"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-400 text-slate-950 hover:bg-amber-300 cursor-pointer"
           >
-            <Sparkles className="w-3 h-3" /> AI Composer
+            <Sparkles className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
