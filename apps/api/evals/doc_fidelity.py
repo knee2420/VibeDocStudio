@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import sqlite3
+import os
 import sys
 from html import unescape
 from pathlib import Path
@@ -28,7 +28,6 @@ from harness_kit import patterns  # noqa: E402
 DOCS = API / "data" / "knowledge" / "documents"
 REFS = API / "data" / "knowledge" / "references" / "items"
 WORKBENCH = API / "state" / "assistant" / "workspace" / "workbench.json"
-AGY_CONV = Path.home() / ".gemini" / "antigravity-cli" / "conversations"
 TARGETS = json.loads((HERE / "doc_fidelity_targets.json").read_text(encoding="utf-8"))
 LAYERS = json.loads((ROOT / "packages" / "harness-packs" / "reference" / "layers.json").read_text(encoding="utf-8"))
 OUT = HERE / "results" / "doc-fidelity"
@@ -166,24 +165,27 @@ def run_for_doc(doc_id: str) -> tuple[str | None, list[str]]:
     return best, list((wb.get(best) or {}).get("conversationIds") or []) if best else []
 
 
+READS = API / "state" / "assistant" / "workspace" / "reads.jsonl"
+
+
 def files_read(conv_ids: list[str], root: Path) -> list[str]:
+    """그 대화들이 실제로 읽은 리소스 파일 — 서버 읽기 원장(reads.jsonl, dc_check 근거 점검과 같은 원장).
+    agy 대화 db 는 버전에 따라 단계가 .pb 에만 남아(.db 비어 있음) 쓰지 않는다."""
     seen: set[str] = set()
     root_s = str(root).replace("/", "\\").lower()
-    for cid in conv_ids:
-        db = AGY_CONV / f"{cid}.db"
-        if not db.is_file():
+    wanted = set(conv_ids)
+    try:
+        lines = READS.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    for line in lines:
+        try:
+            rec = json.loads(line)
+        except ValueError:
             continue
-        con = sqlite3.connect(db)
-        for (payload,) in con.execute("select step_payload from steps"):
-            s = (payload or b"").decode("utf-8", "replace")
-            for m in re.finditer(r'"(?:Path|path|AbsolutePath)"\s*:\s*"((?:[^"\\]|\\.)+)"', s):
-                try:
-                    p = json.loads(f'"{m.group(1)}"')
-                except json.JSONDecodeError:
-                    continue
-                if p.replace("/", "\\").lower().startswith(root_s):
-                    seen.add(p)
-        con.close()
+        p = str(rec.get("path") or "")
+        if rec.get("conv") in wanted and rec.get("ok", True) and p.replace("/", "\\").lower().startswith(root_s):
+            seen.add(os.path.normcase(p))
     return sorted(seen)
 
 
