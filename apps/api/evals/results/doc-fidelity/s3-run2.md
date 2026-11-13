@@ -37,7 +37,7 @@
 - 글머리 기호: 레퍼런스 ['box', 'circle', 'dash', 'note', 'paren'] · 문서 ['box', 'circle', 'dash', 'paren']
 - 장 · 절 번호: 레퍼런스 ['hangul-dot', 'roman'] · 문서 ['hangul-dot', 'roman']
 - 레퍼런스 장 · 절 14개 중 갖춤 14개
-- 층위 차이: bold_per_para, bullet_ratio, callouts, numbers_per_100, source_marks, meta_approval, meta_footnote, heading_levels, block_kinds
+- 층위 차이: avg_para_chars, bold_per_para, callouts, numbers_per_100, source_marks, meta_footnote, meta_version, heading_levels, block_kinds
 - 장르 구성: ✓입찰 참가자격, ✓입찰 · 제출 일정, ✓제출서류, ✓낙찰자 결정 · 평가 방법, ✓문의처
 - 근거 없는 값: 12개월, 2개월, 3개월, 4개월, 5개월, 850,000,000원, 제2026-11호 (레퍼런스에서 온 값: 12개월, 2개월, 3개월)
 - 읽은 리소스 파일 2개

@@ -189,8 +189,17 @@ def measure(htmls: Iterable[str], block_kinds: Optional[Iterable[str]] = None) -
     lines = _lines(htmls)
     raw = "\n".join(lines)
     plain_text = raw.replace("**", "")
-    paras = [line for line in lines if not line.startswith("#") and not line.startswith("- ")]
-    bullets = [line for line in lines if line.startswith("- ")]
+    # 글머리 = 목록 줄(- ) 이거나 글머리 기호(❏ ○ - · ※ …)로 시작하는 문단 — 장 · 절 번호(Ⅰ · 가.)는 글머리가 아니다.
+    # 한글식 개조식은 기호를 글자로 둔 문단이라, 목록 태그만 세면 같은 글머리가 문단으로 잡힌다.
+    section_marks = set((packs.data(LEXICON)["measure"].get("sections") or {}).get("markers") or [])
+    bullet_rx = [rx for label, rx in lex["markers"] if label not in section_marks]
+
+    def is_bullet(line: str) -> bool:
+        text = line.replace("**", "").strip()
+        return line.startswith("- ") or any(rx.match(text) for rx in bullet_rx)
+
+    paras = [line for line in lines if not line.startswith("#") and not is_bullet(line)]
+    bullets = [line for line in lines if not line.startswith("#") and is_bullet(line)]
     headings = [line for line in lines if line.startswith("#")]
     para_chars = [len(line.replace("**", "")) for line in paras] or [0]
     sentences = [s for s in re.split(r"(?<=[.!?。])\s+|\n", plain_text) if len(s.strip()) > 1]

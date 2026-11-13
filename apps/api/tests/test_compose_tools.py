@@ -383,3 +383,19 @@ def test_provenance_absent_values_name_their_blocks(tmp_path):
     blocks = [{"blockId": "b_tbl_1", "text": "사업예산 | 350,000,000원"}, {"blockId": "b_tx_2", "text": "끝"}]
     rows = tools._provenance_rows("사업예산 | 350,000,000원\n끝", "", blocks)
     assert any("350,000,000원 (b_tbl_1)" in r for r in rows)
+
+
+def test_heading_level_comes_from_section_number_when_not_given() -> None:
+    from docstruct_engine.compile.vdoc_build import make_block
+
+    lv = lambda text, **kw: make_block("heading", {"text": text, **kw}, "u")[0]["level"]  # noqa: E731
+    assert lv("Ⅰ. 사업 개요") == 1 and lv("가. 제안요청 개요") == 2
+    assert lv("목 차") == 2 and lv("가. 개요", level=3) == 3  # 번호 없으면 2, 준 단계는 그대로
+
+
+def test_bullet_ratio_counts_marker_paragraphs_not_section_numbers() -> None:
+    from harness_kit import patterns as P
+
+    m = P.measure(["<p>가. 개요</p><p>❏ 하나</p><p>◦ 둘</p><p>그냥 문단</p>"])
+    assert m["bullet_ratio"] == 0.5  # ❏ ◦ 는 글머리, 가. 는 절 번호(문단)
+    assert P.measure(["<ul><li>하나</li><li>둘</li></ul>"])["bullet_ratio"] == 1.0

@@ -700,7 +700,8 @@ class DocTools:
                 html = "".join(str((slots.get(s) or {}).get("content") or "") for s in ids)
                 text = html_to_text(html)
                 if b.get("kind") == "heading" and text.strip():
-                    html = f"<h2>{text.strip()}</h2>"
+                    lv = max(1, min(int(b.get("level") or 2), 6))
+                    html = f"<h{lv}>{text.strip()}</h{lv}>"
                 blocks.append({**b, "html": html, "text": text})
                 if ids and not text.strip():
                     empty.append(str(b.get("blockId")))

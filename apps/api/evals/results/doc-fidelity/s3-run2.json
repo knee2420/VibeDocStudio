@@ -200,14 +200,14 @@
     ],
     "layer_gaps": [
       {
-        "metric": "bold_per_para",
-        "ref": 0.01,
-        "doc": 0.11
+        "metric": "avg_para_chars",
+        "ref": 26.6,
+        "doc": 17.6
       },
       {
-        "metric": "bullet_ratio",
-        "ref": 0.23,
-        "doc": 0.13
+        "metric": "bold_per_para",
+        "ref": 0.01,
+        "doc": 0.12
       },
       {
         "metric": "callouts",
@@ -217,22 +217,22 @@
       {
         "metric": "numbers_per_100",
         "ref": 0.85,
-        "doc": 1.75
+        "doc": 1.74
       },
       {
         "metric": "source_marks",
-        "ref": 2,
+        "ref": 0,
         "doc": 20
-      },
-      {
-        "metric": "meta_approval",
-        "ref": true,
-        "doc": false
       },
       {
         "metric": "meta_footnote",
         "ref": true,
         "doc": false
+      },
+      {
+        "metric": "meta_version",
+        "ref": false,
+        "doc": true
       },
       {
         "metric": "heading_levels",
@@ -241,7 +241,9 @@
           2,
           3
         ],
-        "doc": []
+        "doc": [
+          2
+        ]
       },
       {
         "metric": "block_kinds",

@@ -310,14 +310,32 @@ def _px(value: Any, default: str) -> str:
     return v if re.match(r"^\d+(\.\d+)?(px|%)$", v) else default
 
 
+_SECTION_RX: list[tuple[int, re.Pattern[str]]] | None = None
+
+
+def _section_level(text: str) -> int | None:
+    """제목 첫머리의 장 · 절 번호로 단계를 정한다 — 어휘(core:lexicon measure.sections.markers) 순서: Ⅰ → 1, 가. → 2."""
+    global _SECTION_RX
+    if _SECTION_RX is None:
+        measure = packs.data("core:lexicon/ko.json").get("measure") or {}
+        order = list((measure.get("sections") or {}).get("markers") or [])
+        pats = {m["label"]: m for m in measure.get("markers") or []}
+        _SECTION_RX = [(i + 1, re.compile(pats[label]["pattern"], re.I if "i" in str(pats[label].get("flags") or "") else 0))
+                       for i, label in enumerate(order) if label in pats]
+    head = text.lstrip()
+    return next((lvl for lvl, rx in _SECTION_RX if rx.match(head)), None)
+
+
 def _heading(spec: dict[str, Any], uid: str) -> tuple[dict[str, Any], dict[str, Any]]:
     slots: dict[str, Any] = {}
     text = inline_text(spec.get("text") or spec.get("html") or "")
     if not text:
         raise ValueError("heading 은 text 가 필요하다.")
     sid = _slot(slots, f"s_hd_{uid}", _label("heading"), f"<p>{html_lib.escape(text)}</p>")
+    # 단계를 주지 않으면 장 · 절 번호로 정한다 (번호 없는 제목은 2) — 모든 제목이 같은 단계로 납작해지지 않게
+    level = int(spec.get("level") or _section_level(text) or 2)
     block: dict[str, Any] = {"blockId": f"b_hd_{uid}", "kind": "heading", "title": text[:32], "slotId": sid,
-                             "level": int(spec.get("level") or 2), "align": _align(spec.get("align"), "left")}
+                             "level": max(1, min(level, 6)), "align": _align(spec.get("align"), "left")}
     if spec.get("decoration") in ("quote", "bar"):
         block["decoration"] = spec["decoration"]
     if spec.get("accent"):

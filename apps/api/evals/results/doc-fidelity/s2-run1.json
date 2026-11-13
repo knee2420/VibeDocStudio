@@ -17,7 +17,7 @@
     "B3_hanging_ratio": 1.0,
     "C1_section_coverage": 0.857,
     "C2_heading_scheme_jaccard": 1.0,
-    "C4_layer_gaps": 6,
+    "C4_layer_gaps": 4,
     "E1_genre_items": 0.0,
     "D1_unsourced_values": 3,
     "D2_reference_leaks": 2,
@@ -96,7 +96,7 @@
         {
           "metric": "C4_layer_gaps",
           "label": "레퍼런스 범위 대비 30% 넘게 다른 층위 지표 수",
-          "value": 6,
+          "value": 4,
           "target": "<= 3",
           "pass": false
         },
@@ -201,24 +201,14 @@
         "doc": 0.17
       },
       {
-        "metric": "bullet_ratio",
-        "ref": 0.23,
-        "doc": 0.06
-      },
-      {
         "metric": "callouts",
         "ref": 6,
         "doc": 2
       },
       {
         "metric": "source_marks",
-        "ref": 2,
+        "ref": 0,
         "doc": 1
-      },
-      {
-        "metric": "meta_approval",
-        "ref": true,
-        "doc": false
       },
       {
         "metric": "heading_levels",
@@ -227,7 +217,9 @@
           2,
           3
         ],
-        "doc": []
+        "doc": [
+          2
+        ]
       }
     ],
     "genre": [

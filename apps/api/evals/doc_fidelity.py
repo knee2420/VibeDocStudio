@@ -295,7 +295,14 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
     ref_head_scheme = set(skel["theirs_scheme"])
     doc_head_scheme = set(skel["mine_scheme"])
     ref_m = measure_layers([str(b.get("html") or "") for b in ref_blocks], [str(b.get("kind") or "") for b in ref_blocks])
-    doc_m = measure_layers([h for b in blocks for h in b["htmls"]], [str(b["kind"]) for b in blocks])
+    # 제목 블록은 dc_check 처럼 그 단계의 <hN> 으로 잰다 (칸 HTML 은 <p> 라 그대로 재면 제목이 0개)
+    def _measured(b: dict[str, Any]) -> list[str]:
+        if b["kind"] != "heading":
+            return b["htmls"]
+        lv = max(1, min(int((b.get("block") or {}).get("level") or 2), 6))
+        return [f"<h{lv}>{plain(h)}</h{lv}>" for h in b["htmls"] if plain(h)]
+
+    doc_m = measure_layers([h for b in blocks for h in _measured(b)], [str(b["kind"]) for b in blocks])
     gaps = layer_gaps(ref_m, doc_m)
 
     genre = patterns.genre_of(doctype=args.genre) if args.genre else None

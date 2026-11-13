@@ -190,7 +190,7 @@
       {
         "metric": "bold_per_para",
         "ref": 0.01,
-        "doc": 0.17
+        "doc": 0.18
       },
       {
         "metric": "callouts",
@@ -204,13 +204,13 @@
       },
       {
         "metric": "source_marks",
-        "ref": 2,
+        "ref": 0,
         "doc": 1
       },
       {
-        "metric": "meta_version",
-        "ref": true,
-        "doc": false
+        "metric": "meta_approval",
+        "ref": false,
+        "doc": true
       },
       {
         "metric": "heading_levels",
@@ -219,7 +219,9 @@
           2,
           3
         ],
-        "doc": []
+        "doc": [
+          2
+        ]
       },
       {
         "metric": "block_kinds",
