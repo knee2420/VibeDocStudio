@@ -5,6 +5,7 @@
 
     make_block(kind, spec, uid) -> (block, slots)
     sanitize_html(html)          -> 슬롯에 넣어도 되는 HTML (문단 · 목록 · 굵게 · 기울임 · 밑줄 · 색 · 형광펜 · 링크)
+    drain_dropped()              -> 직전 정리에서 지운 태그 · 속성 (도구 결과에 보고한다 — 조용히 지우지 않는다)
 """
 from __future__ import annotations
 
@@ -27,6 +28,115 @@ _STYLE_PROPS = {"color", "background-color", "background", "font-weight", "font-
 _COLOR_VALUE = re.compile(r"^(#[0-9a-fA-F]{3,8}|rgba?\([\d\s.,%]+\)|[a-zA-Z]{3,20})$")
 _SIZE_VALUE = re.compile(r"^\d{1,2}(\.\d)?px$")
 
+#: 정리하며 지운 태그 · 스타일 속성 (이름 → 횟수). 도구가 작업마다 `drain_dropped()` 로 꺼내 결과에 적는다.
+_DROPPED: dict[str, int] = {}
+#: 지워도 보고하지 않는 무해한 래퍼 (뜻이 없는 껍데기)
+_QUIET_DROPS = {"font", "section", "article", "header", "footer", "main", "body", "html", "head", "meta"}
+
+
+def _drop(name: str) -> None:
+    if name not in _QUIET_DROPS:
+        _DROPPED[name] = _DROPPED.get(name, 0) + 1
+
+
+def drain_dropped() -> dict[str, int]:
+    out = dict(_DROPPED)
+    _DROPPED.clear()
+    return out
+
+
+def contains_table(raw: Any) -> bool:
+    return bool(re.search(r"<\s*(table|tr|td|th)\b", str(raw or ""), re.I))
+
+
+# --- 이름 있는 문단 스타일 (editor 팩 paragraph-styles.json) ----------------------------------------
+
+_STYLE_CACHE: dict[str, Any] = {}
+
+
+def _paragraph_styles() -> tuple[set[str], list[tuple[str, re.Pattern[str]]]]:
+    """(쓸 수 있는 스타일 id, 첫머리 기호 → 스타일 자동 지정 규칙). 규칙은 레지스트리 순서대로 처음 맞는 것."""
+    if "ids" not in _STYLE_CACHE:
+        reg = packs.data("editor:paragraph-styles.json")
+        ids: set[str] = set()
+        rules: list[tuple[str, re.Pattern[str]]] = []
+        default = reg.get("default")
+        for set_name, s in (reg.get("sets") or {}).items():
+            for sid, spec in (s.get("styles") or {}).items():
+                ids.add(sid)
+                if set_name == default:
+                    rules += [(sid, re.compile(p)) for p in spec.get("match") or []]
+        _STYLE_CACHE["ids"], _STYLE_CACHE["rules"] = ids, rules
+    return _STYLE_CACHE["ids"], _STYLE_CACHE["rules"]
+
+
+_PARA = re.compile(r"<p((?:\s[^>]*)?)>(.*?)</p>", re.S)
+
+
+def _lead_text(inner: str) -> str:
+    return html_lib.unescape(re.sub(r"<[^>]+>", "", inner)).lstrip("  \t")
+
+
+def _style_for(inner: str) -> str | None:
+    text = _lead_text(inner)
+    for sid, rx in _paragraph_styles()[1]:
+        if rx.search(text):
+            return sid
+    return None
+
+
+def assign_paragraph_styles(body: str) -> str:
+    """스타일 없는 문단이 글머리 기호(❏ ○ - ※ 가. (1) …)로 시작하면 그 기호의 스타일을 붙인다 —
+    기호는 글자로 남고, 들여쓰기 · 내어쓰기 · 간격은 스타일(CSS)이 맡는다."""
+    def fix(m: re.Match[str]) -> str:
+        attrs, inner = m.group(1), m.group(2)
+        if "data-style=" in attrs:
+            return m.group(0)
+        # 한 문단에 <br> 로 이어 쓴 개조식 줄들은 줄마다 문단으로 나눠 단계별 스타일을 붙인다
+        parts = [p for p in re.split(r"<br\s*/?>", inner) if _lead_text(p).strip()]
+        if len(parts) > 1 and sum(1 for p in parts if _style_for(p)) >= len(parts) - 1:
+            out = []
+            for p in parts:
+                sid = _style_for(p)
+                out.append(f'<p{attrs} data-style="{sid}">{p.strip()}</p>' if sid else f"<p{attrs}>{p.strip()}</p>")
+            return "".join(out)
+        sid = _style_for(inner)
+        return f'<p{attrs} data-style="{sid}">{inner}</p>' if sid else m.group(0)
+    return _PARA.sub(fix, _marker_lists_to_paragraphs(body))
+
+
+_LIST = re.compile(r"<(ul|ol)\b[^>]*>((?:(?!<(?:ul|ol)\b).)*?)</\1>", re.S | re.I)
+_LI = re.compile(r"<li\b[^>]*>(.*?)</li>", re.S | re.I)
+
+
+def _marker_lists_to_paragraphs(body: str) -> str:
+    """항목마다 글머리 기호(❏ ○ - …)를 글자로 단 목록(<ul><li>❏ …)은 문단으로 푼다 — 그대로 두면 목록 점과 기호가
+    겹치고 스타일(들여쓰기 · 내어쓰기)이 붙지 않는다. 안쪽 목록부터 풀어 단계 순서를 지킨다. 기호 없는 목록은 그대로."""
+    def flatten(m: re.Match[str]) -> str:
+        items = _LI.findall(m.group(2))
+        if not items:
+            return m.group(0)
+        heads = [re.split(r"(?=<p\b)", it, maxsplit=1) for it in items]
+        if not all(_style_for(h[0]) for h in heads if _lead_text(h[0]).strip()) or not any(
+                _lead_text(h[0]).strip() for h in heads):
+            return m.group(0)
+        out = []
+        for h in heads:
+            if _lead_text(h[0]).strip():
+                out.append(f"<p>{h[0].strip()}</p>")
+            if len(h) > 1:
+                out.append(h[1])
+        return "".join(out)
+    prev = None
+    while prev != body:
+        prev, body = body, _LIST.sub(flatten, body)
+    return body
+
+
+def unstyled_marker_paragraphs(html: str) -> int:
+    """글머리 기호로 시작하는데 스타일이 없는 문단 수 (점검용)."""
+    return sum(1 for m in _PARA.finditer(str(html or "")) if "data-style=" not in m.group(1) and _style_for(m.group(2)))
+
 
 def _clean_style(style: str) -> str:
     out = []
@@ -36,6 +146,8 @@ def _clean_style(style: str) -> str:
         prop, value = (x.strip() for x in part.split(":", 1))
         prop = prop.lower()
         if prop not in _STYLE_PROPS:
+            if prop not in ("margin", "margin-top", "margin-bottom", "padding", "display", "width"):
+                _drop(f"style:{prop}")
             continue
         if prop in ("color", "background-color", "background") and not _COLOR_VALUE.match(value):
             continue
@@ -68,6 +180,7 @@ class _Sanitizer(HTMLParser):
         elif tag in ("h1", "h2", "h3", "h4", "div"):
             tag = "p"
         if tag not in _ALLOWED:
+            _drop(tag)
             return
         kept = []
         for name, value in attrs:
@@ -80,6 +193,11 @@ class _Sanitizer(HTMLParser):
                 kept.append(f' href="{html_lib.escape(value or "", quote=True)}"')
             elif name.startswith("data-") and tag == "sup":
                 kept.append(f' {name}="{html_lib.escape(value or "", quote=True)}"')
+            elif name == "data-style" and tag == "p":
+                if (value or "") in _paragraph_styles()[0]:
+                    kept.append(f' data-style="{value}"')
+                else:
+                    _drop(f"data-style:{value}")
         if tag == "mark" and not any("style" in k for k in kept):
             kept.append(' style="background-color: #fff3a3"')
         self.out.append(f"<{tag}{''.join(kept)}>")
@@ -112,8 +230,16 @@ def sanitize_html(raw: str) -> str:
     if not text:
         return "<p></p>"
     if "<" not in text:
-        paras = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
-        return "".join(f"<p>{html_lib.escape(p).replace(chr(10), '<br>')}</p>" for p in paras) or "<p></p>"
+        # 맨 글자: 빈 줄은 문단을 나누고, 글머리 기호로 시작하는 줄은 줄마다 문단이 된다 (❏ · ○ · - 개조식)
+        paras: list[str] = []
+        for block in (p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()):
+            lines = [ln.strip() for ln in block.split("\n") if ln.strip()]
+            if len(lines) > 1 and sum(1 for ln in lines if _style_for(html_lib.escape(ln))) >= len(lines) - 1:
+                paras += lines
+            else:
+                paras.append(block)
+        body = "".join(f"<p>{html_lib.escape(p).replace(chr(10), '<br>')}</p>" for p in paras) or "<p></p>"
+        return assign_paragraph_styles(body)
     parser = _Sanitizer()
     parser.feed(text)
     parser.close()
@@ -122,7 +248,7 @@ def sanitize_html(raw: str) -> str:
     body = "".join(parser.out).strip()
     if not re.match(r"^<(p|ul|ol)[\s>]", body):
         body = f"<p>{body}</p>"
-    return body
+    return assign_paragraph_styles(body)
 
 
 def inline_text(raw: str) -> str:
@@ -184,14 +310,32 @@ def _px(value: Any, default: str) -> str:
     return v if re.match(r"^\d+(\.\d+)?(px|%)$", v) else default
 
 
+_SECTION_RX: list[tuple[int, re.Pattern[str]]] | None = None
+
+
+def _section_level(text: str) -> int | None:
+    """제목 첫머리의 장 · 절 번호로 단계를 정한다 — 어휘(core:lexicon measure.sections.markers) 순서: Ⅰ → 1, 가. → 2."""
+    global _SECTION_RX
+    if _SECTION_RX is None:
+        measure = packs.data("core:lexicon/ko.json").get("measure") or {}
+        order = list((measure.get("sections") or {}).get("markers") or [])
+        pats = {m["label"]: m for m in measure.get("markers") or []}
+        _SECTION_RX = [(i + 1, re.compile(pats[label]["pattern"], re.I if "i" in str(pats[label].get("flags") or "") else 0))
+                       for i, label in enumerate(order) if label in pats]
+    head = text.lstrip()
+    return next((lvl for lvl, rx in _SECTION_RX if rx.match(head)), None)
+
+
 def _heading(spec: dict[str, Any], uid: str) -> tuple[dict[str, Any], dict[str, Any]]:
     slots: dict[str, Any] = {}
     text = inline_text(spec.get("text") or spec.get("html") or "")
     if not text:
         raise ValueError("heading 은 text 가 필요하다.")
     sid = _slot(slots, f"s_hd_{uid}", _label("heading"), f"<p>{html_lib.escape(text)}</p>")
+    # 단계를 주지 않으면 장 · 절 번호로 정한다 (번호 없는 제목은 2) — 모든 제목이 같은 단계로 납작해지지 않게
+    level = int(spec.get("level") or _section_level(text) or 2)
     block: dict[str, Any] = {"blockId": f"b_hd_{uid}", "kind": "heading", "title": text[:32], "slotId": sid,
-                             "level": int(spec.get("level") or 2), "align": _align(spec.get("align"), "left")}
+                             "level": max(1, min(level, 6)), "align": _align(spec.get("align"), "left")}
     if spec.get("decoration") in ("quote", "bar"):
         block["decoration"] = spec["decoration"]
     if spec.get("accent"):
@@ -199,8 +343,15 @@ def _heading(spec: dict[str, Any], uid: str) -> tuple[dict[str, Any], dict[str, 
     return block, slots
 
 
+def reject_table_html(raw: Any) -> None:
+    """글 칸에 표 HTML 이 오면 저장하지 않고 표 블록을 쓰라고 돌려보낸다 (정리하면 표가 납작한 줄글이 된다)."""
+    if contains_table(raw):
+        raise ValueError(packs.message("editor:messages.json", "compose.tableInText"))
+
+
 def _text(spec: dict[str, Any], uid: str) -> tuple[dict[str, Any], dict[str, Any]]:
     slots: dict[str, Any] = {}
+    reject_table_html(spec.get("html") or spec.get("text"))
     content = sanitize_html(spec.get("html") or spec.get("text") or "")
     sid = _slot(slots, f"s_tx_{uid}", str(spec.get("label") or _label("body"))[:20], content, spec.get("backDataRefs"))
     return {"blockId": f"b_tx_{uid}", "kind": "text", "title": inline_text(content)[:32] or _label("body"), "slotId": sid,
@@ -282,9 +433,133 @@ def _hero(spec: dict[str, Any], uid: str) -> tuple[dict[str, Any], dict[str, Any
 
 def _callout(spec: dict[str, Any], uid: str) -> tuple[dict[str, Any], dict[str, Any]]:
     slots: dict[str, Any] = {}
+    reject_table_html(spec.get("html") or spec.get("text"))
     sid = _slot(slots, f"s_box_{uid}", _label("callout"), sanitize_html(spec.get("html") or spec.get("text") or ""))
     tone = spec.get("tone") if spec.get("tone") in ("neutral", "info", "warning") else "neutral"
     return {"blockId": f"b_box_{uid}", "kind": "callout-box", "title": _label("callout"), "slotId": sid, "tone": tone}, slots
+
+
+# --- 표 -------------------------------------------------------------------------------------------
+
+TABLE_MAX_ROWS = 80
+TABLE_MAX_COLS = 12
+#: 표 모양 기본값 — 공문 · 제안요청서 류의 얇은 실선 격자. 라벨 칸(머리 칸)은 옅은 음영.
+_TABLE_LINE = "1px solid #555555"
+_TABLE_OUTER = "1.5px solid #222222"
+_HEADER_BG = "#e8edf5"
+
+
+def _cell_spec(raw: Any) -> dict[str, Any]:
+    if isinstance(raw, dict):
+        return raw
+    return {"text": "" if raw is None else str(raw)}
+
+
+def _span(value: Any) -> int:
+    try:
+        return max(1, min(TABLE_MAX_COLS, int(value)))
+    except (TypeError, ValueError):
+        return 1
+
+
+def _width_list(raw: Any, ncols: int) -> list[str]:
+    """열 너비: ["20%", "80%"] · [1, 4](비율) · 생략(균등)."""
+    if isinstance(raw, list) and len(raw) == ncols:
+        if all(isinstance(x, (int, float)) for x in raw):
+            total = sum(float(x) for x in raw) or 1.0
+            return [f"{float(x) / total * 100:.2f}%" for x in raw]
+        vals = [str(x).strip() for x in raw]
+        if all(re.match(r"^\d+(\.\d+)?%$", v) for v in vals):
+            return vals
+    return [f"{100.0 / ncols:.2f}%"] * ncols
+
+
+def _table(spec: dict[str, Any], uid: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    """표 한 개. rows: 행마다 칸 목록(칸 = 글 또는 {text|html, colSpan, rowSpan, header, align, bg}).
+    fields: [[라벨, 값], …] 이면 2열 서식(라벨 칸 음영) — 요구사항 카드 · 표지 사업 정보 같은 키-값 표.
+    header: row(첫 행) · col(첫 열) · both · none. 결과는 양식 가져오기와 같은 `structured-table` 모양이다."""
+    rows_in = spec.get("rows")
+    fields = spec.get("fields")
+    header = str(spec.get("header") or "").strip()
+    if not rows_in and isinstance(fields, list):
+        rows_in = [[{"text": str(f[0]), "header": True}, *(f[1:] or [""])] if isinstance(f, (list, tuple)) and f else [str(f), ""]
+                   for f in fields]
+        header = header or "none"
+    if not isinstance(rows_in, list) or not rows_in or len(rows_in) > TABLE_MAX_ROWS:
+        raise ValueError(packs.message("editor:messages.json", "compose.tableShape", maxRows=TABLE_MAX_ROWS, maxCols=TABLE_MAX_COLS))
+    header = header if header in ("row", "col", "both", "none") else "row"
+
+    # 칸 배치: 위 행의 rowSpan 이 차지한 열을 건너뛰며 왼쪽부터 채운다.
+    occupied: dict[tuple[int, int], bool] = {}
+    placed: list[list[tuple[int, dict[str, Any]]]] = []
+    ncols = 0
+    for r, row in enumerate(rows_in):
+        cells = row if isinstance(row, list) else [row]
+        col = 0
+        out_row: list[tuple[int, dict[str, Any]]] = []
+        for raw in cells:
+            cell = _cell_spec(raw)
+            while occupied.get((r, col)):
+                col += 1
+            cs, rs = _span(cell.get("colSpan")), _span(cell.get("rowSpan"))
+            for dr in range(rs):
+                for dc in range(cs):
+                    occupied[(r + dr, col + dc)] = True
+            out_row.append((col, cell))
+            col += cs
+        ncols = max(ncols, col, max((c + 1 for (rr, c) in occupied if rr == r), default=0))
+        placed.append(out_row)
+    if ncols == 0 or ncols > TABLE_MAX_COLS:
+        raise ValueError(packs.message("editor:messages.json", "compose.tableShape", maxRows=TABLE_MAX_ROWS, maxCols=TABLE_MAX_COLS))
+
+    slots: dict[str, Any] = {}
+    rows_out: list[dict[str, Any]] = []
+    for r, out_row in enumerate(placed):
+        cells_out: list[dict[str, Any]] = []
+        filled = {c for (rr, c) in occupied if rr == r}
+        for c, cell in out_row:
+            is_header = bool(cell.get("header")) or (header in ("row", "both") and r == 0) or (header in ("col", "both") and c == 0)
+            raw = cell.get("html") if cell.get("html") is not None else cell.get("text", "")
+            reject_table_html(raw)
+            content = sanitize_html(raw)
+            label = inline_text(content)[:24] if is_header and inline_text(content) else _label("tableCell", r=r + 1, c=c + 1)
+            sid = _slot(slots, f"s_tc_{uid}_{r}_{c}", label, content)
+            cell_out: dict[str, Any] = {"cellId": f"c_{uid}_{r}_{c}", "slotId": sid, "vAlign": "middle",
+                                        "hAlign": _align(cell.get("align"), "center" if is_header else "left"),
+                                        "padding": "5px 8px"}
+            if is_header:
+                cell_out["isHeader"] = True
+                cell_out["backgroundColor"] = _HEADER_BG
+                cell_out["fontWeight"] = "600"
+            if cell.get("bg") and _COLOR_VALUE.match(str(cell["bg"])):
+                cell_out["backgroundColor"] = str(cell["bg"])
+            if _span(cell.get("colSpan")) > 1:
+                cell_out["colSpan"] = _span(cell.get("colSpan"))
+            if _span(cell.get("rowSpan")) > 1:
+                cell_out["rowSpan"] = _span(cell.get("rowSpan"))
+            cells_out.append(cell_out)
+        # 모자란 칸은 빈 칸으로 채워 격자를 맞춘다 (병합으로 이미 찬 열은 건너뛴다)
+        for c in range(ncols):
+            if c not in filled:
+                sid = _slot(slots, f"s_tc_{uid}_{r}_{c}", _label("tableCell", r=r + 1, c=c + 1), "<p></p>")
+                cells_out.append({"cellId": f"c_{uid}_{r}_{c}", "slotId": sid, "vAlign": "middle", "hAlign": "left", "padding": "5px 8px"})
+        rows_out.append({"rowId": f"r_{uid}_{r}", "cells": cells_out})
+
+    title = inline_text(spec.get("title") or "") or _label("table")
+    block: dict[str, Any] = {
+        "blockId": f"b_tbl_{uid}",
+        "kind": "structured-table",
+        "title": title[:32],
+        "columnWidths": _width_list(spec.get("widths") or spec.get("columns"), ncols),
+        "rows": rows_out,
+        "borderRules": {"outer": _TABLE_OUTER, "rowBottom": _TABLE_LINE, "vertical": _TABLE_LINE,
+                        "headerTop": _TABLE_OUTER, "headerBottom": _TABLE_LINE},
+        "headerStyle": {"bg": _HEADER_BG, "fontWeight": "600"},
+        "tableVariant": "bordered",
+    }
+    if spec.get("caption"):
+        block["caption"] = inline_text(spec["caption"])[:120]
+    return block, slots
 
 
 KINDS: dict[str, Callable[[dict[str, Any], str], tuple[dict[str, Any], dict[str, Any]]]] = {
@@ -296,6 +571,7 @@ KINDS: dict[str, Callable[[dict[str, Any], str], tuple[dict[str, Any], dict[str,
     "divider": _divider,
     "hero": _hero,
     "callout": _callout,
+    "table": _table,
 }
 
 

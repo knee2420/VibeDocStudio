@@ -400,7 +400,7 @@ class RefTools:
             else f"{_LEAK_HEADER}\n[{parsed.render()}]"
         return head + "\n" + "\n".join(rows) + tail
 
-    def _rf_skeleton(self, ref: str = "", **_: Any) -> str:
+    def _rf_skeleton(self, ref: str = "", pages: str = "", **_: Any) -> str:
         """레퍼런스의 배치 뼈대: 첫머리 · 섹션마다 모양(토큰) · 대표 모양 · 맺음 — 내용 없이 '어떻게 쌓았나' 만."""
         book = self._ref(ref) if ref else (next(iter(self.wb.refs.values()), None))
         if book is None:
@@ -429,11 +429,47 @@ class RefTools:
                                   share=int(metrics["signature_share"] * 100), photos=metrics["photos_per_section"],
                                   paras=metrics["paras_per_section"], sizes=metrics["gallery_sizes"] or "-",
                                   questions=int(metrics["question_headings"] * 100)))
+        rows.extend(self._section_tree(book.blocks, pages))
         rows.append(packs.message("reference:messages.json", sk + "tail"))
         if self.store is not None:
             self.store.record_ref_read(session_id=self.session_id, conversation_id=self.conversation_id, ref_id=book.ref_id,
                                        blocks=[], pins=[], anchor=f"ref:{book.ref_id}#skeleton")
         return "\n".join(rows)
+
+    @staticmethod
+    def _section_tree(blocks: list[dict[str, Any]], pages: str = "") -> list[str]:
+        """번호 붙은 장 · 절(Ⅰ · 가.) 뼈대 — 절마다 쪽 · 담긴 표 수 · 글머리 기호. 번호 체계가 없는 레퍼런스면 빈 목록."""
+        m = re.match(r"^\s*(\d+)\s*(?:-\s*(\d+))?\s*$", str(pages or ""))
+        lo, hi = (int(m.group(1)), int(m.group(2) or m.group(1))) if m else (1, 10 ** 6)
+        picked = [(i, b) for i, b in enumerate(blocks) if lo <= int(b.get("page") or 0) <= hi]
+        secs = patterns.section_lines((str(b.get("text") or ""), str(b.get("kind") or ""), i)
+                                      for i, b in picked if "table" not in str(b.get("kind") or ""))
+        if not secs:
+            return []
+        msg = "reference:messages.json"
+        marker_rx = [(label, rx) for label, rx in patterns.marker_patterns()]
+        idx = [i for i, _ in picked]
+        rows = [packs.message(msg, "skeleton.sectionsHead", scope=f" {lo}-{hi}쪽" if m else "",
+                              scheme=" · ".join(dict.fromkeys(s["marker"] for s in secs)), count=len(secs))]
+        for n, s in enumerate(secs):
+            start = s["at"]
+            end = secs[n + 1]["at"] if n + 1 < len(secs) else (idx[-1] + 1)
+            body = [blocks[i] for i in idx if start <= i < end]
+            tables = sum(1 for b in body if "table" in str(b.get("kind") or ""))
+            marks: list[str] = []
+            for b in body:
+                for ln in str(b.get("text") or "").split("\n"):
+                    t = ln.strip()
+                    hit = next(((label, mm) for label, rx in marker_rx if (mm := rx.match(t))), None)
+                    glyph = hit[1].group(0).strip() if hit else ""
+                    hit = hit[0] if hit else None
+                    if hit and hit not in ("roman", "hangul-dot") and glyph and glyph not in marks:
+                        marks.append(glyph)
+            shape = (packs.message(msg, "skeleton.shapeTables", count=tables) if tables else "") + \
+                (packs.message(msg, "skeleton.shapeMarkers", markers=" ".join(marks)) if marks else "")
+            rows.append(packs.message(msg, "skeleton.sectionRow", indent="  " * (s["level"] - 1), label=s["label"],
+                                      page=blocks[start].get("page"), shape=shape))
+        return rows
 
     def _rf_visual(self, ref: str = "", section: str = "", pin: str = "", limit: int = 4, **_: Any) -> str:
         book = self._ref(ref)

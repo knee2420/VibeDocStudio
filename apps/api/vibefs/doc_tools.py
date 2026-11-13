@@ -19,6 +19,7 @@ from __future__ import annotations
 import html as html_lib
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -50,15 +51,19 @@ from docstruct_engine.compile import docstruct_vdoc, hwpx_vdoc
 from docstruct_engine.compile.vdoc_build import (
     blank_page,
     block_slot_ids,
+    drain_dropped,
     make_block,
     media_sources,
+    reject_table_html,
     sanitize_html,
+    unstyled_marker_paragraphs,
 )
 from harness_kit import packs, patterns
 from harness_kit.text import html_to_text
 
 #: dc_* 도구 명세 · 결과 글 — 하네스 editor 팩
 MSG = "editor:messages.json"
+_PARAS = re.compile(r"<(?:p|li)\b[^>]*>.*?</(?:p|li)>", re.S | re.I)
 DC_TOOL_SPECS: list[dict[str, Any]] = packs.tool_specs("editor", "tools.compose.json")
 
 API_BASE = os.environ.get("VIBE_API_BASE", "http://127.0.0.1:8090").rstrip("/")
@@ -107,9 +112,10 @@ class _Api:
 class DocTools:
     def __init__(self, store: Any, session_id: str, index: Any = None, api: Optional[_Api] = None,
                  state: Optional[Callable[[], dict[str, Any]]] = None,
-                 ocr_port: Optional[Any] = None) -> None:
+                 ocr_port: Optional[Any] = None, reads: Callable[[], list[dict[str, Any]]] = lambda: []) -> None:
         self.store = store
         self.session_id = session_id
+        self._reads = reads  # 이 대화에서 실제로 읽은 원천 줄 범위 (원장) — dc_check 근거 점검
         self.index = index
         self.api = api or _Api()
         self._state = state
@@ -376,6 +382,7 @@ class DocTools:
                         return pg, b, i
             raise ValueError(f"블록 {ref} 이 없다 — dc_outline 으로 id 를 본다.")
 
+        drain_dropped()  # 이전 호출의 찌꺼기를 비운다 — 이번 작업에서 지운 것만 보고한다
         for n, op in enumerate(ops, start=1):
             if not isinstance(op, dict):
                 raise ValueError(f"{n}번 작업이 객체가 아니다.")
@@ -423,7 +430,25 @@ class DocTools:
                     if op.get("as"):
                         alias[str(op["as"])] = block["blockId"]
                     notes.append(f"{block['blockId']} {kind}")
+                elif kind_op == "set" and op.get("block") and not op.get("slot") and (op.get("rows") or op.get("fields")):
+                    # 표 다시 짓기 — 같은 자리 · 같은 blockId 로 바꾼다 (첫 칸에 글을 넣는 set 과 다르다)
+                    pg, old, idx = find_block(op["block"])
+                    if "table" not in str(old.get("kind") or ""):
+                        raise ValueError(f"{old.get('kind')} 블록은 rows/fields 로 바꿀 수 없다 — 표 블록에만 쓴다.")
+                    if any((slots.get(s) or {}).get("constraints", {}).get("locked") for s in block_slot_ids(old)):
+                        raise ValueError(f"표 {old.get('blockId')} 에 잠긴 칸이 있다.")
+                    spec = {k: v for k, v in op.items() if k not in ("op", "kind", "block", "page", "after", "before", "as")}
+                    block, bslots = make_block("table", spec, uid())
+                    block["blockId"] = old["blockId"]
+                    for s in block_slot_ids(old):
+                        slots.pop(s, None)
+                    pg["blocks"][idx] = block
+                    slots.update(bslots)
+                    touched += list(bslots)
+                    notes.append(f"표 {old['blockId']} 다시 지음 ({len(block.get('rows') or [])}줄)")
                 elif kind_op == "set":
+                    if op.get("html") is None and op.get("text") is None:
+                        raise ValueError("set 에 글(html · text)이 없다 — 표를 바꾸려면 block + rows/fields 를 준다.")
                     sid = resolve(op.get("slot"))
                     if not sid and op.get("block"):
                         _, b, _ = find_block(op["block"])
@@ -433,6 +458,7 @@ class DocTools:
                         raise ValueError(f"칸 {sid or '(없음)'} 이 없다.")
                     if (slots[sid].get("constraints") or {}).get("locked"):
                         raise ValueError(f"칸 {sid} 은 잠겨 있다.")
+                    reject_table_html(op.get("html") or op.get("text"))
                     slots[sid] = {**slots[sid], "content": sanitize_html(op.get("html") or op.get("text") or "")}
                     touched.append(sid)
                     notes.append(f"글 {sid}")
@@ -446,6 +472,7 @@ class DocTools:
                             ids = block_slot_ids(b)
                             if not ids:
                                 raise ValueError(f"{b.get('kind')} 블록에는 글 칸이 없다.")
+                            reject_table_html(value)
                             slots[ids[0]] = {**slots[ids[0]], "content": sanitize_html(value) if b.get("kind") != "heading"
                                              else f"<p>{html_lib.escape(' '.join(str(value).split()))}</p>"}
                             touched.append(ids[0])
@@ -496,6 +523,9 @@ class DocTools:
         head = packs.message(MSG, "compose.saved", docId=saved.get("docId") or data.get("docId"),
                              revision=saved.get("revision"), count=len(ops),
                              notes=", ".join(notes[:12]) + (" …" if len(notes) > 12 else ""), aliases=alias_line)
+        dropped = drain_dropped()
+        if dropped:
+            head += packs.message(MSG, "compose.dropped", items=", ".join(f"{k}×{v}" for k, v in sorted(dropped.items())))
         return head + "\n" + self._outline(saved)
 
     @staticmethod
@@ -519,7 +549,146 @@ class DocTools:
                     out.append(packs.message(MSG, "compose.hintLine", metric=key, theirs=a, mine=b, hint=way))
         return out
 
-    def _dc_check(self, doc: str = "", ref: str = "", **_: Any) -> str:
+    @staticmethod
+    def _ref_metrics(ref_dir: str, pages: str) -> tuple[dict[str, Any], str, str, list[dict[str, Any]]]:
+        """레퍼런스 지표: 추출본이 있으면 지정한 쪽 범위(예 '1-23')만 다시 잰다 — 사용자가 '23쪽까지'라고 했으면
+        붙임 서식까지 섞인 전체 값과 견주지 않는다. 추출본이 없으면 저장된 전체 측정값.
+        (지표, 층위 세트, 범위 글, 범위 안 추출 블록)"""
+        try:
+            with open(os.path.join(ref_dir, "layers.json"), encoding="utf-8") as fh:
+                stored = json.load(fh)
+        except (OSError, ValueError):
+            stored = {}
+        set_name = stored.get("set") or "blog"
+        m = re.match(r"^\s*(\d+)\s*(?:-\s*(\d+))?\s*$", str(pages or ""))
+        try:
+            with open(os.path.join(ref_dir, "extraction.json"), encoding="utf-8") as fh:
+                ex = json.load(fh)
+        except (OSError, ValueError):
+            ex = {}
+        blocks = [b for b in ex.get("blocks") or [] if isinstance(b, dict)]
+        if blocks and (m or set_name == "document"):
+            lo, hi = (int(m.group(1)), int(m.group(2) or m.group(1))) if m else (1, 10 ** 6)
+            picked = [b for b in blocks if lo <= int(b.get("page") or 0) <= hi]
+            if picked:
+                kinds = sorted({str(b.get("kind") or "") for b in picked})
+                metrics = patterns.measure_all([str(b.get("html") or "") for b in picked], kinds, picked)
+                return metrics, set_name, (f"{lo}-{hi}쪽" if m else ""), picked
+        return stored.get("metrics") or {}, set_name, "", blocks
+
+    @staticmethod
+    def _skeleton_rows(ref_blocks: list[dict[str, Any]], blocks: list[dict[str, Any]], scope: str) -> list[str]:
+        """레퍼런스 범위의 장 · 절(번호 · 단계 · 제목) 대비 내 문서 — 빠진 절 · 같은 자리인데 제목이 다른 절."""
+        not_table = lambda k: "table" not in str(k or "")  # noqa: E731
+        theirs = patterns.section_lines((str(b.get("text") or ""), str(b.get("kind") or ""))
+                                        for b in ref_blocks if not_table(b.get("kind")))
+        if not theirs:
+            return []
+        mine = patterns.section_lines((b["text"], str(b.get("kind") or "")) for b in blocks if not_table(b.get("kind")))
+        d = patterns.skeleton_diff(theirs, mine)
+        where = lambda s: " > ".join(s["path"].split("/")[:-1] + [s["label"]])  # noqa: E731
+        rows = [packs.message(MSG, "compose.skeleton.head", scope=f" {scope}" if scope else "", total=d["total"], kept=len(d["kept"]),
+                              theirs=" · ".join(d["theirs_scheme"]) or "-", mine=" · ".join(d["mine_scheme"]) or "-")]
+        if d["missing"]:
+            rows.append(packs.message(MSG, "compose.skeleton.missing", items=", ".join(where(s) for s in d["missing"][:12])))
+        if d["renamed"]:
+            rows.append(packs.message(MSG, "compose.skeleton.renamed", items=", ".join(
+                f"{where(r)} ← {s['label']}" for r, s in d["renamed"][:8])))
+        if d["missing"] or d["renamed"]:
+            rows.append(packs.message(MSG, "compose.skeleton.hint"))
+        return rows
+
+    def _provenance_rows(self, text: str, ref: str = "", blocks: Optional[list[dict[str, Any]]] = None) -> list[str]:
+        """금액 · 기간 · 비율 · 공고번호가 이 대화에서 읽은 원천 줄에 있는지 — 없으면 값 대신 빈칸 표시, 레퍼런스 값이면 누출."""
+        reads = [r for r in (self._reads() or []) if r.get("path")]
+        corpus: list[str] = []
+        for r in reads:
+            try:
+                with open(str(r["path"]), encoding="utf-8", errors="replace") as fh:
+                    lines = fh.read().splitlines()
+            except OSError:
+                continue
+            start, end = int(r.get("start") or 1), int(r.get("end") or 0)
+            corpus.append("\n".join(lines[max(0, start - 1): end if end else len(lines)]))
+        reference = ""
+        for r in self._wb_state().get("references") or []:
+            if ref and r.get("refId") != ref:
+                continue
+            try:
+                with open(os.path.join(str(r.get("dir") or ""), "extraction.json"), encoding="utf-8") as fh:
+                    reference += "\n".join(str(b.get("text") or "") for b in json.load(fh).get("blocks") or [])
+            except (OSError, ValueError):
+                continue
+        values = patterns.fact_values(text)
+        if not values:
+            return []
+        missing, leaks = patterns.unsourced_values(text, "\n".join(corpus), reference)
+        files = len({os.path.normcase(str(r["path"])) for r in reads})
+        row = packs.message(MSG, "compose.provenance.head", files=files, values=len(values))
+        if not missing:
+            return [row]
+        # 읽지 않은 값마다 리소스 어디에 있는지 — 있으면 그 줄을 읽게, 어디에도 없으면 빈칸 표시로
+        where = self._locate_values(missing)
+        found = [f"{v} → {where[v]}" for v in missing if v in where]
+        absent = [v for v in missing if v not in where]
+        placeholder = packs.data(patterns.GENRES).get("placeholder") or ""
+        rows = [row]
+        if found:
+            rows.append(packs.message(MSG, "compose.provenance.unread", items=", ".join(found[:10])))
+        if absent:
+            # 고칠 자리를 바로 찾게 — 값마다 그 값이 든 블록 id
+            at = {v: [str(b.get("blockId")) for b in blocks or [] if v in re.sub(r"\s+", "", str(b.get("text") or ""))]
+                  for v in absent}
+            items = ", ".join(f"{v} ({' · '.join(at[v][:3])})" if at.get(v) else v for v in absent[:10])
+            rows.append(packs.message(MSG, "compose.provenance.absent", items=items, placeholder=placeholder))
+        if leaks:
+            rows.append(packs.message(MSG, "compose.provenance.leaks", items=", ".join(leaks[:8])))
+        return rows
+
+    def _locate_values(self, values: list[str]) -> dict[str, str]:
+        """값 → 그 값이 처음 나오는 마운트 리소스 줄 ('경로:L줄'). 인덱스가 없으면 빈 사전."""
+        out: dict[str, str] = {}
+        files = self.index.text_files() if self.index is not None and hasattr(self.index, "text_files") else []
+        wanted = set(values)
+        for entry in files:
+            for n, line in enumerate(getattr(entry, "text_lines", None) or [], start=1):
+                flat = re.sub(r"\s+", "", line)
+                for v in [v for v in wanted if v in flat]:
+                    out[v] = f"{entry.rel}:L{n}"
+                    wanted.discard(v)
+                if not wanted:
+                    return out
+        return out
+
+    @staticmethod
+    def _marker_hint(theirs: dict[str, Any], mine: dict[str, Any]) -> list[str]:
+        """레퍼런스가 쓰는 글머리 단계(❏ ○ - ※ …) 중 내 문서에 없는 것 — 장 · 절 번호는 뼈대 점검이 맡는다."""
+        lex = packs.data(patterns.LEXICON)["measure"]
+        glyph = {m["label"]: m.get("glyph") or m["label"] for m in lex.get("markers") or []}
+        sections = set((lex.get("sections") or {}).get("markers") or [])
+        ref_b = [m for m in theirs.get("marker_scheme") or [] if m not in sections]
+        mine_b = set(mine.get("marker_scheme") or [])
+        missing = [m for m in ref_b if m not in mine_b]
+        if not ref_b or not missing:
+            return []
+        return [packs.message(MSG, "compose.markerHint", theirs=" ".join(glyph.get(m, m) for m in ref_b),
+                              missing=" ".join(glyph.get(m, m) for m in missing))]
+
+    @staticmethod
+    def _genre_rows(title: str, doctype: str, text: str) -> list[str]:
+        genre = patterns.genre_of(title, doctype)
+        if not genre:
+            return []
+        items = patterns.genre_items(genre, text)
+        absent = [it["label"] for it in items if not it["present"]]
+        row = packs.message(MSG, "compose.genre.head", label=genre.get("label") or genre["id"], total=len(items),
+                            have=len(items) - len(absent))
+        if absent:
+            row += packs.message(MSG, "compose.genre.missing", items=", ".join(absent),
+                                 placeholder=packs.data(patterns.GENRES).get("placeholder") or "")
+        return [row]
+
+    def _dc_check(self, doc: str = "", ref: str = "", pages: str = "", doctype: str = "", **_: Any) -> str:
         data = self._load(doc)
         slots = data.get("slots") or {}
         blocks: list[dict[str, Any]] = []
@@ -531,7 +700,8 @@ class DocTools:
                 html = "".join(str((slots.get(s) or {}).get("content") or "") for s in ids)
                 text = html_to_text(html)
                 if b.get("kind") == "heading" and text.strip():
-                    html = f"<h2>{text.strip()}</h2>"
+                    lv = max(1, min(int(b.get("level") or 2), 6))
+                    html = f"<h{lv}>{text.strip()}</h{lv}>"
                 blocks.append({**b, "html": html, "text": text})
                 if ids and not text.strip():
                     empty.append(str(b.get("blockId")))
@@ -549,30 +719,33 @@ class DocTools:
         dup = sorted({s for s in srcs if srcs.count(s) > 1})
         if dup:
             problems.append(packs.message(MSG, pm + "duplicate", ids=", ".join(d.replace("resource:", "") for d in dup[:6])))
-        long_paras = [b["blockId"] for b in blocks if b.get("kind") == "text" and len(b["text"]) > 320]
+        # 문단 단위 — 한 칸 안의 이름 있는 문단들은 각각 잰다 (<br> 로 붙인 줄은 한 문단)
+        long_paras = [b["blockId"] for b in blocks if b.get("kind") == "text" and any(
+            len(html_to_text(p)) > 320 for p in (_PARAS.findall(b["html"]) or [b["html"]]))]
         if long_paras:
             problems.append(packs.message(MSG, pm + "longParas", count=len(long_paras), ids=", ".join(long_paras[:6])))
+        unstyled = [b["blockId"] for b in blocks if b.get("kind") == "text" and unstyled_marker_paragraphs(b["html"])]
+        if unstyled:
+            problems.append(packs.message(MSG, pm + "unstyledMarkers", count=len(unstyled), ids=", ".join(unstyled[:6])))
         rows.append(packs.message(MSG, pm + "label") + ("; ".join(problems) if problems else packs.message(MSG, pm + "none")))
+        rows.extend(self._genre_rows(str(data.get("title") or ""), doctype, "\n".join(b["text"] for b in blocks)))
+        rows.extend(self._provenance_rows("\n".join(b["text"] for b in blocks), ref, blocks))
         state = self._wb_state()
         refs = [r for r in state.get("references") or [] if r.get("dir")]
         if ref:
             refs = [r for r in refs if r.get("refId") == ref] or refs
         if refs:
             r = refs[0]
-            try:
-                with open(os.path.join(r["dir"], "layers.json"), encoding="utf-8") as fh:
-                    stored = json.load(fh)
-            except (OSError, ValueError):
-                stored = {}
-            theirs = stored.get("metrics") or {}
-            set_name = stored.get("set") or "blog"
+            theirs, set_name, scope, ref_blocks = self._ref_metrics(r["dir"], pages)
+            rows.extend(self._skeleton_rows(ref_blocks, blocks, scope))
             if theirs:
-                rows.append(packs.message(MSG, "compose.checkCompareHead", refId=r.get("refId")))
+                rows.append(packs.message(MSG, "compose.checkCompareHead", refId=r.get("refId"))
+                            + (packs.message(MSG, "compose.checkScope", scope=scope) if scope else ""))
                 rows.append(patterns.compare(theirs, mine, set_name, "레퍼런스", "내 문서"))
                 rows.append(packs.message(MSG, "compose.checkSignature", theirs=theirs.get("section_signature"),
                                           mine=mine.get("section_signature"), theirsPhoto=theirs.get("photo_signature"),
                                           minePhoto=mine.get("photo_signature")))
-                hints = self._hints(theirs, mine, set_name)
+                hints = self._hints(theirs, mine, set_name) + self._marker_hint(theirs, mine)
                 if hints:
                     rows.append(packs.message(MSG, "compose.hintsHead"))
                     rows.extend(hints)

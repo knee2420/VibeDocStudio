@@ -5,3 +5,4 @@ export * from "./format-extensions";
 export * from "./format-presets";
 export * from "./legacy-html";
 export * from "./SlotRichTextEditor";
+export * from "./paragraph-styles";

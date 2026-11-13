@@ -15,7 +15,7 @@ import { Check, ClipboardCopy, FileText, Languages, MessageSquareShare, MessageS
 
 import { VariableChipNode, StampChipNode } from "./variable-node";
 import { CitationNode, handleCitationPointer } from "./citation-node";
-import { BlockStyle, FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight, Indent, InlineMargin } from "./format-extensions";
+import { BlockStyle, FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight, Indent, InlineMargin, ParagraphStyle } from "./format-extensions";
 import { normalizeLegacyHtml } from "./legacy-html";
 import { useActiveSlotEditorStore } from "./active-editor-store";
 import { ensureEditorBaseStyles } from "./editor-base-style";
@@ -69,6 +69,7 @@ function buildSlotExtensions(placeholder: string): AnyExtension[] {
     LineHeight,
     Indent,
     BlockStyle,
+    ParagraphStyle,
     Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } }),
     VariableChipNode,
     StampChipNode,

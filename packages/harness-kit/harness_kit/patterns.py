@@ -40,10 +40,134 @@ def _lex() -> dict[str, Any]:
             "meta": {k: packs.compile_rx(v) for k, v in raw["meta"].items()},
             "callout": packs.compile_rx(raw["callout"]), "source": packs.compile_rx(raw["source"]),
             "conclusion": packs.compile_rx(raw["conclusion"]),
+            "markers": [(m["label"], packs.compile_rx(m)) for m in raw.get("markers") or []],
         }
         _compiled.clear()
         _compiled[id(raw)] = hit
     return hit
+
+
+def _bigrams(s: str) -> set[str]:
+    s = re.sub(r"\s+", "", s)
+    return {s[i:i + 2] for i in range(len(s) - 1)} or ({s} if s else set())
+
+
+def title_similarity(a: str, b: str) -> float:
+    """제목 두 개의 글자쌍(dice) 유사도 0~1."""
+    x, y = _bigrams(a), _bigrams(b)
+    return 2 * len(x & y) / (len(x) + len(y)) if x and y else 0.0
+
+
+def fact_values(text: str) -> list[str]:
+    """근거가 있어야 하는 값(금액 · 기간 · 비율 · 공고번호 — 어휘 `measure.factValue`)을 공백 없이, 나온 순서대로."""
+    raw = packs.data(LEXICON)["measure"].get("factValue")
+    if not raw:
+        return []
+    return list(dict.fromkeys(re.sub(r"\s+", "", m.group(0)) for m in packs.compile_rx(raw).finditer(text or "")))
+
+
+def unsourced_values(text: str, corpus: str, reference: str = "") -> tuple[list[str], list[str]]:
+    """글의 근거 값 중 말뭉치(읽은 원천 줄)에 없는 것과, 그중 레퍼런스 글에 있는 것(누출)."""
+    flat = re.sub(r"\s+", "", corpus or "")
+    ref_flat = re.sub(r"\s+", "", reference or "")
+    missing = [v for v in fact_values(text) if v not in flat]
+    return missing, [v for v in missing if ref_flat and v in ref_flat]
+
+
+def marker_patterns() -> list[tuple[str, "re.Pattern[str]"]]:
+    """글머리 · 번호 기호 (label, 정규식) — 어휘 `measure.markers`."""
+    return list(_lex()["markers"])
+
+
+def section_lines(items: Iterable[tuple[Any, ...]]) -> list[dict[str, Any]]:
+    """(글, 블록 종류[, 자리]) → 번호 붙은 장 · 절 뼈대 (자리는 그대로 "at" 으로 돌려준다). 단계는 어휘(`measure.sections.markers`) 순서,
+    path 는 위 단계 번호를 이은 자리('Ⅱ/가'). 목차 줄(점 리더) · 글자 없는 조각 · 같은 자리 반복은 뺀다."""
+    raw = packs.data(LEXICON)["measure"].get("sections") or {}
+    order = list(raw.get("markers") or [])
+    if not order:
+        return []
+    marks = {label: rx for label, rx in _lex()["markers"] if label in order}
+    leader = packs.compile_rx(raw["leader"]) if raw.get("leader") else None
+    min_letters, max_title = int(raw.get("minLetters", 2)), int(raw.get("maxTitle", 40))
+    letter = packs.compile_rx(raw["letter"]) if raw.get("letter") else re.compile(r"\w")
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    stack: dict[int, str] = {}
+    for item in items:
+        text, kind, at = item[0], item[1], (item[2] if len(item) > 2 else None)
+        for ln in str(text or "").split("\n"):
+            ln = re.sub(r"\*\*|__", "", ln).strip()  # html_to_text 가 굵게를 ** 로 남긴다
+            if not ln or (leader and leader.search(ln)):
+                continue
+            hit = next(((label, m) for label in order if (m := marks[label].match(ln))), None)
+            if hit is None:
+                continue
+            label, m = hit
+            prefix = m.group(0).strip()
+            title = ln[m.end():].strip(" .|:·-\t")
+            if len(letter.findall(title)) < min_letters or len(title) > max_title:
+                continue
+            level = order.index(label) + 1
+            stack = {k: v for k, v in stack.items() if k < level}
+            stack[level] = prefix.rstrip(".").strip()
+            path = "/".join(stack[k] for k in sorted(stack))
+            if path in seen:
+                continue
+            seen.add(path)
+            out.append({"marker": label, "prefix": prefix, "title": title, "level": level, "path": path,
+                        "kind": str(kind or ""), "at": at, "label": f"{prefix} {title}" if prefix.endswith(".") else f"{prefix}. {title}"})
+    return out
+
+
+def skeleton_diff(theirs: list[dict[str, Any]], mine: list[dict[str, Any]]) -> dict[str, Any]:
+    """레퍼런스 뼈대 대비 내 뼈대 — 같은 자리 · 비슷한 제목이면 갖춤, 같은 자리인데 제목이 다르면 다름, 없으면 빠짐."""
+    th = float((packs.data(LEXICON)["measure"].get("sections") or {}).get("match", 0.5))
+
+    def same(a: str, b: str) -> bool:  # 비슷하거나, 한쪽 제목이 다른 쪽에 통째로 들어 있으면 ('추진 내용' ⊂ '추진 내용 및 …')
+        x, y = re.sub(r"\s+", "", a), re.sub(r"\s+", "", b)
+        return title_similarity(a, b) >= th or bool(x and y and (x in y or y in x))
+
+    by_path = {s["path"]: s for s in mine}
+    kept: list[dict[str, Any]] = []
+    renamed: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    missing: list[dict[str, Any]] = []
+    for r in theirs:
+        at = by_path.get(r["path"])
+        if (at and same(r["title"], at["title"])) or any(same(r["title"], s["title"]) for s in mine):
+            kept.append(r)
+        elif at:
+            renamed.append((r, at))
+        else:
+            missing.append(r)
+    scheme = lambda ss: list(dict.fromkeys(s["marker"] for s in ss))  # noqa: E731
+    return {"total": len(theirs), "kept": kept, "renamed": renamed, "missing": missing,
+            "theirs_scheme": scheme(theirs), "mine_scheme": scheme(mine)}
+
+
+GENRES = "authoring:genres.json"
+
+
+def _squash(s: str) -> str:
+    return re.sub(r"\s+", "", s or "")
+
+
+def genre_of(title: str = "", doctype: str = "") -> Optional[dict[str, Any]]:
+    """장르 표(`authoring:genres.json`)에서 doctype(id) 또는 제목에 든 낱말로 장르를 찾는다."""
+    table = (packs.data(GENRES).get("genres") or {})
+    if doctype and doctype in table:
+        return {"id": doctype, **table[doctype]}
+    flat = _squash(title)
+    for gid, g in table.items():
+        if any(_squash(k) and _squash(k) in flat for k in g.get("match") or []):
+            return {"id": gid, **g}
+    return None
+
+
+def genre_items(genre: dict[str, Any], text: str) -> list[dict[str, Any]]:
+    """장르 필수 구성마다 문서 글에 있는지 — [{id, label, present}]."""
+    flat = _squash(text)
+    return [{"id": it["id"], "label": it["label"], "present": any(_squash(k) in flat for k in it.get("any") or [])}
+            for it in genre.get("items") or []]
 
 
 def _lines(htmls: Iterable[str]) -> list[str]:
@@ -53,14 +177,29 @@ def _lines(htmls: Iterable[str]) -> list[str]:
     return out
 
 
+def _kind_alias(kind: str) -> str:
+    """레퍼런스 추출본과 문서가 같은 블록을 다르게 부르는 이름을 맞춘다 (층위 레지스트리 kindAliases)."""
+    alias = registry().get("kindAliases") or {}
+    return str(alias.get(kind, kind)) if not str(kind).startswith("_") else str(kind)
+
+
 def measure(htmls: Iterable[str], block_kinds: Optional[Iterable[str]] = None) -> dict[str, Any]:
     lex = _lex()
     htmls = [h or "" for h in htmls]
     lines = _lines(htmls)
     raw = "\n".join(lines)
     plain_text = raw.replace("**", "")
-    paras = [line for line in lines if not line.startswith("#") and not line.startswith("- ")]
-    bullets = [line for line in lines if line.startswith("- ")]
+    # 글머리 = 목록 줄(- ) 이거나 글머리 기호(❏ ○ - · ※ …)로 시작하는 문단 — 장 · 절 번호(Ⅰ · 가.)는 글머리가 아니다.
+    # 한글식 개조식은 기호를 글자로 둔 문단이라, 목록 태그만 세면 같은 글머리가 문단으로 잡힌다.
+    section_marks = set((packs.data(LEXICON)["measure"].get("sections") or {}).get("markers") or [])
+    bullet_rx = [rx for label, rx in lex["markers"] if label not in section_marks]
+
+    def is_bullet(line: str) -> bool:
+        text = line.replace("**", "").strip()
+        return line.startswith("- ") or any(rx.match(text) for rx in bullet_rx)
+
+    paras = [line for line in lines if not line.startswith("#") and not is_bullet(line)]
+    bullets = [line for line in lines if not line.startswith("#") and is_bullet(line)]
     headings = [line for line in lines if line.startswith("#")]
     para_chars = [len(line.replace("**", "")) for line in paras] or [0]
     sentences = [s for s in re.split(r"(?<=[.!?。])\s+|\n", plain_text) if len(s.strip()) > 1]
@@ -72,6 +211,16 @@ def measure(htmls: Iterable[str], block_kinds: Optional[Iterable[str]] = None) -
                 endings[label] += 1
                 break
     total_chars = max(1, len(plain_text))
+    # 글머리 체계: 문단 첫머리 기호 종류를 처음 나온 순서대로 (2번 넘게 쓰인 것만 — 우연한 한 줄은 체계가 아니다)
+    marker_hits: dict[str, int] = {}
+    for line in paras + bullets:
+        text = line.replace("**", "").strip()
+        text = text[2:].strip() if text.startswith("- ") and len(text) > 2 and not text[2:3].isspace() else text
+        for label, rx in lex["markers"]:
+            if rx.search(text):
+                marker_hits[label] = marker_hits.get(label, 0) + 1
+                break
+    marker_scheme = [k for k, v in marker_hits.items() if v >= 2]
     tables = sum(h.count("<table") for h in htmls) + sum(1 for k in (block_kinds or []) if "table" in k or "grid" in k or "form" in k)
     first_lines = " ".join(lines[:3])
     m: dict[str, Any] = {
@@ -96,7 +245,8 @@ def measure(htmls: Iterable[str], block_kinds: Optional[Iterable[str]] = None) -
         "emoji": len(lex["emoji"].findall(plain_text)),
         "questions": plain_text.count("?"),
         "exclamations": plain_text.count("!"),
-        "block_kinds": sorted(set(block_kinds or [])),
+        "block_kinds": sorted({_kind_alias(k) for k in block_kinds or []}),
+        "marker_scheme": marker_scheme,
     }
     for key, rx in lex["meta"].items():
         m[key] = bool(rx.search(plain_text))

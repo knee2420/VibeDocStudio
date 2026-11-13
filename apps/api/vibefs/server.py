@@ -62,7 +62,7 @@ class Server:
             if not session:
                 mount = self.store.mount_for(conv or None)
                 session = mount.session_id if mount else ""
-            tools = DocTools(self.store, session, index=index)
+            tools = DocTools(self.store, session, index=index, reads=reads)
         elif WorkbenchTools.handles(name) or RefTools.handles(name):
             session = self.session_id
             if not session:

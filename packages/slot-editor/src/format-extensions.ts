@@ -282,6 +282,31 @@ export const InlineMargin = Extension.create({
   },
 });
 
+/**
+ * Named paragraph style (한글 · 워드 "스타일") — `<p data-style="b1">`. Indent, hanging indent, spacing and size
+ * come from the style registry CSS (`paragraphStyleCss`), so the id must survive every edit round-trip.
+ */
+export const ParagraphStyle = Extension.create({
+  name: "paragraphStyle",
+  addOptions() {
+    return { types: ["paragraph"] };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          paraStyle: {
+            default: null,
+            parseHTML: (el) => el.getAttribute("data-style") || null,
+            renderHTML: (attrs) => (attrs.paraStyle ? { "data-style": attrs.paraStyle } : {}),
+          },
+        },
+      },
+    ];
+  },
+});
+
 /** Properties other paragraph attributes own; `blockStyle` keeps everything else. */
 const OWNED_BLOCK_PROPS = new Set(["text-align", "line-height"]);
 
