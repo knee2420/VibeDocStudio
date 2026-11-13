@@ -469,6 +469,10 @@ class RefTools:
                 (packs.message(msg, "skeleton.shapeMarkers", markers=" ".join(marks)) if marks else "")
             rows.append(packs.message(msg, "skeleton.sectionRow", indent="  " * (s["level"] - 1), label=s["label"],
                                       page=blocks[start].get("page"), shape=shape))
+        # 다음 행동을 결과 안에 — 절 목록을 그대로 넣은 원천 계획 호출 (query 는 내 자료의 말로 바꿔 넣는다)
+        leaves = [s["title"] for s in secs if s["level"] > 1] or [s["title"] for s in secs]
+        call = json.dumps([{"title": t, "query": ""} for t in leaves], ensure_ascii=False)
+        rows.append(packs.message(msg, "skeleton.planHint", call=call))
         return rows
 
     def _rf_visual(self, ref: str = "", section: str = "", pin: str = "", limit: int = 4, **_: Any) -> str:

@@ -169,6 +169,37 @@
   }
  },
  {
+  "name": "ws_plan",
+  "description": "짓기 전 원천 계획: 설계한 절마다 찾을 말을 주면 절마다 후보 원천 파일과 읽을 줄 범위(경로:L시작-L끝)를 한 번에 돌려준다. 서식 문서(보고서 · 공고 · 제안요청서)는 S4 설계 직후 한 번 부르고, 받은 줄을 read_file 로 읽는다. 흔한 말은 가볍게, 여러 말이 함께 맞는 파일이 위로.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "sections": {
+     "type": "array",
+     "description": "[{\"title\": \"절 제목\", \"query\": \"찾을 말 여럿 (띄어 쓰기로 구분)\"}] — query 가 없으면 제목 낱말로 찾는다",
+     "items": {
+      "type": "object",
+      "properties": {
+       "title": {
+        "type": "string"
+       },
+       "query": {
+        "type": "string"
+       }
+      }
+     }
+    },
+    "per": {
+     "type": "integer",
+     "description": "절마다 후보 수 (기본 2, 최대 5)"
+    }
+   },
+   "required": [
+    "sections"
+   ]
+  }
+ },
+ {
   "name": "ws_coverage",
   "description": "이 대화에서 read_file 로 읽은 범위: 다 읽은 파일 · 일부만 읽은 파일 · 안 읽은 파일. '전체를 확인' 하는 작업은 이것이 비워질 때까지 읽는다.",
   "inputSchema": {

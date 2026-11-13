@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import difflib
+import math
 import os
 import re
 from collections import Counter
@@ -144,6 +145,43 @@ class WorkspaceTools:
         if rest > 0:
             out.append(f"\n… {rest}줄 더 있다 — ws_grep(pattern=\"{pattern}\", offset={offset + shown}) 또는 path/glob 로 좁혀라.")
         return "\n".join(out)
+
+    def ws_plan(self, sections: Any = None, per: int = 2) -> str:
+        """설계한 절마다 찾을 말 → 절마다 후보 원천 파일과 읽을 줄 범위. 흔한 말은 가볍게(IDF), 여러 말이 함께 맞을수록 위로."""
+        items = _plan_items(sections)
+        msg = "resource:messages.json"
+        if not items:
+            return packs.message(msg, "plan.empty")
+        per = max(1, min(int(per or 2), 5))
+        files = self.index.text_files()
+        n = max(1, len(files))
+        lowered = [(e, [ln.lower() for ln in e.text_lines],
+                    " ".join([e.rel, e.title or "", *(h.text for h in e.headings)]).lower()) for e in files]
+        rows = [packs.message(msg, "plan.head", sections=len(items), files=len(files))]
+        for title, terms in items:
+            df = {t: sum(1 for _, lines, meta in lowered if t in meta or any(t in ln for ln in lines)) for t in terms}
+            scored = []
+            for entry, lines, meta in lowered:
+                hits = {t: [i for i, ln in enumerate(lines, 1) if t in ln] for t in terms}
+                matched = [t for t in terms if hits[t] or t in meta]
+                if not matched:
+                    continue
+                score = len(matched) * sum(math.log(1 + n / (1 + df[t])) * (math.log(1 + len(hits[t])) + (2 if t in meta else 0))
+                                           for t in matched)
+                scored.append((score, entry, hits, matched))
+            scored.sort(key=lambda x: -x[0])
+            rows.append(packs.message(msg, "plan.section", title=title, terms=" · ".join(terms)))
+            if not scored:
+                rows.append(packs.message(msg, "plan.none"))
+                continue
+            for _, entry, hits, matched in scored[:per]:
+                lo, hi = _best_range(entry, hits)
+                first = next((entry.text_lines[i - 1].strip() for i in range(lo, hi + 1)
+                              if any(i in v for v in hits.values())), "")
+                rows.append(packs.message(msg, "plan.row", path=entry.abs_path, start=lo, end=hi, rid=_rid(entry),
+                                          matched=len(matched), total=len(terms), snippet=first[:60]))
+        rows.append(packs.message(msg, "plan.tail"))
+        return "\n".join(rows)
 
     def ws_outline(self, path: str) -> str:
         entry = self._file(path)
@@ -353,6 +391,43 @@ def _root_line(ix: WorkspaceIndex) -> str:
     if len(ix.roots) == 1:
         return ix.roots[0]
     return " · ".join(f"R{i + 1}={r}" for i, r in enumerate(ix.roots)) or "(없음)"
+
+
+_PLAN_SPLIT = re.compile(r"[\s,·|/]+")
+
+
+def _plan_items(sections: Any) -> list[tuple[str, list[str]]]:
+    """[{title, query}] · ["제목: 말 말"] · 줄바꿈으로 나눈 글 → (절 제목, 찾을 말 목록). 말은 2자 이상 · 절마다 8개까지."""
+    raw = sections
+    if isinstance(raw, str):
+        raw = [ln for ln in raw.splitlines() if ln.strip()]
+    out: list[tuple[str, list[str]]] = []
+    for item in raw or []:
+        if isinstance(item, dict):
+            title, query = str(item.get("title") or "").strip(), str(item.get("query") or "").strip()
+        else:
+            title, _, query = str(item).partition(":")
+            title, query = title.strip(), query.strip()
+        words = [w.lower() for w in _PLAN_SPLIT.split(query or title) if len(w) >= 2]
+        terms = list(dict.fromkeys(words))[:8]
+        if title or terms:
+            out.append((title or " ".join(terms), terms))
+    return out[:20]
+
+
+def _best_range(entry: FileEntry, hits: dict[str, list[int]]) -> tuple[int, int]:
+    """맞은 줄이 가장 많은 제목 구간(없으면 가장 빽빽한 곳 앞뒤 15줄) — 한 번에 읽기 좋게 120줄까지."""
+    lines = sorted({i for v in hits.values() for i in v})
+    if not lines:
+        return 1, min(entry.lines or 1, 60)
+    spans = [(h.line, (entry.headings[k + 1].line - 1) if k + 1 < len(entry.headings) else entry.lines)
+             for k, h in enumerate(entry.headings)]
+    if spans:
+        lo, hi = max(spans, key=lambda s: (sum(1 for i in lines if s[0] <= i <= s[1]), -(s[1] - s[0])))
+        if any(lo <= i <= hi for i in lines):
+            return lo, min(hi, lo + 119)
+    center = max(lines, key=lambda c: sum(1 for i in lines if abs(i - c) <= 15))
+    return max(1, center - 15), min(entry.lines, center + 15)
 
 
 def _rid(entry: FileEntry) -> str:

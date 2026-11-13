@@ -399,3 +399,22 @@ def test_bullet_ratio_counts_marker_paragraphs_not_section_numbers() -> None:
     m = P.measure(["<p>가. 개요</p><p>❏ 하나</p><p>◦ 둘</p><p>그냥 문단</p>"])
     assert m["bullet_ratio"] == 0.5  # ❏ ◦ 는 글머리, 가. 는 절 번호(문단)
     assert P.measure(["<ul><li>하나</li><li>둘</li></ul>"])["bullet_ratio"] == 1.0
+
+
+def test_ws_plan_ranks_sources_per_section_with_line_ranges(tmp_path):
+    from vibefs.index import MountItem, WorkspaceIndex
+    from vibefs.tools import WorkspaceTools
+
+    (tmp_path / "역할.md").write_text("# 회의\n잡담\n## 역할 배분\n가치 담당 민규\n사용성 담당 린\n", encoding="utf-8")
+    (tmp_path / "일정.md").write_text("# 스프린트\n10월 30일 마일스톤\n", encoding="utf-8")
+    (tmp_path / "기타.md").write_text("# 잡담\n담당 없음\n", encoding="utf-8")
+    ix = WorkspaceIndex.build([MountItem(path=str(tmp_path), kind="folder")])
+    out = WorkspaceTools(ix).call("ws_plan", {"sections": [
+        {"title": "추진 체계", "query": "역할 담당"}, {"title": "추진 일정", "query": "스프린트 마일스톤"}, "빈 절: 없는말없는말"]})
+    lines = out.splitlines()
+    i = next(k for k, ln in enumerate(lines) if ln.startswith("§ 추진 체계"))
+    assert "역할.md:L3-L5" in lines[i + 1] and "맞은 말 2/2" in lines[i + 1]  # 두 말이 다 맞는 파일 · 그 제목 구간
+    assert any("일정.md:L" in ln for ln in lines)
+    j = next(k for k, ln in enumerate(lines) if ln.startswith("§ 빈 절"))
+    assert "맞는 원천 없음" in lines[j + 1]
+    assert "sections" in WorkspaceTools(ix).call("ws_plan", {"sections": []})
