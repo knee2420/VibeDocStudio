@@ -194,6 +194,29 @@ export const SourceControlSidebarPanel: React.FC = () => {
                     changedSlotIds: item.changedSlotIds,
                   });
 
+                const discardPageChanges = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  if (!activeDoc) return;
+                  useStudioDocumentStore.getState().updateDoc(
+                    activeDoc.docId,
+                    (prev) => {
+                      const nextSlots = { ...prev.slots };
+                      for (const sid of item.changedSlotIds) {
+                        const slot = nextSlots[sid];
+                        if (!slot) continue;
+                        nextSlots[sid] = {
+                          ...slot,
+                          content: item.beforeSlots[sid] ?? slot.originalContent ?? slot.content,
+                          isEdited: false,
+                        };
+                      }
+                      return { ...prev, slots: nextSlots };
+                    },
+                    { history: true, label: `${item.page.pageLabel} 변경사항 되돌리기` },
+                  );
+                  if (isPageDiffActive) closeDiff();
+                };
+
                 return (
                   <div
                     key={item.page.pageId}
@@ -207,7 +230,7 @@ export const SourceControlSidebarPanel: React.FC = () => {
                         openPageDiff();
                       }
                     }}
-                    className={`fig-row w-full flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition ${
+                    className={`fig-row group w-full flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition ${
                       isPageDiffActive
                         ? "bg-sky-50/80 ring-1 ring-[#0d99ff]"
                         : "hover:bg-slate-100/80"
@@ -218,6 +241,17 @@ export const SourceControlSidebarPanel: React.FC = () => {
                     <span className="fig-row-label truncate text-[11.5px] font-medium flex-1">
                       {item.page.pageLabel}
                     </span>
+                    {item.kind === "edited" && (
+                      <button
+                        type="button"
+                        data-testid={`discard-page-changes-${item.page.pageId}`}
+                        onClick={discardPageChanges}
+                        title="변경사항 되돌리기 (Discard Changes)"
+                        className="p-0.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200/80 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                      </button>
+                    )}
                     <FigmaDiffBadge diffState={{ kind: item.kind, isDirect: true }} />
                   </div>
                 );

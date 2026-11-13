@@ -1,23 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, RotateCcw, Trash2, X } from "lucide-react";
 
 import { MemoVDocPageSheet } from "@vibe/slot-canvas";
 import { documentSurface, type VDocSlot } from "@vibe/vdoc-schema";
 
-import { useAiStagingStore } from "@/entities/ai-staging";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import { restoreSlots } from "@/features/document-revisions/model/useRevisions";
-import { useStageAiChanges } from "@/features/stage-ai-changes";
 
-import { type ActiveDiffTarget, useActiveDiffStore } from "../model/useActiveDiffStore";
+import { type ActiveDiffTarget } from "../model/useActiveDiffStore";
 
 const noop = () => {};
 
 export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = ({ activeDiff }) => {
   const doc = useStudioDocumentStore(selectActiveDocument);
-  const closeDiff = useActiveDiffStore((s) => s.closeDiff);
-  const { acceptStagedChange, rejectStagedChange } = useStageAiChanges();
-  const stagingQueue = useAiStagingStore((s) => s.queue);
 
   const leftPaneRef = useRef<HTMLDivElement>(null);
   const leftScrollRef = useRef<HTMLDivElement>(null);
@@ -148,83 +141,9 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
     ? doc.pages.filter((p) => p.pageId === activeDiff.pageId)
     : doc.pages;
   const effectivePages = pagesToRender.length > 0 ? pagesToRender : doc.pages;
-  const stagedItem = activeDiff.diffId ? stagingQueue.find((c) => c.diffId === activeDiff.diffId) : null;
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#eef0f3] overflow-hidden select-text">
-      {/* Sub-header Context Bar */}
-      <div className="px-4 py-1.5 bg-white border-b border-slate-200/90 flex items-center justify-between gap-4 shrink-0 shadow-2xs select-none">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="font-bold text-xs text-slate-800 truncate">{activeDiff.label}</span>
-          {isAddedPage ? (
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10.5px] font-mono font-semibold shrink-0">
-              신규 페이지 추가됨 (U) · {activeDiff.changedSlotIds.length}개 영역
-            </span>
-          ) : (
-            <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10.5px] font-mono shrink-0">
-              {activeDiff.changedSlotIds.length}개 영역 변경됨
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          {activeDiff.type === "revision" && (
-            <button
-              type="button"
-              onClick={() => {
-                const slotsToRestore = activeDiff.changedSlotIds.map((id) => ({
-                  slotId: id,
-                  before: activeDiff.beforeSlots[id] ?? "",
-                }));
-                restoreSlots(doc.docId, slotsToRestore, `${activeDiff.label} 내용으로 복원`);
-                closeDiff();
-              }}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold cursor-pointer transition shadow-2xs"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              이 버전으로 복원
-            </button>
-          )}
-
-          {activeDiff.type === "staged" && stagedItem && (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  rejectStagedChange(stagedItem.diffId);
-                  closeDiff();
-                }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-semibold cursor-pointer transition"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                반려
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  acceptStagedChange(stagedItem);
-                  closeDiff();
-                }}
-                className="inline-flex items-center gap-1 px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer transition shadow-2xs"
-              >
-                <Check className="w-3.5 h-3.5" />
-                수락
-              </button>
-            </>
-          )}
-
-          <button
-            type="button"
-            onClick={closeDiff}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-xs font-medium cursor-pointer"
-            title="Diff 닫고 편집 모드로 돌아가기"
-          >
-            <X className="w-3.5 h-3.5" />
-            닫기
-          </button>
-        </div>
-      </div>
-
       {/* Main 1:1 Side-by-Side Real A4 Editor Preview */}
       <div className="flex-1 flex overflow-hidden divide-x divide-slate-300">
         {/* Left: Base Version (Before) */}

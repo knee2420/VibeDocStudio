@@ -6,6 +6,7 @@ import { AiAttachLayer, registerWorkspaceAi, useAiScopeLiveSync } from "@/featur
 import { registerCitationNavigation, registerEvidenceFocusAi, useEvidenceFocusSync, useEvidenceStaleCheck } from "@/features/evidence-focus";
 import { GlobalUndoToastHost, useGlobalStudioShortcuts } from "@/features/command-bus";
 import { registerSlotAiActions } from "@/features/compose-slot-ai";
+import { useActiveDiffStore } from "@/features/document-diff";
 import { registerAgentDraftSync } from "@/features/manage-documents";
 import { DeckCardPreview, registerKnowledgeDeckAi, useKnowledgeDeckBootstrap } from "@/features/knowledge-deck-ai";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
@@ -47,6 +48,7 @@ const StudioWorkspace: React.FC = () => {
   }, []);
 
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
+  const activeDiff = useActiveDiffStore((s) => s.activeDiff);
 
   return (
     <div className="h-screen w-screen flex flex-col bg-[#f4f5f7] text-slate-900 overflow-hidden select-none">
@@ -61,7 +63,7 @@ const StudioWorkspace: React.FC = () => {
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <PageTabBar />
 
-          {currentPhase === "drafting" && (
+          {currentPhase === "drafting" && !activeDiff && (
             <SlotFormattingSubToolbar onTableCommand={blocks.runTableCommand} />
           )}
 

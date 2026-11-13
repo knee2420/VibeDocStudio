@@ -19,7 +19,7 @@ import { pageMutations } from "@/features/mutate-document-pages";
 import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes";
 import { getOutlineProjection, outlineCommands, useOutlineSelector, ZoomFocusStyle } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
-import { CanvasDiffTabBar, SideBySideDiffCanvas, useActiveDiffStore } from "@/features/document-diff";
+import { SideBySideDiffCanvas, useActiveDiffStore } from "@/features/document-diff";
 
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
 import { AiStagingDrawer } from "./AiStagingDrawer";
@@ -280,7 +280,6 @@ export const VDocPageCanvas: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
-      <CanvasDiffTabBar />
       <OutlineHoverHighlight />
       <HiddenLayersStyle />
       <ZoomFocusStyle />
