@@ -12,17 +12,20 @@ import {
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { htmlToPlain } from "@/shared/lib";
 
-export type FloatingToolId =
-  | "select"
-  | "hand"
-  | "frame"
-  | "section"
-  | "rectangle"
-  | "pen"
-  | "text"
-  | "resources"
-  | "comment"
-  | "ai";
+/**
+ * 캔버스 도구 (피그마 툴바와 같다).
+ * - `select` 이동 · 선택 (V) · `hand` 화면 이동 (H)
+ * - `section` 드래그한 범위를 섹션 에셋으로 저장
+ * - `place` 블록 배치: 툴바 · 에셋에서 고른 블록(`placement`)을 캔버스를 클릭한 자리에 넣는다.
+ *   고르자마자 넣지 않는다 — 피그마처럼 커서가 십자로 바뀌고, 넣을 자리를 클릭하면 들어간 뒤 이동 도구로 돌아간다.
+ */
+export type FloatingToolId = "select" | "hand" | "section" | "place";
+
+/** 배치할 블록: 기본 블록 kind 또는 `section-asset:<id>`. */
+export interface PlacementTool {
+  kind: string;
+  label: string;
+}
 
 export interface SectionAssetBlockSnapshot {
   block: LayoutBlock;
@@ -125,8 +128,12 @@ function deriveSectionName(
 
 interface AssetLibraryState {
   activeTool: FloatingToolId;
+  /** `place` 도구일 때 배치할 블록. */
+  placement: PlacementTool | null;
   sectionAssets: SectionAssetItem[];
-  setActiveTool: (tool: FloatingToolId) => void;
+  setActiveTool: (tool: Exclude<FloatingToolId, "place">) => void;
+  /** 블록 배치 도구로 바꾼다 (같은 블록을 다시 고르면 이동 도구로 돌아간다). */
+  armPlacement: (placement: PlacementTool) => void;
   createSectionFromSelection: (
     doc: VDocDocument,
     unitIds: string[],
@@ -138,9 +145,16 @@ interface AssetLibraryState {
 
 export const useAssetLibraryStore = create<AssetLibraryState>((set, get) => ({
   activeTool: "select",
+  placement: null,
   sectionAssets: [],
 
-  setActiveTool: (tool) => set({ activeTool: tool }),
+  setActiveTool: (tool) => set({ activeTool: tool, placement: null }),
+  armPlacement: (placement) =>
+    set((s) =>
+      s.activeTool === "place" && s.placement?.kind === placement.kind
+        ? { activeTool: "select", placement: null }
+        : { activeTool: "place", placement }
+    ),
 
   createSectionFromSelection: (doc, unitIds, customName) => {
     if (unitIds.length === 0) return null;

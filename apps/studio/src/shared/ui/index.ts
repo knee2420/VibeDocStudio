@@ -3,4 +3,5 @@ export * from "./hygiene/EmptyStateCard";
 export * from "./hygiene/ActionUndoToast";
 export * from "./hygiene/CollapsedPanelRail";
 export * from "./DocumentSurfaceIcons";
+export * from "./AssetWireframeThumb";
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Boxes, ChevronRight, FolderTree, Settings, Sliders, Sparkles, Wrench } from "lucide-react";
+import { ChevronRight, FolderTree, Settings, Sliders, Sparkles } from "lucide-react";
 
 import { findBlock, type ImageBlockDef } from "@vibe/vdoc-schema";
 
@@ -12,7 +12,7 @@ import { SlotBackdataSection } from "@/features/bind-slot-backdata";
 import { RevisionTimeline } from "@/features/document-revisions";
 import { runFillSlot } from "@/features/fill-slots";
 import { SlotPlainTextEditorCard, SlotTypographyCard, useSlotContentActions } from "@/features/edit-slot-richtext";
-import { BlockInsertionPalette, useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
+import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { useStageAiChanges } from "@/features/stage-ai-changes";
 import { useDragResize } from "@/shared/lib";
 import { CollapsedPanelRail } from "@/shared/ui";
@@ -20,22 +20,14 @@ import { ResourceManagerWidget } from "@/widgets/resource-manager";
 
 import { ImageInspectorCard } from "./ImageInspectorCard";
 
-const BLOCK_GUIDE = [
-  ["텍스트 섹션", "제목과 본문 슬롯이 결합된 기본 문서 블록"],
-  ["구조화 표", "다단 헤더와 데이터 행을 자유롭게 추가하는 표"],
-  ["2단 그리드", "5:5 비율로 좌우 정보를 나란히 배치하는 그리드"],
-  ["할당형 필드", "서명, 날인, 결재, 상태 체크를 위한 전용 슬롯"],
-] as const;
-
 const tabClass = (active: boolean, activeTone: string) =>
   `px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
     active ? `bg-white ${activeTone} shadow-2xs font-bold` : "text-slate-500 hover:text-slate-700"
   }`;
 
-/** 우측 작업 패널: AI Composer(기본) · 블록 박스 · 인스펙터 · 리소스 매니저. */
+/** 우측 작업 패널: AI Composer(기본) · 인스펙터 · 리소스 매니저. */
 export const SlotInspectorDrawer: React.FC = () => {
   const doc = useStudioDocumentStore(selectActiveDocument);
-  const activePageId = useStudioDocumentStore((s) => s.activePageId);
   const selectedSlotId = useSlotSelectionStore((s) => s.selectedSlotId);
   const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
   const toggleComposerForSlot = useSlotSelectionStore((s) => s.toggleComposerForSlot);
@@ -116,15 +108,6 @@ export const SlotInspectorDrawer: React.FC = () => {
           )}
           <button
             type="button"
-            data-testid="tab-view-blockbox"
-            onClick={() => setViewMode("blockbox")}
-            className={tabClass(viewMode === "blockbox", "text-emerald-900")}
-          >
-            <Boxes className="w-3.5 h-3.5 text-emerald-600" />
-            <span>블록</span>
-          </button>
-          <button
-            type="button"
             data-testid="tab-view-inspector"
             onClick={() => setViewMode("inspector")}
             className={tabClass(viewMode === "inspector", "text-blue-900")}
@@ -161,39 +144,6 @@ export const SlotInspectorDrawer: React.FC = () => {
       {viewMode === "resource-manager" && rmPlacement !== "between-split" && (
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <ResourceManagerWidget />
-        </div>
-      )}
-
-      {viewMode === "blockbox" && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
-                작업 도구함 (Toolbox)
-              </span>
-              <span className="text-[11px] text-slate-400 font-mono truncate max-w-[170px]">{doc.title}</span>
-            </div>
-            <h3 className="text-sm font-bold text-slate-900 tracking-tight">블록 박스 (BlockBox)</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              원하는 블록을 캔버스 위로 직접 <strong>끌어다 놓거나(Drag & Drop)</strong>, 클릭하여 현재 페이지 끝에 추가하세요.
-            </p>
-          </div>
-
-          <BlockInsertionPalette targetPageId={activePageId || doc.pages[0]?.pageId || ""} showHeader={false} />
-
-          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-600 space-y-2">
-            <div className="font-semibold text-slate-800 flex items-center gap-1.5">
-              <Wrench className="w-3.5 h-3.5 text-slate-500" />
-              <span>블록 도구 가이드</span>
-            </div>
-            <ul className="space-y-1.5 text-[11px] text-slate-500 leading-normal">
-              {BLOCK_GUIDE.map(([name, desc]) => (
-                <li key={name}>
-                  <strong className="text-slate-700">{name}</strong>: {desc}
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       )}
 
@@ -262,17 +212,9 @@ export const SlotInspectorDrawer: React.FC = () => {
               <Sliders className="w-6 h-6" />
             </div>
             <h4 className="text-xs font-bold text-slate-800 mb-1">선택된 슬롯 또는 블록이 없습니다</h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed max-w-[240px] mb-4">
+            <p className="text-[11px] text-slate-500 leading-relaxed max-w-[240px]">
               중앙 캔버스에서 편집할 슬롯이나 블록을 클릭하면 타이포그래피 제약 및 백데이터 서랍이 표시됩니다.
             </p>
-            <button
-              type="button"
-              onClick={() => setViewMode("blockbox")}
-              className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-2xs"
-            >
-              <Boxes className="w-3.5 h-3.5" />
-              <span>블록 박스 (BlockBox) 열기</span>
-            </button>
           </div>
         ))}
     </aside>

@@ -338,11 +338,16 @@ export function useMutateCanvasBlocks() {
     },
 
     /** Inserts a new block at `atIndex` (default: end of page) and focuses its first slot (or block). */
-    addBlockToPage: (pageId: string, kind: InsertableBlockKind, atIndex?: number) => {
+    addBlockToPage: (pageId: string, kind: InsertableBlockKind | string, atIndex?: number) => {
+      // 섹션 에셋(`section-asset:<id>`)은 저장한 블록 묶음을 그대로 넣는다 (끌어 놓기 · 배치 도구 공통).
+      if (kind.startsWith("section-asset:")) {
+        useAssetLibraryStore.getState().insertSectionIntoPage(kind.slice("section-asset:".length), pageId, atIndex);
+        return;
+      }
       let focusSlotId: string | undefined;
       let createdBlockId: string | null = null;
       apply((doc) => {
-        const draft = createInsertableBlock(kind, {
+        const draft = createInsertableBlock(kind as InsertableBlockKind, {
           suffix: idSuffix(),
           defaultBackdataRefs: Object.keys(doc.backdata).slice(0, 1),
         });

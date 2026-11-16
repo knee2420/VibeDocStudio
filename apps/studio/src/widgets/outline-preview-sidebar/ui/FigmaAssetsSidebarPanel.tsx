@@ -18,7 +18,8 @@ import { useAssetLibraryStore } from "@/entities/asset-library";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
-import { useMutateCanvasBlocks, type InsertableBlockKind } from "@/features/mutate-canvas-blocks";
+import type { InsertableBlockKind } from "@/features/mutate-canvas-blocks";
+import { AssetWireframeThumb } from "@/shared/ui";
 
 import { SectionAssetPreview } from "./SectionAssetPreview";
 
@@ -95,126 +96,19 @@ const INITIAL_LOCAL_ASSETS: AssetItem[] = [
   },
 ];
 
-/** 피그마 에셋 스타일의 미니 와이어프레임 썸네일 */
-const AssetWireframeThumb: React.FC<{ kind: string; large?: boolean }> = ({ kind, large }) => {
-  const pad = large ? "p-4" : "p-2.5";
-  switch (kind) {
-    case "image":
-      return (
-        <div
-          className={`w-full h-full ${pad} flex items-center justify-center`}
-          style={{
-            backgroundImage:
-              "linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)",
-            backgroundSize: large ? "16px 16px" : "10px 10px",
-            backgroundPosition: large ? "0 0, 0 8px, 8px -8px, -8px 0" : "0 0, 0 5px, 5px -5px, -5px 0",
-          }}
-        />
-      );
-    case "columns-grid":
-      return (
-        <div className={`w-full h-full ${pad} flex items-center justify-center`}>
-          <div className="w-full h-full bg-white rounded border border-slate-200/80 p-1.5 grid grid-cols-2 gap-1.5 shadow-2xs">
-            <div className="bg-slate-200/80 rounded-xs" />
-            <div className="bg-slate-200/80 rounded-xs" />
-          </div>
-        </div>
-      );
-    case "structured-table":
-      return (
-        <div className={`w-full h-full ${pad} flex items-center justify-center`}>
-          <div className="w-full h-full bg-white rounded border border-slate-200/80 p-1.5 flex flex-col gap-1 shadow-2xs">
-            <div className="h-2 bg-slate-500/70 rounded-xs" />
-            <div className="flex-1 grid grid-cols-3 gap-1">
-              <div className="bg-slate-200/80 rounded-xs" />
-              <div className="bg-slate-200/80 rounded-xs" />
-              <div className="bg-slate-200/80 rounded-xs" />
-              <div className="bg-slate-100 rounded-xs" />
-              <div className="bg-slate-100 rounded-xs" />
-              <div className="bg-slate-100 rounded-xs" />
-            </div>
-          </div>
-        </div>
-      );
-    case "hero":
-      return (
-        <div className={`w-full h-full ${pad} flex items-center justify-center`}>
-          <div className="w-full h-full bg-white rounded border border-slate-200/80 p-1.5 flex flex-col gap-1.5 shadow-2xs">
-            <div className="h-2/5 bg-slate-600/80 rounded-xs" />
-            <div className="grid grid-cols-3 gap-1 flex-1">
-              <div className="bg-slate-200/80 rounded-xs" />
-              <div className="bg-slate-200/80 rounded-xs" />
-              <div className="bg-slate-200/80 rounded-xs" />
-            </div>
-          </div>
-        </div>
-      );
-    case "fillable-group":
-      return (
-        <div className={`w-full h-full ${pad} flex items-center justify-center`}>
-          <div className="w-full h-full bg-white rounded border border-slate-200/80 p-1.5 flex flex-col justify-center gap-1.5 shadow-2xs">
-            <div className="h-2 w-2/3 bg-slate-300 rounded-xs" />
-            <div className="h-2.5 w-full bg-slate-100 border border-slate-200 rounded-xs" />
-            <div className="h-2.5 w-full bg-slate-100 border border-slate-200 rounded-xs" />
-          </div>
-        </div>
-      );
-    case "link-card":
-      return (
-        <div className={`w-full h-full ${pad} flex items-center justify-center`}>
-          <div className="w-full bg-white rounded border border-slate-200/80 p-1.5 flex items-center gap-1.5 shadow-2xs">
-            <div className="w-4 h-4 rounded-xs bg-slate-500/70 shrink-0" />
-            <div className="flex-1 space-y-1">
-              <div className="h-1.5 w-3/4 bg-slate-400 rounded-xs" />
-              <div className="h-1.5 w-1/2 bg-slate-200 rounded-xs" />
-            </div>
-          </div>
-        </div>
-      );
-    case "divider":
-      return (
-        <div className={`w-full h-full ${pad} flex items-center justify-center`}>
-          <div className="w-full h-0.5 bg-slate-400 rounded-full" />
-        </div>
-      );
-    case "section-block":
-      return (
-        <div className={`w-full h-full ${pad} flex items-center justify-center`}>
-          <div className="w-full h-full bg-white rounded border border-slate-200/80 p-1.5 flex flex-col gap-1 shadow-2xs">
-            <div className="h-2 w-1/2 bg-slate-600/75 rounded-xs" />
-            <div className="h-1.5 w-full bg-slate-200 rounded-xs" />
-            <div className="h-1.5 w-5/6 bg-slate-200 rounded-xs" />
-            <div className="h-1.5 w-2/3 bg-slate-200 rounded-xs" />
-          </div>
-        </div>
-      );
-    default: // "text"
-      return (
-        <div className={`w-full h-full ${pad} flex items-center justify-center`}>
-          <div className="w-full h-full bg-white rounded border border-slate-200/80 p-1.5 flex flex-col justify-center gap-1 shadow-2xs">
-            <div className="h-2 w-2/3 bg-slate-500/75 rounded-xs" />
-            <div className="h-1.5 w-full bg-slate-200 rounded-xs" />
-            <div className="h-1.5 w-4/5 bg-slate-200 rounded-xs" />
-          </div>
-        </div>
-      );
-  }
-};
-
 export const FigmaAssetsSidebarPanel: React.FC = () => {
   const doc = useStudioDocumentStore(selectActiveDocument);
   const activePageId = useStudioDocumentStore((s) => s.activePageId);
   const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
   const setActiveActivityTab = useWorkspaceLayoutStore((s) => s.setActiveActivityTab);
   const sectionAssets = useAssetLibraryStore((s) => s.sectionAssets);
-  const insertSectionIntoPage = useAssetLibraryStore((s) => s.insertSectionIntoPage);
-  const { addBlockToPage } = useMutateCanvasBlocks();
+  const armPlacement = useAssetLibraryStore((s) => s.armPlacement);
+  const armedKind = useAssetLibraryStore((s) => (s.activeTool === "place" ? s.placement?.kind ?? null : null));
 
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [activeFolder, setActiveFolder] = useState<FolderId | null>(null);
   const [localAssets, setLocalAssets] = useState<AssetItem[]>(INITIAL_LOCAL_ASSETS);
-  const [detailPopover, setDetailPopover] = useState<{ item: AssetItem; top: number; left: number } | null>(null);
   const [registerName, setRegisterName] = useState("");
   const [showRegisterForm, setShowRegisterForm] = useState(false);
 
@@ -273,16 +167,6 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
     return <AssetWireframeThumb kind={item.thumbKind} large={opts?.large} />;
   };
 
-  const handleInsertAsset = (item: AssetItem) => {
-    if (!targetPageId) return;
-    if (item.sectionId) {
-      insertSectionIntoPage(item.sectionId, targetPageId);
-    } else {
-      addBlockToPage(targetPageId, item.blockKind);
-    }
-    setDetailPopover(null);
-  };
-
   const handleRegisterTemplate = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = registerName.trim();
@@ -328,100 +212,66 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
 
   const activeFolderMeta = FOLDER_META.find((f) => f.id === activeFolder);
 
-  const openDetails = (e: React.MouseEvent<HTMLElement>, item: AssetItem) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const sidebarRight = e.currentTarget.closest("[data-testid='figma-assets-panel']")?.getBoundingClientRect().right ?? rect.right;
-    const clampedTop = Math.max(48, Math.min(window.innerHeight - 310, rect.top));
-    setDetailPopover({
-      item,
-      top: clampedTop,
-      left: sidebarRight + 8,
-    });
-  };
+  const placementKindOf = (item: AssetItem) => (item.sectionId ? `section-asset:${item.sectionId}` : item.blockKind);
+  const assetDragProps = (item: AssetItem) => ({
+    draggable: true,
+    onDragStart: (e: React.DragEvent) => {
+      e.dataTransfer.effectAllowed = "copy";
+      e.dataTransfer.setData(NEW_BLOCK_DRAG_MIME, placementKindOf(item));
+    },
+  });
+  /** 피그마처럼: 고르면 바로 넣지 않고 배치 도구가 된다 — 캔버스에서 넣을 자리를 클릭한다. 다시 누르면 취소. */
+  const armAsset = (item: AssetItem) => armPlacement({ kind: placementKindOf(item), label: item.name });
 
   const renderAssetCard = (item: AssetItem) => {
-    const isSelected = detailPopover?.item.id === item.id;
+    const isArmed = armedKind === placementKindOf(item);
+    const hint = `${item.name} — ${item.description}
+클릭: 고른 뒤 캔버스에서 넣을 자리 클릭 · 끌어서 원하는 자리에 놓기`;
     if (viewMode === "list") {
       return (
-        <div
+        <button
           key={item.id}
-          draggable
-          onDragStart={(e) => {
-            e.dataTransfer.effectAllowed = "copy";
-            e.dataTransfer.setData(
-              NEW_BLOCK_DRAG_MIME,
-              item.sectionId ? `section-asset:${item.sectionId}` : item.blockKind,
-            );
-          }}
-          onClick={(e) => openDetails(e, item)}
-          onDoubleClick={() => handleInsertAsset(item)}
-          title={`${item.name} — 클릭: 세부 정보 · 드래그/더블클릭: 페이지에 삽입`}
-          className={`group flex items-center gap-2.5 p-1.5 rounded-lg cursor-grab active:cursor-grabbing transition ${
-            isSelected ? "bg-[#e5f4ff] ring-1 ring-[#0d99ff]" : "hover:bg-slate-100/90"
+          type="button"
+          data-testid={`asset-card-${item.id}`}
+          aria-pressed={isArmed}
+          {...assetDragProps(item)}
+          onClick={() => armAsset(item)}
+          title={hint}
+          className={`w-full text-left flex items-center gap-2.5 p-1.5 rounded-[5px] cursor-grab active:cursor-grabbing ${
+            isArmed ? "bg-[#e5f4ff]" : "hover:bg-black/[0.04]"
           }`}
         >
-          <div className="w-9 h-9 rounded-md bg-[#f5f5f5] border border-slate-200/80 shrink-0 overflow-hidden">
+          <div className="w-9 h-9 rounded-[5px] bg-[#f5f5f5] border border-black/10 shrink-0 overflow-hidden">
             {renderAssetPreview(item, { defaultScale: 0.045 })}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[12px] font-medium text-slate-800 truncate">{item.name}</div>
-            <div className="text-[10.5px] text-slate-400 truncate">{item.description}</div>
+            <div className="text-[11px] font-medium text-black/90 truncate">{item.name}</div>
+            <div className="text-[10.5px] text-black/50 truncate">{item.description}</div>
           </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleInsertAsset(item);
-            }}
-            title="현재 페이지에 바로 삽입"
-            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[#0d99ff] hover:text-white text-slate-500 transition cursor-pointer shrink-0"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        </button>
       );
     }
 
     return (
-      <div
+      <button
         key={item.id}
-        draggable
-        onDragStart={(e) => {
-          e.dataTransfer.effectAllowed = "copy";
-          e.dataTransfer.setData(
-            NEW_BLOCK_DRAG_MIME,
-            item.sectionId ? `section-asset:${item.sectionId}` : item.blockKind,
-          );
-        }}
-        onClick={(e) => openDetails(e, item)}
-        onDoubleClick={() => handleInsertAsset(item)}
-        title={`${item.name} — 클릭: 세부 정보 · 드래그/더블클릭: 페이지에 삽입`}
-        className="group flex flex-col cursor-grab active:cursor-grabbing"
+        type="button"
+        data-testid={`asset-card-${item.id}`}
+        aria-pressed={isArmed}
+        {...assetDragProps(item)}
+        onClick={() => armAsset(item)}
+        title={hint}
+        className="group flex flex-col text-left cursor-grab active:cursor-grabbing"
       >
         <div
-          className={`relative aspect-square w-full rounded-lg bg-[#f5f5f5] border overflow-hidden transition ${
-            isSelected
-              ? "border-[#0d99ff] ring-2 ring-[#0d99ff]/25"
-              : "border-slate-200/80 group-hover:border-slate-300"
+          className={`relative aspect-square w-full rounded-[5px] bg-[#f5f5f5] border overflow-hidden ${
+            isArmed ? "border-[#0d99ff] ring-2 ring-[#0d99ff]/25" : "border-black/10 group-hover:border-black/25"
           }`}
         >
           {renderAssetPreview(item)}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleInsertAsset(item);
-            }}
-            title="현재 페이지에 바로 삽입"
-            className="opacity-0 group-hover:opacity-100 absolute top-1.5 right-1.5 w-6 h-6 rounded-md bg-white/95 border border-slate-200 shadow-xs flex items-center justify-center text-slate-600 hover:bg-[#0d99ff] hover:text-white hover:border-[#0d99ff] transition cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
         </div>
-        <span className="mt-1 px-0.5 text-[11.5px] font-medium text-slate-700 truncate text-center group-hover:text-slate-950">
-          {item.name}
-        </span>
-      </div>
+        <span className="mt-1 w-full px-0.5 text-[11px] text-black/80 truncate text-center">{item.name}</span>
+      </button>
     );
   };
 
@@ -537,10 +387,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
         {!isSearching && activeFolder && activeFolderMeta && (
           <button
             type="button"
-            onClick={() => {
-              setActiveFolder(null);
-              setDetailPopover(null);
-            }}
+            onClick={() => setActiveFolder(null)}
             className="w-full flex items-center gap-1.5 py-1 px-1 text-[12px] font-semibold text-slate-700 hover:text-slate-950 cursor-pointer"
           >
             <ChevronLeft className="w-3.5 h-3.5 text-slate-500" />
@@ -556,10 +403,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
                 <button
                   key={folder.id}
                   type="button"
-                  onClick={() => {
-                    setActiveFolder(folder.id);
-                    setDetailPopover(null);
-                  }}
+                  onClick={() => setActiveFolder(folder.id)}
                   className="w-full flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-100/90 transition text-left cursor-pointer"
                 >
                   <div className="w-9 h-9 rounded-md bg-[#f5f5f5] border border-slate-200/80 shrink-0 overflow-hidden">
@@ -610,52 +454,6 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
         )}
       </div>
 
-      {/* 4. 피그마 스타일 "세부 정보" 플로팅 팝오버 (이미지 3 레퍼런스) */}
-      {detailPopover && (
-        <div
-          data-testid="asset-detail-popover"
-          style={{ top: detailPopover.top, left: detailPopover.left }}
-          className="fixed z-50 w-64 bg-white rounded-xl border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-3 space-y-2.5"
-        >
-          <div className="flex items-center justify-between">
-            <div className="min-w-0">
-              <div className="text-[11px] font-semibold text-slate-700">세부 정보</div>
-              <div className="text-[10px] text-slate-400 truncate">
-                {FOLDER_META.find((f) => f.id === detailPopover.item.folder)?.label}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setDetailPopover(null)}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div
-            className={`w-full ${
-              detailPopover.item.sectionId ? "h-44" : "h-32"
-            } rounded-lg bg-[#f5f5f5] border border-slate-200/80 overflow-hidden`}
-          >
-            {renderAssetPreview(detailPopover.item, { large: true })}
-          </div>
-
-          <div>
-            <div className="text-[13px] font-bold text-slate-900">{detailPopover.item.name}</div>
-            <div className="text-[11px] text-slate-500 mt-0.5">{detailPopover.item.description}</div>
-          </div>
-
-          <button
-            type="button"
-            data-testid="asset-insert-instance-btn"
-            onClick={() => handleInsertAsset(detailPopover.item)}
-            className="w-full py-1.5 rounded-lg bg-[#0d99ff] hover:bg-[#0b87e3] text-white text-[12px] font-semibold transition cursor-pointer shadow-xs"
-          >
-            인스턴스 삽입
-          </button>
-        </div>
-      )}
     </div>
   );
 };

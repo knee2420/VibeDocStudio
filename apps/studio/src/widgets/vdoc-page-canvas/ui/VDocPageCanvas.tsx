@@ -28,6 +28,7 @@ import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
 import { ReferenceSplitViewport } from "./ReferenceSplitViewport";
 import { SlotRangeAiBar } from "./SlotRangeAiBar";
+import { BlockPlacementLayer } from "./BlockPlacementLayer";
 import { FigmaFloatingToolbar } from "./FigmaFloatingToolbar";
 import { NewTabPagePicker } from "./NewTabPagePicker";
 import { HiddenLayersStyle } from "@/features/layer-visibility";
@@ -146,6 +147,8 @@ const DraftingCanvas: React.FC = () => {
   const onInsertMedia = useStableCallback(blocks.addMediaToPage);
   const onInsertBlockAtY = useStableCallback(blocks.insertFromMenu);
   const onCopyBlock = useStableCallback(blocks.copyBlock);
+  // 피그마식 배치 도구: 툴바 · 에셋에서 고른 블록을 캔버스를 클릭한 자리에 넣는다.
+  const onPlaceBlock = useStableCallback((pageId: string, kind: string, index: number) => blocks.addBlockToPage(pageId, kind, index));
   const isExternalRangeActive = React.useCallback(() => {
     const r = useSlotSelectionStore.getState().slotRange;
     return Boolean(r && !r.withinTable);
@@ -187,6 +190,7 @@ const DraftingCanvas: React.FC = () => {
       onClick={() => clearSelection()}
       className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6] focus:outline-none"
     >
+      <BlockPlacementLayer getMain={getMain} pages={pagesToRender} editable={mode === "Editing"} onPlace={onPlaceBlock} />
       <div className={`w-fit min-w-[794px] ${openReferenceCount > 0 ? "ml-2.5 mr-auto" : "mx-auto"} flex flex-col items-center`}>
         {isPageZoomed && (
           <div

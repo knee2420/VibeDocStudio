@@ -163,6 +163,7 @@ export function useCanvasRangeSelection(getMain: () => HTMLElement | null): void
     };
 
     const onPointerDown = (e: PointerEvent) => {
+      if (useAssetLibraryStore.getState().activeTool === "hand") return;
       const main = getMain();
       const target = e.target as HTMLElement | null;
       drag = null;

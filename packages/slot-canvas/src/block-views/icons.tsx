@@ -1,13 +1,16 @@
 /** 블록 정의의 `icon` 이름 → lucide 아이콘 (블록 추가 메뉴 · 바로 추가). */
 import type React from "react";
 import {
+  BookImage,
   Columns2,
   FileText,
   Heading,
   Image,
   LayoutTemplate,
+  Link,
   List,
   MessageSquareQuote,
+  Minus,
   PanelTop,
   Square,
   Table,
@@ -16,13 +19,16 @@ import {
 } from "lucide-react";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  "book-image": BookImage,
   "columns-2": Columns2,
   "file-text": FileText,
   heading: Heading,
   image: Image,
   "layout-template": LayoutTemplate,
+  link: Link,
   list: List,
   "message-square-quote": MessageSquareQuote,
+  minus: Minus,
   "panel-top": PanelTop,
   table: Table,
   type: Type,

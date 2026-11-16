@@ -471,3 +471,9 @@
 }
 .fig-splitter:hover::after,
 .fig-splitter:active::after { background: var(--fig-brand); height: 2px; top: 2px; }
+
+/* 캔버스 블록 배치 도구 (툴바 · 에셋에서 블록을 고른 상태): 피그마처럼 십자 커서 */
+[data-vdoc-canvas-main][data-placing],
+[data-vdoc-canvas-main][data-placing] * {
+  cursor: crosshair !important;
+}
