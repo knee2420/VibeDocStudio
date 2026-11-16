@@ -52,7 +52,8 @@ export const GlobalUndoToastHost: React.FC = () => {
         <div
           role="alert"
           data-testid="global-error-toast"
-          className="fixed top-14 right-4 z-50 max-w-sm px-3.5 py-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium shadow-lg"
+          // 되돌리기 안내가 머리말 버튼 아래에 떠 있으면 그 아래로 비켜 선다.
+          className={`fixed ${lastMessage ? "top-[100px]" : "top-14"} right-4 z-50 max-w-sm px-3.5 py-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium shadow-lg`}
         >
           {errorMessage}
         </div>

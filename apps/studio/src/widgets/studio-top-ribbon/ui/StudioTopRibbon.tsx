@@ -236,6 +236,8 @@ export const StudioTopRibbon: React.FC = () => {
           disabled={!canUndo}
           onClick={handleGlobalUndo}
           title="실행 취소 (Ctrl+Z)"
+          data-testid="header-undo-btn"
+          data-undo-anchor=""
           className="w-7 h-7 rounded-md flex items-center justify-center cursor-pointer transition text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 disabled:text-slate-300 disabled:hover:bg-transparent disabled:cursor-default"
         >
           <Undo2 className="w-4 h-4" />
