@@ -4,8 +4,10 @@ import { MemoVDocPageSheet } from "@vibe/slot-canvas";
 import { documentSurface, type VDocSlot } from "@vibe/vdoc-schema";
 
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { diffParagraphs, paraStat } from "@/shared/lib";
 
 import { type ActiveDiffTarget } from "../model/useActiveDiffStore";
+import { ChangeOverviewRuler, scrollToElement, type RulerKind } from "./ChangeOverviewRuler";
 
 const noop = () => {};
 
@@ -54,13 +56,28 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
     if (!selector) return;
 
     const timer = window.setTimeout(() => {
-      leftScrollRef.current?.querySelector(selector)?.scrollIntoView({ block: "center", behavior: "smooth" });
-      rightScrollRef.current?.querySelector(selector)?.scrollIntoView({ block: "center", behavior: "smooth" });
+      for (const pane of [leftScrollRef.current, rightScrollRef.current]) {
+        const target = pane?.querySelector(selector);
+        if (pane && target) scrollToElement(pane, target);
+      }
     }, 60);
     return () => window.clearTimeout(timer);
   }, [activeDiff.slotId, activeDiff.pageId, activeDiff.revisionRev, activeDiff.diffId]);
 
   const changedSet = useMemo(() => new Set(activeDiff.changedSlotIds), [activeDiff.changedSlotIds]);
+
+  // 변경 위치 막대: 칸마다 넣음 · 지움 · 고침과 이름 (+/− 글자 수).
+  const rulerInfo = useMemo(() => {
+    const map = new Map<string, { kind: RulerKind; label: string }>();
+    for (const sid of activeDiff.changedSlotIds) {
+      const st = paraStat(diffParagraphs(activeDiff.diffKind === "added" ? "" : (activeDiff.beforeSlots[sid] ?? ""), activeDiff.afterSlots[sid] ?? ""));
+      const kind: RulerKind = st.added && !st.removed ? "add" : st.removed && !st.added ? "del" : "mod";
+      const name = activeDiff.slotLabels?.[sid] ?? doc?.slots[sid]?.label ?? "칸";
+      map.set(sid, { kind, label: `${name}  +${st.added} −${st.removed}` });
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDiff]);
 
   const beforeSlotsMap = useMemo(() => {
     if (!doc) return {};
@@ -107,6 +124,7 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
       return (
         <div
           data-diff-side="after"
+          data-slot-ref={slot.slotId}
           className="ring-2 ring-emerald-500 bg-emerald-50/45 rounded-[3px] relative min-h-[20px]"
         >
           {content}
@@ -254,6 +272,13 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
             </div>
           </div>
         </div>
+        <ChangeOverviewRuler
+          scrollRef={rightScrollRef}
+          selector='[data-diff-side="after"]'
+          kindOf={(el) => rulerInfo.get(el.dataset.slotRef ?? "")?.kind ?? null}
+          labelOf={(el) => rulerInfo.get(el.dataset.slotRef ?? "")?.label ?? ""}
+          deps={[rulerInfo, sheetZoom, effectivePages]}
+        />
       </div>
     </div>
   );

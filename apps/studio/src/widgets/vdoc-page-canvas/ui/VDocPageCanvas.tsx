@@ -19,7 +19,8 @@ import { pageMutations } from "@/features/mutate-document-pages";
 import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes";
 import { getOutlineProjection, outlineCommands, useOutlineSelector, ZoomFocusStyle } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
-import { SideBySideDiffCanvas, useActiveDiffStore } from "@/features/document-diff";
+import { DocumentDiffView, useActiveDiffStore } from "@/features/document-diff";
+import { restoreSlots } from "@/features/document-revisions";
 
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
 import { AiStagingDrawer } from "./AiStagingDrawer";
@@ -290,7 +291,7 @@ export const VDocPageCanvas: React.FC = () => {
       <div className="flex-1 flex overflow-hidden">
         <ReferenceSplitViewport />
         {activeDiff ? (
-          <SideBySideDiffCanvas activeDiff={activeDiff} />
+          <DocumentDiffView activeDiff={activeDiff} revert={restoreSlots} />
         ) : isNewTab ? (
           <NewTabPagePicker />
         ) : currentPhase === "storylining" ? (

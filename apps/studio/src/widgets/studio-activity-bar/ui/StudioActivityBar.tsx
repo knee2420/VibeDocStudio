@@ -17,7 +17,7 @@ const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNod
   },
   {
     id: "source-control",
-    label: "Staged AI 변경안 검토 & 되돌리기 이력",
+    label: "변경 기록",
     icon: <GitBranch className="w-5 h-5" />,
     testId: "activity-tab-source-control",
   },

@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { setSlotContent, withSlotFill } from "@vibe/vdoc-schema";
 
 import { documentApi, type RevisionEntry, useStudioDocumentStore } from "@/entities/vdoc-document";
+
+const RELOAD_DEBOUNCE_MS = 1500;
 
 /**
  * 문서 개정 이력 (서버 `revisions.jsonl`) — 저장마다 바뀐 칸을 작성자(사람 | 하네스)와 함께 남긴 기록.
@@ -27,8 +29,16 @@ export function useRevisions(docId: string | undefined, opts: { slotId?: string;
     }
   }, [docId, opts.slotId, opts.limit]);
 
+  // 처음엔 바로, 그 뒤 저장마다는 잠잠해지면 한 번 (타이핑 중 자동 저장마다 기록 전체를 다시 받지 않게).
+  const loadedFor = useRef<typeof reload | null>(null);
   useEffect(() => {
-    void reload();
+    if (loadedFor.current !== reload) {
+      loadedFor.current = reload;
+      void reload();
+      return;
+    }
+    const t = window.setTimeout(() => void reload(), RELOAD_DEBOUNCE_MS);
+    return () => window.clearTimeout(t);
   }, [reload, revision]);
 
   return { entries, error, loading, reload };

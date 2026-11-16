@@ -8,9 +8,13 @@ interface FigmaDiffBadgeProps {
 
 /**
  * 안티그래비티 / VS Code 스타일 Git 상태 인디케이터.
- * - isDirect: true -> 우측에 미니멀한 'U' (초록) 또는 'M' (골드) 문자
+ * - isDirect: true -> 우측에 미니멀한 'U' (초록) · 'M' (골드) · 'D' (빨강) 문자
  * - isDirect: false -> 상위 컨테이너 우측에 작은 원형 도트 '●' (초록/골드)
  */
+const LETTER = { added: "U", edited: "M", deleted: "D" } as const;
+const LETTER_TITLE = { added: "신규 추가됨 (U)", edited: "수정됨 (M)", deleted: "삭제됨 (D)" } as const;
+const DOT_TITLE = { added: "하위에 신규 추가된 항목이 있음", edited: "하위에 수정된 항목이 있음", deleted: "하위에 삭제된 항목이 있음" } as const;
+
 export const FigmaDiffBadge: React.FC<FigmaDiffBadgeProps> = ({ diffState, className = "" }) => {
   if (!diffState) return null;
 
@@ -21,9 +25,9 @@ export const FigmaDiffBadge: React.FC<FigmaDiffBadgeProps> = ({ diffState, class
       <span
         data-testid={`git-status-${kind}`}
         className={`fig-git-letter fig-git-${kind} ${className}`}
-        title={kind === "added" ? "신규 추가됨 (U)" : "수정됨 (M)"}
+        title={LETTER_TITLE[kind]}
       >
-        {kind === "added" ? "U" : "M"}
+        {LETTER[kind]}
       </span>
     );
   }
@@ -32,7 +36,7 @@ export const FigmaDiffBadge: React.FC<FigmaDiffBadgeProps> = ({ diffState, class
     <span
       data-testid={`git-status-dot-${kind}`}
       className={`fig-git-dot fig-git-${kind} ${className}`}
-      title={kind === "added" ? "하위에 신규 추가된 항목이 있음" : "하위에 수정된 항목이 있음"}
+      title={DOT_TITLE[kind]}
     />
   );
 };

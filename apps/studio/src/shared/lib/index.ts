@@ -10,3 +10,5 @@ export { downloadJsonFile, readTextFile } from "./download";
 export { errorMessage } from "./errors";
 export { htmlToPlain } from "./plainText";
 export { clipText } from "./text";
+export { changeSnippet, diffParagraphs, diffWords, htmlToDocLines, paraStat, sumStats } from "./docDiff";
+export type { CharStat, ParaDiff, WordSeg } from "./docDiff";

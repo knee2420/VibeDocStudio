@@ -259,6 +259,20 @@ export interface VDocDocument {
   origin?: VDocOrigin;
   /** 속한 프로젝트 (프로젝트 manifest 의 docIds 와 짝). */
   projectId?: string;
+  /** 이름 붙인 버전 (구글 문서 "버전 이름 지정" · 제출본 같은 기준점). 오래된 것부터. */
+  versions?: VDocNamedVersion[];
+}
+
+/** 이름 붙인 버전 — 그 시점까지의 서버 저장 번호(`rev`)를 기준점으로 남긴다. */
+export interface VDocNamedVersion {
+  id: string;
+  name: string;
+  note?: string;
+  /** 이 버전에 포함된 마지막 저장 번호. 개정 기록 중 rev 가 이보다 크면 이 버전 이후 변경. */
+  rev: number;
+  at: string;
+  /** 그때 있던 쪽 (이후 지운 쪽을 D 로 보여 주려고). */
+  pages?: { pageId: string; label: string }[];
 }
 
 export interface VDocSurface {

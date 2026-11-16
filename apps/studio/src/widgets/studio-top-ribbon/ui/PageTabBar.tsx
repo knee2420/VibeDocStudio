@@ -23,6 +23,9 @@ export const PageTabBar: React.FC = () => {
   const closeDiff = useActiveDiffStore((s) => s.closeDiff);
 
   if (openTabs.length === 0 && !activeDiff) return null;
+  // 개정 이력 비교에 "(Working Tree)"가 붙던 문제: 종류별로 붙인다 (개정 번호는 label 에 이미 있다).
+  const diffTabSuffix =
+    activeDiff?.type === "revision" ? "개정 이력" : activeDiff?.type === "staged" ? "Staged" : "Working Tree";
 
   const handleSelectTab = (key: string) => {
     if (activeDiff) closeDiff();
@@ -128,11 +131,11 @@ export const PageTabBar: React.FC = () => {
           role="tab"
           aria-selected={true}
           data-testid="diff-active-tab"
-          title={`${activeDiff.label} (Working Tree)`}
+          title={`${activeDiff.label} (${diffTabSuffix})`}
           className="group flex items-center gap-1.5 h-8 px-3 text-xs cursor-default transition shrink-0 max-w-[260px] bg-white text-slate-900 font-semibold border border-b-white border-slate-200/90 rounded-t-lg -mb-px z-10 shadow-[0_-1px_2px_rgba(0,0,0,0.03)]"
         >
           <GitCompare className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
-          <span className="truncate">{activeDiff.label} (Working Tree)</span>
+          <span className="truncate">{activeDiff.label} ({diffTabSuffix})</span>
           <button
             type="button"
             onClick={closeDiff}

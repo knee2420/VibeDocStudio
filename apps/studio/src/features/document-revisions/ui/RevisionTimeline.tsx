@@ -1,124 +1,76 @@
-import React, { useState } from "react";
-import { ChevronDown, ChevronRight, GitCommit, RefreshCw, RotateCcw, Sparkles, User } from "lucide-react";
+import React, { useMemo } from "react";
+import { RefreshCw, RotateCcw } from "lucide-react";
 
-import { useSlotSelectionStore } from "@/entities/slot";
 import type { RevisionEntry } from "@/entities/vdoc-document";
 import { useActiveDiffStore } from "@/features/document-diff";
-import { revealCanvasElement } from "@/shared/lib";
+import { changeSnippet, diffParagraphs, paraStat, sumStats } from "@/shared/lib";
+import { CharStatText, RedlineSegments } from "@/shared/ui";
 
+import { authorLabel, dayLabel, timeLabel } from "../model/history";
 import { restoreSlots, useRevisions } from "../model/useRevisions";
 
-function ago(at: string): string {
-  const t = Date.parse(at);
-  if (Number.isNaN(t)) return "";
-  const s = Math.max(0, Math.round((Date.now() - t) / 1000));
-  if (s < 60) return `${s}초 전`;
-  if (s < 3600) return `${Math.round(s / 60)}분 전`;
-  if (s < 86400) return `${Math.round(s / 3600)}시간 전`;
-  return new Date(t).toLocaleDateString();
-}
-
-const AuthorBadge: React.FC<{ entry: Pick<RevisionEntry, "author" | "harnessId"> }> = ({ entry }) =>
-  entry.author === "ai" ? (
-    <span className="inline-flex items-center gap-0.5 px-1 rounded bg-violet-100 text-violet-800 text-[9.5px] font-bold" title={entry.harnessId ?? "AI"}>
-      <Sparkles className="w-2.5 h-2.5" />
-      {entry.harnessId ?? "AI"}
-    </span>
-  ) : (
-    <span className="inline-flex items-center gap-0.5 px-1 rounded bg-slate-100 text-slate-700 text-[9.5px] font-bold">
-      <User className="w-2.5 h-2.5" />
-      사람
-    </span>
-  );
-
-const EntryRow: React.FC<{ entry: RevisionEntry; docId: string; compact?: boolean }> = ({ entry, docId, compact }) => {
-  const [open, setOpen] = useState(false);
-  const selectSlot = useSlotSelectionStore((s) => s.setSelectedSlotId);
+const EntryRow: React.FC<{ entry: RevisionEntry; docId: string; slotId?: string }> = ({ entry, docId, slotId }) => {
   const openDiff = useActiveDiffStore((s) => s.openDiff);
   const activeDiff = useActiveDiffStore((s) => s.activeDiff);
-  const isDiffActive = activeDiff?.type === "revision" && activeDiff.revisionRev === entry.rev;
+  const slots = slotId ? entry.slots.filter((s) => s.slotId === slotId) : entry.slots;
+  const paras = useMemo(() => slots.map((s) => diffParagraphs(s.before, s.after)), [slots]);
+  const stat = sumStats(paras.map(paraStat));
+  const snippet = useMemo(() => changeSnippet(paras.find((p) => p.some((x) => x.kind !== "same")) ?? [], 10), [paras]);
+  const active = activeDiff?.type === "revision" && activeDiff.revisionRev === entry.rev && !activeDiff.diffId;
+  const who = authorLabel(entry);
 
-  const showDiff = (targetSlotId?: string) => {
+  const open = () =>
     openDiff({
       type: "revision",
       revisionRev: entry.rev,
-      slotId: targetSlotId,
-      label: `${entry.label} (r${entry.rev})`,
-      beforeSlots: Object.fromEntries(entry.slots.map((s) => [s.slotId, s.before])),
-      afterSlots: Object.fromEntries(entry.slots.map((s) => [s.slotId, s.after])),
-      changedSlotIds: entry.slots.map((s) => s.slotId),
+      slotId,
+      label: `${dayLabel(entry.at)} ${timeLabel(entry.at)} · ${who}`,
+      beforeSlots: Object.fromEntries(slots.map((s) => [s.slotId, s.before])),
+      afterSlots: Object.fromEntries(slots.map((s) => [s.slotId, s.after])),
+      changedSlotIds: slots.map((s) => s.slotId),
+      slotLabels: Object.fromEntries(slots.map((s) => [s.slotId, s.label])),
+      meta: { author: entry.author, authorName: who, at: entry.at },
+      revertible: true,
     });
-  };
 
   return (
-    <div className={`rounded border bg-white transition ${isDiffActive ? "border-[#0d99ff] ring-1 ring-[#0d99ff]" : "border-slate-200"}`}>
-      <div className={`w-full flex items-center gap-1.5 px-2 py-1 text-left cursor-pointer hover:bg-slate-50 ${isDiffActive ? "bg-sky-50/50" : ""}`}>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={(e) => e.key === "Enter" && open()}
+      data-testid="revision-entry"
+      className={`group relative pl-6 pr-1.5 py-1 rounded-[6px] cursor-pointer ${active ? "bg-[var(--fig-selected)]" : "hover:bg-[var(--fig-hover)]"}`}
+    >
+      <span
+        aria-hidden
+        className="absolute left-[7px] top-[9px] w-[9px] h-[9px] rounded-full border-2 bg-white"
+        style={{ borderColor: entry.author === "ai" ? "var(--fig-component)" : "var(--fig-brand)" }}
+      />
+      <div className="flex items-center gap-1.5 text-[11.5px]">
+        <span className="text-black/75 tabular-nums">
+          {dayLabel(entry.at)} {timeLabel(entry.at)}
+        </span>
+        <span className={entry.author === "ai" ? "text-[var(--fig-component)]" : "text-black/45"}>{who}</span>
+        <CharStatText stat={stat} className="ml-auto group-hover:hidden" />
         <button
           type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="p-0.5 text-slate-400 hover:text-slate-700 cursor-pointer shrink-0"
-          title={open ? "접기" : "슬롯별 변경 세부 접기/펴기"}
+          onClick={(e) => {
+            e.stopPropagation();
+            restoreSlots(docId, slots.map((s) => ({ slotId: s.slotId, before: s.before })), `${timeLabel(entry.at)} 이전 글로 되돌리기`);
+          }}
+          className="ml-auto hidden group-hover:inline-flex items-center gap-0.5 h-5 px-1.5 rounded-[4px] text-[11px] text-black/70 hover:bg-black/5"
+          title="이 변경 이전 글로 되돌립니다 (새 변경으로 남아 실행 취소 가능)"
         >
-          {open ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+          <RotateCcw className="w-3 h-3" /> 복원
         </button>
-
-        <div onClick={() => showDiff()} className="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer">
-          <AuthorBadge entry={entry} />
-          <span className="truncate text-[11px] text-slate-700 flex-1 font-medium hover:text-[#0d99ff]" title={`${entry.label} - 클릭 시 중앙 화면에서 전체 문맥 Diff 비교`}>
-            {compact ? entry.slots.map((s) => s.label).join(", ") || entry.label : entry.label}
-          </span>
-        </div>
-
-        <span className="text-[9.5px] text-slate-400 shrink-0 font-mono">
-          r{entry.rev} · {ago(entry.at)}
-        </span>
       </div>
-
-      {open && (
-        <div className="px-2 pb-2 space-y-1.5">
-          {entry.slots.map((change) => (
-            <div key={change.slotId} className="text-[10.5px] border-t border-slate-100 pt-1">
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    selectSlot(change.slotId);
-                    revealCanvasElement({ slotId: change.slotId });
-                    showDiff(change.slotId);
-                  }}
-                  className="font-semibold text-slate-800 hover:text-[#0d99ff] truncate cursor-pointer flex-1 text-left"
-                  title="클릭 시 캔버스 위치 이동 및 중앙 화면 Diff 비교"
-                >
-                  {change.label}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => restoreSlots(docId, [{ slotId: change.slotId, before: change.before }], `'${change.label}' r${entry.rev} 이전으로 복원`)}
-                  className="ml-auto inline-flex items-center gap-0.5 px-1 rounded border border-slate-200 text-slate-500 hover:text-rose-700 hover:border-rose-200 cursor-pointer"
-                  title="이 변경 이전 내용으로 되돌린다 (새 변경으로 남는다)"
-                >
-                  <RotateCcw className="w-2.5 h-2.5" /> 복원
-                </button>
-              </div>
-            </div>
-          ))}
-          {entry.variables.length > 0 && (
-            <div className="text-[10.5px] text-slate-600 border-t border-slate-100 pt-1">
-              변수: {entry.variables.map((v) => `${v.key}=${v.after ?? ""}`).join(", ")}
-            </div>
-          )}
-          {entry.author === "ai" && entry.slots.length > 1 && (
-            <button
-              type="button"
-              onClick={() =>
-                restoreSlots(docId, entry.slots.map((s) => ({ slotId: s.slotId, before: s.before })), `AI 실행 ${entry.runId ?? `r${entry.rev}`} 전체 되돌리기`)
-              }
-              className="w-full mt-1 inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded border border-rose-200 text-rose-700 text-[10.5px] font-semibold hover:bg-rose-50 cursor-pointer"
-            >
-              <RotateCcw className="w-3 h-3" /> 이 AI 실행 전체 되돌리기 ({entry.slots.length}칸)
-            </button>
-          )}
+      {snippet.length > 0 ? (
+        <div className="text-[11.5px] leading-[18px] text-black/60 truncate">
+          <RedlineSegments segs={snippet} />
         </div>
+      ) : (
+        <div className="text-[11px] text-black/40">서식만 바뀜</div>
       )}
     </div>
   );
@@ -132,26 +84,29 @@ export interface RevisionTimelineProps {
   title?: string;
 }
 
-/** 문서 · 칸의 개정 이력 — git 커밋 목록처럼 작성자(사람 | 하네스) · 바뀐 칸 · 복원. */
+/** 칸 · 문서의 저장 기록 — 언제 · 누가 · 무엇을 (빨강 취소선 · 초록 밑줄), 눌러 검토, 복원. */
 export const RevisionTimeline: React.FC<RevisionTimelineProps> = ({ docId, slotId, limit, title = "개정 이력" }) => {
   const { entries, error, loading, reload } = useRevisions(docId, { slotId, limit });
   if (!docId) return null;
   return (
-    <div data-testid={slotId ? "slot-revision-timeline" : "revision-timeline"} className="space-y-1">
-      <div className="flex items-center gap-1 text-slate-700">
-        <GitCommit className="w-3.5 h-3.5 text-slate-500" />
-        <span className="text-[11px] font-bold">
-          {title} ({entries.length})
-        </span>
-        <button type="button" onClick={() => void reload()} className="ml-auto p-0.5 rounded text-slate-400 hover:text-slate-700 cursor-pointer" title="새로고침">
+    <div data-testid={slotId ? "slot-revision-timeline" : "revision-timeline"}>
+      <div className="h-7 flex items-center gap-1">
+        <span className="text-[11px] font-semibold">{title}</span>
+        <span className="text-[11px] text-[var(--fig-text-tertiary)]">{entries.length}</span>
+        <button type="button" onClick={() => void reload()} className="fig-icon-btn ml-auto !w-5 !h-5" title="새로고침">
           <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
-      {error && <p className="text-[10px] text-rose-600">{error}</p>}
-      {!error && entries.length === 0 && <p className="text-[10px] text-slate-400">아직 기록이 없습니다. 저장되면 바뀐 칸이 작성자와 함께 남습니다.</p>}
-      {entries.map((entry) => (
-        <EntryRow key={`${entry.rev}-${entry.at}`} entry={entry} docId={docId} compact={!slotId} />
-      ))}
+      {error && <p className="text-[11px] text-rose-600">{error}</p>}
+      {!error && entries.length === 0 && (
+        <p className="text-[11px] text-[var(--fig-text-tertiary)]">아직 기록이 없습니다. 저장되면 바뀐 글이 작성자와 함께 남습니다.</p>
+      )}
+      <div className="relative">
+        {entries.length > 1 && <span aria-hidden className="absolute left-[11px] top-3 bottom-3 w-px bg-black/10" />}
+        {entries.map((entry) => (
+          <EntryRow key={`${entry.rev}-${entry.at}`} entry={entry} docId={docId} slotId={slotId} />
+        ))}
+      </div>
     </div>
   );
 };

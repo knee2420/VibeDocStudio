@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import type { OutlinerNode, VDocDocument } from "@vibe/vdoc-schema";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 
-export type FigmaDiffKind = "added" | "edited";
+export type FigmaDiffKind = "added" | "edited" | "deleted";
 
 export interface NodeDiffState {
   kind: FigmaDiffKind;

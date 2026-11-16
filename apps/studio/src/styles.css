@@ -371,6 +371,12 @@
   color: #d97706 !important;
   font-weight: 500;
 }
+.fig-row[data-diff="deleted"] .fig-row-label {
+  color: #cf222e !important;
+  font-weight: 500;
+  text-decoration: line-through;
+  text-decoration-color: rgba(207, 34, 46, 0.5);
+}
 
 .fig-git-letter {
   flex-shrink: 0;
@@ -386,6 +392,9 @@
 .fig-git-letter.fig-git-edited {
   color: #d97706;
 }
+.fig-git-letter.fig-git-deleted {
+  color: #cf222e;
+}
 
 .fig-git-dot {
   width: 6px;
@@ -400,6 +409,9 @@
 }
 .fig-git-dot.fig-git-edited {
   background-color: #d97706;
+}
+.fig-git-dot.fig-git-deleted {
+  background-color: #cf222e;
 }
 
 .fig-search {

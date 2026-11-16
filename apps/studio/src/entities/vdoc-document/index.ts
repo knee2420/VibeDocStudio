@@ -13,3 +13,13 @@ export type { DocumentStatusBadgesProps } from "./ui/DocumentStatusBadges";
 export { PageThumbnail } from "./ui/PageThumbnail";
 export type { PageThumbnailProps } from "./ui/PageThumbnail";
 export { SaveConflictPill } from "./ui/SaveConflictPill";
+export {
+  buildChanges,
+  formatCharStat,
+  formatPageNos,
+  groupChangesByPage,
+  pageTitle,
+  slotLocations,
+  summarizeChanges,
+} from "./lib/changeSet";
+export type { ChangeInput, ChangeItem, ChangePageGroup, ChangeSummary, SlotLocation } from "./lib/changeSet";
