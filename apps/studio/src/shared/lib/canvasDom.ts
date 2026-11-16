@@ -13,6 +13,14 @@ function afterRender(run: () => void): void {
   window.setTimeout(run, AFTER_RENDER_MS);
 }
 
+/** 요소가 캔버스 스크롤 영역(없으면 창) 안에 통째로 보이는지. */
+export function isInCanvasView(el: Element): boolean {
+  const main = el.closest("[data-vdoc-canvas-main]");
+  const view = main ? main.getBoundingClientRect() : { top: 0, bottom: window.innerHeight, left: 0, right: window.innerWidth };
+  const r = el.getBoundingClientRect();
+  return r.top >= view.top && r.bottom <= view.bottom && r.left >= view.left && r.right <= view.right;
+}
+
 /** 캔버스의 페이지 시트로 스크롤 (`VDocPageSheet` 의 `id="vdoc-page-{pageId}"`). */
 export function scrollToCanvasPage(pageId: string): void {
   if (typeof window !== "undefined") {
@@ -28,7 +36,13 @@ export function scrollToCanvasPage(pageId: string): void {
  * 요소가 아직 화면(페이지 창)에 없으면 `fallbackPageId` 페이지로만 스크롤한다 — 페이지 스크롤과
  * 요소 스크롤을 연달아 부르면 두 부드러운 스크롤이 서로 끊어 먹어 화면이 뚝뚝 끊긴다.
  */
-export function revealCanvasElement(target: { blockId?: string; slotId?: string; fallbackPageId?: string | null }): void {
+export function revealCanvasElement(target: {
+  blockId?: string;
+  slotId?: string;
+  fallbackPageId?: string | null;
+  /** 이미 캔버스 화면 안에 다 보이면 스크롤하지 않고 강조만 한다 (삽입한 블록처럼 보통은 보이는 자리일 때). */
+  onlyIfHidden?: boolean;
+}): void {
   const selector = target.slotId
     ? `[data-slot-id="${CSS.escape(target.slotId)}"]`
     : target.blockId
@@ -43,7 +57,7 @@ export function revealCanvasElement(target: { blockId?: string; slotId?: string;
       }
       return;
     }
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (!(target.onlyIfHidden && isInCanvasView(el))) el.scrollIntoView({ behavior: "smooth", block: "center" });
     el.classList.add(...FLASH_CLASSES);
     window.setTimeout(() => el.classList.remove(...FLASH_CLASSES), FLASH_MS);
   });

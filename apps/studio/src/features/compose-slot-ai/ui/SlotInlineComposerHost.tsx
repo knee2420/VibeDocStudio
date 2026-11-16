@@ -73,10 +73,10 @@ export const SlotInlineComposerHost: React.FC<SlotInlineComposerHostProps> = ({
               key={chunk.chunkId}
               type="button"
               onClick={() => openRightPanel("inspector")}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-500/30 transition cursor-pointer"
+              className="fig-prompt-chip fig-prompt-chip-muted hover:!text-black/80"
               title={chunk.excerpt}
             >
-              <Paperclip className="w-3 h-3 text-indigo-400" />
+              <Paperclip className="w-3 h-3" />
               {chunk.sourceTitle}
             </button>
           ))}
@@ -84,13 +84,14 @@ export const SlotInlineComposerHost: React.FC<SlotInlineComposerHostProps> = ({
             <button
               type="button"
               onClick={() => openRightPanel("inspector")}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 transition cursor-pointer"
+              className="fig-prompt-chip fig-prompt-chip-muted hover:!text-black/80"
+              title="인스펙터에서 이 슬롯에 백데이터 연결"
             >
-              <Paperclip className="w-3 h-3" />+ 백데이터 연결하기
+              <Paperclip className="w-3 h-3" />백데이터 연결
             </button>
           )}
           {targetSlot.constraints?.maxLines && (
-            <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[11px]">
+            <span className="fig-prompt-chip fig-prompt-chip-muted">
               제약: 최대 {targetSlot.constraints.maxLines}줄
             </span>
           )}

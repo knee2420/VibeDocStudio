@@ -20,10 +20,6 @@ import { ResourceManagerWidget } from "@/widgets/resource-manager";
 
 import { ImageInspectorCard } from "./ImageInspectorCard";
 
-const tabClass = (active: boolean, activeTone: string) =>
-  `px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
-    active ? `bg-white ${activeTone} shadow-2xs font-bold` : "text-slate-500 hover:text-slate-700"
-  }`;
 
 /** 우측 작업 패널: AI Composer(기본) · 인스펙터 · 리소스 매니저. */
 export const SlotInspectorDrawer: React.FC = () => {
@@ -72,7 +68,7 @@ export const SlotInspectorDrawer: React.FC = () => {
     <aside
       data-testid="slot-inspector-drawer"
       style={{ width: `${rightSidebarWidth}px` }}
-      className={`bg-white border-l border-slate-200 flex flex-col shrink-0 select-none relative z-10 min-h-0 ${
+      className={`bg-white border-l border-[#e6e6e6] flex flex-col shrink-0 select-none relative z-10 min-h-0 ${
         isResizing ? "transition-none" : "transition-[width] duration-75"
       }`}
     >
@@ -84,37 +80,44 @@ export const SlotInspectorDrawer: React.FC = () => {
         className="absolute -left-1 top-0 bottom-0 w-2 hover:w-2.5 cursor-col-resize hover:bg-slate-400/40 active:bg-slate-500/60 transition-all z-30"
       />
 
-      <div className="px-2.5 py-2 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
-        <div className="flex items-center p-0.5 bg-slate-100 rounded-lg text-xs font-semibold">
+      {/* 피그마 디자인 패널 머리처럼 글자 탭 (기능 · 탭 구성은 그대로) */}
+      <div className="fig-panel h-10 pl-2 pr-2 border-b border-[var(--fig-border)] flex items-center justify-between shrink-0">
+        <div role="tablist" className="flex items-center">
           <button
             type="button"
+            role="tab"
             data-testid="tab-view-composer"
+            aria-selected={viewMode === "composer"}
             onClick={() => setViewMode("composer")}
-            className={tabClass(viewMode === "composer", "text-violet-900")}
+            className="fig-tab gap-1"
           >
-            <Sparkles className="w-3.5 h-3.5 text-violet-600" />
-            <span>AI Composer</span>
+            <Sparkles className="w-3 h-3" />
+            AI Composer
           </button>
           {rmPlacement !== "between-split" && (
             <button
               type="button"
+              role="tab"
               data-testid="tab-view-resource-manager"
+              aria-selected={viewMode === "resource-manager"}
               onClick={() => setViewMode("resource-manager")}
-              className={tabClass(viewMode === "resource-manager", "text-purple-900")}
+              className="fig-tab gap-1"
             >
-              <FolderTree className="w-3.5 h-3.5 text-purple-600" />
-              <span>리소스</span>
+              <FolderTree className="w-3 h-3" />
+              리소스
             </button>
           )}
           <button
             type="button"
+            role="tab"
             data-testid="tab-view-inspector"
+            aria-selected={viewMode === "inspector"}
             onClick={() => setViewMode("inspector")}
-            className={tabClass(viewMode === "inspector", "text-blue-900")}
+            className="fig-tab gap-1"
           >
-            <Sliders className="w-3.5 h-3.5 text-blue-600" />
-            <span>인스펙터</span>
-            {selectedSlot && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 ml-0.5" />}
+            <Sliders className="w-3 h-3" />
+            인스펙터
+            {selectedSlot && <span className="w-1.5 h-1.5 rounded-full bg-[#0d99ff]" title="선택한 슬롯이 있습니다" />}
           </button>
         </div>
 
@@ -122,10 +125,10 @@ export const SlotInspectorDrawer: React.FC = () => {
           type="button"
           data-testid="collapse-right-sidebar-btn"
           onClick={() => setRightSidebarOpen(false)}
-          className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer ml-1"
+          className="fig-icon-btn"
           title="우측 패널 접기"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
@@ -149,7 +152,7 @@ export const SlotInspectorDrawer: React.FC = () => {
 
       {viewMode === "inspector" &&
         (selectedSlot || selectedBlock ? (
-          <div className="flex-1 overflow-y-auto p-4 space-y-5">
+          <div className="fig-panel flex-1 overflow-y-auto" data-testid="figma-inspector">
             {selectedBlock?.block.kind === "image" && (
               <ImageInspectorCard
                 key={selectedBlock.block.blockId}
@@ -162,58 +165,58 @@ export const SlotInspectorDrawer: React.FC = () => {
 
             {selectedSlot && (
               <>
-                <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-amber-950 flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                      근거로 채우기 (fill.slot)
+                <SlotMetadataCard slot={selectedSlot} onToggleLock={toggleSlotLock} onToggleComposer={toggleComposerForSlot} />
+
+                <div className="fig-dsec" data-testid="slot-fill-section">
+                  <div className="fig-dsec-head">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-[#9747ff]" />
+                      근거로 채우기
+                      <span className="fig-mono font-normal text-black/40">fill.slot</span>
                     </span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        data-testid="ground-cite-btn"
-                        disabled={isAiStreaming || !selectedSlot.content.trim()}
-                        onClick={() => void runFillSlot(selectedSlot.slotId, { harnessId: "ground.cite", docId: doc.docId })}
-                        className="px-2 py-1 rounded-lg border border-amber-300 bg-white text-amber-800 text-[11px] font-semibold cursor-pointer disabled:opacity-40"
-                        title="본문은 그대로 두고, 근거가 있는 문장에 출처 표식만 붙인다"
-                      >
-                        출처 달기
-                      </button>
-                      <button
-                        type="button"
-                        data-testid="stage-slot-ai-draft-btn"
-                        disabled={isAiStreaming}
-                        onClick={() => void runFillSlot(selectedSlot.slotId, { docId: doc.docId })}
-                        className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-wait"
-                      >
-                        {isAiStreaming ? "AI 작성 중…" : "+ 근거로 채우기"}
-                      </button>
-                    </div>
                   </div>
-                  <p className="text-[10px] text-amber-800">
+                  <p className="fig-desc">
                     이 칸의 근거(연결된 자료 · 이웃 칸 근거 · RM 고정 자료 · 열린 참조 문서, 부족하면 지식 덱 추천)만으로 쓰고,
                     문장마다 출처를 답니다. 결과는 캔버스 자리에서 diff 로 검토합니다.
                   </p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      data-testid="ground-cite-btn"
+                      disabled={isAiStreaming || !selectedSlot.content.trim()}
+                      onClick={() => void runFillSlot(selectedSlot.slotId, { harnessId: "ground.cite", docId: doc.docId })}
+                      className="fig-btn"
+                      title="본문은 그대로 두고, 근거가 있는 문장에 출처 표식만 붙인다"
+                    >
+                      출처 달기
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="stage-slot-ai-draft-btn"
+                      disabled={isAiStreaming}
+                      onClick={() => void runFillSlot(selectedSlot.slotId, { docId: doc.docId })}
+                      className="fig-btn fig-btn-primary"
+                    >
+                      {isAiStreaming ? "AI 작성 중…" : "근거로 채우기"}
+                    </button>
+                  </div>
                 </div>
 
-                <SlotMetadataCard slot={selectedSlot} onToggleLock={toggleSlotLock} onToggleComposer={toggleComposerForSlot} />
                 <SlotTypographyCard slot={selectedSlot} />
                 <SlotPlainTextEditorCard key={selectedSlot.slotId} slot={selectedSlot} />
                 <SlotBackdataSection doc={doc} slot={selectedSlot} />
-                <div className="rounded-lg border border-slate-200 p-2">
+                <div className="fig-dsec !border-b-0 pt-3">
                   <RevisionTimeline docId={doc.docId} slotId={selectedSlot.slotId} limit={10} title="이 칸의 기록 (누가 썼나)" />
                 </div>
               </>
             )}
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-              <Sliders className="w-6 h-6" />
-            </div>
-            <h4 className="text-xs font-bold text-slate-800 mb-1">선택된 슬롯 또는 블록이 없습니다</h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed max-w-[240px]">
-              중앙 캔버스에서 편집할 슬롯이나 블록을 클릭하면 타이포그래피 제약 및 백데이터 서랍이 표시됩니다.
+          <div className="fig-panel flex-1 flex flex-col items-center justify-center px-8 text-center">
+            <Sliders className="w-5 h-5 text-black/30 mb-2" />
+            <p className="font-semibold">선택한 슬롯 · 블록이 없습니다</p>
+            <p className="fig-desc mt-1 max-w-[240px]">
+              캔버스에서 슬롯이나 블록을 클릭하면 텍스트 서식 · 내용 · 백데이터가 여기에 표시됩니다.
             </p>
           </div>
         ))}

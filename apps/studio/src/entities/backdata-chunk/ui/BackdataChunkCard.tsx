@@ -1,4 +1,5 @@
 import React from "react";
+import { FileText } from "lucide-react";
 
 import type { BackdataChunk } from "@vibe/vdoc-schema";
 
@@ -6,31 +7,27 @@ export interface BackdataChunkCardProps {
   chunk: BackdataChunk;
 }
 
-export const BackdataChunkCard: React.FC<BackdataChunkCardProps> = ({
-  chunk,
-}) => {
+/** 연결된 백데이터 한 조각 (피그마 목록 행 모양): 출처 · 종류 · 발췌 · 태그. */
+export const BackdataChunkCard: React.FC<BackdataChunkCardProps> = ({ chunk }) => {
   return (
-    <div className="p-3 rounded-xl bg-indigo-50/40 border border-indigo-200/80 space-y-1.5 select-text">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-bold text-indigo-950 truncate">
-          📄 {chunk.sourceTitle}
-        </span>
-        <span className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-semibold uppercase">
-          {chunk.sourceType}
-        </span>
-      </div>
-      <p className="text-xs text-slate-700 leading-relaxed">{chunk.excerpt}</p>
-      <div className="flex flex-wrap items-center gap-1 pt-1">
-        {chunk.tags.map((t) => (
-          <span
-            key={t}
-            className="px-1.5 py-0.2 rounded bg-white border border-indigo-100 text-[10px] text-indigo-600"
-          >
-            #{t}
-          </span>
-        ))}
+    <div className="fig-list-row select-text !cursor-auto">
+      <FileText className="w-3.5 h-3.5 mt-px shrink-0 text-black/50" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="truncate font-medium">{chunk.sourceTitle}</span>
+          <span className="fig-badge uppercase !ml-auto">{chunk.sourceType}</span>
+        </div>
+        <p className="mt-0.5 text-black/60 leading-4">{chunk.excerpt}</p>
+        {chunk.tags.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {chunk.tags.map((t) => (
+              <span key={t} className="text-[10px] text-[#0d99ff]">
+                #{t}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
-

@@ -34,6 +34,7 @@ import { getBlockView, type BlockRenderContext, type SlotBoxOptions, type TableC
 import type { TableSelectionInfo } from "./InteractiveTable";
 import { CanvasKeyLayerContext, type CanvasKeyRegistrar } from "./keyLayer";
 import { ACCENT, BLOCK_DRAG_MIME, DROP_LINE, MEDIA_DRAG_MIME, NEW_BLOCK_DRAG_MIME } from "./tokens";
+import { FloatingSlotPopover } from "./FloatingSlotPopover";
 
 export interface TableSelectionTarget extends TableSelectionInfo {
   pageId: string;
@@ -351,9 +352,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         </div>
 
         {isComposerOpen && editable && renderInlineComposer && (
-          <div onClick={(e) => e.stopPropagation()} className="relative z-30 pt-2 pb-2 min-w-[480px] max-w-[680px] text-left">
-            {renderInlineComposer(slot, slotChunks)}
-          </div>
+          // 피그마 프롬프트 팝오버처럼 슬롯 아래에 떠 있는다 (아래 내용을 밀어내지 않는다).
+          <FloatingSlotPopover>{renderInlineComposer(slot, slotChunks)}</FloatingSlotPopover>
         )}
       </div>
     );

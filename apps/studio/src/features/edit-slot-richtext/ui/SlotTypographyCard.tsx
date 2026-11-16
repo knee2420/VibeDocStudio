@@ -1,5 +1,5 @@
 import React from "react";
-import { AlignCenter, AlignLeft, AlignRight, Type } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, ChevronDown } from "lucide-react";
 
 import type { SlotConstraints, VDocSlot } from "@vibe/vdoc-schema";
 
@@ -13,127 +13,114 @@ import {
 import { useSlotContentActions } from "../model/useSlotContentActions";
 
 const ALIGN_OPTIONS = [
-  { id: "left", icon: AlignLeft },
-  { id: "center", icon: AlignCenter },
-  { id: "right", icon: AlignRight },
+  { id: "left", icon: AlignLeft, label: "왼쪽 정렬" },
+  { id: "center", icon: AlignCenter, label: "가운데 정렬" },
+  { id: "right", icon: AlignRight, label: "오른쪽 정렬" },
 ] as const;
 
-const chip = (active: boolean) =>
-  active ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100";
+/** 프리셋에 없는 지금 값도 고를 수 있게 맨 앞에 붙인다 (기본값 13px 같은 경우). */
+const withCurrent = (options: readonly string[], current: string) => (options.includes(current) ? options : [current, ...options]);
 
-/** 슬롯 단위 타이포그래피 제약 (글자 크기 · 행간 · 정렬 · 굵기 · 색). */
+/** 피그마 텍스트 구역처럼 회색 입력칸 + 펼침 단추. */
+const FieldSelect: React.FC<{
+  prefix: React.ReactNode;
+  value: string;
+  options: readonly { value: string; label: string }[];
+  onChange: (v: string) => void;
+  title: string;
+  testId?: string;
+}> = ({ prefix, value, options, onChange, title, testId }) => (
+  <label className="fig-input relative" title={title}>
+    <span className="fig-input-prefix">{prefix}</span>
+    <select data-testid={testId} value={value} onChange={(e) => onChange(e.target.value)} className="appearance-none pr-4">
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+    <ChevronDown className="w-3 h-3 text-black/40 absolute right-1.5 pointer-events-none" />
+  </label>
+);
+
+/**
+ * 슬롯 단위 타이포그래피 제약 (글자 크기 · 행간 · 정렬 · 굵기 · 색) — 피그마 "텍스트" 구역 모양.
+ * 선택지 · 동작은 예전과 같다 (`updateSlotConstraints`, 프리셋 목록 그대로).
+ */
 export const SlotTypographyCard: React.FC<{ slot: VDocSlot }> = ({ slot }) => {
   const { updateSlotConstraints } = useSlotContentActions();
   const c = { ...SLOT_TYPOGRAPHY_DEFAULTS, ...slot.constraints };
   const update = (patch: Partial<SlotConstraints>) => updateSlotConstraints(slot.slotId, patch);
+  const toOptions = (values: readonly string[]) => values.map((v) => ({ value: v, label: v }));
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-3">
-      <div className="flex items-center justify-between">
-        <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-          <Type className="w-3.5 h-3.5 text-blue-600" />
-          타이포그래피 및 스타일 제약
-        </h4>
-        <span className="text-[10px] text-slate-400 font-mono">
+    <div className="fig-dsec" data-testid="slot-typography-section">
+      <div className="fig-dsec-head">
+        <span>텍스트</span>
+        <span className="fig-mono font-normal text-black/40 pr-2">
           {c.fontSize} / {c.lineHeight}
         </span>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-[11px] font-medium text-slate-600 flex items-center justify-between">
-          <span>글자 크기 (Font Size)</span>
-          <span className="text-slate-400 font-mono text-[10px]">{c.fontSize}</span>
-        </label>
-        <div className="flex flex-wrap gap-1">
-          {FONT_SIZE_OPTIONS.map((size) => (
-            <button
-              key={size}
-              type="button"
-              onClick={() => update({ fontSize: size })}
-              className={`px-2 py-0.5 rounded text-[11px] font-medium border cursor-pointer transition ${chip(c.fontSize === size)}`}
-            >
-              {size}
+      <div className="grid grid-cols-2 gap-2">
+        <FieldSelect
+          testId="slot-font-size-select"
+          title="글자 크기 (Font Size)"
+          prefix={<span className="font-semibold">Aa</span>}
+          value={c.fontSize}
+          options={toOptions(withCurrent(FONT_SIZE_OPTIONS, c.fontSize))}
+          onChange={(v) => update({ fontSize: v })}
+        />
+        <FieldSelect
+          testId="slot-line-height-select"
+          title="줄간격 / 행간 (Line Height)"
+          prefix={<span className="text-[10px] leading-none">↕</span>}
+          value={c.lineHeight}
+          options={toOptions(withCurrent(LINE_HEIGHT_OPTIONS, c.lineHeight))}
+          onChange={(v) => update({ lineHeight: v })}
+        />
+        <FieldSelect
+          testId="slot-font-weight-select"
+          title="굵기 (Weight)"
+          prefix={<span className="font-bold">B</span>}
+          value={c.fontWeight}
+          options={FONT_WEIGHT_OPTIONS}
+          onChange={(v) => update({ fontWeight: v })}
+        />
+        <div className="fig-seg" role="group" aria-label="정렬">
+          {ALIGN_OPTIONS.map(({ id, icon: Icon, label }) => (
+            <button key={id} type="button" aria-pressed={c.align === id} onClick={() => update({ align: id })} title={label}>
+              <Icon className="w-3.5 h-3.5" />
             </button>
           ))}
         </div>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-[11px] font-medium text-slate-600 flex items-center justify-between">
-          <span>줄간격 / 행간 (Line Height)</span>
-          <span className="text-slate-400 font-mono text-[10px]">{c.lineHeight}</span>
-        </label>
-        <div className="flex gap-1">
-          {LINE_HEIGHT_OPTIONS.map((lh) => (
-            <button
-              key={lh}
-              type="button"
-              onClick={() => update({ lineHeight: lh })}
-              className={`flex-1 py-0.5 rounded text-[11px] font-medium border text-center cursor-pointer transition ${chip(c.lineHeight === lh)}`}
-            >
-              {lh}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/80">
-        <div>
-          <label className="text-[11px] font-medium text-slate-600 block mb-1">정렬</label>
-          <div className="flex rounded border border-slate-200 bg-white overflow-hidden">
-            {ALIGN_OPTIONS.map(({ id, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => update({ align: id })}
-                className={`flex-1 p-1 flex items-center justify-center cursor-pointer transition ${
-                  c.align === id ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-500 hover:bg-slate-50"
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="text-[11px] font-medium text-slate-600 block mb-1">굵기 (Weight)</label>
-          <select
-            value={c.fontWeight}
-            onChange={(e) => update({ fontWeight: e.target.value })}
-            className="w-full text-xs bg-white border border-slate-200 rounded p-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            {FONT_WEIGHT_OPTIONS.map((w) => (
-              <option key={w.value} value={w.value}>
-                {w.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="pt-1 border-t border-slate-200/80">
-        <label className="text-[11px] font-medium text-slate-600 block mb-1">텍스트 색상 (Color)</label>
-        <div className="flex items-center gap-1.5">
-          {TEXT_COLOR_PRESETS.map((preset) => (
-            <button
-              key={preset.value}
-              type="button"
-              onClick={() => update({ color: preset.value })}
-              title={`${preset.label} (${preset.value})`}
-              style={{ backgroundColor: preset.value }}
-              className={`w-4 h-4 rounded-full cursor-pointer transition hover:scale-125 ${
-                c.color === preset.value ? "ring-2 ring-blue-500 ring-offset-1" : ""
-              }`}
-            />
-          ))}
+      <span className="fig-dlabel">색상</span>
+      <div className="flex items-center gap-2">
+        <label className="fig-input flex-1" title="텍스트 색상 (HEX)">
+          <span className="fig-swatch" style={{ backgroundColor: c.color }} />
           <input
             type="text"
             value={c.color}
             onChange={(e) => update({ color: e.target.value })}
-            className="ml-auto w-20 text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-200 bg-white text-slate-700 focus:outline-none"
             placeholder="#000000"
+            className="fig-mono uppercase"
           />
+        </label>
+        <div className="flex items-center">
+          {TEXT_COLOR_PRESETS.map((preset) => (
+            <button
+              key={preset.value}
+              type="button"
+              aria-pressed={c.color === preset.value}
+              onClick={() => update({ color: preset.value })}
+              title={`${preset.label} (${preset.value})`}
+              className="fig-swatch-btn"
+            >
+              <span className="fig-swatch block" style={{ backgroundColor: preset.value }} />
+            </button>
+          ))}
         </div>
       </div>
     </div>

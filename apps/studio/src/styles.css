@@ -477,3 +477,179 @@
 [data-vdoc-canvas-main][data-placing] * {
   cursor: crosshair !important;
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * 우측 인스펙터 — 피그마 UI3 "디자인" 패널 톤
+ * 구역(.fig-dsec) = 32px 머리 + 내용, 구역 사이 1px 선 · 24px 회색 입력칸 · 분할 버튼 · 기본/강조 버튼.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.fig-dsec { padding: 4px 16px 12px; border-bottom: 1px solid var(--fig-border); }
+.fig-dsec-head {
+  height: 32px;
+  margin-right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-weight: 600;
+}
+.fig-dsec-head .fig-dsec-actions { display: flex; align-items: center; gap: 4px; }
+.fig-dlabel { display: block; margin: 8px 0 4px; color: var(--fig-text-secondary); }
+.fig-desc { color: var(--fig-text-secondary); line-height: 16px; }
+.fig-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10.5px; }
+
+.fig-input {
+  height: 24px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 0 8px;
+  border-radius: 5px;
+  background: var(--fig-hover);
+  border: 1px solid transparent;
+  color: var(--fig-text);
+}
+.fig-input:hover { border-color: var(--fig-border); }
+.fig-input:focus-within { background: #fff; border-color: var(--fig-brand); }
+.fig-input > input,
+.fig-input > select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: transparent;
+  outline: none;
+  font-size: 11px;
+  color: inherit;
+}
+.fig-input > select { cursor: default; }
+.fig-input-prefix { flex-shrink: 0; color: var(--fig-text-tertiary); font-size: 11px; display: inline-flex; }
+.fig-input:has(> :disabled) { opacity: 0.45; }
+
+.fig-textarea {
+  width: 100%;
+  display: block;
+  padding: 6px 8px;
+  border-radius: 5px;
+  background: var(--fig-hover);
+  border: 1px solid transparent;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--fig-text);
+  outline: none;
+  resize: vertical;
+}
+.fig-textarea:hover { border-color: var(--fig-border); }
+.fig-textarea:focus { background: #fff; border-color: var(--fig-brand); }
+.fig-textarea:disabled { opacity: 0.45; }
+.fig-textarea::placeholder, .fig-input > input::placeholder { color: var(--fig-text-tertiary); }
+
+.fig-seg { height: 24px; display: flex; padding: 2px; gap: 2px; border-radius: 5px; background: var(--fig-hover); }
+.fig-seg > button {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 4px;
+  color: var(--fig-text-secondary);
+  font-size: 11px;
+  cursor: default;
+}
+.fig-seg > button:hover { color: var(--fig-text); }
+.fig-seg > button[aria-pressed="true"] { background: #fff; color: var(--fig-text); box-shadow: 0 0 0 1px var(--fig-border); }
+.fig-seg > button:disabled { opacity: 0.4; pointer-events: none; }
+
+.fig-btn {
+  height: 24px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 5px;
+  border: 1px solid var(--fig-border);
+  background: #fff;
+  color: var(--fig-text);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: default;
+}
+.fig-btn:hover { background: var(--fig-hover); }
+.fig-btn:disabled { opacity: 0.4; pointer-events: none; }
+.fig-btn-primary { background: var(--fig-brand); border-color: var(--fig-brand); color: #fff; }
+.fig-btn-primary:hover { background: #0b8ae6; }
+.fig-link { color: var(--fig-brand); font-weight: 500; cursor: default; display: inline-flex; align-items: center; gap: 4px; }
+.fig-link:hover { text-decoration: underline; }
+
+.fig-swatch { width: 14px; height: 14px; flex-shrink: 0; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); }
+.fig-swatch-btn { padding: 2px; border-radius: 4px; cursor: default; }
+.fig-swatch-btn:hover { background: var(--fig-hover); }
+.fig-swatch-btn[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--fig-brand); }
+
+/* 목록 행 (백데이터 · 보관함): 피그마 채우기 · 레이어 행처럼 */
+.fig-list-row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  text-align: left;
+  color: var(--fig-text);
+  cursor: default;
+}
+.fig-list-row:hover { background: var(--fig-hover); }
+.fig-list-row[aria-pressed="true"] { background: var(--fig-selected); }
+.fig-empty { padding: 10px 8px; border-radius: 5px; border: 1px dashed var(--fig-border); color: var(--fig-text-secondary); text-align: center; line-height: 16px; }
+
+/* ── 인라인 AI: 피그마 "프롬프트로 편집하기" 팝오버 ── */
+.fig-prompt {
+  width: 360px;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 5px 17px rgba(0, 0, 0, 0.2), 0 2px 7px rgba(0, 0, 0, 0.15), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+  /* 빠른 지시 메뉴가 카드 밖으로 펼쳐지도록 자르지 않는다. 대신 첫 줄(오류 · 미리보기)의 위 모서리를 둥글게. */
+  overflow: visible;
+}
+.fig-prompt > :first-child { border-top-left-radius: 13px; border-top-right-radius: 13px; }
+.fig-prompt-input {
+  width: 100%;
+  display: block;
+  padding: 12px 36px 4px 12px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--fig-text);
+  background: transparent;
+  outline: none;
+  resize: none;
+}
+.fig-prompt-input::placeholder { color: var(--fig-text-tertiary); }
+.fig-prompt-chip {
+  height: 24px;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: var(--fig-selected);
+  color: var(--fig-brand);
+  font-size: 11px;
+  font-weight: 500;
+}
+.fig-prompt-chip-muted { background: var(--fig-hover); color: var(--fig-text-secondary); }
+.fig-prompt-send {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fig-brand);
+  color: #fff;
+  cursor: default;
+}
+.fig-prompt-send:disabled { background: rgba(0, 0, 0, 0.1); color: #fff; }

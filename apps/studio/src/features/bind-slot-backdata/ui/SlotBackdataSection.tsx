@@ -1,5 +1,5 @@
 import React from "react";
-import { Paperclip } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 
 import { getSlotBackdata, type VDocDocument, type VDocSlot } from "@vibe/vdoc-schema";
 
@@ -14,75 +14,89 @@ export interface SlotBackdataSectionProps {
   slot: VDocSlot;
 }
 
-/** 인스펙터의 백데이터 영역: 이 슬롯에 연결된 청크 · 등록 양식 · 문서 전체 보관함(클릭해 연결/해제). */
+/**
+ * 인스펙터의 백데이터 구역 (피그마 디자인 패널 구역 모양): 이 슬롯에 연결된 청크 · 등록 양식 ·
+ * 문서 전체 보관함(클릭해 연결/해제). 동작은 예전과 같다.
+ */
 export const SlotBackdataSection: React.FC<SlotBackdataSectionProps> = ({ doc, slot }) => {
   const formOpen = useWorkspaceLayoutStore((s) => s.backdataFormOpen);
   const setFormOpen = useWorkspaceLayoutStore((s) => s.setBackdataFormOpen);
   const toggleBackdataRef = useToggleSlotBackdata();
   const linked = getSlotBackdata(doc, slot);
+  const pool = Object.values(doc.backdata);
 
   return (
     <>
-      <div className="space-y-2.5">
-        <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-            <Paperclip className="w-3.5 h-3.5 text-indigo-600" />이 슬롯에 연결된 백데이터 ({linked.length}건)
-          </h4>
-          <button
-            type="button"
-            onClick={() => setFormOpen(!formOpen)}
-            className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
-          >
-            + 새 백데이터 추가
-          </button>
+      <div className="fig-dsec" data-testid="slot-backdata-section">
+        <div className="fig-dsec-head">
+          <span>
+            연결된 백데이터 <span className="fig-section-meta">{linked.length}</span>
+          </span>
+          <div className="fig-dsec-actions">
+            <button
+              type="button"
+              data-testid="add-backdata-btn"
+              aria-pressed={formOpen}
+              onClick={() => setFormOpen(!formOpen)}
+              title="새 백데이터 추가"
+              className="fig-icon-btn"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {formOpen && <AddBackdataChunkForm targetSlotId={slot.slotId} />}
 
         {linked.length > 0 ? (
-          <div className="space-y-2">
+          <div className="-mx-2">
             {linked.map((chunk) => (
               <BackdataChunkCard key={chunk.chunkId} chunk={chunk} />
             ))}
           </div>
         ) : (
-          <div className="p-4 rounded-xl border border-dashed border-slate-300 text-center text-xs text-slate-400">
-            연결된 백데이터가 없습니다. 아래 전체 백데이터 보관함에서 클릭해 바인딩하세요.
-          </div>
+          <div className="fig-empty">연결된 백데이터가 없습니다. 아래 보관함에서 클릭해 연결하세요.</div>
         )}
       </div>
 
-      <div className="space-y-2 pt-3 border-t border-slate-200">
-        <h4 className="text-xs font-bold text-slate-700">📚 문서 전체 백데이터 풀 (클릭하여 현재 슬롯에 연결/해제)</h4>
-        <div className="space-y-1.5">
-          {Object.values(doc.backdata).map((chunk) => {
-            const isBound = slot.backDataRefs.includes(chunk.chunkId);
-            return (
-              <button
-                key={chunk.chunkId}
-                type="button"
-                onClick={() => toggleBackdataRef(slot.slotId, chunk.chunkId)}
-                className={`w-full text-left p-2.5 rounded-lg border text-xs transition cursor-pointer ${
-                  isBound
-                    ? "border-indigo-400 bg-indigo-50/60 text-indigo-950"
-                    : "border-slate-200 hover:bg-slate-50 text-slate-600"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2 font-semibold">
-                  <span className="truncate">{chunk.sourceTitle}</span>
+      <div className="fig-dsec" data-testid="doc-backdata-pool">
+        <div className="fig-dsec-head">
+          <span>
+            문서 백데이터 보관함 <span className="fig-section-meta">{pool.length}</span>
+          </span>
+        </div>
+        <p className="fig-desc mb-1.5">클릭하면 현재 슬롯에 연결 · 해제됩니다.</p>
+        {pool.length > 0 ? (
+          <div className="-mx-2">
+            {pool.map((chunk) => {
+              const isBound = slot.backDataRefs.includes(chunk.chunkId);
+              return (
+                <button
+                  key={chunk.chunkId}
+                  type="button"
+                  aria-pressed={isBound}
+                  onClick={() => toggleBackdataRef(slot.slotId, chunk.chunkId)}
+                  title={isBound ? "연결 해제" : "현재 슬롯에 연결"}
+                  className="fig-list-row"
+                >
                   <span
-                    className={`shrink-0 whitespace-nowrap text-[10px] px-1.5 py-0.5 rounded ${
-                      isBound ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500"
+                    className={`mt-px w-3.5 h-3.5 shrink-0 rounded-[3px] flex items-center justify-center ${
+                      isBound ? "bg-[#0d99ff] text-white" : "border border-black/25"
                     }`}
                   >
-                    {isBound ? "✓ 연결됨" : "+ 연결"}
+                    {isBound && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
                   </span>
-                </div>
-                <div className="text-[11px] text-slate-500 line-clamp-2 mt-1">{chunk.excerpt}</div>
-              </button>
-            );
-          })}
-        </div>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">{chunk.sourceTitle}</span>
+                    <span className="block text-black/50 line-clamp-2 leading-4">{chunk.excerpt}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="fig-empty">이 문서에 등록된 백데이터가 없습니다. 위 + 로 원천 자료를 등록하세요.</div>
+        )}
       </div>
     </>
   );

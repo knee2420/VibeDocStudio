@@ -87,85 +87,71 @@ export const ImageInspectorCard: React.FC<ImageInspectorCardProps> = ({
     });
   };
 
+  // 피그마 디자인 패널처럼 이미지 · 레이아웃 · 채우기 구역으로 나눈다. 동작(잠금 · 삭제 · 교체 · 크기 · 맞춤 · 경로)은 그대로.
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-3.5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-          <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />
-          <span>이미지 블록 속성</span>
-        </h4>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => handleUpdate((prev) => ({ ...prev, locked: !prev.locked }))}
-            className={`p-1 rounded text-xs transition cursor-pointer ${
-              isLocked ? "bg-amber-100 text-amber-700" : "hover:bg-slate-200 text-slate-500"
-            }`}
-            title={isLocked ? "잠금 해제" : "위치/크기 잠금"}
-          >
-            {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
-          </button>
-          {onDeleteBlock && (
+    <>
+      <div className="fig-dsec" data-testid="image-inspector-section">
+        <div className="fig-dsec-head !h-10">
+          <span className="flex items-center gap-1.5 text-[13px]">
+            <ImageIcon className="w-3.5 h-3.5 text-black/50" />
+            이미지
+          </span>
+          <div className="fig-dsec-actions">
             <button
               type="button"
-              onClick={() => onDeleteBlock(pageId, block.blockId)}
-              className="p-1 rounded text-xs hover:bg-rose-100 text-slate-400 hover:text-rose-600 transition cursor-pointer"
-              title="블록 삭제"
+              aria-pressed={isLocked}
+              onClick={() => handleUpdate((prev) => ({ ...prev, locked: !prev.locked }))}
+              className="fig-icon-btn"
+              title={isLocked ? "잠금 해제" : "위치/크기 잠금"}
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
             </button>
-          )}
+            {onDeleteBlock && (
+              <button
+                type="button"
+                onClick={() => onDeleteBlock(pageId, block.blockId)}
+                className="fig-icon-btn fig-danger"
+                title="블록 삭제"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
+
+        <div className="relative w-full h-28 rounded-[5px] bg-[#f5f5f5] overflow-hidden flex items-center justify-center group">
+          <img
+            src={block.src}
+            alt={block.alt || "Image preview"}
+            className={`max-w-full max-h-full ${fit === "cover" ? "object-cover w-full h-full" : "object-contain"}`}
+          />
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="fig-btn">
+              <Upload className="w-3 h-3" />
+              교체
+            </button>
+          </div>
+        </div>
+
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
       </div>
 
-      {/* Preview Thumbnail */}
-      <div className="relative w-full h-24 bg-white border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center p-2 group">
-        <img
-          src={block.src}
-          alt={block.alt || "Image preview"}
-          className={`max-w-full max-h-full ${fit === "cover" ? "object-cover w-full h-full" : "object-contain"}`}
-        />
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="px-2 py-1 bg-white text-slate-800 text-[11px] font-semibold rounded shadow-sm hover:bg-slate-100 flex items-center gap-1 cursor-pointer"
-          >
-            <Upload className="w-3 h-3" />
-            교체
-          </button>
+      <div className="fig-dsec">
+        <div className="fig-dsec-head">
+          <span>레이아웃</span>
+          <div className="fig-dsec-actions">
+            <button type="button" onClick={handleResetSize} className="fig-icon-btn" title="기본 크기(200 × 60)로 초기화">
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
-      </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileUpload}
-        className="hidden"
-      />
-
-      {/* Dimensions (W / H) */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-[11px] font-medium text-slate-600">
-          <span className="flex items-center gap-1">
-            <Maximize2 className="w-3 h-3 text-slate-400" />
-            크기 (Width × Height)
-          </span>
-          <button
-            type="button"
-            onClick={handleResetSize}
-            className="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5 cursor-pointer"
-            title="기본 크기로 복원"
-          >
-            <RotateCcw className="w-2.5 h-2.5" />
-            초기화
-          </button>
-        </div>
+        <span className="fig-dlabel !mt-0 flex items-center gap-1">
+          <Maximize2 className="w-3 h-3" />
+          크기
+        </span>
         <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center border border-slate-200 rounded bg-white px-2 py-1">
-            <span className="text-[10px] font-bold text-slate-400 mr-1.5">W</span>
+          <label className="fig-input">
+            <span className="fig-input-prefix">W</span>
             <input
               type="number"
               min={20}
@@ -173,12 +159,10 @@ export const ImageInspectorCard: React.FC<ImageInspectorCardProps> = ({
               value={width}
               disabled={isLocked}
               onChange={(e) => handleWidthChange(Number(e.target.value))}
-              className="w-full text-xs font-mono outline-none text-slate-800 bg-transparent disabled:opacity-50"
             />
-            <span className="text-[10px] text-slate-400">px</span>
-          </div>
-          <div className="flex items-center border border-slate-200 rounded bg-white px-2 py-1">
-            <span className="text-[10px] font-bold text-slate-400 mr-1.5">H</span>
+          </label>
+          <label className="fig-input">
+            <span className="fig-input-prefix">H</span>
             <input
               type="number"
               min={20}
@@ -186,72 +170,61 @@ export const ImageInspectorCard: React.FC<ImageInspectorCardProps> = ({
               value={height}
               disabled={isLocked}
               onChange={(e) => handleHeightChange(Number(e.target.value))}
-              className="w-full text-xs font-mono outline-none text-slate-800 bg-transparent disabled:opacity-50"
             />
-            <span className="text-[10px] text-slate-400">px</span>
-          </div>
+          </label>
         </div>
       </div>
 
-      {/* Aspect Ratio / Fit mode */}
-      <div className="space-y-1.5">
-        <label className="text-[11px] font-medium text-slate-600 block">
-          맞춤 방식 (Object Fit)
-        </label>
-        <div className="grid grid-cols-2 gap-1.5">
+      <div className="fig-dsec">
+        <div className="fig-dsec-head">
+          <span>채우기</span>
+        </div>
+        <span className="fig-dlabel !mt-0">맞춤 방식</span>
+        <div className="fig-seg">
           <button
             type="button"
             disabled={isLocked}
+            aria-pressed={fit === "contain"}
             onClick={() => handleUpdate((p) => ({ ...p, objectFit: "contain", fit: "contain" }))}
-            className={`py-1 text-center rounded text-[11px] font-medium border cursor-pointer transition ${
-              fit === "contain"
-                ? "bg-emerald-600 text-white border-emerald-600"
-                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100 disabled:opacity-50"
-            }`}
           >
             비율 유지 (Contain)
           </button>
           <button
             type="button"
             disabled={isLocked}
+            aria-pressed={fit === "cover"}
             onClick={() => handleUpdate((p) => ({ ...p, objectFit: "cover", fit: "cover" }))}
-            className={`py-1 text-center rounded text-[11px] font-medium border cursor-pointer transition ${
-              fit === "cover"
-                ? "bg-emerald-600 text-white border-emerald-600"
-                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100 disabled:opacity-50"
-            }`}
           >
             영역 채우기 (Cover)
           </button>
         </div>
-      </div>
 
-      {/* Image Source URL */}
-      <div className="space-y-1">
-        <label className="text-[11px] font-medium text-slate-600 flex items-center gap-1">
-          <Link2 className="w-3 h-3 text-slate-400" />
+        <span className="fig-dlabel flex items-center gap-1">
+          <Link2 className="w-3 h-3" />
           이미지 경로 또는 URL
-        </label>
+        </span>
         <div className="flex gap-1">
-          <input
-            type="text"
-            value={block.src}
-            disabled={isLocked}
-            onChange={(e) => handleUpdate((p) => ({ ...p, src: e.target.value }))}
-            placeholder="https://... 또는 /images/..."
-            className="flex-1 text-xs px-2 py-1 border border-slate-200 rounded bg-white outline-none focus:border-emerald-500 font-mono text-slate-700 truncate disabled:opacity-50"
-          />
+          <label className="fig-input flex-1">
+            <input
+              type="text"
+              value={block.src}
+              disabled={isLocked}
+              onChange={(e) => handleUpdate((p) => ({ ...p, src: e.target.value }))}
+              placeholder="https://... 또는 /images/..."
+              className="fig-mono truncate"
+            />
+          </label>
           <button
             type="button"
             disabled={isLocked}
             onClick={() => fileInputRef.current?.click()}
-            className="px-2 py-1 bg-white border border-slate-200 rounded text-xs hover:bg-slate-100 text-slate-600 shrink-0 cursor-pointer disabled:opacity-50"
+            className="fig-icon-btn !w-6 !h-6 border border-[var(--fig-border)]"
             title="로컬 이미지 파일 선택"
           >
             <Upload className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 };
