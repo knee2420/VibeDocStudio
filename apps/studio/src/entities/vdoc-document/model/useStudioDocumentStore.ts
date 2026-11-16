@@ -84,6 +84,8 @@ export interface StudioDocumentState {
 
 const AUTOSAVE_DELAY_MS = 800;
 const autosaveTimers = new Map<string, number>();
+/** 문서별 진행 중인 저장 (저장을 한 줄로 세운다). */
+const inflightSaves = new Map<string, Promise<void>>();
 /** 다음 저장에 실어 보낼 변경 출처 (문서별). 저장이 성공하면 비운다. */
 const pendingNotes = new Map<string, ChangeNote[]>();
 /** 비동기로 수화된 예약 페이지 ID (문서별) — 이전 스냅샷 restore() 가 비동기 결과를 지우지 않게 보호한다. */
@@ -120,8 +122,22 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
   const setSaveState = (docId: string, state: DocumentSaveState) =>
     set((s) => ({ saveState: { ...s.saveState, [docId]: state } }));
 
-  const saveNow = async (docId: string) => {
+  /**
+   * 같은 문서의 저장은 한 번에 하나씩 보낸다. 앞 저장이 끝나 새 revision 을 받은 뒤에 다음 저장이
+   * 그 revision 을 기준으로 나간다 — 겹쳐 보내면 뒤 저장이 옛 기준으로 나가 409 충돌이 난다
+   * (예: 블록 삽입 저장이 아직 진행 중일 때 바로 Undo 하면 그 저장이 충돌해 되돌림이 서버에 안 남았다).
+   */
+  const saveNow = (docId: string): Promise<void> => {
     autosaveTimers.delete(docId);
+    const run = (inflightSaves.get(docId) ?? Promise.resolve()).then(() => saveOnce(docId));
+    inflightSaves.set(docId, run);
+    void run.finally(() => {
+      if (inflightSaves.get(docId) === run) inflightSaves.delete(docId);
+    });
+    return run;
+  };
+
+  const saveOnce = async (docId: string) => {
     const doc = get().docs.find((d) => d.docId === docId);
     if (!doc || !get().persistedDocIds.has(docId)) return;
     if (get().saveState[docId] === "conflict") return; // 충돌을 풀 때까지 덮어쓰지 않는다
@@ -156,11 +172,15 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
     setSaveState(docId, "dirty");
   };
 
-  /** 문서 전체를 갈아 끼우는 Undo/Redo (같은 문서가 열려 있을 때만). */
+  /**
+   * 문서 전체를 갈아 끼우는 Undo/Redo (같은 문서가 열려 있을 때만).
+   * 스냅샷의 내용만 되돌리고 서버 버전(`revision`)은 지금 문서 것을 쓴다 — 스냅샷은 그 편집이 저장되기
+   * 전의 옛 revision 을 들고 있어서, 그대로 저장하면 서버가 409 로 거절하고 되돌림이 서버에 남지 않았다.
+   */
   const restore = (doc: VDocDocument) => {
     const liveDoc = get().docs.find((d) => d.docId === doc.docId);
     if (!liveDoc) return;
-    let merged = doc;
+    let merged: VDocDocument = { ...doc, revision: liveDoc.revision };
     const hydratedIds = asyncHydratedPages.get(doc.docId);
     if (hydratedIds && hydratedIds.size > 0) {
       for (const pageId of hydratedIds) {
