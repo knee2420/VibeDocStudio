@@ -1,4 +1,5 @@
 export * from "./VDocPageSheet";
+export * from "./BlockStaticPreview";
 export * from "./MemoVDocPageSheet";
 export * from "./WindowedPageChunker";
 export * from "./AlignmentGuides";

@@ -14,14 +14,15 @@ import {
 import { NEW_BLOCK_DRAG_MIME } from "@vibe/slot-canvas";
 import { listInsertableBlocks } from "@vibe/vdoc-schema";
 
-import { useAssetLibraryStore } from "@/entities/asset-library";
+import { useAssetLibraryStore, type AssetSource } from "@/entities/asset-library";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
-import type { InsertableBlockKind } from "@/features/mutate-canvas-blocks";
+import { useMutateCanvasBlocks, type InsertableBlockKind } from "@/features/mutate-canvas-blocks";
 import { AssetWireframeThumb } from "@/shared/ui";
 
-import { SectionAssetPreview } from "./SectionAssetPreview";
+import { AssetDetailPopover } from "./asset-insert/AssetDetailPopover";
+import { AssetPreview } from "./asset-insert/AssetPreview";
 
 type ViewMode = "grid" | "list";
 type FolderId = "blocks" | "local" | "sections";
@@ -102,13 +103,14 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
   const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
   const setActiveActivityTab = useWorkspaceLayoutStore((s) => s.setActiveActivityTab);
   const sectionAssets = useAssetLibraryStore((s) => s.sectionAssets);
-  const armPlacement = useAssetLibraryStore((s) => s.armPlacement);
-  const armedKind = useAssetLibraryStore((s) => (s.activeTool === "place" ? s.placement?.kind ?? null : null));
+  const insertSectionIntoPage = useAssetLibraryStore((s) => s.insertSectionIntoPage);
+  const { addBlockToPage } = useMutateCanvasBlocks();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [activeFolder, setActiveFolder] = useState<FolderId | null>(null);
   const [localAssets, setLocalAssets] = useState<AssetItem[]>(INITIAL_LOCAL_ASSETS);
+  const [detailPopover, setDetailPopover] = useState<{ item: AssetItem; top: number; left: number } | null>(null);
   const [registerName, setRegisterName] = useState("");
   const [showRegisterForm, setShowRegisterForm] = useState(false);
 
@@ -146,25 +148,30 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
 
   const targetPageId = activePageId ?? doc?.pages[0]?.pageId ?? "";
 
-  const activePageLayout = useMemo(
-    () => doc?.pages.find((p) => p.pageId === targetPageId)?.layout ?? doc?.pages[0]?.layout,
-    [doc, targetPageId],
-  );
-
-  const renderAssetPreview = (item: AssetItem, opts?: { large?: boolean; defaultScale?: number }) => {
-    if (item.sectionId) {
-      const sec = sectionAssets.find((s) => s.id === item.sectionId);
-      if (sec) {
-        return (
-          <SectionAssetPreview
-            section={sec}
-            pageLayout={activePageLayout}
-            defaultScale={opts?.defaultScale ?? (opts?.large ? 0.3 : 0.15)}
-          />
-        );
-      }
+  /** 아이템별 미리보기 · 삽입 출처 (참조가 바뀌지 않게 메모 — 미리보기가 매번 다시 계산되지 않게). */
+  const sourceById = useMemo(() => {
+    const map = new Map<string, AssetSource>();
+    for (const item of allAssets) {
+      const section = item.sectionId ? sectionAssets.find((x) => x.id === item.sectionId) : undefined;
+      map.set(item.id, section ? { type: "section", section } : { type: "block", blockKind: item.blockKind });
     }
-    return <AssetWireframeThumb kind={item.thumbKind} large={opts?.large} />;
+    return map;
+  }, [allAssets, sectionAssets]);
+
+  /** 타일 · 목록 썸네일: 캔버스와 같은 모양의 실제 내용 미리보기 (예시 문구 · 더미 이미지 · 원본). */
+  const renderAssetPreview = (item: AssetItem, height: number) => {
+    const source = sourceById.get(item.id);
+    return source ? <AssetPreview source={source} height={height} contentWidth={340} /> : <AssetWireframeThumb kind={item.thumbKind} />;
+  };
+
+  const handleInsertAsset = (item: AssetItem) => {
+    if (!targetPageId) return;
+    if (item.sectionId) {
+      insertSectionIntoPage(item.sectionId, targetPageId);
+    } else {
+      addBlockToPage(targetPageId, item.blockKind);
+    }
+    setDetailPopover(null);
   };
 
   const handleRegisterTemplate = (e: React.FormEvent) => {
@@ -212,66 +219,100 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
 
   const activeFolderMeta = FOLDER_META.find((f) => f.id === activeFolder);
 
-  const placementKindOf = (item: AssetItem) => (item.sectionId ? `section-asset:${item.sectionId}` : item.blockKind);
-  const assetDragProps = (item: AssetItem) => ({
-    draggable: true,
-    onDragStart: (e: React.DragEvent) => {
-      e.dataTransfer.effectAllowed = "copy";
-      e.dataTransfer.setData(NEW_BLOCK_DRAG_MIME, placementKindOf(item));
-    },
-  });
-  /** 피그마처럼: 고르면 바로 넣지 않고 배치 도구가 된다 — 캔버스에서 넣을 자리를 클릭한다. 다시 누르면 취소. */
-  const armAsset = (item: AssetItem) => armPlacement({ kind: placementKindOf(item), label: item.name });
+  const openDetails = (e: React.MouseEvent<HTMLElement>, item: AssetItem) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const sidebarRight = e.currentTarget.closest("[data-testid='figma-assets-panel']")?.getBoundingClientRect().right ?? rect.right;
+    const clampedTop = Math.max(48, Math.min(window.innerHeight - 310, rect.top));
+    setDetailPopover({
+      item,
+      top: clampedTop,
+      left: sidebarRight + 8,
+    });
+  };
 
   const renderAssetCard = (item: AssetItem) => {
-    const isArmed = armedKind === placementKindOf(item);
-    const hint = `${item.name} — ${item.description}
-클릭: 고른 뒤 캔버스에서 넣을 자리 클릭 · 끌어서 원하는 자리에 놓기`;
+    const isSelected = detailPopover?.item.id === item.id;
     if (viewMode === "list") {
       return (
-        <button
+        <div
           key={item.id}
-          type="button"
-          data-testid={`asset-card-${item.id}`}
-          aria-pressed={isArmed}
-          {...assetDragProps(item)}
-          onClick={() => armAsset(item)}
-          title={hint}
-          className={`w-full text-left flex items-center gap-2.5 p-1.5 rounded-[5px] cursor-grab active:cursor-grabbing ${
-            isArmed ? "bg-[#e5f4ff]" : "hover:bg-black/[0.04]"
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.effectAllowed = "copy";
+            e.dataTransfer.setData(
+              NEW_BLOCK_DRAG_MIME,
+              item.sectionId ? `section-asset:${item.sectionId}` : item.blockKind,
+            );
+          }}
+          onClick={(e) => openDetails(e, item)}
+          onDoubleClick={() => handleInsertAsset(item)}
+          title={`${item.name} — 클릭: 세부 정보 · 드래그/더블클릭: 페이지에 삽입`}
+          className={`group flex items-center gap-2.5 p-1.5 rounded-lg cursor-grab active:cursor-grabbing transition ${
+            isSelected ? "bg-[#e5f4ff] ring-1 ring-[#0d99ff]" : "hover:bg-slate-100/90"
           }`}
         >
-          <div className="w-9 h-9 rounded-[5px] bg-[#f5f5f5] border border-black/10 shrink-0 overflow-hidden">
-            {renderAssetPreview(item, { defaultScale: 0.045 })}
+          <div className="w-9 h-9 rounded-md bg-[#f5f5f5] border border-slate-200/80 shrink-0 overflow-hidden">
+            {renderAssetPreview(item, 34)}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-medium text-black/90 truncate">{item.name}</div>
-            <div className="text-[10.5px] text-black/50 truncate">{item.description}</div>
+            <div className="text-[12px] font-medium text-slate-800 truncate">{item.name}</div>
+            <div className="text-[10.5px] text-slate-400 truncate">{item.description}</div>
           </div>
-        </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleInsertAsset(item);
+            }}
+            title="현재 페이지에 바로 삽입"
+            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[#0d99ff] hover:text-white text-slate-500 transition cursor-pointer shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        </div>
       );
     }
 
     return (
-      <button
+      <div
         key={item.id}
-        type="button"
-        data-testid={`asset-card-${item.id}`}
-        aria-pressed={isArmed}
-        {...assetDragProps(item)}
-        onClick={() => armAsset(item)}
-        title={hint}
-        className="group flex flex-col text-left cursor-grab active:cursor-grabbing"
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.effectAllowed = "copy";
+          e.dataTransfer.setData(
+            NEW_BLOCK_DRAG_MIME,
+            item.sectionId ? `section-asset:${item.sectionId}` : item.blockKind,
+          );
+        }}
+        onClick={(e) => openDetails(e, item)}
+        onDoubleClick={() => handleInsertAsset(item)}
+        title={`${item.name} — 클릭: 세부 정보 · 드래그/더블클릭: 페이지에 삽입`}
+        className="group flex flex-col cursor-grab active:cursor-grabbing"
       >
         <div
-          className={`relative aspect-square w-full rounded-[5px] bg-[#f5f5f5] border overflow-hidden ${
-            isArmed ? "border-[#0d99ff] ring-2 ring-[#0d99ff]/25" : "border-black/10 group-hover:border-black/25"
+          className={`relative h-[132px] w-full rounded-lg bg-white p-2 border overflow-hidden transition ${
+            isSelected
+              ? "border-[#0d99ff] ring-2 ring-[#0d99ff]/25"
+              : "border-slate-200/80 group-hover:border-slate-300"
           }`}
         >
-          {renderAssetPreview(item)}
+          {renderAssetPreview(item, 114)}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleInsertAsset(item);
+            }}
+            title="현재 페이지에 바로 삽입"
+            className="opacity-0 group-hover:opacity-100 absolute top-1.5 right-1.5 w-6 h-6 rounded-md bg-white/95 border border-slate-200 shadow-xs flex items-center justify-center text-slate-600 hover:bg-[#0d99ff] hover:text-white hover:border-[#0d99ff] transition cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
         </div>
-        <span className="mt-1 w-full px-0.5 text-[11px] text-black/80 truncate text-center">{item.name}</span>
-      </button>
+        <span className="mt-1 px-0.5 text-[11.5px] font-medium text-slate-700 truncate text-center group-hover:text-slate-950">
+          {item.name}
+        </span>
+      </div>
     );
   };
 
@@ -387,7 +428,10 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
         {!isSearching && activeFolder && activeFolderMeta && (
           <button
             type="button"
-            onClick={() => setActiveFolder(null)}
+            onClick={() => {
+              setActiveFolder(null);
+              setDetailPopover(null);
+            }}
             className="w-full flex items-center gap-1.5 py-1 px-1 text-[12px] font-semibold text-slate-700 hover:text-slate-950 cursor-pointer"
           >
             <ChevronLeft className="w-3.5 h-3.5 text-slate-500" />
@@ -403,7 +447,10 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
                 <button
                   key={folder.id}
                   type="button"
-                  onClick={() => setActiveFolder(folder.id)}
+                  onClick={() => {
+                    setActiveFolder(folder.id);
+                    setDetailPopover(null);
+                  }}
                   className="w-full flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-100/90 transition text-left cursor-pointer"
                 >
                   <div className="w-9 h-9 rounded-md bg-[#f5f5f5] border border-slate-200/80 shrink-0 overflow-hidden">
@@ -454,6 +501,21 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
         )}
       </div>
 
+
+      {/* 4. 세부 정보 (피그마 에셋 세부 정보 배치): 실제 내용 미리보기 → 원본 · 예시 · 빈 칸으로 삽입 */}
+      {detailPopover && sourceById.get(detailPopover.item.id) && (
+        <AssetDetailPopover
+          key={detailPopover.item.id}
+          source={sourceById.get(detailPopover.item.id)!}
+          name={detailPopover.item.name}
+          description={detailPopover.item.description}
+          folderLabel={FOLDER_META.find((f) => f.id === detailPopover.item.folder)?.label ?? "에셋"}
+          pageId={targetPageId}
+          anchor={{ top: detailPopover.top, left: detailPopover.left }}
+          onClose={() => setDetailPopover(null)}
+          onInsertBlank={() => handleInsertAsset(detailPopover.item)}
+        />
+      )}
     </div>
   );
 };

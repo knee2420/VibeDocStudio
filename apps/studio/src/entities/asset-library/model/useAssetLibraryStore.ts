@@ -36,7 +36,10 @@ export interface SectionAssetItem {
   id: string;
   name: string;
   description: string;
+  /** 저장한 틀: 글자는 "제목을 입력하세요" 같은 자리 표시, 이미지는 비움 (빈 칸으로 삽입할 때 · 예시를 채울 구조). */
   blocks: SectionAssetBlockSnapshot[];
+  /** 감싼 영역의 원본 내용 그대로 (원본 그대로 삽입 · 미리보기). 이 필드가 없는 옛 에셋은 원본 선택지가 없다. */
+  originalBlocks?: SectionAssetBlockSnapshot[];
   slotCount: number;
   createdAt: string;
 }
@@ -140,6 +143,13 @@ interface AssetLibraryState {
     customName?: string,
   ) => SectionAssetItem | null;
   insertSectionIntoPage: (sectionId: string, pageId: string, atIndex?: number) => boolean;
+  /** 블록 묶음을 새 id 로 복제해 페이지에 넣고, 넣은 블록 id 를 돌려준다 (에셋 미리보기 · 삽입 공통). */
+  insertSnapshotsIntoPage: (
+    snapshots: readonly SectionAssetBlockSnapshot[],
+    pageId: string,
+    atIndex?: number,
+    label?: string,
+  ) => string[];
   removeSectionAsset: (sectionId: string) => void;
 }
 
@@ -209,6 +219,7 @@ export const useAssetLibraryStore = create<AssetLibraryState>((set, get) => ({
       name,
       description: `${snapshots.length}개 블록 · ${slotCount}개 슬롯 섹션`,
       blocks: snapshots,
+      originalBlocks: rawSnapshots.map(({ block, slots }) => ({ block: structuredClone(block), slots: structuredClone(slots) })),
       slotCount,
       createdAt: new Date().toISOString(),
     };
@@ -220,24 +231,30 @@ export const useAssetLibraryStore = create<AssetLibraryState>((set, get) => ({
   insertSectionIntoPage: (sectionId, pageId, atIndex) => {
     const section = get().sectionAssets.find((s) => s.id === sectionId);
     if (!section || !pageId) return false;
+    return get().insertSnapshotsIntoPage(section.blocks, pageId, atIndex, `섹션 에셋 '${section.name}' 삽입`).length > 0;
+  },
 
+  insertSnapshotsIntoPage: (snapshots, pageId, atIndex, label) => {
+    if (!pageId || snapshots.length === 0) return [];
     const store = useStudioDocumentStore.getState();
     const doc = store.docs.find((d) => d.docId === store.activeDocId);
-    if (!doc) return false;
-
-    return store.updateDoc(
+    if (!doc) return [];
+    const inserted: string[] = [];
+    const ok = store.updateDoc(
       doc.docId,
       (prev) => {
         let next = prev;
-        section.blocks.forEach((snap, idx) => {
+        snapshots.forEach((snap, idx) => {
           const cloned = cloneBlockWithSlots(snap.block, snap.slots, randomId, { copySuffix: false });
           const targetIdx = atIndex !== undefined ? atIndex + idx : undefined;
           next = insertBlock(next, pageId, cloned.block, cloned.slots, targetIdx);
+          inserted.push(cloned.block.blockId);
         });
         return next;
       },
-      { history: true, label: `섹션 에셋 '${section.name}' 삽입` },
+      { history: true, label: label ?? "에셋 삽입" },
     );
+    return ok ? inserted : [];
   },
 
   removeSectionAsset: (sectionId) =>

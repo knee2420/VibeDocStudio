@@ -8,13 +8,13 @@ import {
   GitPullRequestDraft,
   GripVertical,
   Languages,
-  LayoutGrid,
   Loader2,
   MessageSquareShare,
   Minimize2,
   MoreHorizontal,
   PencilLine,
   RotateCcw,
+  SquareDashed,
   Trash2,
   Wand2,
   X,
@@ -422,9 +422,9 @@ export const SlotRangeAiBar: React.FC = () => {
                   setLevel("icon");
                 }}
                 className={BUTTON}
-                title="선택 영역을 새 섹션으로 묶어 Assets에 추가 (Wrap in new section)"
+                title="고른 범위를 섹션 에셋으로 저장 — 왼쪽 Assets ▸ 생성된 섹션 에셋에 추가돼 다른 곳에 다시 넣을 수 있어요"
               >
-                <LayoutGrid className="w-3.5 h-3.5 text-[#0d99ff]" /> Wrap in new section
+                <SquareDashed className="w-3.5 h-3.5 text-gray-500" /> 에셋으로 저장
               </button>
               {canDeleteRange && (
                 <>

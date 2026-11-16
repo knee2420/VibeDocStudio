@@ -35,6 +35,7 @@ import {
 import { useAssetLibraryStore } from "@/entities/asset-library";
 import { useBlockClipboardStore, useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { revealCanvasElement } from "@/shared/lib";
 
 export type { InsertableBlockKind };
 
@@ -42,6 +43,11 @@ export type { InsertableBlockKind };
 const idSuffix = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 const HISTORY = { history: true } as const;
+
+/** 새로 넣은 블록을 잠깐 강조하고, 화면 밖에 들어갔으면 그 자리로 스크롤한다 (무엇이 어디 생겼는지 보이게). */
+const revealInserted = (blockId: string | null) => {
+  if (blockId) revealCanvasElement({ blockId, onlyIfHidden: true });
+};
 
 function blockToPlainText(block: LayoutBlock, docSlots: Record<string, VDocSlot>): string {
   const def = getBlockKind(block.kind);
@@ -335,13 +341,19 @@ export function useMutateCanvasBlocks() {
       } else if (createdBlockId) {
         useSlotSelectionStore.getState().setSelectedBlockId(createdBlockId);
       }
+      revealInserted(createdBlockId);
     },
 
     /** Inserts a new block at `atIndex` (default: end of page) and focuses its first slot (or block). */
     addBlockToPage: (pageId: string, kind: InsertableBlockKind | string, atIndex?: number) => {
       // 섹션 에셋(`section-asset:<id>`)은 저장한 블록 묶음을 그대로 넣는다 (끌어 놓기 · 배치 도구 공통).
       if (kind.startsWith("section-asset:")) {
-        useAssetLibraryStore.getState().insertSectionIntoPage(kind.slice("section-asset:".length), pageId, atIndex);
+        const assets = useAssetLibraryStore.getState();
+        const section = assets.sectionAssets.find((x) => x.id === kind.slice("section-asset:".length));
+        if (section) {
+          const ids = assets.insertSnapshotsIntoPage(section.blocks, pageId, atIndex, `섹션 에셋 '${section.name}' 삽입`);
+          revealInserted(ids.at(-1) ?? null);
+        }
         return;
       }
       let focusSlotId: string | undefined;
@@ -357,6 +369,7 @@ export function useMutateCanvasBlocks() {
       });
       if (focusSlotId) setSelectedSlotId(focusSlotId);
       else if (createdBlockId) useSlotSelectionStore.getState().setSelectedBlockId(createdBlockId);
+      revealInserted(createdBlockId);
     },
 
     /** 리소스 사진을 끌어 놓은 자리에 이미지 블록 (`src` = `resource:<id>`, 새로고침 · 다른 PC 에서도 유지). */
@@ -369,6 +382,7 @@ export function useMutateCanvasBlocks() {
         return insertBlock(doc, pageId, block, draft.slots, atIndex);
       }, "사진 넣기");
       if (createdBlockId) useSlotSelectionStore.getState().setSelectedBlockId(createdBlockId);
+      revealInserted(createdBlockId);
     },
 
     duplicateBlock: (pageId: string, blockId: string) => {
