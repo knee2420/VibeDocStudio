@@ -8,7 +8,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   cacheDir: path.join(process.env.LOCALAPPDATA || os.tmpdir(), "vibe-studio-vite-cache"),
-  plugins: [react(), tailwindcss()],
+  plugins: [react({ exclude: [/node_modules/, /vibe-studio-vite-cache/] }), tailwindcss()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

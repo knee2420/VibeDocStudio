@@ -1,3 +1,4 @@
+import type { ElementKind } from "./element-kit";
 import type { EvidenceLocator } from "./evidence";
 /**
  * @vibe/vdoc-schema — Multi-Document Project Manifest (`.vproj`), 4-Level Zoom Hierarchy,
@@ -15,6 +16,7 @@ export interface OutlinerNode {
   parentId: string | null;
   depth: number;
   zoomLevel: ZoomLevel;
+  elementKind?: ElementKind;
   title: string;
   summary: string;
   targetDocId?: string | null;

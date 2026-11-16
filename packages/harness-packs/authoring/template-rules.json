@@ -38,6 +38,29 @@
    "rationale": "좌우 대조 및 다단 레이아웃 비교 그리드 블록"
   },
   {
+   "template_id": "callout-box",
+   "keywords": [
+    "주의",
+    "요약",
+    "핵심",
+    "안내",
+    "callout"
+   ],
+   "rationale": "강조 안내문·주의사항·핵심 요약 콜아웃 블록"
+  },
+  {
+   "template_id": "hero",
+   "keywords": [
+    "히어로",
+    "표지",
+    "배너",
+    "제안",
+    "hero",
+    "cover"
+   ],
+   "rationale": "상단 헤드라인 및 대표 배너 히어로 블록"
+  },
+  {
    "template_id": "cover-banner",
    "keywords": [
     "표지",

@@ -18,6 +18,7 @@ import {
 } from "../model/outlineSections";
 import { useLayerFlags } from "../model/useLayerFlags";
 import { useRowSelection } from "../model/useRowSelection";
+import { useWindowedNodes } from "../model/useWindowedNodes";
 import { OutlineNodeRow } from "./OutlineNodeRow";
 import { AddNodeButton, type SectionProps } from "./outlineSectionParts";
 
@@ -74,7 +75,6 @@ export const ElementsSection: React.FC<
     return parentIds.some((id) => collapsed.has(id));
   }, [parentIds, collapsedNodeIds]);
   const selection = useRowSelection(nodes);
-  const { lockSlotIds, hidden } = useLayerFlags(baseNodes, nodes);
   useLayoutEffect(() => reportOrder(nodes), [nodes, reportOrder]);
 
   // 캔버스에서 고른 엘리먼트가 목록 밖이면 보이도록 스크롤 (피그마처럼). 이미 보이면 움직이지 않는다.
@@ -83,6 +83,11 @@ export const ElementsSection: React.FC<
     for (const [id, state] of selection) if (state === "on") return id;
     return null;
   }, [selection]);
+  const { visibleNodes: renderedNodes, remainingCount, showMore } = useWindowedNodes(nodes, treeRef, {
+    resetKey: `elements:${isAllMode ? "all" : "page"}:${activeDocId}:${activePageId}:${rootNodeId}:${query}`,
+    ensureNodeId: firstSelectedId,
+  });
+  const { lockSlotIds, hidden } = useLayerFlags(baseNodes, renderedNodes);
   useEffect(() => {
     if (!firstSelectedId) return;
     treeRef.current?.querySelector(`[data-node-id="${CSS.escape(firstSelectedId)}"]`)?.scrollIntoView({ block: "nearest" });
@@ -193,7 +198,7 @@ export const ElementsSection: React.FC<
             )}
           </div>
         ) : (
-          nodes.map((node) => (
+          renderedNodes.map((node) => (
             <OutlineNodeRow
               key={node.nodeId}
               node={node}
@@ -208,6 +213,16 @@ export const ElementsSection: React.FC<
               hidden={hidden.get(node.nodeId)}
             />
           ))
+        )}
+
+        {remainingCount > 0 && (
+          <button
+            type="button"
+            onClick={showMore}
+            className="fig-row w-[calc(100%-16px)] text-[11px] text-black/60 hover:text-black/90 underline cursor-pointer"
+          >
+            나머지 {remainingCount}개 요소 더 보기
+          </button>
         )}
 
         {onAddNode && <AddNodeButton onClick={onAddNode} />}

@@ -38,6 +38,7 @@ from app.authoring.use_cases import (
     StagedPhaseRunner,
     StagingQueueUseCase,
 )
+from app.bootstrap.outline_links import OutlineDocumentBridge, OutlineProjectBridge
 from app.bootstrap.project_links import ProjectDocLinks
 from app.catalog.adapters import (
     DocStructCatalogExtractorAdapter,
@@ -77,6 +78,14 @@ from app.llm.use_cases import (
     GetRuntimeDashboardUseCase,
     SetGoogleApiKeyUseCase,
     UpdateRuntimePolicyUseCase,
+)
+from app.outline.adapters import LocalWorkingOutlineRepository
+from app.outline.use_cases import (
+    ApplyWorkingCommandsUseCase,
+    CommitOutlineToDocumentsUseCase,
+    CompilePreviewUseCase,
+    GetWorkingOutlineUseCase,
+    SaveWorkingOutlineUseCase,
 )
 from app.projects.adapters import LocalVProjectRepository
 from app.projects.use_cases import (
@@ -291,6 +300,43 @@ class Container(containers.DeclarativeContainer):
     save_project = providers.Factory(SaveProjectUseCase, repository=project_repository)
     get_project_outline_tree = providers.Factory(GetProjectOutlineTreeUseCase, repository=project_repository)
     apply_outline_command = providers.Factory(ApplyOutlineCommandUseCase, repository=project_repository)
+
+    # --- 4-1. outline 도메인 (`data/knowledge/outline`) ---
+    outline_repository = providers.Singleton(
+        LocalWorkingOutlineRepository,
+        root_dir=providers.Callable(lambda st: st.knowledge_of("outline"), storage),
+    )
+    outline_project_bridge = providers.Factory(OutlineProjectBridge, projects=project_repository)
+    outline_document_bridge = providers.Factory(OutlineDocumentBridge, documents=document_repository)
+    get_working_outline = providers.Factory(
+        GetWorkingOutlineUseCase,
+        repository=outline_repository,
+        projects=outline_project_bridge,
+        documents=outline_document_bridge,
+    )
+    save_working_outline = providers.Factory(
+        SaveWorkingOutlineUseCase,
+        repository=outline_repository,
+        projects=outline_project_bridge,
+    )
+    apply_working_commands = providers.Factory(
+        ApplyWorkingCommandsUseCase,
+        repository=outline_repository,
+        projects=outline_project_bridge,
+        documents=outline_document_bridge,
+    )
+    compile_outline_preview = providers.Factory(
+        CompilePreviewUseCase,
+        repository=outline_repository,
+        projects=outline_project_bridge,
+        documents=outline_document_bridge,
+    )
+    commit_outline_to_documents = providers.Factory(
+        CommitOutlineToDocumentsUseCase,
+        repository=outline_repository,
+        projects=outline_project_bridge,
+        documents=outline_document_bridge,
+    )
     # 문서 생애(만들기 · 이름 · 복제 · 삭제) — 프로젝트 docIds 연결을 함께 한다
     document_lifecycle = providers.Factory(
         DocumentLifecycleUseCase,

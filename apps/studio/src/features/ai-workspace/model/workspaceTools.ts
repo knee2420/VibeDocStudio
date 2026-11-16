@@ -25,6 +25,7 @@ import { useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
+import { projectWorkingOutlineToOutlinerNodes, useWorkingOutlineStore } from "@/entities/working-outline";
 import { useWorkspaceLayoutStore, type RightPanelTab } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { clipText, htmlToPlain, newId, revealCanvasElement, scrollToCanvasPage } from "@/shared/lib";
@@ -459,6 +460,23 @@ export const WORKSPACE_TOOLS: WorkspaceTool<any>[] = [
         ok: true,
         count: resolved.length,
         citations: resolved,
+      };
+    },
+  },
+  {
+    ...clientTool("outline.getWorkingTree"),
+    describe: () => "Phase 1 WorkingOutline 트리 읽기",
+    run: () => {
+      const project = selectActiveProject(useProjectStore.getState());
+      const outline = useWorkingOutlineStore.getState().outline;
+      if (!outline) {
+        return { projectId: project?.projectId ?? null, dirty: false, nodes: [] };
+      }
+      return {
+        projectId: outline.projectId,
+        revision: outline.revision,
+        dirty: outline.dirty,
+        nodes: projectWorkingOutlineToOutlinerNodes(outline, project?.title),
       };
     },
   },

@@ -32,6 +32,7 @@ from app.core.config import Settings, get_settings
 from app.documents import router as documents_router_module
 from app.form_scaffold import router as form_scaffold_router_module
 from app.llm import router as llm_router_module
+from app.outline import router as outline_router_module
 from app.projects import router as projects_router_module
 from app.reference import router as reference_router_module
 from app.resource.backdata import router as backdata_router_module
@@ -46,6 +47,7 @@ _DOMAIN_ROUTERS = (
     (backdata_router_module, "/api/backdata", "resource.backdata"),
     (authoring_router_module, "/api/ai", "authoring"),
     (projects_router_module, "/api/projects", "projects"),
+    (outline_router_module, "/api/projects", "outline"),
     (staging_router_module, "/api/projects", "authoring.staging"),
     (resource_ledger_router_module, "/api/resources", "resource.ledger"),
     (knowledge_router_module, "/api/knowledge", "resource.index"),

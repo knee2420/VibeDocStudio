@@ -16,4 +16,6 @@ export * from "./document-ops";
 export * from "./page-ops";
 export * from "./block-templates";
 export * from "./block-kit";
+export * from "./element-kit";
+export * from "./outline-compiler";
 export * from "./resource";

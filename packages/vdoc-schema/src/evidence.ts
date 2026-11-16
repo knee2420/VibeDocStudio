@@ -10,6 +10,7 @@
  * 슬롯 ↔ 근거 연결(`EvidenceLink`)은 문서에 저장된다 (`doc.evidenceLinks`). 사람이 붙이든, AI 가 채우면서
  * 인용하든 같은 링크가 남고, RM 강조 · 자동 선택 · 인용 이동 · 무효화 표시가 모두 이 링크를 읽는다.
  */
+import { htmlToPlainText } from "./html-text";
 import type { VDocDocument, VDocSlot } from "./types";
 
 export type EvidenceKind = "backdata" | "resource" | "sector" | "ref-region" | "kcard";
@@ -160,17 +161,7 @@ export function contentHash(html: string): string {
 }
 
 export function slotPlainText(html: string): string {
-  return (html ?? "")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/(p|li|h\d|div)>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .trim();
+  return htmlToPlainText(html ?? "");
 }
 
 /** 비어 있는가: 글자가 없거나, 자리표시(placeholder) · 안내 문구(`[…]`, `○○○`, `내용 입력`)만 있다. */

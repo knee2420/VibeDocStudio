@@ -11,15 +11,24 @@ import { useStudioDocumentStore } from "@/entities/vdoc-document";
  *   자리는 유지) 문서 · 저장 · 내보내기에는 영향이 없다. 세션 동안 기억한다.
  */
 
+const subtreeSlotsCache = new WeakMap<readonly OutlinerNode[], Map<string, string[]>>();
+
 /** 각 행 아래(자기 포함)에 있는 슬롯 id. `nodes` 는 깊이 우선 순서. */
 export function collectSubtreeSlotIds(nodes: readonly OutlinerNode[]): Map<string, string[]> {
+  const cached = subtreeSlotsCache.get(nodes);
+  if (cached) return cached;
   const out = new Map<string, string[]>();
   const stack: { node: OutlinerNode; slots: string[] }[] = [];
   const close = (depth: number) => {
     while (stack.length && stack[stack.length - 1].node.depth >= depth) {
       const done = stack.pop()!;
       out.set(done.node.nodeId, done.slots);
-      if (stack.length) stack[stack.length - 1].slots.push(...done.slots);
+      if (stack.length && done.slots.length > 0) {
+        const parentSlots = stack[stack.length - 1].slots;
+        for (let i = 0; i < done.slots.length; i += 1) {
+          parentSlots.push(done.slots[i]);
+        }
+      }
     }
   };
   for (const node of nodes) {
@@ -27,6 +36,7 @@ export function collectSubtreeSlotIds(nodes: readonly OutlinerNode[]): Map<strin
     stack.push({ node, slots: node.targetSlotId ? [node.targetSlotId] : [] });
   }
   close(-Infinity);
+  subtreeSlotsCache.set(nodes, out);
   return out;
 }
 

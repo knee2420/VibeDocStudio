@@ -48,6 +48,7 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.form_scaffold",
+    "app.outline",
     "app.projects",
     "app.reference",
     "app.resource",
@@ -66,6 +67,7 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.form_scaffold",
+    "app.outline",
     "app.projects",
     "app.reference",
     "app.resource",
@@ -82,6 +84,7 @@ source_modules = [
     "app.catalog.use_cases",
     "app.documents.use_cases",
     "app.form_scaffold.use_cases",
+    "app.outline.use_cases",
     "app.projects.use_cases",
     "app.reference.use_cases",
     "app.resource.backdata.use_cases",
@@ -104,6 +107,7 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.form_scaffold",
+    "app.outline",
     "app.projects",
     "app.reference",
     "app.resource",
@@ -147,6 +151,7 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.form_scaffold",
+    "app.outline",
     "app.projects",
     "app.reference",
     "app.resource",
@@ -163,6 +168,7 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.form_scaffold",
+    "app.outline",
     "app.projects",
     "app.reference",
     "app.resource",
@@ -179,6 +185,7 @@ forbidden_modules = [
     "app.authoring",
     "app.documents",
     "app.form_scaffold",
+    "app.outline",
     "app.projects",
     "app.reference",
     "app.resource",
@@ -195,6 +202,7 @@ forbidden_modules = [
     "app.authoring",
     "app.catalog",
     "app.form_scaffold",
+    "app.outline",
     "app.projects",
     "app.reference",
     "app.resource",
@@ -211,6 +219,7 @@ forbidden_modules = [
     "app.authoring",
     "app.catalog",
     "app.documents",
+    "app.outline",
     "app.projects",
     "app.reference",
     "app.resource",
@@ -228,6 +237,24 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.form_scaffold",
+    "app.outline",
+    "app.reference",
+    "app.resource",
+]
+
+[[tool.importlinter.contracts]]
+name = "outline must not depend on other domains"
+type = "forbidden"
+source_modules = [
+    "app.outline",
+]
+forbidden_modules = [
+    "app.assistant",
+    "app.authoring",
+    "app.catalog",
+    "app.documents",
+    "app.form_scaffold",
+    "app.projects",
     "app.reference",
     "app.resource",
 ]
@@ -244,6 +271,7 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.form_scaffold",
+    "app.outline",
     "app.projects",
     "app.resource",
 ]
@@ -260,6 +288,7 @@ forbidden_modules = [
     "app.catalog",
     "app.documents",
     "app.form_scaffold",
+    "app.outline",
     "app.projects",
     "app.reference",
 ]

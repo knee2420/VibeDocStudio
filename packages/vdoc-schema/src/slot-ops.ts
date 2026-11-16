@@ -4,29 +4,7 @@
  * (스토어가 참조 비교로 "변경 없음"을 판단해 자동 저장 · 이력을 건너뛴다).
  */
 import type { BackdataChunk, SlotConstraints, VDocDocument, VDocSlot } from "./types";
-
-/** 슬롯 HTML 을 사람이 읽는 평문으로 (`<br>` 은 줄바꿈으로). */
-export function htmlToPlainText(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/(p|div|h[1-6]|li)>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-/** 한 줄 요약용: 태그를 지우고 공백을 하나로 모은다. */
-export function htmlToSummary(html: string, maxLength?: number): string {
-  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  return maxLength === undefined ? text : text.slice(0, maxLength);
-}
-
-/** 평문 입력을 슬롯 HTML 로 (줄바꿈은 `<br/>`). */
-export function plainTextToHtml(text: string): string {
-  const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  return `<p>${escaped.replace(/\n/g, "<br/>")}</p>`;
-}
+export { htmlToPlainText, htmlToSummary, plainTextToHtml } from "./html-text";
 
 /** 슬롯 하나를 바꾼다. 슬롯이 없거나 `fn` 이 같은 슬롯을 돌려주면 문서도 그대로다. */
 export function updateSlot(

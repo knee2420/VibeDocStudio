@@ -10,6 +10,7 @@ import { isPageTargetNode } from "@/features/edit-outline";
 
 import { useSplitterDrag } from "../lib/useSplitterDrag";
 import { minDepth, selectPageTreeForZoom } from "../model/outlineSections";
+import { useWindowedNodes } from "../model/useWindowedNodes";
 import { OutlineNodeRow } from "./OutlineNodeRow";
 import { AddNodeButton, type SectionProps } from "./outlineSectionParts";
 
@@ -39,9 +40,6 @@ export const DocumentsPagesSection: React.FC<
     () => selectPageTreeForZoom(allNodes, collapsedNodeIds, allNodes.find((n) => n.nodeId === zoomRootId)),
     [allNodes, collapsedNodeIds, zoomRootId]
   );
-  const depthOffset = useMemo(() => minDepth(nodes), [nodes]);
-  useLayoutEffect(() => reportOrder(folded ? [] : nodes), [folded, nodes, reportOrder]);
-
   const paneHeight = useWorkspaceLayoutStore((s) => s.pagesPaneHeight);
   const treeRef = useRef<HTMLDivElement>(null);
   const onSplitterDown = useSplitterDrag(
@@ -54,6 +52,12 @@ export const DocumentsPagesSection: React.FC<
     () => nodes.find((n) => isPageTargetNode(n) && n.targetPageId === activePageId && (n.targetDocId || activeDocId) === activeDocId)?.nodeId,
     [nodes, activePageId, activeDocId]
   );
+  const { visibleNodes: renderedNodes, remainingCount, showMore } = useWindowedNodes(nodes, treeRef, {
+    resetKey: `pages:${zoomRootId}:${activeDocId}`,
+    ensureNodeId: currentNodeId,
+  });
+  const depthOffset = useMemo(() => minDepth(nodes), [nodes]);
+  useLayoutEffect(() => reportOrder(folded ? [] : nodes), [folded, nodes, reportOrder]);
   useEffect(() => {
     if (!currentNodeId) return;
     treeRef.current?.querySelector(`[data-node-id="${CSS.escape(currentNodeId)}"]`)?.scrollIntoView({ block: "nearest" });
@@ -93,7 +97,7 @@ export const DocumentsPagesSection: React.FC<
           style={{ maxHeight: paneHeight }}
           className="pb-2 overflow-y-auto overflow-x-hidden"
         >
-          {nodes.map((node) => {
+          {renderedNodes.map((node) => {
             const isPage = isPageTargetNode(node);
             const isCurrent = isPage && node.targetPageId === activePageId && (node.targetDocId || activeDocId) === activeDocId;
             return (
@@ -112,6 +116,15 @@ export const DocumentsPagesSection: React.FC<
               />
             );
           })}
+          {remainingCount > 0 && (
+            <button
+              type="button"
+              onClick={showMore}
+              className="fig-row w-[calc(100%-16px)] text-[11px] text-black/60 hover:text-black/90 underline cursor-pointer"
+            >
+              나머지 {remainingCount}개 페이지 더 보기
+            </button>
+          )}
           {onAddNode && <AddNodeButton onClick={onAddNode} />}
         </div>
       )}

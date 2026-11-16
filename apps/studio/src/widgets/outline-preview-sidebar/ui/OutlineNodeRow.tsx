@@ -63,6 +63,45 @@ function nodeIcon(node: OutlinerNode, docSurface: DocumentSurfaceKind): React.Re
   if (node.zoomLevel === "document") {
     return <DocumentSurfaceIcon surface={docSurface} className={`${ICON} ${docSurface === "scroll" ? "text-emerald-500" : "text-[#0d99ff]"}`} />;
   }
+  if (node.elementKind) {
+    if (node.elementKind === "page") return null;
+    if (
+      node.elementKind === "structured-table" ||
+      node.elementKind === "table" ||
+      node.elementKind === "table-row" ||
+      node.elementKind === "table-cell"
+    ) {
+      return <Table className={ICON} />;
+    }
+    if (
+      node.elementKind === "section" ||
+      node.elementKind === "columns-grid" ||
+      node.elementKind === "grid-col" ||
+      node.elementKind === "composite-form-frame" ||
+      node.elementKind === "section-block"
+    ) {
+      return <LayoutGrid className={ICON} />;
+    }
+    if (
+      node.elementKind === "hero" ||
+      node.elementKind === "callout-box" ||
+      node.elementKind === "fillable-group" ||
+      node.elementKind === "cover-banner" ||
+      node.elementKind === "link-card"
+    ) {
+      return <Component className={ICON} />;
+    }
+    if (
+      node.elementKind === "text" ||
+      node.elementKind === "heading" ||
+      node.elementKind === "form-title" ||
+      node.elementKind === "slot" ||
+      node.elementKind === "summary-list"
+    ) {
+      return <Type className={ICON} />;
+    }
+    return <Hash className={ICON} />;
+  }
   const title = node.title.toLowerCase();
   if (node.zoomLevel === "page") {
     if (!node.targetBlockId) return null;

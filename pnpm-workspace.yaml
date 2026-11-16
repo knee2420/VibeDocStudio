@@ -2,4 +2,5 @@ packages:
   - "apps/*"
   - "packages/*"
   - "../VibePatchNote/packages/document-viewer"
+  - "../VibePatchNote/packages/outliner"
 

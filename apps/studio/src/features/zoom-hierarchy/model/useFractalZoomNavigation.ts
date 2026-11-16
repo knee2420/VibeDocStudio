@@ -12,6 +12,10 @@ import {
 import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
+import {
+  projectWorkingOutlineToOutlinerNodes,
+  useWorkingOutlineStore,
+} from "@/entities/working-outline";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { revealCanvasElement, scrollToCanvasPage } from "@/shared/lib";
 
@@ -30,14 +34,35 @@ const EMPTY_PROJECT: VProjectManifest = {
  * 아웃라인 투영은 아웃라이너 · 브레드크럼 · 캔버스가 함께 쓴다. 입력이 같으면 한 번만 계산하도록
  * 마지막 입력/결과를 모듈에 기억한다 (소비자마다 `useMemo` 를 두면 같은 트리를 세 번 만든다).
  */
-type ProjectionInputs = [VProjectManifest, VDocDocument[], string];
+type ProjectionInputs = [VProjectManifest, VDocDocument[], string, string, unknown];
 let lastInputs: ProjectionInputs | null = null;
 let lastProjection: FractalOutlineProjection | null = null;
 
-function projectOutline(...inputs: ProjectionInputs): FractalOutlineProjection {
+function projectOutline(
+  project: VProjectManifest,
+  docs: VDocDocument[],
+  zoomRootNodeId: string,
+  phase: string,
+  workingOutline: ReturnType<typeof useWorkingOutlineStore.getState>["outline"]
+): FractalOutlineProjection {
+  const inputs: ProjectionInputs = [project, docs, zoomRootNodeId, phase, workingOutline];
   if (lastProjection && lastInputs && inputs.every((v, i) => v === lastInputs![i])) return lastProjection;
   lastInputs = inputs;
-  lastProjection = shareStructure(lastProjection, buildProjectFractalTree(...inputs));
+  const useWorking =
+    phase === "storylining" &&
+    workingOutline &&
+    workingOutline.projectId === project.projectId;
+  const projectedProject = useWorking
+    ? {
+        ...project,
+        storylineNodes: projectWorkingOutlineToOutlinerNodes(workingOutline, project.title),
+      }
+    : project;
+  const projectedDocs = useWorking ? [] : docs;
+  lastProjection = shareStructure(
+    lastProjection,
+    buildProjectFractalTree(projectedProject, projectedDocs, zoomRootNodeId)
+  );
   return lastProjection;
 }
 
@@ -92,10 +117,13 @@ function shareStructure(prev: FractalOutlineProjection | null, next: FractalOutl
  * 전체 트리를 다시 만들고 캔버스까지 깨운다. `visibleNodes` 는 줌 범위만 반영한다.
  */
 export function getOutlineProjection(): FractalOutlineProjection {
+  const session = useWorkspaceSessionStore.getState();
   return projectOutline(
     selectActiveProject(useProjectStore.getState()) ?? EMPTY_PROJECT,
     useStudioDocumentStore.getState().docs,
-    useWorkspaceSessionStore.getState().zoomRootNodeId
+    session.zoomRootNodeId,
+    session.currentPhase,
+    useWorkingOutlineStore.getState().outline
   );
 }
 
@@ -104,6 +132,7 @@ function subscribeOutlineInputs(onChange: () => void): () => void {
     useProjectStore.subscribe(onChange),
     useStudioDocumentStore.subscribe(onChange),
     useWorkspaceSessionStore.subscribe(onChange),
+    useWorkingOutlineStore.subscribe(onChange),
   ];
   return () => unsubscribers.forEach((u) => u());
 }
@@ -113,12 +142,13 @@ function subscribeOutlineInputs(onChange: () => void): () => void {
  * 예전에는 페이지 최상위가 `docs` 를 통째로 구독해, 슬롯 한 칸이 바뀌어도 앱 전체가 두 번씩 다시 그려졌다.
  */
 export function useOutlineSelector<T>(select: (projection: FractalOutlineProjection) => T): T {
-  return useSyncExternalStore(subscribeOutlineInputs, () => select(getOutlineProjection()));
+  const getSnapshot = () => select(getOutlineProjection());
+  return useSyncExternalStore(subscribeOutlineInputs, getSnapshot, getSnapshot);
 }
 
 /** 현재 줌 상태의 아웃라인 투영 (읽기 전용). 투영 내용이 실제로 바뀔 때만 다시 그린다. */
 export function useOutlineProjection(): FractalOutlineProjection {
-  return useSyncExternalStore(subscribeOutlineInputs, getOutlineProjection);
+  return useSyncExternalStore(subscribeOutlineInputs, getOutlineProjection, getOutlineProjection);
 }
 
 /** 노드가 가리키는 문서 · 페이지 · 블록 · 슬롯을 캔버스에서 고르고 보여준다. */

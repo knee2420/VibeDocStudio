@@ -197,5 +197,14 @@
     "panel"
    ]
   }
+ },
+ {
+  "name": "outline.getWorkingTree",
+  "description": "Phase 1 WorkingOutline 트리와 각 노드의 ElementKind 역할(document/page/structured-table/text 등) 및 sourceRef 를 읽는다.",
+  "risk": "read",
+  "inputSchema": {
+   "type": "object",
+   "properties": {}
+  }
  }
 ]

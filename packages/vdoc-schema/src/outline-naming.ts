@@ -1,3 +1,4 @@
+import { htmlToSummary } from "./html-text";
 import type { TableCellSlotDef, VDocSlot } from "./types";
 
 /**
@@ -25,12 +26,7 @@ const LABEL_NAMED = /(라벨|헤더|header|label)(\s*\d+)?\s*$|^헤더\s*:/i;
 /** import 엔진이 붙인 블록 이름 (`p1_tbl_1`). */
 const MACHINE_TITLE = /^[a-z]+\d*_[a-z]+_\d+$/i;
 
-export const plainText = (html: string | undefined): string =>
-  (html || "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+export const plainText = (html: string | undefined): string => htmlToSummary(html ?? "");
 
 const compact = (s: string): string => s.replace(/\s+/g, "");
 

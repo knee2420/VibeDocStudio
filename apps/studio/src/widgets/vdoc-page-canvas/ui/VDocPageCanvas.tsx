@@ -23,7 +23,7 @@ import { useStableCallback } from "@/shared/lib";
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
 import { AiStagingDrawer } from "./AiStagingDrawer";
 import { SlotFrame } from "./SlotFrame";
-import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
+import { Phase1WorkflowyPane } from "./Phase1WorkflowyPane";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
 import { ReferenceSplitViewport } from "./ReferenceSplitViewport";
 import { SlotRangeAiBar } from "./SlotRangeAiBar";
@@ -280,8 +280,8 @@ export const VDocPageCanvas: React.FC = () => {
       <div className="flex-1 flex overflow-hidden">
         <ReferenceSplitViewport />
         {currentPhase === "storylining" ? (
-          <main className="flex-1 overflow-y-auto">
-            <Phase1StorylineWorkbench />
+          <main className="flex-1 flex flex-col overflow-hidden">
+            <Phase1WorkflowyPane />
           </main>
         ) : currentPhase === "templating" ? (
           <main className="flex-1 overflow-y-auto">
@@ -292,7 +292,7 @@ export const VDocPageCanvas: React.FC = () => {
         )}
       </div>
       {currentPhase === "drafting" && <SlotRangeAiBar />}
-      <FigmaFloatingToolbar />
+      {currentPhase === "drafting" && <FigmaFloatingToolbar />}
       <AiStagingDrawer />
     </div>
   );

@@ -49,6 +49,8 @@ export interface WorkspaceSessionState {
   toggleNodeCollapse: (nodeId: string) => void;
   /** 주어진 노드들만 한꺼번에 접거나 편다 (다른 구역의 접힘 상태는 건드리지 않는다). */
   setNodesCollapsed: (nodeIds: readonly string[], collapsed: boolean) => void;
+  /** 세션 저장소에 사용자 지정 접힘 상태가 없을 때만 비활성 문서 노드를 기본 접힘으로 시드한다. */
+  seedDefaultCollapsed: (nodeIds: readonly string[]) => void;
   toggleNodeHidden: (nodeId: string) => void;
   setHoveredOutlineTargetId: (id: string | null) => void;
   setHighlightedEntityId: (id: string | null) => void;
@@ -66,6 +68,15 @@ export function parseReferenceIds(raw: string | null | undefined): string[] {
 
 const SESSION_STORAGE_KEY_OUTLINER = "vdoc:outliner_collapsed_nodes";
 const SESSION_STORAGE_KEY_HIDDEN = "vdoc:outliner_hidden_nodes";
+
+const hasStoredOutlinerCollapsedPreference = (key: string = SESSION_STORAGE_KEY_OUTLINER): boolean => {
+  if (typeof window === "undefined" || !window.sessionStorage) return false;
+  try {
+    return window.sessionStorage.getItem(key) !== null;
+  } catch {
+    return false;
+  }
+};
 
 const loadOutlinerCollapsedFromSession = (key: string = SESSION_STORAGE_KEY_OUTLINER): string[] => {
   if (typeof window === "undefined" || !window.sessionStorage) return [];
@@ -143,6 +154,20 @@ export const useWorkspaceSessionStore = create<WorkspaceSessionState>((set) => (
       const next = [...ids];
       saveOutlinerCollapsedToSession(next);
       return { collapsedNodeIds: next };
+    }),
+
+  seedDefaultCollapsed: (nodeIds) =>
+    set((state) => {
+      if (nodeIds.length === 0 || hasStoredOutlinerCollapsedPreference()) return state;
+      const ids = new Set(state.collapsedNodeIds);
+      let changed = false;
+      for (const id of nodeIds) {
+        if (!ids.has(id)) {
+          ids.add(id);
+          changed = true;
+        }
+      }
+      return changed ? { collapsedNodeIds: [...ids] } : state;
     }),
 
   // 호버는 초당 수십 번 들어온다. 값이 같으면 구독자(아웃라인 줄 · 캔버스)를 깨우지 않는다.

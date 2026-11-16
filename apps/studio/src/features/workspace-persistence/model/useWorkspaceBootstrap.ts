@@ -66,7 +66,14 @@ export function useWorkspaceBootstrap(): {
         .hydrate(projectState.projects.flatMap((p) => p.docIds), params.get("doc"));
       if (cancelled) return;
 
-      const activeDoc = selectActiveDocument(useStudioDocumentStore.getState());
+      const docState = useStudioDocumentStore.getState();
+      const activeDoc = selectActiveDocument(docState);
+      if (docState.docs.length > 1) {
+        const inactiveCollapsed = docState.docs
+          .filter((d) => d.docId !== activeDoc?.docId)
+          .flatMap((d) => [`auto-doc-${d.docId}`, `wo-doc-${d.docId}`]);
+        session.seedDefaultCollapsed(inactiveCollapsed);
+      }
       useSlotSelectionStore.getState().setSelectedSlotId(findFirstEditableSlotId(activeDoc));
       setStatus("ready");
     })();

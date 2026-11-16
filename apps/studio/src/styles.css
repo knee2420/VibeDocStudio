@@ -1,9 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap");
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
+@import "@vibe/outliner/styles.css";
 @source "../../../packages/ai-composer/src";
 @source "../../../packages/ai-inline/src";
 @source "../../../packages/ai-react/src";
+@source "../../../../VibePatchNote/packages/outliner/src";
 
 @font-face {
   font-family: "GulimChe";
@@ -45,6 +47,21 @@
   font-display: block;
 }
 @source "../../../packages";
+
+/* @vibe/outliner 테마 변수 매핑 (Obsidian 호환 토큰 → VibeDocStudio 라이트 스튜디오 팔레트) */
+.vdoc-outliner-theme {
+  --text-normal: #0f172a;
+  --text-muted: #475569;
+  --text-faint: #94a3b8;
+  --text-accent: #4f46e5;
+  --background-primary: #ffffff;
+  --background-secondary: #f8fafc;
+  --background-modifier-hover: rgba(15, 23, 42, 0.045);
+  --background-modifier-border: #e2e8f0;
+  --background-modifier-border-hover: #cbd5e1;
+  --interactive-accent: #4f46e5;
+  --outline-line-gap: 4px;
+}
 
 /* Tiptap Slot Rich-Text Typography inside VibeDocStudio Slots */
 .vdoc-tiptap-slot h1 {
