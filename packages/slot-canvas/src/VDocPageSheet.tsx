@@ -565,9 +565,12 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         y: Math.round((boxes[i].bottom + boxes[i + 1].top) / 2),
       });
     }
+    // 마지막 틈(페이지 끝)은 실제로 그려진 시트 높이로 막는다. 내용이 A4 높이를 넘으면 시트가 늘어나는데,
+    // 예전처럼 정해진 페이지 높이로 막으면 마지막 틈이 넘친 블록 한가운데(글줄 사이)에 그어졌다.
+    const sheetHeight = Math.max(currentDims.height, sheetRect.height / scale);
     gaps.push({
       index: currentPage.blocks.length,
-      y: Math.min(currentDims.height - 16, Math.round(boxes[boxes.length - 1].bottom + gapPx / 2)),
+      y: Math.min(sheetHeight - 16, Math.round(boxes[boxes.length - 1].bottom + gapPx / 2)),
     });
     return gaps;
   }, []);
