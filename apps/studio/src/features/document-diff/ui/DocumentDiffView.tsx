@@ -19,7 +19,13 @@ const SHOW_LABEL: Record<ReviewShow, string> = { both: "변경 표시", before: 
 export const DocumentDiffView: React.FC<{
   activeDiff: ActiveDiffTarget;
   revert?: (docId: string, slots: { slotId: string; before: string }[], label: string) => boolean;
-}> = ({ activeDiff, revert }) => {
+  /** 버전 비교 중일 때: 문서 전체를 그 버전으로 */
+  restoreVersion?: () => Promise<void>;
+  /** 버전 비교 중일 때: 쪽 하나를 그 버전 모습으로 */
+  restorePage?: (pageId: string) => void;
+}> = ({ activeDiff, revert, restoreVersion, restorePage }) => {
+  const [confirmRestore, setConfirmRestore] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [show, setShow] = useState<ReviewShow>(() => SHOWS[readStoredNumber(SHOW_KEY, 0)] ?? "both");
   const [pages, setPages] = useState(() => readStoredNumber(PAGES_KEY, 0) === 1);
   const chooseShow = (v: ReviewShow) => {
@@ -43,11 +49,50 @@ export const DocumentDiffView: React.FC<{
             ))}
           </div>
         )}
+        {activeDiff.version && restoreVersion && (
+          <span className="ml-auto flex items-center gap-1.5">
+            {confirmRestore ? (
+              <>
+                <span className="text-[12px] text-black/65">문서 전체를 이 버전으로? 지금 상태는 자동 보관됩니다.</span>
+                <button type="button" className="fig-btn" onClick={() => setConfirmRestore(false)}>
+                  취소
+                </button>
+                <button
+                  type="button"
+                  disabled={restoring}
+                  className="fig-btn fig-btn-primary"
+                  data-testid="diff-restore-version-confirm"
+                  onClick={async () => {
+                    setRestoring(true);
+                    try {
+                      await restoreVersion();
+                    } finally {
+                      setRestoring(false);
+                      setConfirmRestore(false);
+                    }
+                  }}
+                >
+                  {restoring ? "되돌리는 중…" : "되돌리기"}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="fig-btn fig-btn-primary"
+                onClick={() => setConfirmRestore(true)}
+                data-testid="diff-restore-version"
+                title="문서 전체(쪽 구성 · 글)를 이 버전 상태로 되돌립니다"
+              >
+                '{activeDiff.version.name}'(으)로 전체 되돌리기
+              </button>
+            )}
+          </span>
+        )}
         <button
           type="button"
           onClick={togglePages}
           aria-pressed={pages}
-          className={`ml-auto h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] text-[12px] ${
+          className={`${activeDiff.version && restoreVersion ? "" : "ml-auto"} h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] text-[12px] ${
             pages ? "bg-[var(--fig-selected)] text-[var(--fig-brand)]" : "text-black/65 hover:bg-black/5"
           }`}
           title="실제 쪽 모양을 좌우로 놓고 비교"
@@ -57,7 +102,7 @@ export const DocumentDiffView: React.FC<{
           실제 페이지로 비교
         </button>
       </div>
-      {pages ? <SideBySideDiffCanvas activeDiff={activeDiff} /> : <ChangeReviewView activeDiff={activeDiff} show={show} revert={revert} />}
+      {pages ? <SideBySideDiffCanvas activeDiff={activeDiff} /> : <ChangeReviewView activeDiff={activeDiff} show={show} revert={revert} restorePage={restorePage} />}
     </div>
   );
 };

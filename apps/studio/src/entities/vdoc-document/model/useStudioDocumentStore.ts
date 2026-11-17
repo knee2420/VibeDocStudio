@@ -78,7 +78,10 @@ export interface StudioDocumentState {
   /** 데모용 Git Commit & Push: 현재 문서의 모든 변경점(isEdited, 신규 페이지)을 기준점(Base)으로 확정해 비운다. */
   commitDocChanges: (docId: string) => void;
   /** 데모용 Git Commit & Push: 작업 공간의 모든 문서/페이지 변경점을 기준점(Base)으로 확정해 비운다. */
-  commitAllDocChanges: () => void;
+  /** "바뀐 곳" 기준점을 지금으로 옮긴다. `docId` 를 주면 그 문서만 (버전 저장), 없으면 열린 문서 전부. */
+  commitAllDocChanges: (docId?: string) => void;
+  /** 기다리는 자동 저장을 지금 보내고 끝날 때까지 기다린다 (버전 보관 · 되돌리기 전에 서버를 최신으로). */
+  flushSave: (docId: string) => Promise<void>;
   dismissError: () => void;
 }
 
@@ -468,8 +471,8 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
       );
     },
 
-    commitAllDocChanges: () => {
-      const allDocs = get().docs;
+    commitAllDocChanges: (docId) => {
+      const allDocs = docId ? get().docs.filter((d) => d.docId === docId) : get().docs;
       const nextCommitted = new Set(get().committedPageIds);
       for (const d of allDocs) {
         for (const page of d.pages) {
@@ -498,6 +501,15 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
           { history: false, label: "Commit & Push (전체 기준점 확정)" },
         );
       }
+    },
+
+    flushSave: async (docId) => {
+      const timer = autosaveTimers.get(docId);
+      if (timer) {
+        window.clearTimeout(timer);
+        await saveNow(docId);
+      }
+      await inflightSaves.get(docId);
     },
 
     dismissError: () => set({ lastError: null }),

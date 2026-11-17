@@ -59,3 +59,8 @@ test("changeSnippet: 바뀐 곳 앞뒤만 남긴다", () => {
     { kind: "add", text: "200만원" },
   ]);
 });
+
+test("changeSnippet: 문단을 통째로 바꿔 쓰면 지운 글 → 넣은 글", () => {
+  const snip = changeSnippet(diffParagraphs("<p>상금 [확인 필요] 및 상장 수여</p>", "<p>10,000,000원 (일 천만원)</p>"));
+  assert.deepEqual(snip.map((s) => s.kind), ["del", "same", "add"]);
+});

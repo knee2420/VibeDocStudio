@@ -30,8 +30,8 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
       rafId = requestAnimationFrame(() => {
         const w = el.clientWidth;
         if (w > 100) {
-          // Reserve 48px for p-4 (32px) + vertical scrollbar allowance (16px)
-          const next = Math.min(1, Math.max(0.42, (w - 48) / 794));
+          // p-4 좌우 여백 32px (스크롤 막대는 숨기고 변경 위치 막대가 대신한다)
+          const next = Math.min(1, Math.max(0.42, (w - 32) / 794));
           const rounded = Math.round(next * 200) / 200;
           setSheetZoom((prev) => (Math.abs(prev - rounded) >= 0.005 ? rounded : prev));
         }
@@ -72,14 +72,16 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
     for (const sid of activeDiff.changedSlotIds) {
       const st = paraStat(diffParagraphs(activeDiff.diffKind === "added" ? "" : (activeDiff.beforeSlots[sid] ?? ""), activeDiff.afterSlots[sid] ?? ""));
       const kind: RulerKind = st.added && !st.removed ? "add" : st.removed && !st.added ? "del" : "mod";
-      const name = activeDiff.slotLabels?.[sid] ?? doc?.slots[sid]?.label ?? "칸";
+      const name = activeDiff.slotLabels?.[sid] ?? doc?.slots[sid]?.label ?? activeDiff.beforeDoc?.slots[sid]?.label ?? "칸";
       map.set(sid, { kind, label: `${name}  +${st.added} −${st.removed}` });
     }
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDiff]);
 
+  const beforeDoc = activeDiff.beforeDoc;
   const beforeSlotsMap = useMemo(() => {
+    if (beforeDoc) return beforeDoc.slots;
     if (!doc) return {};
     const next: Record<string, VDocSlot> = { ...doc.slots };
     for (const slotId of activeDiff.changedSlotIds) {
@@ -89,7 +91,7 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
       }
     }
     return next;
-  }, [doc, activeDiff.changedSlotIds, activeDiff.beforeSlots]);
+  }, [doc, beforeDoc, activeDiff.changedSlotIds, activeDiff.beforeSlots]);
 
   const afterSlotsMap = useMemo(() => {
     if (!doc) return {};
@@ -158,7 +160,16 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
   const pagesToRender = activeDiff.pageId
     ? doc.pages.filter((p) => p.pageId === activeDiff.pageId)
     : doc.pages;
-  const effectivePages = pagesToRender.length > 0 ? pagesToRender : doc.pages;
+  // 버전 비교: 왼쪽은 그때 문서의 쪽 구성 그대로, 오른쪽은 지금 (한쪽에만 있는 쪽은 빈 자리로 표시).
+  const effectivePages = beforeDoc ? pagesToRender : pagesToRender.length > 0 ? pagesToRender : doc.pages;
+  const leftPages = beforeDoc
+    ? activeDiff.pageId
+      ? beforeDoc.pages.filter((p) => p.pageId === activeDiff.pageId)
+      : beforeDoc.pages
+    : effectivePages;
+  const leftEmpty = isAddedPage || (Boolean(beforeDoc) && leftPages.length === 0);
+  const rightEmpty = Boolean(beforeDoc) && effectivePages.length === 0;
+  const leftTitle = activeDiff.version ? `'${activeDiff.version.name}' 버전` : "Base version (이전 서식)";
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#eef0f3] overflow-hidden select-text">
@@ -167,7 +178,7 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
         {/* Left: Base Version (Before) */}
         <div ref={leftPaneRef} className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#e9ecef]">
           <div className="px-4 py-1.5 bg-rose-50/90 border-b border-rose-200/80 flex items-center justify-between shrink-0 select-none">
-            <span className="text-[11px] font-bold text-rose-900">Base version (이전 서식)</span>
+            <span className="text-[11px] font-bold text-rose-900 truncate">{leftTitle}</span>
             <span className="px-1.5 py-0.2 rounded bg-rose-200/80 text-rose-800 text-[10px] font-mono font-bold">
               BEFORE
             </span>
@@ -176,10 +187,10 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
           <div
             ref={leftScrollRef}
             onScroll={() => handleScroll("left")}
-            className="flex-1 overflow-y-auto overflow-x-auto p-4 [scrollbar-gutter:stable]"
+            className="flex-1 overflow-y-auto overflow-x-auto p-4 fig-scroll-hidden"
           >
             <div style={{ zoom: sheetZoom }} className="w-[794px] mx-auto space-y-6">
-              {isAddedPage ? (
+              {leftEmpty ? (
                 <div className="w-[794px] min-h-[520px] rounded-lg border-2 border-dashed border-slate-300 bg-slate-100/80 flex flex-col items-center justify-center gap-2.5 text-slate-500 p-12 select-none">
                   <span className="px-2.5 py-1 rounded-full bg-slate-200/90 text-slate-600 text-xs font-mono font-bold">
                     NO BASE VERSION
@@ -192,15 +203,15 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
                   </p>
                 </div>
               ) : (
-                effectivePages.map((page) => (
+                leftPages.map((page) => (
                   <div key={`before-${page.pageId}`} data-page-id={page.pageId}>
                     <MemoVDocPageSheet
                       seamless={seamless}
-                      docTitle={doc.title}
-                      totalPages={doc.pages.length}
+                      docTitle={beforeDoc?.title ?? doc.title}
+                      totalPages={(beforeDoc ?? doc).pages.length}
                       page={page}
                       slots={beforeSlotsMap}
-                      backdata={doc.backdata}
+                      backdata={beforeDoc?.backdata ?? doc.backdata}
                       mode="Viewing"
                       selectedBlockId={null}
                       selectedSlotId={null}
@@ -233,9 +244,15 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
           <div
             ref={rightScrollRef}
             onScroll={() => handleScroll("right")}
-            className="flex-1 overflow-y-auto overflow-x-auto p-4 [scrollbar-gutter:stable]"
+            className="flex-1 overflow-y-auto overflow-x-auto p-4 fig-scroll-hidden"
           >
             <div style={{ zoom: sheetZoom }} className="w-[794px] mx-auto space-y-6">
+              {rightEmpty && (
+                <div className="w-[794px] min-h-[520px] rounded-lg border-2 border-dashed border-rose-200 bg-rose-50/60 flex flex-col items-center justify-center gap-2 text-rose-700 p-12 select-none">
+                  <p className="text-sm font-semibold">지금 문서에는 없는 쪽입니다</p>
+                  <p className="text-xs text-rose-500">이 버전 뒤에 지운 쪽 — 왼쪽이 그때 모습입니다.</p>
+                </div>
+              )}
               {effectivePages.map((page) => (
                 <div
                   key={`after-${page.pageId}`}

@@ -7,11 +7,13 @@ import {
   groupChangesByPage,
   pageTitle,
   selectActiveDocument,
+  slotBlockIndex,
   slotLocations,
   summarizeChanges,
   formatPageNos,
   useStudioDocumentStore,
   type ChangeItem,
+  type SlotBlock,
 } from "@/entities/vdoc-document";
 import { revealCanvasElement, sumStats, type ParaDiff } from "@/shared/lib";
 import { ADD_CLASS, CharStatText, DEL_CLASS, RedlineSegments } from "@/shared/ui";
@@ -32,6 +34,18 @@ function ago(at: string): string {
   if (s < 3600) return `${Math.round(s / 60)}분 전`;
   if (s < 86400) return `${Math.round(s / 3600)}시간 전`;
   return new Date(t).toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
+}
+
+/** 같은 블록의 칸들이 이어지면 한 묶음으로 (표 하나 = 묶음 하나). */
+function blockRuns(items: ChangeItem[], index: Map<string, SlotBlock>): { block: SlotBlock | undefined; items: ChangeItem[] }[] {
+  const runs: { block: SlotBlock | undefined; items: ChangeItem[] }[] = [];
+  for (const item of items) {
+    const block = index.get(item.slotId);
+    const last = runs[runs.length - 1];
+    if (last && block && last.block?.blockId === block.blockId) last.items.push(item);
+    else runs.push({ block, items: [item] });
+  }
+  return runs;
 }
 
 /** 바뀐 문단 앞뒤 한 문단만 남기고 나머지 같은 문단은 "같은 문단 N개"로 접는다. */
@@ -154,11 +168,13 @@ const ChangeCard: React.FC<{
  * 변경 검토 — 문서를 읽듯이 바뀐 곳만 쪽 순서로: 지운 글은 빨강 취소선, 넣은 글은 초록 밑줄 (워드 · 구글 문서 방식).
  * 위에서 이전/다음 변경으로 넘기고, 곳마다 되돌리기 · 문서에서 보기. 바뀌지 않은 문단은 접는다.
  */
-export const ChangeReviewView: React.FC<{ activeDiff: ActiveDiffTarget; show: ReviewShow; revert?: RevertFn }> = ({
-  activeDiff,
-  show,
-  revert,
-}) => {
+export const ChangeReviewView: React.FC<{
+  activeDiff: ActiveDiffTarget;
+  show: ReviewShow;
+  revert?: RevertFn;
+  /** 버전과 비교 중일 때: 쪽 하나를 그 버전 모습으로 (지운 쪽이면 되살리기) */
+  restorePage?: (pageId: string) => void;
+}> = ({ activeDiff, show, revert, restorePage }) => {
   const doc = useStudioDocumentStore(selectActiveDocument);
   const pages = doc?.pages;
   const closeDiff = useActiveDiffStore((s) => s.closeDiff);
@@ -171,7 +187,22 @@ export const ChangeReviewView: React.FC<{ activeDiff: ActiveDiffTarget; show: Re
   // 쪽 · 제목 위치는 문서 구조가 바뀔 때만 다시 (글자 입력마다 다시 세지 않게).
   const slotsRef = useRef(doc?.slots);
   slotsRef.current = doc?.slots;
-  const where = useMemo(() => slotLocations(pages ?? [], slotsRef.current ?? {}), [pages]);
+  const beforeDoc = activeDiff.beforeDoc;
+  // 지금 문서에 없는 칸(그 버전 뒤 지운 쪽)은 그 버전 문서에서 위치를 찾는다.
+  // 지금 쪽 위에 놓인 칸 — 이 칸만 글을 되돌릴 수 있다 (지운 블록의 칸은 쪽 되돌리기로).
+  const liveWhere = useMemo(() => slotLocations(pages ?? [], slotsRef.current ?? {}), [pages]);
+  const where = useMemo(() => {
+    if (!beforeDoc) return liveWhere;
+    const merged = new Map(liveWhere);
+    for (const [id, loc] of slotLocations(beforeDoc.pages, beforeDoc.slots)) if (!merged.has(id)) merged.set(id, loc);
+    return merged;
+  }, [liveWhere, beforeDoc]);
+  const livePageIds = useMemo(() => new Set((pages ?? []).map((p) => p.pageId)), [pages]);
+  // 칸 → 블록 (지금 문서 먼저, 지운 블록은 그 버전 문서에서).
+  const blockIndex = useMemo(
+    () => slotBlockIndex(pages ? { pages, slots: slotsRef.current ?? {} } : null, beforeDoc),
+    [pages, beforeDoc],
+  );
   const isAdded = activeDiff.diffKind === "added";
   const items = useMemo(
     () =>
@@ -186,6 +217,8 @@ export const ChangeReviewView: React.FC<{ activeDiff: ActiveDiffTarget; show: Re
     [where, activeDiff, isAdded],
   );
   const groups = useMemo(() => groupChangesByPage(items), [items]);
+  // 블록 단위 (표의 칸 여러 개 = 블록 하나).
+  const blockTotal = useMemo(() => new Set(items.map((it) => blockIndex.get(it.slotId)?.blockId ?? it.slotId)).size, [items, blockIndex]);
   const summary = useMemo(() => summarizeChanges(items), [items]);
   const canRevert = Boolean(revert && activeDiff.revertible && doc);
   // 되돌려 목록이 줄어도 범위 안에.
@@ -257,7 +290,7 @@ export const ChangeReviewView: React.FC<{ activeDiff: ActiveDiffTarget; show: Re
   return (
     <div className="flex-1 min-h-0 flex bg-[#f3f3f3]" data-testid="change-review-view">
       <div className="flex-1 min-w-0 relative">
-      <div ref={scrollRef} className="absolute inset-0 overflow-y-auto">
+      <div ref={scrollRef} className="absolute inset-0 overflow-y-auto fig-scroll-hidden">
         <div className="max-w-[780px] mx-auto px-6 pb-16">
           {/* 요약 */}
           <section className="pt-6 pb-4">
@@ -279,7 +312,7 @@ export const ChangeReviewView: React.FC<{ activeDiff: ActiveDiffTarget; show: Re
             {meta?.note && <p className="mt-2 text-[13px] text-black/65 border-l-2 border-black/15 pl-3 whitespace-pre-wrap">{meta.note}</p>}
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-black/70" data-testid="review-summary">
               <span>
-                <b>{summary.pageNos.length}</b>개 쪽에서 <b>{summary.places}</b>곳
+                <b>{summary.pageNos.length}</b>개 쪽 · 블록 <b>{blockTotal}</b>개
               </span>
               {summary.pageNos.length > 0 && <span className="text-black/45">{formatPageNos(summary.pageNos)}</span>}
               <CharStatText stat={summary.stat} className="!text-[12.5px]" />
@@ -338,27 +371,53 @@ export const ChangeReviewView: React.FC<{ activeDiff: ActiveDiffTarget; show: Re
             <section key={g.key} className="mt-4">
               <div className="h-8 flex items-center gap-2 text-[12px]">
                 <span className="font-semibold text-black/70">{g.location ? pageTitle(g.location) : "지금 문서에 없는 칸"}</span>
+                {g.location && !livePageIds.has(g.location.pageId) && <span className="text-[#cf222e]">지금은 지운 쪽</span>}
                 <span className="text-black/35">{g.items.length}곳</span>
                 <CharStatText stat={sumStats(g.items.map((i) => i.stat))} className="ml-auto" />
+                {restorePage && g.location && (
+                  <button
+                    type="button"
+                    onClick={() => restorePage(g.location!.pageId)}
+                    className="h-6 px-2 rounded-[5px] bg-white border border-black/10 text-[11.5px] text-black/70 hover:bg-black/5 inline-flex items-center gap-1"
+                    title={livePageIds.has(g.location.pageId) ? "이 쪽 전체(구성 + 글)를 그 버전 모습으로" : "지운 쪽을 그 버전에서 되살리기"}
+                    data-testid="review-restore-page"
+                  >
+                    <RotateCcw className="w-3 h-3" /> {livePageIds.has(g.location.pageId) ? "이 쪽 되돌리기" : "이 쪽 되살리기"}
+                  </button>
+                )}
               </div>
-              <div className="space-y-2">
-                {g.items.map((item) => {
-                  index += 1;
-                  const i = index;
-                  return (
-                    <ChangeCard
-                      key={item.slotId}
-                      item={item}
-                      index={i}
-                      focused={focus === i}
-                      show={show}
-                      canRevert={canRevert && Boolean(item.location)}
-                      onFocus={() => setFocus(i)}
-                      onRevert={() => revertItems([item], `'${item.label}' 되돌리기`)}
-                      onReveal={() => reveal(item)}
-                    />
-                  );
-                })}
+              <div className="space-y-3">
+                {blockRuns(g.items, blockIndex).map((run) => (
+                  <div key={`${run.block?.blockId ?? run.items[0].slotId}`} data-testid="review-block">
+                    {/* 표 · 다단처럼 칸이 여럿인 블록은 블록 하나 아래 바뀐 칸들을 묶는다 */}
+                    {run.block?.multiSlot && (
+                      <div className="h-7 flex items-center gap-1.5 text-[12px] min-w-0">
+                        <span className="text-black/45 shrink-0">{run.block.kindLabel}</span>
+                        <span className="font-medium text-black/80 truncate">{run.block.name}</span>
+                        <span className="text-black/35 shrink-0">칸 {run.items.length}개 바뀜</span>
+                      </div>
+                    )}
+                    <div className={run.block?.multiSlot ? "pl-3 border-l-2 border-black/10 space-y-2" : "space-y-2"}>
+                      {run.items.map((item) => {
+                        index += 1;
+                        const i = index;
+                        return (
+                          <ChangeCard
+                            key={item.slotId}
+                            item={item}
+                            index={i}
+                            focused={focus === i}
+                            show={show}
+                            canRevert={canRevert && liveWhere.has(item.slotId)}
+                            onFocus={() => setFocus(i)}
+                            onRevert={() => revertItems([item], `'${item.label}' 되돌리기`)}
+                            onReveal={() => reveal(item)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
           ))}

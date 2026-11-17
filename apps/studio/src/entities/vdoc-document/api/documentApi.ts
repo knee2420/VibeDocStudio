@@ -39,6 +39,25 @@ export interface RevisionEntry {
   variables: { key: string; before?: string | null; after?: string | null; author: string }[];
 }
 
+/** 문서 버전 — 그 시점 문서 전체가 서버에 보관돼 있어 통째로 되돌릴 수 있다. */
+export interface DocumentVersion {
+  id: string;
+  /** named: 사람이 이름 붙인 버전 · auto: 자동 보관 지점 (쉬었다 다시 고치기 직전 · 되돌리기 직전) */
+  kind: "named" | "auto";
+  name: string;
+  note: string;
+  /** 자동 보관 이유 ("편집 시작 전" · "되돌리기 전") */
+  reason: string;
+  /** 이 버전에 담긴 서버 저장 번호 */
+  rev: number;
+  at: string;
+  pageCount: number;
+  /** 블록 수 (예전 버전에는 없다) */
+  blockCount?: number;
+  /** 글자 수 (공백 제외) */
+  chars: number;
+}
+
 export interface DocumentSummary {
   docId: string;
   title: string;
@@ -96,4 +115,22 @@ export const documentApi = {
     if (opts.limit) q.set("limit", String(opts.limit));
     return (await httpClient.get<{ docId: string; revisions: RevisionEntry[] }>(`${path(docId)}/revisions?${q}`)).revisions;
   },
+
+  /** 버전 목록 (최신이 앞). */
+  versions: async (docId: string) =>
+    (await httpClient.get<{ docId: string; versions: DocumentVersion[] }>(`${path(docId)}/versions`)).versions,
+
+  /** 지금 서버에 저장된 문서 전체를 버전으로 보관한다 (먼저 저장을 끝내고 부른다). */
+  createVersion: async (docId: string, input: { name?: string; note?: string; kind?: "named" | "auto"; reason?: string }) =>
+    httpClient.post<DocumentVersion>(`${path(docId)}/versions`, input),
+
+  /** 버전 안의 문서 전체. */
+  versionDocument: async (docId: string, versionId: string) =>
+    (await httpClient.get<{ docId: string; version: DocumentVersion; document: VDocDocument }>(`${path(docId)}/versions/${encodeURIComponent(versionId)}`)).document,
+
+  updateVersion: async (docId: string, versionId: string, patch: { name?: string; note?: string }) =>
+    httpClient.patch<DocumentVersion>(`${path(docId)}/versions/${encodeURIComponent(versionId)}`, patch),
+
+  removeVersion: async (docId: string, versionId: string) =>
+    httpClient.delete<void>(`${path(docId)}/versions/${encodeURIComponent(versionId)}`),
 };

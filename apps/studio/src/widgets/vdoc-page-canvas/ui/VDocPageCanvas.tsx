@@ -19,8 +19,8 @@ import { pageMutations } from "@/features/mutate-document-pages";
 import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes";
 import { getOutlineProjection, outlineCommands, useOutlineSelector, ZoomFocusStyle } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
-import { DocumentDiffView, useActiveDiffStore } from "@/features/document-diff";
-import { restoreSlots } from "@/features/document-revisions";
+import { DocumentDiffView, useActiveDiffStore, type ActiveDiffTarget } from "@/features/document-diff";
+import { restorePageFromVersion, restoreSlots, restoreVersion } from "@/features/document-revisions";
 
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
 import { AiStagingDrawer } from "./AiStagingDrawer";
@@ -274,6 +274,34 @@ const DraftingCanvas: React.FC = () => {
 };
 
 /** 중앙 작업 영역: 단계별 작업대 + 왼쪽 참조 작업창 + 하단 AI 변경안 서랍 + Side-by-Side Diff 캔버스. */
+/** 변경 비교 화면 + 버전 비교일 때 "전체 · 쪽 되돌리기" 연결 (기능 둘을 이 위젯에서 잇는다). */
+const VersionAwareDiffView: React.FC<{ activeDiff: ActiveDiffTarget }> = ({ activeDiff }) => {
+  const docId = useStudioDocumentStore((s) => s.activeDocId);
+  const version = activeDiff.version;
+  const beforeDoc = activeDiff.beforeDoc;
+  return (
+    <DocumentDiffView
+      activeDiff={activeDiff}
+      revert={restoreSlots}
+      restoreVersion={
+        version && docId
+          ? async () => {
+              await restoreVersion(docId, version);
+              useActiveDiffStore.getState().closeDiff();
+            }
+          : undefined
+      }
+      restorePage={
+        version && beforeDoc && docId
+          ? (pageId) => {
+              if (restorePageFromVersion(docId, beforeDoc, pageId, version.name)) useActiveDiffStore.getState().closeDiff();
+            }
+          : undefined
+      }
+    />
+  );
+};
+
 export const VDocPageCanvas: React.FC = () => {
   const hasDocument = useStudioDocumentStore((s) => Boolean(selectActiveDocument(s)));
   const activeTabKey = useStudioDocumentStore((s) => s.activeTabKey);
@@ -291,7 +319,7 @@ export const VDocPageCanvas: React.FC = () => {
       <div className="flex-1 flex overflow-hidden">
         <ReferenceSplitViewport />
         {activeDiff ? (
-          <DocumentDiffView activeDiff={activeDiff} revert={restoreSlots} />
+          <VersionAwareDiffView activeDiff={activeDiff} />
         ) : isNewTab ? (
           <NewTabPagePicker />
         ) : currentPhase === "storylining" ? (

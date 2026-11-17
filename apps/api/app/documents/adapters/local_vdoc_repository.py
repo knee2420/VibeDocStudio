@@ -19,6 +19,8 @@ from ..models import VDocAggregateRecord, VDocSummaryRecord
 _DOCUMENT_FILE = "document.vdoc.json"
 _SUMMARY_FILE = "summary.json"
 _REVISIONS_FILE = "revisions.jsonl"
+_VERSIONS_DIR = "versions"
+_VERSIONS_INDEX = "index.json"
 
 
 class LocalVDocDocumentRepository:
@@ -113,6 +115,54 @@ class LocalVDocDocumentRepository:
             else:
                 lines = [json.dumps(entry, ensure_ascii=False)]
             path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    # --- 버전 (문서 전체 보관) --------------------------------------------------
+
+    def _versions_dir(self, doc_id: str) -> Path:
+        return self._doc_dir(doc_id) / _VERSIONS_DIR
+
+    def _read_index(self, doc_id: str) -> list[dict]:
+        data = read_json(self._versions_dir(doc_id) / _VERSIONS_INDEX)
+        return [v for v in data if isinstance(v, dict)] if isinstance(data, list) else []
+
+    def list_versions(self, doc_id: str) -> list[dict]:
+        return self._read_index(doc_id)
+
+    def add_version(self, doc_id: str, entry: dict, payload: dict) -> None:
+        vdir = self._versions_dir(doc_id)
+        index_path = vdir / _VERSIONS_INDEX
+        with locked_path(index_path):
+            vdir.mkdir(parents=True, exist_ok=True)
+            write_json(vdir / f"{safe_segment(entry['id'])}.vdoc.json", payload, indent=None)
+            write_json(index_path, [*self._read_index(doc_id), entry])
+
+    def get_version_payload(self, doc_id: str, version_id: str) -> dict | None:
+        payload = read_json(self._versions_dir(doc_id) / f"{safe_segment(version_id)}.vdoc.json")
+        return payload if isinstance(payload, dict) else None
+
+    def update_version(self, doc_id: str, version_id: str, patch: dict) -> dict | None:
+        index_path = self._versions_dir(doc_id) / _VERSIONS_INDEX
+        with locked_path(index_path):
+            index = self._read_index(doc_id)
+            hit = None
+            for i, v in enumerate(index):
+                if v.get("id") == version_id:
+                    hit = index[i] = {**v, **patch}
+            if hit is not None:
+                write_json(index_path, index)
+            return hit
+
+    def delete_version(self, doc_id: str, version_id: str) -> bool:
+        vdir = self._versions_dir(doc_id)
+        index_path = vdir / _VERSIONS_INDEX
+        with locked_path(index_path):
+            index = self._read_index(doc_id)
+            kept = [v for v in index if v.get("id") != version_id]
+            if len(kept) == len(index):
+                return False
+            write_json(index_path, kept)
+            (vdir / f"{safe_segment(version_id)}.vdoc.json").unlink(missing_ok=True)
+            return True
 
     def list_revisions(self, doc_id: str, limit: int = 200) -> list[dict]:
         path = self._revisions_file(doc_id)

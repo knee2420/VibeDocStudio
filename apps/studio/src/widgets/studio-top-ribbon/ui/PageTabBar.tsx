@@ -25,7 +25,7 @@ export const PageTabBar: React.FC = () => {
   if (openTabs.length === 0 && !activeDiff) return null;
   // 개정 이력 비교에 "(Working Tree)"가 붙던 문제: 종류별로 붙인다 (개정 번호는 label 에 이미 있다).
   const diffTabSuffix =
-    activeDiff?.type === "revision" ? "개정 이력" : activeDiff?.type === "staged" ? "Staged" : "Working Tree";
+    activeDiff?.type === "version" ? "버전 비교" : activeDiff?.type === "revision" ? "편집 기록" : activeDiff?.type === "staged" ? "AI 제안" : "지금 작업";
 
   const handleSelectTab = (key: string) => {
     if (activeDiff) closeDiff();

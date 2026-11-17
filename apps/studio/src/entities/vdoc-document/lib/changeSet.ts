@@ -140,3 +140,6 @@ export function formatPageNos(nos: number[]): string {
 /** "+1,240자 −320자" */
 export const formatCharStat = ({ added, removed }: CharStat) =>
   `+${added.toLocaleString()}자 −${removed.toLocaleString()}자`;
+
+/** 바뀐 곳들의 글자 수 합. */
+export const sumStatsOf = (items: ChangeItem[]): CharStat => sumStats(items.map((i) => i.stat));

@@ -665,3 +665,7 @@
   cursor: default;
 }
 .fig-prompt-send:disabled { background: rgba(0, 0, 0, 0.1); color: #fff; }
+
+/* 변경 비교 화면: 원래 스크롤 막대를 숨기고 변경 위치 막대가 스크롤 막대를 대신한다 (VS Code 처럼 하나만). */
+.fig-scroll-hidden { scrollbar-width: none; }
+.fig-scroll-hidden::-webkit-scrollbar { display: none; }

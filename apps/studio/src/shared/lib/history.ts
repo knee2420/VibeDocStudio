@@ -14,6 +14,8 @@ export interface HistoryEntry {
   scope: HistoryScope;
   /** 같은 키로 연달아 들어오는 편집(예: 슬롯 타이핑 디바운스)은 첫 `undo` 를 유지한 채 하나로 합친다. */
   coalesceKey?: string;
+  /** 되돌리기 안내를 띄우지 않는다. 연속 편집(`coalesceKey`)은 저절로 조용하다. */
+  quiet?: boolean;
   undo: () => void | Promise<void>;
   redo: () => void | Promise<void>;
 }
@@ -32,6 +34,14 @@ interface HistoryState {
   clearScope: (scope: HistoryScope) => void;
   dismissMessage: () => void;
 }
+
+/**
+ * 되돌리기 안내(토스트)는 블록 삭제 · 쪽 추가 · AI 적용 · 버전 되돌리기처럼 한 번에 크게 바뀌는 일에만 띄운다.
+ * 글자 입력 · 스타일 조정 같은 연속 편집은 워드 · 구글 문서처럼 조용히 Ctrl+Z 로만 되돌린다 —
+ * 스페이스 한 번마다 안내가 뜨던 문제. 조용한 편집이 들어오면 떠 있던 안내도 닫는다
+ * (안내의 "되돌리기"가 이제는 방금 친 글을 되돌리게 되므로).
+ */
+const announces = (entry: HistoryEntry) => !entry.quiet && !entry.coalesceKey;
 
 /** `transaction()` 이 열려 있는 동안 쌓이는 항목. 닫힐 때 하나의 항목으로 합쳐진다. */
 let openTransaction: HistoryEntry[] | null = null;
@@ -59,13 +69,13 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
         return {
           past: [...s.past.slice(0, -1), merged],
           future: [],
-          lastMessage: merged.label,
+          lastMessage: announces(merged) ? merged.label : null,
         };
       }
       return {
         past: [...s.past, entry].slice(-HISTORY_LIMIT),
         future: [],
-        lastMessage: entry.label,
+        lastMessage: announces(entry) ? entry.label : null,
       };
     });
   },
@@ -79,7 +89,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       set((s) => ({
         past: s.past.slice(0, -1),
         future: [entry, ...s.future].slice(0, HISTORY_LIMIT),
-        lastMessage: `되돌림: ${entry.label}`,
+        lastMessage: announces(entry) ? `되돌림: ${entry.label}` : null,
       }));
     } finally {
       busy = false;
@@ -95,7 +105,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       set((s) => ({
         past: [...s.past, entry].slice(-HISTORY_LIMIT),
         future: s.future.slice(1),
-        lastMessage: `다시 실행: ${entry.label}`,
+        lastMessage: announces(entry) ? `다시 실행: ${entry.label}` : null,
       }));
     } finally {
       busy = false;

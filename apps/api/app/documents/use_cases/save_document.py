@@ -10,6 +10,7 @@ from ..errors import VDocRevisionConflictError
 from ..models import VDocAggregateRecord
 from ..ports import VDocDocumentRepositoryPort
 from ..revisions import build_revision_entry, coalesce
+from .document_versions import DocumentVersionsUseCase
 
 
 class SaveDocumentUseCase:
@@ -42,11 +43,14 @@ class SaveDocumentUseCase:
                 )
             payload = {**document, "docId": normalized_id, "revision": current_rev + 1}
             holder["entry"] = build_revision_entry(current.payload, payload, notes, rev=current_rev + 1, now=now)
+            holder["before"] = current.payload
             return current.with_payload(payload, now=now)
 
         updated = self._repository.update(normalized_id, mutate)
         entry = holder.get("entry")
         if entry:
+            # 글이 바뀌는 저장: 한동안 쉬었다 다시 고치는 거면 고치기 직전 상태를 자동 보관 (언제든 되돌릴 수 있게).
+            DocumentVersionsUseCase(self._repository).checkpoint_before_edit(normalized_id, holder["before"], now)
             last = (self._repository.list_revisions(normalized_id, limit=1) or [None])[0]
             merged = coalesce(last, entry)
             if merged:

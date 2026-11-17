@@ -1,5 +1,3 @@
-import type { VDocNamedVersion } from "@vibe/vdoc-schema";
-
 import type { RevisionEntry } from "@/entities/vdoc-document";
 
 /** 이만큼 쉬면 다른 편집 세션 (구글 문서 버전 기록처럼 자동 저장을 작업 단위로 묶는다). */
@@ -26,12 +24,6 @@ export interface EditSession {
   saves: number;
 }
 
-export interface VersionMark {
-  type: "version";
-  version: VDocNamedVersion;
-}
-
-export type HistoryItem = EditSession | VersionMark;
 
 const t = (at: string) => {
   const v = Date.parse(at);
@@ -79,53 +71,21 @@ function absorb(s: EditSession, e: RevisionEntry) {
 }
 
 /**
- * 개정 기록(저장 하나하나) → 최신순 작업 기록: 편집 세션과 이름 붙인 버전이 섞인 타임라인.
- * 세션은 이름 붙인 버전을 넘어 이어지지 않는다 (버전 앞뒤가 섞이지 않게).
- * 변수만 바뀐 저장은 세션에 들어가되 칸 변경은 없다.
+ * 개정 기록(저장 하나하나) → 최신순 편집 세션 (자동 저장을 작업 단위로 묶는다).
+ * 사람은 20분 넘게 쉬면 다른 세션, AI 는 실행마다 따로. 변수만 바뀐 저장은 칸 변경이 없는 세션이 된다.
  */
-export function buildHistory(entries: RevisionEntry[], versions: VDocNamedVersion[] = []): HistoryItem[] {
-  const asc = [...entries].sort((a, b) => a.rev - b.rev);
-  const marks = [...versions].sort((a, b) => a.rev - b.rev);
-  const out: HistoryItem[] = [];
+export function buildHistory(entries: RevisionEntry[]): EditSession[] {
+  const out: EditSession[] = [];
   let cur: EditSession | null = null;
-  let vi = 0;
-  const flush = () => {
-    if (cur) out.push(cur);
-    cur = null;
-  };
-  for (const e of asc) {
-    while (vi < marks.length && marks[vi].rev < e.rev) {
-      flush();
-      out.push({ type: "version", version: marks[vi++] });
-    }
+  for (const e of [...entries].sort((a, b) => a.rev - b.rev)) {
     if (!cur || !sameWork(cur, e)) {
-      flush();
+      if (cur) out.push(cur);
       cur = startSession(e);
     }
-    absorb(cur!, e);
+    absorb(cur, e);
   }
-  flush();
-  while (vi < marks.length) out.push({ type: "version", version: marks[vi++] });
+  if (cur) out.push(cur);
   return out.reverse();
-}
-
-/** 이 버전 이후 지금까지 바뀐 칸 (각 칸의 버전 당시 내용 → 지금 기록의 마지막 내용). */
-export function changesSince(entries: RevisionEntry[], rev: number) {
-  const before: Record<string, string> = {};
-  const after: Record<string, string> = {};
-  const labels: Record<string, string> = {};
-  const slotIds: string[] = [];
-  for (const e of [...entries].filter((x) => x.rev > rev).sort((a, b) => a.rev - b.rev)) {
-    for (const c of e.slots) {
-      if (!(c.slotId in before)) {
-        slotIds.push(c.slotId);
-        before[c.slotId] = c.before;
-      }
-      after[c.slotId] = c.after;
-      labels[c.slotId] = c.label;
-    }
-  }
-  return { slotIds, before, after, labels };
 }
 
 /** "오늘" · "어제" · "11월 14일 (금)" */

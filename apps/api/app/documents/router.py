@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, Query, status
 from .models import VDocAggregateRecord, VDocSummaryRecord
 from .schemas import (
     CreateDocumentRequest,
+    CreateVersionRequest,
     DeleteDocumentResponse,
     DuplicateDocumentRequest,
     LinkDocumentRequest,
@@ -18,12 +19,16 @@ from .schemas import (
     RenameDocumentRequest,
     RevisionListResponse,
     SaveVDocRequest,
+    UpdateVersionRequest,
     VDocDocumentResponse,
     VDocPageChunkResponse,
     VDocSummaryResponse,
+    VersionDocumentResponse,
+    VersionListResponse,
 )
 from .use_cases import (
     DocumentLifecycleUseCase,
+    DocumentVersionsUseCase,
     GetDocumentPageChunkUseCase,
     GetDocumentUseCase,
     ListDocumentsUseCase,
@@ -43,6 +48,7 @@ UpdateSlotDep = Annotated[UpdateSlotContentUseCase, Depends(Provide["update_slot
 PatchStructureDep = Annotated[PatchDocumentStructureUseCase, Depends(Provide["patch_document_structure"])]
 LifecycleDep = Annotated[DocumentLifecycleUseCase, Depends(Provide["document_lifecycle"])]
 RevisionsDep = Annotated[ListRevisionsUseCase, Depends(Provide["list_document_revisions"])]
+VersionsDep = Annotated[DocumentVersionsUseCase, Depends(Provide["document_versions"])]
 
 
 def _summary_response(item: VDocSummaryRecord) -> VDocSummaryResponse:
@@ -118,6 +124,39 @@ def list_revisions(
     limit: int = Query(default=100, ge=1, le=500),
 ) -> RevisionListResponse:
     return RevisionListResponse(docId=doc_id, revisions=use_case.execute(doc_id, slot_id=slotId, limit=limit))
+
+
+@router.get("/{doc_id}/versions", response_model=VersionListResponse)
+@inject
+def list_versions(doc_id: str, use_case: VersionsDep) -> VersionListResponse:
+    """버전 목록 (최신이 앞) — 이름 붙인 버전과 자동 보관 지점."""
+    return VersionListResponse(docId=doc_id, versions=use_case.list(doc_id))
+
+
+@router.post("/{doc_id}/versions", status_code=status.HTTP_201_CREATED)
+@inject
+def create_version(doc_id: str, body: CreateVersionRequest, use_case: VersionsDep) -> dict:
+    """지금 서버에 저장된 문서 전체를 버전으로 보관한다 (클라이언트는 먼저 저장을 끝낸다)."""
+    return use_case.create(doc_id, name=body.name, note=body.note, kind=body.kind, reason=body.reason)
+
+
+@router.get("/{doc_id}/versions/{version_id}", response_model=VersionDocumentResponse)
+@inject
+def get_version(doc_id: str, version_id: str, use_case: VersionsDep) -> VersionDocumentResponse:
+    entry, payload = use_case.get(doc_id, version_id)
+    return VersionDocumentResponse(docId=doc_id, version=entry, document=payload)
+
+
+@router.patch("/{doc_id}/versions/{version_id}")
+@inject
+def update_version(doc_id: str, version_id: str, body: UpdateVersionRequest, use_case: VersionsDep) -> dict:
+    return use_case.update(doc_id, version_id, name=body.name, note=body.note)
+
+
+@router.delete("/{doc_id}/versions/{version_id}", status_code=status.HTTP_204_NO_CONTENT)
+@inject
+def delete_version(doc_id: str, version_id: str, use_case: VersionsDep) -> None:
+    use_case.delete(doc_id, version_id)
 
 
 @router.patch("/{doc_id}/slots/{slot_id}", response_model=VDocDocumentResponse)

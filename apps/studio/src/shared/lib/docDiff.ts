@@ -213,10 +213,17 @@ export function sumStats(stats: Iterable<CharStat>): CharStat {
  * 앞뒤 같은 글은 `context` 글자까지만.
  */
 export function changeSnippet(paras: ParaDiff[], context = 14): WordSeg[] {
-  const p = paras.find((x) => x.kind !== "same");
+  const at = paras.findIndex((x) => x.kind !== "same");
+  const p = paras[at];
   if (!p) return [];
   if (p.kind === "added") return [{ kind: "add", text: p.text }];
-  if (p.kind === "removed") return [{ kind: "del", text: p.text }];
+  if (p.kind === "removed") {
+    // 문단을 통째로 바꿔 쓴 경우: 지운 글 → 넣은 글을 한 줄에.
+    const next = paras[at + 1];
+    return next?.kind === "added"
+      ? [{ kind: "del", text: p.text }, { kind: "same", text: " " }, { kind: "add", text: next.text }]
+      : [{ kind: "del", text: p.text }];
+  }
   if (p.kind !== "changed") return [];
   const segs = p.segs.map((s) => ({ ...s }));
   const first = segs[0];

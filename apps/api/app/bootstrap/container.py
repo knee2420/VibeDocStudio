@@ -58,6 +58,7 @@ from app.documents.use_cases import (
     GetDocumentUseCase,
     ListDocumentsUseCase,
     ListRevisionsUseCase,
+    DocumentVersionsUseCase,
     PatchDocumentStructureUseCase,
     SaveDocumentUseCase,
     UpdateSlotContentUseCase,
@@ -224,6 +225,7 @@ class Container(containers.DeclarativeContainer):
     get_document_page_chunk = providers.Factory(GetDocumentPageChunkUseCase, repository=document_repository)
     save_document = providers.Factory(SaveDocumentUseCase, repository=document_repository)
     list_document_revisions = providers.Factory(ListRevisionsUseCase, repository=document_repository)
+    document_versions = providers.Factory(DocumentVersionsUseCase, repository=document_repository)
     update_slot_content = providers.Factory(UpdateSlotContentUseCase, repository=document_repository)
     patch_document_structure = providers.Factory(PatchDocumentStructureUseCase, repository=document_repository)
     delete_document = providers.Factory(DeleteDocumentUseCase, repository=document_repository)

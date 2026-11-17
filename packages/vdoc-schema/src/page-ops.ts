@@ -529,3 +529,23 @@ export function buildReservedPdfPlaceholders(
   return { pages, slots, thumbnails, mappings };
 }
 
+
+/**
+ * 쪽 하나를 다른 판(보관된 버전)의 모습으로 되돌린다 — 쪽 구성(블록)과 그 쪽 칸들의 내용까지.
+ * 지금 문서에 그 쪽이 있으면 바꿔 끼우고, 지웠던 쪽이면 예전 순서 자리에 다시 넣는다.
+ * 그 판에 없는 쪽이면 문서를 그대로 돌려준다.
+ */
+export function restorePageFrom(doc: VDocDocument, source: Pick<VDocDocument, "pages" | "slots">, pageId: string): VDocDocument {
+  const index = source.pages.findIndex((p) => p.pageId === pageId);
+  if (index < 0) return doc;
+  const page = source.pages[index];
+  const slots: Record<string, VDocSlot> = { ...doc.slots };
+  for (const id of iterPageSlotIds(page)) {
+    if (source.slots[id]) slots[id] = source.slots[id];
+  }
+  const at = doc.pages.findIndex((p) => p.pageId === pageId);
+  const pages = [...doc.pages];
+  if (at >= 0) pages[at] = page;
+  else pages.splice(Math.min(index, pages.length), 0, page);
+  return { ...doc, pages: renumberPages(pages), slots };
+}

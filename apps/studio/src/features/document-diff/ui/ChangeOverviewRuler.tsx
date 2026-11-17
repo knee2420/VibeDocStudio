@@ -49,15 +49,27 @@ export const ChangeOverviewRuler: React.FC<{
 }> = ({ scrollRef, selector, kindOf, labelOf, onJump, deps }) => {
   const [marks, setMarks] = useState<Mark[]>([]);
   const viewRef = useRef<HTMLSpanElement>(null);
+  const rulerRef = useRef<HTMLDivElement>(null);
+  /** 막대 높이 — 눈금 · 범위 상자는 이 높이에 맞춘다 (막대가 스크롤 영역보다 길어도 맞게). */
+  const rulerH = () => Math.max(1, rulerRef.current?.clientHeight ?? scrollRef.current?.clientHeight ?? 1);
 
-  // 보이는 범위 상자는 스크롤마다 React 를 거치지 않고 직접 옮긴다.
+  // 보이는 범위 상자(= 스크롤 손잡이)는 스크롤마다 React 를 거치지 않고 직접 옮긴다.
   const syncView = () => {
     const el = scrollRef.current;
     const box = viewRef.current;
     if (!el || !box) return;
     const total = Math.max(1, el.scrollHeight);
-    box.style.top = `${(el.scrollTop / total) * el.clientHeight}px`;
-    box.style.height = `${(el.clientHeight / total) * el.clientHeight}px`;
+    const h = rulerH();
+    box.style.top = `${(el.scrollTop / total) * h}px`;
+    box.style.height = `${Math.max(16, (el.clientHeight / total) * h)}px`;
+    box.style.display = el.scrollHeight > el.clientHeight + 1 ? "block" : "none";
+  };
+
+  /** 막대 위 y 를 스크롤 위치로: 손잡이 위쪽이 y - grab 에 오게. */
+  const scrollToRulerY = (y: number, grab: number) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTop = ((y - grab) / rulerH()) * el.scrollHeight;
   };
 
   useLayoutEffect(() => {
@@ -66,7 +78,7 @@ export const ChangeOverviewRuler: React.FC<{
     let raf = 0;
     const measure = () => {
       const total = Math.max(1, el.scrollHeight);
-      const h = el.clientHeight;
+      const h = rulerH();
       const base = el.getBoundingClientRect().top - el.scrollTop;
       const next: Mark[] = [];
       el.querySelectorAll<HTMLElement>(selector).forEach((node, index) => {
@@ -113,29 +125,51 @@ export const ChangeOverviewRuler: React.FC<{
 
   return (
     <div
+      ref={rulerRef}
       data-testid="change-overview-ruler"
-      className="relative w-[18px] shrink-0 bg-white/70 border-l border-black/5 cursor-pointer"
-      onClick={(e) => {
-        const el = scrollRef.current;
-        if (!el) return;
-        const ratio = (e.clientY - e.currentTarget.getBoundingClientRect().top) / Math.max(1, el.clientHeight);
-        el.scrollTop = ratio * el.scrollHeight - el.clientHeight / 2;
+      className="group/ruler relative w-[16px] shrink-0 bg-[#fafafa] border-l border-black/5 touch-none select-none"
+      // 스크롤 막대 역할: 손잡이를 끌면 따라가고, 빈 곳을 누르면 그 자리로 옮긴 뒤 끌 수 있다. 휠도 그대로.
+      onPointerDown={(e) => {
+        if (e.button !== 0) return;
+        const top = e.currentTarget.getBoundingClientRect().top;
+        const thumb = viewRef.current;
+        const y = e.clientY - top;
+        const tTop = thumb ? parseFloat(thumb.style.top || "0") : 0;
+        const tH = thumb ? parseFloat(thumb.style.height || "0") : 0;
+        const grab = y >= tTop && y <= tTop + tH ? y - tTop : tH / 2;
+        scrollToRulerY(y, grab);
+        e.currentTarget.setPointerCapture(e.pointerId);
+        const move = (ev: PointerEvent) => scrollToRulerY(ev.clientY - top, grab);
+        const up = () => {
+          window.removeEventListener("pointermove", move);
+          window.removeEventListener("pointerup", up);
+        };
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", up);
       }}
-      title="변경 위치 — 누르면 그 자리로"
+      onWheel={(e) => {
+        const el = scrollRef.current;
+        if (el) el.scrollTop += e.deltaY;
+      }}
     >
-      {/* 지금 보이는 범위 */}
-      <span ref={viewRef} aria-hidden className="absolute left-0 right-[6px] bg-black/[0.06] pointer-events-none" />
+      {/* 지금 보이는 범위 = 스크롤 손잡이 */}
+      <span
+        ref={viewRef}
+        aria-hidden
+        className="absolute left-[2px] right-[2px] rounded-[3px] bg-black/[0.09] group-hover/ruler:bg-black/[0.14] pointer-events-none"
+      />
       {marks.map((m, i) => (
         <button
           key={i}
           type="button"
           data-testid="ruler-mark"
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             jump(m);
           }}
-          title={m.label}
-          className="absolute left-[3px] right-[8px] rounded-[1px] opacity-85 hover:opacity-100 hover:left-[1px] hover:right-[6px] transition-[left,right]"
+          title={`${m.label} — 누르면 그 자리로`}
+          className="absolute left-[4px] right-[4px] rounded-[1px] opacity-90 hover:opacity-100 hover:left-[2px] hover:right-[2px] transition-[left,right] cursor-pointer"
           style={{ top: m.top, height: m.height, background: COLOR[m.kind] }}
         />
       ))}

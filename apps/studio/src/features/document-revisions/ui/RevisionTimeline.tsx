@@ -40,7 +40,7 @@ const EntryRow: React.FC<{ entry: RevisionEntry; docId: string; slotId?: string 
       onClick={open}
       onKeyDown={(e) => e.key === "Enter" && open()}
       data-testid="revision-entry"
-      className={`group relative pl-6 pr-1.5 py-1 rounded-[6px] cursor-pointer ${active ? "bg-[var(--fig-selected)]" : "hover:bg-[var(--fig-hover)]"}`}
+      className={`group relative pl-6 pr-1.5 py-1 rounded-[6px] cursor-pointer ${active ? "bg-[var(--fig-selected)]" : "bg-white hover:bg-[var(--fig-hover)]"}`}
     >
       <span
         aria-hidden
@@ -52,14 +52,14 @@ const EntryRow: React.FC<{ entry: RevisionEntry; docId: string; slotId?: string 
           {dayLabel(entry.at)} {timeLabel(entry.at)}
         </span>
         <span className={entry.author === "ai" ? "text-[var(--fig-component)]" : "text-black/45"}>{who}</span>
-        <CharStatText stat={stat} className="ml-auto group-hover:hidden" />
+        <CharStatText stat={stat} className="ml-auto" />
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             restoreSlots(docId, slots.map((s) => ({ slotId: s.slotId, before: s.before })), `${timeLabel(entry.at)} 이전 글로 되돌리기`);
           }}
-          className="ml-auto hidden group-hover:inline-flex items-center gap-0.5 h-5 px-1.5 rounded-[4px] text-[11px] text-black/70 hover:bg-black/5"
+          className="absolute right-1 top-0.5 hidden group-hover:inline-flex items-center gap-0.5 h-5 px-1.5 rounded-[4px] text-[11px] text-black/70 [background:inherit] hover:!bg-black/5"
           title="이 변경 이전 글로 되돌립니다 (새 변경으로 남아 실행 취소 가능)"
         >
           <RotateCcw className="w-3 h-3" /> 복원

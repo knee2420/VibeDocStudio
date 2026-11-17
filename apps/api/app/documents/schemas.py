@@ -33,6 +33,30 @@ class SaveVDocRequest(BaseModel):
     changes: list[ChangeNotePayload] = Field(default_factory=list)
 
 
+class CreateVersionRequest(BaseModel):
+    name: str = ""
+    note: str = ""
+    kind: Literal["named", "auto"] = "named"
+    #: 자동 보관 이유 (예: "되돌리기 전")
+    reason: str = ""
+
+
+class UpdateVersionRequest(BaseModel):
+    name: Optional[str] = None
+    note: Optional[str] = None
+
+
+class VersionListResponse(BaseModel):
+    docId: str
+    versions: list[dict[str, Any]]
+
+
+class VersionDocumentResponse(BaseModel):
+    docId: str
+    version: dict[str, Any]
+    document: dict[str, Any]
+
+
 class RevisionListResponse(BaseModel):
     docId: str
     revisions: list[dict[str, Any]]

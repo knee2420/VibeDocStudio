@@ -1,7 +1,9 @@
 import { create } from "zustand";
 
+import type { VDocDocument } from "@vibe/vdoc-schema";
+
 export interface ActiveDiffTarget {
-  type: "working" | "revision" | "staged" | "slot";
+  type: "working" | "revision" | "staged" | "slot" | "version";
   diffKind?: "added" | "edited" | "deleted";
   revisionRev?: number;
   diffId?: string;
@@ -17,6 +19,13 @@ export interface ActiveDiffTarget {
   meta?: { author?: "human" | "ai"; authorName?: string; at?: string; note?: string };
   /** 검토 화면에서 바뀐 곳마다 "되돌리기"를 보일까 (새로 만든 쪽의 칸은 되돌릴 이전 글이 없다). */
   revertible?: boolean;
+  /**
+   * 비교 기준이 보관된 버전이면 그 문서 전체 — "실제 페이지로 비교"에서 왼쪽에 그때의 쪽 구성 그대로 그린다
+   * (없으면 지금 문서 구성에 이전 글만 넣어 그린다).
+   */
+  beforeDoc?: VDocDocument;
+  /** 버전과 비교 중이면 그 버전 (검토 화면 위에 "이 버전으로 되돌리기"). */
+  version?: { id: string; name: string; at: string; kind: "named" | "auto" };
 }
 
 export interface ActiveDiffState {
