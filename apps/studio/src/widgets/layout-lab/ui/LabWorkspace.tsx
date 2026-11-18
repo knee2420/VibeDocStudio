@@ -1,11 +1,22 @@
 import React from "react";
 import { Library, Maximize2, X } from "lucide-react";
 
-import { LAB_VERSIONS, LayoutLabPicker, OUTLINE_VERSIONS, useLayoutLabStore, type LabVersionId, type OutlineVersionId } from "@/features/layout-lab";
+import {
+  LAB_VERSIONS,
+  LayoutLabPicker,
+  OUTLINE_VERSIONS,
+  SIDEBAR_VERSIONS,
+  useLayoutLabStore,
+  type LabVersionId,
+  type OutlineVersionId,
+  type SidebarVersionId,
+} from "@/features/layout-lab";
 
 import { LAB_DOC } from "../model/dummy";
 import { useLabStore, type WorkMode } from "../model/useLabStore";
 import { LibraryModal } from "./LibraryModal";
+import { SidebarLab } from "./sidebar-lab/SidebarLab";
+import { CardProto } from "./card-proto/CardProto";
 import { VersionA, VersionB, VersionC, VersionD, VersionE } from "./versions";
 
 /** 버전마다 "이걸 해 보세요" — 직접 써 보며 판단하라고. */
@@ -27,6 +38,14 @@ const OUTLINE_TRY: Record<Exclude<OutlineVersionId, "current">, string> = {
   o5: "6 · 7쪽 서식을 '지금 트리' 와 번갈아 보기 · 블록을 눌러 아래 속성(칸) 보기 · 위 숫자로 자동 이름 비율 · 고정 글 숨기기",
 };
 
+const SIDEBAR_TRY: Record<Exclude<SidebarVersionId, "current">, string> = {
+  sa: "위 '예시 문서'를 회의록 · 카드 안내장 · 청원서로 바꿔 같은 나무가 버티는지 · 보일 단계(장 · 구역 · 칸) · 오른쪽 아래 다음 할 일 · 본문 칸을 누르면 트리가 따라 펼쳐지는지",
+  sb: "목차에서 구역을 고르면 아래 '할 일' 목록이 바뀌는지 · 청원서(29장)에서 위 목차가 얼마나 길어지는지 · 1 · 2 단계에서 아래 칸이 쓸모 있는지",
+  se: "예시 문서를 '넛지 시리즈'로 · 아래 넛지 1 의 장을 오른쪽 대화로 끌어다 놓고 보내기 → '목차에 넣기' · 두 번 눌러 이름 · Enter · Tab · Alt+↑↓ · 장 번호를 눌러 확대 · 다른 프로젝트 장을 내 목차로 끌어 가져오기",
+  sd: "A · B · C 와 번갈아 보며 덜어낸 것이 아쉬운지 · 청원서에서 장까지만 접힌 목차 + 부 접기 + 찾기로 충분한지 · 점 하나로 어디를 열지 알 수 있는지",
+  sc: "청원서로 바꿔 왼쪽 띠만 보고 어느 부 · 장이 비었는지 말해 보기 · 회의록(3장)에서 띠가 쓸모 있는지 · 본문을 스크롤하면 파란 틀이 따라오는지",
+};
+
 const MODES: { id: WorkMode; label: string }[] = [
   { id: "gather", label: "모으기" },
   { id: "write", label: "쓰기" },
@@ -41,6 +60,10 @@ export const LabWorkspace: React.FC = () => {
   const version = (picked === "current" ? "a" : picked) as Exclude<LabVersionId, "current">;
   const info = LAB_VERSIONS.find((v) => v.id === version);
   const outlineInfo = OUTLINE_VERSIONS.find((v) => v.id === outline && v.id !== "current");
+  // 사이드바 시안을 골랐으면 그 화면이 먼저다 (레이아웃 · 아웃라인 실험은 뒤로).
+  const sidebar = useLayoutLabStore((s) => s.sidebar);
+  const sidebarInfo = SIDEBAR_VERSIONS.find((v) => v.id === sidebar && v.id !== "current");
+  const proto = useLayoutLabStore((s) => s.proto);
   const minimized = useLabStore((s) => s.minimized);
   const toggleMinimized = useLabStore((s) => s.toggleMinimized);
   const setLibrary = useLabStore((s) => s.setLibrary);
@@ -81,7 +104,7 @@ export const LabWorkspace: React.FC = () => {
           <LayoutLabPicker />
         </div>
         <div className="flex-1 min-w-0 flex items-center justify-center">
-          {version === "c" ? (
+          {version === "c" && !sidebarInfo ? (
             <div className="fig-panel fig-seg w-[210px] !h-[26px]" role="group" aria-label="작업 배치">
               {MODES.map((m, i) => (
                 <button key={m.id} type="button" aria-pressed={workMode === m.id} onClick={() => setWorkMode(m.id)} title={`Alt+${i + 1}`} data-testid={`lab-mode-${m.id}`}>
@@ -111,21 +134,45 @@ export const LabWorkspace: React.FC = () => {
         </div>
       </header>
 
-      {!tipHidden && info && (
+      {!tipHidden && proto && (
         <div className="fig-panel h-7 shrink-0 px-3 flex items-center gap-2 bg-violet-50 border-b border-violet-200 text-[11.5px] text-violet-900">
-          <span className="font-semibold shrink-0">{info.name}{outlineInfo ? ` + ${outlineInfo.name}` : ""}</span>
-          <span className="truncate text-violet-800/80">해 볼 것 · {outlineInfo ? OUTLINE_TRY[outline as Exclude<OutlineVersionId, "current">] : TRY[version]}</span>
+          <span className="font-semibold shrink-0">시제품 · 카드 안내장</span>
+          <span className="truncate text-violet-800/80">해 볼 것 · 왼쪽에 메모 더 써 보기 → 오른쪽 '정돈 제안 보기' → 받기 → 줄 하나 골라 다른 카드사 비교 → 서식에서 판형 바꾸기 → 채우기에서 위험한 곳부터</span>
+          <button type="button" className="ml-auto shrink-0 opacity-60 hover:opacity-100" onClick={() => setTipHidden(true)} title="숨기기">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+      {!tipHidden && !proto && (sidebarInfo || info) && (
+        <div className="fig-panel h-7 shrink-0 px-3 flex items-center gap-2 bg-violet-50 border-b border-violet-200 text-[11.5px] text-violet-900">
+          <span className="font-semibold shrink-0">{sidebarInfo ? `사이드바 ${sidebarInfo.name}` : `${info?.name}${outlineInfo ? ` + ${outlineInfo.name}` : ""}`}</span>
+          <span className="truncate text-violet-800/80" title={sidebarInfo ? SIDEBAR_TRY[sidebarInfo.id as Exclude<SidebarVersionId, "current">] : undefined}>
+            해 볼 것 ·{" "}
+            {sidebarInfo
+              ? SIDEBAR_TRY[sidebarInfo.id as Exclude<SidebarVersionId, "current">]
+              : outlineInfo
+                ? OUTLINE_TRY[outline as Exclude<OutlineVersionId, "current">]
+                : TRY[version]}
+          </span>
           <button type="button" className="ml-auto shrink-0 opacity-60 hover:opacity-100" onClick={() => setTipHidden(true)} title="숨기기">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
-      {version === "a" && <VersionA />}
-      {version === "b" && <VersionB />}
-      {version === "c" && <VersionC />}
-      {version === "d" && <VersionD />}
-      {version === "e" && <VersionE />}
+      {proto ? (
+        <CardProto />
+      ) : sidebarInfo ? (
+        <SidebarLab variant={sidebarInfo.id as Exclude<SidebarVersionId, "current">} />
+      ) : (
+        <>
+          {version === "a" && <VersionA />}
+          {version === "b" && <VersionB />}
+          {version === "c" && <VersionC />}
+          {version === "d" && <VersionD />}
+          {version === "e" && <VersionE />}
+        </>
+      )}
 
       <LibraryModal />
       {toast && (

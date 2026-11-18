@@ -6,6 +6,8 @@ import { create } from "zustand";
  */
 export type LabVersionId = "current" | "a" | "b" | "c" | "d" | "e";
 export type OutlineVersionId = "current" | "o1" | "o2" | "o3" | "o4" | "o5" | "o6" | "o7";
+/** 사이드바 개선안 시안 (2026-11-18 개선안 페이지의 A · B · C). 사이드바 + 툴바 + 캔버스 흐름을 같이 바꾼다. */
+export type SidebarVersionId = "current" | "sa" | "sb" | "sc" | "sd" | "se";
 
 export interface LabVersion<T extends string = string> {
   id: T;
@@ -36,8 +38,19 @@ export const OUTLINE_VERSIONS: LabVersion<OutlineVersionId>[] = [
   { id: "o7", name: "O7 · 뼈대 편집", desc: "실제로 짜고 옮기기 — 새 문서는 뼈대부터, 가져온 서식은 고치기 · 1 뼈대 → 2 서식 꽂기 → 3 채우기 · 캔버스가 따라 움직임", refs: "Workflowy · Relume 사이트맵 · 피그마 레이어" },
 ];
 
+export const SIDEBAR_VERSIONS: LabVersion<SidebarVersionId>[] = [
+  { id: "current", name: "지금 사이드바", desc: "Documents & Pages + Elements 두 칸 그대로", refs: "" },
+  { id: "sa", name: "A · 한 나무 목차", desc: "경계 없이 문서 → 장 → 구역 → 칸 한 목록, 층은 글자 모양으로 · 단계 표시는 사이드바 머리", refs: "Word 탐색 창 · Google Docs 개요 · Logseq 스레딩" },
+  { id: "sb", name: "B · 목차 + 할 일", desc: "위는 장 · 구역까지 목차, 아래는 고른 구역의 채울 칸 목록", refs: "GOV.UK 할 일 목록 · PandaDoc Next" },
+  { id: "sc", name: "C · 장 지도 레일 + 목차", desc: "왼쪽 얇은 띠에 장마다 분량 · 채움 막대, 오른쪽 촘촘한 목차", refs: "StudioBinder 스트립보드 · VS Code 미니맵" },
+  { id: "sd", name: "D · 덜어낸 목차", desc: "줄 = 화살표 + 이름, 신호는 '손댈 게 있음' 점 하나. 칸 상태는 캔버스에서만", refs: "Word 탐색 창 · Google Docs 개요" },
+  { id: "se", name: "E · 작업 공간 아웃라이너", desc: "D 처럼 조용하되 목차가 일한다 — 고치기 · 옮기기 · 확대 · 요약, 같은 작업 공간의 다른 프로젝트를 끌어 대화 · 목차로", refs: "Workflowy · 안티그래비티 · 커서 작업 공간" },
+];
+
 const KEY = "vds.layoutLab.version";
 const OKEY = "vds.layoutLab.outline";
+const SKEY = "vds.layoutLab.sidebar";
+const PKEY = "vds.layoutLab.proto";
 
 function load<T extends string>(key: string, list: LabVersion<T>[]): T {
   try {
@@ -59,13 +72,30 @@ function save(key: string, v: string) {
 interface LayoutLabState {
   version: LabVersionId;
   outline: OutlineVersionId;
+  sidebar: SidebarVersionId;
+  /** 카드 안내장 시제품 (사용자 되어 보기) — 켜면 다른 실험보다 먼저 보인다 */
+  proto: boolean;
+  setProto: (on: boolean) => void;
   setVersion: (v: LabVersionId) => void;
   setOutline: (v: OutlineVersionId) => void;
+  setSidebar: (v: SidebarVersionId) => void;
 }
 
 export const useLayoutLabStore = create<LayoutLabState>((set) => ({
   version: load(KEY, LAB_VERSIONS),
   outline: load(OKEY, OUTLINE_VERSIONS),
+  sidebar: load(SKEY, SIDEBAR_VERSIONS),
+  proto: (() => {
+    try {
+      return localStorage.getItem(PKEY) === "1";
+    } catch {
+      return false;
+    }
+  })(),
+  setProto: (proto) => {
+    save(PKEY, proto ? "1" : "0");
+    set({ proto });
+  },
   setVersion: (version) => {
     save(KEY, version);
     set({ version });
@@ -74,7 +104,11 @@ export const useLayoutLabStore = create<LayoutLabState>((set) => ({
     save(OKEY, outline);
     set({ outline });
   },
+  setSidebar: (sidebar) => {
+    save(SKEY, sidebar);
+    set({ sidebar });
+  },
 }));
 
-/** 실험 화면을 띄울지 — 둘 중 하나라도 시제품을 골랐으면. */
-export const selectLabActive = (s: LayoutLabState) => s.version !== "current" || s.outline !== "current";
+/** 실험 화면을 띄울지 — 하나라도 시제품을 골랐으면. */
+export const selectLabActive = (s: LayoutLabState) => s.proto || s.version !== "current" || s.outline !== "current" || s.sidebar !== "current";
