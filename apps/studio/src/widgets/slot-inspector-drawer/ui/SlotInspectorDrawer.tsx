@@ -46,13 +46,30 @@ export const SlotInspectorDrawer: React.FC = () => {
   const { updateBlock, deleteBlock } = useMutateCanvasBlocks();
   const { isAiStreaming } = useStageAiChanges();
 
+  // Composer 는 받는 값이 없으니 한 번 만든 그대로 쓴다 — 패널 열고 닫기 · 글자 입력으로 이 패널이 다시 그려질 때
+  // 대화 기록 전체가 따라 다시 그려지지 않게.
+  const composerView = React.useMemo(
+    () => (
+      <AiComposerView
+        headerActions={
+          <StudioAgentSettingsButton className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer inline-flex">
+            <Settings className="w-4 h-4" />
+          </StudioAgentSettingsButton>
+        }
+      />
+    ),
+    [],
+  );
+
   if (!doc) return null;
 
   const selectedSlot = selectedSlotId ? doc.slots[selectedSlotId] : undefined;
   const selectedBlock = selectedBlockId ? findBlock(doc, selectedBlockId) : null;
 
-  if (!rightSidebarOpen) {
-    return (
+  // 접어도 패널은 그대로 두고 숨기기만 한다 — 펼 때마다 Composer 대화 · 탭 내용을 처음부터 다시 그리지 않게.
+  return (
+    <>
+    {!rightSidebarOpen && (
       <CollapsedPanelRail
         side="right"
         label="AI Composer · 작업 도구"
@@ -61,14 +78,12 @@ export const SlotInspectorDrawer: React.FC = () => {
         onExpand={() => setRightSidebarOpen(true)}
         testId="right-sidebar-collapsed-rail"
       />
-    );
-  }
-
-  return (
+    )}
     <aside
-      data-testid="slot-inspector-drawer"
+      data-testid={rightSidebarOpen ? "slot-inspector-drawer" : undefined}
+      aria-hidden={!rightSidebarOpen || undefined}
       style={{ width: `${rightSidebarWidth}px` }}
-      className={`bg-white border-l border-[#e6e6e6] flex flex-col shrink-0 select-none relative z-10 min-h-0 ${
+      className={`bg-white border-l border-[#e6e6e6] ${rightSidebarOpen ? "flex" : "hidden"} flex-col shrink-0 select-none relative z-10 min-h-0 ${
         isResizing ? "transition-none" : "transition-[width] duration-75"
       }`}
     >
@@ -133,15 +148,7 @@ export const SlotInspectorDrawer: React.FC = () => {
       </div>
 
       {viewMode === "composer" && (
-        <div className="flex-1 min-h-0">
-          <AiComposerView
-            headerActions={
-              <StudioAgentSettingsButton className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer inline-flex">
-                <Settings className="w-4 h-4" />
-              </StudioAgentSettingsButton>
-            }
-          />
-        </div>
+        <div className="flex-1 min-h-0">{composerView}</div>
       )}
 
       {viewMode === "resource-manager" && rmPlacement !== "between-split" && (
@@ -221,5 +228,6 @@ export const SlotInspectorDrawer: React.FC = () => {
           </div>
         ))}
     </aside>
+    </>
   );
 };

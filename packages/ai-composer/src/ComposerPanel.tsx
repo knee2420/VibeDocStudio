@@ -147,6 +147,20 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
     if (el && stickRef.current) el.scrollTop = el.scrollHeight;
   }, [state.items]);
 
+  // 패널을 접어 둔(숨긴) 동안 온 답은 맨 아래로 내릴 수 없다 — 다시 보일 때 끝을 따라가던 중이면 맨 아래로.
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    let shown = el.clientHeight > 0;
+    const ro = new ResizeObserver(() => {
+      const now = el.clientHeight > 0;
+      if (now && !shown && stickRef.current) el.scrollTop = el.scrollHeight;
+      shown = now;
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <AiSurfaceProvider value={surface}>
     <div data-testid="ai-composer-panel" className="relative flex flex-col h-full min-h-0 bg-white" {...dropHandlers}>
