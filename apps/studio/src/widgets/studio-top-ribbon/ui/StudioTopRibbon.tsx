@@ -22,6 +22,7 @@ import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { selectCurrentReferenceId, useReferenceStore } from "@/entities/reference-manager";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
+import { LayoutLabPicker } from "@/features/layout-lab";
 import { DocumentLifecycleMenuItems } from "@/features/manage-documents";
 import { ImportPdfButton } from "@/features/import-pdf-form";
 import { useHistoryStore } from "@/shared/lib";
@@ -203,6 +204,8 @@ export const StudioTopRibbon: React.FC = () => {
             </div>
           )}
         </div>
+
+        <LayoutLabPicker />
       </div>
 
       {/* Center: Desktop Window Title */}

@@ -9,6 +9,8 @@ import { registerSlotAiActions } from "@/features/compose-slot-ai";
 import { useActiveDiffStore } from "@/features/document-diff";
 import { registerAgentDraftSync } from "@/features/manage-documents";
 import { DeckCardPreview, registerKnowledgeDeckAi, useKnowledgeDeckBootstrap } from "@/features/knowledge-deck-ai";
+import { selectLabActive, useLayoutLabStore } from "@/features/layout-lab";
+import { LabWorkspace } from "@/widgets/layout-lab";
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { usePdfScaffoldSync } from "@/features/mutate-document-pages";
@@ -90,8 +92,10 @@ const StudioWorkspace: React.FC = () => {
 /** 서버(원장)에서 작업 공간을 불러온 뒤에만 스튜디오를 그린다. */
 export const StudioPage: React.FC = () => {
   const { status, error, retry } = useWorkspaceBootstrap();
+  // 레이아웃 실험: 더미 시제품을 고르면 실제 작업 공간 대신 그 배치를 보여 준다 (문서 · 서버는 그대로).
+  const labActive = useLayoutLabStore(selectLabActive);
 
-  if (status === "ready") return <StudioWorkspace />;
+  if (status === "ready") return labActive ? <LabWorkspace /> : <StudioWorkspace />;
 
   return (
     <div
