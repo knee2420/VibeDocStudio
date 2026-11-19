@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useAiStagingStore } from "@/entities/ai-staging";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { isWorkbenchPhase, parseReferenceIds, useWorkspaceSessionStore } from "@/entities/workspace-session";
-import { writeStoredJson } from "@/shared/lib";
+import { runWhenIdle, writeStoredJson } from "@/shared/lib";
 
 const STORAGE_KEY = "vdoc-studio-session-v1";
 
@@ -19,22 +19,27 @@ export function useWorkspaceUrlSync(): void {
   const activeDocId = useStudioDocumentStore((s) => s.activeDocId);
   const stagingCount = useAiStagingStore((s) => s.queue.length);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    params.set("phase", currentPhase);
-    params.set("zoom", zoomRootNodeId);
-    if (activeDocId) params.set("doc", activeDocId);
-    if (openReferenceIds.length > 0) params.set("splitRef", openReferenceIds.join(","));
-    else params.delete("splitRef");
-    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+  // URL · 저장소 기록은 화면이 그려진 뒤 한가할 때 한 번만 (연달아 줌 · 전환하면 마지막 위치만 남긴다).
+  useEffect(
+    () =>
+      runWhenIdle(() => {
+        const params = new URLSearchParams(window.location.search);
+        params.set("phase", currentPhase);
+        params.set("zoom", zoomRootNodeId);
+        if (activeDocId) params.set("doc", activeDocId);
+        if (openReferenceIds.length > 0) params.set("splitRef", openReferenceIds.join(","));
+        else params.delete("splitRef");
+        window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
 
-    writeStoredJson(STORAGE_KEY, {
-      phase: currentPhase,
-      zoom: zoomRootNodeId,
-      doc: activeDocId,
-      splitRef: openReferenceIds,
-    });
-  }, [currentPhase, zoomRootNodeId, activeDocId, openReferenceIds]);
+        writeStoredJson(STORAGE_KEY, {
+          phase: currentPhase,
+          zoom: zoomRootNodeId,
+          doc: activeDocId,
+          splitRef: openReferenceIds,
+        });
+      }),
+    [currentPhase, zoomRootNodeId, activeDocId, openReferenceIds]
+  );
 
   useEffect(() => {
     const onPopState = () => {

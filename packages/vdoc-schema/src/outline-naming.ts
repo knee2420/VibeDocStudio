@@ -26,7 +26,18 @@ const LABEL_NAMED = /(라벨|헤더|header|label)(\s*\d+)?\s*$|^헤더\s*:/i;
 /** import 엔진이 붙인 블록 이름 (`p1_tbl_1`). */
 const MACHINE_TITLE = /^[a-z]+\d*_[a-z]+_\d+$/i;
 
-export const plainText = (html: string | undefined): string => htmlToSummary(html ?? "");
+/** 같은 슬롯 HTML 은 다시 파싱하지 않는다 (아웃라인을 다시 만들 때마다 모든 슬롯을 평문으로 바꾼다). */
+const plainTextCache = new Map<string, string>();
+export const plainText = (html: string | undefined): string => {
+  const src = html ?? "";
+  if (!src) return "";
+  const hit = plainTextCache.get(src);
+  if (hit !== undefined) return hit;
+  const text = htmlToSummary(src);
+  if (plainTextCache.size > 20000) plainTextCache.clear();
+  plainTextCache.set(src, text);
+  return text;
+};
 
 const compact = (s: string): string => s.replace(/\s+/g, "");
 

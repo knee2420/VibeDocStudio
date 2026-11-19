@@ -1,8 +1,10 @@
 import { useEffect, useSyncExternalStore } from "react";
 
 import {
-  buildProjectFractalTree,
+  buildProjectOutlineBase,
+  deriveOutlineView,
   PROJECT_ROOT_CRUMB_ID,
+  type OutlineBase,
   type FractalOutlineProjection,
   type OutlinerNode,
   type VDocDocument,
@@ -31,23 +33,26 @@ const EMPTY_PROJECT: VProjectManifest = {
 };
 
 /**
- * 아웃라인 투영은 아웃라이너 · 브레드크럼 · 캔버스가 함께 쓴다. 입력이 같으면 한 번만 계산하도록
- * 마지막 입력/결과를 모듈에 기억한다 (소비자마다 `useMemo` 를 두면 같은 트리를 세 번 만든다).
+ * 아웃라인 투영은 아웃라이너 · 브레드크럼 · 캔버스가 함께 쓴다. 두 층으로 기억한다.
+ * - 바탕(base): 프로젝트 · 문서 · 단계 · 작업 아웃라인이 같으면 그대로. 문서 조각은 문서 객체별로 캐시되므로
+ *   슬롯 한 칸을 고치면 그 문서 조각만 다시 만든다 (`buildProjectOutlineBase`).
+ * - 보기(view): 줌 루트만 바뀌면 바탕을 다시 만들지 않고 보기만 다시 계산한다 (`deriveOutlineView`).
  */
-type ProjectionInputs = [VProjectManifest, VDocDocument[], string, string, unknown];
-let lastInputs: ProjectionInputs | null = null;
+type BaseInputs = [VProjectManifest, VDocDocument[], string, unknown];
+let lastBaseInputs: BaseInputs | null = null;
+let lastBase: { base: OutlineBase; project: VProjectManifest } | null = null;
+let lastViewKey: [OutlineBase, string] | null = null;
 let lastProjection: FractalOutlineProjection | null = null;
 
-function projectOutline(
+function outlineBase(
   project: VProjectManifest,
   docs: VDocDocument[],
-  zoomRootNodeId: string,
   phase: string,
   workingOutline: ReturnType<typeof useWorkingOutlineStore.getState>["outline"]
-): FractalOutlineProjection {
-  const inputs: ProjectionInputs = [project, docs, zoomRootNodeId, phase, workingOutline];
-  if (lastProjection && lastInputs && inputs.every((v, i) => v === lastInputs![i])) return lastProjection;
-  lastInputs = inputs;
+): { base: OutlineBase; project: VProjectManifest } {
+  const inputs: BaseInputs = [project, docs, phase, workingOutline];
+  if (lastBase && lastBaseInputs && inputs.every((v, i) => v === lastBaseInputs![i])) return lastBase;
+  lastBaseInputs = inputs;
   const useWorking =
     phase === "storylining" &&
     workingOutline &&
@@ -58,11 +63,21 @@ function projectOutline(
         storylineNodes: projectWorkingOutlineToOutlinerNodes(workingOutline, project.title),
       }
     : project;
-  const projectedDocs = useWorking ? [] : docs;
-  lastProjection = shareStructure(
-    lastProjection,
-    buildProjectFractalTree(projectedProject, projectedDocs, zoomRootNodeId)
-  );
+  lastBase = { base: buildProjectOutlineBase(projectedProject, useWorking ? [] : docs), project: projectedProject };
+  return lastBase;
+}
+
+function projectOutline(
+  project: VProjectManifest,
+  docs: VDocDocument[],
+  zoomRootNodeId: string,
+  phase: string,
+  workingOutline: ReturnType<typeof useWorkingOutlineStore.getState>["outline"]
+): FractalOutlineProjection {
+  const { base, project: projectedProject } = outlineBase(project, docs, phase, workingOutline);
+  if (lastProjection && lastViewKey && lastViewKey[0] === base && lastViewKey[1] === zoomRootNodeId) return lastProjection;
+  lastViewKey = [base, zoomRootNodeId];
+  lastProjection = shareStructure(lastProjection, deriveOutlineView(base, projectedProject, zoomRootNodeId));
   return lastProjection;
 }
 
@@ -75,6 +90,7 @@ function shallowEqual<T extends object>(a: T, b: T): boolean {
 }
 
 function shareArray<T extends object>(prev: readonly T[] | undefined, next: T[], pool: Map<string, T>, key: (v: T) => string): T[] {
+  if (prev === next) return next;
   let same = prev !== undefined && prev.length === next.length;
   const out = next.map((item, i) => {
     const old = pool.get(key(item));

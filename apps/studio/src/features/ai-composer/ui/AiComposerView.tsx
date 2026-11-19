@@ -23,6 +23,7 @@ import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-do
 import { useProjectStore } from "@/entities/vdoc-project";
 import type { VDocDocument } from "@vibe/vdoc-schema";
 import { aiRuntime, composerController } from "@/shared/ai";
+import { runWhenIdle } from "@/shared/lib";
 
 import { ComposerSettingsBar } from "./ComposerSettingsBar";
 
@@ -196,18 +197,19 @@ function useAutoContexts(): { auto: ContextRef[]; suggested: ContextRef[] } {
   const keyRef = React.useRef(JSON.stringify(value));
 
   React.useEffect(() => {
-    let timer: number | null = null;
+    let cancel: (() => void) | null = null;
     const recompute = () => {
-      timer = null;
+      cancel = null;
       const next = compute();
       const key = JSON.stringify(next);
       if (key === keyRef.current) return;
       keyRef.current = key;
       setValue(next);
     };
-    // 같은 틱의 여러 변경(선택 + 문서)은 한 번만 계산한다.
+    // 같은 틱의 여러 변경(선택 + 문서)은 한 번만 계산한다. 문서 전체 글을 모아 비교하므로 화면이 그려진 뒤
+    // 한가할 때 돈다 — 바로 돌면 큰 문서 전환 · 슬롯 커밋 직후 다음 화면이 수십 ms 늦게 그려졌다.
     const schedule = () => {
-      if (timer === null) timer = window.setTimeout(recompute, 0);
+      if (cancel === null) cancel = runWhenIdle(recompute);
     };
     recompute();
     const unsubscribers = [
@@ -222,7 +224,7 @@ function useAutoContexts(): { auto: ContextRef[]; suggested: ContextRef[] } {
     ];
     return () => {
       unsubscribers.forEach((u) => u());
-      if (timer !== null) window.clearTimeout(timer);
+      cancel?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [providers]);

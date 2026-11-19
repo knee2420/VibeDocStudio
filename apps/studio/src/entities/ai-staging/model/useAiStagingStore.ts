@@ -269,7 +269,27 @@ export const useAiStagingStore = create<AiStagingState>((set, get) => {
 });
 
 /** 변경안의 대상 슬롯 id 들 (채움 상태 "staged" 계산용). */
+const stagedIdsCache = new WeakMap<StagedAiChange[], Map<string, Set<string>>>();
+
+/**
+ * 대기열에 변경안이 걸린 슬롯 ID. 캔버스의 슬롯 틀마다 부르므로 (대기열 · 문서)별로 한 번만 만든다.
+ * 돌려받은 Set 은 공유되므로 고치지 않는다.
+ */
 export function stagedSlotIds(queue: StagedAiChange[], docId?: string): Set<string> {
+  let byDoc = stagedIdsCache.get(queue);
+  if (!byDoc) {
+    byDoc = new Map();
+    stagedIdsCache.set(queue, byDoc);
+  }
+  const key = docId ?? "";
+  const hit = byDoc.get(key);
+  if (hit) return hit;
+  const ids = computeStagedSlotIds(queue, docId);
+  byDoc.set(key, ids);
+  return ids;
+}
+
+function computeStagedSlotIds(queue: StagedAiChange[], docId?: string): Set<string> {
   const ids = new Set<string>();
   for (const c of queue) {
     if (c.targetKind !== "slot-html") continue;

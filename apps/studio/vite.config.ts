@@ -14,9 +14,14 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  preview: {
+    headers: { "Document-Policy": "js-profiling" },
+  },
   server: {
     port: 5180,
     strictPort: false,
+    // 개발 서버에서 JS Self-Profiling API 허용 (`window.__studioPerf.profile` · scripts/studio_perf.py --profile)
+    headers: { "Document-Policy": "js-profiling" },
     proxy: {
       "/api": {
         target: "http://127.0.0.1:8090",

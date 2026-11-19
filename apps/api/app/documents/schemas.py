@@ -52,6 +52,13 @@ class VDocDocumentResponse(BaseModel):
     document: dict[str, Any]
 
 
+class VDocSaveAckResponse(BaseModel):
+    """`PUT ?ack=revision` 응답 — 저장된 버전만 돌려준다 (자동 저장마다 문서 전체를 되받지 않게)."""
+
+    docId: str
+    revision: int
+
+
 class VDocPageChunkResponse(BaseModel):
     docId: str
     title: str

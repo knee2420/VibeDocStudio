@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { BadgeCheck, Sparkles } from "lucide-react";
 
-import { slotFillState, type StagedSlotHtmlChange, type VDocSlot } from "@vibe/vdoc-schema";
+import { slotFillState, type StagedSlotHtmlChange, type VDocDocument, type VDocSlot } from "@vibe/vdoc-schema";
 
 import { stagedSlotIds, useAiStagingStore } from "@/entities/ai-staging";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
@@ -22,6 +22,31 @@ export interface SlotFrameProps {
  * - 채움 상태: 빈 칸(점선) · AI 초안(보라 배지 — 눌러서 검증) · 검증됨(초록)
  * - 근거 역방향 강조: RM 에서 자료를 가리키면 그 자료를 쓰는 칸이 빛난다 (`evidence-focus`)
  */
+type EvidenceLinks = NonNullable<VDocDocument["evidenceLinks"]>;
+const staleKeysCache = new WeakMap<EvidenceLinks, Map<string, string>>();
+
+/**
+ * 근거가 무효(원문 변경 · 소실)인 슬롯별 표시 키. 슬롯 틀마다 문서 근거 목록 전체를 훑지 않도록
+ * 근거 목록 객체별로 한 번만 만든다 (슬롯 수 × 근거 수 → 근거 수).
+ */
+function staleKeyFor(links: EvidenceLinks | undefined, slotId: string): string {
+  if (!links || links.length === 0) return "";
+  let bySlot = staleKeysCache.get(links);
+  if (!bySlot) {
+    const grouped = new Map<string, string[]>();
+    for (const l of links) {
+      if (!l.status || l.status === "ok") continue;
+      const list = grouped.get(l.slotId);
+      const key = `${l.status}:${l.locator.label}`;
+      if (list) list.push(key);
+      else grouped.set(l.slotId, [key]);
+    }
+    bySlot = new Map([...grouped].map(([id, keys]) => [id, keys.join("|")]));
+    staleKeysCache.set(links, bySlot);
+  }
+  return bySlot.get(slotId) ?? "";
+}
+
 export const SlotFrame: React.FC<SlotFrameProps> = ({ slot, children, onOpenEvidence }) => {
   const docId = useStudioDocumentStore((s) => s.activeDocId);
   const drafting = useWorkspaceSessionStore((s) => s.currentPhase === "drafting");
@@ -33,11 +58,9 @@ export const SlotFrame: React.FC<SlotFrameProps> = ({ slot, children, onOpenEvid
   const maxLines = slot.constraints?.maxLines;
   const overflow = maxLines && lines > maxLines;
   // 근거 무효화: 이 칸의 근거 원문이 바뀌었거나 사라졌으면 표시 (내용은 그대로 — 사람이 판단)
-  const staleKey = useStudioDocumentStore((s) => {
-    const d = s.docs.find((x) => x.docId === docId);
-    const bad = (d?.evidenceLinks ?? []).filter((l) => l.slotId === slot.slotId && l.status && l.status !== "ok");
-    return bad.map((l) => `${l.status}:${l.locator.label}`).join("|");
-  });
+  const staleKey = useStudioDocumentStore((s) =>
+    staleKeyFor(s.docs.find((x) => x.docId === docId)?.evidenceLinks, slot.slotId)
+  );
 
   const ring = highlighted
     ? "ring-2 ring-amber-400 ring-offset-1 rounded-sm bg-amber-50/40"

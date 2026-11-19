@@ -20,6 +20,7 @@ from .schemas import (
     SaveVDocRequest,
     VDocDocumentResponse,
     VDocPageChunkResponse,
+    VDocSaveAckResponse,
     VDocSummaryResponse,
 )
 from .use_cases import (
@@ -96,17 +97,23 @@ def get_document_page_chunk(
     )
 
 
-@router.put("/{doc_id}", response_model=VDocDocumentResponse)
+@router.put("/{doc_id}", response_model=VDocDocumentResponse | VDocSaveAckResponse)
 @inject
-def save_document(doc_id: str, body: SaveVDocRequest, use_case: SaveDep) -> VDocDocumentResponse:
-    return _document_response(
-        use_case.execute(
-            doc_id,
-            body.document,
-            base_revision=body.baseRevision,
-            changes=[c.model_dump() for c in body.changes],
-        )
+def save_document(
+    doc_id: str,
+    body: SaveVDocRequest,
+    use_case: SaveDep,
+    ack: str | None = Query(default=None, description="`revision` 이면 문서 대신 저장된 버전만 돌려준다"),
+) -> VDocDocumentResponse | VDocSaveAckResponse:
+    record = use_case.execute(
+        doc_id,
+        body.document,
+        base_revision=body.baseRevision,
+        changes=[c.model_dump() for c in body.changes],
     )
+    if ack == "revision":
+        return VDocSaveAckResponse(docId=record.doc_id, revision=int(record.payload.get("revision") or 0))
+    return _document_response(record)
 
 
 @router.get("/{doc_id}/revisions", response_model=RevisionListResponse)

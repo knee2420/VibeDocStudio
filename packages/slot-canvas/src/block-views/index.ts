@@ -16,6 +16,7 @@ import { textView } from "./views/TextBlockView";
 import { linkCardView } from "./views/LinkCardBlockView";
 import { dividerView } from "./views/DividerBlockView";
 import { heroView } from "./views/HeroBlockView";
+import { webFormView } from "./views/WebFormBlockView";
 
 export const BUILTIN_BLOCK_VIEWS = [
   textView,
@@ -32,6 +33,7 @@ export const BUILTIN_BLOCK_VIEWS = [
   linkCardView,
   dividerView,
   heroView,
+  webFormView,
 ] as const;
 
 for (const view of BUILTIN_BLOCK_VIEWS) registerBlockView(view as never);

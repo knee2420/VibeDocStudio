@@ -17,7 +17,7 @@ export type WorkspaceBootStatus = "loading" | "ready" | "error";
  * 작업 공간 기동 순서 (서버가 원장):
  * 1) URL 의 위치(단계 · 줌 · 참조 작업창)를 세션에 복원
  * 2) 프로젝트 매니페스트를 불러오고, URL 에 단계가 없으면 프로젝트에 기록된 단계로 시작
- * 3) 모든 프로젝트의 작업 문서를 불러와 URL 의 `doc` 을 활성 문서로
+ * 3) URL 의 `doc`(활성 문서)을 먼저 불러와 바로 그리고, 나머지 프로젝트 문서는 뒤에서 이어 받는다
  * 4) 활성 문서의 첫 편집 슬롯을 선택
  * 레퍼런스(라이브러리 · 프로젝트 연결)는 작업 문서와 따로 불러오고, 활성 프로젝트가 바뀌면 다시 불러온다.
  */
@@ -61,20 +61,22 @@ export function useWorkspaceBootstrap(): {
       const recordedPhase = selectActiveProject(projectState)?.activePhase;
       if (!params.get("phase") && recordedPhase) session.setPhase(recordedPhase);
 
-      await useStudioDocumentStore
-        .getState()
-        .hydrate(projectState.projects.flatMap((p) => p.docIds), params.get("doc"));
+      const allDocIds = [...new Set(projectState.projects.flatMap((p) => p.docIds))];
+      const { background } = await useStudioDocumentStore.getState().hydrate(allDocIds, params.get("doc"));
+      void background.then(() => performance.mark("studio:docs-loaded"));
       if (cancelled) return;
 
       const docState = useStudioDocumentStore.getState();
       const activeDoc = selectActiveDocument(docState);
-      if (docState.docs.length > 1) {
-        const inactiveCollapsed = docState.docs
-          .filter((d) => d.docId !== activeDoc?.docId)
-          .flatMap((d) => [`auto-doc-${d.docId}`, `wo-doc-${d.docId}`]);
+      // 아직 받는 중인 문서도 처음엔 접어 둔다 (예전에는 모든 문서를 받은 뒤 같은 목록을 접었다).
+      if (allDocIds.length > 1) {
+        const inactiveCollapsed = allDocIds
+          .filter((id) => id !== activeDoc?.docId)
+          .flatMap((id) => [`auto-doc-${id}`, `wo-doc-${id}`]);
         session.seedDefaultCollapsed(inactiveCollapsed);
       }
       useSlotSelectionStore.getState().setSelectedSlotId(findFirstEditableSlotId(activeDoc));
+      performance.mark("studio:ready");
       setStatus("ready");
     })();
 

@@ -30,8 +30,11 @@ import { SlotRangeAiBar } from "./SlotRangeAiBar";
 import { FigmaFloatingToolbar } from "./FigmaFloatingToolbar";
 import { HiddenLayersStyle } from "@/features/layer-visibility";
 
-/** 한 번에 DOM 에 올리는 페이지 수 (슬라이딩 윈도우). */
-const WINDOW_CHUNK_PAGES = 15;
+/**
+ * 한 번에 DOM 에 올리는 페이지 수 (슬라이딩 윈도우). 1080p 화면에 A4 가 1~2쪽 보이므로 앞뒤 여유를 두고 6쪽.
+ * 쪽당 DOM 이 수백 개라 15쪽을 한꺼번에 올리면 문서 전환 · 줌아웃마다 레이아웃이 수백 ms 걸렸다.
+ */
+const WINDOW_CHUNK_PAGES = 6;
 
 /**
  * 아웃라인에서 가리키는 캔버스 대상(슬롯 · 블록)을 강조하는 스타일 (피그마 레이어 호버와 같은 파란 외곽선).

@@ -466,7 +466,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     width: pageDims.width,
     minWidth: pageDims.width,
     maxWidth: pageDims.width,
-    minHeight: pageDims.height,
+    minHeight: seamless ? undefined : pageDims.height,
     backgroundColor: layout?.background ?? undefined,
     fontFamily: layout?.fontFamily,
     fontSize: layout?.fontSize,

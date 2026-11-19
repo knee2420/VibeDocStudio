@@ -9,6 +9,7 @@ import type { HeadingBlockDef, FormTitleBlockDef } from "./heading-block";
 import type { LinkCardBlockDef } from "./link-card-block";
 import type { DividerBlockDef } from "./divider-block";
 import type { HeroBlockDef } from "./hero-block";
+import type { WebFormBlockDef } from "./web-form-block";
 import type {
   CompositeFormFrameBlockDef,
   SummaryListBlockDef,
@@ -27,6 +28,7 @@ export * from "./summary-banner-blocks";
 export * from "./link-card-block";
 export * from "./divider-block";
 export * from "./hero-block";
+export * from "./web-form-block";
 
 export type LayoutBlock =
   | ImageBlockDef
@@ -43,5 +45,6 @@ export type LayoutBlock =
   | CalloutBoxBlockDef
   | LinkCardBlockDef
   | DividerBlockDef
-  | HeroBlockDef;
+  | HeroBlockDef
+  | WebFormBlockDef;
 

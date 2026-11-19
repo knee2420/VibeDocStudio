@@ -15,6 +15,7 @@ import { textBlock } from "./kinds/text";
 import { linkCardBlock } from "./kinds/link-card";
 import { dividerBlock } from "./kinds/divider";
 import { heroBlock } from "./kinds/hero";
+import { webFormBlock } from "./kinds/web-form";
 import { registerBlockKind } from "./registry";
 
 /** 기본 블록 종류 (블록 추가 메뉴는 이 순서로 보인다). */
@@ -33,6 +34,7 @@ export const BUILTIN_BLOCK_KINDS = [
   linkCardBlock,
   dividerBlock,
   heroBlock,
+  webFormBlock,
 ] as const;
 
 for (const def of BUILTIN_BLOCK_KINDS) registerBlockKind(def as never);

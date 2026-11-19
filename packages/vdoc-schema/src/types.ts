@@ -77,6 +77,7 @@ export interface TableBorderRules {
   headerBottom?: string; // e.g. "1px solid #e2e8f0"
   rowBottom?: string;    // e.g. "1px solid #e2e8f0"
   vertical?: string;     // e.g. "none" | "1px solid #0f172a"
+  radius?: string;       // e.g. "0px" (sharp HWP grid) | "6px"
 }
 
 export interface TableHeaderStyle {

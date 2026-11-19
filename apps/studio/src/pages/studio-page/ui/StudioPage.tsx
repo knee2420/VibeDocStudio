@@ -21,9 +21,12 @@ import { StudioActivityBar } from "@/widgets/studio-activity-bar";
 import { StudioTopRibbon } from "@/widgets/studio-top-ribbon";
 import { VDocPageCanvas } from "@/widgets/vdoc-page-canvas";
 
-/** 전역 부작용(URL · 단축키 · 줌 위계)은 여기서 한 번씩만 건다. */
-const StudioWorkspace: React.FC = () => {
-  const blocks = useMutateCanvasBlocks();
+/**
+ * 전역 부작용(URL · 단축키 · 줌 위계 · 근거 · AI 범위)은 여기서 한 번씩만 건다.
+ * 아무것도 그리지 않는 별도 컴포넌트로 둔다 — 이 훅들은 활성 문서 · 줌 · 선택 슬롯을 구독하므로
+ * 작업 공간 루트에 두면 문서 전환 · 줌 · 슬롯 클릭마다 화면 전체가 다시 그려졌다.
+ */
+const StudioGlobalEffects: React.FC<{ blocks: ReturnType<typeof useMutateCanvasBlocks> }> = ({ blocks }) => {
   useWorkspaceUrlSync();
   useGlobalStudioShortcuts({
     onCopySelectedBlock: blocks.copySelectedBlock,
@@ -45,6 +48,11 @@ const StudioWorkspace: React.FC = () => {
     const offs = [registerWorkspaceAi(), registerSlotAiActions(), registerKnowledgeDeckAi(), registerCitationNavigation(), registerEvidenceFocusAi(), registerAgentDraftSync()];
     return () => offs.forEach((off) => off());
   }, []);
+  return null;
+};
+
+const StudioWorkspace: React.FC = () => {
+  const blocks = useMutateCanvasBlocks();
 
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
 
@@ -81,6 +89,8 @@ const StudioWorkspace: React.FC = () => {
       <HoverPagePeekCard />
       <AiAttachLayer />
       <ResourcePreviewHost />
+      {/* 마지막 자식: 예전처럼 다른 패널의 effect 가 먼저 돈 뒤에 전역 effect 가 돈다. */}
+      <StudioGlobalEffects blocks={blocks} />
     </div>
   );
 };

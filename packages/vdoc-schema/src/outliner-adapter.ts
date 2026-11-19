@@ -58,6 +58,357 @@ function titleFromLabels(grid: PlacedCell[][]): string {
   return labels.length > 2 ? `${labels.slice(0, 2).join(" · ")} 외` : labels.join(" · ");
 }
 
+/** 스토리라인 노드 색인 — 문서별 아웃라인 조각을 만들 때 읽기만 한다. */
+interface StoryIndex {
+  nodes: OutlinerNode[];
+  rootId: string | null;
+  docNodeByDocId: ReadonlyMap<string, OutlinerNode>;
+  pageNodeByKey: ReadonlyMap<string, OutlinerNode>;
+  storySlotByKey: ReadonlyMap<string, OutlinerNode>;
+}
+
+/** 문서 하나가 내놓는 아웃라인 노드 (문서 순서). `emit: false` 는 순서만 매기는 스토리라인 페이지 노드. */
+interface DocOutlineOp {
+  node: OutlinerNode;
+  emit: boolean;
+}
+
+/**
+ * 문서별 아웃라인 조각 캐시. 문서 객체 · 스토리라인 노드 배열이 같으면 다시 만들지 않는다.
+ * 슬롯 한 칸을 고치면 그 문서 조각만, 줌을 바꾸면 아무 조각도 다시 만들지 않는다.
+ * 캐시된 노드 객체는 공유되므로 아무도 고쳐 쓰지 않는다 (DFS 는 깊이가 다를 때 복사한다).
+ */
+const docOutlineCache = new WeakMap<VDocDocument, { story: OutlinerNode[]; rootId: string | null; ops: DocOutlineOp[] }>();
+
+function documentOutlineOps(doc: VDocDocument, story: StoryIndex): DocOutlineOp[] {
+  const cached = docOutlineCache.get(doc);
+  if (cached && cached.story === story.nodes && cached.rootId === story.rootId) return cached.ops;
+  const ops = computeDocumentOps(doc, story);
+  docOutlineCache.set(doc, { story: story.nodes, rootId: story.rootId, ops });
+  return ops;
+}
+
+function computeDocumentOps(doc: VDocDocument, story: StoryIndex): DocOutlineOp[] {
+  const { rootId, docNodeByDocId, pageNodeByKey, storySlotByKey } = story;
+  const ops: DocOutlineOp[] = [];
+  const emit = (node: OutlinerNode): OutlinerNode => {
+    ops.push({ node, emit: true });
+    return node;
+  };
+
+  let docNode = docNodeByDocId.get(doc.docId);
+  if (!docNode) {
+    docNode = emit({
+      nodeId: `auto-doc-${doc.docId}`,
+      parentId: rootId,
+      depth: 1,
+      zoomLevel: "document",
+      elementKind: "document",
+      title: doc.title,
+      summary: `${doc.pages.length}p · 슬롯 ${Object.keys(doc.slots).length}개`,
+      targetDocId: doc.docId,
+      aiStatus: "idle",
+    });
+  }
+  const docParent = docNode;
+  const emittedSlotKeys = new Set<string>();
+
+  const emitSlot = (
+    parent: OutlinerNode,
+    page: VDocPage,
+    blockId: string,
+    slotId: string,
+    name: OutlineName,
+    isStatic = false
+  ): OutlinerNode | undefined => {
+    const slot = doc.slots[slotId];
+    const key = `${doc.docId}\u0000${slotId}`;
+    if (!slot || emittedSlotKeys.has(key)) return undefined;
+    emittedSlotKeys.add(key);
+    const story = storySlotByKey.get(key);
+    if (story) {
+      return emit({
+        ...story,
+        parentId: parent.nodeId,
+        targetPageId: story.targetPageId ?? page.pageId,
+        targetBlockId: blockId,
+      });
+    }
+    return emit({
+      nodeId: `auto-slot-${doc.docId}-${slotId}`,
+      parentId: parent.nodeId,
+      depth: parent.depth + 1,
+      zoomLevel: "slot",
+      elementKind: "slot",
+      title: name.title,
+      summary: plainText(slot.content).slice(0, 90) || "(빈 슬롯)",
+      targetDocId: doc.docId,
+      targetPageId: page.pageId,
+      targetSlotId: slotId,
+      targetBlockId: blockId,
+      aiStatus: slot.isEdited ? "applied" : "idle",
+      ...(isStatic ? { isStatic: true } : {}),
+      ...(name.needsReview ? { nameNeedsReview: true } : {}),
+    });
+  };
+
+  const emitContainer = (
+    parent: OutlinerNode,
+    nodeId: string,
+    page: VDocPage,
+    blk: LayoutBlock,
+    title: string,
+    summary: string,
+    needsReview = false
+  ): OutlinerNode =>
+    emit({
+      nodeId,
+      parentId: parent.nodeId,
+      depth: parent.depth + 1,
+      zoomLevel: "page",
+      elementKind: nodeId.startsWith("auto-sec-") ? "section" : blk.kind,
+      title,
+      summary,
+      targetDocId: doc.docId,
+      targetPageId: page.pageId,
+      targetBlockId: blk.blockId,
+      recommendedTemplateId: blk.kind,
+      aiStatus: "idle",
+      ...(needsReview ? { nameNeedsReview: true } : {}),
+    });
+
+  /** 합계 · 요약 항목: 값 칸 하나를 항목 라벨(직접 값 또는 라벨 슬롯의 글자) 이름으로 붙인다. */
+  const summaryItemEntries = (items: TableSummaryItem[]) =>
+    items.flatMap((item) => {
+      const slotId = item.valueSlotId ?? item.slotId;
+      if (!slotId) return [];
+      const label =
+        tidyName(item.label) ||
+        tidyName(plainText(item.labelSlotId ? doc.slots[item.labelSlotId]?.content : ""));
+      return [{ slotId, name: { title: label || item.itemId, needsReview: !label } }];
+    });
+
+  /** 이름이 겹치지 않게 정리한 뒤 같은 부모 아래 슬롯들을 붙인다. */
+  const emitSlotGroup = (
+    parent: OutlinerNode,
+    page: VDocPage,
+    blockId: string,
+    entries: { slotId: string; name: OutlineName; isStatic?: boolean }[]
+  ) => {
+    const named = dedupeNames(entries.map((e) => ({ ...e, title: e.name.title })));
+    for (const e of named) {
+      emitSlot(parent, page, blockId, e.slotId, { ...e.name, title: e.title }, e.isStatic);
+    }
+  };
+
+  /** 표 · 구역 공통: 반복 영역이면 행 노드로, 아니면 입력 칸을 바로 붙인다. */
+  const emitCellGrid = (
+    parent: OutlinerNode,
+    page: VDocPage,
+    blk: LayoutBlock,
+    grid: PlacedCell[][],
+    scopeTitle: string,
+    rowNodePrefix: string
+  ) => {
+    if (isRepeatingGrid(grid)) {
+      let rowNo = 0;
+      grid.forEach((row, r) => {
+        const values = row.filter((c) => c.role === "value");
+        if (values.length === 0) return;
+        rowNo++;
+        const rowNode = emitContainer(
+          parent,
+          `${rowNodePrefix}-r${r}`,
+          page,
+          blk,
+          `${rowNo}행`,
+          values.map((c) => plainText(c.slot.content)).filter(Boolean).join(" · ").slice(0, 90)
+        );
+        emitSlotGroup(
+          rowNode,
+          page,
+          blk.blockId,
+          values.map((c) => ({
+            slotId: c.cell.slotId,
+            name: nameTableValueCell(grid, c, scopeTitle, { preferColumnHeader: true }),
+          }))
+        );
+      });
+      return;
+    }
+    emitSlotGroup(
+      parent,
+      page,
+      blk.blockId,
+      grid
+        .flat()
+        .filter((c) => c.role === "value")
+        .map((c) => ({ slotId: c.cell.slotId, name: nameTableValueCell(grid, c, scopeTitle) }))
+    );
+  };
+
+  const emitTable = (pageNode: OutlinerNode, page: VDocPage, blk: LayoutBlock & { kind: "structured-table" | "table" }) => {
+    const grid = placeTableCells(blk.rows, doc.slots);
+    const title = tidyBlockTitle(blk.title) || titleFromLabels(grid) || "표";
+    const tableNode = emitContainer(
+      pageNode,
+      `auto-blk-${doc.docId}-${blk.blockId}`,
+      page,
+      blk,
+      `[표] ${title}`,
+      `표 (${blk.rows.length}행)`,
+      !tidyBlockTitle(blk.title)
+    );
+
+    for (const row of grid) {
+      const values = row.filter((c) => c.role === "value");
+      if (values.length === 0) continue;
+      const [first] = row;
+      if (first.role === "value" && values.length > 1) {
+        // 첫 칸이 행의 이름(키)인 매트릭스 표: 첫 칸 노드 아래에 나머지 칸을 열 머리 이름으로 붙인다.
+        const rowKey = tidyName(plainText(first.slot.content)).slice(0, 40);
+        const rowNode = emitSlot(
+          tableNode,
+          page,
+          blk.blockId,
+          first.cell.slotId,
+          rowKey ? { title: rowKey, needsReview: false } : nameTableValueCell(grid, first, title)
+        );
+        emitSlotGroup(
+          rowNode ?? tableNode,
+          page,
+          blk.blockId,
+          values.slice(1).map((c) => ({
+            slotId: c.cell.slotId,
+            name: nameTableValueCell(grid, c, title, { preferColumnHeader: true }),
+          }))
+        );
+      } else {
+        emitSlotGroup(
+          tableNode,
+          page,
+          blk.blockId,
+          values.map((c) => ({ slotId: c.cell.slotId, name: nameTableValueCell(grid, c, title) }))
+        );
+      }
+    }
+
+    emitSlotGroup(tableNode, page, blk.blockId, summaryItemEntries(blk.footerSummary?.items ?? []));
+  };
+
+  const emitFrame = (
+    pageNode: OutlinerNode,
+    page: VDocPage,
+    blk: LayoutBlock & { kind: "composite-form-frame" }
+  ) => {
+    const grids = blk.sections.map((sec) => placeTableCells(sec.rows, doc.slots));
+    const blockTitle = tidyBlockTitle(blk.title);
+    const frameTitle = blockTitle || titleFromLabels(grids.flat()) || "서식 프레임";
+    const frameNode = emitContainer(
+      pageNode,
+      `auto-blk-${doc.docId}-${blk.blockId}`,
+      page,
+      blk,
+      frameTitle,
+      `서식 프레임 · ${blk.sections.length}구역`,
+      !blockTitle
+    );
+    blk.sections.forEach((sec: StructuredTableSectionDef, i) => {
+      const grid = grids[i];
+      // 구역이 하나뿐이면 구역 단계를 건너뛰고 프레임 바로 아래에 붙인다.
+      let sectionNode = frameNode;
+      if (blk.sections.length > 1) {
+        const secTitle = tidyBlockTitle(sec.title) || titleFromLabels(grid) || `${i + 1}구역`;
+        const hasValues = grid.some((row) => row.some((c) => c.role === "value"));
+        sectionNode = emitContainer(
+          frameNode,
+          `auto-sec-${doc.docId}-${blk.blockId}-${sec.sectionId}`,
+          page,
+          blk,
+          secTitle,
+          hasValues ? `구역 · ${sec.rows.length}행` : "고정 텍스트 구역",
+          !tidyBlockTitle(sec.title)
+        );
+        if (!hasValues) {
+          sectionNode.isStatic = true;
+          return;
+        }
+      }
+      emitCellGrid(
+        sectionNode,
+        page,
+        blk,
+        grid,
+        sec.title || frameTitle,
+        `auto-row-${doc.docId}-${blk.blockId}-${sec.sectionId}`
+      );
+    });
+  };
+
+  /** 블록 종류마다 아웃라인 모양은 그 정의(`block-kit`)가 정하고, 여기서는 이 블록에 묶인 도구를 넘긴다. */
+  const emitBlock = (pageNode: OutlinerNode, page: VDocPage, blk: LayoutBlock) => {
+    const blockTitle = tidyBlockTitle(blk.title);
+    const blockNodeId = `auto-blk-${doc.docId}-${blk.blockId}`;
+    const ctx: BlockOutlineContext = {
+      doc,
+      page,
+      pageNode,
+      blockNodeId,
+      blockTitle,
+      emitSlot: (parent, slotId, name, isStatic) => emitSlot(parent, page, blk.blockId, slotId, name, isStatic),
+      emitContainer: (parent, nodeId, title, summary, needsReview) => emitContainer(parent, nodeId, page, blk, title, summary, needsReview),
+      emitSlotGroup: (parent, entries) => emitSlotGroup(parent, page, blk.blockId, entries),
+      emitStatic: (title, summary) =>
+        emit({
+          nodeId: blockNodeId,
+          parentId: pageNode.nodeId,
+          depth: pageNode.depth + 1,
+          zoomLevel: "slot",
+          elementKind: blk.kind,
+          title,
+          summary,
+          targetDocId: doc.docId,
+          targetPageId: page.pageId,
+          targetBlockId: blk.blockId,
+          aiStatus: "idle",
+          isStatic: true,
+        }),
+      emitTable: (table) => emitTable(pageNode, page, table),
+      emitFrame: (frame) => emitFrame(pageNode, page, frame),
+      summaryItemEntries,
+      nameStandaloneSlot,
+      plainText,
+      tidyName,
+    };
+    const def = getBlockKind(blk.kind);
+    def.outline ? def.outline(blk, ctx) : genericBlockKind.outline!(blk, ctx);
+  };
+
+  for (const page of doc.pages) {
+    const pageKey = `${doc.docId}\u0000${page.pageId}`;
+    let pageNode = pageNodeByKey.get(pageKey);
+    if (pageNode) {
+      ops.push({ node: pageNode, emit: false });
+    } else {
+      pageNode = emit({
+        nodeId: `auto-page-${doc.docId}-${page.pageId}`,
+        parentId: docParent.nodeId,
+        depth: docParent.depth + 1,
+        zoomLevel: "page",
+        elementKind: "page",
+        title: `Page ${page.pageNumber} · ${page.pageLabel}`,
+        summary: `블록 ${page.blocks.length}개`,
+        targetDocId: doc.docId,
+        targetPageId: page.pageId,
+        recommendedTemplateId: page.blocks[0]?.kind || "section-block",
+        aiStatus: "idle",
+      });
+    }
+    for (const blk of page.blocks) emitBlock(pageNode, page, blk);
+  }
+  return ops;
+}
+
 /**
  * Combines explicit `project.storylineNodes` with live `.vdoc` Documents -> Pages -> Blocks -> Slots
  * into a unified Fractal Outliner Tree (`Project` -> `Document` -> `Page` -> `Block/구역/행` -> `Slot`).
@@ -74,6 +425,19 @@ export function buildProjectFractalTree(
   quickFilter?: string,
   collapsedNodeIds?: string[]
 ): FractalOutlineProjection {
+  return deriveOutlineView(buildProjectOutlineBase(project, docs), project, rootNodeId, quickFilter, collapsedNodeIds);
+}
+
+/** 줌 · 검색 · 접힘과 무관한 프로젝트 아웃라인 전체 (문서 조각은 문서별로 캐시된다). */
+export interface OutlineBase {
+  allNodes: OutlinerNode[];
+  byId: ReadonlyMap<string, OutlinerNode>;
+  hasChildrenMap: Record<string, boolean>;
+  /** 스토리라인 최상위 노드 (브레드크럼에서 뺀다). */
+  storyRootId: string | null;
+}
+
+export function buildProjectOutlineBase(project: VProjectManifest, docs: VDocDocument[]): OutlineBase {
   const storyNodes = project.storylineNodes;
   const seqById = new Map<string, number>();
   storyNodes.forEach((n, i) => seqById.set(n.nodeId, PLANNED_SEQ + i));
@@ -98,328 +462,14 @@ export function buildProjectFractalTree(
 
   const candidateNodes: OutlinerNode[] = [];
   let seq = storyNodes.length;
-  const emit = (node: OutlinerNode): OutlinerNode => {
-    candidateNodes.push(node);
-    seqById.set(node.nodeId, seq++);
-    return node;
-  };
-
   const rootId = storyNodes.find((n) => n.parentId === null)?.nodeId ?? null;
+  const story: StoryIndex = { nodes: storyNodes, rootId, docNodeByDocId, pageNodeByKey, storySlotByKey };
   for (const docId of project.docIds) {
     const doc = docsById.get(docId);
     if (!doc) continue;
-
-    let docNode = docNodeByDocId.get(doc.docId);
-    if (!docNode) {
-      docNode = emit({
-        nodeId: `auto-doc-${doc.docId}`,
-        parentId: rootId,
-        depth: 1,
-        zoomLevel: "document",
-        elementKind: "document",
-        title: doc.title,
-        summary: `${doc.pages.length}p · 슬롯 ${Object.keys(doc.slots).length}개`,
-        targetDocId: doc.docId,
-        aiStatus: "idle",
-      });
-      docNodeByDocId.set(doc.docId, docNode);
-    }
-    const docParent = docNode;
-    const emittedSlotKeys = new Set<string>();
-
-    const emitSlot = (
-      parent: OutlinerNode,
-      page: VDocPage,
-      blockId: string,
-      slotId: string,
-      name: OutlineName,
-      isStatic = false
-    ): OutlinerNode | undefined => {
-      const slot = doc.slots[slotId];
-      const key = `${doc.docId}\u0000${slotId}`;
-      if (!slot || emittedSlotKeys.has(key)) return undefined;
-      emittedSlotKeys.add(key);
-      const story = storySlotByKey.get(key);
-      if (story) {
-        return emit({
-          ...story,
-          parentId: parent.nodeId,
-          targetPageId: story.targetPageId ?? page.pageId,
-          targetBlockId: blockId,
-        });
-      }
-      return emit({
-        nodeId: `auto-slot-${doc.docId}-${slotId}`,
-        parentId: parent.nodeId,
-        depth: parent.depth + 1,
-        zoomLevel: "slot",
-        elementKind: "slot",
-        title: name.title,
-        summary: plainText(slot.content).slice(0, 90) || "(빈 슬롯)",
-        targetDocId: doc.docId,
-        targetPageId: page.pageId,
-        targetSlotId: slotId,
-        targetBlockId: blockId,
-        aiStatus: slot.isEdited ? "applied" : "idle",
-        ...(isStatic ? { isStatic: true } : {}),
-        ...(name.needsReview ? { nameNeedsReview: true } : {}),
-      });
-    };
-
-    const emitContainer = (
-      parent: OutlinerNode,
-      nodeId: string,
-      page: VDocPage,
-      blk: LayoutBlock,
-      title: string,
-      summary: string,
-      needsReview = false
-    ): OutlinerNode =>
-      emit({
-        nodeId,
-        parentId: parent.nodeId,
-        depth: parent.depth + 1,
-        zoomLevel: "page",
-        elementKind: nodeId.startsWith("auto-sec-") ? "section" : blk.kind,
-        title,
-        summary,
-        targetDocId: doc.docId,
-        targetPageId: page.pageId,
-        targetBlockId: blk.blockId,
-        recommendedTemplateId: blk.kind,
-        aiStatus: "idle",
-        ...(needsReview ? { nameNeedsReview: true } : {}),
-      });
-
-    /** 합계 · 요약 항목: 값 칸 하나를 항목 라벨(직접 값 또는 라벨 슬롯의 글자) 이름으로 붙인다. */
-    const summaryItemEntries = (items: TableSummaryItem[]) =>
-      items.flatMap((item) => {
-        const slotId = item.valueSlotId ?? item.slotId;
-        if (!slotId) return [];
-        const label =
-          tidyName(item.label) ||
-          tidyName(plainText(item.labelSlotId ? doc.slots[item.labelSlotId]?.content : ""));
-        return [{ slotId, name: { title: label || item.itemId, needsReview: !label } }];
-      });
-
-    /** 이름이 겹치지 않게 정리한 뒤 같은 부모 아래 슬롯들을 붙인다. */
-    const emitSlotGroup = (
-      parent: OutlinerNode,
-      page: VDocPage,
-      blockId: string,
-      entries: { slotId: string; name: OutlineName; isStatic?: boolean }[]
-    ) => {
-      const named = dedupeNames(entries.map((e) => ({ ...e, title: e.name.title })));
-      for (const e of named) {
-        emitSlot(parent, page, blockId, e.slotId, { ...e.name, title: e.title }, e.isStatic);
-      }
-    };
-
-    /** 표 · 구역 공통: 반복 영역이면 행 노드로, 아니면 입력 칸을 바로 붙인다. */
-    const emitCellGrid = (
-      parent: OutlinerNode,
-      page: VDocPage,
-      blk: LayoutBlock,
-      grid: PlacedCell[][],
-      scopeTitle: string,
-      rowNodePrefix: string
-    ) => {
-      if (isRepeatingGrid(grid)) {
-        let rowNo = 0;
-        grid.forEach((row, r) => {
-          const values = row.filter((c) => c.role === "value");
-          if (values.length === 0) return;
-          rowNo++;
-          const rowNode = emitContainer(
-            parent,
-            `${rowNodePrefix}-r${r}`,
-            page,
-            blk,
-            `${rowNo}행`,
-            values.map((c) => plainText(c.slot.content)).filter(Boolean).join(" · ").slice(0, 90)
-          );
-          emitSlotGroup(
-            rowNode,
-            page,
-            blk.blockId,
-            values.map((c) => ({
-              slotId: c.cell.slotId,
-              name: nameTableValueCell(grid, c, scopeTitle, { preferColumnHeader: true }),
-            }))
-          );
-        });
-        return;
-      }
-      emitSlotGroup(
-        parent,
-        page,
-        blk.blockId,
-        grid
-          .flat()
-          .filter((c) => c.role === "value")
-          .map((c) => ({ slotId: c.cell.slotId, name: nameTableValueCell(grid, c, scopeTitle) }))
-      );
-    };
-
-    const emitTable = (pageNode: OutlinerNode, page: VDocPage, blk: LayoutBlock & { kind: "structured-table" | "table" }) => {
-      const grid = placeTableCells(blk.rows, doc.slots);
-      const title = tidyBlockTitle(blk.title) || titleFromLabels(grid) || "표";
-      const tableNode = emitContainer(
-        pageNode,
-        `auto-blk-${doc.docId}-${blk.blockId}`,
-        page,
-        blk,
-        `[표] ${title}`,
-        `표 (${blk.rows.length}행)`,
-        !tidyBlockTitle(blk.title)
-      );
-
-      for (const row of grid) {
-        const values = row.filter((c) => c.role === "value");
-        if (values.length === 0) continue;
-        const [first] = row;
-        if (first.role === "value" && values.length > 1) {
-          // 첫 칸이 행의 이름(키)인 매트릭스 표: 첫 칸 노드 아래에 나머지 칸을 열 머리 이름으로 붙인다.
-          const rowKey = tidyName(plainText(first.slot.content)).slice(0, 40);
-          const rowNode = emitSlot(
-            tableNode,
-            page,
-            blk.blockId,
-            first.cell.slotId,
-            rowKey ? { title: rowKey, needsReview: false } : nameTableValueCell(grid, first, title)
-          );
-          emitSlotGroup(
-            rowNode ?? tableNode,
-            page,
-            blk.blockId,
-            values.slice(1).map((c) => ({
-              slotId: c.cell.slotId,
-              name: nameTableValueCell(grid, c, title, { preferColumnHeader: true }),
-            }))
-          );
-        } else {
-          emitSlotGroup(
-            tableNode,
-            page,
-            blk.blockId,
-            values.map((c) => ({ slotId: c.cell.slotId, name: nameTableValueCell(grid, c, title) }))
-          );
-        }
-      }
-
-      emitSlotGroup(tableNode, page, blk.blockId, summaryItemEntries(blk.footerSummary?.items ?? []));
-    };
-
-    const emitFrame = (
-      pageNode: OutlinerNode,
-      page: VDocPage,
-      blk: LayoutBlock & { kind: "composite-form-frame" }
-    ) => {
-      const grids = blk.sections.map((sec) => placeTableCells(sec.rows, doc.slots));
-      const blockTitle = tidyBlockTitle(blk.title);
-      const frameTitle = blockTitle || titleFromLabels(grids.flat()) || "서식 프레임";
-      const frameNode = emitContainer(
-        pageNode,
-        `auto-blk-${doc.docId}-${blk.blockId}`,
-        page,
-        blk,
-        frameTitle,
-        `서식 프레임 · ${blk.sections.length}구역`,
-        !blockTitle
-      );
-      blk.sections.forEach((sec: StructuredTableSectionDef, i) => {
-        const grid = grids[i];
-        // 구역이 하나뿐이면 구역 단계를 건너뛰고 프레임 바로 아래에 붙인다.
-        let sectionNode = frameNode;
-        if (blk.sections.length > 1) {
-          const secTitle = tidyBlockTitle(sec.title) || titleFromLabels(grid) || `${i + 1}구역`;
-          const hasValues = grid.some((row) => row.some((c) => c.role === "value"));
-          sectionNode = emitContainer(
-            frameNode,
-            `auto-sec-${doc.docId}-${blk.blockId}-${sec.sectionId}`,
-            page,
-            blk,
-            secTitle,
-            hasValues ? `구역 · ${sec.rows.length}행` : "고정 텍스트 구역",
-            !tidyBlockTitle(sec.title)
-          );
-          if (!hasValues) {
-            sectionNode.isStatic = true;
-            return;
-          }
-        }
-        emitCellGrid(
-          sectionNode,
-          page,
-          blk,
-          grid,
-          sec.title || frameTitle,
-          `auto-row-${doc.docId}-${blk.blockId}-${sec.sectionId}`
-        );
-      });
-    };
-
-    /** 블록 종류마다 아웃라인 모양은 그 정의(`block-kit`)가 정하고, 여기서는 이 블록에 묶인 도구를 넘긴다. */
-    const emitBlock = (pageNode: OutlinerNode, page: VDocPage, blk: LayoutBlock) => {
-      const blockTitle = tidyBlockTitle(blk.title);
-      const blockNodeId = `auto-blk-${doc.docId}-${blk.blockId}`;
-      const ctx: BlockOutlineContext = {
-        doc,
-        page,
-        pageNode,
-        blockNodeId,
-        blockTitle,
-        emitSlot: (parent, slotId, name, isStatic) => emitSlot(parent, page, blk.blockId, slotId, name, isStatic),
-        emitContainer: (parent, nodeId, title, summary, needsReview) => emitContainer(parent, nodeId, page, blk, title, summary, needsReview),
-        emitSlotGroup: (parent, entries) => emitSlotGroup(parent, page, blk.blockId, entries),
-        emitStatic: (title, summary) =>
-          emit({
-            nodeId: blockNodeId,
-            parentId: pageNode.nodeId,
-            depth: pageNode.depth + 1,
-            zoomLevel: "slot",
-            elementKind: blk.kind,
-            title,
-            summary,
-            targetDocId: doc.docId,
-            targetPageId: page.pageId,
-            targetBlockId: blk.blockId,
-            aiStatus: "idle",
-            isStatic: true,
-          }),
-        emitTable: (table) => emitTable(pageNode, page, table),
-        emitFrame: (frame) => emitFrame(pageNode, page, frame),
-        summaryItemEntries,
-        nameStandaloneSlot,
-        plainText,
-        tidyName,
-      };
-      const def = getBlockKind(blk.kind);
-      def.outline ? def.outline(blk, ctx) : genericBlockKind.outline!(blk, ctx);
-    };
-
-    for (const page of doc.pages) {
-      const pageKey = `${doc.docId}\u0000${page.pageId}`;
-      let pageNode = pageNodeByKey.get(pageKey);
-      if (pageNode) {
-        seqById.set(pageNode.nodeId, seq++);
-      } else {
-        pageNode = emit({
-          nodeId: `auto-page-${doc.docId}-${page.pageId}`,
-          parentId: docParent.nodeId,
-          depth: docParent.depth + 1,
-          zoomLevel: "page",
-          elementKind: "page",
-          title: `Page ${page.pageNumber} · ${page.pageLabel}`,
-          summary: `블록 ${page.blocks.length}개`,
-          targetDocId: doc.docId,
-          targetPageId: page.pageId,
-          recommendedTemplateId: page.blocks[0]?.kind || "section-block",
-          aiStatus: "idle",
-        });
-        pageNodeByKey.set(pageKey, pageNode);
-      }
-      for (const blk of page.blocks) emitBlock(pageNode, page, blk);
+    for (const op of documentOutlineOps(doc, story)) {
+      if (op.emit) candidateNodes.push(op.node);
+      seqById.set(op.node.nodeId, seq++);
     }
   }
 
@@ -465,6 +515,24 @@ export function buildProjectFractalTree(
   }
 
   const byId = new Map<string, OutlinerNode>(allNodes.map((n) => [n.nodeId, n]));
+  const hasChildrenMap: Record<string, boolean> = {};
+  for (const n of allNodes) {
+    if (n.parentId) {
+      hasChildrenMap[n.parentId] = true;
+    }
+  }
+  return { allNodes, byId, hasChildrenMap, storyRootId: rootId };
+}
+
+/** 줌 루트 · 검색어 · 접힘을 적용한 보기 (트리를 다시 만들지 않는다 — 노드 수에 선형). */
+export function deriveOutlineView(
+  base: OutlineBase,
+  project: VProjectManifest,
+  rootNodeId?: string | null,
+  quickFilter?: string,
+  collapsedNodeIds?: string[]
+): FractalOutlineProjection {
+  const { allNodes, byId, hasChildrenMap, storyRootId: rootId } = base;
   const breadcrumbs: OutlineBreadcrumbItem[] = [
     { nodeId: PROJECT_ROOT_CRUMB_ID, title: project.title, zoomLevel: "project" },
   ];
@@ -479,13 +547,6 @@ export function buildProjectFractalTree(
     rootNodeId && !isProjectRoot(rootNodeId) && byId.has(rootNodeId)
       ? rootNodeId
       : PROJECT_ROOT_CRUMB_ID;
-
-  const hasChildrenMap: Record<string, boolean> = {};
-  for (const n of allNodes) {
-    if (n.parentId) {
-      hasChildrenMap[n.parentId] = true;
-    }
-  }
 
   let parentZoomNodeId: string | null = null;
   let parentZoomTitle: string | null = null;

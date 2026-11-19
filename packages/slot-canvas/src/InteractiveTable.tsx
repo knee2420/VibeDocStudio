@@ -383,7 +383,12 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
           className="w-full overflow-hidden"
           style={{
             border: borderRules.outer === "none" ? undefined : borderRules.outer || "1px solid #cbd5e1",
-            borderRadius: roundedOuter && borderRules.outer && borderRules.outer !== "none" ? "6px" : undefined,
+            borderRadius:
+              borderRules.radius !== undefined
+                ? borderRules.radius
+                : roundedOuter && borderRules.outer && borderRules.outer !== "none"
+                  ? "6px"
+                  : undefined,
           }}
         >
           <table ref={tableRef} className="w-full border-collapse table-fixed">

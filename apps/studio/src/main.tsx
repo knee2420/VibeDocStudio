@@ -6,9 +6,11 @@ import { ensureParagraphStyles, type ParagraphStyleRegistry } from "@vibe/slot-e
 
 import { App } from "./app";
 import { installAutomationBridge } from "./app/automationBridge";
+import { installPerfProbe } from "./app/perfProbe";
 import "./styles.css";
 
 installAutomationBridge();
+installPerfProbe();
 // 이름 있는 문단 스타일(<p data-style>) — 편집 칸 · 읽기 칸 · 인쇄가 같은 규칙을 쓴다 (레지스트리는 editor 팩 데이터)
 ensureParagraphStyles(paragraphStyles as ParagraphStyleRegistry);
 

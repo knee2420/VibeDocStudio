@@ -54,15 +54,19 @@ const path = (docId: string) => `/api/documents/${encodeURIComponent(docId)}`;
 export const documentApi = {
   get: async (docId: string) => (await httpClient.get<DocumentEnvelope>(path(docId))).document,
 
-  /** `baseRevision` 이 서버 버전과 다르면 409 (다른 탭 · 다른 곳에서 먼저 저장). */
-  save: async (doc: VDocDocument, opts: { baseRevision?: number; changes?: ChangeNote[] } = {}) =>
-    (
-      await httpClient.put<DocumentEnvelope>(path(doc.docId), {
-        document: doc,
-        baseRevision: opts.baseRevision ?? null,
-        changes: opts.changes ?? [],
-      })
-    ).document,
+  /**
+   * `baseRevision` 이 서버 버전과 다르면 409 (다른 탭 · 다른 곳에서 먼저 저장).
+   * 서버가 매긴 새 버전만 돌려받는다 (`?ack=revision`) — 큰 문서는 자동 저장마다 수 MB 를 되받아 파싱했다.
+   */
+  save: async (doc: VDocDocument, opts: { baseRevision?: number; changes?: ChangeNote[] } = {}): Promise<{ revision?: number }> => {
+    const res = await httpClient.put<{ revision?: number; document?: VDocDocument }>(`${path(doc.docId)}?ack=revision`, {
+      document: doc,
+      baseRevision: opts.baseRevision ?? null,
+      changes: opts.changes ?? [],
+    });
+    // `ack` 를 모르는 예전 서버는 문서 전체(envelope)를 돌려준다.
+    return { revision: res.revision ?? res.document?.revision };
+  },
 
   /** 빈 문서 한 편을 만들어 프로젝트 문서 목록에 넣는다 (지면 · 장르 · 만든 이). */
   create: async (input: {

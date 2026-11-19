@@ -44,8 +44,11 @@ export interface StudioDocumentState {
   saveState: Record<string, DocumentSaveState>;
   lastError: string | null;
 
-  /** 서버에서 문서들을 불러와 작업 사본을 만든다. */
-  hydrate: (docIds: string[], preferredActiveDocId?: string | null) => Promise<void>;
+  /**
+   * 서버에서 문서들을 불러와 작업 사본을 만든다. 활성 문서를 먼저 받아 바로 그릴 수 있게 하고(돌려받는 Promise),
+   * 나머지는 뒤에서 받아 원래 순서대로 끼워 넣는다 (`background` Promise — 다 받으면 끝난다).
+   */
+  hydrate: (docIds: string[], preferredActiveDocId?: string | null) => Promise<{ background: Promise<void> }>;
   setActiveDocId: (docId: string) => void;
   setActivePageId: (pageId: string) => void;
   setMode: (mode: "Editing" | "Viewing") => void;
@@ -157,21 +160,58 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
 
     hydrate: async (docIds, preferredActiveDocId) => {
       const unique = [...new Set(docIds)];
-      const results = await Promise.allSettled(unique.map((id) => documentApi.get(id)));
-      const loaded = results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
-      const failed = results.length - loaded.length;
-      const active =
-        loaded.find((d) => d.docId === preferredActiveDocId) ??
-        loaded.find((d) => d.docId === get().activeDocId) ??
-        loaded[0];
+      const firstId =
+        (preferredActiveDocId && unique.includes(preferredActiveDocId) && preferredActiveDocId) ||
+        (unique.includes(get().activeDocId) && get().activeDocId) ||
+        unique[0];
+      // 모든 문서를 한꺼번에 받으면 큰 프로젝트는 수 MB 를 다 받고 파싱한 뒤에야 첫 화면이 나왔다.
+      const first = firstId ? await documentApi.get(firstId).catch(() => null) : null;
+      const rest = unique.filter((id) => id !== firstId);
+      if (!first) {
+        // 활성 문서를 못 받았으면 예전처럼 전부 받은 뒤에 시작한다.
+        const results = await Promise.allSettled(rest.map((id) => documentApi.get(id)));
+        const loaded = results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
+        const failed = unique.length - loaded.length;
+        set({
+          docs: loaded,
+          persistedDocIds: new Set(loaded.map((d) => d.docId)),
+          saveState: Object.fromEntries(loaded.map((d) => [d.docId, "saved" as const])),
+          activeDocId: loaded[0]?.docId ?? "",
+          activePageId: loaded[0]?.pages[0]?.pageId ?? "",
+          lastError: failed > 0 ? `문서 ${failed}개를 불러오지 못했습니다.` : null,
+        });
+        return { background: Promise.resolve() };
+      }
       set({
-        docs: loaded,
-        persistedDocIds: new Set(loaded.map((d) => d.docId)),
-        saveState: Object.fromEntries(loaded.map((d) => [d.docId, "saved" as const])),
-        activeDocId: active?.docId ?? "",
-        activePageId: active?.pages[0]?.pageId ?? "",
-        lastError: failed > 0 ? `문서 ${failed}개를 불러오지 못했습니다.` : null,
+        docs: [first],
+        persistedDocIds: new Set([first.docId]),
+        saveState: { [first.docId]: "saved" },
+        activeDocId: first.docId,
+        activePageId: first.pages[0]?.pageId ?? "",
+        lastError: null,
       });
+      const background = (async () => {
+        const results = await Promise.allSettled(rest.map((id) => documentApi.get(id)));
+        const loaded = results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
+        const failed = results.length - loaded.length;
+        set((s) => {
+          // 그사이 들어온 문서(새로 만들기 · 에이전트 초안)와 고친 내용은 그대로 둔다 — 없는 문서만 더한다.
+          const have = new Set(s.docs.map((d) => d.docId));
+          const added = loaded.filter((d) => !have.has(d.docId));
+          if (added.length === 0 && failed === 0) return s;
+          const order = new Map(unique.map((id, i) => [id, i]));
+          const docs = [...s.docs, ...added].sort(
+            (a, b) => (order.get(a.docId) ?? Number.MAX_SAFE_INTEGER) - (order.get(b.docId) ?? Number.MAX_SAFE_INTEGER)
+          );
+          return {
+            docs,
+            persistedDocIds: new Set([...s.persistedDocIds, ...added.map((d) => d.docId)]),
+            saveState: { ...s.saveState, ...Object.fromEntries(added.map((d) => [d.docId, "saved" as const])) },
+            lastError: failed > 0 ? `문서 ${failed}개를 불러오지 못했습니다.` : s.lastError,
+          };
+        });
+      })();
+      return { background };
     },
 
     setActiveDocId: (docId) => {

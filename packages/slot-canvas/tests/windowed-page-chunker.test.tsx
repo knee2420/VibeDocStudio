@@ -111,5 +111,20 @@ describe("WindowedPageChunker", () => {
     assert.ok(html.includes("chunker-top-spacer"), "1~2페이지는 상단 스페이서로 치환된다");
     assert.ok(!html.includes("chunker-bottom-spacer"), "하단 스페이서는 남지 않아야 한다");
   });
+
+  it("첫 화면은 활성 페이지 앞뒤만 그리고 나머지 창은 같은 높이의 자리로 둔다 (점진 마운트)", () => {
+    const pages = makePages(20);
+    const html = renderToStaticMarkup(
+      React.createElement(WindowedPageChunker, {
+        pages,
+        activePageId: "page_1",
+        chunkSize: 6,
+        renderPage: (p) => React.createElement("div", { key: p.pageId, "data-page": p.pageId }),
+      })
+    );
+    assert.ok(html.includes('data-page="page_1"') && html.includes('data-page="page_2"'), "활성 페이지와 다음 쪽은 바로 그린다");
+    assert.ok(!html.includes('data-page="page_3"'), "창의 나머지는 첫 화면 뒤에 채운다");
+    assert.equal((html.match(/chunker-pending-page/g) ?? []).length, 4, "6쪽 창 중 4쪽은 자리만 둔다");
+  });
 });
 

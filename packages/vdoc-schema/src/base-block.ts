@@ -33,6 +33,7 @@ export const LAYOUT_BLOCK_KINDS = [
   "link-card",
   "divider",
   "hero",
+  "web-form",
 ] as const;
 
 export type LayoutBlockKind = (typeof LAYOUT_BLOCK_KINDS)[number];

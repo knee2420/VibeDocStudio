@@ -2,7 +2,7 @@
   "projectId": "vproj-enterprise-architecture-suite",
   "title": "2026 엔터프라이즈 문서 거버넌스 & 제안 패키지",
   "description": "다중 문서(.vdoc) 아키텍처 회의록·투자 제안서·정산 명세서 통합 작업 프로젝트",
-  "activePhase": "storylining",
+  "activePhase": "drafting",
   "docIds": [
     "vdoc_meeting_minutes_1028",
     "vdoc-1a1c8b1a2b3-6dcc5fc9",
@@ -17,7 +17,10 @@
     "vdoc-1a1d088026d-c0c06018",
     "vdoc-1a1d2b536c3-4adc54af",
     "vdoc-1a1d2c45386-19babb39",
-    "vdoc-1a1d2cdf01a-ca18770a"
+    "vdoc-1a1d2cdf01a-ca18770a",
+    "vdoc-1a1eed23109-d85e79cb",
+    "vdoc-1a1f1e712af-48746272",
+    "vdoc-1a1f25a3bf1-5c5a288a"
   ],
   "storylineNodes": [
     {
@@ -127,5 +130,5 @@
       "clonedAt": "2026-11-03T12:25:23Z"
     }
   ],
-  "updatedAt": "2026-11-16T03:34:07Z"
+  "updatedAt": "2026-11-19T05:52:44Z"
 }

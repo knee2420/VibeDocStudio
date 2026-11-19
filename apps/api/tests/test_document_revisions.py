@@ -41,6 +41,20 @@ def test_save_increments_revision_and_rejects_stale_base() -> None:
     assert client.get("/api/documents/rev_doc_a").json()["document"]["title"] == "바뀜"
 
 
+def test_save_ack_revision_returns_only_the_new_revision() -> None:
+    """자동 저장은 `?ack=revision` 으로 버전만 받는다 — 문서 전체를 되받지 않고, 저장 내용은 같다."""
+    doc = _doc("rev_doc_ack")
+    first = _save(doc, None).json()["document"]["revision"]
+    ack = client.put(
+        f"/api/documents/{doc['docId']}?ack=revision",
+        json={"document": {**doc, "title": "짧은 응답"}, "baseRevision": first, "changes": []},
+    )
+    assert ack.status_code == 200
+    assert ack.json() == {"docId": "rev_doc_ack", "revision": first + 1}
+    stored = client.get(f"/api/documents/{doc['docId']}").json()["document"]
+    assert stored["title"] == "짧은 응답" and stored["revision"] == first + 1
+
+
 def test_revision_log_records_authors_and_coalesces_human_typing() -> None:
     doc = _doc("rev_doc_b")
     rev = _save(doc, None).json()["document"]["revision"]

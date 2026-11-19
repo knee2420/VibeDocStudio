@@ -11,6 +11,11 @@ export interface WindowedPageChunkerProps {
   /** 쪽 사이 간격 (px). 이음매 없는 지면은 0. */
   pageGapPx?: number;
   renderPage: (page: VDocPage, index: number) => React.ReactNode;
+  /**
+   * 새 페이지 목록(문서 전환 · 페이지 격리 · 첫 마운트)을 받으면 활성 페이지 앞뒤 이만큼만 먼저 그리고,
+   * 창의 나머지는 첫 화면이 그려진 직후 채운다. 0 이면 한 번에 모두 그린다.
+   */
+  eagerPages?: number;
 }
 
 function findScrollParent(el: HTMLElement | null): HTMLElement | null {
@@ -74,6 +79,7 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
   chunkSize = 15,
   pageGapPx = A4_PAGE_GAP_PX,
   renderPage,
+  eagerPages = 1,
 }) => {
   const totalPages = pages.length;
   const virtualized = totalPages > chunkSize;
@@ -83,6 +89,15 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
     return idx >= 0 ? computeWindowStartForPage(idx + 1, pages.length, chunkSize) : 1;
   });
   const [prevActivePageId, setPrevActivePageId] = useState<string | undefined>(activePageId);
+  // 점진 마운트: 페이지 목록이 통째로 바뀌면(첫 페이지 · 쪽수가 달라짐) 활성 페이지 주변만 먼저 그린다.
+  const listKey = `${pages[0]?.pageId ?? ""}:${totalPages}`;
+  const [revealedKey, setRevealedKey] = useState<string | null>(eagerPages > 0 ? null : listKey);
+  const [seenKey, setSeenKey] = useState(listKey);
+  if (listKey !== seenKey) {
+    setSeenKey(listKey);
+    if (eagerPages > 0) setRevealedKey(null);
+  }
+  const fullyRevealed = revealedKey === listKey;
   const [scrollHoldToken, setScrollHoldToken] = useState(0);
   const scrollHoldUntilRef = useRef(0);
 
@@ -130,6 +145,22 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
       scroller.removeEventListener("pointerdown", releaseHold);
     };
   }, [scrollHoldToken]);
+
+  // 첫 화면(활성 페이지 주변)이 그려진 바로 다음 작업에서 창의 나머지 페이지를 채운다.
+  useEffect(() => {
+    if (fullyRevealed) return;
+    let timer = 0;
+    const frame = requestAnimationFrame(() => {
+      timer = window.setTimeout(() => setRevealedKey(listKey), 0);
+    });
+    // 창이 가려져 rAF 가 멈춰도 채운다.
+    const fallback = window.setTimeout(() => setRevealedKey(listKey), 120);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+      window.clearTimeout(fallback);
+    };
+  }, [fullyRevealed, listKey]);
 
   // 같은 activePageId 를 다시 클릭하거나 직접 스크롤 명령이 올 때도 대상 페이지가 DOM 에 마운트되게 보장한다.
   useEffect(() => {
@@ -214,7 +245,17 @@ export const WindowedPageChunker: React.FC<WindowedPageChunkerProps> = ({
       {/* 언마운트된 쪽의 실제 높이만큼 자리를 지킨다 (스크롤바 길이 · 위치 유지) */}
       {topSpacerPx > 0 && <div aria-hidden="true" data-testid="chunker-top-spacer" style={{ height: `${topSpacerPx}px` }} />}
 
-      {visiblePages.map((page, idx) => renderPage(page, startPage - 1 + idx))}
+      {(() => {
+        // 활성 페이지(없으면 창의 첫 페이지) 앞뒤 `eagerPages` 쪽만 먼저 그리고 나머지는 같은 높이의 자리만 둔다.
+        if (fullyRevealed) return visiblePages.map((page, idx) => renderPage(page, startPage - 1 + idx));
+        const activeIdx = Math.max(0, visiblePages.findIndex((p) => p.pageId === activePageId));
+        return visiblePages.map((page, idx) => {
+          const absolute = startPage - 1 + idx;
+          if (Math.abs(idx - activeIdx) <= eagerPages) return renderPage(page, absolute);
+          const height = (cumulativeBottoms[absolute] ?? 0) - (absolute > 0 ? cumulativeBottoms[absolute - 1] ?? 0 : 0);
+          return <div key={page.pageId} aria-hidden="true" data-testid="chunker-pending-page" style={{ height: `${height}px` }} />;
+        });
+      })()}
 
       {bottomSpacerPx > 0 && <div aria-hidden="true" data-testid="chunker-bottom-spacer" style={{ height: `${bottomSpacerPx}px` }} />}
     </div>
