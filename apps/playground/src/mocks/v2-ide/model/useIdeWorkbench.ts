@@ -1,9 +1,20 @@
 import { insertBlock, setSlotContent } from "@vibe/vdoc-schema";
 import {
+  createIngestingRefDocument,
+  createRefFromVaultFile,
+  isRefPath,
+  parseRefJson,
+  refFileStemFromTitle,
+  rewriteRefPointersOnRename,
+  serializeRefJson,
+  type RefDocument,
+} from "@vibe/ref-canvas/core";
+import {
   LocalApiVaultAdapter,
   MemoryVaultAdapter,
   VaultMetadataCache,
   createOrMountLocalVault,
+  basename,
   dirname,
   listLocalVaults,
   rewriteWikilinksOnRename,
@@ -32,6 +43,8 @@ import {
 
 import { createIdeEditorRegistry, type IdeEditorEnv } from "./editorAdapters";
 import { mountLocalFolderAsVault } from "./localVaultMount";
+import { isOutlinePath, parseOutlineJson } from "./outlineCodec";
+import { importWebUrlAsRefStream } from "./refClient";
 import { V2_SAMPLE_VAULT_SEEDS, resolveTabTitle } from "./sampleVault";
 import {
   createVaultLinkCardDraft,
@@ -45,7 +58,7 @@ import { createVDocUiBridgeStore, type VDocUiBridgeStore } from "./vdocUiBridge"
 export interface IdeLogEntry {
   readonly id: string;
   readonly timestamp: string;
-  readonly source: "vault" | "layout" | "explorer" | "composer";
+  readonly source: "vault" | "layout" | "explorer" | "composer" | "ref";
   readonly level: "info" | "ok" | "warn";
   readonly message: string;
 }
@@ -74,6 +87,38 @@ export interface IdeWorkbenchRuntime {
     fromPath: string,
     mode?: OpenResourceMode
   ) => boolean;
+  readonly promoteFileToRef: (
+    vaultPath: string,
+    openMode?: OpenResourceMode
+  ) => Promise<string | null>;
+  readonly importRefDocument: (
+    targetFolder: string,
+    doc: RefDocument,
+    options?: {
+      readonly replacePath?: string | null;
+      readonly openMode?: OpenResourceMode;
+      /** File name a person typed for this reference; wins over the source title. */
+      readonly fileName?: string;
+    }
+  ) => string | null;
+  readonly startAsyncUrlRefImport: (options: {
+    readonly url: string;
+    readonly title?: string;
+    readonly targetFolder: string;
+    readonly replacePath?: string | null;
+    readonly openMode?: OpenResourceMode;
+    /** File name a person typed for this reference; wins over the source title. */
+    readonly fileName?: string;
+  }) => string | null;
+  /**
+   * Gives a `.ref` file its proper name after content was imported into it: the typed name if any,
+   * otherwise the source's original title while the current name is still app-chosen.
+   * Returns the (possibly new) path.
+   */
+  readonly settleRefFileName: (
+    path: string,
+    options: { readonly fileName?: string; readonly wasEmpty: boolean }
+  ) => string;
   readonly executeAiDirective: (directive: EditorAiDirective) => AiDirectiveExecutionResult;
   readonly resetWorkspace: () => void;
   readonly resyncLocalVault: () => Promise<void>;
@@ -168,11 +213,11 @@ export function createIdeWorkbenchRuntime(
   const memoryVault: MemoryVaultAdapter | null = options?.vaultAdapter
     ? null
     : new MemoryVaultAdapter({
-        id: "vibe-ide-vault",
-        name: "VibeDoc Vault",
-        initialEntries: V2_SAMPLE_VAULT_SEEDS,
-        storageKey: persist ? VAULT_STORAGE_KEY : undefined,
-      });
+      id: "vibe-ide-vault",
+      name: "VibeDoc Vault",
+      initialEntries: V2_SAMPLE_VAULT_SEEDS,
+      storageKey: persist ? VAULT_STORAGE_KEY : undefined,
+    });
 
   const vault: VaultPort = options?.vaultAdapter ?? memoryVault!;
 
@@ -182,15 +227,18 @@ export function createIdeWorkbenchRuntime(
 
   const savedExplorer = options?.initialSession?.explorer as
     | {
-        expandedPaths?: string[];
-        sortOrder?: VaultSortOrder;
-        autoReveal?: boolean;
-      }
+      expandedPaths?: string[];
+      sortOrder?: VaultSortOrder;
+      autoReveal?: boolean;
+    }
     | undefined;
 
-  const defaultExpanded = ["01. Architecture", "02. Specs", "03. Harness"].filter((p) =>
-    vault.exists(p)
-  );
+  const defaultExpanded = [
+    "01. Architecture",
+    "02. Specs",
+    "03. Harness",
+    "04. Launch-Campaign.vproj",
+  ].filter((p) => vault.exists(p));
   const explorer = createFileExplorerStore(vault, {
     initialExpandedPaths: savedExplorer?.expandedPaths ?? defaultExpanded,
     initialSortOrder: savedExplorer?.sortOrder,
@@ -400,7 +448,261 @@ ${selText || "(선택된 블록 요약)"}
     return { createdPath: newPath, summary: `Created ${newPath}` };
   };
 
-  // Bridge 1: Vault -> Layout + Auto Reference Rewriters (.md wikilinks + .vdoc pointers!)
+  const rewriteVaultRefPointersOnRename = (
+    targetVault: VaultPort,
+    oldPath: string,
+    newPath: string
+  ) => {
+    const updatedFiles: string[] = [];
+    let totalReplacements = 0;
+    for (const node of targetVault.listAll()) {
+      if (node.kind !== "file" || !isRefPath(node.path)) continue;
+      if (targetVault.isLoaded && !targetVault.isLoaded(node.path)) continue;
+      const raw = targetVault.read(node.path);
+      const res = rewriteRefPointersOnRename(raw, oldPath, newPath);
+      if (res.replacements > 0) {
+        targetVault.write(node.path, res.content);
+        updatedFiles.push(node.path);
+        totalReplacements += res.replacements;
+      }
+    }
+    return { updatedFiles, totalReplacements };
+  };
+
+  const promoteFileToRef: IdeWorkbenchRuntime["promoteFileToRef"] = async (
+    vaultPath,
+    openMode = "split-right"
+  ) => {
+    if (vault.isReadOnly?.()) {
+      pushLog("vault", "warn", "읽기 전용 볼트입니다 — 상태바 RO를 클릭해 잠금 해제 후 .ref를 생성하세요");
+      return null;
+    }
+    const node = vault.getNode(vaultPath);
+    if (!node || node.kind !== "file" || isRefPath(node.path)) return null;
+
+    const lower = node.path.toLowerCase();
+    const isBinary = /\.(pdf|png|jpg|jpeg|webp|gif|svg)$/.test(lower);
+    let content: string | undefined;
+    if (!isBinary) {
+      if (vault.isLoaded && !vault.isLoaded(node.path) && vault.ensureLoaded) {
+        content = await vault.ensureLoaded(node.path);
+      } else {
+        content = vault.read(node.path);
+      }
+    }
+
+    const refDoc = createRefFromVaultFile({
+      vaultPath: node.path,
+      content,
+      binaryUrl: isBinary ? vault.getBinaryUrl?.(node.path) : undefined,
+    });
+
+    const folder = dirname(node.path);
+    const baseStem = node.stem || node.name.replace(/\.[^.]+$/, "") || "Reference";
+    const newPath = vault.getUniquePath(folder, baseStem, "ref");
+    vault.createFile(newPath, serializeRefJson(refDoc));
+    explorer.getState().markExternalChange(newPath, "NEW");
+    openVaultFile(newPath, openMode, "vibe-ref");
+    pushLog("vault", "ok", `promoted ${node.path} -> ${newPath} (.ref)`);
+    return newPath;
+  };
+
+  const importRefDocument: IdeWorkbenchRuntime["importRefDocument"] = (
+    targetFolder,
+    doc,
+    options
+  ) => {
+    if (vault.isReadOnly?.()) {
+      pushLog("vault", "warn", "읽기 전용 볼트입니다 — 상태바 RO를 클릭해 잠금 해제 후 Import하세요");
+      return null;
+    }
+    const openMode = options?.openMode ?? "current";
+    if (options?.replacePath && vault.exists(options.replacePath)) {
+      const prev = parseRefJson(vault.read(options.replacePath), doc.title);
+      vault.write(options.replacePath, serializeRefJson({ ...doc, nameSource: prev.nameSource }));
+      const finalPath = settleRefFileName(options.replacePath, {
+        fileName: options.fileName,
+        wasEmpty: prev.frames.length === 0,
+      });
+      openVaultFile(finalPath, openMode, "vibe-ref");
+      pushLog("vault", "ok", `imported "${doc.title}" into ${finalPath}`);
+      return finalPath;
+    }
+
+    const typedStem = refFileStemFromTitle(options?.fileName ?? "");
+    const safeStem = typedStem || refFileStemFromTitle(doc.title) || doc.refId;
+    const newPath = vault.getUniquePath(targetFolder, safeStem, "ref");
+    vault.createFile(
+      newPath,
+      serializeRefJson({ ...doc, nameSource: typedStem ? "user" : "auto" })
+    );
+    explorer.getState().markExternalChange(newPath, "NEW");
+    openVaultFile(newPath, openMode, "vibe-ref");
+    pushLog(
+      "ref",
+      "ok",
+      `imported .ref "${doc.title}" (${doc.frames.length} frames · ${doc.blocks.length} blocks) -> ${newPath}`
+    );
+    return newPath;
+  };
+
+  /** `true` while this runtime renames a `.ref` itself, so the rename is not mistaken for a person's. */
+  let renamingRefForTitle = false;
+
+  const settleRefFileName: IdeWorkbenchRuntime["settleRefFileName"] = (path, options) => {
+    if (!vault.exists(path) || vault.isReadOnly?.()) return path;
+    const currentStem = basename(path).replace(/\.ref$/i, "");
+    const doc = parseRefJson(vault.read(path), currentStem);
+    const typedStem = refFileStemFromTitle(options.fileName ?? "");
+
+    let nextSource: "auto" | "user";
+    let desiredStem: string;
+    if (typedStem) {
+      nextSource = "user";
+      desiredStem = typedStem;
+    } else if (doc.nameSource === "auto" || (doc.nameSource === undefined && options.wasEmpty)) {
+      // The name was app-chosen (or this was a blank file being filled for the first time):
+      // follow the source's original title.
+      nextSource = "auto";
+      desiredStem = refFileStemFromTitle(doc.title);
+    } else {
+      return path;
+    }
+
+    if (doc.nameSource !== nextSource) {
+      vault.write(path, serializeRefJson({ ...doc, nameSource: nextSource }));
+    }
+    if (!desiredStem || desiredStem === currentStem) return path;
+
+    const nextPath = vault.getUniquePath(dirname(path), desiredStem, "ref");
+    renamingRefForTitle = true;
+    try {
+      vault.rename(path, basename(nextPath));
+    } catch (err) {
+      pushLog("ref", "warn", `이름 변경 실패 (${path}): ${err instanceof Error ? err.message : String(err)}`);
+      return path;
+    } finally {
+      renamingRefForTitle = false;
+    }
+    pushLog("ref", "ok", `이름 지정: ${basename(path)} -> ${basename(nextPath)}`);
+    return nextPath;
+  };
+
+  const startAsyncUrlRefImport: IdeWorkbenchRuntime["startAsyncUrlRefImport"] = (options) => {
+    if (vault.isReadOnly?.()) {
+      pushLog("ref", "warn", "읽기 전용 볼트입니다 — 상태바 RO를 클릭해 잠금 해제 후 URL Import하세요");
+      return null;
+    }
+    const trimmedUrl = options.url.trim();
+    if (!trimmedUrl) return null;
+
+    let displayTitle = options.title?.trim() || "";
+    if (!displayTitle) {
+      try {
+        displayTitle = new URL(trimmedUrl).hostname;
+      } catch {
+        displayTitle = "Web Reference";
+      }
+    }
+
+    const ingestingDoc = createIngestingRefDocument({
+      title: displayTitle,
+      targetUrl: trimmedUrl,
+      stage: "init",
+      message: "백엔드 웹 수집 · 렌더링 요청 중...",
+      percent: 5,
+    });
+
+    const openMode = options.openMode ?? "current";
+    let targetPath: string;
+    let wasEmpty = true;
+    if (options.replacePath && vault.exists(options.replacePath)) {
+      targetPath = options.replacePath;
+      const prev = parseRefJson(vault.read(targetPath), displayTitle);
+      wasEmpty = prev.frames.length === 0;
+      vault.write(targetPath, serializeRefJson({ ...ingestingDoc, nameSource: prev.nameSource }));
+      // A typed name is the person's decision — apply it now so the tab shows it while capturing.
+      if (options.fileName?.trim()) {
+        targetPath = settleRefFileName(targetPath, { fileName: options.fileName, wasEmpty });
+      }
+    } else {
+      const typedStem = refFileStemFromTitle(options.fileName ?? "");
+      const safeStem = typedStem || refFileStemFromTitle(displayTitle) || "Web-Reference";
+      targetPath = vault.getUniquePath(options.targetFolder, safeStem, "ref");
+      vault.createFile(
+        targetPath,
+        serializeRefJson({
+          ...ingestingDoc,
+          nameSource: typedStem || options.title?.trim() ? "user" : "auto",
+        })
+      );
+      explorer.getState().markExternalChange(targetPath, "NEW");
+    }
+
+    openVaultFile(targetPath, openMode, "vibe-ref");
+    const startedAt = Date.now();
+    pushLog("ref", "info", `[시작] URL Import -> ${targetPath} (${trimmedUrl})`);
+
+    void importWebUrlAsRefStream(trimmedUrl, options.title, (ev) => {
+      pushLog("ref", "info", `[${ev.percent}% · ${ev.stage}] ${ev.message}`);
+      if (vault.exists(targetPath) && !vault.isReadOnly?.()) {
+        const cur = parseRefJson(vault.read(targetPath), displayTitle);
+        if (cur.status === "ingesting") {
+          vault.write(
+            targetPath,
+            serializeRefJson({
+              ...cur,
+              ingestProgress: {
+                stage: ev.stage,
+                percent: ev.percent,
+                message: ev.message,
+                startedAt,
+                targetUrl: trimmedUrl,
+              },
+              updatedAt: Date.now(),
+            })
+          );
+        }
+      }
+    })
+      .then((finalDoc) => {
+        const sec = ((Date.now() - startedAt) / 1000).toFixed(1);
+        if (vault.exists(targetPath) && !vault.isReadOnly?.()) {
+          const cur = parseRefJson(vault.read(targetPath), displayTitle);
+          vault.write(targetPath, serializeRefJson({ ...finalDoc, nameSource: cur.nameSource }));
+          targetPath = settleRefFileName(targetPath, { wasEmpty });
+          explorer.getState().markExternalChange(targetPath, "NEW");
+        }
+        const surface = finalDoc.frames[0]?.surfaceKind ?? "unknown";
+        pushLog(
+          "ref",
+          "ok",
+          `[완료 · ${sec}s] "${finalDoc.title}" (${finalDoc.frames.length} ${surface} frames · ${finalDoc.blocks.length} blocks · ${finalDoc.layerSet}) -> ${targetPath}`
+        );
+      })
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : "URL Import 실패";
+        const sec = ((Date.now() - startedAt) / 1000).toFixed(1);
+        pushLog("ref", "warn", `[실패 · ${sec}s] ${targetPath}: ${msg}`);
+        if (vault.exists(targetPath) && !vault.isReadOnly?.()) {
+          const cur = parseRefJson(vault.read(targetPath), displayTitle);
+          vault.write(
+            targetPath,
+            serializeRefJson({
+              ...cur,
+              status: "failed",
+              error: msg,
+              ingestProgress: undefined,
+              updatedAt: Date.now(),
+            })
+          );
+        }
+      });
+
+    return targetPath;
+  };
+
+  // Bridge 1: Vault -> Layout + Auto Reference Rewriters (.md wikilinks + .vdoc/.ref pointers!)
   let runningRewriters = false;
   const unsubVault = vault.subscribe((event: VaultEvent) => {
     if (event.type === "create") {
@@ -435,11 +737,36 @@ ${selText || "(선택된 블록 요약)"}
             const summary = runVaultRenameRewriters(vault, mapping.oldPath, mapping.newPath, [
               rewriteWikilinksOnRename,
               rewriteVDocPointersOnRename,
+              rewriteVaultRefPointersOnRename,
             ]);
             totalRefUpdates += summary.totalReplacements;
             for (const f of summary.updatedFiles) refUpdatedFiles.add(f);
           } finally {
             runningRewriters = false;
+          }
+
+          // 제목을 따로 바꾼 적 없는 .outline 은 파일 이름을 바꾸면 제목도 따라간다.
+          const oldStem = basename(mapping.oldPath).replace(/\.outline$/i, "");
+          const newStem = basename(mapping.newPath).replace(/\.outline$/i, "");
+          if (isOutlinePath(mapping.newPath) && oldStem !== newStem && !vault.isReadOnly?.()) {
+            const raw = vault.read(mapping.newPath);
+            const outline = parseOutlineJson(raw, newStem);
+            if (outline.title === oldStem) {
+              vault.write(mapping.newPath, JSON.stringify({ ...outline, title: newStem }, null, 2));
+            }
+          }
+
+          // A person renamed this reference — keep their name from now on.
+          if (
+            !renamingRefForTitle &&
+            isRefPath(mapping.newPath) &&
+            basename(mapping.oldPath) !== basename(mapping.newPath) &&
+            !vault.isReadOnly?.()
+          ) {
+            const renamed = parseRefJson(vault.read(mapping.newPath), basename(mapping.newPath));
+            if (renamed.nameSource !== "user") {
+              vault.write(mapping.newPath, serializeRefJson({ ...renamed, nameSource: "user" }));
+            }
           }
         }
       }
@@ -533,8 +860,8 @@ ${selText || "(선택된 블록 요약)"}
   const unsubExplorerSession = localAdapter ? explorer.subscribe(scheduleSessionSave) : null;
   const unsubVaultCache = localAdapter
     ? vault.subscribe((ev) => {
-        if (ev.type !== "vault-reset") scheduleCacheSave();
-      })
+      if (ev.type !== "vault-reset") scheduleCacheSave();
+    })
     : null;
 
   const resyncLocalVault = async (): Promise<void> => {
@@ -607,6 +934,10 @@ ${selText || "(선택된 블록 요약)"}
     vdocUiBridge,
     openVaultFile,
     openWikilink,
+    promoteFileToRef,
+    importRefDocument,
+    startAsyncUrlRefImport,
+    settleRefFileName,
     executeAiDirective,
     resetWorkspace,
     resyncLocalVault,
@@ -617,7 +948,7 @@ ${selText || "(선택된 블록 요약)"}
     subscribeSyncStatus(listener) {
       if (localAdapter) return localAdapter.subscribeStatus(listener);
       listener(memoryStatus);
-      return () => {};
+      return () => { };
     },
     subscribeLogs(listener) {
       logListeners.add(listener);
@@ -694,7 +1025,7 @@ export async function bootstrapIdeWorkbench(options?: {
       void saveLocalVaultAppState(apiBaseUrl, {
         activeVaultId: meta.id,
         theme: "dark",
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     const runtime = createIdeWorkbenchRuntime({

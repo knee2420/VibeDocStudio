@@ -1,6 +1,10 @@
 import {
+  A4_DOCUMENT_VIEW,
+  BLOG_DOCUMENT_VIEW,
   getBlockSlotIds,
   isBlockLocked,
+  resolveDocumentView,
+  type DocumentViewId,
   type LayoutBlock,
   type LinkCardBlockDef,
   type VDocDocument,
@@ -31,10 +35,40 @@ export function isVDocPath(path: string): boolean {
   return matchesCompoundExtension(path, "vdoc") || matchesCompoundExtension(path, "vdoc.json");
 }
 
+/**
+ * File Explorer / Tab 아이콘 판별용 경량 View 스니펫 감지기 (전체 JSON 파싱 생략).
+ */
+export function detectVDocViewId(raw: string): "a4" | "blog" {
+  // 키 순서나 본문 길이와 무관하게 판별한다. `viewId` 는 최상위에만 존재하는 키라 전체 문자열에서 찾아도 안전하다.
+  const explicit = /"viewId"\s*:\s*"(a4|blog)"/.exec(raw);
+  if (explicit) return explicit[1] as "a4" | "blog";
+  if (/"surface"\s*:\s*\{[^{}]*"kind"\s*:\s*"scroll"/.test(raw)) return "blog";
+  return "a4";
+}
+
+/** 양식 메타(viewId·surface·genre·schemaRef·styleRef·sourceRef)를 JSON 최상단에 두어 사람이 열어봐도 바로 보이게 한다. */
+function withFormatFieldsFirst(doc: VDocDocument): VDocDocument {
+  const { version, docId, title, viewId, surface, genre, schemaRef, styleRef, sourceRef, ...rest } = doc;
+  return {
+    version,
+    docId,
+    title,
+    viewId,
+    surface,
+    genre,
+    ...(schemaRef ? { schemaRef } : {}),
+    ...(styleRef ? { styleRef } : {}),
+    ...(sourceRef ? { sourceRef } : {}),
+    ...rest,
+  } as VDocDocument;
+}
+
 export function createDefaultVDoc(
   title: string,
-  surfaceKind: "paged" | "scroll" = "paged"
+  viewOrSurface: DocumentViewId | "paged" | "scroll" = "a4"
 ): VDocDocument {
+  const isBlog = viewOrSurface === "blog" || viewOrSurface === "scroll";
+  const profile = isBlog ? BLOG_DOCUMENT_VIEW : A4_DOCUMENT_VIEW;
   const now = new Date().toISOString();
   const uid = Date.now().toString(36);
   return {
@@ -44,12 +78,14 @@ export function createDefaultVDoc(
     status: "Draft",
     updatedAt: now,
     variables: {},
-    surface: { kind: surfaceKind, width: surfaceKind === "scroll" ? 760 : 794 },
+    viewId: profile.id,
+    surface: { ...profile.surface },
+    genre: profile.genre,
     pages: [
       {
         pageId: `page-${uid}-1`,
         pageNumber: 1,
-        pageLabel: "Page 1",
+        pageLabel: isBlog ? "Article Flow" : "Page 1",
         headerSlotId: `slot-${uid}-hdr`,
         footerSlotId: `slot-${uid}-ftr`,
         hideHeaderFooter: true,
@@ -57,14 +93,14 @@ export function createDefaultVDoc(
           {
             blockId: `blk-${uid}-h1`,
             kind: "heading",
-            title: "문서 제목",
+            title: isBlog ? "포스팅 제목" : "문서 제목",
             level: 1,
             slotId: `slot-${uid}-h1`,
           },
           {
             blockId: `blk-${uid}-body`,
             kind: "text",
-            title: "개요",
+            title: isBlog ? "도입부" : "개요",
             slotId: `slot-${uid}-body`,
           },
         ],
@@ -87,17 +123,18 @@ export function createDefaultVDoc(
       },
       [`slot-${uid}-h1`]: {
         slotId: `slot-${uid}-h1`,
-        label: "제목",
+        label: isBlog ? "포스팅 제목" : "제목",
         role: "editable-slot",
         content: `<h1>${title}</h1>`,
         backDataRefs: [],
       },
       [`slot-${uid}-body`]: {
         slotId: `slot-${uid}-body`,
-        label: "개요",
+        label: isBlog ? "도입부" : "개요",
         role: "editable-slot",
-        content:
-          "<p>2D 캔버스 위에서 직접 편집하거나, 좌측 File Explorer에서 파일을 중앙으로 드래그해 링크 카드를 배치해 보세요.</p>",
+        content: isBlog
+          ? "<p>이음매 없는 블로그 스크롤 캔버스입니다. 소제목 · 이미지 · 링크 카드를 자유롭게 이어 작성해 보세요.</p>"
+          : "<p>2D 캔버스 위에서 직접 편집하거나, 좌측 File Explorer에서 파일을 중앙으로 드래그해 링크 카드를 배치해 보세요.</p>",
         backDataRefs: [],
       },
     },
@@ -105,9 +142,15 @@ export function createDefaultVDoc(
   };
 }
 
-function sanitizeVDocPages(pages: VDocPage[]): VDocPage[] {
+function sanitizeVDocPages(
+  pages: VDocPage[],
+  surface?: { kind: "paged" | "scroll"; width?: number }
+): VDocPage[] {
   return pages.map((page) => ({
     ...page,
+    ...(surface?.kind === "scroll" && !page.pageRect
+      ? { pageRect: { width: surface.width ?? 720, height: 1123, unit: "px" as const } }
+      : {}),
     blocks: (Array.isArray(page.blocks) ? page.blocks : []).map((rawBlock) => {
       const block = rawBlock as LayoutBlock & Record<string, unknown>;
       if (block.kind === "columns-grid") {
@@ -138,21 +181,29 @@ export function parseVDocJson(raw: string, fallbackTitle: string): VDocDocument 
   try {
     const parsed = JSON.parse(raw) as Partial<VDocDocument>;
     if (Array.isArray(parsed.pages) && parsed.slots && typeof parsed.slots === "object") {
+      const resolvedView = resolveDocumentView(parsed);
       return {
         version: "1.0.0",
         docId: parsed.docId ?? `vdoc-${Date.now().toString(36)}`,
         title: parsed.title ?? fallbackTitle,
+        viewId: parsed.viewId ?? resolvedView.id,
+        surface: parsed.surface ?? { ...resolvedView.surface },
+        genre: parsed.genre ?? resolvedView.genre,
+        schemaRef: parsed.schemaRef,
+        styleRef: parsed.styleRef,
+        sourceRef: parsed.sourceRef,
         status: parsed.status ?? "Draft",
         updatedAt: parsed.updatedAt ?? new Date().toISOString(),
         variables: parsed.variables ?? {},
-        pages: sanitizeVDocPages(parsed.pages),
+        pages: sanitizeVDocPages(
+          parsed.pages,
+          parsed.styleRef ? undefined : (parsed.surface ?? resolvedView.surface)
+        ),
         slots: parsed.slots,
         backdata: parsed.backdata ?? {},
-        surface: parsed.surface ?? { kind: "paged", width: 794 },
         preview: parsed.preview,
         evidenceLinks: parsed.evidenceLinks,
         revision: parsed.revision,
-        genre: parsed.genre,
         origin: parsed.origin,
         projectId: parsed.projectId,
       };
@@ -166,7 +217,7 @@ export function parseVDocJson(raw: string, fallbackTitle: string): VDocDocument 
 export function serializeVDocJson(doc: VDocDocument): string {
   return JSON.stringify(
     {
-      ...doc,
+      ...withFormatFieldsFirst(doc),
       updatedAt: new Date().toISOString(),
     },
     null,
@@ -219,13 +270,18 @@ export function projectVDocToStructure(
   pages: DocumentStructureNode[];
   elements: DocumentStructureNode[];
 } {
-  const pages: DocumentStructureNode[] = doc.pages.map((page) => ({
-    id: page.pageId,
-    kind: "page",
-    label: page.pageLabel || `Page ${page.pageNumber}`,
-    badge: `${page.blocks.length}`,
-    active: page.pageId === activePageId,
-  }));
+  const view = resolveDocumentView(doc);
+  const pages: DocumentStructureNode[] = doc.pages.map((page) => {
+    const isSection = page.unitKind === "section" || view.unitKind === "section";
+    const roleTag = isSection && page.sectionRole ? `${page.sectionRole} · ` : "";
+    return {
+      id: page.pageId,
+      kind: isSection ? "section" : "page",
+      label: page.pageLabel || (isSection ? `Section ${page.pageNumber}` : `Page ${page.pageNumber}`),
+      badge: `${roleTag}${page.blocks.length}`,
+      active: page.pageId === activePageId,
+    };
+  });
 
   const activePage: VDocPage | undefined =
     doc.pages.find((p) => p.pageId === activePageId) ?? doc.pages[0];
@@ -302,8 +358,33 @@ export const rewriteVDocPointersOnRename: VaultRenameRewriter = (
         }),
       }));
 
+      let nextStyleRef = doc.styleRef;
+      if (doc.styleRef?.packPath === oldUri) {
+        fileReplacements += 1;
+        nextStyleRef = { ...doc.styleRef, packPath: newUri };
+      }
+      let nextSchemaRef = doc.schemaRef;
+      if (doc.schemaRef?.registryPath === oldUri) {
+        fileReplacements += 1;
+        nextSchemaRef = { ...doc.schemaRef, registryPath: newUri };
+      }
+      let nextSourceRef = doc.sourceRef;
+      if (doc.sourceRef === oldUri) {
+        fileReplacements += 1;
+        nextSourceRef = newUri;
+      }
+
       if (fileReplacements > 0) {
-        vault.write(node.path, serializeVDocJson({ ...doc, pages: nextPages }));
+        vault.write(
+          node.path,
+          serializeVDocJson({
+            ...doc,
+            styleRef: nextStyleRef,
+            schemaRef: nextSchemaRef,
+            sourceRef: nextSourceRef,
+            pages: nextPages,
+          })
+        );
         updatedFiles.push(node.path);
         totalReplacements += fileReplacements;
       }

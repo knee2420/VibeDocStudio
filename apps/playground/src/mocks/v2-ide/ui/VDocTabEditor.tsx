@@ -11,8 +11,6 @@ import {
   Minus,
   MousePointer2,
   Pencil,
-  Plus,
-  ScrollText,
   Sparkles,
   Table2,
   Type,
@@ -23,18 +21,17 @@ import {
 import {
   applyTableCommandToDocument,
   createInsertableBlock,
-  createSectionPage,
   documentSurface,
   duplicateBlock,
   findBlock,
   findBlockBySlotId,
   insertBlock,
-  insertPages,
   moveBlockByOffset,
   moveBlockFrame,
   moveBlockToPosition,
   removeBlock,
   resizeBlockFrame,
+  resolveDocumentView,
   setSlotContent,
   toggleBlockLock,
   type InsertableBlockKind,
@@ -44,7 +41,15 @@ import {
   type VDocPage,
 } from "@vibe/vdoc-schema";
 import {
+  BUILTIN_STYLE_PACKS,
+  getBuiltinStylePack,
+  isValidStylePack,
+  resolveDefaultStylePack,
+  type StylePack,
+} from "@vibe/style-core";
+import {
   MemoVDocPageSheet,
+  VDocStyleProvider,
   WindowedPageChunker,
   type VDocPageSheetProps,
 } from "@vibe/slot-canvas";
@@ -60,6 +65,7 @@ import {
   parseVDocJson,
   serializeVDocJson,
 } from "../model/vdocCodec";
+import { DocumentViewIcon } from "./DocumentSurfaceIcons";
 
 export interface VDocTabEditorProps {
   readonly host: EditorHostContext<IdeEditorEnv>;
@@ -118,6 +124,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
   const [aiBarOpen, setAiBarOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiAction, setAiAction] = useState<NonNullable<EditorAiDirective["action"]>>("extract-md");
+  const [styleRevision, setStyleRevision] = useState(0);
 
   const canvasScrollRef = useRef<HTMLDivElement>(null);
   const localWriteRef = useRef(false);
@@ -180,6 +187,21 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       if (localWriteRef.current) return;
       if ((ev.type === "modify" && ev.path === path) || ev.type === "vault-reset") {
         reload();
+      }
+      const changedPath =
+        ev.type === "create"
+          ? ev.node.path
+          : ev.type === "modify" || ev.type === "delete"
+            ? ev.path
+            : ev.type === "rename"
+              ? ev.newPath
+              : "";
+      if (
+        ev.type === "vault-reset" ||
+        changedPath.endsWith(".vstyle") ||
+        changedPath.endsWith(".vstyle.json")
+      ) {
+        setStyleRevision((r) => r + 1);
       }
     });
   }, [vault, path, fallbackTitle]);
@@ -311,34 +333,6 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     vdocUiBridge.getState().selectBlock(path, draft.block.blockId, targetPage.pageId);
   };
 
-  const handleAddPage = () => {
-    const pageNum = doc.pages.length + 1;
-    const pageId = `page_${uidFactory()}`;
-    const built = createSectionPage({
-      pageId,
-      pageNumber: pageNum,
-      pageLabel: `Page ${pageNum}`,
-      headerHtml: "",
-      footerHtml: "",
-      headingHtml: `<h2>새 페이지 ${pageNum}</h2>`,
-      bodyHtml: "<p>2D 블록을 추가하거나 좌측 File Explorer에서 파일을 끌어다 놓으세요.</p>",
-    });
-    const nextPage = { ...built.page, hideHeaderFooter: true };
-    commitDoc((prev) => insertPages(prev, [nextPage], built.slots));
-    vdocUiBridge.getState().setActivePage(path, nextPage.pageId);
-  };
-
-  const handleToggleSurface = () => {
-    commitDoc((prev) => {
-      const cur = documentSurface(prev);
-      const nextKind = cur.kind === "paged" ? "scroll" : "paged";
-      return {
-        ...prev,
-        surface: { kind: nextKind, width: nextKind === "scroll" ? 760 : 794 },
-      };
-    });
-  };
-
   // Accept files dragged from File Explorer onto the 2D canvas center -> insert Vault LinkCard!
   const handleCanvasDragOver = (ev: React.DragEvent) => {
     if (!ev.dataTransfer.types.includes(VIBE_VAULT_PATHS_MIME)) return;
@@ -417,7 +411,61 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     setAiBarOpen(false);
   };
 
+  const activeView = resolveDocumentView(doc);
   const surface = documentSurface(doc);
+
+  // Discover vault `.vstyle.json` files + built-in style packs (re-runs on vault `.vstyle.json` edits!)
+  const styleCatalog = useMemo(() => {
+    void styleRevision;
+    const byId = new Map<string, { pack: StylePack; vaultPath?: string }>();
+    for (const builtin of BUILTIN_STYLE_PACKS) {
+      byId.set(builtin.id, { pack: builtin });
+    }
+    for (const node of vault.listAll()) {
+      if (
+        node.kind !== "file" ||
+        (!node.path.endsWith(".vstyle") && !node.path.endsWith(".vstyle.json"))
+      ) {
+        continue;
+      }
+      try {
+        const parsed = JSON.parse(vault.read(node.path)) as unknown;
+        if (isValidStylePack(parsed)) {
+          byId.set(parsed.id, { pack: parsed, vaultPath: node.path });
+        }
+      } catch {
+        // Ignore malformed style file safely
+      }
+    }
+    return byId;
+  }, [vault, styleRevision]);
+
+  const activeStyleEntry = useMemo(() => {
+    if (doc.styleRef?.packPath) {
+      const targetPath = fromVaultUri(doc.styleRef.packPath);
+      if (targetPath && vault.exists(targetPath)) {
+        try {
+          const parsed = JSON.parse(vault.read(targetPath)) as unknown;
+          if (isValidStylePack(parsed)) {
+            return { pack: parsed, vaultPath: targetPath };
+          }
+        } catch {
+          // Fall through to packId lookup
+        }
+      }
+    }
+    if (doc.styleRef?.packId) {
+      const fromCatalog = styleCatalog.get(doc.styleRef.packId);
+      if (fromCatalog) return fromCatalog;
+      const builtin = getBuiltinStylePack(doc.styleRef.packId);
+      if (builtin) return { pack: builtin };
+    }
+    if (activeView.id === "blog" || activeView.id === "web") {
+      const defPack = resolveDefaultStylePack(activeView.id);
+      return styleCatalog.get(defPack.id) ?? { pack: defPack };
+    }
+    return null;
+  }, [doc.styleRef, styleCatalog, vault, activeView.id]);
 
   // Stable MemoVDocPageSheet callbacks (100% referential stability so arePageSheetPropsEqual hits!)
   const handleSelectPage = useCallback(
@@ -525,9 +573,9 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           p.pageId !== pid
             ? p
             : {
-                ...p,
-                blocks: p.blocks.map((b) => (b.blockId === bid ? updater(b as LayoutBlock) : b)),
-              }
+              ...p,
+              blocks: p.blocks.map((b) => (b.blockId === bid ? updater(b as LayoutBlock) : b)),
+            }
         ),
       }));
     },
@@ -638,35 +686,31 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           <button
             type="button"
             onClick={() => setMode((m) => (m === "Editing" ? "Viewing" : "Editing"))}
-            className="flex items-center gap-1 rounded-[4px] border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2 py-0.5 text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+            className="flex shrink-0 items-center gap-1 rounded-[4px] border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2 py-0.5 text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
           >
             {mode === "Editing" ? <Pencil className="h-3 w-3 text-sky-400" /> : <Eye className="h-3 w-3" />}
             <span>{mode}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleToggleSurface}
-            className="flex items-center gap-1 rounded-[4px] px-2 py-0.5 hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#dadada)]"
-            title="Toggle A4 Paged vs Continuous Scroll surface"
+          {/* 양식은 문서 생성 시 하나로 정해진다 — 전환 토글 없이 읽기 전용 배지로만 보여준다. */}
+          <span
+            aria-label="Document format"
+            title={activeView.description}
+            className={`flex shrink-0 items-center gap-1 rounded-[4px] border px-2 py-0.5 font-medium ${activeView.id === "blog"
+              ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-300"
+              : "border-sky-500/30 bg-sky-500/15 text-sky-300"
+              }`}
           >
-            <ScrollText className="h-3 w-3" />
-            <span>{surface.kind === "paged" ? "A4 Paged" : "Scroll"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleAddPage}
-            className="flex items-center gap-1 rounded-[4px] px-2 py-0.5 hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#dadada)]"
-          >
-            <Plus className="h-3 w-3" />
-            <span>Page</span>
-          </button>
+            <DocumentViewIcon viewId={activeView.id} className="h-3 w-3" />
+            <span>{activeView.label}</span>
+          </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <span className="font-code text-[10.5px] opacity-75">
-            {doc.pages.length} {doc.pages.length === 1 ? "page" : "pages"}
+        <div className="flex shrink-0 items-center gap-1">
+          <span className="font-code text-[10px] opacity-75">
+            {activeView.unitKind === "section"
+              ? `${doc.pages.length}sec · ${surface.width}px`
+              : `${doc.pages.length} ${doc.pages.length === 1 ? "page" : "pages"}`}
           </span>
           <div className="h-3.5 w-px bg-[var(--obs-border,#363636)]" />
           <button
@@ -680,7 +724,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           <button
             type="button"
             onClick={() => setZoom(100)}
-            className="w-10 text-center font-code text-[11px] hover:text-[var(--obs-text-normal,#dadada)]"
+            className="w-9 text-center font-code text-[10.5px] hover:text-[var(--obs-text-normal,#dadada)]"
           >
             {zoom}%
           </button>
@@ -706,7 +750,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       <div
         ref={canvasScrollRef}
         onClick={() => vdocUiBridge.getState().selectBlock(path, null)}
-        className="min-h-0 flex-1 overflow-auto px-6 py-8 pb-28"
+        className="min-h-0 flex-1 overflow-auto px-4 py-6 pb-28"
       >
         <div
           className="mx-auto flex flex-col items-center gap-6 transition-transform"
@@ -715,13 +759,19 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
             transformOrigin: "top center",
           }}
         >
-          <WindowedPageChunker
-            pages={doc.pages}
-            chunkSize={6}
-            activePageId={activePageId}
-            pageGapPx={surface.kind === "scroll" ? 0 : 24}
-            renderPage={renderPage}
-          />
+          <VDocStyleProvider
+            pack={activeStyleEntry?.pack ?? null}
+            mode={doc.styleRef?.mode}
+            viewKey={activeView.id}
+          >
+            <WindowedPageChunker
+              pages={doc.pages}
+              chunkSize={6}
+              activePageId={activePageId}
+              pageGapPx={surface.kind === "scroll" ? 0 : 24}
+              renderPage={renderPage}
+            />
+          </VDocStyleProvider>
         </div>
       </div>
 
@@ -758,11 +808,10 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
                 key={id}
                 type="button"
                 onClick={() => setAiAction(id)}
-                className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] transition-colors ${
-                  aiAction === id
-                    ? "border-[#8a5cf5] bg-[#8a5cf5]/25 text-white"
-                    : "border-[#363636] bg-[#262626] text-slate-300 hover:bg-[#303030]"
-                }`}
+                className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] transition-colors ${aiAction === id
+                  ? "border-[#8a5cf5] bg-[#8a5cf5]/25 text-white"
+                  : "border-[#363636] bg-[#262626] text-slate-300 hover:bg-[#303030]"
+                  }`}
               >
                 <Icon className="h-3 w-3" />
                 <span>{label}</span>
@@ -832,11 +881,10 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           type="button"
           onClick={() => setAiBarOpen((v) => !v)}
           title="2D AI Directing (파일 추출 · 슬롯 보강)"
-          className={`flex h-8 items-center gap-1.5 rounded-xl px-2.5 font-medium transition-colors ${
-            aiBarOpen
-              ? "bg-[#8a5cf5] text-white"
-              : "bg-[#8a5cf5]/20 text-[#c4b5fd] hover:bg-[#8a5cf5]/35"
-          }`}
+          className={`flex h-8 items-center gap-1.5 rounded-xl px-2.5 font-medium transition-colors ${aiBarOpen
+            ? "bg-[#8a5cf5] text-white"
+            : "bg-[#8a5cf5]/20 text-[#c4b5fd] hover:bg-[#8a5cf5]/35"
+            }`}
         >
           <Sparkles className="h-3.5 w-3.5" />
           <span>AI Direct</span>

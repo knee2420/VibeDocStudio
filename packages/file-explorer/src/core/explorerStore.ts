@@ -1,11 +1,15 @@
 import { createStore, type StoreApi } from "zustand/vanilla";
 import {
+  PROJECT_FOLDER_EXT,
   basename,
   dirname,
   getAncestorPaths,
   isDescendantPath,
+  isProjectFolderName,
   joinPath,
   normalizeVaultPath,
+  stripProjectFolderExt,
+  toggleProjectFolderName,
   validateEntryName,
   type VaultPort,
   type VaultSortOrder,
@@ -159,6 +163,7 @@ function buildFlatRows(params: {
         path: node.path,
         node,
         depth,
+        isProjectFolder: isFolder && isProjectFolderName(node.name),
         isExpanded,
         hasChildren: isFolder && children.length > 0,
         isSelected: params.selectedPaths.has(node.path),
@@ -270,10 +275,25 @@ export function createFileExplorerStore(
       });
     };
 
-    const validateRenameDraft = (targetPath: string, draft: string): string | null => {
+    const resolveEffectiveRenameName = (draft: string, preservedSuffix?: string): string => {
+      const trimmed = draft.trim();
+      if (!trimmed || !preservedSuffix) return trimmed;
+      return trimmed.toLowerCase().endsWith(preservedSuffix.toLowerCase())
+        ? trimmed
+        : `${trimmed}${preservedSuffix}`;
+    };
+
+    const validateRenameDraft = (
+      targetPath: string,
+      draft: string,
+      preservedSuffix?: string
+    ): string | null => {
       const nameErr = validateEntryName(draft);
       if (nameErr) return nameErr;
-      const candidate = joinPath(dirname(targetPath), draft.trim());
+      const effectiveName = resolveEffectiveRenameName(draft, preservedSuffix);
+      const effectiveErr = validateEntryName(effectiveName);
+      if (effectiveErr) return effectiveErr;
+      const candidate = joinPath(dirname(targetPath), effectiveName);
       if (candidate !== targetPath && vault.exists(candidate)) {
         return `이미 같은 이름이 존재합니다: ${draft.trim()}`;
       }
@@ -555,9 +575,11 @@ export function createFileExplorerStore(
         const norm = normalizeVaultPath(path);
         const node = vault.getNode(norm);
         if (!node) return;
+        const isProjFolder = node.kind === "folder" && isProjectFolderName(node.name);
         const renameState: ExplorerInlineRenameState = {
           path: norm,
-          draft: node.name,
+          draft: isProjFolder ? stripProjectFolderExt(node.name) : node.name,
+          preservedSuffix: isProjFolder ? `.${PROJECT_FOLDER_EXT}` : undefined,
           error: null,
         };
         recompute({
@@ -570,7 +592,7 @@ export function createFileExplorerStore(
       updateRenameDraft(draft) {
         const cur = get().renameState;
         if (!cur) return;
-        const error = validateRenameDraft(cur.path, draft);
+        const error = validateRenameDraft(cur.path, draft, cur.preservedSuffix);
         recompute({
           renameState: { ...cur, draft, error },
         });
@@ -580,17 +602,18 @@ export function createFileExplorerStore(
         const cur = get().renameState;
         if (!cur) return { ok: false, error: "Not renaming" };
         const trimmed = cur.draft.trim();
-        const err = validateRenameDraft(cur.path, trimmed);
+        const err = validateRenameDraft(cur.path, trimmed, cur.preservedSuffix);
         if (err) {
           recompute({ renameState: { ...cur, error: err } });
           return { ok: false, error: err };
         }
-        if (trimmed === basename(cur.path)) {
+        const effectiveName = resolveEffectiveRenameName(trimmed, cur.preservedSuffix);
+        if (effectiveName === basename(cur.path)) {
           recompute({ renameState: null });
           return { ok: true, newPath: cur.path };
         }
         try {
-          const res = vault.rename(cur.path, trimmed);
+          const res = vault.rename(cur.path, effectiveName);
           recompute({
             renameState: null,
             focusedPath: res.newPath,
@@ -653,7 +676,8 @@ export function createFileExplorerStore(
       createNewFolder(parentFolderPath = "", createOptions) {
         const normParent = normalizeVaultPath(parentFolderPath);
         const base = createOptions?.baseName?.trim() || "New folder";
-        const uniquePath = vault.getUniquePath(normParent, base);
+        const cleanExt = createOptions?.extension?.replace(/^\./, "").toLowerCase() || undefined;
+        const uniquePath = vault.getUniquePath(normParent, base, cleanExt);
         internalCreateDepth += 1;
         let created;
         try {
@@ -672,6 +696,7 @@ export function createFileExplorerStore(
         if (createOptions?.onCreated) {
           nextExpanded.add(created.path);
         }
+        const isProjFolder = isProjectFolderName(created.name);
         recompute({
           expandedPaths: nextExpanded,
           focusedPath: created.path,
@@ -679,11 +704,44 @@ export function createFileExplorerStore(
           selectionAnchorPath: created.path,
           renameState: {
             path: created.path,
-            draft: created.name,
+            draft: isProjFolder ? stripProjectFolderExt(created.name) : created.name,
+            preservedSuffix: isProjFolder ? `.${PROJECT_FOLDER_EXT}` : undefined,
             error: null,
           },
         });
         return { path: created.path };
+      },
+
+      toggleProjectFolder(path) {
+        const norm = normalizeVaultPath(path);
+        const node = vault.getNode(norm);
+        if (!node || node.kind !== "folder") {
+          return { ok: false, error: "폴더만 프로젝트로 전환할 수 있습니다." };
+        }
+        const { nextName, isProject } = toggleProjectFolderName(node.name);
+        const candidatePath = joinPath(dirname(norm), nextName);
+        if (candidatePath !== norm && vault.exists(candidatePath)) {
+          return { ok: false, error: `이미 같은 이름의 폴더가 존재합니다: ${nextName}` };
+        }
+        try {
+          const res = vault.rename(norm, nextName);
+          recompute({
+            focusedPath: res.newPath,
+            selectedPaths: new Set([res.newPath]),
+            selectionAnchorPath: res.newPath,
+          });
+          return {
+            ok: true,
+            oldPath: norm,
+            newPath: res.newPath,
+            isProject,
+          };
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : "폴더 전환에 실패했습니다.",
+          };
+        }
       },
 
       duplicatePaths(paths) {

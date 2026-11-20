@@ -99,12 +99,18 @@ importers:
       '@vibe/outliner':
         specifier: workspace:*
         version: link:../../../VibePatchNote/packages/outliner
+      '@vibe/ref-canvas':
+        specifier: workspace:*
+        version: link:../../packages/ref-canvas
       '@vibe/slot-canvas':
         specifier: workspace:*
         version: link:../../packages/slot-canvas
       '@vibe/slot-editor':
         specifier: workspace:*
         version: link:../../packages/slot-editor
+      '@vibe/style-core':
+        specifier: workspace:*
+        version: link:../../packages/style-core
       '@vibe/vault-core':
         specifier: workspace:*
         version: link:../../packages/vault-core
@@ -359,6 +365,24 @@ importers:
         specifier: ^19.0.0
         version: 19.3.1(react@19.3.1)
 
+  packages/ref-canvas:
+    dependencies:
+      '@vibe/vault-core':
+        specifier: workspace:*
+        version: link:../vault-core
+      lucide-react:
+        specifier: ^0.475.0
+        version: 0.475.0(react@19.3.1)
+      pdfjs-dist:
+        specifier: ^5.4.296
+        version: 5.4.296
+      react:
+        specifier: ^19.0.0
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.3.1(react@19.3.1)
+
   packages/slot-canvas:
     dependencies:
       '@vibe/ai-composer':
@@ -367,6 +391,9 @@ importers:
       '@vibe/slot-editor':
         specifier: workspace:*
         version: link:../slot-editor
+      '@vibe/style-core':
+        specifier: workspace:*
+        version: link:../style-core
       '@vibe/vdoc-schema':
         specifier: workspace:*
         version: link:../vdoc-schema
@@ -434,10 +461,15 @@ importers:
         specifier: ^5.0.3
         version: 5.0.16(@types/react@19.3.0)(react@19.3.1)(use-sync-external-store@1.7.0(react@19.3.1))
 
+  packages/style-core: {}
+
   packages/vault-core: {}
 
   packages/vdoc-schema:
     dependencies:
+      '@vibe/style-core':
+        specifier: workspace:*
+        version: link:../style-core
       entities:
         specifier: ^9.0.0
         version: 9.0.0

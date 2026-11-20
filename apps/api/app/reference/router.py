@@ -10,12 +10,15 @@
 도메인 오류는 `app.bootstrap.error_handlers` 가 HTTP 응답으로 번역한다.
 """
 
-from typing import Annotated, Any
+import json
+import queue
+import threading
+from typing import Annotated, Any, Optional
 from urllib.parse import quote
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 
 from .models import ProjectBinding
 from .schemas import (
@@ -51,6 +54,25 @@ def list_items(service: ServiceDep) -> list[dict[str, Any]]:
     return [item.to_dict() for item in service.list_items()]
 
 
+@router.get("/normalized")
+@inject
+def list_normalized_items(
+    service: ServiceDep,
+    project_id: str = Query("", alias="projectId"),
+) -> list[dict[str, Any]]:
+    return service.list_normalized(project_id=project_id)
+
+
+@router.get("/items/{ref_id}/normalized")
+@inject
+def get_normalized_item(
+    ref_id: str,
+    service: ServiceDep,
+    project_id: str = Query("", alias="projectId"),
+) -> dict[str, Any]:
+    return service.normalized(ref_id, project_id=project_id)
+
+
 @router.post("/items/file")
 @inject
 async def add_file(service: ServiceDep, file: UploadFile = File(...), title: str = Form("")) -> dict[str, Any]:
@@ -62,6 +84,71 @@ async def add_file(service: ServiceDep, file: UploadFile = File(...), title: str
 @inject
 def add_url(body: AddUrlRequest, service: ServiceDep) -> dict[str, Any]:
     return service.add_url(body.url, body.title, body.layerSet).to_dict()
+
+
+_STAGE_PERCENT: dict[str, int] = {
+    "init": 5,
+    "canonicalize": 12,
+    "browser": 22,
+    "measure": 42,
+    "capture": 68,
+    "fallback": 45,
+    "fetch": 50,
+    "save": 82,
+    "layers": 92,
+}
+
+
+@router.post("/items/url/stream")
+@inject
+def add_url_stream(body: AddUrlRequest, service: ServiceDep) -> StreamingResponse:
+    """웹 URL 레퍼런스 수집·캡처·정규화 진행 상황을 SSE(`text/event-stream`)로 실시간 스트리밍한다."""
+    q: queue.Queue[Optional[tuple[str, dict[str, Any]]]] = queue.Queue()
+
+    def on_progress(stage: str, message: str) -> None:
+        q.put(
+            (
+                "progress",
+                {
+                    "stage": stage,
+                    "percent": _STAGE_PERCENT.get(stage, 50),
+                    "message": message,
+                },
+            )
+        )
+
+    def worker() -> None:
+        try:
+            item = service.add_url(body.url, body.title, body.layerSet, on_progress=on_progress)
+            normalized = service.normalized(item.ref_id)
+            q.put(("done", {"item": item.to_dict(), "normalized": normalized}))
+        except Exception as exc:  # noqa: BLE001
+            q.put(("error", {"detail": str(exc)}))
+        finally:
+            q.put(None)
+
+    threading.Thread(target=worker, daemon=True).start()
+
+    def event_gen():
+        while True:
+            try:
+                ev = q.get(timeout=2.0)
+            except queue.Empty:
+                yield ": keepalive\n\n"
+                continue
+            if ev is None:
+                break
+            ev_name, payload = ev
+            yield f"event: {ev_name}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        event_gen(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @router.get("/items/{ref_id}")

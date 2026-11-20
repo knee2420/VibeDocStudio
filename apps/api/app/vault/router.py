@@ -4,7 +4,7 @@ from __future__ import annotations
 import threading
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
 
 from app.core.sse import sse_response
@@ -119,7 +119,9 @@ def stream_vault_raw_file(
     service: VaultService = Depends(Provide["vault_service"]),
 ) -> FileResponse:
     resolved = service.resolve_raw_file(vault_id, path)
-    return FileResponse(path=str(resolved), filename=resolved.name)
+    # 화면(이미지·PDF 뷰어 iframe)에서 바로 보이도록 inline 으로 내려준다.
+    # attachment 로 주면 브라우저가 열 때마다 내려받기를 시작한다.
+    return FileResponse(path=str(resolved), filename=resolved.name, content_disposition_type="inline")
 
 
 @router.post("/{vault_id}/file", response_model=VaultNodeDto)
@@ -130,6 +132,20 @@ def create_vault_file(
     service: VaultService = Depends(Provide["vault_service"]),
 ) -> VaultNodeDto:
     return service.create_file(vault_id, req)
+
+
+@router.post("/{vault_id}/upload", response_model=VaultNodeDto)
+@inject
+async def upload_vault_binary(
+    vault_id: str,
+    file: UploadFile = File(...),
+    folder: str = Form(""),
+    clientId: str | None = Form(default=None),
+    service: VaultService = Depends(Provide["vault_service"]),
+) -> VaultNodeDto:
+    """이미지·PDF 같은 바이너리 파일을 볼트 폴더에 저장한다 (같은 이름이면 번호를 붙인다)."""
+    data = await file.read()
+    return service.upload_binary(vault_id, folder, file.filename or "file", data, client_id=clientId)
 
 
 @router.put("/{vault_id}/file", response_model=VaultNodeDto)

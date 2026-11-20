@@ -55,6 +55,10 @@ def layout_to_extraction(layout: dict[str, Any], url: str = "") -> dict[str, Any
             geom["sourceY"] = cur_rect["y"]
             if cur_rect.get("height") is not None:
                 geom["sourceHeight"] = cur_rect["height"]
+            if cur_rect.get("x") is not None:
+                geom["sourceX"] = cur_rect["x"]
+            if cur_rect.get("width") is not None:
+                geom["sourceWidth"] = cur_rect["width"]
         blocks.append({"id": f"b{len(blocks) + 1}", "page": 1, "kind": kind, "level": level,
                        "text": text, "html": html, "bbox": None, **geom, **extra})
 
@@ -144,7 +148,12 @@ class FidelityWebLayoutExtractor:
         self.use_browser = use_browser
         self.capture_screenshots = capture_screenshots
 
-    def extract_with_shots(self, url: str) -> tuple[dict[str, Any], dict[str, Any], list[Any]]:
+    def extract_with_shots(
+        self,
+        url: str,
+        *,
+        on_progress: Any = None,
+    ) -> tuple[dict[str, Any], dict[str, Any], list[Any]]:
         from webpage_fidelity_engine import (
             WebpageExtractOptions,
             run_webpage_extraction,
@@ -157,11 +166,11 @@ class FidelityWebLayoutExtractor:
             inline_images=False,
             generate_thumbnails=False,
             use_browser_fallback=self.use_browser,
-            fetch_timeout_s=22.0,
+            fetch_timeout_s=30.0,
             capture_screenshots=self.capture_screenshots,
             max_screenshots=16,
         )
-        res = run_webpage_extraction(url, options=opts)
+        res = run_webpage_extraction(url, options=opts, on_progress=on_progress)
         layout = res.document
         return layout_to_extraction(layout, url), layout, list(getattr(res, "screenshots", []) or [])
 

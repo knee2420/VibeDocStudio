@@ -134,6 +134,11 @@ export interface VaultPort {
   isReadOnly?(): boolean;
   setReadOnly?(readOnly: boolean): void;
   getBinaryUrl?(path: string): string;
+  /**
+   * Optional: stores binary files (images, PDFs, …) in `folderPath` and resolves to their vault paths,
+   * in the same order. A name already taken gets a number (`shot 1.png`).
+   */
+  importBinaryFiles?(folderPath: string, files: readonly Blob[], names?: readonly string[]): Promise<string[]>;
   revealInOsExplorer?(path?: string): Promise<string>;
   dispose?(): void;
 }

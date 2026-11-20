@@ -195,4 +195,41 @@ describe("@vibe/file-explorer — Headless Obsidian Parity", () => {
     assert.equal(explorer.getState().expandedPaths.has("Research"), true);
     explorer.getState().dispose();
   });
+
+  it("creates .vproj Project Folders, preserves .vproj suffix on F2 rename, and toggles folder promotion/demotion", () => {
+    const { vault, explorer } = createTestFixture();
+
+    // 1. Create a Project Folder via extension option -> starts inline rename with clean draft & preservedSuffix
+    const proj = explorer.getState().createNewFolder("", {
+      baseName: "Campaign",
+      extension: "vproj",
+    });
+    assert.equal(proj.path, "Campaign.vproj");
+    assert.equal(explorer.getState().renameState?.draft, "Campaign");
+    assert.equal(explorer.getState().renameState?.preservedSuffix, ".vproj");
+
+    // 2. User types a new clean name without ".vproj" -> commitRename automatically preserves ".vproj"!
+    explorer.getState().updateRenameDraft("Launch 2026");
+    const renamed = explorer.getState().commitRename();
+    assert.equal(renamed.ok, true);
+    assert.equal(renamed.newPath, "Launch 2026.vproj");
+    assert.equal(vault.exists("Launch 2026.vproj"), true);
+    const projRow = explorer.getState().rows.find((r) => r.path === "Launch 2026.vproj");
+    assert.equal(projRow?.isProjectFolder, true);
+
+    // 3. Promote an existing normal folder to Project Folder & demote it back cleanly
+    const promoted = explorer.getState().toggleProjectFolder("01. Docs");
+    assert.equal(promoted.ok, true);
+    assert.equal(promoted.isProject, true);
+    assert.equal(promoted.newPath, "01. Docs.vproj");
+    assert.equal(vault.exists("01. Docs.vproj/Spec.outline"), true);
+
+    const demoted = explorer.getState().toggleProjectFolder("01. Docs.vproj");
+    assert.equal(demoted.ok, true);
+    assert.equal(demoted.isProject, false);
+    assert.equal(demoted.newPath, "01. Docs");
+    assert.equal(vault.exists("01. Docs/Spec.outline"), true);
+
+    explorer.getState().dispose();
+  });
 });

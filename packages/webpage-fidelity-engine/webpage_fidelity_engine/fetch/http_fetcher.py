@@ -19,6 +19,27 @@ _DEFAULT_HEADERS = {
     "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
 }
 _LOCAL_HOSTNAMES = {"localhost", "localhost.localdomain", "ip6-localhost", "ip6-loopback"}
+_NAVER_BLOG_POST_RE = re.compile(r"^/([A-Za-z0-9_.-]+)/(\d{6,})/?$")
+
+
+def canonicalize_fetch_url(url: str) -> str:
+    """외부 래퍼 프레임셋(예: `blog.naver.com/<blogId>/<logNo>`)을 실제 본문 주소로 정규화한다.
+
+    네이버 블로그 PC 주소는 3KB짜리 `<iframe id="mainFrame">` 껍데기만 반환하므로
+    `PostView.naver?blogId=...&logNo=...` 로 직행해야 정적 폴백과 브라우저 실측 모두
+    이중 네비게이션 없이 100% 안정적으로 본문과 캡처를 얻는다.
+    """
+    clean = (url or "").strip()
+    if not clean:
+        return clean
+    parsed = urlparse(clean)
+    host = (parsed.hostname or "").lower()
+    if host == "blog.naver.com":
+        m = _NAVER_BLOG_POST_RE.match(parsed.path or "")
+        if m:
+            blog_id, log_no = m.group(1), m.group(2)
+            return f"https://blog.naver.com/PostView.naver?blogId={blog_id}&logNo={log_no}"
+    return clean
 
 
 def _is_blocked_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
@@ -90,7 +111,10 @@ class HttpWebFetcher:
         self._max_bytes = max_bytes
 
     def fetch(self, url: str, *, timeout_s: float = 12.0) -> tuple[bytes, str, str]:
-        current_url = validate_public_http_url(url, allow_private_hosts=self._allow_private)
+        current_url = validate_public_http_url(
+            canonicalize_fetch_url(url),
+            allow_private_hosts=self._allow_private,
+        )
         max_redirects = 5
         with httpx.Client(headers=_DEFAULT_HEADERS, timeout=timeout_s, follow_redirects=False) as client:
             for _ in range(max_redirects + 1):

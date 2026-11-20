@@ -11,6 +11,7 @@ import {
   nextLayoutId,
   normalizeLayoutTree,
   pruneUnusedTabGroups,
+  reconcileTabGroupPairs,
   resizeSplitInTree,
   sortPinnedTabsFirst,
   splitGroupInTree,
@@ -22,6 +23,8 @@ import {
   type ExpandedTabGroupState,
   type LayoutNode,
   type TabGroupMeta,
+  type TabGroupNode,
+  type TabGroupPairState,
   type WorkspaceLayoutSnapshot,
   type WorkspaceLayoutState,
   type WorkspaceTab,
@@ -186,11 +189,21 @@ export function createWorkspaceLayoutStore(
       ? candidateInitialActive
       : initialGroups[0].id;
   const initialExpanded: ExpandedTabGroupState | null = null;
-  const initialTabGroups: Readonly<Record<string, TabGroupMeta>> = pruneUnusedTabGroups(
+  const initialTabGroups: Readonly<Record<string, TabGroupMeta>> = reconcileTabGroupPairs(
     initialRoot,
-    seed?.tabGroups ?? {},
-    initialExpanded
+    pruneUnusedTabGroups(initialRoot, seed?.tabGroups ?? {}, initialExpanded)
   );
+
+  // Per-group MRU tab history so Pair View defaults to [activeTab, previouslyViewedGroupTab]
+  const groupMruMap = new Map<string, string[]>();
+  const recordGroupMru = (tabGroupId: string | undefined, tabId: string) => {
+    if (!tabGroupId) return;
+    const prev = groupMruMap.get(tabGroupId) ?? [];
+    groupMruMap.set(
+      tabGroupId,
+      [tabId, ...prev.filter((id) => id !== tabId)].slice(0, 16)
+    );
+  };
 
   const store = createStore<WorkspaceLayoutState>((set, get) => {
     const commit = (
@@ -208,11 +221,12 @@ export function createWorkspaceLayoutStore(
         : groups[0].id;
       const nextExpanded =
         expandedOverride !== undefined ? expandedOverride : get().expandedTabGroup;
-      const nextTabGroups = pruneUnusedTabGroups(
+      const prunedTabGroups = pruneUnusedTabGroups(
         nextRoot,
         tabGroupsOverride !== undefined ? tabGroupsOverride : get().tabGroups,
         nextExpanded
       );
+      const nextTabGroups = reconcileTabGroupPairs(nextRoot, prunedTabGroups);
 
       set({
         root: nextRoot,
@@ -287,15 +301,45 @@ export function createWorkspaceLayoutStore(
           return { ...g, activeTabId: tabId };
         });
 
+        recordGroupMru(activatedGroupId, tabId);
+
         let nextTabGroups: Record<string, TabGroupMeta> | undefined;
-        if (activatedGroupId && get().tabGroups[activatedGroupId]?.collapsed) {
-          nextTabGroups = {
-            ...get().tabGroups,
-            [activatedGroupId]: {
-              ...get().tabGroups[activatedGroupId],
-              collapsed: false,
-            },
-          };
+        const curMeta = activatedGroupId ? get().tabGroups[activatedGroupId] : undefined;
+        if (activatedGroupId && curMeta) {
+          let updatedMeta = curMeta;
+          let metaChanged = false;
+          if (updatedMeta.collapsed) {
+            updatedMeta = { ...updatedMeta, collapsed: false };
+            metaChanged = true;
+          }
+          if (updatedMeta.pair) {
+            const p = updatedMeta.pair;
+            if (tabId === p.leftTabId) {
+              if (p.activeSide !== "left") {
+                updatedMeta = { ...updatedMeta, pair: { ...p, activeSide: "left" } };
+                metaChanged = true;
+              }
+            } else if (tabId === p.rightTabId) {
+              if (p.activeSide !== "right") {
+                updatedMeta = { ...updatedMeta, pair: { ...p, activeSide: "right" } };
+                metaChanged = true;
+              }
+            } else {
+              // Clicking another member tab in a 3+ tab group loads it into the currently focused pair side
+              const nextPair: TabGroupPairState =
+                p.activeSide === "right"
+                  ? { ...p, rightTabId: tabId, activeSide: "right" }
+                  : { ...p, leftTabId: tabId, activeSide: "left" };
+              updatedMeta = { ...updatedMeta, pair: nextPair };
+              metaChanged = true;
+            }
+          }
+          if (metaChanged) {
+            nextTabGroups = {
+              ...get().tabGroups,
+              [activatedGroupId]: updatedMeta,
+            };
+          }
         }
         commit(nextRoot, groupId, undefined, nextTabGroups);
       },
@@ -314,24 +358,32 @@ export function createWorkspaceLayoutStore(
       },
 
       openResource(input) {
-        const { root, activeGroupId } = get();
+        const { root, activeGroupId, expandedTabGroup } = get();
         const mode = input.mode ?? "current";
+        const inheritedTabGroupId = expandedTabGroup?.tabGroupId;
         const targetGroup =
           (input.groupId ? findGroup(root, input.groupId) : null) ??
           findGroup(root, activeGroupId) ??
           getAllGroups(root)[0];
 
         if (mode === "split-right" || mode === "split-down") {
-          const newTab = createResourceTab(input.resourceId, input.title, input.viewType);
+          const baseTab = createResourceTab(input.resourceId, input.title, input.viewType);
+          const newTab: WorkspaceTab = inheritedTabGroupId
+            ? { ...baseTab, tabGroupId: inheritedTabGroupId }
+            : baseTab;
           const newGroup = createTabGroup([newTab]);
           const edge = mode === "split-right" ? "right" : "bottom";
           const nextRoot = splitGroupInTree(root, targetGroup.id, edge, newGroup);
+          recordGroupMru(newTab.tabGroupId, newTab.id);
           commit(nextRoot, newGroup.id);
           return { groupId: newGroup.id, tabId: newTab.id };
         }
 
         if (mode === "new-tab") {
-          const newTab = createResourceTab(input.resourceId, input.title, input.viewType);
+          const baseTab = createResourceTab(input.resourceId, input.title, input.viewType);
+          const newTab: WorkspaceTab = inheritedTabGroupId
+            ? { ...baseTab, tabGroupId: inheritedTabGroupId }
+            : baseTab;
           const nextRoot = mapGroups(root, (g) => {
             if (g.id !== targetGroup.id) return g;
             return {
@@ -340,6 +392,7 @@ export function createWorkspaceLayoutStore(
               activeTabId: newTab.id,
             };
           });
+          recordGroupMru(newTab.tabGroupId, newTab.id);
           commit(nextRoot, targetGroup.id);
           return { groupId: targetGroup.id, tabId: newTab.id };
         }
@@ -381,12 +434,16 @@ export function createWorkspaceLayoutStore(
               activeTabId: updatedTab.id,
             };
           });
+          recordGroupMru(updatedTab.tabGroupId, updatedTab.id);
           commit(nextRoot, targetGroup.id);
           return { groupId: targetGroup.id, tabId: updatedTab.id };
         }
 
         // 3) Active tab is pinned -> find an unpinned tab or open a new tab (never overwrite pinned!)
-        const newTab = createResourceTab(input.resourceId, input.title, input.viewType);
+        const baseTab = createResourceTab(input.resourceId, input.title, input.viewType);
+        const newTab: WorkspaceTab = inheritedTabGroupId
+          ? { ...baseTab, tabGroupId: inheritedTabGroupId }
+          : baseTab;
         const nextRoot = mapGroups(root, (g) => {
           if (g.id !== targetGroup.id) return g;
           return {
@@ -395,17 +452,21 @@ export function createWorkspaceLayoutStore(
             activeTabId: newTab.id,
           };
         });
+        recordGroupMru(newTab.tabGroupId, newTab.id);
         commit(nextRoot, targetGroup.id);
         return { groupId: targetGroup.id, tabId: newTab.id };
       },
 
       openNewEmptyTab(explicitGroupId) {
-        const { root, activeGroupId } = get();
+        const { root, activeGroupId, expandedTabGroup } = get();
         const targetGroup =
           (explicitGroupId ? findGroup(root, explicitGroupId) : null) ??
           findGroup(root, activeGroupId) ??
           getAllGroups(root)[0];
-        const tab = createEmptyTab();
+        const baseTab = createEmptyTab();
+        const tab: WorkspaceTab = expandedTabGroup
+          ? { ...baseTab, tabGroupId: expandedTabGroup.tabGroupId }
+          : baseTab;
         const nextRoot = mapGroups(root, (g) => {
           if (g.id !== targetGroup.id) return g;
           return {
@@ -414,6 +475,7 @@ export function createWorkspaceLayoutStore(
             activeTabId: tab.id,
           };
         });
+        recordGroupMru(tab.tabGroupId, tab.id);
         commit(nextRoot, targetGroup.id);
         return { groupId: targetGroup.id, tabId: tab.id };
       },
@@ -757,19 +819,13 @@ export function createWorkspaceLayoutStore(
       },
 
       dockTab(tabId, targetGroupId, zone, targetIndex) {
-        const { root, expandedTabGroup } = get();
+        const { root } = get();
         const loc = findTabLocation(root, tabId);
         const targetGroup = findGroup(root, targetGroupId);
         if (!loc || !targetGroup) return;
 
         if (zone === "center") {
-          const detachCrossPane = !expandedTabGroup && loc.group.id !== targetGroupId;
-          get().moveTabToGroup(
-            tabId,
-            targetGroupId,
-            targetIndex,
-            detachCrossPane ? { targetTabGroupId: null } : undefined
-          );
+          get().moveTabToGroup(tabId, targetGroupId, targetIndex);
           return;
         }
 
@@ -789,17 +845,17 @@ export function createWorkspaceLayoutStore(
           };
         });
 
-        const dockedTab: WorkspaceTab = expandedTabGroup
-          ? loc.tab
-          : { ...loc.tab, tabGroupId: undefined };
+        // Preserve tabGroupId when splitting a grouped tab (detach only via explicit ungroup / tab bar drop)
+        const dockedTab: WorkspaceTab = loc.tab;
         const newGroup = createTabGroup([dockedTab]);
         const nextRoot = splitGroupInTree(withoutSource, targetGroup.id, zone, newGroup);
         commit(nextRoot, newGroup.id);
       },
 
       dockResource(input, targetGroupId, zone, targetIndex) {
-        const { root } = get();
+        const { root, expandedTabGroup } = get();
         const targetGroup = findGroup(root, targetGroupId) ?? getAllGroups(root)[0];
+        const inheritedTabGroupId = expandedTabGroup?.tabGroupId;
 
         if (zone === "center") {
           const existing = targetGroup.tabs.find((t) => t.resourceId === input.resourceId);
@@ -807,7 +863,10 @@ export function createWorkspaceLayoutStore(
             get().activateTab(targetGroup.id, existing.id);
             return { groupId: targetGroup.id, tabId: existing.id };
           }
-          const tab = createResourceTab(input.resourceId, input.title, input.viewType);
+          const baseTab = createResourceTab(input.resourceId, input.title, input.viewType);
+          const tab: WorkspaceTab = inheritedTabGroupId
+            ? { ...baseTab, tabGroupId: inheritedTabGroupId }
+            : baseTab;
           const nextRoot = mapGroups(root, (g) => {
             if (g.id !== targetGroup.id) return g;
             const nextTabs = [...g.tabs];
@@ -822,13 +881,18 @@ export function createWorkspaceLayoutStore(
               activeTabId: tab.id,
             };
           });
+          recordGroupMru(tab.tabGroupId, tab.id);
           commit(nextRoot, targetGroup.id);
           return { groupId: targetGroup.id, tabId: tab.id };
         }
 
-        const tab = createResourceTab(input.resourceId, input.title, input.viewType);
+        const baseTab = createResourceTab(input.resourceId, input.title, input.viewType);
+        const tab: WorkspaceTab = inheritedTabGroupId
+          ? { ...baseTab, tabGroupId: inheritedTabGroupId }
+          : baseTab;
         const newGroup = createTabGroup([tab]);
         const nextRoot = splitGroupInTree(root, targetGroup.id, zone, newGroup);
+        recordGroupMru(tab.tabGroupId, tab.id);
         commit(nextRoot, newGroup.id);
         return { groupId: newGroup.id, tabId: tab.id };
       },
@@ -1236,6 +1300,7 @@ export function createWorkspaceLayoutStore(
             ...(patch.color !== undefined ? { color: patch.color } : {}),
             ...(patch.collapsed !== undefined ? { collapsed: patch.collapsed } : {}),
             ...(patch.stacked !== undefined ? { stacked: patch.stacked } : {}),
+            ...(patch.pair !== undefined ? { pair: patch.pair } : {}),
           },
         };
         commit(get().root, undefined, undefined, nextTabGroups);
@@ -1253,7 +1318,221 @@ export function createWorkspaceLayoutStore(
         const nextStacked = !existing.stacked;
         get().updateTabGroupMeta(tabGroupId, {
           stacked: nextStacked,
+          ...(nextStacked ? { pair: null } : {}),
           ...(nextStacked && existing.collapsed ? { collapsed: false } : {}),
+        });
+      },
+
+      enableTabGroupPair(tabGroupId, options) {
+        const { root, tabGroups } = get();
+        const meta = tabGroups[tabGroupId];
+        if (!meta) return;
+
+        // Find pane holding this group's members (prefer the pane with most members / active pane)
+        const panes = getAllGroups(root);
+        let hostPane: TabGroupNode | null = null;
+        let members: WorkspaceTab[] = [];
+        for (const pane of panes) {
+          const found = pane.tabs.filter((t) => t.tabGroupId === tabGroupId);
+          if (found.length > members.length) {
+            members = found;
+            hostPane = pane;
+          }
+        }
+        if (!hostPane || members.length === 0) return;
+
+        let workingRoot = root;
+        let workingMembers = [...members];
+
+        // 1-tab group: create a sibling empty tab inside the same group so pair opens immediately
+        if (workingMembers.length === 1) {
+          const partner: WorkspaceTab = { ...createEmptyTab(), tabGroupId };
+          workingRoot = mapGroups(root, (g) => {
+            if (g.id !== hostPane!.id) return g;
+            const nextTabs = sortPinnedTabsFirst([...g.tabs, partner]);
+            return { ...g, tabs: nextTabs };
+          });
+          workingMembers = [workingMembers[0], partner];
+        }
+
+        const memberIds = new Set(workingMembers.map((t) => t.id));
+        const activeInGroup =
+          hostPane.activeTabId && memberIds.has(hostPane.activeTabId)
+            ? hostPane.activeTabId
+            : null;
+
+        let leftTabId =
+          options?.leftTabId && memberIds.has(options.leftTabId)
+            ? options.leftTabId
+            : activeInGroup ?? workingMembers[0].id;
+
+        const mru = groupMruMap.get(tabGroupId) ?? [];
+        const mruCandidate = mru.find((id) => id !== leftTabId && memberIds.has(id));
+        const leftIdx = workingMembers.findIndex((t) => t.id === leftTabId);
+        const adjacentCandidate =
+          workingMembers[leftIdx + 1]?.id ??
+          workingMembers[leftIdx - 1]?.id ??
+          workingMembers.find((t) => t.id !== leftTabId)?.id;
+
+        let rightTabId =
+          options?.rightTabId && memberIds.has(options.rightTabId) && options.rightTabId !== leftTabId
+            ? options.rightTabId
+            : mruCandidate ?? adjacentCandidate ?? "";
+
+        if (!rightTabId || rightTabId === leftTabId) {
+          const fallback = workingMembers.find((t) => t.id !== leftTabId);
+          if (!fallback) return;
+          rightTabId = fallback.id;
+        }
+
+        const activeSide: "left" | "right" = options?.activeSide ?? "left";
+        const splitRatio = Math.max(
+          20,
+          Math.min(80, Number.isFinite(options?.splitRatio) ? (options?.splitRatio as number) : meta.pair?.splitRatio ?? 50)
+        );
+        const focusedTabId = activeSide === "right" ? rightTabId : leftTabId;
+
+        const nextRoot = mapGroups(workingRoot, (g) =>
+          g.id === hostPane!.id ? { ...g, activeTabId: focusedTabId } : g
+        );
+        const nextTabGroups: Record<string, TabGroupMeta> = {
+          ...tabGroups,
+          [tabGroupId]: {
+            ...meta,
+            collapsed: false,
+            stacked: false,
+            pair: {
+              leftTabId,
+              rightTabId,
+              splitRatio,
+              activeSide,
+            },
+          },
+        };
+        recordGroupMru(tabGroupId, rightTabId);
+        recordGroupMru(tabGroupId, leftTabId);
+        commit(nextRoot, hostPane.id, undefined, nextTabGroups);
+      },
+
+      disableTabGroupPair(tabGroupId) {
+        const existing = get().tabGroups[tabGroupId];
+        if (!existing || !existing.pair) return;
+        get().updateTabGroupMeta(tabGroupId, { pair: null });
+      },
+
+      toggleTabGroupPair(tabGroupId, options) {
+        const existing = get().tabGroups[tabGroupId];
+        if (!existing) return;
+        if (existing.pair && !options?.leftTabId && !options?.rightTabId) {
+          get().disableTabGroupPair(tabGroupId);
+        } else {
+          get().enableTabGroupPair(tabGroupId, options);
+        }
+      },
+
+      setTabGroupPairSlot(tabGroupId, side, tabId) {
+        const { root, tabGroups } = get();
+        const meta = tabGroups[tabGroupId];
+        if (!meta) return;
+        const loc = findTabLocation(root, tabId);
+        if (!loc || loc.tab.tabGroupId !== tabGroupId) return;
+
+        if (!meta.pair) {
+          get().enableTabGroupPair(
+            tabGroupId,
+            side === "left" ? { leftTabId: tabId, activeSide: "left" } : { rightTabId: tabId, activeSide: "right" }
+          );
+          return;
+        }
+
+        const cur = meta.pair;
+        let nextLeft = cur.leftTabId;
+        let nextRight = cur.rightTabId;
+
+        if (side === "left") {
+          if (tabId === cur.rightTabId) {
+            // Swap sides cleanly instead of duplicating the same tab on both sides
+            nextRight = cur.leftTabId;
+            nextLeft = tabId;
+          } else {
+            nextLeft = tabId;
+          }
+        } else {
+          if (tabId === cur.leftTabId) {
+            nextLeft = cur.rightTabId;
+            nextRight = tabId;
+          } else {
+            nextRight = tabId;
+          }
+        }
+
+        const nextRoot = mapGroups(root, (g) =>
+          g.id === loc.group.id ? { ...g, activeTabId: tabId } : g
+        );
+        const nextTabGroups: Record<string, TabGroupMeta> = {
+          ...tabGroups,
+          [tabGroupId]: {
+            ...meta,
+            collapsed: false,
+            stacked: false,
+            pair: {
+              ...cur,
+              leftTabId: nextLeft,
+              rightTabId: nextRight,
+              activeSide: side,
+            },
+          },
+        };
+        recordGroupMru(tabGroupId, tabId);
+        commit(nextRoot, loc.group.id, undefined, nextTabGroups);
+      },
+
+      setTabGroupPairActiveSide(tabGroupId, side) {
+        const { root, tabGroups } = get();
+        const meta = tabGroups[tabGroupId];
+        if (!meta?.pair) return;
+        const targetTabId = side === "right" ? meta.pair.rightTabId : meta.pair.leftTabId;
+        const loc = findTabLocation(root, targetTabId);
+        if (!loc) return;
+
+        const nextRoot = mapGroups(root, (g) =>
+          g.id === loc.group.id ? { ...g, activeTabId: targetTabId } : g
+        );
+        const nextTabGroups: Record<string, TabGroupMeta> =
+          meta.pair.activeSide === side
+            ? tabGroups
+            : {
+              ...tabGroups,
+              [tabGroupId]: {
+                ...meta,
+                pair: { ...meta.pair, activeSide: side },
+              },
+            };
+        recordGroupMru(tabGroupId, targetTabId);
+        commit(nextRoot, loc.group.id, undefined, nextTabGroups);
+      },
+
+      swapTabGroupPair(tabGroupId) {
+        const meta = get().tabGroups[tabGroupId];
+        if (!meta?.pair) return;
+        const nextSide: "left" | "right" = meta.pair.activeSide === "left" ? "right" : "left";
+        get().updateTabGroupMeta(tabGroupId, {
+          pair: {
+            ...meta.pair,
+            leftTabId: meta.pair.rightTabId,
+            rightTabId: meta.pair.leftTabId,
+            activeSide: nextSide,
+          },
+        });
+      },
+
+      resizeTabGroupPair(tabGroupId, splitRatio) {
+        const meta = get().tabGroups[tabGroupId];
+        if (!meta?.pair) return;
+        const clamped = Math.max(20, Math.min(80, splitRatio));
+        if (Math.abs(clamped - meta.pair.splitRatio) < 0.05) return;
+        get().updateTabGroupMeta(tabGroupId, {
+          pair: { ...meta.pair, splitRatio: clamped },
         });
       },
 

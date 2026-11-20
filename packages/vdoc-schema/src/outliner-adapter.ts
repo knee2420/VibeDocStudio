@@ -678,13 +678,19 @@ export function getZoomLevelMeta(level: ZoomLevel): {
       };
     case "page":
       return {
-        badge: "L3 · Page/Block",
-        shortLabel: "페이지·블록",
+        badge: "L3 · Page",
+        shortLabel: "페이지",
         colorClass: "bg-blue-50 text-blue-700 border-blue-200",
+      };
+    case "element":
+      return {
+        badge: "L4 · Element",
+        shortLabel: "요소·블록",
+        colorClass: "bg-violet-50 text-violet-700 border-violet-200",
       };
     case "slot":
       return {
-        badge: "L4 · Slot",
+        badge: "L5 · Slot",
         shortLabel: "슬롯",
         colorClass: "bg-amber-50 text-amber-800 border-amber-200",
       };

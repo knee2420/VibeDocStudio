@@ -19,3 +19,5 @@ export * from "./block-kit";
 export * from "./element-kit";
 export * from "./outline-compiler";
 export * from "./resource";
+export * from "./view-registry";
+export * from "./element-syntax";

@@ -1,19 +1,28 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import {
+  BookOpen,
   Check,
   ChevronDown,
   ChevronRight,
+  ChevronsUpDown,
   Database,
+  FilePlus2,
   FileText,
+  FolderKanban,
   FolderOpen,
   FolderTree,
+  HelpCircle,
+  Keyboard,
   Layers,
+  ListTree,
   Lock,
   Moon,
+  Palette,
   Plus,
   RefreshCw,
   RotateCcw,
+  Settings,
   Sparkles,
   Sun,
   Terminal as TerminalIcon,
@@ -21,8 +30,26 @@ import {
   Unlock,
   X,
 } from "lucide-react";
-import type { LocalApiVaultStatusSnapshot, LocalVaultSummary } from "@vibe/vault-core";
-import { FileExplorer } from "@vibe/file-explorer/ui";
+import {
+  createEmptyRefDocument,
+  isRefPath,
+  serializeRefJson,
+} from "@vibe/ref-canvas/core";
+import {
+  basename,
+  findOwningProjectPath,
+  stripProjectFolderExt,
+  type LocalApiVaultStatusSnapshot,
+  type LocalVaultSummary,
+  type VaultFileNode,
+  type VaultPort,
+} from "@vibe/vault-core";
+import {
+  FileExplorer,
+  type ExplorerCustomContextAction,
+  type FileCreateSchema,
+  type FileExplorerPresentationOverride,
+} from "@vibe/file-explorer/ui";
 import { VIBE_VAULT_PATHS_MIME } from "@vibe/file-explorer/core";
 import { WorkspaceLayoutView, type ExternalDropResource } from "@vibe/workspace-layout/ui";
 import {
@@ -37,6 +64,19 @@ import {
 import type { IdeEditorEnv } from "../model/editorAdapters";
 import { resolveTabTitle } from "../model/sampleVault";
 import {
+  createDefaultVDoc,
+  detectVDocViewId,
+  isVDocPath,
+  serializeVDocJson,
+} from "../model/vdocCodec";
+import { createDefaultOutlineJson } from "../model/outlineCodec";
+import {
+  createDefaultStylePackJson,
+  createDefaultSyntaxJson,
+  isStylePath,
+  isSyntaxPath,
+} from "../model/settingsRegistry";
+import {
   bootstrapIdeWorkbench,
   createOrMountWorkbenchVault,
   getVaultFileStats,
@@ -44,6 +84,9 @@ import {
   type IdeLogEntry,
   type IdeWorkbenchRuntime,
 } from "../model/useIdeWorkbench";
+import { PagedDocumentIcon, ScrollDocumentIcon } from "./DocumentSurfaceIcons";
+import { ImportReferenceModal } from "./ImportReferenceModal";
+import { IdeSettingsModal } from "./settings";
 
 /**
  * Isolated Terminal Drawer — subscribes to logs independently so incoming Vault/Layout logs
@@ -55,7 +98,12 @@ const IdeTerminalDrawer = React.memo<{
   readonly onClose: () => void;
 }>(({ runtime, height, onClose }) => {
   const [logs, setLogs] = useState<readonly IdeLogEntry[]>(() => runtime.getLogs());
+  const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => runtime.subscribeLogs(setLogs), [runtime]);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [logs.length]);
 
   return (
     <section
@@ -79,7 +127,10 @@ const IdeTerminalDrawer = React.memo<{
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-1.5 font-code text-[11.5px] leading-5">
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 overflow-y-auto px-3 py-1.5 font-code text-[11.5px] leading-5"
+      >
         {logs.map((entry) => (
           <div key={entry.id} className="flex items-baseline gap-2">
             <span className="shrink-0 text-[var(--obs-text-faint,#666666)]">{entry.timestamp}</span>
@@ -93,7 +144,9 @@ const IdeTerminalDrawer = React.memo<{
                       ? "#a68af9"
                       : entry.source === "composer"
                         ? "#3fb950"
-                        : "#d29922",
+                        : entry.source === "ref"
+                          ? "#f59e0b"
+                          : "#d29922",
               }}
             >
               [{entry.source}]
@@ -174,6 +227,12 @@ const IdeComposerSidebar = React.memo<{
     setComposerDraft("");
   };
 
+  const activeProjectName = useMemo(() => {
+    if (!activeResourceId) return null;
+    const projPath = findOwningProjectPath(activeResourceId);
+    return projPath ? stripProjectFolderExt(basename(projPath)) : null;
+  }, [activeResourceId]);
+
   const adapters = useMemo(() => runtime.editorRegistry.listAll(), [runtime.editorRegistry]);
 
   return (
@@ -197,9 +256,19 @@ const IdeComposerSidebar = React.memo<{
           <Sparkles className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
           <span>AI-Composer</span>
         </span>
-        <span className="font-code text-[10px] font-normal text-[var(--obs-text-faint,#666666)]">
-          2D Directing
-        </span>
+        {activeProjectName ? (
+          <span
+            title={`소속 프로젝트: ${activeProjectName}`}
+            className="flex max-w-[130px] items-center gap-1 rounded bg-[rgba(138,92,245,0.18)] px-1.5 py-0.5 font-code text-[10px] font-medium text-[#c4b5fd]"
+          >
+            <FolderKanban className="h-2.5 w-2.5 shrink-0" />
+            <span className="truncate">{activeProjectName}</span>
+          </span>
+        ) : (
+          <span className="font-code text-[10px] font-normal text-[var(--obs-text-faint,#666666)]">
+            2D Directing
+          </span>
+        )}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[12px] text-[var(--obs-text-muted,#b3b3b3)]">
@@ -334,6 +403,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
 }) => {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showExplorer, setShowExplorer] = useState(true);
+  const [explorerAccordionOpen, setExplorerAccordionOpen] = useState(true);
   const [explorerWidth, setExplorerWidth] = useState(270);
   const [structureOpen, setStructureOpen] = useState(true);
   const [structureHeight, setStructureHeight] = useState(260);
@@ -352,6 +422,19 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
   const [readOnly, setReadOnly] = useState<boolean>(() => runtime.vault.isReadOnly?.() ?? false);
   const [vaultActionError, setVaultActionError] = useState<string | null>(null);
   const [vaultActionBusy, setVaultActionBusy] = useState(false);
+  const [refImportModal, setRefImportModal] = useState<{
+    readonly open: boolean;
+    readonly targetFolder: string;
+    readonly replaceRefPath: string | null;
+  }>({ open: false, targetFolder: "00. References", replaceRefPath: null });
+  const [settingsModal, setSettingsModal] = useState<{
+    readonly open: boolean;
+    readonly sectionId?: string;
+  }>({ open: false });
+
+  const openSettings = useCallback((sectionId?: string) => {
+    setSettingsModal({ open: true, sectionId });
+  }, []);
 
   const supportsReadOnlyToggle = Boolean(runtime.vault.isReadOnly && runtime.vault.setReadOnly);
   const handleToggleReadOnly = useCallback(() => {
@@ -388,13 +471,191 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
     return getVaultFileStats(runtime.vault);
   }, [runtime.vault, explorerRevision]);
 
+  const openImportReferenceModal = useCallback((replaceRefPath?: string, targetFolder?: string) => {
+    setRefImportModal({
+      open: true,
+      targetFolder: targetFolder ?? "00. References",
+      replaceRefPath: replaceRefPath ?? null,
+    });
+  }, []);
+
+  const startAsyncUrlImport = useCallback(
+    (opts: {
+      readonly url: string;
+      readonly title?: string;
+      readonly targetFolder: string;
+      readonly replacePath?: string | null;
+      readonly fileName?: string;
+    }) => {
+      setShowTerminal(true);
+      runtime.startAsyncUrlRefImport({
+        ...opts,
+        openMode: "current",
+      });
+    },
+    [runtime]
+  );
+
   const editorEnv = useMemo<IdeEditorEnv>(
     () => ({
       vault: runtime.vault,
       metadataCache: runtime.metadataCache,
       vdocUiBridge: runtime.vdocUiBridge,
+      openImportReferenceModal: (replaceRefPath) => openImportReferenceModal(replaceRefPath),
+      startAsyncUrlRefImport: startAsyncUrlImport,
+      settleRefFileName: runtime.settleRefFileName,
     }),
-    [runtime.vault, runtime.metadataCache, runtime.vdocUiBridge]
+    [
+      runtime.vault,
+      runtime.settleRefFileName,
+      runtime.metadataCache,
+      runtime.vdocUiBridge,
+      openImportReferenceModal,
+      startAsyncUrlImport,
+    ]
+  );
+
+  const fileCreateSchemas = useMemo<readonly FileCreateSchema[]>(
+    () => [
+      {
+        id: "md",
+        label: "새 노트 (.md)",
+        description: "WYSIWYM 메모 · 개발 Docs",
+        extension: "md",
+        icon: <FilePlus2 className="h-3.5 w-3.5 text-[var(--obs-text-muted,#b3b3b3)]" />,
+      },
+      {
+        id: "vdoc-a4",
+        label: "새 문서 · A4 (.vdoc)",
+        description: "페이지 단위 일반 문서 (794px)",
+        extension: "vdoc",
+        baseName: "New Document",
+        icon: <PagedDocumentIcon className="h-3.5 w-3.5 text-sky-400" />,
+        contentFactory: (title) => serializeVDocJson(createDefaultVDoc(title, "a4")),
+      },
+      {
+        id: "vdoc-blog",
+        label: "새 블로그 글 (.vdoc)",
+        description: "이음매 없는 한 단 스크롤 글 (720px)",
+        extension: "vdoc",
+        baseName: "New Blog Post",
+        icon: <ScrollDocumentIcon className="h-3.5 w-3.5 text-emerald-400" />,
+        contentFactory: (title) => serializeVDocJson(createDefaultVDoc(title, "blog")),
+      },
+      {
+        id: "outline",
+        label: "새 아웃라인 (.outline)",
+        description: "트리 계층 구조 설계",
+        extension: "outline",
+        icon: <ListTree className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />,
+        contentFactory: (title) => createDefaultOutlineJson(title),
+      },
+      {
+        id: "ref",
+        label: "새 레퍼런스 (.ref)",
+        description: "2D 캔버스 · 핀 · 층위 표본",
+        extension: "ref",
+        baseName: "Reference",
+        icon: <BookOpen className="h-3.5 w-3.5 text-amber-400" />,
+        // 앱이 정한 임시 이름이라 표시 — 내용을 가져오면 원본 제목으로 바뀐다.
+        contentFactory: (title) =>
+          serializeRefJson({ ...createEmptyRefDocument(title), nameSource: "auto" }),
+      },
+      {
+        id: "vsyntax",
+        label: "새 기호 규격 (.vsyntax)",
+        description: "아웃라인 · 문서 요소 표현 기호 규격",
+        extension: "vsyntax",
+        baseName: "element-syntax",
+        icon: <Keyboard className="h-3.5 w-3.5 text-indigo-400" />,
+        contentFactory: (title) => createDefaultSyntaxJson(title),
+      },
+      {
+        id: "vstyle",
+        label: "새 스타일 팩 (.vstyle)",
+        description: "5대 Grid Kit 토큰 · 디자인 팩",
+        extension: "vstyle",
+        baseName: "custom-style",
+        icon: <Palette className="h-3.5 w-3.5 text-cyan-400" />,
+        contentFactory: (title) => createDefaultStylePackJson(title),
+      },
+    ],
+    []
+  );
+
+  const resolveExplorerFilePresentation = useCallback(
+    (node: VaultFileNode, vault: VaultPort): FileExplorerPresentationOverride | null => {
+      if (isSyntaxPath(node.path)) {
+        return {
+          icon: <Keyboard className="h-3.5 w-3.5 text-indigo-400" />,
+          badge: "SYNTAX",
+          badgeToneClass: "bg-indigo-500/15 text-indigo-300",
+        };
+      }
+      if (isStylePath(node.path)) {
+        return {
+          icon: <Palette className="h-3.5 w-3.5 text-cyan-400" />,
+          badge: "STYLE",
+          badgeToneClass: "bg-cyan-500/15 text-cyan-300",
+        };
+      }
+      if (isRefPath(node.path)) {
+        return {
+          icon: <BookOpen className="h-3.5 w-3.5 text-amber-400" />,
+          badge: "REF",
+          badgeToneClass: "bg-amber-500/15 text-amber-300",
+        };
+      }
+      if (isVDocPath(node.path)) {
+        let viewId: "a4" | "blog" = "a4";
+        try {
+          if (!vault.isLoaded || vault.isLoaded(node.path)) {
+            viewId = detectVDocViewId(vault.read(node.path));
+          }
+        } catch {
+          viewId = "a4";
+        }
+        if (viewId === "blog") {
+          return {
+            icon: <ScrollDocumentIcon className="h-3.5 w-3.5 text-emerald-400" />,
+            badge: "BLOG",
+            badgeToneClass: "bg-emerald-500/15 text-emerald-300",
+          };
+        }
+        return {
+          icon: <PagedDocumentIcon className="h-3.5 w-3.5 text-sky-400" />,
+          badge: "A4",
+          badgeToneClass: "bg-sky-500/15 text-sky-300",
+        };
+      }
+      return null;
+    },
+    []
+  );
+
+  const explorerContextActions = useMemo<readonly ExplorerCustomContextAction[]>(
+    () => [
+      {
+        id: "promote-to-ref",
+        label: "레퍼런스로 만들기 (.ref)",
+        icon: <BookOpen className="h-3.5 w-3.5 text-amber-400" />,
+        targetKinds: ["file"],
+        when: (filePath) => !isRefPath(filePath),
+        onSelect: (filePath) => {
+          void runtime.promoteFileToRef(filePath, "split-right");
+        },
+      },
+      {
+        id: "import-ref-here",
+        label: "Import Reference (.ref)...",
+        icon: <BookOpen className="h-3.5 w-3.5 text-amber-400" />,
+        targetKinds: ["folder", "root"],
+        onSelect: (folderPath) => {
+          openImportReferenceModal(undefined, folderPath);
+        },
+      },
+    ],
+    [openImportReferenceModal, runtime]
   );
 
   // Resolve active adapter for Left-Bottom Document Structure panel
@@ -412,6 +673,11 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
         target?.tagName === "TEXTAREA" ||
         target?.isContentEditable;
 
+      if ((ev.ctrlKey || ev.metaKey) && ev.key === ",") {
+        ev.preventDefault();
+        setSettingsModal((prev) => ({ open: !prev.open, sectionId: prev.sectionId }));
+        return;
+      }
       if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "b") {
         ev.preventDefault();
         setShowExplorer((v) => !v);
@@ -536,6 +802,33 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
 
   const renderTabIcon = useCallback(
     (tab: WorkspaceTab) => {
+      if (tab.resourceId && isVDocPath(tab.resourceId) && tab.viewType === "vibe-vdoc") {
+        let viewId: "a4" | "blog" = "a4";
+        try {
+          if (
+            runtime.vault.exists(tab.resourceId) &&
+            (!runtime.vault.isLoaded || runtime.vault.isLoaded(tab.resourceId))
+          ) {
+            viewId = detectVDocViewId(runtime.vault.read(tab.resourceId));
+          }
+        } catch {
+          viewId = "a4";
+        }
+        return viewId === "blog" ? (
+          <ScrollDocumentIcon className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+        ) : (
+          <PagedDocumentIcon className="h-3.5 w-3.5 shrink-0 text-sky-400" />
+        );
+      }
+      if (tab.resourceId && isRefPath(tab.resourceId)) {
+        return <BookOpen className="h-3.5 w-3.5 shrink-0 text-amber-400" />;
+      }
+      if (tab.resourceId && isSyntaxPath(tab.resourceId) && tab.viewType === "vibe-syntax") {
+        return <Keyboard className="h-3.5 w-3.5 shrink-0 text-indigo-400" />;
+      }
+      if (tab.resourceId && isStylePath(tab.resourceId) && tab.viewType === "vibe-style") {
+        return <Palette className="h-3.5 w-3.5 shrink-0 text-cyan-400" />;
+      }
       const adapter = tab.resourceId
         ? runtime.editorRegistry.resolveForTab(tab.resourceId, tab.viewType)
         : runtime.editorRegistry.getById(tab.viewType);
@@ -545,12 +838,16 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           ? "text-sky-400"
           : adapter?.id === "vibe-outliner"
             ? "text-[var(--obs-accent,#8a5cf5)]"
-            : adapter?.id === "raw-code"
-              ? "text-amber-400"
-              : "opacity-75";
+            : adapter?.id === "vibe-syntax"
+              ? "text-indigo-400"
+              : adapter?.id === "vibe-style"
+                ? "text-cyan-400"
+                : adapter?.id === "raw-code"
+                  ? "text-amber-400"
+                  : "opacity-75";
       return <Icon className={`h-3.5 w-3.5 shrink-0 ${colorClass}`} />;
     },
-    [runtime.editorRegistry]
+    [runtime.editorRegistry, runtime.vault]
   );
 
   const getAvailableViewTypes = useCallback(
@@ -583,7 +880,10 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           <button
             type="button"
             onClick={() => {
-              const { path } = runtime.explorer.getState().createNewFile("", "vdoc");
+              const { path } = runtime.explorer.getState().createNewFile("", "vdoc", {
+                baseName: "New Document",
+                contentFactory: (title) => serializeVDocJson(createDefaultVDoc(title, "a4")),
+              });
               runtime.layout.getState().openResource({
                 resourceId: path,
                 title: resolveTabTitle(path),
@@ -594,7 +894,26 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
             }}
             className="text-sky-400 hover:underline"
           >
-            Create new 2D document (.vdoc)
+            Create new A4 document (.vdoc)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const { path } = runtime.explorer.getState().createNewFile("", "vdoc", {
+                baseName: "New Blog Post",
+                contentFactory: (title) => serializeVDocJson(createDefaultVDoc(title, "blog")),
+              });
+              runtime.layout.getState().openResource({
+                resourceId: path,
+                title: resolveTabTitle(path),
+                viewType: runtime.editorRegistry.resolveDefault(path)?.id ?? "vibe-vdoc",
+                mode: "current",
+                groupId: group.id,
+              });
+            }}
+            className="text-emerald-400 hover:underline"
+          >
+            Create new Blog post (.vdoc)
           </button>
           <button
             type="button"
@@ -710,9 +1029,8 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
 
   return (
     <div
-      className={`flex h-full w-full flex-col overflow-hidden bg-[var(--obs-bg-primary,#1e1e1e)] text-[var(--obs-text-normal,#dadada)] ${
-        theme === "dark" ? "obs-theme-dark" : "obs-theme-light"
-      }`}
+      className={`flex h-full w-full flex-col overflow-hidden bg-[var(--obs-bg-primary,#1e1e1e)] text-[var(--obs-text-normal,#dadada)] ${theme === "dark" ? "obs-theme-dark" : "obs-theme-light"
+        }`}
     >
       {/* Main 4-Zone IDE Body */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
@@ -763,6 +1081,16 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
             >
               <Sparkles className="h-4 w-4" />
             </button>
+
+            <button
+              type="button"
+              onClick={() => openImportReferenceModal(undefined, "00. References")}
+              title="Import Reference (.ref) — 등록 라이브러리 10종 · 웹 URL · 파일 · Vault 승격"
+              aria-label="Import Reference"
+              className="flex h-8 w-8 items-center justify-center rounded-[5px] text-amber-400 hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+            >
+              <BookOpen className="h-4 w-4" />
+            </button>
           </div>
 
           <div className="flex flex-col items-center gap-1">
@@ -799,11 +1127,31 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
               style={{ width: `${explorerWidth}px` }}
               className="flex h-full shrink-0 flex-col overflow-hidden bg-[var(--obs-bg-secondary,#262626)]"
             >
-              {/* Top: Obsidian 90% File Explorer */}
-              <div className="min-h-0 flex-1 overflow-hidden">
+              {/* Top: Obsidian 90% File Explorer (Accordion) */}
+              <div
+                className={
+                  explorerAccordionOpen
+                    ? "min-h-0 flex-1 overflow-hidden"
+                    : "shrink-0 overflow-hidden"
+                }
+              >
                 <FileExplorer
                   store={runtime.explorer}
                   vaultName={runtime.vault.name}
+                  collapsed={!explorerAccordionOpen}
+                  onToggleCollapsed={() => setExplorerAccordionOpen((v) => !v)}
+                  fileCreateSchemas={fileCreateSchemas}
+                  customContextActions={explorerContextActions}
+                  resolveFilePresentation={resolveExplorerFilePresentation}
+                  onToggleProjectFolder={({ oldPath, newPath, isProject }) => {
+                    runtime.pushLog(
+                      "explorer",
+                      "ok",
+                      isProject
+                        ? `promoted to Project Folder: ${oldPath} -> ${newPath}`
+                        : `converted to normal folder: ${oldPath} -> ${newPath}`
+                    );
+                  }}
                   onOpenFile={(path, mode) => runtime.openVaultFile(path, mode)}
                   onCopyPath={(path) => {
                     void navigator.clipboard?.writeText(path);
@@ -816,12 +1164,12 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
               </div>
 
               {/* Horizontal Resizer Splitter (File Explorer <-> Document Structure) */}
-              {structureOpen && (
+              {explorerAccordionOpen && structureOpen && (
                 <div
                   role="separator"
                   aria-orientation="horizontal"
                   onMouseDown={(ev) =>
-                    startVerticalResize(ev, structureHeight, 120, 480, setStructureHeight)
+                    startVerticalResize(ev, structureHeight, 120, 720, setStructureHeight)
                   }
                   className="group relative z-20 h-px shrink-0 cursor-row-resize bg-[var(--obs-border,#363636)]"
                 >
@@ -831,8 +1179,16 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
 
               {/* Bottom: Adapter-Driven Document Structure (Figma Pages & Elements / MD Outline / Outline Branches) */}
               <div
-                style={{ height: structureOpen ? `${structureHeight}px` : "28px" }}
-                className="flex shrink-0 flex-col overflow-hidden border-t border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)]"
+                style={
+                  !structureOpen
+                    ? { height: "28px" }
+                    : explorerAccordionOpen
+                      ? { height: `${structureHeight}px` }
+                      : undefined
+                }
+                className={`flex flex-col overflow-hidden border-t border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] ${
+                  structureOpen && !explorerAccordionOpen ? "min-h-0 flex-1" : "shrink-0"
+                }`}
               >
                 <button
                   type="button"
@@ -851,7 +1207,13 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                         ? "PAGES & ELEMENTS"
                         : activeAdapter?.id === "obsidian-markdown"
                           ? "OUTLINE & BACKLINKS"
-                          : "DOCUMENT STRUCTURE"}
+                          : activeAdapter?.id === "vibe-ref"
+                            ? "REFERENCE CANVAS & PINS"
+                            : activeAdapter?.id === "vibe-syntax"
+                              ? "SYNTAX RULES"
+                              : activeAdapter?.id === "vibe-style"
+                                ? "STYLE GRID KITS"
+                                : "DOCUMENT STRUCTURE"}
                     </span>
                   </span>
                   {activeAdapter && (
@@ -875,6 +1237,44 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                     )}
                   </div>
                 )}
+              </div>
+
+              {/* Obsidian 1.15 Left Sidebar Bottom Footer: [Vault ▾]   [?] [⚙️] */}
+              <div className="flex h-9 shrink-0 select-none items-center justify-between gap-1 border-t border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVaultActionError(null);
+                    setVaultMenuOpen((v) => !v);
+                  }}
+                  title={`볼트 전환 · ${runtime.vault.name}`}
+                  className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-1.5 py-1 text-left text-[12px] font-medium text-[var(--obs-text-muted,#b8b8b8)] transition-colors hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#ececec)]"
+                >
+                  <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-[var(--obs-text-faint,#777)]" />
+                  <span className="truncate">{runtime.vault.name}</span>
+                </button>
+
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => openSettings("options:files")}
+                    title="파일 확장자 · Code as Doc 도움말"
+                    aria-label="Help"
+                    className="flex h-7 w-7 items-center justify-center rounded-[5px] text-[var(--obs-text-muted,#9a9a9a)] transition-colors hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#ececec)]"
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openSettings("options:syntax")}
+                    title="설정 열기 (Ctrl+,)"
+                    aria-label="Settings"
+                    data-testid="ide-settings-trigger"
+                    className="flex h-7 w-7 items-center justify-center rounded-[5px] text-[var(--obs-text-muted,#9a9a9a)] transition-colors hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#ececec)]"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </aside>
 
@@ -994,11 +1394,10 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                   ? "읽기 전용 보호 켜짐 — 원본 파일 수정 차단 중 (클릭하여 잠금 해제)"
                   : "쓰기 허용됨 — 수정 사항이 디스크에 반영됨 (클릭하여 읽기 전용 잠금)"
               }
-              className={`flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium transition-colors ${
-                readOnly
-                  ? "bg-[rgba(250,204,21,0.14)] text-[#facc15] hover:bg-[rgba(250,204,21,0.22)]"
-                  : "bg-[rgba(74,222,128,0.12)] text-[#4ade80] hover:bg-[rgba(74,222,128,0.20)]"
-              }`}
+              className={`flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium transition-colors ${readOnly
+                ? "bg-[rgba(250,204,21,0.14)] text-[#facc15] hover:bg-[rgba(250,204,21,0.22)]"
+                : "bg-[rgba(74,222,128,0.12)] text-[#4ade80] hover:bg-[rgba(74,222,128,0.20)]"
+                }`}
             >
               {readOnly ? <Lock className="h-2.5 w-2.5" /> : <Unlock className="h-2.5 w-2.5" />}
               <span>{readOnly ? "RO" : "RW"}</span>
@@ -1017,6 +1416,20 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           <span>
             {vaultStats.files} files · {vaultStats.folders} folders
           </span>
+          {activeTab?.resourceId &&
+            (() => {
+              const projPath = findOwningProjectPath(activeTab.resourceId);
+              if (!projPath) return null;
+              return (
+                <span
+                  title={`소속 프로젝트 폴더: ${projPath}`}
+                  className="flex shrink-0 items-center gap-1 rounded bg-[rgba(138,92,245,0.18)] px-1.5 py-0.5 text-[10px] font-medium text-[#c4b5fd]"
+                >
+                  <FolderKanban className="h-2.5 w-2.5" />
+                  <span>PROJ · {stripProjectFolderExt(basename(projPath))}</span>
+                </span>
+              );
+            })()}
           {activeTab?.resourceId && (
             <span className="truncate text-[var(--obs-text-muted,#b3b3b3)]">
               {activeTab.resourceId} ({activeTab.viewType})
@@ -1230,6 +1643,45 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           </div>
         )}
       </footer>
+
+      <ImportReferenceModal
+        open={refImportModal.open}
+        targetFolder={refImportModal.targetFolder}
+        replaceRefPath={refImportModal.replaceRefPath}
+        vault={runtime.vault}
+        onClose={() => setRefImportModal((s) => ({ ...s, open: false }))}
+        onImportedDoc={(doc, opts) => {
+          runtime.importRefDocument(refImportModal.targetFolder, doc, {
+            replacePath: opts?.replacePath ?? refImportModal.replaceRefPath,
+            openMode: "current",
+          });
+        }}
+        onStartAsyncUrlImport={(url, title) => {
+          startAsyncUrlImport({
+            url,
+            title,
+            targetFolder: refImportModal.targetFolder,
+            replacePath: refImportModal.replaceRefPath,
+          });
+        }}
+        onPromoteVaultFile={(vaultPath) => {
+          void runtime.promoteFileToRef(vaultPath, "current");
+        }}
+      />
+
+      {/* Obsidian 1.15 Full-Overlay Settings Modal (Ctrl+, / Sidebar ⚙️) */}
+      {settingsModal.open && (
+        <IdeSettingsModal
+          key={settingsModal.sectionId ?? "options:syntax"}
+          open={settingsModal.open}
+          onClose={() => setSettingsModal((prev) => ({ ...prev, open: false }))}
+          vault={runtime.vault}
+          theme={theme}
+          onChangeTheme={setTheme}
+          initialSectionId={settingsModal.sectionId}
+          onOpenFileInTab={(filePath) => runtime.openVaultFile(filePath, "current")}
+        />
+      )}
     </div>
   );
 };

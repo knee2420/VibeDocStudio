@@ -580,6 +580,54 @@ export class LocalApiVaultAdapter implements VaultPort {
     return this.vaultUrl(`/raw?path=${encodeURIComponent(norm)}`);
   }
 
+  public async importBinaryFiles(
+    folderPath: string,
+    files: readonly Blob[],
+    names?: readonly string[]
+  ): Promise<string[]> {
+    this.assertWritable("importBinaryFiles");
+    const folder = normalizeVaultPath(folderPath);
+    const stored: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const blob = files[i];
+      const name = names?.[i] ?? (blob as Partial<File>).name ?? "file";
+      const form = new FormData();
+      form.append("file", blob, name);
+      form.append("folder", folder);
+      form.append("clientId", this.clientId);
+      // multipart 경계는 브라우저가 붙이므로 Content-Type 을 직접 넣지 않는다.
+      const res = await this.fetchFn(this.vaultUrl("/upload"), {
+        method: "POST",
+        headers: { "X-Vault-Writable": "true" },
+        body: form,
+      });
+      if (!res.ok) {
+        let detail = `${res.status} ${res.statusText}`;
+        try {
+          const body = (await res.json()) as { detail?: string };
+          if (body.detail) detail = body.detail;
+        } catch {
+          // keep status text
+        }
+        throw new Error(detail);
+      }
+      const node = (await res.json()) as { path: string };
+      const norm = normalizeVaultPath(node.path);
+      // 서버가 이미 디스크에 썼다. 내 쓰기의 감시 이벤트는 돌아오지 않으니 미러에 직접 올린다
+      // (바이너리라 글자 내용은 없다 — 화면은 getBinaryUrl 로 그린다).
+      if (!this.mirror.exists(norm)) {
+        this.currentOrigin = "external";
+        try {
+          this.mirror.createFile(norm, "");
+        } finally {
+          this.currentOrigin = "local";
+        }
+      }
+      stored.push(norm);
+    }
+    return stored;
+  }
+
   public async revealInOsExplorer(path = ""): Promise<string> {
     const norm = normalizeVaultPath(path);
     const res = await fetchJson<{ ok: boolean; resolvedPath: string }>(

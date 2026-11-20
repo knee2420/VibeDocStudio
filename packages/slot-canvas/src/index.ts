@@ -12,3 +12,4 @@ export * from "./blocks/ImageBlockView";
 export * from "./block-views";
 export * from "./keyLayer";
 export * from "./mediaSrc";
+export * from "./styleContext";

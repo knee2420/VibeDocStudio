@@ -82,6 +82,9 @@ TEXT_EXTENSIONS: frozenset[str] = frozenset(
         "markdown",
         "outline",
         "vdoc",
+        "ref",
+        "vsyntax",
+        "vstyle",
         "json",
         "txt",
         "yaml",
@@ -151,6 +154,33 @@ def _atomic_write_text(target: Path, content: str) -> None:
             except OSError:
                 pass
         raise
+
+
+def _atomic_write_bytes(target: Path, data: bytes) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_name(f".{target.name}.{os.getpid()}.{threading.get_ident()}.tmp")
+    try:
+        tmp.write_bytes(data)
+        os.replace(tmp, target)
+    except Exception:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+        raise
+
+
+MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+_ILLEGAL_NAME_CHARS = set('\\/:*?"<>|')
+
+
+def _safe_upload_name(raw_name: str) -> str:
+    """업로드된 파일 이름에서 경로와 쓸 수 없는 문자를 걷어낸다. 남는 게 없으면 `file`."""
+    base = raw_name.replace("\\", "/").rsplit("/", 1)[-1]
+    cleaned = "".join(" " if (ch in _ILLEGAL_NAME_CHARS or ord(ch) < 32) else ch for ch in base)
+    cleaned = " ".join(cleaned.split()).strip(" .")
+    return cleaned or "file"
 
 
 def _node_dto_from_path(root: Path, target: Path) -> VaultNodeDto:
@@ -564,6 +594,38 @@ class LocalVaultRepository:
         self._bump_revision(vault_id)
         return _node_dto_from_path(root, target)
 
+    def upload_binary(
+        self,
+        vault_id: str,
+        folder_rel: str,
+        file_name: str,
+        data: bytes,
+        *,
+        client_id: str | None = None,
+    ) -> VaultNodeDto:
+        """바이너리 파일(이미지·PDF 등)을 폴더에 새로 저장한다. 같은 이름이 있으면 `이름 1.ext` 처럼 번호를 붙인다."""
+        if len(data) > MAX_UPLOAD_BYTES:
+            raise ValidationError(f"파일이 너무 큽니다 (최대 {MAX_UPLOAD_BYTES // (1024 * 1024)}MB): {file_name}")
+        root = self._get_vault_root(vault_id)
+        folder_norm, folder = self._resolve_inside(root, folder_rel, allow_empty=True)
+        if folder.exists() and not folder.is_dir():
+            raise ValidationError(f"폴더가 아닙니다: {folder_norm}")
+        name = _safe_upload_name(file_name)
+        dot = name.rfind(".")
+        stem, ext = (name[:dot], name[dot:]) if dot > 0 else (name, "")
+        with self._lock:
+            candidate = name
+            counter = 1
+            while (folder / candidate).exists():
+                candidate = f"{stem} {counter}{ext}"
+                counter += 1
+            rel = f"{folder_norm}/{candidate}" if folder_norm else candidate
+            norm, target = self._resolve_inside(root, rel)
+            _atomic_write_bytes(target, data)
+        self._record_local_write(vault_id, [norm], client_id)
+        self._bump_revision(vault_id)
+        return _node_dto_from_path(root, target)
+
     def create_folder(
         self,
         vault_id: str,
@@ -819,7 +881,14 @@ class LocalVaultRepository:
             ):
                 if combined_stop.is_set():
                     break
+                # 한 묶음 안의 변경을 경로별로 합친다. 원자적 저장(임시 파일 → 교체)은 같은 경로에
+                # deleted + added 를 순서 없이 남기는데, 그대로 보내면 다른 창이 파일을 지웠다가
+                # 다시 만들어 열린 탭이 닫힌다. 판단은 묶음이 끝난 뒤 파일의 실제 상태로 한다.
+                kinds_by_path: dict[str, set[Change]] = {}
                 for change_kind, raw_path in changes:
+                    kinds_by_path.setdefault(raw_path, set()).add(change_kind)
+
+                for raw_path, kinds in kinds_by_path.items():
                     target = Path(raw_path)
                     try:
                         rel = target.resolve().relative_to(root).as_posix()
@@ -828,7 +897,7 @@ class LocalVaultRepository:
                     if self._is_self_echo(vault_id, rel, subscriber_client_id):
                         continue
 
-                    if change_kind == Change.deleted or not target.exists():
+                    if not target.exists():
                         yield {
                             "type": "delete",
                             "path": rel,
@@ -852,7 +921,7 @@ class LocalVaultRepository:
                         except (OSError, UnicodeDecodeError):
                             content = None
 
-                    ev_type = "create" if change_kind == Change.added else "modify"
+                    ev_type = "create" if kinds == {Change.added} else "modify"
                     yield {
                         "type": ev_type,
                         "node": dto.model_dump(),

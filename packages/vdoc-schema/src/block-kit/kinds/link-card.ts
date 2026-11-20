@@ -37,6 +37,7 @@ export const linkCardBlock = defineBlockKind<LinkCardBlockDef>({
       thumbnail: { type: "string", description: "썸네일 (resource:<id> 또는 주소)" },
       layout: { type: "string", description: "썸네일 위치", enum: ["thumb-top", "thumb-left"] },
       width: { type: "string", description: "카드 폭 (예: 72%)" },
+      variant: { type: "string", description: "표현 변형 (카드 · 블로그 CTA)", enum: ["card", "cta"] },
     },
   },
 });

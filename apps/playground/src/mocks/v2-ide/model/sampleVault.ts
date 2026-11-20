@@ -1,5 +1,5 @@
 import { getObsidianDisplayName, type MemoryVaultSeedEntry } from "@vibe/vault-core";
-import { createSampleProposalVDoc, serializeVDocJson } from "./vdocCodec";
+import { createDefaultVDoc, createSampleProposalVDoc, serializeVDocJson } from "./vdocCodec";
 
 export function resolveTabTitle(path: string): string {
   const name = path.split("/").pop() ?? path;
@@ -278,6 +278,20 @@ description: 아웃라인 문서의 계층 구조와 누락 항목을 점검하�
       null,
       2
     ),
+  },
+  {
+    path: "04. Launch-Campaign.vproj/01. Launch-Proposal.vdoc",
+    kind: "file",
+    ctime: 1763506500000,
+    mtime: 1763541500000,
+    content: serializeVDocJson(createDefaultVDoc("신제품 런칭 제안서 (A4)", "a4")),
+  },
+  {
+    path: "04. Launch-Campaign.vproj/02. Launch-Blog-Post.vdoc",
+    kind: "file",
+    ctime: 1763506600000,
+    mtime: 1763541600000,
+    content: serializeVDocJson(createDefaultVDoc("신제품 런칭 블로그 가이드", "blog")),
   },
   {
     path: "README.md",

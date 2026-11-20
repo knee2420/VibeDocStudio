@@ -16,4 +16,8 @@ export interface LinkCardBlockDef extends BaseLayoutBlock {
   layout?: "thumb-top" | "thumb-left";
   /** 카드 폭 (예: 72%). */
   width?: string;
+  /** `"card"`(기본 OG 링크 카드) | `"cta"`(블로그형 강조 클릭 CTA 배너). */
+  variant?: "card" | "cta";
+  /** `variant === "cta"` 일 때 상단에 `▼ ▼ ▼` 유도 화살표를 표시할지 여부. */
+  ctaChevron?: boolean;
 }

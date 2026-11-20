@@ -375,17 +375,162 @@ describe("@vibe/workspace-layout — Headless Obsidian Tab & Split Parity", () =
       3
     );
 
-    // 6. Dragging a grouped tab out onto the right edge via dockTab splits it out & detaches from Group 1
+    // 6. Dragging a grouped tab out onto the right edge via dockTab splits it out while PRESERVING Group 1 membership
     const paneNow = layout.getState().getActiveGroup()!;
     layout.getState().dockTab(t3.tabId, paneNow.id, "right");
     assert.equal(layout.getState().getGroupCount(), 2);
     const allPanes = getAllGroups(layout.getState().root);
     assert.equal(allPanes[1].tabs[0].id, t3.tabId);
-    assert.equal(allPanes[1].tabs[0].tabGroupId, undefined);
+    assert.equal(allPanes[1].tabs[0].tabGroupId, g1);
 
-    // 7. Detaching remaining tabs from g1 auto-prunes g1 metadata
+    // 7. Explicitly detaching all tabs from g1 auto-prunes g1 metadata
     layout.getState().moveTabToGroup(t1.tabId, allPanes[0].id, 2, { targetTabGroupId: null });
     layout.getState().moveTabToGroup(t2.tabId, allPanes[0].id, 2, { targetTabGroupId: null });
+    layout.getState().moveTabToGroup(t3.tabId, allPanes[1].id, 1, { targetTabGroupId: null });
     assert.equal(layout.getState().tabGroups[g1], undefined);
+  });
+
+  it("preserves tabGroupId during '크게 보기' (expandedTabGroup) for new tabs, split opens, and dockResource", () => {
+    const layout = createWorkspaceLayoutStore();
+    const t1 = layout.getState().openResource({
+      resourceId: "proj/01.outline",
+      title: "01.outline",
+      viewType: "vibe-outliner",
+      mode: "current",
+    });
+    const t2 = layout.getState().openResource({
+      resourceId: "proj/02.vdoc",
+      title: "02.vdoc",
+      viewType: "vibe-vdoc",
+      mode: "new-tab",
+    });
+    const g1 = layout.getState().createTabGroupCollection([t1.tabId, t2.tabId], {
+      title: "Pair Group",
+      color: "purple",
+    });
+    assert.ok(g1);
+
+    layout.getState().expandTabGroup(g1);
+    const pane = layout.getState().getActiveGroup()!;
+
+    // New empty tab & dockResource inside expanded mode inherit g1 automatically
+    const emptyCreated = layout.getState().openNewEmptyTab(pane.id);
+    const docked = layout.getState().dockResource(
+      { resourceId: "proj/ref.ref", title: "ref.ref", viewType: "vibe-ref" },
+      pane.id,
+      "right"
+    );
+
+    const allTabs = getAllGroups(layout.getState().root).flatMap((p) => p.tabs);
+    assert.equal(allTabs.find((t) => t.id === emptyCreated.tabId)?.tabGroupId, g1);
+    assert.equal(allTabs.find((t) => t.id === docked.tabId)?.tabGroupId, g1);
+
+    // Restoring merges all tabs back into g1 cleanly
+    layout.getState().restoreExpandedTabGroup();
+    const restoredPane = layout.getState().getActiveGroup()!;
+    assert.equal(restoredPane.tabs.filter((t) => t.tabGroupId === g1).length, 4);
+  });
+
+  it("supports Group Pair View for 1-tab, 2-tab, and 7-tab groups with slot switching, swap, resize, and auto-heal", () => {
+    const layout = createWorkspaceLayoutStore();
+
+    // A. 1-tab group -> enabling pair auto-creates a sibling empty tab inside the same group
+    const solo = layout.getState().openResource({
+      resourceId: "solo/a.vdoc",
+      title: "a.vdoc",
+      viewType: "vibe-vdoc",
+      mode: "current",
+    });
+    const gSolo = layout.getState().createTabGroupCollection([solo.tabId], { title: "Solo" });
+    assert.ok(gSolo);
+    layout.getState().enableTabGroupPair(gSolo);
+    const soloPair = layout.getState().tabGroups[gSolo]?.pair;
+    assert.ok(soloPair);
+    assert.equal(soloPair.leftTabId, solo.tabId);
+    assert.notEqual(soloPair.rightTabId, solo.tabId);
+    assert.equal(
+      layout.getState().getActiveGroup()?.tabs.filter((t) => t.tabGroupId === gSolo).length,
+      2
+    );
+
+    // B. 7-tab group -> explicit 2-tab pick, activeSide slot replacement, swap, resize, expand round-trip, and auto-heal
+    const sevenIds: string[] = [];
+    for (let i = 1; i <= 7; i += 1) {
+      const created = layout.getState().openResource({
+        resourceId: `proj/doc-${i}.md`,
+        title: `doc-${i}.md`,
+        viewType: "obsidian-markdown",
+        mode: "new-tab",
+      });
+      sevenIds.push(created.tabId);
+    }
+    const g7 = layout.getState().createTabGroupCollection(sevenIds, {
+      title: "Seven Group",
+      color: "blue",
+    });
+    assert.ok(g7);
+
+    // Enabling pair clears stacked mode and opens chosen pair [T1, T5]
+    layout.getState().toggleTabGroupStacked(g7);
+    assert.equal(layout.getState().tabGroups[g7].stacked, true);
+    layout.getState().enableTabGroupPair(g7, {
+      leftTabId: sevenIds[0],
+      rightTabId: sevenIds[4],
+    });
+    assert.equal(layout.getState().tabGroups[g7].stacked, false);
+    assert.deepEqual(layout.getState().tabGroups[g7].pair, {
+      leftTabId: sevenIds[0],
+      rightTabId: sevenIds[4],
+      splitRatio: 50,
+      activeSide: "left",
+    });
+
+    // Focus right side -> syncs pane activeTabId to T5
+    layout.getState().setTabGroupPairActiveSide(g7, "right");
+    assert.equal(layout.getState().tabGroups[g7].pair?.activeSide, "right");
+    assert.equal(layout.getState().getActiveGroup()?.activeTabId, sevenIds[4]);
+
+    // Clicking another tab (T7) from the 7-tab strip loads it into the currently active side (right)
+    const activePane = layout.getState().getActiveGroup()!;
+    layout.getState().activateTab(activePane.id, sevenIds[6]);
+    assert.equal(layout.getState().tabGroups[g7].pair?.leftTabId, sevenIds[0]);
+    assert.equal(layout.getState().tabGroups[g7].pair?.rightTabId, sevenIds[6]);
+    assert.equal(layout.getState().tabGroups[g7].pair?.activeSide, "right");
+
+    // Selecting the opposite side's tab via setTabGroupPairSlot swaps cleanly instead of duplicating
+    layout.getState().setTabGroupPairSlot(g7, "left", sevenIds[6]);
+    assert.equal(layout.getState().tabGroups[g7].pair?.leftTabId, sevenIds[6]);
+    assert.equal(layout.getState().tabGroups[g7].pair?.rightTabId, sevenIds[0]);
+
+    // Swap & Resize (clamped 20..80)
+    layout.getState().swapTabGroupPair(g7);
+    assert.equal(layout.getState().tabGroups[g7].pair?.leftTabId, sevenIds[0]);
+    assert.equal(layout.getState().tabGroups[g7].pair?.rightTabId, sevenIds[6]);
+    layout.getState().resizeTabGroupPair(g7, 95);
+    assert.equal(layout.getState().tabGroups[g7].pair?.splitRatio, 80);
+    layout.getState().resizeTabGroupPair(g7, 5);
+    assert.equal(layout.getState().tabGroups[g7].pair?.splitRatio, 20);
+
+    // Pair survives "크게 보기" <-> "되돌리기"
+    layout.getState().expandTabGroup(g7);
+    assert.equal(layout.getState().tabGroups[g7].pair?.leftTabId, sevenIds[0]);
+    assert.equal(layout.getState().tabGroups[g7].pair?.rightTabId, sevenIds[6]);
+    layout.getState().restoreExpandedTabGroup();
+    assert.equal(layout.getState().tabGroups[g7].pair?.leftTabId, sevenIds[0]);
+    assert.equal(layout.getState().tabGroups[g7].pair?.rightTabId, sevenIds[6]);
+
+    // Auto-heal when closing the right paired tab (T7) -> fills right slot from remaining members
+    layout.getState().closeTab(sevenIds[6]);
+    const healed = layout.getState().tabGroups[g7].pair;
+    assert.ok(healed);
+    assert.equal(healed.leftTabId, sevenIds[0]);
+    assert.notEqual(healed.rightTabId, sevenIds[6]);
+    assert.notEqual(healed.rightTabId, sevenIds[0]);
+
+    // Closing down to 1 tab cleanly exits pair mode (pair: null)
+    for (let i = 1; i <= 5; i += 1) {
+      layout.getState().closeTab(sevenIds[i]);
+    }
+    assert.equal(layout.getState().tabGroups[g7].pair, null);
   });
 });

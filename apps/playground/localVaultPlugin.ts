@@ -1,7 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Plugin, ViteDevServer } from "vite";
+
+const PLUGIN_DIR = path.dirname(fileURLToPath(import.meta.url));
+const PROJECT_REFS_ROOT = path.resolve(PLUGIN_DIR, "../api/data/knowledge/references");
 
 const IGNORED_DIRS = new Set([".git", ".obsidian", ".trash", "node_modules", ".vibe"]);
 const INLINE_TEXT_EXTS = new Set([
@@ -9,6 +13,9 @@ const INLINE_TEXT_EXTS = new Set([
   "markdown",
   "outline",
   "vdoc",
+  "ref",
+  "vsyntax",
+  "vstyle",
   "json",
   "txt",
   "yaml",
@@ -32,6 +39,8 @@ const MIME_BY_EXT: Record<string, string> = {
   mp3: "audio/mpeg",
   wav: "audio/wav",
   json: "application/json; charset=utf-8",
+  vsyntax: "application/json; charset=utf-8",
+  vstyle: "application/json; charset=utf-8",
   txt: "text/plain; charset=utf-8",
   md: "text/markdown; charset=utf-8",
 };
@@ -378,8 +387,174 @@ export function localVaultBridgePlugin(): Plugin {
     });
   };
 
+  const readJsonFile = (filePath: string): unknown => {
+    if (!fs.existsSync(filePath)) return null;
+    try {
+      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    } catch {
+      return null;
+    }
+  };
+
+  const attachRefLibraryMiddleware = (server: ViteDevServer) => {
+    server.middlewares.use((req, res, next) => {
+      const rawUrl = req.url ?? "";
+      if (!rawUrl.startsWith("/local-ref-library/")) {
+        next();
+        return;
+      }
+
+      const urlObj = new URL(rawUrl, "http://127.0.0.1");
+      const subPath = urlObj.pathname.slice("/local-ref-library".length);
+      const method = (req.method ?? "GET").toUpperCase();
+      if (method !== "GET") {
+        sendJson(res, 405, { detail: "Read-only local reference library bridge" });
+        return;
+      }
+
+      const itemsDir = path.join(PROJECT_REFS_ROOT, "items");
+      const bindingsDir = path.join(PROJECT_REFS_ROOT, "bindings");
+
+      const findBindingEntry = (refId: string): { consensus: unknown[]; layers: Record<string, boolean> } => {
+        if (!fs.existsSync(bindingsDir)) return { consensus: [], layers: {} };
+        for (const f of fs.readdirSync(bindingsDir)) {
+          if (!f.endsWith(".json")) continue;
+          const b = readJsonFile(path.join(bindingsDir, f)) as {
+            entries?: Array<{ refId?: string; consensus?: unknown[]; layers?: Record<string, boolean> }>;
+          } | null;
+          const found = b?.entries?.find((e) => e.refId === refId);
+          if (found) {
+            return {
+              consensus: Array.isArray(found.consensus) ? found.consensus : [],
+              layers: found.layers && typeof found.layers === "object" ? found.layers : {},
+            };
+          }
+        }
+        return { consensus: [], layers: {} };
+      };
+
+      try {
+        if (subPath === "/items") {
+          if (!fs.existsSync(itemsDir)) {
+            sendJson(res, 200, { items: [] });
+            return;
+          }
+          const dirs = fs
+            .readdirSync(itemsDir, { withFileTypes: true })
+            .filter((d) => d.isDirectory())
+            .map((d) => d.name)
+            .sort();
+          const items = dirs
+            .map((dirName) => {
+              const dir = path.join(itemsDir, dirName);
+              const ref = readJsonFile(path.join(dir, "ref.json")) as Record<string, unknown> | null;
+              if (!ref || !ref.refId) return null;
+              const ext = readJsonFile(path.join(dir, "extraction.json")) as { blocks?: unknown[] } | null;
+              const pins = readJsonFile(path.join(dir, "pins.json")) as unknown[] | null;
+              const shots = readJsonFile(path.join(dir, "shots.json")) as { shots?: unknown[] } | null;
+              return {
+                refId: String(ref.refId),
+                kind: String(ref.kind ?? "pdf"),
+                title: String(ref.title ?? ref.refId),
+                sourceUrl: String(ref.sourceUrl ?? ""),
+                sourceName: String(ref.sourceName ?? ""),
+                pageCount: Number(ref.pageCount ?? 1),
+                layerSet: String(ref.layerSet ?? "document"),
+                status: String(ref.status ?? "ready"),
+                blocksCount: Array.isArray(ext?.blocks) ? ext.blocks.length : 0,
+                pinsCount: Array.isArray(pins) ? pins.length : 0,
+                shotsCount: Array.isArray(shots?.shots) ? shots.shots.length : 0,
+              };
+            })
+            .filter(Boolean);
+          sendJson(res, 200, { items });
+          return;
+        }
+
+        const itemMatch = /^\/items\/([^/]+)(\/.*)?$/.exec(subPath);
+        if (!itemMatch) {
+          sendJson(res, 404, { detail: `Unknown ref-library endpoint: ${subPath}` });
+          return;
+        }
+        const refId = decodeURIComponent(itemMatch[1]);
+        const safeRefDir = resolveSafePath(itemsDir, refId);
+        if (!fs.existsSync(safeRefDir) || !fs.statSync(safeRefDir).isDirectory()) {
+          sendJson(res, 404, { detail: `Reference item not found: ${refId}` });
+          return;
+        }
+        const action = itemMatch[2] ?? "";
+
+        if (action === "/bundle") {
+          const ref = readJsonFile(path.join(safeRefDir, "ref.json"));
+          if (!ref) {
+            sendJson(res, 404, { detail: `Missing ref.json for ${refId}` });
+            return;
+          }
+          const bindingEntry = findBindingEntry(refId);
+          sendJson(res, 200, {
+            ref,
+            extraction: readJsonFile(path.join(safeRefDir, "extraction.json")),
+            layers: readJsonFile(path.join(safeRefDir, "layers.json")),
+            pins: readJsonFile(path.join(safeRefDir, "pins.json")) ?? [],
+            shots: readJsonFile(path.join(safeRefDir, "shots.json")),
+            consensus: bindingEntry.consensus,
+            layerOverrides: bindingEntry.layers,
+            assetBaseUrl: `/local-ref-library/items/${encodeURIComponent(refId)}`,
+          });
+          return;
+        }
+
+        if (action === "/source") {
+          const sourceFile = fs
+            .readdirSync(safeRefDir)
+            .find((name) => name.startsWith("source."));
+          if (!sourceFile) {
+            sendJson(res, 404, { detail: `Source binary not found for ${refId}` });
+            return;
+          }
+          const absSource = path.join(safeRefDir, sourceFile);
+          const ext = path.extname(sourceFile).slice(1).toLowerCase();
+          res.statusCode = 200;
+          res.setHeader(
+            "Content-Type",
+            ext === "html" || ext === "htm"
+              ? "text/html; charset=utf-8"
+              : (MIME_BY_EXT[ext] ?? "application/octet-stream")
+          );
+          res.setHeader("Cache-Control", "private, max-age=120");
+          fs.createReadStream(absSource).pipe(res);
+          return;
+        }
+
+        const shotMatch = /^\/shots\/([^/]+)$/.exec(action);
+        if (shotMatch) {
+          const shotName = decodeURIComponent(shotMatch[1]);
+          const absShot = resolveSafePath(path.join(safeRefDir, "shots"), shotName);
+          if (!fs.existsSync(absShot) || !fs.statSync(absShot).isFile()) {
+            sendJson(res, 404, { detail: `Shot not found: ${shotName}` });
+            return;
+          }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "image/png");
+          res.setHeader("Cache-Control", "private, max-age=120");
+          fs.createReadStream(absShot).pipe(res);
+          return;
+        }
+
+        sendJson(res, 404, { detail: `Unknown ref-library action: ${action}` });
+      } catch (err) {
+        sendJson(res, 500, {
+          detail: err instanceof Error ? err.message : "Local ref library error",
+        });
+      }
+    });
+  };
+
   return {
     name: "vibe-local-vault-bridge",
-    configureServer: attachMiddleware,
+    configureServer(server) {
+      attachMiddleware(server);
+      attachRefLibraryMiddleware(server);
+    },
   };
 }

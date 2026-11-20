@@ -189,9 +189,16 @@ class UrllibWebFetcher:
     def fetch(self, url: str) -> tuple[bytes, str]:
         if not re.match(r"^https?://", url or "", re.I):
             raise ValueError("http(s) 주소만 받을 수 있습니다.")
-        req = urllib.request.Request(url, headers={
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) VibeDocStudio-Reference/1.0",
+        naver_match = re.match(r"^https?://blog\.naver\.com/([A-Za-z0-9_.-]+)/(\d{6,})(?:[/?#].*)?$", url.strip(), re.I)
+        target_url = (
+            f"https://blog.naver.com/PostView.naver?blogId={naver_match.group(1)}&logNo={naver_match.group(2)}"
+            if naver_match
+            else url
+        )
+        req = urllib.request.Request(target_url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/pdf;q=0.9,*/*;q=0.8",
+            "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
         })
         with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310 — 사용자가 고른 주소
             data = resp.read(_MAX_BYTES + 1)

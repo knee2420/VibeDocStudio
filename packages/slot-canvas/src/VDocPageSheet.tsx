@@ -34,6 +34,7 @@ import { getBlockView, type BlockRenderContext, type SlotBoxOptions, type TableC
 import type { TableSelectionInfo } from "./InteractiveTable";
 import { CanvasKeyLayerContext, type CanvasKeyRegistrar } from "./keyLayer";
 import { ACCENT, BLOCK_DRAG_MIME, DROP_LINE, MEDIA_DRAG_MIME, NEW_BLOCK_DRAG_MIME } from "./tokens";
+import { useVDocStyle } from "./styleContext";
 
 export interface TableSelectionTarget extends TableSelectionInfo {
   pageId: string;
@@ -208,10 +209,11 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   onRetryPendingPage,
   onRemovePendingPage,
 }) => {
+  const docStyle = useVDocStyle();
   const editable = mode === "Editing" && !pendingState;
   const layout = page.layout;
-  /** Pages with their own typography let slots inherit it instead of the Studio defaults. */
-  const inheritsTypography = Boolean(layout);
+  /** Pages with their own typography or active StylePack let slots inherit it instead of Studio defaults. */
+  const inheritsTypography = Boolean(layout || docStyle);
   const [dropTarget, setDropTarget] = useState<{ blockId: string; edge: DropEdge } | null>(null);
   const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -447,18 +449,23 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     );
   }
 
-  const pageDims = resolvePageDimensionsPx(page);
-  const contentPadding = layout?.margin ? "" : page.hideHeaderFooter ? "px-14 pt-12 pb-12" : "px-10 py-6";
+  const basePageDims = resolvePageDimensionsPx(page);
+  const pageDims = {
+    width: page.pageRect?.width ?? docStyle?.pageGrid.width ?? basePageDims.width,
+    height: basePageDims.height,
+  };
+  const effectiveMargin = layout?.margin ?? docStyle?.pageGrid.margins;
+  const contentPadding = effectiveMargin ? "" : page.hideHeaderFooter ? "px-14 pt-12 pb-12" : "px-10 py-6";
   const contentStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
-    gap: layout?.blockGap ?? (page.hideHeaderFooter ? 20 : 24),
-    ...(layout?.margin
+    gap: layout?.blockGap ?? docStyle?.pageGrid.blockGap ?? (page.hideHeaderFooter ? 20 : 24),
+    ...(effectiveMargin
       ? {
-          paddingTop: layout.margin.top,
-          paddingRight: layout.margin.right,
-          paddingBottom: layout.margin.bottom,
-          paddingLeft: layout.margin.left,
+          paddingTop: effectiveMargin.top,
+          paddingRight: effectiveMargin.right,
+          paddingBottom: effectiveMargin.bottom,
+          paddingLeft: effectiveMargin.left,
         }
       : {}),
   };
@@ -467,11 +474,11 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     minWidth: pageDims.width,
     maxWidth: pageDims.width,
     minHeight: seamless ? undefined : pageDims.height,
-    backgroundColor: layout?.background ?? undefined,
-    fontFamily: layout?.fontFamily,
-    fontSize: layout?.fontSize,
-    color: layout?.color,
-    lineHeight: layout?.lineHeight,
+    backgroundColor: layout?.background ?? docStyle?.pageGrid.background ?? undefined,
+    fontFamily: layout?.fontFamily ?? docStyle?.bodyText.fontFamily,
+    fontSize: layout?.fontSize ?? docStyle?.bodyText.fontSize,
+    color: layout?.color ?? docStyle?.bodyText.color,
+    lineHeight: layout?.lineHeight ?? docStyle?.bodyText.lineHeight,
     ...(layout?.exactText ? { fontKerning: "none", fontVariantLigatures: "none" } : {}),
   };
   const flowIndexes = page.blocks.map((b, i) => (b.frame ? -1 : i)).filter((i) => i >= 0);
@@ -630,6 +637,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
       selectedBlockId === block.blockId ? 1 : 0,
       dropTarget?.blockId === block.blockId ? dropTarget.edge : "",
       page.blocks.length,
+      docStyle ? `${docStyle.resolvedPack.packId}:${docStyle.resolvedPack.mode}:${docStyle.pack.updatedAt ?? ""}` : "",
     ].join("");
     return (
       <PageBlock

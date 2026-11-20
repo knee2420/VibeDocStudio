@@ -40,6 +40,16 @@ export const TAB_GROUP_COLORS: Readonly<
   red: { hex: "#f87171", bg: "rgba(248,113,113,0.22)", label: "Red" },
 };
 
+/** Side-by-side Pair View state inside a single Chrome Tab Group (keeps all group tabs in one pool). */
+export interface TabGroupPairState {
+  readonly leftTabId: string;
+  readonly rightTabId: string;
+  /** Left pane width percentage (20..80, default 50). */
+  readonly splitRatio: number;
+  /** Currently focused side — clicking a tab in the strip loads into this side. */
+  readonly activeSide: "left" | "right";
+}
+
 /** Chrome-style colored Tab Group metadata inside the workspace. */
 export interface TabGroupMeta {
   readonly id: string;
@@ -48,6 +58,8 @@ export interface TabGroupMeta {
   readonly collapsed: boolean;
   /** Group-scoped Obsidian Stacked Tabs mode (only tabs in this group render as vertical spines). */
   readonly stacked?: boolean;
+  /** Group-scoped side-by-side Pair View (two member tabs shown simultaneously without detaching from group). */
+  readonly pair?: TabGroupPairState | null;
 }
 
 /** Snapshot saved when expanding a Chrome Tab Group into full-workspace split focus ("크게 보기"). */
@@ -199,10 +211,28 @@ export interface WorkspaceLayoutState {
   dockTabGroupCollection(tabGroupId: string, targetPaneId: string, zone: DockDropZone): void;
   updateTabGroupMeta(
     tabGroupId: string,
-    patch: Partial<Pick<TabGroupMeta, "title" | "color" | "collapsed" | "stacked">>
+    patch: Partial<Pick<TabGroupMeta, "title" | "color" | "collapsed" | "stacked" | "pair">>
   ): void;
   toggleTabGroupCollapsed(tabGroupId: string): void;
   toggleTabGroupStacked(tabGroupId: string): void;
+  enableTabGroupPair(
+    tabGroupId: string,
+    options?: {
+      readonly leftTabId?: string;
+      readonly rightTabId?: string;
+      readonly splitRatio?: number;
+      readonly activeSide?: "left" | "right";
+    }
+  ): void;
+  disableTabGroupPair(tabGroupId: string): void;
+  toggleTabGroupPair(
+    tabGroupId: string,
+    options?: { readonly leftTabId?: string; readonly rightTabId?: string }
+  ): void;
+  setTabGroupPairSlot(tabGroupId: string, side: "left" | "right", tabId: string): void;
+  setTabGroupPairActiveSide(tabGroupId: string, side: "left" | "right"): void;
+  swapTabGroupPair(tabGroupId: string): void;
+  resizeTabGroupPair(tabGroupId: string, splitRatio: number): void;
   ungroupTabGroup(tabGroupId: string): void;
   closeTabGroup(tabGroupId: string, options?: { force?: boolean }): void;
   expandTabGroup(tabGroupId: string): void;

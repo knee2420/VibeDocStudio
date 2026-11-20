@@ -11,6 +11,7 @@ from .fetch.asset_resolver import AssetResolver, HttpxAssetFetcher
 from .fetch.browser_fetcher import CdpBrowserDomFetcher
 from .fetch.http_fetcher import (
     HttpWebFetcher,
+    canonicalize_fetch_url,
     decode_html_bytes,
     validate_public_http_url,
 )
@@ -35,6 +36,7 @@ def _try_browser_extraction(
     opts: WebpageExtractOptions,
     browser_dom: Optional[BrowserDomPort | BrowserLayoutPort],
     allow_default_browser: bool,
+    on_progress: Any = None,
 ) -> tuple[Optional[WebArticleIR], bool, list[BrowserScreenshotTile]]:
     """브라우저 실측(`render_layout_snapshot`)을 우선 시도한다. `(article, attempted, screenshots)` 반환."""
     dom_port = browser_dom
@@ -61,6 +63,8 @@ def _try_browser_extraction(
                 overlap_px=opts.screenshot_overlap_px,
                 max_screenshots=opts.max_screenshots,
             )
+        if callable(on_progress) and ("on_progress" in sig or any(p.kind == p.VAR_KEYWORD for p in sig.values())):
+            kwargs["on_progress"] = on_progress
         snapshot = snapshot_fn(resolved_url, **kwargs)
         if snapshot and snapshot.elements:
             ir = extract_ir_from_browser_snapshot(snapshot, include_images=opts.include_images)
@@ -82,10 +86,14 @@ def run_webpage_extraction(
     asset_fetcher: Optional[AssetFetcherPort] = None,
     browser_dom: Optional[BrowserDomPort | BrowserLayoutPort] = None,
     refiner: Optional[WebpageRefinerPort] = None,
+    on_progress: Any = None,
 ) -> WebpageExtractionResult:
     """웹 URL(또는 HTML 원본)을 분석하여 페이지별 슬라이스된 `.vdoc` 문서를 반환한다."""
     opts = options or WebpageExtractOptions()
-    resolved_url = (url or "").strip()
+    raw_url = (url or "").strip()
+    resolved_url = canonicalize_fetch_url(raw_url) if raw_url else ""
+    if callable(on_progress) and raw_url and resolved_url != raw_url:
+        on_progress("canonicalize", f"프레임셋 URL 정규화 완료 → {resolved_url}")
     article: Optional[WebArticleIR] = None
     browser_attempted = False
     screenshots: list[BrowserScreenshotTile] = []
@@ -101,10 +109,13 @@ def run_webpage_extraction(
                 opts=opts,
                 browser_dom=browser_dom,
                 allow_default_browser=(fetcher is None),
+                on_progress=on_progress,
             )
 
         # 브라우저 실측이 비활성이거나 연결 실패한 경우 정적 HTTP + 휴리스틱(방식 A) 폴백
         if article is None:
+            if callable(on_progress):
+                on_progress("fallback", "정적 HTTP 수집 폴백 실행 중...")
             active_fetcher = fetcher or HttpWebFetcher(allow_private_hosts=opts.allow_private_hosts)
             raw_bytes, fetched_ct, final_url = active_fetcher.fetch(resolved_url, timeout_s=opts.fetch_timeout_s)
             resolved_url = final_url or resolved_url

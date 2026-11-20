@@ -90,7 +90,59 @@ export function matchesCompoundExtension(path: string, extSpec: string): boolean
 }
 
 /**
+ * 폴더 확장자: `<프로젝트명>.vproj/` 폴더를 프로젝트 컨텍스트 경계로 인식한다.
+ */
+export const PROJECT_FOLDER_EXT = "vproj";
+
+export function isProjectFolderName(name: string): boolean {
+  const suffix = `.${PROJECT_FOLDER_EXT}`;
+  return name.length > suffix.length && name.toLowerCase().endsWith(suffix);
+}
+
+export function isProjectFolderPath(path: string): boolean {
+  return isProjectFolderName(basename(path));
+}
+
+export function stripProjectFolderExt(name: string): string {
+  if (!isProjectFolderName(name)) return name;
+  return name.slice(0, -(PROJECT_FOLDER_EXT.length + 1));
+}
+
+export function ensureProjectFolderName(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return trimmed;
+  return isProjectFolderName(trimmed) ? trimmed : `${trimmed}.${PROJECT_FOLDER_EXT}`;
+}
+
+export function toggleProjectFolderName(name: string): {
+  nextName: string;
+  isProject: boolean;
+} {
+  const trimmed = name.trim();
+  if (isProjectFolderName(trimmed)) {
+    return { nextName: stripProjectFolderExt(trimmed), isProject: false };
+  }
+  return { nextName: `${trimmed}.${PROJECT_FOLDER_EXT}`, isProject: true };
+}
+
+/**
+ * Nearest Ancestor 프로젝트 리졸버:
+ * 임의 파일/폴더 경로에서 위로 올라가며 가장 가까운 `*.vproj/` 프로젝트 폴더 경로를 반환한다.
+ * 상위에 프로젝트 폴더가 없으면 `null` (단독 문서).
+ */
+export function findOwningProjectPath(path: string): string | null {
+  const segments = splitPathSegments(path);
+  for (let i = segments.length - 1; i >= 0; i--) {
+    if (isProjectFolderName(segments[i])) {
+      return segments.slice(0, i + 1).join("/");
+    }
+  }
+  return null;
+}
+
+/**
  * Obsidian 표시명 규칙: `.md` 파일은 확장자를 숨기고, 그 외 확장자는 배지로 표시한다.
+ * `.vproj` 프로젝트 폴더는 확장자를 숨기고 `PROJ` 배지를 붙이며,
  * 복합 확장자 `.vdoc.json`도 깔끔하게 `VDOC` 배지로 축약한다.
  */
 export function getObsidianDisplayName(name: string, kind: "file" | "folder"): {
@@ -98,6 +150,9 @@ export function getObsidianDisplayName(name: string, kind: "file" | "folder"): {
   extensionBadge: string | null;
 } {
   if (kind === "folder") {
+    if (isProjectFolderName(name)) {
+      return { label: stripProjectFolderExt(name), extensionBadge: "PROJ" };
+    }
     return { label: name, extensionBadge: null };
   }
   const lower = name.toLowerCase();

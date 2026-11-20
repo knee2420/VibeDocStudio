@@ -9,15 +9,17 @@
     "preview": "vite preview --port 5181",
     "typecheck": "tsc --noEmit",
     "lint": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\oxlint.CMD -c .oxlintrc.json src",
-    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test src/mocks/v1-form-hub/__tests__/playground-table.test.ts src/mocks/v2-ide/__tests__/v2-ide-integration.test.ts src/mocks/v2-ide/__tests__/v2-ide-perf.test.ts"
+    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test src/mocks/v1-form-hub/__tests__/playground-table.test.ts src/mocks/v2-ide/__tests__/v2-ide-integration.test.ts src/mocks/v2-ide/__tests__/outline-host.test.ts src/mocks/v2-ide/__tests__/v2-ide-perf.test.ts src/mocks/v2-ide/__tests__/settings-registry.test.ts"
   },
   "dependencies": {
     "@vibe/ai-kernel": "workspace:*",
     "@vibe/file-explorer": "workspace:*",
     "@vibe/markdown-editor": "workspace:*",
     "@vibe/outliner": "workspace:*",
+    "@vibe/ref-canvas": "workspace:*",
     "@vibe/slot-canvas": "workspace:*",
     "@vibe/slot-editor": "workspace:*",
+    "@vibe/style-core": "workspace:*",
     "@vibe/vault-core": "workspace:*",
     "@vibe/vdoc-schema": "workspace:*",
     "@vibe/workspace-layout": "workspace:*",

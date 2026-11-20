@@ -4,7 +4,9 @@
  * Combines PandaDoc Kolas Editor 4-Layer Page Anatomy + Puck Layout Tree + Maily.to Section/Column Attributes + Slot-Scoped Backdata
  */
 
+import type { StyleOverrideDelta, VDocStyleRef } from "@vibe/style-core";
 import type { EvidenceLink, EvidenceLocator } from "./evidence";
+import type { DocumentViewId } from "./view-registry";
 
 export type SlotRole = "editable-slot" | "fillable-field";
 
@@ -202,6 +204,12 @@ export interface VDocPage {
   pageId: string;
   pageNumber: number;
   pageLabel: string;
+  /** 문서 단위 성격: A4 는 `"page"`, Blog/Web 은 `"section"`. 생략 시 View 프로필에서 추론. */
+  unitKind?: "page" | "section";
+  /** `unitKind === "section"` 일 때의 의미적 역할 힌트 (예: `"hero"`, `"tip"`, `"spot"`, `"outro"`). */
+  sectionRole?: string;
+  /** 섹션 단위로 역추출/보관할 수 있는 원본 Outline DSL 스냅샷 (선택). */
+  outlineDsl?: string[];
   headerSlotId: string;
   blocks: LayoutBlock[];
   footerSlotId: string;
@@ -211,6 +219,8 @@ export interface VDocPage {
   typstTemplate?: string;
   pageRect?: { width: number; height: number; unit?: "px" | "pt" | "mm" | "%" };
   layout?: VDocPageLayout;
+  /** Section/Page-level Cascade override applied on top of the active StylePack. */
+  styleOverrides?: StyleOverrideDelta;
 }
 
 export interface VDocCatalogManifest {
@@ -236,6 +246,21 @@ export interface VDocPreviewAssets {
   sourceWebUrl?: string;
 }
 
+/**
+ * CRUD 가능한 Element/Syntax 레지스트리 및 Document Profile 참조 메타데이터.
+ * 문서가 어떤 스키마 표준과 레지스트리 버전을 기준으로 정비되었는지 선언한다.
+ */
+export interface VDocSchemaRef {
+  /** 문서 프로파일 ID (예: `"blog"`, `"a4"`, `"web"`). */
+  profileId: string;
+  /** 레지스트리 JSON 파일 포인터 (예: `"vault://.../schema/element-registry.json"`). */
+  registryPath?: string;
+  /** 사용된 레지스트리 버전 (예: `"1.0.0"`). */
+  registryVersion: string;
+  /** 이 문서가 활용하는 Element 정의 ID 목록 (예: `["section", "table"]`). */
+  elementIds?: string[];
+}
+
 export interface VDocDocument {
   version: "1.0.0";
   docId: string;
@@ -254,8 +279,16 @@ export interface VDocDocument {
   revision?: number;
   /** 지면: paged = A4 쪽 나눔(기본) · scroll = 높이가 내용 따라 늘고 쪽 사이 이음매 없는 한 단(블로그). */
   surface?: VDocSurface;
+  /** 활성 View 프로필 ID (`a4` · `blog` · `web` 등, Notion View 개념). 없으면 `surface`/`genre`에서 자동 추론. */
+  viewId?: DocumentViewId;
   /** 장르 — 레퍼런스 층위 세트 이름 (document · blog · …). 문서 성격 표시이자 측정 기준. */
   genre?: string;
+  /** CRUD 가능한 Element/Syntax 레지스트리 및 스키마 프로파일 참조. */
+  schemaRef?: VDocSchemaRef;
+  /** 분리된 스타일 엔진(`.vstyle.json`) 포인터 참조 (사본 복제 금지). */
+  styleRef?: VDocStyleRef;
+  /** 원천 레퍼런스(.ref) 포인터 (예: `"vault://...ref"`). 본문 사본을 중복 저장하지 않는다. */
+  sourceRef?: string;
   /** 누가 만들었나 — agent 가 만든 초안은 에이전트가 구조(블록 · 쪽)까지 직접 고칠 수 있다. */
   origin?: VDocOrigin;
   /** 속한 프로젝트 (프로젝트 manifest 의 docIds 와 짝). */

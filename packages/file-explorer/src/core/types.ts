@@ -8,6 +8,7 @@ export interface ExplorerFlatRow {
   readonly path: string;
   readonly node: VaultNode;
   readonly depth: number;
+  readonly isProjectFolder: boolean;
   readonly isExpanded: boolean;
   readonly hasChildren: boolean;
   readonly isSelected: boolean;
@@ -20,6 +21,8 @@ export interface ExplorerFlatRow {
 export interface ExplorerInlineRenameState {
   readonly path: string;
   readonly draft: string;
+  /** Automatically re-appended on commit (e.g. `.vproj` on project folders) so users never lose folder type. */
+  readonly preservedSuffix?: string;
   readonly error: string | null;
 }
 
@@ -37,6 +40,8 @@ export interface CreateFileOptions {
 
 export interface CreateFolderOptions {
   readonly baseName?: string;
+  /** Optional folder extension without leading dot (e.g. `"vproj"` for Project Folders). */
+  readonly extension?: string;
   /** Optional hook executed immediately after folder creation (e.g. scaffold subfolders/meta files). */
   readonly onCreated?: (folderPath: string, vault: VaultPort) => void;
 }
@@ -107,6 +112,13 @@ export interface FileExplorerState {
     parentFolderPath?: string,
     options?: CreateFolderOptions
   ): { path: string };
+  toggleProjectFolder(path: string): {
+    ok: boolean;
+    oldPath?: string;
+    newPath?: string;
+    isProject?: boolean;
+    error?: string;
+  };
   duplicatePaths(paths: readonly string[]): string[];
   deletePaths(paths: readonly string[]): string[];
 

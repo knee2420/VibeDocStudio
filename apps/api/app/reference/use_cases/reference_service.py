@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 
 from app.core.storage import new_id
 
+from ..adapters.normalizer import normalize_reference_item
 from ..errors import (
     ReferenceNotFoundError,
     ReferencePinNotFoundError,
@@ -198,16 +199,30 @@ class ReferenceLibraryService:
         self.library.write_source(item.ref_id, ext, data)
         return self._process(item, data, content_type=mime, explicit_title=bool(title))
 
-    def add_url(self, url: str, title: str = "", layer_set: str = "") -> ReferenceItem:
+    def add_url(
+        self,
+        url: str,
+        title: str = "",
+        layer_set: str = "",
+        *,
+        on_progress: Any = None,
+    ) -> ReferenceItem:
         url = (url or "").strip()
         parsed = urlparse(url)
         if parsed.scheme not in ("http", "https") or not parsed.netloc:
             raise UnsupportedReferenceSourceError("http(s) 주소 하나를 넣어 주세요.")
+        if callable(on_progress):
+            on_progress("init", f"웹 레퍼런스 등록 시작: {url}")
         item = ReferenceItem(
             ref_id=new_id(REFERENCE_PREFIX), kind="web", title=(title or parsed.netloc).strip(),
             source_url=url, mime_type="text/html", layer_set=(layer_set or "").strip() or DEFAULT_LAYER_SET,
         )
-        return self._fetch_into(item, explicit_title=bool(title), auto_layer_set=not layer_set)
+        return self._fetch_into(
+            item,
+            explicit_title=bool(title),
+            auto_layer_set=not layer_set,
+            on_progress=on_progress,
+        )
 
     def reanalyze(self, ref_id: str) -> ReferenceItem:
         item = self.get(ref_id)
@@ -274,6 +289,49 @@ class ReferenceLibraryService:
         if item.kind != "web" or not item.source_url:
             raise UnsupportedReferenceSourceError("웹 레퍼런스만 라이브 캡처를 지원합니다.")
         return self._fetch_into(item, explicit_title=item.title != urlparse(item.source_url).netloc)
+
+    def normalized(
+        self,
+        ref_id: str,
+        *,
+        project_id: str = "",
+        asset_base_url: str = "",
+    ) -> dict[str, Any]:
+        """레퍼런스 1건을 통합 `.ref` v1 정규화 IR(Canvas Frames + Block IR + Pins + Layers + Consensus)로 반환한다."""
+        item = self.get(ref_id)
+        extraction = self.library.load_artifact(ref_id, "extraction")
+        layers_report = self.library.load_artifact(ref_id, "layers")
+        shots_manifest = self.library.load_artifact(ref_id, "shots")
+        pins = self.library.load_pins(ref_id)
+        consensus: list[ConsensusCard] = []
+        layer_overrides: dict[str, bool] = {}
+        if project_id:
+            entry = self.binding(project_id).find(ref_id)
+            if entry is not None:
+                consensus = list(entry.consensus)
+                layer_overrides = dict(entry.layers)
+        else:
+            for binding in self.library.list_bindings():
+                entry = binding.find(ref_id)
+                if entry is not None:
+                    if not consensus and entry.consensus:
+                        consensus = list(entry.consensus)
+                    if not layer_overrides and entry.layers:
+                        layer_overrides = dict(entry.layers)
+        return normalize_reference_item(
+            item,
+            extraction=extraction if isinstance(extraction, dict) else None,
+            layers_report=layers_report if isinstance(layers_report, dict) else None,
+            pins=pins,
+            shots_manifest=shots_manifest if isinstance(shots_manifest, dict) else None,
+            consensus=consensus,
+            layer_overrides=layer_overrides,
+            asset_base_url=asset_base_url,
+        )
+
+    def list_normalized(self, *, project_id: str = "") -> list[dict[str, Any]]:
+        """라이브러리의 모든 레퍼런스를 `.ref` v1 정규화 IR 목록으로 반환한다."""
+        return [self.normalized(item.ref_id, project_id=project_id) for item in self.list_items()]
 
     # --- 핀 --------------------------------------------------------------------------------
 
@@ -478,7 +536,14 @@ class ReferenceLibraryService:
         self.library.save_item(done)
         return done
 
-    def _fetch_into(self, item: ReferenceItem, *, explicit_title: bool, auto_layer_set: bool = False) -> ReferenceItem:
+    def _fetch_into(
+        self,
+        item: ReferenceItem,
+        *,
+        explicit_title: bool,
+        auto_layer_set: bool = False,
+        on_progress: Any = None,
+    ) -> ReferenceItem:
         """웹 주소를 가져와 같은 refId 에 원본으로 둔다. 실패해도 항목은 남겨 다시 시도할 수 있게 한다.
 
         브라우저 실측 추출기가 있으면 먼저 쓴다 (사진 · 사진 묶음 · 링크 카드 · 구분선까지 덩어리로 남고, 레이아웃
@@ -488,14 +553,24 @@ class ReferenceLibraryService:
             try:
                 extract_shots_fn = getattr(self.layout_extractor, "extract_with_shots", None)
                 if callable(extract_shots_fn):
-                    extraction, layout, tiles = extract_shots_fn(item.source_url)
+                    try:
+                        extraction, layout, tiles = extract_shots_fn(item.source_url, on_progress=on_progress)
+                    except TypeError:
+                        extraction, layout, tiles = extract_shots_fn(item.source_url)
                 else:
                     extraction, layout = self.layout_extractor.extract(item.source_url)
                     tiles = []
             except Exception as exc:  # noqa: BLE001 — 실측이 안 되면 정적 파서로 내려간다
                 logger.warning("[reference] %s 레이아웃 실측 실패 → 정적 파서: %s", item.ref_id, exc)
+                if callable(on_progress):
+                    on_progress("fallback", f"브라우저 실측 실패 → 정적 HTML 파서 폴백 ({exc})")
             else:
                 if extraction.get("blocks"):
+                    if callable(on_progress):
+                        on_progress(
+                            "save",
+                            f"추출 결과 저장 중 ({len(extraction.get('blocks') or [])}개 블록 · {len(tiles)}개 시각 타일)...",
+                        )
                     self.library.save_artifact(item.ref_id, "layout", layout)
                     save_shots_fn = getattr(self.library, "save_shots", None)
                     if tiles and callable(save_shots_fn):
@@ -510,8 +585,12 @@ class ReferenceLibraryService:
                         pass
                     if auto_layer_set:
                         item = replace(item, layer_set=_guess_layer_set(extraction))
+                    if callable(on_progress):
+                        on_progress("layers", f"층위({item.layer_set}) 정량 측정 및 정규화 중...")
                     return self._finish(item, extraction, explicit_title=explicit_title)
         try:
+            if callable(on_progress):
+                on_progress("fetch", "원문 HTTP 다운로드 중...")
             data, content_type = self.fetcher.fetch(item.source_url)
         except Exception as exc:  # noqa: BLE001
             failed = item.touched(status="failed", error=f"가져오기 실패: {exc}"[:300])

@@ -11,6 +11,7 @@ import {
   Copy,
   FilePlus2,
   FileText,
+  FolderKanban,
   FolderOpen,
   FolderPlus,
   LayoutTemplate,
@@ -25,7 +26,9 @@ import {
   VAULT_SORT_LABELS,
   dirname,
   getObsidianDisplayName,
+  isProjectFolderPath,
   stem,
+  type VaultFileNode,
   type VaultPort,
   type VaultSortOrder,
 } from "@vibe/vault-core";
@@ -52,8 +55,25 @@ export interface FolderCreateSchema {
   readonly label: string;
   readonly description?: string;
   readonly baseName?: string;
+  /** Optional folder extension without leading dot (e.g. `"vproj"`). */
+  readonly extension?: string;
   readonly icon?: React.ReactNode;
   readonly onCreated?: (folderPath: string, vault: VaultPort) => void;
+}
+
+export interface FileExplorerPresentationOverride {
+  readonly icon?: React.ReactNode;
+  readonly badge?: string | null;
+  readonly badgeToneClass?: string;
+}
+
+export interface ExplorerCustomContextAction {
+  readonly id: string;
+  readonly label: string;
+  readonly icon?: React.ReactNode;
+  readonly targetKinds: readonly ("file" | "folder" | "root")[];
+  readonly when?: (path: string, kind: "file" | "folder" | "root") => boolean;
+  readonly onSelect: (path: string, kind: "file" | "folder" | "root") => void;
 }
 
 export interface FileExplorerProps {
@@ -61,7 +81,20 @@ export interface FileExplorerProps {
   readonly vaultName?: string;
   readonly fileCreateSchemas?: readonly FileCreateSchema[];
   readonly folderCreateSchemas?: readonly FolderCreateSchema[];
+  readonly customContextActions?: readonly ExplorerCustomContextAction[];
+  /** Optional resolver to customize file icon & badge (e.g. A4 vs Blog `.vdoc`). */
+  readonly resolveFilePresentation?: (
+    node: VaultFileNode,
+    vault: VaultPort
+  ) => FileExplorerPresentationOverride | null;
+  readonly onToggleProjectFolder?: (result: {
+    readonly oldPath: string;
+    readonly newPath: string;
+    readonly isProject: boolean;
+  }) => void;
   readonly onOpenFile?: (path: string, mode: "current" | "new-tab" | "split-right") => void;
+  readonly collapsed?: boolean;
+  readonly onToggleCollapsed?: () => void;
   readonly onCopyPath?: (path: string) => void;
   readonly onRevealInOsExplorer?: (path: string) => void;
   readonly className?: string;
@@ -92,8 +125,16 @@ const DEFAULT_FOLDER_CREATE_SCHEMAS: readonly FolderCreateSchema[] = [
   {
     id: "folder",
     label: "New folder",
-    description: "일반 폴더",
+    description: "일반 분류 폴더",
     icon: <FolderPlus className="h-3.5 w-3.5 text-[var(--obs-text-muted,#b3b3b3)]" />,
+  },
+  {
+    id: "project",
+    label: "New Project Folder",
+    description: "문서 · 레퍼런스 · 리소스 작업 공간 (.vproj)",
+    baseName: "New Project",
+    extension: "vproj",
+    icon: <FolderKanban className="h-3.5 w-3.5 text-[#a68af9]" />,
   },
 ];
 
@@ -188,9 +229,14 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
   vaultName,
   fileCreateSchemas,
   folderCreateSchemas,
+  customContextActions,
+  resolveFilePresentation,
+  onToggleProjectFolder,
   onOpenFile,
   onCopyPath,
   onRevealInOsExplorer,
+  collapsed = false,
+  onToggleCollapsed,
   className = "",
 }) => {
   const effectiveFileSchemas =
@@ -288,6 +334,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     const folder = explicitFolder !== undefined ? explicitFolder : resolveCreationTargetFolder();
     store.getState().createNewFolder(folder, {
       baseName: schema.baseName,
+      extension: schema.extension,
       onCreated: schema.onCreated,
     });
   };
@@ -465,7 +512,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
   return (
     <div
-      className={`flex h-full w-full select-none flex-col bg-[var(--obs-bg-secondary,#262626)] text-[var(--obs-text-normal,#dadada)] ${className}`}
+      className={`flex ${collapsed ? "h-auto" : "h-full"} w-full select-none flex-col bg-[var(--obs-bg-secondary,#262626)] text-[var(--obs-text-normal,#dadada)] ${className}`}
     >
       {/* Obsidian Nav Header Toolbar (36px): [New File ▾] [New Folder ▾] | [Sort] [Auto-reveal] [Collapse] [Filter] */}
       <div className="flex h-9 shrink-0 items-center justify-center gap-0.5 border-b border-[var(--obs-border-subtle,#2d2d2d)] px-2">
@@ -703,19 +750,41 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         </button>
       </div>
 
-      {/* Vault Title / Quick Filter */}
-      {vaultName && (
-        <div className="flex h-7 shrink-0 items-center justify-between px-3 text-[11px] font-semibold tracking-wide text-[var(--obs-text-muted,#b3b3b3)]">
-          <span className="truncate">{vaultName}</span>
-          {selectedPaths.size > 1 && (
-            <span className="rounded bg-[var(--obs-bg-selected,rgba(138,92,245,0.22))] px-1.5 py-0 text-[10px] text-[var(--obs-accent-hover,#a68af9)]">
-              {selectedPaths.size} selected
+      {/* Vault Title / Accordion Header */}
+      {vaultName &&
+        (onToggleCollapsed ? (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-expanded={!collapsed}
+            className="flex h-7 w-full shrink-0 items-center justify-between px-2.5 text-[11px] font-semibold tracking-wide text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#dadada)]"
+          >
+            <span className="flex min-w-0 items-center gap-1.5 truncate">
+              {collapsed ? (
+                <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+              )}
+              <span className="truncate">{vaultName}</span>
             </span>
-          )}
-        </div>
-      )}
+            {selectedPaths.size > 1 && (
+              <span className="rounded bg-[var(--obs-bg-selected,rgba(138,92,245,0.22))] px-1.5 py-0 text-[10px] text-[var(--obs-accent-hover,#a68af9)]">
+                {selectedPaths.size} selected
+              </span>
+            )}
+          </button>
+        ) : (
+          <div className="flex h-7 shrink-0 items-center justify-between px-3 text-[11px] font-semibold tracking-wide text-[var(--obs-text-muted,#b3b3b3)]">
+            <span className="truncate">{vaultName}</span>
+            {selectedPaths.size > 1 && (
+              <span className="rounded bg-[var(--obs-bg-selected,rgba(138,92,245,0.22))] px-1.5 py-0 text-[10px] text-[var(--obs-accent-hover,#a68af9)]">
+                {selectedPaths.size} selected
+              </span>
+            )}
+          </div>
+        ))}
 
-      {filterOpen && (
+      {!collapsed && filterOpen && (
         <div className="shrink-0 px-2 pb-1.5">
           <div className="flex items-center gap-1.5 rounded-[4px] border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2 py-1">
             <Search className="h-3.5 w-3.5 shrink-0 text-[var(--obs-text-faint,#666666)]" />
@@ -740,6 +809,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
       )}
 
       {/* Flat Tree Viewport */}
+      {!collapsed && (
       <div
         ref={treeRef}
         role="tree"
@@ -765,6 +835,12 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
           rows.map((row) => {
             const isFolder = row.node.kind === "folder";
             const display = getObsidianDisplayName(row.node.name, row.node.kind);
+            const filePres =
+              !isFolder && resolveFilePresentation
+                ? resolveFilePresentation(row.node, store.getState().vault)
+                : null;
+            const effectiveBadge =
+              filePres && filePres.badge !== undefined ? filePres.badge : display.extensionBadge;
             const targetFolder = isFolder ? row.path : dirname(row.path);
             const isDropHighlight =
               isFolder && dropTargetFolder !== null && dropTargetFolder === row.path;
@@ -827,19 +903,26 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                   />
                 ))}
 
-                {/* Folder Chevron (or subtle file alignment spacer) */}
+                {/* Folder Chevron (+ Project Folder icon) or File Icon */}
                 {isFolder ? (
-                  <span className="mr-1 flex h-4 w-4 shrink-0 items-center justify-center text-[var(--obs-text-faint,#666666)] group-hover:text-[var(--obs-text-muted,#b3b3b3)]">
-                    <ChevronRight
-                      className="h-3.5 w-3.5 transition-transform duration-100"
-                      style={{
-                        transform: row.isExpanded ? "rotate(90deg)" : "rotate(0deg)",
-                      }}
-                    />
-                  </span>
+                  <>
+                    <span className="mr-1 flex h-4 w-4 shrink-0 items-center justify-center text-[var(--obs-text-faint,#666666)] group-hover:text-[var(--obs-text-muted,#b3b3b3)]">
+                      <ChevronRight
+                        className="h-3.5 w-3.5 transition-transform duration-100"
+                        style={{
+                          transform: row.isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+                        }}
+                      />
+                    </span>
+                    {row.isProjectFolder && (
+                      <FolderKanban className="mr-1.5 h-3.5 w-3.5 shrink-0 text-[#a68af9]" />
+                    )}
+                  </>
                 ) : (
                   <span className="mr-1.5 flex h-4 w-3.5 shrink-0 items-center justify-center text-[var(--obs-text-faint,#666666)]">
-                    {row.node.extension === "outline" ? (
+                    {filePres?.icon ? (
+                      filePres.icon
+                    ) : row.node.extension === "outline" ? (
                       <ListTree className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
                     ) : row.node.extension === "vdoc" ||
                       row.node.name.toLowerCase().endsWith(".vdoc.json") ? (
@@ -865,7 +948,13 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                   />
                 ) : (
                   <>
-                    <span className="min-w-0 flex-1 truncate">{display.label}</span>
+                    <span
+                      className={`min-w-0 flex-1 truncate ${
+                        row.isProjectFolder ? "font-medium text-[var(--obs-text-normal,#dadada)]" : ""
+                      }`}
+                    >
+                      {display.label}
+                    </span>
                     {row.recentBadge && (
                       <span
                         className="ml-1 shrink-0 rounded-[3px] px-1 py-0 text-[9px] font-bold tracking-wider"
@@ -880,9 +969,17 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                         {row.recentBadge}
                       </span>
                     )}
-                    {display.extensionBadge && (
-                      <span className="ml-1.5 shrink-0 rounded-[3px] bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] px-1 py-0 text-[9px] font-semibold tracking-wider text-[var(--obs-text-faint,#666666)]">
-                        {display.extensionBadge}
+                    {effectiveBadge && (
+                      <span
+                        className={
+                          row.isProjectFolder
+                            ? "ml-1.5 shrink-0 rounded-[3px] bg-[rgba(138,92,245,0.20)] px-1 py-0 text-[9px] font-semibold tracking-wider text-[#c4b5fd]"
+                            : filePres?.badgeToneClass
+                              ? `ml-1.5 shrink-0 rounded-[3px] px-1 py-0 text-[9px] font-semibold tracking-wider ${filePres.badgeToneClass}`
+                              : "ml-1.5 shrink-0 rounded-[3px] bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] px-1 py-0 text-[9px] font-semibold tracking-wider text-[var(--obs-text-faint,#666666)]"
+                        }
+                      >
+                        {effectiveBadge}
                       </span>
                     )}
                   </>
@@ -892,6 +989,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
           })
         )}
       </div>
+      )}
 
       {/* Obsidian Context Menu */}
       {contextMenu && (
@@ -933,6 +1031,40 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               <div className="my-1 h-px bg-[var(--obs-border-subtle,#2d2d2d)]" />
             </>
           )}
+
+          {customContextActions &&
+            (() => {
+              const matching = customContextActions.filter(
+                (act) =>
+                  act.targetKinds.includes(contextMenu.kind) &&
+                  (!act.when || act.when(contextMenu.path, contextMenu.kind))
+              );
+              if (matching.length === 0) return null;
+              return (
+                <>
+                  {matching.map((act) => (
+                    <button
+                      key={`ctx-custom-${act.id}`}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        act.onSelect(contextMenu.path, contextMenu.kind);
+                        setContextMenu(null);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-[4px] px-2.5 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                    >
+                      {act.icon && (
+                        <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+                          {act.icon}
+                        </span>
+                      )}
+                      <span>{act.label}</span>
+                    </button>
+                  ))}
+                  <div className="my-1 h-px bg-[var(--obs-border-subtle,#2d2d2d)]" />
+                </>
+              );
+            })()}
 
           {(contextMenu.kind === "folder" || contextMenu.kind === "root") && (
             <>
@@ -976,6 +1108,30 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               ))}
               {contextMenu.kind === "folder" && (
                 <>
+                  <div className="my-1 h-px bg-[var(--obs-border-subtle,#2d2d2d)]" />
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      const res = store.getState().toggleProjectFolder(contextMenu.path);
+                      if (res.ok && res.oldPath && res.newPath && res.isProject !== undefined) {
+                        onToggleProjectFolder?.({
+                          oldPath: res.oldPath,
+                          newPath: res.newPath,
+                          isProject: res.isProject,
+                        });
+                      }
+                      setContextMenu(null);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-[4px] px-2.5 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                  >
+                    <FolderKanban className="h-3.5 w-3.5 text-[#a68af9]" />
+                    <span>
+                      {isProjectFolderPath(contextMenu.path)
+                        ? "일반 폴더로 전환"
+                        : "프로젝트 폴더로 전환 (.vproj)"}
+                    </span>
+                  </button>
                   <div className="my-1 h-px bg-[var(--obs-border-subtle,#2d2d2d)]" />
                   <button
                     type="button"

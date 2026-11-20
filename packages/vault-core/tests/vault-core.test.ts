@@ -5,12 +5,16 @@ import {
   LocalApiVaultAdapter,
   MemoryVaultAdapter,
   VaultMetadataCache,
+  findOwningProjectPath,
   getAncestorPaths,
   getObsidianDisplayName,
   isDescendantPath,
+  isProjectFolderPath,
   isValidEntryName,
   normalizeVaultPath,
   rewriteWikilinksOnRename,
+  stripProjectFolderExt,
+  toggleProjectFolderName,
   type VaultEvent,
 } from "../src/index";
 
@@ -46,6 +50,34 @@ describe("@vibe/vault-core — path utilities", () => {
       label: "01. Docs",
       extensionBadge: null,
     });
+    assert.deepEqual(getObsidianDisplayName("04. Launch-Campaign.vproj", "folder"), {
+      label: "04. Launch-Campaign",
+      extensionBadge: "PROJ",
+    });
+  });
+
+  it("handles .vproj folder extension helpers and Nearest Ancestor project resolution", () => {
+    assert.equal(isProjectFolderPath("Work/Campaign.vproj"), true);
+    assert.equal(isProjectFolderPath("Work/Regular"), false);
+    assert.equal(stripProjectFolderExt("Campaign.vproj"), "Campaign");
+    assert.deepEqual(toggleProjectFolderName("Campaign"), {
+      nextName: "Campaign.vproj",
+      isProject: true,
+    });
+    assert.deepEqual(toggleProjectFolderName("Campaign.vproj"), {
+      nextName: "Campaign",
+      isProject: false,
+    });
+
+    assert.equal(
+      findOwningProjectPath("04. Launch-Campaign.vproj/sub/02. Launch-Blog-Post.vdoc"),
+      "04. Launch-Campaign.vproj"
+    );
+    assert.equal(
+      findOwningProjectPath("Outer.vproj/Inner.vproj/doc.vdoc"),
+      "Outer.vproj/Inner.vproj"
+    );
+    assert.equal(findOwningProjectPath("01. Architecture/00. System-Proposal.vdoc"), null);
   });
 
   it("validates illegal filename characters", () => {

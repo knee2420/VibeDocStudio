@@ -222,6 +222,81 @@ export function pruneUnusedTabGroups(
 }
 
 /**
+ * 각 크롬 탭 그룹의 `pair` 슬롯(`leftTabId`/`rightTabId`)이 현재 같은 pane의 멤버 탭을 가리키는지 검증·보정한다.
+ * - 한쪽 탭이 닫히거나 그룹에서 빠지면 남은 그룹 멤버로 자동 보충한다.
+ * - 그룹 멤버가 2개 미만이면 페어 모드를 깔끔하게 해제한다(`pair: null`).
+ * - 변경이 없으면 기존 객체 참조를 그대로 반환한다.
+ */
+export function reconcileTabGroupPairs(
+  root: LayoutNode,
+  tabGroups: Readonly<Record<string, TabGroupMeta>>
+): Readonly<Record<string, TabGroupMeta>> {
+  let changed = false;
+  const next: Record<string, TabGroupMeta> = { ...tabGroups };
+
+  const panes = getAllGroups(root);
+  for (const [groupId, meta] of Object.entries(tabGroups)) {
+    const pair = meta.pair;
+    if (!pair) continue;
+
+    // Collect members grouped by pane so we can verify both slots live in a valid member set
+    let bestMembers: WorkspaceTab[] = [];
+    for (const pane of panes) {
+      const members = pane.tabs.filter((t) => t.tabGroupId === groupId);
+      if (members.length > bestMembers.length) {
+        bestMembers = members;
+      }
+    }
+
+    if (bestMembers.length < 2) {
+      next[groupId] = { ...meta, pair: null };
+      changed = true;
+      continue;
+    }
+
+    const memberIds = new Set(bestMembers.map((t) => t.id));
+    let leftId = memberIds.has(pair.leftTabId) ? pair.leftTabId : "";
+    let rightId = memberIds.has(pair.rightTabId) ? pair.rightTabId : "";
+
+    if (!leftId) {
+      leftId = bestMembers.find((t) => t.id !== rightId)?.id ?? bestMembers[0].id;
+    }
+    if (!rightId || rightId === leftId) {
+      rightId = bestMembers.find((t) => t.id !== leftId)?.id ?? "";
+    }
+
+    if (!leftId || !rightId || leftId === rightId) {
+      next[groupId] = { ...meta, pair: null };
+      changed = true;
+      continue;
+    }
+
+    const clampedRatio = Math.max(20, Math.min(80, Number.isFinite(pair.splitRatio) ? pair.splitRatio : 50));
+    const activeSide: "left" | "right" = pair.activeSide === "right" ? "right" : "left";
+
+    if (
+      leftId !== pair.leftTabId ||
+      rightId !== pair.rightTabId ||
+      clampedRatio !== pair.splitRatio ||
+      activeSide !== pair.activeSide
+    ) {
+      next[groupId] = {
+        ...meta,
+        pair: {
+          leftTabId: leftId,
+          rightTabId: rightId,
+          splitRatio: clampedRatio,
+          activeSide,
+        },
+      };
+      changed = true;
+    }
+  }
+
+  return changed ? next : tabGroups;
+}
+
+/**
  * 레이아웃 트리를 정규화한다:
  * - 다중 분할 상태에서 탭이 0개인 빈 그룹 제거
  * - 자식이 1개만 남은 SplitNode 언래핑

@@ -4,6 +4,8 @@
  * Every block inherits identity, placement/frame, and lock state from this base.
  */
 
+import type { StyleOverrideDelta } from "@vibe/style-core";
+
 export interface BlockFrameRect {
   x: number;
   y: number;
@@ -48,5 +50,9 @@ export interface BaseLayoutBlock {
   /** Explicit vertical space before this flow block in CSS px (when blockGap is 0). */
   spaceBefore?: number;
   locked?: boolean;
+  /** Optional explicit Composite Style key inside the bound StylePack. */
+  styleKey?: string;
+  /** Figma-style Instance Override delta applied on top of the active StylePack. */
+  styleOverrides?: StyleOverrideDelta;
 }
 

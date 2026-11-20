@@ -80,6 +80,11 @@ class VaultService:
     def create_file(self, vault_id: str, req: CreateFileRequest) -> VaultNodeDto:
         return self._repo.create_file(vault_id, req.path, req.content, client_id=req.clientId)
 
+    def upload_binary(
+        self, vault_id: str, folder: str, file_name: str, data: bytes, client_id: str | None = None
+    ) -> VaultNodeDto:
+        return self._repo.upload_binary(vault_id, folder, file_name, data, client_id=client_id)
+
     def write_file(self, vault_id: str, req: WriteFileRequest) -> VaultNodeDto:
         return self._repo.write_file(
             vault_id,

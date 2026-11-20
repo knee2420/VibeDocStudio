@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import {
   ArrowLeft,
+  ArrowLeftRight,
   ArrowRight,
   ChevronDown,
   Columns2,
@@ -146,9 +147,16 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
   const [tabListOpen, setTabListOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState<TabContextMenuState | null>(null);
+  const [contextMenuPairOpen, setContextMenuPairOpen] = useState(false);
   const [groupMenu, setGroupMenu] = useState<GroupChipMenuState | null>(null);
+  const [groupMenuPairPicker, setGroupMenuPairPicker] = useState<{
+    readonly leftTabId: string;
+    readonly rightTabId: string | null;
+  } | null>(null);
+  const [pairSlotDropdown, setPairSlotDropdown] = useState<"left" | "right" | null>(null);
 
   const paneBodyRef = useRef<HTMLDivElement>(null);
+  const pairContainerRef = useRef<HTMLDivElement>(null);
   const tabListRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
 
@@ -160,19 +168,39 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
     [group.tabs, tabGroups]
   );
 
-  // Active tab's own Chrome Tab Group (stays active even when expanded so Stack Tabs & group chip keep working!)
+  // Active tab's own Chrome Tab Group (stays active even when expanded so Stack/Pair & group chip keep working!)
   const activeTabGroupMeta: TabGroupMeta | null = useMemo(() => {
     if (!activeTab?.tabGroupId) return null;
     return tabGroups[activeTab.tabGroupId] ?? null;
   }, [activeTab?.tabGroupId, tabGroups]);
 
-  const stackedGroupTabs = useMemo(() => {
-    if (!activeTabGroupMeta?.stacked) return null;
-    const members = group.tabs.filter((t) => t.tabGroupId === activeTabGroupMeta.id);
-    return members.length > 0 ? members : null;
+  const activeTabGroupMembers = useMemo(() => {
+    if (!activeTabGroupMeta) return [];
+    return group.tabs.filter((t) => t.tabGroupId === activeTabGroupMeta.id);
   }, [activeTabGroupMeta, group.tabs]);
 
+  const stackedGroupTabs = useMemo(() => {
+    if (!activeTabGroupMeta?.stacked) return null;
+    return activeTabGroupMembers.length > 0 ? activeTabGroupMembers : null;
+  }, [activeTabGroupMeta, activeTabGroupMembers]);
+
   const isGroupStacked = Boolean(stackedGroupTabs);
+
+  const activeGroupPair = useMemo(() => {
+    if (!activeTabGroupMeta?.pair || isGroupStacked) return null;
+    const leftTab = activeTabGroupMembers.find((t) => t.id === activeTabGroupMeta.pair?.leftTabId);
+    const rightTab = activeTabGroupMembers.find((t) => t.id === activeTabGroupMeta.pair?.rightTabId);
+    if (!leftTab || !rightTab || leftTab.id === rightTab.id) return null;
+    return {
+      meta: activeTabGroupMeta,
+      state: activeTabGroupMeta.pair,
+      leftTab,
+      rightTab,
+      members: activeTabGroupMembers,
+    };
+  }, [activeTabGroupMeta, activeTabGroupMembers, isGroupStacked]);
+
+  const isGroupPaired = Boolean(activeGroupPair);
 
   // Target Chrome Tab Group eligible for the top-right "크게 보기" <-> "되돌리기" toggle in this pane
   const paneTargetGroupMeta: TabGroupMeta | null = useMemo(() => {
@@ -185,13 +213,28 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
   }, [activeTabGroupMeta, expandedTabGroup, group.tabs, tabGroups]);
 
   const activeGroupMenuMeta = groupMenu ? (tabGroups[groupMenu.tabGroupId] ?? null) : null;
+  const activeGroupMenuMembers = useMemo(() => {
+    if (!activeGroupMenuMeta) return [];
+    return group.tabs.filter((t) => t.tabGroupId === activeGroupMenuMeta.id);
+  }, [activeGroupMenuMeta, group.tabs]);
 
-  const hasOpenOverlay = Boolean(contextMenu || groupMenu || tabListOpen || moreMenuOpen);
+  const hasOpenOverlay = Boolean(
+    contextMenu || groupMenu || tabListOpen || moreMenuOpen || pairSlotDropdown
+  );
   useEffect(() => {
     if (!hasOpenOverlay) return;
     const onPointerDown = (ev: MouseEvent) => {
-      if (contextMenu) setContextMenu(null);
-      if (groupMenu) setGroupMenu(null);
+      if (contextMenu) {
+        setContextMenu(null);
+        setContextMenuPairOpen(false);
+      }
+      if (groupMenu) {
+        setGroupMenu(null);
+        setGroupMenuPairPicker(null);
+      }
+      if (pairSlotDropdown) {
+        setPairSlotDropdown(null);
+      }
       if (tabListOpen && tabListRef.current && !tabListRef.current.contains(ev.target as Node)) {
         setTabListOpen(false);
       }
@@ -202,7 +245,10 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
     const onKeyDown = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") {
         setContextMenu(null);
+        setContextMenuPairOpen(false);
         setGroupMenu(null);
+        setGroupMenuPairPicker(null);
+        setPairSlotDropdown(null);
         setTabListOpen(false);
         setMoreMenuOpen(false);
       }
@@ -213,7 +259,7 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
       window.removeEventListener("mousedown", onPointerDown);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [hasOpenOverlay, contextMenu, groupMenu, tabListOpen, moreMenuOpen]);
+  }, [hasOpenOverlay, contextMenu, groupMenu, tabListOpen, moreMenuOpen, pairSlotDropdown]);
 
   const hasValidDragPayload = (dt: DataTransfer): boolean => {
     if (dt.types.includes(VIBE_WORKSPACE_TAB_MIME)) return true;
@@ -285,7 +331,11 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
       }
       const side: "left" | "right" = rx < 0.28 ? "left" : "right";
       const targetTabGroupId =
-        !isExpandedMode && tab.tabGroupId && tabGroups[tab.tabGroupId] ? tab.tabGroupId : null;
+        isExpandedMode && expandedTabGroup
+          ? expandedTabGroup.tabGroupId
+          : tab.tabGroupId && tabGroups[tab.tabGroupId]
+            ? tab.tabGroupId
+            : null;
       setTabDropPreview({
         kind: "insert",
         index: side === "left" ? idx : idx + 1,
@@ -352,9 +402,11 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
           }
           const insertIdx = rx < 0.28 ? idx : idx + 1;
           const targetTabGroupId =
-            !isExpandedMode && tab.tabGroupId && tabGroups[tab.tabGroupId]
-              ? tab.tabGroupId
-              : null;
+            isExpandedMode && expandedTabGroup
+              ? expandedTabGroup.tabGroupId
+              : tab.tabGroupId && tabGroups[tab.tabGroupId]
+                ? tab.tabGroupId
+                : null;
           store.getState().moveTabToGroup(parsed.tabId, group.id, insertIdx, {
             targetTabGroupId,
           });
@@ -411,7 +463,8 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
         const parsed = JSON.parse(rawTab) as { tabId?: string };
         if (parsed.tabId) {
           store.getState().moveTabToGroup(parsed.tabId, group.id, group.tabs.length, {
-            targetTabGroupId: null,
+            targetTabGroupId:
+              isExpandedMode && expandedTabGroup ? expandedTabGroup.tabGroupId : null,
           });
           return;
         }
@@ -549,7 +602,17 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
   };
 
   const renderTabItem = (tab: WorkspaceTab, idx: number, groupAccentHex?: string) => {
-    const isTabActive = tab.id === activeTab?.id;
+    const pairSide: "left" | "right" | null =
+      activeGroupPair && tab.tabGroupId === activeGroupPair.meta.id
+        ? tab.id === activeGroupPair.leftTab.id
+          ? "left"
+          : tab.id === activeGroupPair.rightTab.id
+            ? "right"
+            : null
+        : null;
+    const isPairFocusedSide =
+      pairSide !== null && activeGroupPair?.state.activeSide === pairSide;
+    const isTabActive = tab.id === activeTab?.id || pairSide !== null;
     const isMergeTarget =
       tabDropPreview?.kind === "merge" && tabDropPreview.targetTabId === tab.id;
     const showInsertLeft =
@@ -590,11 +653,25 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
             store.getState().closeTab(tab.id);
           }
         }}
-        onClick={() => store.getState().activateTab(group.id, tab.id)}
+        onClick={(ev) => {
+          if (
+            ev.altKey &&
+            activeGroupPair &&
+            tab.tabGroupId === activeGroupPair.meta.id
+          ) {
+            const oppositeSide: "left" | "right" =
+              activeGroupPair.state.activeSide === "left" ? "right" : "left";
+            store.getState().setTabGroupPairSlot(activeGroupPair.meta.id, oppositeSide, tab.id);
+            return;
+          }
+          store.getState().activateTab(group.id, tab.id);
+        }}
         onContextMenu={(ev) => {
           ev.preventDefault();
           ev.stopPropagation();
           setGroupMenu(null);
+          setGroupMenuPairPicker(null);
+          setContextMenuPairOpen(false);
           setContextMenu({ tab, x: ev.clientX, y: ev.clientY });
         }}
         className={`group relative flex h-[31px] shrink-0 cursor-pointer items-center gap-1.5 rounded-t-[6px] px-2.5 text-[12px] transition-all ${
@@ -607,7 +684,9 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
             ? `${tabDropPreview.accentHex}33`
             : isTabActive
               ? groupAccentHex
-                ? `${groupAccentHex}26`
+                ? pairSide && !isPairFocusedSide
+                  ? `${groupAccentHex}14`
+                  : `${groupAccentHex}26`
                 : "var(--obs-bg-primary,#1e1e1e)"
               : "transparent",
           color: isTabActive || isMergeTarget
@@ -626,9 +705,26 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
         title={
           isMergeTarget
             ? "놓으면 그룹으로 합치기"
-            : `${tab.resourceId ?? tab.title} · 드래그: 다른 탭 중앙에 놓아 그룹 합치기 / 빈 공간에 놓아 그룹 해제`
+            : pairSide
+              ? `${tab.resourceId ?? tab.title} · 페어 ${pairSide === "left" ? "왼쪽(L)" : "오른쪽(R)"} 슬롯`
+              : activeGroupPair && tab.tabGroupId === activeGroupPair.meta.id
+                ? `${tab.resourceId ?? tab.title} · 클릭: 현재 페어 슬롯 교체 · Alt+클릭: 반대 슬롯에 열기`
+                : `${tab.resourceId ?? tab.title} · 드래그: 다른 탭 중앙에 놓아 그룹 합치기 / 빈 공간에 놓아 그룹 해제`
         }
       >
+        {pairSide && (
+          <span
+            className="shrink-0 rounded px-1 py-px text-[9px] font-bold leading-none"
+            style={{
+              backgroundColor: isPairFocusedSide
+                ? (groupAccentHex ?? "#8a5cf5")
+                : `${groupAccentHex ?? "#8a5cf5"}38`,
+              color: isPairFocusedSide ? "#111111" : "var(--obs-text-normal,#dadada)",
+            }}
+          >
+            {pairSide === "left" ? "L" : "R"}
+          </span>
+        )}
         {renderTabIcon(tab)}
         <span className="min-w-0 flex-1 truncate">{tab.title}</span>
 
@@ -736,6 +832,8 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
                     ev.preventDefault();
                     ev.stopPropagation();
                     setContextMenu(null);
+                    setContextMenuPairOpen(false);
+                    setGroupMenuPairPicker(null);
                     setGroupMenu({ tabGroupId: meta.id, x: ev.clientX, y: ev.clientY });
                   }}
                   onDragOver={(ev) => handleChipDragOver(ev, meta.id)}
@@ -841,6 +939,36 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
             disabled={!activeTabGroupMeta}
             onClick={() => {
               if (activeTabGroupMeta) {
+                store.getState().toggleTabGroupPair(activeTabGroupMeta.id);
+              }
+            }}
+            title={
+              activeTabGroupMeta
+                ? isGroupPaired
+                  ? `"${activeTabGroupMeta.title}" 그룹 페어 보기 해제`
+                  : `"${activeTabGroupMeta.title}" 그룹 페어로 보기 (양쪽 동시 표시)`
+                : "그룹에 속한 탭에서만 페어 보기를 사용할 수 있습니다"
+            }
+            aria-label="Toggle group pair view"
+            aria-pressed={isGroupPaired}
+            className="flex h-6 w-6 items-center justify-center rounded-[4px] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
+            style={{
+              color: isGroupPaired && activeTabGroupMeta
+                ? TAB_GROUP_COLORS[activeTabGroupMeta.color].hex
+                : "var(--obs-text-muted,#b3b3b3)",
+              backgroundColor: isGroupPaired && activeTabGroupMeta
+                ? TAB_GROUP_COLORS[activeTabGroupMeta.color].bg
+                : undefined,
+            }}
+          >
+            <Columns2 className="h-3.5 w-3.5" />
+          </button>
+
+          <button
+            type="button"
+            disabled={!activeTabGroupMeta}
+            onClick={() => {
+              if (activeTabGroupMeta) {
                 store.getState().toggleTabGroupStacked(activeTabGroupMeta.id);
               }
             }}
@@ -910,7 +1038,7 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
       </div>
 
       {/* Obsidian View Header (34px): Back/Forward + Breadcrumb + Split Quick Actions */}
-      {activeTab && !isGroupStacked && (
+      {activeTab && !isGroupStacked && !isGroupPaired && (
         <div className="flex h-[34px] shrink-0 select-none items-center justify-between gap-2 border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2.5 text-[12px]">
           <div className="flex min-w-0 items-center gap-1">
             <button
@@ -1018,19 +1146,34 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
                   <span>{activeTab.pinned ? "Unpin" : "Pin"}</span>
                 </button>
                 {activeTabGroupMeta && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      store.getState().toggleTabGroupStacked(activeTabGroupMeta.id);
-                      setMoreMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
-                  >
-                    <Layers className="h-3.5 w-3.5 text-[var(--obs-text-muted,#b3b3b3)]" />
-                    <span>
-                      {activeTabGroupMeta.stacked ? "그룹 스택 보기 해제" : "그룹 스택 보기"}
-                    </span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        store.getState().toggleTabGroupPair(activeTabGroupMeta.id);
+                        setMoreMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                    >
+                      <Columns2 className="h-3.5 w-3.5 text-[var(--obs-text-muted,#b3b3b3)]" />
+                      <span>
+                        {activeTabGroupMeta.pair ? "그룹 페어 보기 해제" : "그룹 페어로 보기"}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        store.getState().toggleTabGroupStacked(activeTabGroupMeta.id);
+                        setMoreMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                    >
+                      <Layers className="h-3.5 w-3.5 text-[var(--obs-text-muted,#b3b3b3)]" />
+                      <span>
+                        {activeTabGroupMeta.stacked ? "그룹 스택 보기 해제" : "그룹 스택 보기"}
+                      </span>
+                    </button>
+                  </>
                 )}
                 {(() => {
                   const viewOptions = getAvailableViewTypes?.(activeTab) ?? [];
@@ -1080,7 +1223,225 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
         onDrop={handlePaneDrop}
         className="relative flex min-h-0 flex-1 overflow-hidden"
       >
-        {isGroupStacked && stackedGroupTabs && activeTabGroupMeta ? (
+        {isGroupPaired && activeGroupPair ? (
+          /* Group-Scoped Side-by-Side Pair View (All group tabs stay in one pool; L/R slots swap in 1 click) */
+          (() => {
+            const { meta: pairMeta, state: pairState, leftTab, rightTab, members } = activeGroupPair;
+            const groupHex = TAB_GROUP_COLORS[pairMeta.color].hex;
+
+            const startPairResize = (ev: React.MouseEvent) => {
+              ev.preventDefault();
+              const container = pairContainerRef.current;
+              if (!container) return;
+              const rect = container.getBoundingClientRect();
+              if (rect.width <= 0) return;
+
+              const onMouseMove = (moveEv: MouseEvent) => {
+                const nextPct = ((moveEv.clientX - rect.left) / rect.width) * 100;
+                store.getState().resizeTabGroupPair(pairMeta.id, nextPct);
+              };
+              const onMouseUp = () => {
+                window.removeEventListener("mousemove", onMouseMove);
+                window.removeEventListener("mouseup", onMouseUp);
+                document.body.style.cursor = "";
+                document.body.style.userSelect = "";
+              };
+
+              document.body.style.cursor = "col-resize";
+              document.body.style.userSelect = "none";
+              window.addEventListener("mousemove", onMouseMove);
+              window.addEventListener("mouseup", onMouseUp);
+            };
+
+            const renderPairHalf = (side: "left" | "right", tab: WorkspaceTab) => {
+              const isSideFocused = pairState.activeSide === side;
+              const isDropdownOpen = pairSlotDropdown === side;
+              const sideLabel = side === "left" ? "L" : "R";
+              return (
+                <div
+                  key={`${side}-${tab.id}`}
+                  data-pair-side={side}
+                  data-pair-tab-id={tab.id}
+                  onMouseDown={() => {
+                    if (!isSideFocused || group.activeTabId !== tab.id) {
+                      store.getState().setTabGroupPairActiveSide(pairMeta.id, side);
+                    }
+                  }}
+                  className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--obs-bg-primary,#1e1e1e)]"
+                  style={
+                    side === "left"
+                      ? { flex: `0 0 ${pairState.splitRatio}%` }
+                      : { flex: "1 1 0%" }
+                  }
+                >
+                  {/* Pair Slot Mini-Header (30px): L/R badge + Group Member Switcher + Swap/Exit */}
+                  <div
+                    className="relative flex h-[30px] shrink-0 select-none items-center justify-between gap-1.5 border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-2 text-[11.5px]"
+                    style={{
+                      borderTop: isSideFocused
+                        ? `2px solid ${groupHex}`
+                        : `2px solid ${groupHex}40`,
+                    }}
+                  >
+                    <div className="relative flex min-w-0 items-center gap-1.5">
+                      <span
+                        className="shrink-0 rounded px-1.5 py-0.5 text-[9.5px] font-bold leading-none"
+                        style={{
+                          backgroundColor: isSideFocused ? groupHex : `${groupHex}33`,
+                          color: isSideFocused ? "#111111" : "var(--obs-text-normal,#dadada)",
+                        }}
+                      >
+                        {sideLabel}
+                      </span>
+                      <button
+                        type="button"
+                        onMouseDown={(ev) => ev.stopPropagation()}
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setPairSlotDropdown((cur) => (cur === side ? null : side));
+                        }}
+                        title={`"${pairMeta.title}" 그룹의 다른 탭으로 ${side === "left" ? "왼쪽" : "오른쪽"} 슬롯 교체 (${members.length}개 탭)`}
+                        className="flex min-w-0 items-center gap-1 rounded-[4px] px-1.5 py-0.5 text-left transition-colors hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                        style={{
+                          color: isSideFocused
+                            ? "var(--obs-text-normal,#dadada)"
+                            : "var(--obs-text-muted,#b3b3b3)",
+                          fontWeight: isSideFocused ? 600 : 500,
+                        }}
+                      >
+                        {renderTabIcon(tab)}
+                        <span className="truncate">{tab.title}</span>
+                        <ChevronDown className="h-3 w-3 shrink-0 opacity-70" />
+                      </button>
+
+                      {isDropdownOpen && (
+                        <div
+                          role="menu"
+                          onMouseDown={(ev) => ev.stopPropagation()}
+                          className="absolute top-full left-0 z-50 mt-1 w-60 max-h-64 overflow-y-auto rounded-md border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] p-1 shadow-2xl"
+                        >
+                          <div className="px-2 py-1 text-[10px] font-semibold tracking-wider text-[var(--obs-text-faint,#777)] uppercase">
+                            {pairMeta.title} · {side === "left" ? "왼쪽(L)" : "오른쪽(R)"} 슬롯 선택 ({members.length})
+                          </div>
+                          {members.map((member) => {
+                            const memberSlot =
+                              member.id === leftTab.id
+                                ? "L"
+                                : member.id === rightTab.id
+                                  ? "R"
+                                  : null;
+                            const isCurrent = member.id === tab.id;
+                            return (
+                              <button
+                                key={member.id}
+                                type="button"
+                                onClick={() => {
+                                  store.getState().setTabGroupPairSlot(pairMeta.id, side, member.id);
+                                  setPairSlotDropdown(null);
+                                }}
+                                className="flex w-full items-center justify-between gap-2 rounded-[4px] px-2 py-1.5 text-left text-[11.5px] text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                                style={{ fontWeight: isCurrent ? 600 : 400 }}
+                              >
+                                <span className="flex min-w-0 items-center gap-1.5">
+                                  {renderTabIcon(member)}
+                                  <span className="truncate">{member.title}</span>
+                                </span>
+                                {memberSlot && (
+                                  <span
+                                    className="shrink-0 rounded px-1 py-px text-[9px] font-bold"
+                                    style={{
+                                      backgroundColor:
+                                        memberSlot === sideLabel ? groupHex : `${groupHex}33`,
+                                      color:
+                                        memberSlot === sideLabel
+                                          ? "#111111"
+                                          : "var(--obs-text-normal,#dadada)",
+                                    }}
+                                  >
+                                    {memberSlot}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-0.5">
+                      {side === "right" && (
+                        <>
+                          <button
+                            type="button"
+                            onMouseDown={(ev) => ev.stopPropagation()}
+                            onClick={(ev) => {
+                              ev.stopPropagation();
+                              store.getState().swapTabGroupPair(pairMeta.id);
+                            }}
+                            title="좌우 탭 교체"
+                            aria-label="좌우 탭 교체"
+                            className="flex h-5 w-5 items-center justify-center rounded text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#dadada)]"
+                          >
+                            <ArrowLeftRight className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onMouseDown={(ev) => ev.stopPropagation()}
+                            onClick={(ev) => {
+                              ev.stopPropagation();
+                              store.getState().disableTabGroupPair(pairMeta.id);
+                            }}
+                            title="페어 보기 종료"
+                            aria-label="페어 보기 종료"
+                            className="flex h-5 w-5 items-center justify-center rounded text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#dadada)]"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Slot Tab Content */}
+                  <div className="min-h-0 flex-1 overflow-hidden">
+                    {tab.resourceId === null && renderEmptyTab
+                      ? renderEmptyTab(group, tab)
+                      : renderTabContent(tab, group)}
+                  </div>
+                </div>
+              );
+            };
+
+            return (
+              <div
+                ref={pairContainerRef}
+                data-paired-tab-group={pairMeta.id}
+                className="flex h-full min-h-0 w-full min-w-0 overflow-hidden"
+              >
+                {renderPairHalf("left", leftTab)}
+                <div
+                  role="separator"
+                  aria-orientation="vertical"
+                  aria-label="페어 비율 조절"
+                  onMouseDown={startPairResize}
+                  className="group relative z-20 w-px shrink-0 cursor-col-resize bg-[var(--obs-border,#363636)]"
+                >
+                  <div
+                    className="absolute top-0 bottom-0 -left-[3px] w-[7px] transition-colors group-hover:-left-[1px] group-hover:w-[3px]"
+                    style={{ backgroundColor: "transparent" }}
+                    onMouseEnter={(ev) => {
+                      ev.currentTarget.style.backgroundColor = groupHex;
+                    }}
+                    onMouseLeave={(ev) => {
+                      ev.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                  />
+                </div>
+                {renderPairHalf("right", rightTab)}
+              </div>
+            );
+          })()
+        ) : isGroupStacked && stackedGroupTabs && activeTabGroupMeta ? (
           /* Group-Scoped Obsidian Stacked Tabs Mode (Vertical Spines for active Chrome Tab Group ONLY) */
           <div
             data-stacked-tab-group={activeTabGroupMeta.id}
@@ -1244,43 +1605,132 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
 
           {/* Chrome Tab Group Context Actions */}
           {contextMenu.tab.tabGroupId && tabGroups[contextMenu.tab.tabGroupId] ? (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  if (expandedTabGroup?.tabGroupId === contextMenu.tab.tabGroupId) {
-                    store.getState().restoreExpandedTabGroup();
-                  } else if (contextMenu.tab.tabGroupId) {
-                    store.getState().expandTabGroup(contextMenu.tab.tabGroupId);
-                  }
-                  setContextMenu(null);
-                }}
-                className="flex w-full items-center gap-2 rounded-[4px] px-2.5 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
-              >
-                {expandedTabGroup?.tabGroupId === contextMenu.tab.tabGroupId ? (
-                  <>
-                    <Minimize2 className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
-                    <span>되돌리기 (원래 그룹 탭으로)</span>
-                  </>
-                ) : (
-                  <>
-                    <Maximize2 className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
-                    <span>그룹 크게 보기</span>
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  store.getState().removeTabFromTabGroup(contextMenu.tab.id);
-                  setContextMenu(null);
-                }}
-                className="flex w-full items-center gap-2 rounded-[4px] px-2.5 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
-              >
-                <Ungroup className="h-3.5 w-3.5 text-[var(--obs-text-muted,#b3b3b3)]" />
-                <span>그룹에서 빼기</span>
-              </button>
-            </>
+            (() => {
+              const ctxGroupId = contextMenu.tab.tabGroupId;
+              const ctxMeta = tabGroups[ctxGroupId];
+              const ctxSiblings = group.tabs.filter(
+                (t) => t.tabGroupId === ctxGroupId && t.id !== contextMenu.tab.id
+              );
+              const ctxGroupHex = TAB_GROUP_COLORS[ctxMeta.color].hex;
+              return (
+                <>
+                  {ctxMeta.pair ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        store.getState().disableTabGroupPair(ctxGroupId);
+                        setContextMenu(null);
+                        setContextMenuPairOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-[4px] px-2.5 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                    >
+                      <Columns2 className="h-3.5 w-3.5" style={{ color: ctxGroupHex }} />
+                      <span>페어 보기 해제</span>
+                    </button>
+                  ) : ctxSiblings.length <= 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        store.getState().enableTabGroupPair(ctxGroupId, {
+                          leftTabId: contextMenu.tab.id,
+                          rightTabId: ctxSiblings[0]?.id,
+                        });
+                        setContextMenu(null);
+                        setContextMenuPairOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-[4px] px-2.5 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                    >
+                      <Columns2 className="h-3.5 w-3.5" style={{ color: ctxGroupHex }} />
+                      <span>
+                        {ctxSiblings.length === 1
+                          ? "페어로 보기"
+                          : "페어로 보기 (새 탭 추가)"}
+                      </span>
+                    </button>
+                  ) : (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setContextMenuPairOpen((v) => !v)}
+                        className="flex w-full items-center justify-between gap-2 rounded-[4px] px-2.5 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Columns2 className="h-3.5 w-3.5" style={{ color: ctxGroupHex }} />
+                          <span>페어로 보기 ({ctxSiblings.length + 1}개 중 선택)</span>
+                        </span>
+                        <ChevronDown
+                          className={`h-3 w-3 shrink-0 transition-transform ${
+                            contextMenuPairOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {contextMenuPairOpen && (
+                        <div className="my-1 ml-2 max-h-48 overflow-y-auto rounded border border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] p-1">
+                          <div className="px-1.5 py-0.5 text-[10px] text-[var(--obs-text-faint,#888)]">
+                            오른쪽(R)에 함께 띄울 탭 선택
+                          </div>
+                          {ctxSiblings.map((sib) => (
+                            <button
+                              key={sib.id}
+                              type="button"
+                              onClick={() => {
+                                store.getState().enableTabGroupPair(ctxGroupId, {
+                                  leftTabId: contextMenu.tab.id,
+                                  rightTabId: sib.id,
+                                });
+                                setContextMenu(null);
+                                setContextMenuPairOpen(false);
+                              }}
+                              className="flex w-full items-center gap-1.5 rounded-[4px] px-1.5 py-1 text-left text-[11.5px] text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.08))]"
+                            >
+                              {renderTabIcon(sib)}
+                              <span className="truncate">{sib.title}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (expandedTabGroup?.tabGroupId === ctxGroupId) {
+                        store.getState().restoreExpandedTabGroup();
+                      } else {
+                        store.getState().expandTabGroup(ctxGroupId);
+                      }
+                      setContextMenu(null);
+                      setContextMenuPairOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-[4px] px-2.5 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                  >
+                    {expandedTabGroup?.tabGroupId === ctxGroupId ? (
+                      <>
+                        <Minimize2 className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
+                        <span>되돌리기 (원래 그룹 탭으로)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Maximize2 className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
+                        <span>그룹 크게 보기</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      store.getState().removeTabFromTabGroup(contextMenu.tab.id);
+                      setContextMenu(null);
+                      setContextMenuPairOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-[4px] px-2.5 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                  >
+                    <Ungroup className="h-3.5 w-3.5 text-[var(--obs-text-muted,#b3b3b3)]" />
+                    <span>그룹에서 빼기</span>
+                  </button>
+                </>
+              );
+            })()
           ) : (
             <>
               <button
@@ -1391,10 +1841,13 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
           role="dialog"
           aria-label="Tab group settings"
           onMouseDown={(e) => e.stopPropagation()}
-          className="fixed z-50 w-[236px] rounded-lg border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] p-2.5 text-[12px] text-[var(--obs-text-normal,#dadada)] shadow-2xl"
+          className="fixed z-50 max-h-[calc(100vh-24px)] w-[264px] overflow-y-auto rounded-lg border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] p-2.5 text-[12px] text-[var(--obs-text-normal,#dadada)] shadow-2xl"
           style={{
-            left: Math.min(groupMenu.x, window.innerWidth - 250),
-            top: Math.min(groupMenu.y + 8, window.innerHeight - 260),
+            left: Math.min(groupMenu.x, window.innerWidth - 278),
+            top: Math.max(
+              12,
+              Math.min(groupMenu.y + 8, window.innerHeight - (groupMenuPairPicker ? 460 : 300))
+            ),
           }}
         >
           <input
@@ -1464,6 +1917,173 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
               </>
             )}
           </button>
+          {/* Pair View (1-click for <=2 tabs, inline 2-slot picker for 3+ tabs) */}
+          {activeGroupMenuMeta.pair ? (
+            <button
+              type="button"
+              onClick={() => {
+                store.getState().disableTabGroupPair(activeGroupMenuMeta.id);
+                setGroupMenu(null);
+                setGroupMenuPairPicker(null);
+              }}
+              className="flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+            >
+              <Columns2
+                className="h-3.5 w-3.5"
+                style={{ color: TAB_GROUP_COLORS[activeGroupMenuMeta.color].hex }}
+              />
+              <span>페어 보기 해제</span>
+            </button>
+          ) : (
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (activeGroupMenuMembers.length <= 2) {
+                    store.getState().enableTabGroupPair(activeGroupMenuMeta.id);
+                    setGroupMenu(null);
+                    setGroupMenuPairPicker(null);
+                    return;
+                  }
+                  if (groupMenuPairPicker) {
+                    setGroupMenuPairPicker(null);
+                    return;
+                  }
+                  const defaultLeft =
+                    (activeTab && activeTab.tabGroupId === activeGroupMenuMeta.id
+                      ? activeTab.id
+                      : activeGroupMenuMembers[0]?.id) ?? "";
+                  setGroupMenuPairPicker({ leftTabId: defaultLeft, rightTabId: null });
+                }}
+                className="flex w-full items-center justify-between gap-2 rounded-[4px] px-2 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+              >
+                <span className="flex items-center gap-2">
+                  <Columns2
+                    className="h-3.5 w-3.5"
+                    style={{ color: TAB_GROUP_COLORS[activeGroupMenuMeta.color].hex }}
+                  />
+                  <span>
+                    {activeGroupMenuMembers.length === 1
+                      ? "페어로 보기 (새 탭 추가)"
+                      : activeGroupMenuMembers.length === 2
+                        ? "페어로 보기 (2개 탭)"
+                        : `페어로 보기 (${activeGroupMenuMembers.length}개 중 2개 선택)`}
+                  </span>
+                </span>
+                {activeGroupMenuMembers.length >= 3 && (
+                  <ChevronDown
+                    className={`h-3 w-3 shrink-0 transition-transform ${
+                      groupMenuPairPicker ? "rotate-180" : ""
+                    }`}
+                  />
+                )}
+              </button>
+
+              {groupMenuPairPicker && activeGroupMenuMembers.length >= 3 && (
+                <div className="my-1.5 rounded-md border border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] p-1.5">
+                  <div className="mb-1 flex items-center justify-between gap-1 px-1 text-[10px] text-[var(--obs-text-muted,#b3b3b3)]">
+                    <span>상대 탭 클릭 시 즉시 페어 열기</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        store.getState().enableTabGroupPair(activeGroupMenuMeta.id, {
+                          leftTabId: groupMenuPairPicker.leftTabId,
+                          rightTabId: groupMenuPairPicker.rightTabId ?? undefined,
+                        });
+                        setGroupMenu(null);
+                        setGroupMenuPairPicker(null);
+                      }}
+                      className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-[#111111] hover:brightness-110"
+                      style={{
+                        backgroundColor: TAB_GROUP_COLORS[activeGroupMenuMeta.color].hex,
+                      }}
+                    >
+                      바로 열기
+                    </button>
+                  </div>
+                  <div className="max-h-48 space-y-0.5 overflow-y-auto">
+                    {activeGroupMenuMembers.map((member) => {
+                      const isLeft = groupMenuPairPicker.leftTabId === member.id;
+                      const isRight = groupMenuPairPicker.rightTabId === member.id;
+                      const gHex = TAB_GROUP_COLORS[activeGroupMenuMeta.color].hex;
+                      return (
+                        <div
+                          key={member.id}
+                          className="flex items-center justify-between gap-1 rounded-[4px] px-1 py-0.5 hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (member.id === groupMenuPairPicker.leftTabId) return;
+                              store.getState().enableTabGroupPair(activeGroupMenuMeta.id, {
+                                leftTabId: groupMenuPairPicker.leftTabId,
+                                rightTabId: member.id,
+                              });
+                              setGroupMenu(null);
+                              setGroupMenuPairPicker(null);
+                            }}
+                            className="flex min-w-0 flex-1 items-center gap-1.5 text-left text-[11px] text-[var(--obs-text-normal,#dadada)]"
+                            title={
+                              isLeft
+                                ? "현재 왼쪽(L)으로 선택됨"
+                                : "클릭하면 오른쪽(R)에 배치하고 바로 페어 열기"
+                            }
+                          >
+                            {renderTabIcon(member)}
+                            <span className="truncate">{member.title}</span>
+                          </button>
+                          <div className="flex shrink-0 items-center gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setGroupMenuPairPicker((prev) => {
+                                  if (!prev) return prev;
+                                  return {
+                                    leftTabId: member.id,
+                                    rightTabId:
+                                      prev.rightTabId === member.id
+                                        ? prev.leftTabId
+                                        : prev.rightTabId,
+                                  };
+                                })
+                              }
+                              title="왼쪽(L) 슬롯으로 지정"
+                              className="rounded px-1 py-px text-[9.5px] font-bold transition-colors"
+                              style={{
+                                backgroundColor: isLeft ? gHex : "rgba(255,255,255,0.08)",
+                                color: isLeft ? "#111111" : "var(--obs-text-muted,#b3b3b3)",
+                              }}
+                            >
+                              L
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (member.id === groupMenuPairPicker.leftTabId) return;
+                                setGroupMenuPairPicker((prev) =>
+                                  prev ? { ...prev, rightTabId: member.id } : prev
+                                );
+                              }}
+                              disabled={isLeft}
+                              title="오른쪽(R) 슬롯으로 지정"
+                              className="rounded px-1 py-px text-[9.5px] font-bold transition-colors disabled:opacity-30"
+                              style={{
+                                backgroundColor: isRight ? gHex : "rgba(255,255,255,0.08)",
+                                color: isRight ? "#111111" : "var(--obs-text-muted,#b3b3b3)",
+                              }}
+                            >
+                              R
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => {
@@ -1473,6 +2093,7 @@ const TabGroupPaneImpl: React.FC<TabGroupPaneProps> = ({
               }
               store.getState().toggleTabGroupStacked(activeGroupMenuMeta.id);
               setGroupMenu(null);
+              setGroupMenuPairPicker(null);
             }}
             className="flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
           >

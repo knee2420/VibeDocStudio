@@ -250,8 +250,12 @@ def test_pipeline_falls_back_to_static_heuristics_when_browser_unavailable() -> 
 def test_compute_scroll_bands_and_screenshot_pipeline_forwarding() -> None:
     assert compute_scroll_bands(800, 900) == [0]
     assert compute_scroll_bands(2000, 900, overlap_px=100, max_tiles=10) == [0, 800, 1100]
+    # 예산 초과 시 중간을 건너뛰며 표집하지 않고, 위에서부터 빈틈 없는 연속 구간만 남긴다.
     capped = compute_scroll_bands(25000, 900, overlap_px=80, max_tiles=6)
-    assert len(capped) <= 6 and capped[0] == 0 and capped[-1] == 24100
+    assert capped == [0, 820, 1640, 2460, 3280, 4100]
+    assert all(b - a <= 900 for a, b in zip(capped, capped[1:]))
+    full = compute_scroll_bands(25000, 900, overlap_px=80, max_tiles=100)
+    assert full[-1] == 24100 and all(b - a <= 900 for a, b in zip(full, full[1:]))
 
     snap = parse_browser_snapshot_json(_sample_browser_snapshot_json())
     snap.screenshots = [

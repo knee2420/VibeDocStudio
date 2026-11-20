@@ -36,6 +36,9 @@ from .http_fetcher import validate_public_http_url
 
 _IS_WINDOWS = sys.platform == "win32"
 
+# 풀페이지 캡처 상한 (px). 이보다 긴 문서는 위에서부터 연속으로 이 높이까지만 찍는다.
+_MAX_CAPTURE_HEIGHT_PX = 120_000
+
 # 공용 JS: 바깥 window · same-origin iframe(네이버 블로그 #mainFrame 등) · 내부 overflow 컨테이너 중
 # 실제 스크롤 주체를 판별해 좌표를 이동/측정한다.
 _SCROLL_HELPER_JS = r"""
@@ -1090,7 +1093,12 @@ def compute_scroll_bands(
     overlap_px: int = 80,
     max_tiles: int = 24,
 ) -> list[int]:
-    """스크롤 높이 대비 캡처할 Y 좌표 목록을 계산한다 (상단 0 및 하단 누락 방지, 최대 타일 예산 내 균등 표집)."""
+    """스크롤 높이 대비 캡처할 Y 좌표 목록을 계산한다.
+
+    타일은 항상 위에서부터 빈틈 없이 이어진다. 예산(`max_tiles`)을 넘으면 중간을 건너뛰며
+    표집하지 않고 연속된 앞부분만 남긴다 — 표집하면 뷰어가 이어 붙였을 때 중간 내용이 사라진
+    가짜 연속 페이지가 되기 때문이다. 잘린 꼬리는 `total_height` 와 비교해 호출자가 알 수 있다.
+    """
     vh = max(240, int(viewport_height))
     total = max(vh, int(total_height))
     if total <= vh or max_tiles <= 1:
@@ -1100,18 +1108,7 @@ def compute_scroll_bands(
     bands = list(range(0, max_y, step))
     if not bands or bands[-1] != max_y:
         bands.append(max_y)
-    if len(bands) <= max_tiles:
-        return bands
-    # 첫 장(0) 과 마지막 장은 반드시 포함하고 나머지를 균등 샘플링
-    picked = [0]
-    inner_slots = max_tiles - 2
-    for slot in range(1, inner_slots + 1):
-        idx = round(slot * (len(bands) - 1) / (inner_slots + 1))
-        if bands[idx] not in picked:
-            picked.append(bands[idx])
-    if bands[-1] not in picked:
-        picked.append(bands[-1])
-    return sorted(picked)
+    return bands[: max(1, int(max_tiles))]
 
 
 _SCROLL_INFO_JS = """
@@ -1433,6 +1430,7 @@ class CdpBrowserDomFetcher:
         viewport_height: int,
         overlap_px: int,
         max_screenshots: int,
+        on_progress: Any = None,
     ) -> list[BrowserScreenshotTile]:
         vw = max(480, int(viewport_width))
         vh = max(400, int(viewport_height))
@@ -1442,8 +1440,66 @@ class CdpBrowserDomFetcher:
         except ValueError:
             info = {}
         total_h = int(info.get("totalHeight") or vh)
-        bands = compute_scroll_bands(total_h, vh, overlap_px=overlap_px, max_tiles=max_screenshots)
-        tiles: list[BrowserScreenshotTile] = []
+        same_doc = bool(info.get("sameDoc", True))
+        scroll_mode = str(info.get("scrollMode") or "win")
+
+        # 1차 경로: 최상위 문서(sameDoc && win)는 captureBeyondViewport + 연속 clip(0px 갭 · 0px 겹침)으로
+        # 2000px 단위 무결점 스트립을 빠르게 캡처한다 (프론트에서 gap-0으로 붙이면 완벽한 연속 풀페이지 캔버스).
+        if same_doc and scroll_mode == "win":
+            slice_h = 2000
+            # `max_screenshots` 는 옛 900px 타일 예산이라 2000px 스트립 상한으로 쓰면 긴 글이 잘린다.
+            effective_h = min(total_h, _MAX_CAPTURE_HEIGHT_PX)
+            strip_ys = list(range(0, max(1, effective_h), slice_h))
+            if callable(on_progress):
+                on_progress("capture", f"연속 풀페이지 캔버스 캡처 시작 ({len(strip_ys)}스트립 · {effective_h}px)")
+                if effective_h < total_h:
+                    on_progress("capture", f"문서가 너무 길어 {effective_h}px까지만 캡처합니다 (전체 {total_h}px)")
+            tiles: list[BrowserScreenshotTile] = []
+            masked = False
+            try:
+                for idx, y in enumerate(strip_ys, start=1):
+                    h = min(slice_h, max(1, effective_h - y))
+                    if y > 0 and not masked:
+                        call("Runtime.evaluate", expression=_toggle_sticky_js(True), returnByValue=True)
+                        masked = True
+                    shot = call(
+                        "Page.captureScreenshot",
+                        format="png",
+                        captureBeyondViewport=True,
+                        clip={"x": 0, "y": y, "width": vw, "height": h, "scale": 1},
+                    )
+                    b64 = shot.get("data") if isinstance(shot, dict) else None
+                    if not isinstance(b64, str) or not b64:
+                        continue
+                    tiles.append(
+                        BrowserScreenshotTile(
+                            index=idx,
+                            scroll_y=y,
+                            width=vw,
+                            height=h,
+                            png_bytes=base64.b64decode(b64),
+                            total_height=total_h,
+                        )
+                    )
+                    if callable(on_progress):
+                        on_progress("capture", f"캔버스 스트립 캡처 {idx}/{len(strip_ys)} ({y}~{y + h}px)")
+            except Exception:
+                tiles = []
+            finally:
+                if masked:
+                    try:
+                        call("Runtime.evaluate", expression=_toggle_sticky_js(False), returnByValue=True)
+                    except Exception:
+                        pass
+            if tiles:
+                return tiles
+
+        # 2차 폴백: 내부 overflow 컨테이너 또는 same-origin iframe 문서는 스크롤 타일 캡처
+        tile_budget = max(int(max_screenshots or 0), _MAX_CAPTURE_HEIGHT_PX // max(200, vh - max(0, overlap_px)))
+        bands = compute_scroll_bands(total_h, vh, overlap_px=overlap_px, max_tiles=tile_budget)
+        if callable(on_progress):
+            on_progress("capture", f"시각 타일 캡처 시작 (총 {len(bands)}장 · 문서 높이 {total_h}px)")
+        tiles = []
         masked = False
         try:
             for idx, scroll_y in enumerate(bands, start=1):
@@ -1481,6 +1537,8 @@ class CdpBrowserDomFetcher:
                         total_height=total_h,
                     )
                 )
+                if callable(on_progress) and (idx == 1 or idx == len(bands) or idx % 4 == 0):
+                    on_progress("capture", f"타일 캡처 진행 {idx}/{len(bands)} (scrollY={actual_y}px)")
         finally:
             if masked:
                 try:
@@ -1499,13 +1557,22 @@ class CdpBrowserDomFetcher:
         return tiles
 
     def render_dom(self, url: str, *, timeout_s: float = 15.0) -> Optional[tuple[str, str]]:
-        """JS 평가 완료 후 `(outerHTML, final_url)` 을 반환한다."""
+        """JS 평가 완료 후 `(outerHTML, final_url)` 을 반환한다 (same-origin iframe 본문 자동 해소)."""
         with self._tab_session(url, viewport_width=1280, timeout_s=timeout_s) as call:
             if call is None:
                 return None
+            expr = (
+                "(() => {"
+                + _SCROLL_HELPER_JS
+                + "const st = _findScrollTarget();"
+                + "const d = st.doc || document;"
+                + "const u = (d && d.location && d.location.href) || location.href;"
+                + "return JSON.stringify({html: d.documentElement.outerHTML, url: u});"
+                + "})()"
+            )
             res = call(
                 "Runtime.evaluate",
-                expression="JSON.stringify({html: document.documentElement.outerHTML, url: location.href})",
+                expression=expr,
                 returnByValue=True,
                 awaitPromise=False,
             )
@@ -1528,8 +1595,11 @@ class CdpBrowserDomFetcher:
         viewport_height: int = 900,
         overlap_px: int = 80,
         max_screenshots: int = 24,
+        on_progress: Any = None,
     ) -> Optional[BrowserLayoutSnapshot]:
         """가시 DOM 요소의 `getBoundingClientRect` · `getComputedStyle` 실측 스냅샷과 선택적 PNG 타일을 반환한다."""
+        if callable(on_progress):
+            on_progress("browser", f"헤드리스 브라우저 페이지 로딩 중 ({viewport_width}px)...")
         with self._tab_session(
             url,
             viewport_width=viewport_width,
@@ -1538,6 +1608,8 @@ class CdpBrowserDomFetcher:
         ) as call:
             if call is None:
                 return None
+            if callable(on_progress):
+                on_progress("measure", "DOM 레이아웃 · getBoundingClientRect 실측 중...")
             res = call(
                 "Runtime.evaluate",
                 expression=_MEASURE_ARTICLE_JS,
@@ -1548,6 +1620,8 @@ class CdpBrowserDomFetcher:
             if not isinstance(raw, str) or not raw:
                 return None
             snapshot = parse_browser_snapshot_json(raw, fallback_url=url)
+            if snapshot is not None and callable(on_progress):
+                on_progress("measure", f"DOM 실측 완료 ({len(snapshot.elements)}개 요소 추출)")
             if capture_screenshots and snapshot is not None:
                 snapshot.screenshots = self._capture_viewport_tiles(
                     call,
@@ -1555,5 +1629,6 @@ class CdpBrowserDomFetcher:
                     viewport_height=viewport_height,
                     overlap_px=overlap_px,
                     max_screenshots=max_screenshots,
+                    on_progress=on_progress,
                 )
             return snapshot

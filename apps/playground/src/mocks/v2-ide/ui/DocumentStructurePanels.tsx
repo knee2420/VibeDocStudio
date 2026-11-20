@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import {
   ChevronDown,
@@ -21,6 +21,7 @@ import {
   duplicatePage,
   insertPages,
   removePage,
+  resolveDocumentView,
   toggleBlockLock,
   type VDocDocument,
 } from "@vibe/vdoc-schema";
@@ -30,7 +31,11 @@ import type {
   EditorOutlineHostContext,
 } from "@vibe/workspace-layout/core";
 
+import type { OutlineNode } from "@vibe/outliner";
+
 import type { IdeEditorEnv } from "../model/editorAdapters";
+import { requestOutlineReveal } from "../model/outlineRevealBus";
+import { parseOutlineJson } from "../model/outlineCodec";
 import {
   parseVDocJson,
   projectVDocToStructure,
@@ -55,6 +60,9 @@ export const VDocFigmaStructurePanel: React.FC<{
     parseVDocJson(vault.exists(path) ? vault.read(path) : "", fallbackTitle)
   );
   const [expandedBlocks, setExpandedBlocks] = useState<Set<string>>(() => new Set());
+  const [unitPaneHeight, setUnitPaneHeight] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const unitPaneRef = useRef<HTMLDivElement>(null);
 
   // Fine-grained selectors: NEVER subscribe to hoveredBlockId so mouse sweeps cause 0 re-renders!
   const storedActivePageId = useStore(vdocUiBridge, (s) => s.byPath[path]?.activePageId ?? null);
@@ -102,23 +110,6 @@ export const VDocFigmaStructurePanel: React.FC<{
     [doc, activePageId, selectedBlockId, selectedSlotId, hiddenBlockIds]
   );
 
-  const handleAddPage = () => {
-    const pageNum = doc.pages.length + 1;
-    const pageId = `page_${uidFactory()}`;
-    const built = createSectionPage({
-      pageId,
-      pageNumber: pageNum,
-      pageLabel: `Page ${pageNum}`,
-      headerHtml: "",
-      footerHtml: "",
-      headingHtml: `<h2>페이지 ${pageNum}</h2>`,
-      bodyHtml: "<p>새 페이지 본문</p>",
-    });
-    const nextPage = { ...built.page, hideHeaderFooter: true };
-    mutateDoc((prev) => insertPages(prev, [nextPage], built.slots));
-    vdocUiBridge.getState().requestScrollTo(path, nextPage.pageId, nextPage.pageId);
-  };
-
   const toggleBlockExpand = (blockId: string) => {
     setExpandedBlocks((prev) => {
       const next = new Set(prev);
@@ -128,84 +119,172 @@ export const VDocFigmaStructurePanel: React.FC<{
     });
   };
 
-  return (
-    <div className="flex h-full w-full select-none flex-col overflow-hidden text-[12px]">
-      {/* Top Sub-section: Figma Pages */}
-      <div className="shrink-0 border-b border-[var(--obs-border-subtle,#2d2d2d)]">
-        <div className="flex h-7 items-center justify-between px-3 text-[10.5px] font-semibold tracking-wider text-[var(--obs-text-faint,#666666)] uppercase">
-          <span>Pages ({pages.length})</span>
-          <button
-            type="button"
-            onClick={handleAddPage}
-            title="Add page"
-            className="flex h-5 w-5 items-center justify-center rounded hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#dadada)]"
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </button>
-        </div>
+  const activeView = useMemo(() => resolveDocumentView(doc), [doc]);
+  const isSectionView = activeView.unitKind === "section" || Boolean(activeView.showSectionsSection);
+  const showUnitList = activeView.showPagesSection || isSectionView;
 
-        <div className="max-h-32 overflow-y-auto px-1.5 pb-1.5">
-          {pages.map((pageNode: DocumentStructureNode) => (
-            <div
-              key={pageNode.id}
-              onClick={() => {
-                vdocUiBridge.getState().setActivePage(path, pageNode.id);
-                vdocUiBridge.getState().requestScrollTo(path, pageNode.id, pageNode.id);
-              }}
-              className="group flex h-6 cursor-pointer items-center justify-between rounded-[4px] px-2 transition-colors"
-              style={{
-                backgroundColor: pageNode.active
-                  ? "var(--obs-bg-selected,rgba(138,92,245,0.22))"
-                  : "transparent",
-                color: pageNode.active
-                  ? "var(--obs-text-normal,#dadada)"
-                  : "var(--obs-text-muted,#b3b3b3)",
-              }}
-            >
-              <span className="flex min-w-0 items-center gap-1.5 truncate">
-                <FileText className="h-3 w-3 shrink-0 opacity-70" />
-                <span className="truncate">{pageNode.label}</span>
+  const handleAddUnit = () => {
+    const unitNum = doc.pages.length + 1;
+    const pageId = `${isSectionView ? "sec" : "page"}_${uidFactory()}`;
+    const built = createSectionPage({
+      pageId,
+      pageNumber: unitNum,
+      pageLabel: isSectionView ? `섹션 ${unitNum}` : `Page ${unitNum}`,
+      headerHtml: "",
+      footerHtml: "",
+      headingHtml: isSectionView ? `<h2>섹션 ${unitNum}</h2>` : `<h2>페이지 ${unitNum}</h2>`,
+      bodyHtml: isSectionView ? "<p>새 섹션 본문</p>" : "<p>새 페이지 본문</p>",
+    });
+    const nextPage = {
+      ...built.page,
+      unitKind: isSectionView ? ("section" as const) : ("page" as const),
+      sectionRole: isSectionView ? "body" : undefined,
+      hideHeaderFooter: true,
+    };
+    mutateDoc((prev) => insertPages(prev, [nextPage], built.slots));
+    vdocUiBridge.getState().requestScrollTo(path, nextPage.pageId, nextPage.pageId);
+  };
+
+  const handleStartUnitResize = (ev: React.MouseEvent) => {
+    ev.preventDefault();
+    const startY = ev.clientY;
+    const startH = unitPaneRef.current?.getBoundingClientRect().height ?? 160;
+    const containerH = containerRef.current?.getBoundingClientRect().height ?? 500;
+    const maxH = Math.max(96, containerH - 72);
+    const prevCursor = document.body.style.cursor;
+    document.body.style.cursor = "row-resize";
+
+    const onMove = (moveEv: MouseEvent) => {
+      const next = Math.max(64, Math.min(maxH, Math.round(startH + (moveEv.clientY - startY))));
+      setUnitPaneHeight(next);
+    };
+    const onUp = () => {
+      document.body.style.cursor = prevCursor;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex h-full w-full select-none flex-col overflow-hidden text-[12px]"
+    >
+      {/* Top Sub-section: Figma Pages (A4) or Sections (Blog/Web) */}
+      {showUnitList && (
+        <>
+          <div
+            ref={unitPaneRef}
+            style={
+              unitPaneHeight !== null
+                ? { height: `${unitPaneHeight}px`, maxHeight: "calc(100% - 72px)" }
+                : undefined
+            }
+            className={`flex shrink-0 flex-col overflow-hidden ${
+              unitPaneHeight === null ? "max-h-[45%]" : ""
+            }`}
+          >
+            <div className="flex h-7 shrink-0 items-center justify-between px-3 text-[10.5px] font-semibold tracking-wider text-[var(--obs-text-faint,#666666)] uppercase">
+              <span>
+                {isSectionView ? `Sections (${pages.length})` : `Pages (${pages.length})`}
               </span>
-              <span className="flex shrink-0 items-center gap-0.5">
-                <span className="mr-1 text-[10px] text-[var(--obs-text-faint,#666666)] group-hover:hidden">
-                  {pageNode.badge}
-                </span>
-                <button
-                  type="button"
-                  onClick={(ev) => {
-                    ev.stopPropagation();
-                    mutateDoc((prev) => duplicatePage(prev, pageNode.id, uidFactory));
-                  }}
-                  title="Duplicate page"
-                  className="hidden h-4 w-4 items-center justify-center rounded hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.08))] group-hover:flex"
-                >
-                  <Copy className="h-2.5 w-2.5" />
-                </button>
-                {pages.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={(ev) => {
-                      ev.stopPropagation();
-                      mutateDoc((prev) => removePage(prev, pageNode.id));
-                    }}
-                    title="Delete page"
-                    className="hidden h-4 w-4 items-center justify-center rounded text-[var(--obs-danger,#fb464c)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.08))] group-hover:flex"
-                  >
-                    <Trash2 className="h-2.5 w-2.5" />
-                  </button>
-                )}
-              </span>
+              <button
+                type="button"
+                onClick={handleAddUnit}
+                title={isSectionView ? "Add section" : "Add page"}
+                className="flex h-5 w-5 items-center justify-center rounded hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#dadada)]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
             </div>
-          ))}
-        </div>
-      </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-1.5 pb-1.5">
+              {pages.map((pageNode: DocumentStructureNode) => (
+                <div
+                  key={pageNode.id}
+                  onClick={() => {
+                    vdocUiBridge.getState().setActivePage(path, pageNode.id);
+                    vdocUiBridge.getState().requestScrollTo(path, pageNode.id, pageNode.id);
+                  }}
+                  className="group flex h-6 cursor-pointer items-center justify-between rounded-[4px] px-2 transition-colors"
+                  style={{
+                    backgroundColor: pageNode.active
+                      ? "var(--obs-bg-selected,rgba(138,92,245,0.22))"
+                      : "transparent",
+                    color: pageNode.active
+                      ? "var(--obs-text-normal,#dadada)"
+                      : "var(--obs-text-muted,#b3b3b3)",
+                  }}
+                >
+                  <span className="flex min-w-0 items-center gap-1.5 truncate">
+                    {isSectionView ? (
+                      <Hash className="h-3 w-3 shrink-0 opacity-70 text-emerald-400" />
+                    ) : (
+                      <FileText className="h-3 w-3 shrink-0 opacity-70" />
+                    )}
+                    <span className="truncate">{pageNode.label}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-0.5">
+                    <span className="mr-1 text-[10px] text-[var(--obs-text-faint,#666666)] group-hover:hidden">
+                      {pageNode.badge}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        mutateDoc((prev) => duplicatePage(prev, pageNode.id, uidFactory));
+                      }}
+                      title={isSectionView ? "Duplicate section" : "Duplicate page"}
+                      className="hidden h-4 w-4 items-center justify-center rounded hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.08))] group-hover:flex"
+                    >
+                      <Copy className="h-2.5 w-2.5" />
+                    </button>
+                    {pages.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          mutateDoc((prev) => removePage(prev, pageNode.id));
+                        }}
+                        title={isSectionView ? "Delete section" : "Delete page"}
+                        className="hidden h-4 w-4 items-center justify-center rounded text-[var(--obs-danger,#fb464c)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.08))] group-hover:flex"
+                      >
+                        <Trash2 className="h-2.5 w-2.5" />
+                      </button>
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Draggable Horizontal Splitter (Sections/Pages <-> Elements) */}
+          <div
+            role="separator"
+            aria-orientation="horizontal"
+            aria-label="Resize sections and elements split"
+            onMouseDown={handleStartUnitResize}
+            onDoubleClick={() => setUnitPaneHeight(null)}
+            title="드래그하여 높이 조절 (더블클릭 시 기본값 복원)"
+            className="group relative z-20 h-px shrink-0 cursor-row-resize bg-[var(--obs-border-subtle,#2d2d2d)]"
+          >
+            <div className="absolute right-0 left-0 -top-[3px] h-[7px] transition-colors group-hover:top-[-1px] group-hover:h-[3px] group-hover:bg-[var(--obs-accent,#8a5cf5)]" />
+          </div>
+        </>
+      )}
 
       {/* Bottom Sub-section: Figma Elements (Block -> Slot) */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex h-7 shrink-0 items-center justify-between px-3 text-[10.5px] font-semibold tracking-wider text-[var(--obs-text-faint,#666666)] uppercase">
           <span className="flex items-center gap-1">
             <Layers className="h-3 w-3" />
-            <span>Elements ({elements.length})</span>
+            <span>
+              {isSectionView
+                ? `Section Elements (${elements.length})`
+                : `Elements (${elements.length})`}
+            </span>
           </span>
         </div>
 
@@ -426,38 +505,64 @@ export const OutlineStructurePanel: React.FC<{
     });
   }, [vault, host.path]);
 
-  const branches = useMemo(() => {
+  // 편집 화면과 같은 규칙으로 읽고, 깊이와 상관없이 전체 트리를 펼쳐 보여 준다.
+  const rows = useMemo(() => {
     void tick;
+    let roots: OutlineNode[] = [];
     try {
-      const parsed = JSON.parse(vault.read(host.path)) as {
-        rootNodes?: Array<{ id: string; text: string; children?: Array<{ id: string; text: string }> }>;
-      };
-      return parsed.rootNodes ?? [];
+      roots = parseOutlineJson(vault.read(host.path), stem(host.path)).rootNodes;
     } catch {
-      return [];
+      roots = [];
     }
+    const out: { id: string; text: string; depth: number; folded: boolean; childCount: number }[] = [];
+    const walk = (nodes: OutlineNode[], depth: number) => {
+      for (const node of nodes) {
+        const children = node.children ?? [];
+        out.push({
+          id: node.id,
+          text: node.text,
+          depth,
+          folded: Boolean(node.isFolded) && children.length > 0,
+          childCount: children.length,
+        });
+        walk(children, depth + 1);
+      }
+    };
+    walk(roots, 0);
+    return out;
   }, [vault, host.path, tick]);
 
   return (
     <div className="flex h-full w-full select-none flex-col overflow-y-auto px-2 py-1.5 text-[12px]">
       <div className="mb-1 flex items-center gap-1 px-1 text-[10.5px] font-semibold tracking-wider text-[var(--obs-text-faint,#666666)] uppercase">
         <ListTree className="h-3 w-3" />
-        <span>Branches ({branches.length})</span>
+        <span>Bullets ({rows.length})</span>
       </div>
-      {branches.map((root) => (
-        <div key={root.id} className="mb-1.5">
-          <div className="truncate rounded-[4px] px-1.5 py-0.5 font-medium text-[var(--obs-text-normal,#dadada)]">
-            • {root.text}
-          </div>
-          {(root.children ?? []).map((child) => (
-            <div
-              key={child.id}
-              className="truncate py-0.5 pl-4 text-[11.5px] text-[var(--obs-text-muted,#b3b3b3)]"
-            >
-              ◦ {child.text}
-            </div>
-          ))}
-        </div>
+      {rows.map((row) => (
+        <button
+          key={row.id}
+          type="button"
+          onClick={() => requestOutlineReveal(host.path, row.id)}
+          title="편집 화면에서 이 불릿으로 이동"
+          style={{ paddingLeft: `${6 + row.depth * 12}px` }}
+          className={`flex w-full min-w-0 items-center gap-1 rounded-[4px] py-0.5 pr-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] ${
+            row.depth === 0
+              ? "font-medium text-[var(--obs-text-normal,#dadada)]"
+              : "text-[11.5px] text-[var(--obs-text-muted,#b3b3b3)]"
+          }`}
+        >
+          {row.folded ? (
+            <ChevronRight className="h-3 w-3 shrink-0 opacity-60" />
+          ) : (
+            <span className="w-3 shrink-0 text-center opacity-60">{row.depth === 0 ? "•" : "◦"}</span>
+          )}
+          <span className={`truncate ${row.text.trim() ? "" : "italic opacity-50"}`}>
+            {row.text.trim() || "(빈 불릿)"}
+          </span>
+          {row.folded && (
+            <span className="ml-auto shrink-0 font-code text-[10px] opacity-50">{row.childCount}</span>
+          )}
+        </button>
       ))}
     </div>
   );

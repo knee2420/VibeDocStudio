@@ -1,11 +1,14 @@
 import type { ElementKind } from "./element-kit";
 import type { EvidenceLocator } from "./evidence";
 /**
- * @vibe/vdoc-schema — Multi-Document Project Manifest (`.vproj`), 4-Level Zoom Hierarchy,
+ * @vibe/vdoc-schema — Multi-Document Project Manifest (`.vproj`), 5-Level Context Hierarchy,
  * Provenance Lineage, and 3-Phase AI Staging Contracts. (References are not projects — see `/api/reference`.)
  */
 
-export type ZoomLevel = "project" | "document" | "page" | "slot";
+/** Vault 폴더 확장자: `<프로젝트명>.vproj/` 폴더가 프로젝트 컨텍스트 경계가 된다. */
+export const VPROJ_FOLDER_EXT = "vproj";
+
+export type ZoomLevel = "project" | "document" | "page" | "element" | "slot";
 
 export type WorkbenchPhase = "storylining" | "templating" | "drafting";
 
