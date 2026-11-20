@@ -127,6 +127,8 @@ from app.resource.ledger.adapters import (
     WebArticleProvider,
 )
 from app.resource.ledger.use_cases import ResourceLedgerService
+from app.vault.adapters import LocalVaultRepository
+from app.vault.use_cases import VaultService
 
 
 def _card_enricher_factory(settings: Settings, policy: RuntimeExecutionPolicy, sandbox: Path):
@@ -435,3 +437,14 @@ class Container(containers.DeclarativeContainer):
             MeasuredLayerAnalyzer, measure=layer_patterns.measure, by_layer=layer_patterns.by_layer, layout=layer_patterns.measure_layout
         ),
     )
+
+    # --- 10. vault 도메인 (로컬 파일시스템 Vault · 기본 데이터 위치: `apps/playground/data/`) ---
+    vault_repository = providers.Singleton(
+        LocalVaultRepository,
+        vault_home_dir=providers.Callable(lambda s: s.vault_home_dir, settings),
+        denied_roots=providers.Callable(
+            lambda st: (st.knowledge, st.state, st.cache),
+            storage,
+        ),
+    )
+    vault_service = providers.Singleton(VaultService, repo=vault_repository)

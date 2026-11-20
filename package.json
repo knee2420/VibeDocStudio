@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "pnpm --filter @vibe/api --filter @vibe/studio --parallel dev",
     "dev:studio": "pnpm --filter @vibe/studio dev",
+    "dev:playground": "pnpm --filter @vibe/playground dev",
     "dev:api": "pnpm --filter @vibe/api dev",
     "lint": "pnpm -r lint",
     "build": "pnpm -r build",

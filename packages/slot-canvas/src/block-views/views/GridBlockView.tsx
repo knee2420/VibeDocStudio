@@ -31,6 +31,10 @@ export const gridView = defineBlockView<ColumnsGridBlockDef>({
     const cardClass =
       block.cardStyle === "plain" ? "min-w-0 bg-transparent p-0" : "min-w-0 rounded-lg border border-slate-200 bg-slate-50/50 p-2.5";
     const columns = columnsOf(block);
+    const widths =
+      Array.isArray(block.widths) && block.widths.length > 0
+        ? block.widths
+        : columns.map(() => "1fr");
     // 리소스 사진을 칸에 놓으면 그 칸이 사진이 된다 (사람이 사진 묶음을 만드는 길 — 에이전트 gallery 와 같은 모양)
     const dropOn = (cIdx: number) => ({
       onDragOver: (e: React.DragEvent) => {
@@ -53,7 +57,7 @@ export const gridView = defineBlockView<ColumnsGridBlockDef>({
     return (
       <div
         className={`grid ${block.gap !== undefined ? "" : block.cardStyle === "plain" ? "gap-6" : "gap-4"} items-start w-full`}
-        style={{ gap: block.gap, gridTemplateColumns: block.widths.map((w) => (w.endsWith("fr") ? `minmax(0, ${w})` : w)).join(" ") }}
+        style={{ gap: block.gap, gridTemplateColumns: widths.map((w) => (w.endsWith("fr") ? `minmax(0, ${w})` : w)).join(" ") }}
       >
         {columns.map((col, cIdx) => (
           <div key={cIdx} className={cardClass} {...dropOn(cIdx)}>

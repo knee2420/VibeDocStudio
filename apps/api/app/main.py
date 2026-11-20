@@ -38,6 +38,7 @@ from app.reference import router as reference_router_module
 from app.resource.backdata import router as backdata_router_module
 from app.resource.index import router as knowledge_router_module
 from app.resource.ledger import router as resource_ledger_router_module
+from app.vault import router as vault_router_module
 
 #: (라우터 모듈, URL 접두사, 태그). 도메인을 추가하면 여기 한 줄만 늘린다.
 _DOMAIN_ROUTERS = (
@@ -55,6 +56,7 @@ _DOMAIN_ROUTERS = (
     (assistant_router_module, "/api/assistant", "assistant"),
     (harness_router_module, "/api/assistant", "authoring.harness"),
     (reference_router_module, "/api/reference", "reference"),
+    (vault_router_module, "/api/vaults", "vault"),
 )
 
 
@@ -106,6 +108,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         container.knowledge_jobs().start()  # 서버가 꺼지기 전에 돌던 색인 작업을 이어서 돌린다
         container.scaffold_jobs().start()  # 중단된 비동기 PDF 스캐폴딩 작업을 이어서 돌린다
         yield
+        container.vault_service().shutdown()
         container.scaffold_jobs().shutdown()
         container.knowledge_jobs().shutdown()
         # agy 상주 프로세스(Composer 세션 · 예열 풀)는 API 와 함께 내려간다.

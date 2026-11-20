@@ -1,0 +1,179 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import "tailwindcss";
+@import "@vibe/outliner/styles.css";
+@source "../../../packages";
+@source "../../../../VibePatchNote/packages/outliner/src";
+
+:root {
+  --pg-font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --pg-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  font-family: var(--pg-font-sans);
+}
+
+.font-code {
+  font-family: var(--pg-font-mono);
+}
+
+/* Obsidian Desktop Theme Tokens (_dissections/obsidian/01.layout_tokens.json) */
+.obs-theme-dark {
+  --obs-bg-primary: #1e1e1e;
+  --obs-bg-primary-alt: #242424;
+  --obs-bg-secondary: #262626;
+  --obs-bg-secondary-alt: #1a1a1a;
+  --obs-bg-tab-bar: #262626;
+  --obs-bg-hover: rgba(255, 255, 255, 0.067);
+  --obs-bg-active: rgba(255, 255, 255, 0.11);
+  --obs-bg-selected: rgba(138, 92, 245, 0.22);
+  --obs-bg-drop-overlay: rgba(138, 92, 245, 0.2);
+  --obs-border: #363636;
+  --obs-border-subtle: #2d2d2d;
+  --obs-indent-guide: rgba(255, 255, 255, 0.1);
+  --obs-indent-guide-active: rgba(255, 255, 255, 0.26);
+  --obs-text-normal: #dadada;
+  --obs-text-muted: #b3b3b3;
+  --obs-text-faint: #666666;
+  --obs-accent: #8a5cf5;
+  --obs-accent-hover: #a68af9;
+  --obs-danger: #fb464c;
+}
+
+.obs-theme-light {
+  --obs-bg-primary: #ffffff;
+  --obs-bg-primary-alt: #fafafa;
+  --obs-bg-secondary: #f6f6f6;
+  --obs-bg-secondary-alt: #ededed;
+  --obs-bg-tab-bar: #f2f2f2;
+  --obs-bg-hover: rgba(0, 0, 0, 0.055);
+  --obs-bg-active: rgba(0, 0, 0, 0.085);
+  --obs-bg-selected: rgba(124, 58, 237, 0.14);
+  --obs-bg-drop-overlay: rgba(124, 58, 237, 0.16);
+  --obs-border: #e0e0e0;
+  --obs-border-subtle: #ebebeb;
+  --obs-indent-guide: rgba(0, 0, 0, 0.1);
+  --obs-indent-guide-active: rgba(0, 0, 0, 0.28);
+  --obs-text-normal: #222222;
+  --obs-text-muted: #5c5c5c;
+  --obs-text-faint: #ababab;
+  --obs-accent: #7c3aed;
+  --obs-accent-hover: #6d28d9;
+  --obs-danger: #e93147;
+}
+
+/* @vibe/outliner adaptive Obsidian theme binding */
+.obs-outliner-surface {
+  --text-normal: var(--obs-text-normal);
+  --text-muted: var(--obs-text-muted);
+  --text-faint: var(--obs-text-faint);
+  --text-accent: var(--obs-accent);
+  --background-primary: var(--obs-bg-primary);
+  --background-secondary: var(--obs-bg-secondary);
+  --background-modifier-hover: var(--obs-bg-hover);
+  --background-modifier-border: var(--obs-border);
+  --background-modifier-border-hover: var(--obs-indent-guide-active);
+  --interactive-accent: var(--obs-accent);
+  --outline-line-gap: 4px;
+}
+
+/* @vibe/outliner 테마 변수 매핑 (v1-form-hub 호환) */
+.vdoc-outliner-theme {
+  --text-normal: #0f172a;
+  --text-muted: #475569;
+  --text-faint: #94a3b8;
+  --text-accent: #4f46e5;
+  --background-primary: #ffffff;
+  --background-secondary: #f8fafc;
+  --background-modifier-hover: rgba(15, 23, 42, 0.045);
+  --background-modifier-border: #e2e8f0;
+  --background-modifier-border-hover: #cbd5e1;
+  --interactive-accent: #4f46e5;
+  --outline-line-gap: 4px;
+}
+
+/* Tiptap Slot Rich-Text Typography inside @vibe/slot-canvas */
+.vdoc-tiptap-slot h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 0.35rem;
+}
+
+.vdoc-tiptap-slot h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 0.25rem;
+}
+
+.vdoc-tiptap-slot h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 0.2rem;
+}
+
+.vdoc-slot-editor,
+.vdoc-tiptap-slot,
+.vdoc-tiptap-slot.ProseMirror {
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+.vdoc-tiptap-slot p {
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
+  margin-top: 0 !important;
+  margin-bottom: 0.2rem;
+}
+
+.vdoc-tiptap-slot p:empty {
+  min-height: 0.45rem;
+}
+
+.vdoc-tiptap-slot p:last-child {
+  margin-bottom: 0 !important;
+}
+
+.vdoc-tiptap-slot ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.vdoc-tiptap-slot ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.vdoc-tiptap-slot code {
+  background: rgba(15, 23, 42, 0.08);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  font-family: var(--pg-font-mono);
+  font-size: 0.8em;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

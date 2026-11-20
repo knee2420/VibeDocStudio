@@ -16,6 +16,8 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 _DEFAULT_CORS_ORIGINS = [
     "http://localhost:5180",
     "http://127.0.0.1:5180",
+    "http://localhost:5181",
+    "http://127.0.0.1:5181",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
@@ -44,6 +46,9 @@ class Settings:
             data_dir=_optional_path("VIBE_DATA_DIR"),
             cache_dir=_optional_path("VIBE_CACHE_DIR"),
             state_dir=_optional_path("VIBE_STATE_DIR"),
+        )
+        self.vault_home_dir: Path = (
+            _optional_path("VIBE_VAULT_HOME") or (BASE_DIR.parent / "playground" / "data")
         )
         self.public_base_url: str = os.getenv(
             "VIBE_PUBLIC_BASE_URL", "http://localhost:8090"

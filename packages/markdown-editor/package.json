@@ -1,0 +1,35 @@
+{
+  "name": "@vibe/markdown-editor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Obsidian Tier-1 Markdown engine on CodeMirror 6 (Live Preview, Source, Reading, Frontmatter Properties, [[Wikilinks]], Callouts, Transclusion Embeds)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./core": "./src/core/index.ts",
+    "./ui": "./src/ui/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "lint": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\oxlint.CMD src",
+    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/markdown-editor.test.ts"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/commands": "^6.11.0",
+    "@codemirror/lang-markdown": "^6.5.2",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/search": "^6.7.2",
+    "@codemirror/state": "^6.7.4",
+    "@codemirror/view": "^6.43.11",
+    "@lezer/highlight": "^1.2.3",
+    "@lezer/markdown": "^1.7.2",
+    "@vibe/vault-core": "workspace:*",
+    "lucide-react": "^0.475.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

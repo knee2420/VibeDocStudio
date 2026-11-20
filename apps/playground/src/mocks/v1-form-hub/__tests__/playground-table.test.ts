@@ -8,20 +8,20 @@ import {
   computeSourceHash,
   parseThreeRuleTextToNodes,
   serializeNodesToOutlineText,
-} from "../src/pages/playground-page/model/aiTableCompiler";
-import { extractPhase2Links, resolveNodesForLinkedDoc } from "../src/pages/playground-page/model/documentLinkParser";
+} from "../model/aiTableCompiler";
+import { extractPhase2Links, resolveNodesForLinkedDoc } from "../model/documentLinkParser";
 import {
   BLOCK_ASSET_CATALOG,
   buildAssetTemplatePreviewTable,
   buildDynamicTableVariantBlock,
-} from "../src/pages/playground-page/model/formAssets";
+} from "../model/formAssets";
 import {
   compilePlaygroundToVDoc,
   tableBlockToPlaygroundNodes,
-} from "../src/pages/playground-page/model/playgroundCompiler";
-import { clonePlaygroundPreset } from "../src/pages/playground-page/model/presets";
-import type { BlockVariantId } from "../src/pages/playground-page/model/types";
-import { usePlaygroundStore } from "../src/pages/playground-page/model/usePlaygroundStore";
+} from "../model/playgroundCompiler";
+import { clonePlaygroundPreset } from "../model/presets";
+import type { BlockVariantId } from "../model/types";
+import { usePlaygroundStore } from "../model/usePlaygroundStore";
 
 function findTableBlock(
   doc: ReturnType<typeof compilePlaygroundToVDoc>["doc"],

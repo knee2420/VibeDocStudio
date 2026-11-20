@@ -1,0 +1,12 @@
+{
+  "plugins": [
+    "react",
+    "typescript",
+    "oxc",
+    "import"
+  ],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "import/no-cycle": "error"
+  }
+}

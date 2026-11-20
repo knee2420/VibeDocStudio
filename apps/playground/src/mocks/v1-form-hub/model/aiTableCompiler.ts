@@ -1,5 +1,5 @@
 import { AssistantClient, type ContextRef } from "@vibe/ai-kernel";
-import { env } from "../../../shared/config/env";
+import { env } from "../../../config/env";
 import { parseContainerDirective, stripLinkTags } from "./documentLinkParser";
 import { type BlockAssetMeta, parseThreeRuleTextToNodes } from "./formAssets";
 import type { PlaygroundNode } from "./types";

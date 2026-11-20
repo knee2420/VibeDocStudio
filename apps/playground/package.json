@@ -1,0 +1,39 @@
+{
+  "name": "@vibe/playground",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5181",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 5181",
+    "typecheck": "tsc --noEmit",
+    "lint": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\oxlint.CMD -c .oxlintrc.json src",
+    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test src/mocks/v1-form-hub/__tests__/playground-table.test.ts src/mocks/v2-ide/__tests__/v2-ide-integration.test.ts src/mocks/v2-ide/__tests__/v2-ide-perf.test.ts"
+  },
+  "dependencies": {
+    "@vibe/ai-kernel": "workspace:*",
+    "@vibe/file-explorer": "workspace:*",
+    "@vibe/markdown-editor": "workspace:*",
+    "@vibe/outliner": "workspace:*",
+    "@vibe/slot-canvas": "workspace:*",
+    "@vibe/slot-editor": "workspace:*",
+    "@vibe/vault-core": "workspace:*",
+    "@vibe/vdoc-schema": "workspace:*",
+    "@vibe/workspace-layout": "workspace:*",
+    "lucide-react": "^0.475.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0"
+  }
+}
