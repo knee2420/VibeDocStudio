@@ -8,11 +8,20 @@ import {
   type ElementSyntaxRule,
 } from "@vibe/vdoc-schema";
 import {
-  NAVER_TRAVEL_BLOG_PACK,
+  STANDARD_BASE_STYLE_PACK,
   isValidStylePack,
   type StylePack,
 } from "@vibe/style-core";
 import { matchesCompoundExtension } from "@vibe/vault-core";
+
+export const VAULT_SYSTEM_DIR = ".vibedoc";
+export const STANDARD_SYNTAX_PATH = `${VAULT_SYSTEM_DIR}/element-registry.vsyntax`;
+export const STANDARD_STYLE_PATH = `${VAULT_SYSTEM_DIR}/standard.vstyle`;
+
+export function isSystemSettingsPath(path: string): boolean {
+  const norm = path.replace(/\\/g, "/").replace(/^\/+/, "");
+  return norm === VAULT_SYSTEM_DIR || norm.startsWith(`${VAULT_SYSTEM_DIR}/`);
+}
 
 export function isSyntaxPath(path: string): boolean {
   return matchesCompoundExtension(path, "vsyntax");
@@ -81,12 +90,17 @@ export function createDefaultStylePackJson(title: string): string {
       .replace(/[^a-z0-9가-힣]+/g, "-")
       .replace(/^-+|-+$/g, "") || `style-${Date.now().toString(36)}`;
   return serializeStylePack({
-    ...JSON.parse(JSON.stringify(NAVER_TRAVEL_BLOG_PACK)),
+    ...JSON.parse(JSON.stringify(STANDARD_BASE_STYLE_PACK)),
     id: slug,
     name: title,
-    description: `${title} 커스텀 그리드 스타일 팩`,
+    genre: "custom",
+    description: `${title} — 표준 사양 기반 개별 적용 스타일`,
     sourceRef: undefined,
   });
+}
+
+export function createStandardBaseStyleJson(): string {
+  return serializeStylePack(JSON.parse(JSON.stringify(STANDARD_BASE_STYLE_PACK)) as StylePack);
 }
 
 export function createDefaultSyntaxJson(title: string): string {
@@ -168,9 +182,9 @@ export interface SettingsGroupMeta {
 }
 
 export const SETTINGS_GROUPS: readonly SettingsGroupMeta[] = [
-  { id: "options", label: "옵션", order: 1 },
+  { id: "options", label: "옵션 (표준 사양)", order: 1 },
   { id: "elements", label: "요소 규격 (.vsyntax)", order: 2 },
-  { id: "styles", label: "스타일 팩 (.vstyle)", order: 3 },
+  { id: "styles", label: "개별 적용 스타일 (.vstyle)", order: 3 },
   { id: "ai-harness", label: "AI & 하네스", order: 4 },
 ];
 

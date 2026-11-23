@@ -94,6 +94,22 @@ export const DEFAULT_TABLE_ELEMENT_DEF: ElementSyntaxDefinition = {
       description: "위쪽 칸과 병합 (rowspan 확장)",
       options: { mergeDir: "up" },
     },
+    {
+      id: "cell-container",
+      symbol: "<<cell>>",
+      primitive: "frame",
+      position: "bracket",
+      description: "복합 컨테이너 셀 (하위 트리 전체를 셀 내부 블록으로 재귀 배치)",
+      options: { container: "cell" },
+    },
+    {
+      id: "row-container",
+      symbol: "<<row>>",
+      primitive: "stack",
+      position: "prefix",
+      description: "다중 복합 셀 행 (| 없이 하위 <<cell>> 들을 한 행으로 묶음)",
+      options: { container: "row" },
+    },
   ],
 };
 
@@ -192,6 +208,34 @@ export const DEFAULT_SECTION_ELEMENT_DEF: ElementSyntaxDefinition = {
       primitive: "accent",
       position: "inline",
       description: "본문 인라인 형광펜 강조 (==텍스트==)",
+    },
+    {
+      id: "form-title",
+      symbol: "<<view:title>>",
+      primitive: "accent",
+      position: "prefix",
+      description: "문서·서식 상단 제목 블록",
+    },
+    {
+      id: "list-view",
+      symbol: "<<view:list>>",
+      primitive: "stack",
+      position: "prefix",
+      description: "항목 목록 컨테이너 (글머리 기호 모양은 .vstyle · 인스펙터에서 지정)",
+    },
+    {
+      id: "columns-container",
+      symbol: "<<view:columns>>",
+      primitive: "split",
+      position: "prefix",
+      description: "다단 컨테이너 (하위 <<col>> 블록들을 가로 다단 배치, 열 비율은 인스펙터에서 지정)",
+    },
+    {
+      id: "col-container",
+      symbol: "<<col>>",
+      primitive: "frame",
+      position: "prefix",
+      description: "다단 컬럼 컨테이너 (하위 트리 전체를 해당 열 내부 블록으로 재귀 배치)",
     },
   ],
 };

@@ -1,12 +1,20 @@
 import type { StylePack } from "../core/token-contract";
 import { GOV_RFP_PACK } from "./gov-rfp";
 import { NAVER_TRAVEL_BLOG_PACK } from "./naver-travel-blog";
+import { STANDARD_BASE_STYLE_PACK } from "./standard-base";
 import { YESFORM_OFFICIAL_PACK } from "./yesform-official";
 import { YONHAP_NEWS_PACK } from "./yonhap-news";
 
-export { GOV_RFP_PACK, NAVER_TRAVEL_BLOG_PACK, YESFORM_OFFICIAL_PACK, YONHAP_NEWS_PACK };
+export {
+  GOV_RFP_PACK,
+  NAVER_TRAVEL_BLOG_PACK,
+  STANDARD_BASE_STYLE_PACK,
+  YESFORM_OFFICIAL_PACK,
+  YONHAP_NEWS_PACK,
+};
 
 export const BUILTIN_STYLE_PACKS: readonly StylePack[] = [
+  STANDARD_BASE_STYLE_PACK,
   NAVER_TRAVEL_BLOG_PACK,
   YONHAP_NEWS_PACK,
   YESFORM_OFFICIAL_PACK,

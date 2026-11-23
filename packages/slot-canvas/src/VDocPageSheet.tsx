@@ -361,8 +361,69 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     );
   };
 
-  const cellSlot = (cell: TableCellLike, hAlignClass: string) =>
-    renderSlotBox(cell.slotId, {
+  const renderNestedBlocks = (nestedBlocks: readonly LayoutBlock[]) => (
+    <div className="flex w-full flex-col gap-2 text-left">
+      {nestedBlocks.map((nested) => {
+        const model = getBlockKind(nested.kind);
+        return (
+          <div
+            key={nested.blockId}
+            data-nested-block-id={nested.blockId}
+            className="min-w-0 w-full"
+            onClick={(e) => {
+              if (!editable) return;
+              e.stopPropagation();
+              onSelectBlock?.(nested.blockId);
+            }}
+          >
+            <BaseBlockWrapper
+              block={nested}
+              editable={editable}
+              selected={selectedBlockId === nested.blockId}
+              editing={Boolean(
+                selectedSlotId &&
+                  activeBlockId === nested.blockId &&
+                  selectedBlockId !== nested.blockId
+              )}
+              resizable={Boolean(model.layout?.resizable)}
+              hasOwnGrip={Boolean(model.layout?.ownGrip)}
+              locked={isBlockLocked(nested, slots)}
+              onSelectBlock={(id) => onSelectBlock?.(id)}
+              dropEdge={null}
+              canMoveUp={false}
+              canMoveDown={false}
+              onMoveUp={() => {}}
+              onMoveDown={() => {}}
+              onCopy={onCopyBlock ? () => onCopyBlock(page.pageId, nested.blockId) : undefined}
+              onToggleLock={() => onToggleBlockLock?.(page.pageId, nested.blockId)}
+              onDelete={() => onDeleteBlock(page.pageId, nested.blockId)}
+            >
+              {renderBlockBody(nested)}
+            </BaseBlockWrapper>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const cellSlot = (cell: TableCellLike, hAlignClass: string) => {
+    if (cell.blocks && cell.blocks.length > 0) {
+      return (
+        <div
+          className={`w-full ${hAlignClass}`}
+          style={{
+            fontSize: cell.fontSize,
+            lineHeight: cell.lineHeight,
+            color: cell.color,
+            fontWeight: cell.fontWeight,
+            fontFamily: cell.fontFamily,
+          }}
+        >
+          {renderNestedBlocks(cell.blocks)}
+        </div>
+      );
+    }
+    return renderSlotBox(cell.slotId, {
       variant: "cell",
       className: hAlignClass,
       compact: Boolean(cell.compact || cell.padding),
@@ -375,6 +436,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         textAlign: cell.hAlign as React.CSSProperties["textAlign"],
       },
     });
+  };
 
   /** 블록 뷰에 넘기는 공통 연결 — 뷰는 이것만 보고 몸통을 그린다 (`block-views`). */
   const renderContext = (block: LayoutBlock): BlockRenderContext => ({
@@ -384,6 +446,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     selectedBlockId: selectedBlockId ?? null,
     selectedSlotId,
     renderSlot: renderSlotBox,
+    renderNestedBlocks,
     renderSummary,
     tableBindings: (sectionId) => ({
       editable,
@@ -625,16 +688,33 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   renderRef.current = renderFramedOrFlowBlock;
   const renderBlock = useCallback((block: LayoutBlock, bIdx: number) => renderRef.current(block, bIdx), []);
 
+  const containsBlockId = (blk: LayoutBlock, targetId: string | null | undefined): boolean => {
+    if (!targetId) return false;
+    if (blk.blockId === targetId) return true;
+    if (blk.kind === "structured-table") {
+      return blk.rows.some((r) =>
+        r.cells.some((c) => Boolean(c.blocks?.some((nb) => containsBlockId(nb, targetId))))
+      );
+    }
+    if (blk.kind === "columns-grid" && blk.columns) {
+      return blk.columns.some((col) =>
+        Boolean(col.blocks?.some((nb) => containsBlockId(nb, targetId)))
+      );
+    }
+    return false;
+  };
+
   /** 블록에 관계있는 선택만 남긴 렌더 입력. */
   const pageBlock = (block: LayoutBlock, bIdx: number) => {
     const ids = blockSlotIdsOf(block);
     const inBlock = (id: string | null | undefined) => (id && ids.includes(id) ? id : "");
     const composerHere = inBlock(composerOpenSlotId);
+    const selectedInside = containsBlockId(block, selectedBlockId) ? (selectedBlockId ?? "") : "";
     const sig = [
       editable ? 1 : 0,
       inBlock(selectedSlotId),
       composerHere,
-      selectedBlockId === block.blockId ? 1 : 0,
+      selectedInside,
       dropTarget?.blockId === block.blockId ? dropTarget.edge : "",
       page.blocks.length,
       docStyle ? `${docStyle.resolvedPack.packId}:${docStyle.resolvedPack.mode}:${docStyle.pack.updatedAt ?? ""}` : "",

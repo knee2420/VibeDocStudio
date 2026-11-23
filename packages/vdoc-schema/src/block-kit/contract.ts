@@ -92,6 +92,56 @@ export interface BlockOutlineContext {
   tidyName(text: string | undefined): string;
 }
 
+/**
+ * `.outline` 태그와 1:1 대칭되는 피그마식 2D Scene Graph 노드 역할.
+ * 캔버스에 존재하는 모든 블록·행·셀·컬럼·슬롯·미디어를 누락 없이 재귀 트리로 컴파일한다.
+ */
+export type SceneGraphNodeRole =
+  | "block"
+  | "row"
+  | "cell"
+  | "column"
+  | "slot"
+  | "media";
+
+export interface SceneGraphNode {
+  readonly id: string;
+  readonly role: SceneGraphNodeRole;
+  /** 1:1 대칭되는 `.outline` 태그 (예: `<<view:table:header>>`, `<<row>>`, `<<cell>>`, `<<view:list>>`, `[img]`). */
+  readonly outlineTag?: string;
+  /** 레이어 트리에 표시되는 사람 친화적 이름. */
+  readonly label: string;
+  /** 아이콘 힌트 (`table`, `rows`, `square`, `columns-2`, `image`, `list`, `type`, `heading`, `message-square-quote`, `link`, `minus`, 등). */
+  readonly icon: string;
+  /** 보조 메타 배지 (예: `2D`, `18:82`, `2:1`, `8항목`, `Header`). */
+  readonly badge?: string;
+  /** 클릭 시 2D 캔버스·인스펙터에서 선택할 대상 `blockId`. */
+  readonly selectBlockId: string;
+  /** 클릭 시 포커스할 대상 `slotId` (단순 텍스트 셀·슬롯일 때). */
+  readonly selectSlotId?: string;
+  /** 좌측 `.outline` 과 양방향 역추적할 원본 불릿 ID. */
+  readonly sourceNodeId?: string;
+  /** 독립 블록 여부 (`true` 면 레이어에서 직접 잠금·숨김·인스펙터 조작 가능). */
+  readonly isBlock?: boolean;
+  readonly locked?: boolean;
+  readonly hidden?: boolean;
+  readonly active?: boolean;
+  readonly children?: readonly SceneGraphNode[];
+}
+
+export interface SceneGraphCompileContext {
+  readonly slots: Record<string, VDocSlot>;
+  readonly selectedBlockId: string | null;
+  readonly selectedSlotId: string | null;
+  readonly hiddenBlockIds: ReadonlySet<string>;
+  /** 중첩 `LayoutBlock` 을 자기 자신의 `BlockModelDefinition` 을 통해 자동 재귀 컴파일한다. */
+  readonly compileBlock: (block: LayoutBlock) => SceneGraphNode;
+  /** 지정 슬롯의 HTML 에서 평문 미리보기를 추출한다. */
+  readonly plainText: (slotId: string | undefined) => string;
+  /** `.vsyntax` 레지스트리에서 동적 기호를 조회한다 (없으면 기본 기호 폴백). */
+  readonly resolveTag: (elementId: string, ruleId: string, fallback: string) => string;
+}
+
 export interface BlockModelDefinition<B extends LayoutBlock = LayoutBlock> {
   /** 이 정의가 맡는 종류들 (같은 모양의 별칭 포함: `structured-table` · `table`). */
   kinds: readonly string[];
@@ -100,12 +150,16 @@ export interface BlockModelDefinition<B extends LayoutBlock = LayoutBlock> {
   category: BlockCategory;
   /** lucide 아이콘 이름 힌트 (화면이 해석). */
   icon: string;
+  /** `.outline` 태그 1:1 매핑 (고정 문자열 또는 블록 상태 기반 함수). */
+  outlineTag?: string | ((block: B, slots: Record<string, VDocSlot>) => string);
   /** 렌더하는 모든 slotId, 읽는 순서대로. */
   slotIds(block: B): string[];
   /** 선택 단위. 생략하면 slotIds 를 slot 단위로. */
   units?(block: B): BlockUnit[];
   /** 아웃라이너 노드. 생략하면 슬롯 하나는 그 슬롯, 여럿이면 컨테이너 + 슬롯들. */
   outline?(block: B, ctx: BlockOutlineContext): void;
+  /** 피그마식 2D Scene Graph 노드 컴파일러. 생략하면 `block-kit` 기본 규칙으로 자동 컴파일된다. */
+  sceneNode?(block: B, ctx: SceneGraphCompileContext): SceneGraphNode;
   /** 블록 안의 표들 (표 명령 · AI 표 위치). */
   tables?(block: B): BlockTable[];
   /** 구역(sectionId)의 표를 바꾼 새 블록. `tables` 가 있으면 함께 둔다. */

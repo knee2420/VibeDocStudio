@@ -1,18 +1,119 @@
-import type { ColumnsGridBlockDef } from "../../types";
-import type { BlockUnit } from "../contract";
+import { isBlockLocked } from "../../block-ops";
+import type { ColumnsGridBlockDef, GridColumnDef, LayoutBlock } from "../../types";
+import type { BlockUnit, SceneGraphNode } from "../contract";
 import { defineBlockKind } from "../contract";
+import { getBlockKind } from "../registry";
 import { makeSlot, outlineSlotGroup } from "./shared";
 
-const gridSlotIds = (b: ColumnsGridBlockDef) =>
-  b.columns ? b.columns.flatMap((c) => (c.slotId ? [c.slotId] : [])) : (b.slotIds ?? []);
+const nestedGridBlockSlotIds = (blocks: readonly LayoutBlock[] | undefined): string[] =>
+  blocks && blocks.length > 0 ? blocks.flatMap((nb) => getBlockKind(nb.kind).slotIds(nb)) : [];
 
-/** 다단 그리드 — 칸마다 슬롯 또는 이미지(로고). */
+const gridSlotIds = (b: ColumnsGridBlockDef) =>
+  b.columns
+    ? b.columns.flatMap((c) => [
+        ...(c.slotId ? [c.slotId] : []),
+        ...nestedGridBlockSlotIds(c.blocks),
+      ])
+    : (b.slotIds ?? []);
+
+function formatGridRatioBadge(widths: readonly string[]): string | undefined {
+  if (!widths || widths.length < 2) return undefined;
+  const frs = widths.map((w) => (/^(\d+(?:\.\d+)?)fr$/i.exec(w.trim())?.[1] ?? null));
+  if (frs.every(Boolean)) {
+    return frs.join(":");
+  }
+  return `${widths.length}단`;
+}
+
+/** 다단 그리드 — 칸마다 슬롯 또는 이미지 또는 재귀 중첩 블록. */
 export const gridBlock = defineBlockKind<ColumnsGridBlockDef>({
   kinds: ["columns-grid"],
   label: "다단 그리드",
   category: "layout",
   icon: "columns-2",
+  outlineTag: (b) => {
+    const cols = b.columns ?? [];
+    if (cols.length > 0 && cols.every((c) => Boolean(c.blocks?.length))) {
+      return "<<view:columns>>";
+    }
+    if (cols.length > 0 && cols.every((c) => Boolean(c.image))) {
+      return "[img] | [img]";
+    }
+    return "|";
+  },
   slotIds: gridSlotIds,
+  sceneNode: (b, ctx) => {
+    const colTag = ctx.resolveTag("section", "col-container", "<<col>>");
+    const imgTag = ctx.resolveTag("section", "image-slot", "[img]");
+    const cols: GridColumnDef[] =
+      b.columns ?? (b.slotIds ?? []).map((slotId): GridColumnDef => ({ slotId }));
+    const locked = isBlockLocked(b, ctx.slots);
+    const hidden = ctx.hiddenBlockIds.has(b.blockId);
+
+    const colNodes: SceneGraphNode[] = cols.map((col, cIdx) => {
+      if (col.blocks && col.blocks.length > 0) {
+        const nested = col.blocks.map((nb) => ctx.compileBlock(nb));
+        return {
+          id: `${b.blockId}_col_${cIdx + 1}`,
+          role: "column",
+          outlineTag: colTag,
+          label: `${cIdx + 1}열`,
+          icon: "square",
+          badge: b.widths[cIdx],
+          selectBlockId: b.blockId,
+          children: nested,
+        };
+      }
+      if (col.image) {
+        return {
+          id: `${b.blockId}:col${cIdx}`,
+          role: "media",
+          outlineTag: imgTag,
+          label: col.image.alt || `${cIdx + 1}열 이미지`,
+          icon: "image",
+          badge: b.widths[cIdx],
+          selectBlockId: b.blockId,
+        };
+      }
+      const sid = col.slotId;
+      const plain = ctx.plainText(sid);
+      const slot = sid ? ctx.slots[sid] : undefined;
+      return {
+        id: sid || `${b.blockId}_col_${cIdx + 1}`,
+        role: "slot",
+        label: plain ? plain.slice(0, 36) : slot?.label || `${cIdx + 1}열`,
+        icon: "type",
+        badge: b.widths[cIdx],
+        selectBlockId: b.blockId,
+        selectSlotId: sid,
+        locked: Boolean(slot?.constraints?.locked),
+        active: Boolean(sid && sid === ctx.selectedSlotId),
+      };
+    });
+
+    const isNestedContainer = cols.length > 0 && cols.every((c) => Boolean(c.blocks?.length));
+    const isPhotoStrip = cols.length > 0 && cols.every((c) => Boolean(c.image));
+
+    return {
+      id: b.blockId,
+      role: "block",
+      outlineTag: isNestedContainer
+        ? ctx.resolveTag("section", "columns-container", "<<view:columns>>")
+        : isPhotoStrip
+          ? `${imgTag} | ${imgTag}`
+          : ctx.resolveTag("section", "horizontal-split", "|"),
+      label: b.title || (isPhotoStrip ? `사진 스트립 (${cols.length}장)` : `다단 (${cols.length}단)`),
+      icon: "columns-2",
+      badge: b.frame ? "2D" : formatGridRatioBadge(b.widths),
+      selectBlockId: b.blockId,
+      sourceNodeId: b.sourceNodeId,
+      isBlock: true,
+      locked,
+      hidden,
+      active: b.blockId === ctx.selectedBlockId,
+      children: colNodes,
+    };
+  },
   units: (b) => {
     if (!b.columns) return (b.slotIds ?? []).map((slotId) => ({ unitId: slotId, kind: "slot" as const, slotId }));
     return b.columns.flatMap((col, i): BlockUnit[] =>

@@ -1,4 +1,18 @@
 import type { OutlineNode, ViewMode } from "@vibe/outliner";
+import { type VaultPort, type VaultRenameRewriter } from "@vibe/vault-core";
+import { rewriteVaultUriPrefix, toVaultUri } from "./vdocCodec";
+
+/** 1:N 마스터 `.outline` 안의 특정 지시어 노드(`nodeId`)와 바인딩된 `.vdoc` 포인터. */
+export interface OutlineDocBinding {
+  /** 바인딩된 `.vdoc` 의 불변 고유 ID (`VDocDocument.docId`). 파일·폴더 이동 시 경로 자가 치유에 사용된다. */
+  readonly docId?: string;
+  /** 볼트 내 `.vdoc` 포인터 (예: `"vault://워크샵/블로그_후기.vdoc"`). */
+  readonly vdocPath: string;
+  /** 바인딩 당시 문서 프로파일 ID (예: `"blog"`, `"a4"`, `"web"`). */
+  readonly profileId?: string;
+  /** 마지막 동기화 시각 (ISO 8601). */
+  readonly lastSyncedAt?: string;
+}
 
 /** `.outline` 파일 (불릿 트리 문서) 의 저장 형식 */
 export interface OutlineFilePayload {
@@ -8,6 +22,8 @@ export interface OutlineFilePayload {
   defaultView: ViewMode;
   createdAt?: string;
   updatedAt?: string;
+  /** 불변 `nodeId -> .vdoc 바인딩` 맵 (1개 `.outline` 에 N개 `.vdoc` 문서 연결 가능). */
+  docBindings?: Record<string, OutlineDocBinding>;
   rootNodes: OutlineNode[];
 }
 
@@ -15,6 +31,10 @@ export function parseOutlineJson(raw: string, fallbackTitle: string): OutlineFil
   try {
     const parsed = JSON.parse(raw) as Partial<OutlineFilePayload>;
     if (Array.isArray(parsed.rootNodes)) {
+      const docBindings =
+        parsed.docBindings && typeof parsed.docBindings === "object"
+          ? parsed.docBindings
+          : undefined;
       return {
         version: typeof parsed.version === "number" ? parsed.version : 1,
         id: typeof parsed.id === "string" ? parsed.id : `outline-${Date.now()}`,
@@ -22,6 +42,7 @@ export function parseOutlineJson(raw: string, fallbackTitle: string): OutlineFil
         defaultView: parsed.defaultView === "board" ? "board" : "bullets",
         createdAt: parsed.createdAt,
         updatedAt: parsed.updatedAt,
+        ...(docBindings && Object.keys(docBindings).length > 0 ? { docBindings } : {}),
         rootNodes: parsed.rootNodes,
       };
     }
@@ -42,6 +63,10 @@ export function parseOutlineJson(raw: string, fallbackTitle: string): OutlineFil
       },
     ],
   };
+}
+
+export function serializeOutlineJson(payload: OutlineFilePayload): string {
+  return JSON.stringify(payload, null, 2);
 }
 
 function randomNodeId(): string {
@@ -72,3 +97,56 @@ export function createDefaultOutlineJson(title: string): string {
 export function isOutlinePath(path: string): boolean {
   return /\.outline$/i.test(path);
 }
+
+/**
+ * Vault 내 `.vdoc` 파일 또는 상위 폴더가 이름변경/이동되었을 때 모든 `.outline` 파일의
+ * `docBindings[*].vdocPath` (`vault://<oldPath>` 및 하위 경로) 포인터를 자동 갱신한다.
+ */
+export const rewriteOutlineBindingsOnRename: VaultRenameRewriter = (
+  vault: VaultPort,
+  oldPath: string,
+  newPath: string
+) => {
+  const oldUri = toVaultUri(oldPath);
+  const updatedFiles: string[] = [];
+  let totalReplacements = 0;
+
+  for (const node of vault.listAll()) {
+    if (node.kind !== "file" || !isOutlinePath(node.path)) continue;
+    const raw = vault.read(node.path);
+    if (!raw.includes(oldUri)) continue;
+
+    try {
+      const payload = parseOutlineJson(raw, node.stem);
+      if (!payload.docBindings) continue;
+      let fileReplacements = 0;
+      const nextBindings: Record<string, OutlineDocBinding> = {};
+
+      for (const [nodeId, binding] of Object.entries(payload.docBindings)) {
+        const rewritten = rewriteVaultUriPrefix(binding.vdocPath, oldPath, newPath);
+        if (rewritten !== binding.vdocPath) {
+          fileReplacements += 1;
+          nextBindings[nodeId] = { ...binding, vdocPath: rewritten };
+        } else {
+          nextBindings[nodeId] = binding;
+        }
+      }
+
+      if (fileReplacements > 0) {
+        vault.write(
+          node.path,
+          serializeOutlineJson({
+            ...payload,
+            docBindings: nextBindings,
+          })
+        );
+        updatedFiles.push(node.path);
+        totalReplacements += fileReplacements;
+      }
+    } catch {
+      // Skip malformed outline safely
+    }
+  }
+
+  return { updatedFiles, totalReplacements };
+};

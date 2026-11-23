@@ -37,6 +37,11 @@ export interface IdeEditorEnv {
   readonly vault: VaultPort;
   readonly metadataCache: VaultMetadataCache;
   readonly vdocUiBridge: VDocUiBridgeStore;
+  /** 같은 Chrome 스타일 그룹 탭에 추가하고 페어 뷰 슬롯을 치환해 연다. */
+  readonly openInPairTabGroup?: (
+    targetPath: string,
+    options?: { readonly sourceTabId?: string; readonly sourcePath?: string }
+  ) => void;
   readonly openImportReferenceModal?: (replaceRefPath?: string) => void;
   readonly startAsyncUrlRefImport?: (opts: {
     readonly url: string;
@@ -107,6 +112,17 @@ const OutlinerAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }
         vault={host.env.vault}
         path={host.path}
         openFile={(target) => host.openLink(target, "split-right")}
+        openLink={(target, mode) => host.openLink(target, mode ?? "split-right")}
+        openInPairGroup={(target) => {
+          if (host.env.openInPairTabGroup) {
+            host.env.openInPairTabGroup(target, {
+              sourceTabId: host.tabId,
+              sourcePath: host.path,
+            });
+          } else {
+            host.openLink(target, "split-right");
+          }
+        }}
       />
     </LazyVaultFileGate>
   ),

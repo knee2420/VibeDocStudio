@@ -12,6 +12,7 @@ export const textView = defineBlockView<TextBlockDef>({
       ? resolveTextRoleStyle(docStyle.resolvedPack, "body", "text", undefined, block.styleOverrides)
       : null;
     const effectiveAlign = block.align ?? role?.align;
+    const effectiveListMarker = block.listMarker ?? role?.listMarker ?? "disc";
     const alignClass =
       effectiveAlign === "right"
         ? "text-right"
@@ -23,6 +24,7 @@ export const textView = defineBlockView<TextBlockDef>({
 
     return (
       <div
+        data-list-marker={effectiveListMarker}
         style={
           role
             ? {

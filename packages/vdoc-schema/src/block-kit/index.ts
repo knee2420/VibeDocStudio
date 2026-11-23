@@ -41,3 +41,4 @@ for (const def of BUILTIN_BLOCK_KINDS) registerBlockKind(def as never);
 
 export * from "./contract";
 export * from "./registry";
+export * from "./scene-graph";

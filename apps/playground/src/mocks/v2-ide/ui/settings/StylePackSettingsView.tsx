@@ -9,6 +9,7 @@ import {
   resolveTextRoleStyle,
   type FrameOrnamentKind,
   type GridAlign,
+  type StyleListMarker,
   type StylePack,
 } from "@vibe/style-core";
 import type { VaultPort } from "@vibe/vault-core";
@@ -29,6 +30,14 @@ const ALIGN_OPTIONS: readonly { value: GridAlign; label: string }[] = [
   { value: "left", label: "좌측" },
   { value: "center", label: "중앙" },
   { value: "right", label: "우측" },
+];
+
+const LIST_MARKER_STYLE_OPTIONS: readonly { value: StyleListMarker; label: string }[] = [
+  { value: "disc", label: "• 채운 원" },
+  { value: "circle", label: "◦ 빈 원" },
+  { value: "square", label: "▪ 사각" },
+  { value: "dash", label: "- 대시" },
+  { value: "decimal", label: "1. 번호" },
 ];
 
 const ORNAMENT_OPTIONS: readonly { value: FrameOrnamentKind; label: string }[] = [
@@ -400,6 +409,24 @@ export const StylePackSettingsView: React.FC<StylePackSettingsViewProps> = ({
                       styles: {
                         ...prev.styles,
                         text: { ...prev.styles.text, body: { ...bodyDef, color } },
+                      },
+                    }))
+                  }
+                />
+              </SettingRow>
+              <SettingRow
+                title="목록 글머리 기호 (<<view:list>>)"
+                description="블로그는 채운 원(•), 공식 서식·제안요청서는 빈 원(◦)이 표준입니다."
+              >
+                <SegmentedControl
+                  value={previewData.body.listMarker}
+                  options={LIST_MARKER_STYLE_OPTIONS}
+                  onChange={(listMarker) =>
+                    commitPack((prev) => ({
+                      ...prev,
+                      styles: {
+                        ...prev.styles,
+                        text: { ...prev.styles.text, body: { ...bodyDef, listMarker } },
                       },
                     }))
                   }

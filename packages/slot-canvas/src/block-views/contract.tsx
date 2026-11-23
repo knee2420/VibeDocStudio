@@ -31,6 +31,7 @@ export interface TableCellLike {
   fontWeight?: string;
   hAlign?: string;
   fontFamily?: string;
+  blocks?: LayoutBlock[];
 }
 
 export interface SummaryLike {
@@ -62,6 +63,8 @@ export interface BlockRenderContext {
   selectedSlotId: string | null;
   /** 슬롯 하나 (리치텍스트 편집기 + 인라인 AI 작성기). 선택 단위 표시를 함께 붙인다. */
   renderSlot(slotId: string, options?: SlotBoxOptions): React.ReactNode;
+  /** 셀·칼럼 컨테이너 내부의 재귀 블록 목록을 페이지 본문과 동일한 렌더러로 그린다. */
+  renderNestedBlocks(blocks: readonly LayoutBlock[]): React.ReactNode;
   /** 라벨 · 값 요약 줄 (표 아래 합계 · 요약 목록). */
   renderSummary(summary: SummaryLike, spacing: string): React.ReactNode;
   /** 이 블록의 표(sectionId: 구역, 단일 표는 null)에 쓸 연결. */

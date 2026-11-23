@@ -54,5 +54,7 @@ export interface BaseLayoutBlock {
   styleKey?: string;
   /** Figma-style Instance Override delta applied on top of the active StylePack. */
   styleOverrides?: StyleOverrideDelta;
+  /** Immutable OutlineNode.id provenance pointer for non-destructive `.outline` ↔ `.vdoc` sync. */
+  sourceNodeId?: string;
 }
 

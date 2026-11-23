@@ -33,7 +33,8 @@ describe("@vibe/style-core — Registry CRUD, Alias Resolver & 4-Tier Cascade", 
 
   it("supports full CRUD lifecycle, JSON import/export, Reset Overrides, and Push Override to Pack", () => {
     const reg = createStylePackRegistry(BUILTIN_STYLE_PACKS);
-    assert.equal(reg.list().length, 4);
+    assert.equal(reg.list().length, 5);
+    assert.ok(reg.get("standard-base"));
     assert.ok(reg.get("naver-travel-blog"));
     assert.ok(reg.get("yonhap-news"));
     assert.ok(reg.get("yesform-official"));

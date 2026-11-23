@@ -8,6 +8,7 @@ export const linkCardBlock = defineBlockKind<LinkCardBlockDef>({
   label: "링크 카드",
   category: "media",
   icon: "link",
+  outlineTag: "[cta]",
   slotIds: (b) => (b.slotId ? [b.slotId] : []),
   units: (b) => [
     ...(b.thumbnail ? [{ unitId: `${b.blockId}:thumb`, kind: "media" as const, label: "링크 카드 썸네일" }] : []),

@@ -132,6 +132,19 @@ function filterTreeByQuery(
   return result;
 }
 
+function stripHiddenDotEntries(nodes: readonly VaultTreeNode[]): VaultTreeNode[] {
+  const visible: VaultTreeNode[] = [];
+  for (const item of nodes) {
+    if (item.node.name.startsWith(".")) continue;
+    visible.push(
+      item.node.kind === "folder"
+        ? { node: item.node, children: stripHiddenDotEntries(item.children) }
+        : item
+    );
+  }
+  return visible;
+}
+
 function buildFlatRows(params: {
   vault: VaultPort;
   sortOrder: VaultSortOrder;
@@ -143,7 +156,7 @@ function buildFlatRows(params: {
   renamePath: string | null;
   recentBadges: ReadonlyMap<string, ExplorerRecentBadge>;
 }): { rows: ExplorerFlatRow[]; hasAnyExpandedFolder: boolean } {
-  const tree = params.vault.getTree(params.sortOrder);
+  const tree = stripHiddenDotEntries(params.vault.getTree(params.sortOrder));
   const lowerQuery = params.filterQuery.trim().toLowerCase();
   const effectiveTree = lowerQuery ? filterTreeByQuery(tree, lowerQuery) : tree;
   const forceExpand = lowerQuery.length > 0;

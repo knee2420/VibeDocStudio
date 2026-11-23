@@ -1,19 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import {
+  AlertTriangle,
   Columns2,
   Eye,
   FileCode2,
   FilePlus2,
+  FolderInput,
   Heading1,
   Info,
+  Link2,
   ListTree,
   Minus,
   MousePointer2,
   Pencil,
+  RefreshCw,
+  Search,
   Sparkles,
   Table2,
   Type,
+  Unlink,
   X,
   ZoomIn,
   ZoomOut,
@@ -26,6 +32,7 @@ import {
   findBlock,
   findBlockBySlotId,
   insertBlock,
+  mapBlock,
   moveBlockByOffset,
   moveBlockFrame,
   moveBlockToPosition,
@@ -36,6 +43,7 @@ import {
   toggleBlockLock,
   type InsertableBlockKind,
   type LayoutBlock,
+  type SceneGraphNodeRole,
   type TableCommand,
   type VDocDocument,
   type VDocPage,
@@ -55,9 +63,22 @@ import {
 } from "@vibe/slot-canvas";
 import { VIBE_VAULT_PATHS_MIME } from "@vibe/file-explorer/core";
 import type { EditorAiDirective, EditorHostContext } from "@vibe/workspace-layout/core";
-import { stem } from "@vibe/vault-core";
+import { basename, findOwningProjectPath, stem } from "@vibe/vault-core";
 
 import type { IdeEditorEnv } from "../model/editorAdapters";
+import { requestOutlineReveal } from "../model/outlineRevealBus";
+import {
+  bindVDocToExistingOutline,
+  collectOutlineCandidatesForVDoc,
+  compileBoundOutlineIntoVDoc,
+  formatProjectScopeLabel,
+  importPartnerIntoProjectAndBind,
+  inspectVDocOutlineLink,
+  openOrCreateOutlineForVDoc,
+  resolveOutlineForVDoc,
+  syncVDocMeaningBackToOutline,
+  unlinkVDocFromOutline,
+} from "../model/outlineVDocBridge";
 import type { VDocUiBridgeStore } from "../model/vdocUiBridge";
 import {
   createVaultLinkCardDraft,
@@ -74,35 +95,80 @@ export interface VDocTabEditorProps {
 const uidFactory = () =>
   `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
 
+function selectorForSceneNode(role: SceneGraphNodeRole, id: string): string {
+  const esc = CSS.escape(id);
+  switch (role) {
+    case "row":
+      return `tr[data-row-id="${esc}"]`;
+    case "cell":
+      return `td[data-cell-id="${esc}"]`;
+    case "column":
+      return `[data-col-id="${esc}"]`;
+    case "media":
+      return `[data-vdoc-unit="${esc}"]`;
+    case "slot":
+      return `[data-slot-id="${esc}"]`;
+    default:
+      return `[data-block-id="${esc}"]`;
+  }
+}
+
 /**
- * Leaf component isolated to subscribe ONLY to hover/hidden overlay state.
- * Hovering over Left-Bottom Figma Elements updates this tiny <style> tag with
- * ZERO re-renders of VDocTabEditor or MemoVDocPageSheet.
+ * Leaf component isolated to subscribe ONLY to hover/selection/hidden overlay state.
+ * Draws razor-sharp 1:1 Figma-style bounding boxes for ANY Scene Graph node
+ * (`block` / `row` / `cell` / `column` / `media` / `slot`) with ZERO re-renders of MemoVDocPageSheet.
  */
 const VDocOverlayStyle = React.memo<{
   readonly bridge: VDocUiBridgeStore;
   readonly path: string;
-}>(({ bridge, path }) => {
-  const hoveredBlockId = useStore(bridge, (s) => s.byPath[path]?.hoveredBlockId ?? null);
+  readonly structureMode: boolean;
+}>(({ bridge, path, structureMode }) => {
+  const hoveredSceneNode = useStore(bridge, (s) => s.byPath[path]?.hoveredSceneNode ?? null);
+  const selectedSceneNode = useStore(bridge, (s) => s.byPath[path]?.selectedSceneNode ?? null);
   const hiddenBlockIds = useStore(bridge, (s) => s.byPath[path]?.hiddenBlockIds);
 
   const cssText = useMemo(() => {
     const rules: string[] = [];
-    if (hoveredBlockId) {
+    if (structureMode) {
       rules.push(
-        `[data-block-id="${CSS.escape(hoveredBlockId)}"] { outline: 2px solid #0d99ff !important; outline-offset: 2px; }`
+        `[data-vdoc-structure-mode="true"] [data-block-id] { cursor: pointer; }`,
+        // Deepest-only hover outline so nested blocks NEVER trigger double overlapping outlines with their parent table
+        `[data-vdoc-structure-mode="true"] [data-block-id]:hover:not(:has([data-block-id]:hover)) { outline: 1px solid rgba(13, 153, 255, 0.72); outline-offset: -1px; }`
       );
     }
+
+    if (selectedSceneNode && (structureMode || selectedSceneNode.role !== "block")) {
+      const sel = selectorForSceneNode(selectedSceneNode.role, selectedSceneNode.id);
+      const isTableSub = selectedSceneNode.role === "row" || selectedSceneNode.role === "cell";
+      rules.push(
+        isTableSub
+          ? `${sel} { outline: 1.5px solid #0d99ff !important; outline-offset: -1px; background-color: rgba(13, 153, 255, 0.06) !important; position: relative; z-index: 4; }`
+          : `${sel} { outline: 1.5px solid #0d99ff !important; outline-offset: -1px; box-shadow: inset 0 0 0 1px rgba(13, 153, 255, 0.18); position: relative; z-index: 4; }`
+      );
+    }
+
+    if (hoveredSceneNode) {
+      const hovSel = selectorForSceneNode(hoveredSceneNode.role, hoveredSceneNode.id);
+      const isTableSub = hoveredSceneNode.role === "row" || hoveredSceneNode.role === "cell";
+      rules.push(
+        isTableSub
+          ? `${hovSel} { outline: 1.5px solid #0d99ff !important; outline-offset: -1px; background-color: rgba(13, 153, 255, 0.05) !important; }`
+          : `${hovSel} { outline: 1.5px solid #0d99ff !important; outline-offset: -1px; }`
+      );
+    }
+
     if (hiddenBlockIds && hiddenBlockIds.size > 0) {
       for (const id of hiddenBlockIds) {
         rules.push(`[data-block-id="${CSS.escape(id)}"] { display: none !important; }`);
       }
     }
     return rules.join("\n");
-  }, [hoveredBlockId, hiddenBlockIds]);
+  }, [hoveredSceneNode, selectedSceneNode, hiddenBlockIds, structureMode]);
 
   return cssText ? <style>{cssText}</style> : null;
 });
+
+type VDocWorkMode = "Structure" | "Design" | "Preview";
 
 const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
   const { vault, vdocUiBridge } = host.env;
@@ -118,7 +184,11 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       return parseVDocJson("", fallbackTitle);
     }
   });
-  const [mode, setMode] = useState<"Editing" | "Viewing">("Editing");
+  const [workMode, setWorkMode] = useState<VDocWorkMode>(() =>
+    doc.outlineRef ? "Structure" : "Design"
+  );
+  const [syncFlash, setSyncFlash] = useState<"idle" | "synced" | "noop">("idle");
+  const sheetMode: "Editing" | "Viewing" = workMode === "Design" ? "Editing" : "Viewing";
   const [zoom, setZoom] = useState(92);
   const [canvasDropActive, setCanvasDropActive] = useState(false);
   const [aiBarOpen, setAiBarOpen] = useState(false);
@@ -160,6 +230,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     pendingWriteDocRef.current = null;
     localWriteRef.current = true;
     try {
+      // `.vdoc` 편집 중에는 `.vdoc` 만 저장한다 (`.outline` 반영은 명시적 [구조 동기화] 클릭 시에만 실행).
       vault.write(path, serializeVDocJson(toWrite));
     } finally {
       localWriteRef.current = false;
@@ -199,7 +270,8 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       if (
         ev.type === "vault-reset" ||
         changedPath.endsWith(".vstyle") ||
-        changedPath.endsWith(".vstyle.json")
+        changedPath.endsWith(".vstyle.json") ||
+        changedPath.endsWith(".outline")
       ) {
         setStyleRevision((r) => r + 1);
       }
@@ -221,10 +293,32 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     const escaped = CSS.escape(scrollTargetId);
     const el =
       hostEl.querySelector<HTMLElement>(`[data-block-id="${escaped}"]`) ??
+      hostEl.querySelector<HTMLElement>(`tr[data-row-id="${escaped}"]`) ??
+      hostEl.querySelector<HTMLElement>(`td[data-cell-id="${escaped}"]`) ??
+      hostEl.querySelector<HTMLElement>(`[data-col-id="${escaped}"]`) ??
+      hostEl.querySelector<HTMLElement>(`[data-vdoc-unit="${escaped}"]`) ??
       hostEl.querySelector<HTMLElement>(`[data-slot-id="${escaped}"]`) ??
       hostEl.querySelector<HTMLElement>(`[data-vdoc-page-id="${escaped}"]`);
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [scrollSeq, scrollTargetId]);
+
+  // Scoped Ctrl/Cmd + Mouse Wheel (and trackpad pinch) zoom ONLY on this 2D canvas viewport
+  // Must use `{ passive: false }` native listener to block browser-wide page zoom cleanly.
+  useEffect(() => {
+    const el = canvasScrollRef.current;
+    if (!el) return;
+    const onWheel = (ev: WheelEvent) => {
+      if (!ev.ctrlKey && !ev.metaKey) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      const absY = Math.abs(ev.deltaY);
+      const step = absY < 40 ? Math.max(2, Math.round(absY * 0.4)) : 8;
+      const delta = ev.deltaY < 0 ? step : -step;
+      setZoom((prev) => Math.max(40, Math.min(200, prev + delta)));
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
 
   const commitDoc = useCallback(
     (updater: (prev: VDocDocument) => VDocDocument, options?: { immediate?: boolean }) => {
@@ -370,17 +464,145 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     }
   };
 
-  // Intercept clicks on `vault://` links inside LinkCard blocks to open directly in workspace tab!
+  // Intercept clicks on `vault://` links, and in Structure mode perform v1-style Block Select ONLY!
   const handleCanvasClickCapture = (ev: React.MouseEvent) => {
-    const anchor = (ev.target as HTMLElement | null)?.closest<HTMLAnchorElement>("a[href]");
-    if (!anchor) return;
-    const href = anchor.getAttribute("href") ?? "";
-    const vaultTarget = fromVaultUri(href);
-    if (vaultTarget) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      hostRef.current.openLink(vaultTarget, ev.ctrlKey || ev.metaKey ? "new-tab" : "split-right");
+    const targetEl = ev.target as HTMLElement | null;
+    const anchor = targetEl?.closest<HTMLAnchorElement>("a[href]");
+    if (anchor) {
+      const href = anchor.getAttribute("href") ?? "";
+      const vaultTarget = fromVaultUri(href);
+      if (vaultTarget) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        hostRef.current.openLink(vaultTarget, ev.ctrlKey || ev.metaKey ? "new-tab" : "split-right");
+        return;
+      }
     }
+
+    if (workMode === "Structure") {
+      const blockEl = targetEl?.closest<HTMLElement>("[data-block-id]");
+      if (blockEl?.dataset.blockId) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const bid = blockEl.dataset.blockId;
+        const loc = findBlock(docRef.current, bid);
+        vdocUiBridge.getState().selectBlock(path, bid, loc?.pageId);
+        // Cross-highlight the source bullet in the paired `.outline` pane (read-only reveal)
+        const sourceNodeId = loc?.block.sourceNodeId;
+        const resolvedOutline = sourceNodeId
+          ? resolveOutlineForVDoc(vault, path, docRef.current, { heal: false })
+          : null;
+        if (sourceNodeId && resolvedOutline) {
+          requestOutlineReveal(resolvedOutline.outlinePath, sourceNodeId, { zoom: false });
+        }
+      }
+    }
+  };
+
+  // v1-parity: Double-clicking a block/slot in Structure mode enters Design (Filling) mode immediately!
+  const handleCanvasDoubleClickCapture = (ev: React.MouseEvent) => {
+    if (workMode !== "Structure") return;
+    const targetEl = ev.target as HTMLElement | null;
+    const blockEl = targetEl?.closest<HTMLElement>("[data-block-id]");
+    if (!blockEl?.dataset.blockId) return;
+    ev.stopPropagation();
+    const bid = blockEl.dataset.blockId;
+    const slotEl = targetEl?.closest<HTMLElement>("[data-slot-id]");
+    const sid = slotEl?.dataset.slotId ?? null;
+    const loc = findBlock(docRef.current, bid);
+    setWorkMode("Design");
+    if (sid) {
+      vdocUiBridge.getState().selectSlot(path, sid, bid, loc?.pageId);
+    } else {
+      vdocUiBridge.getState().selectBlock(path, bid, loc?.pageId);
+    }
+  };
+
+  const [outlinePickerOpen, setOutlinePickerOpen] = useState(false);
+  const [outlineSearch, setOutlineSearch] = useState("");
+
+  const openOutlineInPair = useCallback(
+    (target: string) => {
+      const openPair = hostRef.current.env.openInPairTabGroup;
+      if (openPair) {
+        openPair(target, { sourceTabId: hostRef.current.tabId, sourcePath: path });
+      } else {
+        hostRef.current.openLink(target, "split-right");
+      }
+    },
+    [path]
+  );
+
+  const owningProjectPath = useMemo(() => findOwningProjectPath(path), [path]);
+  const projectScopeLabel = formatProjectScopeLabel(owningProjectPath);
+
+  // Read-only link status (never mutates vault during render)
+  const linkStatus = useMemo(() => {
+    void styleRevision;
+    return inspectVDocOutlineLink(vault, path, doc);
+  }, [vault, path, doc, styleRevision]);
+
+  const outlineCandidates = useMemo(() => {
+    if (!outlinePickerOpen) return [];
+    void styleRevision;
+    const all = collectOutlineCandidatesForVDoc(vault, path, doc, { includeExternal: false });
+    const q = outlineSearch.trim().toLowerCase();
+    if (!q) return all;
+    return all.filter(
+      (c) =>
+        c.outlinePath.toLowerCase().includes(q) ||
+        c.title.toLowerCase().includes(q) ||
+        c.docDirectives.some((d) => d.label.toLowerCase().includes(q))
+    );
+  }, [outlinePickerOpen, styleRevision, vault, path, doc, outlineSearch]);
+
+  const handleEnterStructureMode = () => {
+    setWorkMode("Structure");
+    const opened = openOrCreateOutlineForVDoc(vault, path, openOutlineInPair, {
+      allowCreate: false,
+    });
+    if (opened) {
+      setOutlinePickerOpen(false);
+    } else {
+      setOutlineSearch("");
+      setOutlinePickerOpen(true);
+    }
+  };
+
+  const handleBindExistingOutline = (outlinePath: string, rootNodeId?: string) => {
+    bindVDocToExistingOutline(vault, path, outlinePath, {
+      rootNodeId,
+      openLink: openOutlineInPair,
+    });
+    setOutlinePickerOpen(false);
+    setWorkMode("Structure");
+  };
+
+  const handleImportExternalOutline = (externalOutlinePath: string, rootNodeId?: string) => {
+    importPartnerIntoProjectAndBind(vault, path, externalOutlinePath, {
+      rootNodeId,
+      openLink: openOutlineInPair,
+    });
+    setOutlinePickerOpen(false);
+    setWorkMode("Structure");
+  };
+
+  const handleCreateNewOutline = () => {
+    openOrCreateOutlineForVDoc(vault, path, openOutlineInPair, {
+      allowCreate: true,
+    });
+    setOutlinePickerOpen(false);
+    setWorkMode("Structure");
+  };
+
+  const handleExplicitSyncAction = () => {
+    flushVaultWrite();
+    const changed =
+      workMode === "Structure"
+        ? compileBoundOutlineIntoVDoc(vault, path)
+        : syncVDocMeaningBackToOutline(vault, path, docRef.current);
+    setSyncFlash(changed ? "synced" : "noop");
+    setTimeout(() => setSyncFlash("idle"), 1600);
   };
 
   const handleRunAiDirective = (ev: React.FormEvent) => {
@@ -567,17 +789,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
 
   const handleUpdateBlock = useCallback(
     (pid: string, bid: string, updater: (prev: LayoutBlock) => LayoutBlock) => {
-      commitDoc((prev) => ({
-        ...prev,
-        pages: prev.pages.map((p) =>
-          p.pageId !== pid
-            ? p
-            : {
-              ...p,
-              blocks: p.blocks.map((b) => (b.blockId === bid ? updater(b as LayoutBlock) : b)),
-            }
-        ),
-      }));
+      commitDoc((prev) => mapBlock(prev, pid, bid, updater));
     },
     [commitDoc]
   );
@@ -609,9 +821,9 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           page={page}
           slots={doc.slots}
           backdata={doc.backdata}
-          mode={mode}
-          selectedBlockId={selectedBlockId}
-          selectedSlotId={selectedSlotId}
+          mode={sheetMode}
+          selectedBlockId={workMode === "Design" ? selectedBlockId : null}
+          selectedSlotId={workMode === "Design" ? selectedSlotId : null}
           composerOpenSlotId={null}
           onSelectPage={handleSelectPage}
           onSelectBlock={handleSelectBlock}
@@ -652,12 +864,13 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       handleToggleBlockLock,
       handleUpdateBlock,
       handleUpdateSlotContent,
-      mode,
       path,
       selectedBlockId,
       selectedSlotId,
+      sheetMode,
       surface.kind,
       vdocUiBridge,
+      workMode,
     ]
   );
 
@@ -671,6 +884,8 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       }}
       onDrop={handleCanvasDrop}
       onClickCapture={handleCanvasClickCapture}
+      onDoubleClickCapture={handleCanvasDoubleClickCapture}
+      data-vdoc-structure-mode={workMode === "Structure" ? "true" : undefined}
       className="relative flex h-full w-full flex-col overflow-hidden bg-[#2b2d31]"
       style={{
         boxShadow: canvasDropActive
@@ -678,19 +893,155 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           : undefined,
       }}
     >
-      <VDocOverlayStyle bridge={vdocUiBridge} path={path} />
+      <VDocOverlayStyle
+        bridge={vdocUiBridge}
+        path={path}
+        structureMode={workMode === "Structure"}
+      />
 
       {/* 2D Canvas Top Control Strip */}
-      <div className="flex h-8 shrink-0 select-none items-center justify-between border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-3 text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
+      <div className="relative flex h-8 shrink-0 select-none items-center justify-between border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-3 text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
         <div className="flex items-center gap-1.5">
+          {/* 3-Mode Workflow Toggle: [ 구조(틀) ] [ 디자인(Filling) ] [ 미리보기 ] */}
+          <div
+            role="group"
+            aria-label="Document working mode"
+            className="flex shrink-0 items-center rounded-[5px] border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] p-0.5"
+          >
+            <button
+              type="button"
+              onClick={handleEnterStructureMode}
+              title={
+                linkStatus.kind === "linked"
+                  ? `구조 모드 (${basename(linkStatus.outlinePath)} 열기)`
+                  : linkStatus.kind === "out-of-scope"
+                    ? `프로젝트 경계 외부 .outline (${linkStatus.externalOutlinePath}) — 클릭해 등록 또는 변경`
+                    : linkStatus.kind === "broken"
+                      ? "연결된 .outline 경로가 끊어졌습니다 — 클릭해 복구"
+                      : "구조 모드 (같은 프로젝트의 .outline 연결 또는 새로 추출)"
+              }
+              className={`flex items-center gap-1 rounded-[3px] px-2 py-0.5 transition-colors ${
+                workMode === "Structure"
+                  ? "bg-emerald-500/25 font-medium text-emerald-200"
+                  : "text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#ececec)]"
+              }`}
+            >
+              <ListTree className="h-3 w-3 text-emerald-400" />
+              <span>구조</span>
+              {linkStatus.kind === "linked" ? (
+                <span
+                  aria-label="Outline bound"
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    linkStatus.healed ? "bg-amber-400" : "bg-emerald-400"
+                  }`}
+                />
+              ) : linkStatus.kind === "out-of-scope" ? (
+                <span
+                  aria-label="Outline out of project scope"
+                  className="h-1.5 w-1.5 rounded-full bg-amber-400"
+                />
+              ) : linkStatus.kind === "broken" ? (
+                <span
+                  aria-label="Outline link broken"
+                  className="h-1.5 w-1.5 rounded-full bg-rose-400"
+                />
+              ) : null}
+            </button>
+            <button
+              type="button"
+              onClick={() => setWorkMode("Design")}
+              title="디자인 / Filling 모드 (WYSIWYG 개별 텍스트·표·2D 편집)"
+              className={`flex items-center gap-1 rounded-[3px] px-2 py-0.5 transition-colors ${
+                workMode === "Design"
+                  ? "bg-[var(--obs-accent,#8a5cf5)]/25 font-medium text-[var(--obs-text-normal,#ececec)]"
+                  : "text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#ececec)]"
+              }`}
+            >
+              <Pencil className="h-3 w-3 text-sky-400" />
+              <span>디자인</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setWorkMode("Preview")}
+              title="발행 미리보기 모드 (읽기 전용)"
+              className={`flex items-center gap-1 rounded-[3px] px-2 py-0.5 transition-colors ${
+                workMode === "Preview"
+                  ? "bg-[var(--obs-accent,#8a5cf5)]/25 font-medium text-[var(--obs-text-normal,#ececec)]"
+                  : "text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#ececec)]"
+              }`}
+            >
+              <Eye className="h-3 w-3" />
+              <span>미리보기</span>
+            </button>
+          </div>
+
+          {/* 1st-class Toolbar Link Chip — always shows bound `.outline` without opening Inspector */}
           <button
             type="button"
-            onClick={() => setMode((m) => (m === "Editing" ? "Viewing" : "Editing"))}
-            className="flex shrink-0 items-center gap-1 rounded-[4px] border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2 py-0.5 text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+            onClick={() => {
+              setOutlineSearch("");
+              setOutlinePickerOpen((v) => !v);
+            }}
+            title={
+              linkStatus.kind === "linked"
+                ? `연결된 .outline: ${linkStatus.outlinePath} (클릭해 열기/변경/해제)`
+                : linkStatus.kind === "out-of-scope"
+                  ? `프로젝트 경계 외부 .outline: ${linkStatus.externalOutlinePath} (클릭해 등록 또는 해제)`
+                  : linkStatus.kind === "broken"
+                    ? `경로 끊어짐: ${linkStatus.rawOutlineUri}`
+                    : "클릭해 같은 프로젝트의 .outline 연결"
+            }
+            className={`flex min-w-0 max-w-[200px] items-center gap-1 rounded-[4px] border px-1.5 py-0.5 text-[10.5px] transition-colors ${
+              linkStatus.kind === "linked"
+                ? "border-emerald-500/35 bg-emerald-500/12 text-emerald-200 hover:bg-emerald-500/20"
+                : linkStatus.kind === "out-of-scope"
+                  ? "border-amber-500/40 bg-amber-500/15 text-amber-200 hover:bg-amber-500/25"
+                  : linkStatus.kind === "broken"
+                    ? "border-rose-500/40 bg-rose-500/15 text-rose-200 hover:bg-rose-500/25"
+                    : "border-dashed border-[var(--obs-border,#444)] bg-transparent text-[var(--obs-text-muted,#9a9a9a)] hover:border-emerald-500/40 hover:text-emerald-200"
+            }`}
           >
-            {mode === "Editing" ? <Pencil className="h-3 w-3 text-sky-400" /> : <Eye className="h-3 w-3" />}
-            <span>{mode}</span>
+            {linkStatus.kind === "out-of-scope" || linkStatus.kind === "broken" ? (
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+            ) : (
+              <Link2 className="h-3 w-3 shrink-0" />
+            )}
+            <span className="truncate">
+              {linkStatus.kind === "linked"
+                ? basename(linkStatus.outlinePath)
+                : linkStatus.kind === "out-of-scope"
+                  ? `외부 · ${basename(linkStatus.externalOutlinePath)}`
+                  : linkStatus.kind === "broken"
+                    ? "끊어짐 · 복구"
+                    : ".outline 연결"}
+            </span>
           </button>
+
+          {linkStatus.kind === "linked" && workMode !== "Preview" && (
+            <button
+              type="button"
+              onClick={handleExplicitSyncAction}
+              title={
+                workMode === "Structure"
+                  ? "연결된 .outline 구조를 컴파일해 이 .vdoc 에 반영 (.outline → .vdoc)"
+                  : "디자인(Filling)에서 수정한 텍스트를 원본 태그 손상 없이 .outline 에 반영 (.vdoc → .outline)"
+              }
+              className="flex shrink-0 items-center gap-1 rounded-[4px] border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] text-emerald-300 transition-colors hover:bg-emerald-500/20"
+            >
+              <RefreshCw className="h-3 w-3" />
+              <span>
+                {syncFlash === "synced"
+                  ? workMode === "Structure"
+                    ? "컴파일됨 ✓"
+                    : "반영됨 ✓"
+                  : syncFlash === "noop"
+                    ? "변경 없음"
+                    : workMode === "Structure"
+                      ? "← 구조에서 컴파일"
+                      : "→ 구조로 반영"}
+              </span>
+            </button>
+          )}
 
           {/* 양식은 문서 생성 시 하나로 정해진다 — 전환 토글 없이 읽기 전용 배지로만 보여준다. */}
           <span
@@ -715,29 +1066,252 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           <div className="h-3.5 w-px bg-[var(--obs-border,#363636)]" />
           <button
             type="button"
-            onClick={() => setZoom((z) => Math.max(50, z - 10))}
+            onClick={() => setZoom((z) => Math.max(40, z - 10))}
             className="rounded p-0.5 hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
-            title="Zoom out"
+            title="Zoom out (Ctrl + 휠 아래)"
           >
             <ZoomOut className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={() => setZoom(100)}
+            title="100%로 초기화 (캔버스 위에서 Ctrl + 마우스 휠로 확대/축소)"
             className="w-9 text-center font-code text-[10.5px] hover:text-[var(--obs-text-normal,#dadada)]"
           >
             {zoom}%
           </button>
           <button
             type="button"
-            onClick={() => setZoom((z) => Math.min(150, z + 10))}
+            onClick={() => setZoom((z) => Math.min(200, z + 10))}
             className="rounded p-0.5 hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
-            title="Zoom in"
+            title="Zoom in (Ctrl + 휠 위)"
           >
             <ZoomIn className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
+
+      {/* Explicit Outline Link Picker Popover (strictly scoped to owning `.vproj`) */}
+      {outlinePickerOpen && (
+        <div
+          onClick={(ev) => ev.stopPropagation()}
+          className="absolute top-9 left-3 z-40 w-[360px] rounded-md border border-[var(--obs-border,#3d3d3d)] bg-[var(--obs-bg-secondary,#242424)] p-2.5 text-[11.5px] text-[var(--obs-text-normal,#ececec)] shadow-2xl"
+        >
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-1.5 font-medium">
+              <Link2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+              <span className="truncate">원천 .outline 연결</span>
+              <span className="shrink-0 rounded border border-violet-500/30 bg-violet-500/15 px-1.5 py-0 text-[9.5px] text-violet-200">
+                {owningProjectPath ? `PROJ · ${projectScopeLabel}` : "단독 영역"}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOutlinePickerOpen(false)}
+              className="rounded p-0.5 text-[var(--obs-text-muted,#9a9a9a)] hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {linkStatus.kind === "linked" && (
+            <div className="mb-2 rounded border border-emerald-500/30 bg-emerald-500/10 p-2">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-200">
+                <ListTree className="h-3 w-3 shrink-0 text-emerald-400" />
+                <span className="truncate">{basename(linkStatus.outlinePath)}</span>
+              </div>
+              <div className="mt-0.5 truncate pl-4 font-code text-[9.5px] text-emerald-300/75">
+                {linkStatus.outlinePath}
+              </div>
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    openOrCreateOutlineForVDoc(vault, path, openOutlineInPair, {
+                      allowCreate: false,
+                    });
+                    setOutlinePickerOpen(false);
+                  }}
+                  className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10.5px] text-emerald-100 hover:bg-emerald-500/30"
+                >
+                  페어 탭 열기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    unlinkVDocFromOutline(vault, path);
+                    setOutlinePickerOpen(false);
+                  }}
+                  className="ml-auto flex items-center gap-1 rounded px-2 py-0.5 text-[10.5px] text-rose-300 hover:bg-rose-500/15"
+                >
+                  <Unlink className="h-3 w-3" />
+                  <span>연결 해제</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {linkStatus.kind === "out-of-scope" && (
+            <div className="mb-2 rounded border border-amber-500/35 bg-amber-500/10 p-2 text-[10.5px] text-amber-100">
+              <div className="flex items-center gap-1 font-medium text-amber-200">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+                <span>프로젝트 경계 외부의 .outline 입니다</span>
+              </div>
+              <div className="mt-0.5 truncate font-code text-[9.5px] opacity-80">
+                {linkStatus.externalOutlinePath}
+              </div>
+              <div className="mt-2 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleImportExternalOutline(
+                      linkStatus.externalOutlinePath,
+                      linkStatus.rootNodeId
+                    )
+                  }
+                  className="flex items-center gap-1 rounded border border-amber-400/40 bg-amber-500/25 px-2 py-1 text-[10.5px] font-medium text-amber-100 hover:bg-amber-500/35"
+                >
+                  <FolderInput className="h-3 w-3" />
+                  <span>이 프로젝트로 등록 (가져오기)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    unlinkVDocFromOutline(vault, path);
+                    setOutlinePickerOpen(false);
+                  }}
+                  className="ml-auto rounded px-1.5 py-1 text-[10px] text-rose-300 hover:bg-rose-500/15"
+                >
+                  해제
+                </button>
+              </div>
+            </div>
+          )}
+
+          {linkStatus.kind === "broken" && (
+            <div className="mb-2 flex items-start justify-between gap-2 rounded border border-rose-500/30 bg-rose-500/10 px-2 py-1.5 text-[10.5px] text-rose-200">
+              <div className="flex min-w-0 items-start gap-1.5">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-400" />
+                <div className="min-w-0">
+                  <div className="font-medium">기존 연결 경로를 찾을 수 없습니다</div>
+                  <div className="truncate font-code text-[10px] opacity-80">
+                    {fromVaultUri(linkStatus.rawOutlineUri) ?? linkStatus.rawOutlineUri}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  unlinkVDocFromOutline(vault, path);
+                  setOutlinePickerOpen(false);
+                }}
+                className="shrink-0 rounded bg-rose-500/20 px-1.5 py-0.5 text-[10px] hover:bg-rose-500/30"
+              >
+                해제
+              </button>
+            </div>
+          )}
+
+          <div className="relative mb-2">
+            <Search className="pointer-events-none absolute top-1/2 left-2 h-3 w-3 -translate-y-1/2 text-[var(--obs-text-faint,#777)]" />
+            <input
+              type="text"
+              value={outlineSearch}
+              onChange={(ev) => setOutlineSearch(ev.target.value)}
+              placeholder=".outline 검색..."
+              className="w-full rounded border border-[var(--obs-border,#3a3a3a)] bg-[var(--obs-bg-primary,#1a1a1a)] py-1 pr-2 pl-6 text-[11px] outline-none focus:border-emerald-400"
+            />
+          </div>
+
+          <div className="max-h-52 space-y-1 overflow-y-auto pr-0.5">
+            <div className="mb-1 text-[10px] font-semibold tracking-wider text-[var(--obs-text-faint,#808080)] uppercase">
+              같은 경계 내 .outline ({outlineCandidates.length})
+            </div>
+            {outlineCandidates.length === 0 ? (
+              <div className="rounded bg-black/20 px-2 py-2.5 text-center text-[10.5px] text-[var(--obs-text-faint,#777)]">
+                같은 경계에 연결할 .outline 파일이 없습니다.
+              </div>
+            ) : (
+              outlineCandidates.map((cand) => (
+                <div
+                  key={cand.outlinePath}
+                  className="rounded border border-transparent bg-[var(--obs-bg-primary,#1b1b1b)] p-1.5 hover:border-emerald-500/35"
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleBindExistingOutline(
+                        cand.outlinePath,
+                        cand.docDirectives[0]?.nodeId
+                      )
+                    }
+                    className="flex w-full items-center justify-between gap-1.5 text-left"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <ListTree className="h-3 w-3 shrink-0 text-emerald-400" />
+                        <span className="truncate font-medium text-[var(--obs-text-normal,#ececec)]">
+                          {basename(cand.outlinePath)}
+                        </span>
+                        {cand.sameFolder && (
+                          <span className="shrink-0 rounded bg-emerald-500/15 px-1 py-0 text-[9.5px] text-emerald-300">
+                            같은 폴더
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-0.5 truncate pl-4 font-code text-[9.5px] text-[var(--obs-text-faint,#808080)]">
+                        {cand.folder || "/"}
+                      </div>
+                    </div>
+                    <span className="shrink-0 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-medium text-emerald-200">
+                      연결
+                    </span>
+                  </button>
+
+                  {cand.docDirectives.length > 1 && (
+                    <div className="mt-1.5 space-y-0.5 border-t border-white/5 pt-1 pl-4">
+                      {cand.docDirectives.map((dir) => (
+                        <button
+                          key={dir.nodeId}
+                          type="button"
+                          onClick={() =>
+                            handleBindExistingOutline(cand.outlinePath, dir.nodeId)
+                          }
+                          className="flex w-full items-center justify-between gap-1 rounded px-1.5 py-0.5 text-left text-[10px] text-[var(--obs-text-muted,#b3b3b3)] hover:bg-white/5 hover:text-white"
+                        >
+                          <span className="min-w-0 flex-1 truncate">
+                            <span className="mr-1 font-code text-emerald-300">
+                              {dir.rawToken}
+                            </span>
+                            {dir.label}
+                          </span>
+                          <span className="shrink-0 text-[9.5px] text-emerald-400">
+                            {dir.boundVDocPath ? basename(dir.boundVDocPath) : "선택"}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="mt-2.5 flex items-center justify-between border-t border-[var(--obs-border-subtle,#323232)] pt-2">
+            <span className="text-[10px] text-[var(--obs-text-faint,#808080)]">
+              현재 경계 안에 새 구조 추출
+            </span>
+            <button
+              type="button"
+              onClick={handleCreateNewOutline}
+              className="flex items-center gap-1 rounded border border-sky-500/35 bg-sky-500/15 px-2 py-1 text-[10.5px] font-medium text-sky-200 transition-colors hover:bg-sky-500/25"
+            >
+              <FilePlus2 className="h-3 w-3" />
+              <span>새 .outline 추출</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Drop Hint Banner when dragging a Vault file onto 2D canvas center */}
       {canvasDropActive && (
@@ -838,58 +1412,71 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         </form>
       )}
 
-      {/* Bottom Figma-style Floating 2D Toolbar */}
-      <div
-        onClick={(ev) => ev.stopPropagation()}
-        className="absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 select-none items-center gap-0.5 rounded-2xl border border-white/10 bg-[#2c2c2c] p-1 text-xs text-white/90 shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
-      >
-        <button
-          type="button"
-          onClick={() => vdocUiBridge.getState().selectBlock(path, null)}
-          title="Select"
-          className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0d99ff] text-white"
+      {/* Structure Mode Subtle Hint Pill (v1-parity frame selection mode) */}
+      {workMode === "Structure" && (
+        <div
+          onClick={(ev) => ev.stopPropagation()}
+          className="pointer-events-none absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 select-none items-center gap-2 rounded-full border border-emerald-500/30 bg-[#1e2422]/90 px-3.5 py-1.5 text-[11px] text-emerald-200 shadow-lg backdrop-blur-sm"
         >
-          <MousePointer2 className="h-4 w-4" />
-        </button>
+          <ListTree className="h-3.5 w-3.5 text-emerald-400" />
+          <span>구조 모드 · 블록 클릭으로 틀/인스펙터 선택 · 더블클릭으로 디자인(Filling) 진입</span>
+        </div>
+      )}
 
-        <div className="mx-1 h-4 w-px bg-white/15" />
-
-        {(
-          [
-            { kind: "section-block", title: "Insert Section", Icon: Heading1 },
-            { kind: "text", title: "Insert Text", Icon: Type },
-            { kind: "structured-table", title: "Insert Table", Icon: Table2 },
-            { kind: "columns-grid", title: "Insert 2-Column Grid", Icon: Columns2 },
-            { kind: "callout-box", title: "Insert Callout", Icon: Info },
-            { kind: "divider", title: "Insert Divider", Icon: Minus },
-          ] as const
-        ).map(({ kind, title, Icon }) => (
+      {/* Bottom Figma-style Floating 2D Toolbar (only in Design / Filling mode) */}
+      {workMode === "Design" && (
+        <div
+          onClick={(ev) => ev.stopPropagation()}
+          className="absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 select-none items-center gap-0.5 rounded-2xl border border-white/10 bg-[#2c2c2c] p-1 text-xs text-white/90 shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+        >
           <button
-            key={kind}
             type="button"
-            onClick={() => handleInsertQuickBlock(kind)}
-            title={title}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+            onClick={() => vdocUiBridge.getState().selectBlock(path, null)}
+            title="Select"
+            className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0d99ff] text-white"
           >
-            <Icon className="h-4 w-4" />
+            <MousePointer2 className="h-4 w-4" />
           </button>
-        ))}
 
-        <div className="mx-1 h-4 w-px bg-white/15" />
+          <div className="mx-1 h-4 w-px bg-white/15" />
 
-        <button
-          type="button"
-          onClick={() => setAiBarOpen((v) => !v)}
-          title="2D AI Directing (파일 추출 · 슬롯 보강)"
-          className={`flex h-8 items-center gap-1.5 rounded-xl px-2.5 font-medium transition-colors ${aiBarOpen
-            ? "bg-[#8a5cf5] text-white"
-            : "bg-[#8a5cf5]/20 text-[#c4b5fd] hover:bg-[#8a5cf5]/35"
-            }`}
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>AI Direct</span>
-        </button>
-      </div>
+          {(
+            [
+              { kind: "section-block", title: "Insert Section", Icon: Heading1 },
+              { kind: "text", title: "Insert Text", Icon: Type },
+              { kind: "structured-table", title: "Insert Table", Icon: Table2 },
+              { kind: "columns-grid", title: "Insert 2-Column Grid", Icon: Columns2 },
+              { kind: "callout-box", title: "Insert Callout", Icon: Info },
+              { kind: "divider", title: "Insert Divider", Icon: Minus },
+            ] as const
+          ).map(({ kind, title, Icon }) => (
+            <button
+              key={kind}
+              type="button"
+              onClick={() => handleInsertQuickBlock(kind)}
+              title={title}
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+            >
+              <Icon className="h-4 w-4" />
+            </button>
+          ))}
+
+          <div className="mx-1 h-4 w-px bg-white/15" />
+
+          <button
+            type="button"
+            onClick={() => setAiBarOpen((v) => !v)}
+            title="2D AI Directing (파일 추출 · 슬롯 보강)"
+            className={`flex h-8 items-center gap-1.5 rounded-xl px-2.5 font-medium transition-colors ${aiBarOpen
+              ? "bg-[#8a5cf5] text-white"
+              : "bg-[#8a5cf5]/20 text-[#c4b5fd] hover:bg-[#8a5cf5]/35"
+              }`}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>AI Direct</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

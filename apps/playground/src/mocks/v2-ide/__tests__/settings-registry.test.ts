@@ -1,18 +1,24 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
+import { createFileExplorerStore } from "@vibe/file-explorer/core";
+import { MemoryVaultAdapter } from "@vibe/vault-core";
 import { createDefaultRegistrySnapshot } from "@vibe/vdoc-schema";
 import { createIdeEditorRegistry } from "../model/editorAdapters";
 import {
   SETTINGS_GROUPS,
+  STANDARD_STYLE_PATH,
+  STANDARD_SYNTAX_PATH,
   createDefaultStylePackJson,
   createDefaultSyntaxJson,
   createSettingsSectionRegistry,
+  createStandardBaseStyleJson,
   detectSyntaxRuleConflicts,
   getDefaultRuleSymbol,
   isStylePath,
   isSyntaxPath,
   isSyntaxRuleModified,
+  isSystemSettingsPath,
   parseStylePackJson,
   parseSyntaxSnapshot,
   serializeStylePack,
@@ -150,5 +156,28 @@ describe("v2-ide — Obsidian Settings Platform & Code-as-Doc (.vsyntax / .vstyl
     assert.equal(reg.search("gemini").map((s) => s.id).join(","), "ai:models");
     assert.equal(reg.search("예스폼").map((s) => s.id).join(","), "ai:custom-plugin");
     assert.equal(reg.search("").length, 3);
+  });
+
+  it("hides .vibedoc global standard specs from FileExplorer while keeping them accessible via VaultPort", () => {
+    assert.equal(isSystemSettingsPath(STANDARD_SYNTAX_PATH), true);
+    assert.equal(isSystemSettingsPath(STANDARD_STYLE_PATH), true);
+    assert.equal(isSystemSettingsPath("문서 스키마 표준 정비 프로젝트/naver-travel-blog.vstyle"), false);
+
+    const stdPack = parseStylePackJson(createStandardBaseStyleJson());
+    assert.ok(stdPack);
+    assert.equal(stdPack.id, "standard-base");
+    assert.equal(stdPack.genre, "standard");
+    assert.equal(stdPack.styles.text.body?.align, "left");
+
+    const vault = new MemoryVaultAdapter({ persistDebounceMs: 0 });
+    vault.createFile(STANDARD_SYNTAX_PATH, createDefaultSyntaxJson("표준"));
+    vault.createFile(STANDARD_STYLE_PATH, createStandardBaseStyleJson());
+    vault.createFile("blog/naver-travel-blog.vstyle", createDefaultStylePackJson("블로그"));
+    const explorer = createFileExplorerStore(vault, { initialExpandedPaths: ["blog"] });
+    const visiblePaths = explorer.getState().rows.map((r) => r.path);
+    assert.equal(visiblePaths.some((p) => p.startsWith(".vibedoc")), false);
+    assert.equal(visiblePaths.includes("blog/naver-travel-blog.vstyle"), true);
+    assert.equal(vault.exists(STANDARD_SYNTAX_PATH), true);
+    assert.equal(vault.exists(STANDARD_STYLE_PATH), true);
   });
 });

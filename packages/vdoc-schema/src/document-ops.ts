@@ -16,19 +16,79 @@ export interface BlockLocation {
   block: LayoutBlock;
 }
 
-export function findBlock(doc: VDocDocument, blockId: string): BlockLocation | null {
-  for (const page of doc.pages) {
-    const index = page.blocks.findIndex((b) => b.blockId === blockId);
-    if (index >= 0) return { pageId: page.pageId, index, block: page.blocks[index] };
+function findBlockInList(
+  blocks: readonly LayoutBlock[],
+  pageId: string,
+  blockId: string
+): BlockLocation | null {
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (b.blockId === blockId) return { pageId, index: i, block: b };
+    if (b.kind === "structured-table") {
+      for (const row of b.rows) {
+        for (const cell of row.cells) {
+          if (cell.blocks && cell.blocks.length > 0) {
+            const hit = findBlockInList(cell.blocks, pageId, blockId);
+            if (hit) return hit;
+          }
+        }
+      }
+    } else if (b.kind === "columns-grid" && b.columns) {
+      for (const col of b.columns) {
+        if (col.blocks && col.blocks.length > 0) {
+          const hit = findBlockInList(col.blocks, pageId, blockId);
+          if (hit) return hit;
+        }
+      }
+    }
   }
   return null;
 }
 
-/** 주어진 `slotId` 를 소유한 레이아웃 블록과 페이지 위치를 찾는다. */
+export function findBlock(doc: VDocDocument, blockId: string): BlockLocation | null {
+  for (const page of doc.pages) {
+    const hit = findBlockInList(page.blocks, page.pageId, blockId);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/** 주어진 `slotId` 를 소유한 레이아웃 블록과 페이지 위치를 찾는다 (중첩 블록 우선). */
+function findDeepestBlockBySlotIdInList(
+  blocks: readonly LayoutBlock[],
+  pageId: string,
+  slotId: string
+): BlockLocation | null {
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (b.kind === "structured-table") {
+      for (const row of b.rows) {
+        for (const cell of row.cells) {
+          if (cell.blocks && cell.blocks.length > 0) {
+            const nested = findDeepestBlockBySlotIdInList(cell.blocks, pageId, slotId);
+            if (nested) return nested;
+          }
+        }
+      }
+    } else if (b.kind === "columns-grid" && b.columns) {
+      for (const col of b.columns) {
+        if (col.blocks && col.blocks.length > 0) {
+          const nested = findDeepestBlockBySlotIdInList(col.blocks, pageId, slotId);
+          if (nested) return nested;
+        }
+      }
+    }
+    if (getBlockSlotIds(b).includes(slotId)) {
+      return { pageId, index: i, block: b };
+    }
+  }
+  return null;
+}
+
 export function findBlockBySlotId(doc: VDocDocument, slotId: string): BlockLocation | null {
   for (const page of doc.pages) {
-    const index = page.blocks.findIndex((b) => getBlockSlotIds(b).includes(slotId));
-    if (index >= 0) return { pageId: page.pageId, index, block: page.blocks[index] };
+    const hit = findDeepestBlockBySlotIdInList(page.blocks, page.pageId, slotId);
+    if (hit) return hit;
   }
   return null;
 }
@@ -49,22 +109,63 @@ function mapPageBlocks(
   return changed ? { ...doc, pages } : doc;
 }
 
+function mapBlockInList(
+  blocks: LayoutBlock[],
+  blockId: string,
+  fn: (block: LayoutBlock) => LayoutBlock
+): LayoutBlock[] {
+  let changed = false;
+  const next = blocks.map((b) => {
+    if (b.blockId === blockId) {
+      const mapped = fn(b);
+      if (mapped !== b) changed = true;
+      return mapped;
+    }
+    if (b.kind === "structured-table") {
+      let tblChanged = false;
+      const nextRows = b.rows.map((row) => {
+        let rowChanged = false;
+        const nextCells = row.cells.map((cell) => {
+          if (!cell.blocks || cell.blocks.length === 0) return cell;
+          const mappedNested = mapBlockInList(cell.blocks, blockId, fn);
+          if (mappedNested === cell.blocks) return cell;
+          rowChanged = true;
+          return { ...cell, blocks: mappedNested };
+        });
+        if (!rowChanged) return row;
+        tblChanged = true;
+        return { ...row, cells: nextCells };
+      });
+      if (tblChanged) {
+        changed = true;
+        return { ...b, rows: nextRows };
+      }
+    } else if (b.kind === "columns-grid" && b.columns) {
+      let gridChanged = false;
+      const nextCols = b.columns.map((col) => {
+        if (!col.blocks || col.blocks.length === 0) return col;
+        const mappedNested = mapBlockInList(col.blocks, blockId, fn);
+        if (mappedNested === col.blocks) return col;
+        gridChanged = true;
+        return { ...col, blocks: mappedNested };
+      });
+      if (gridChanged) {
+        changed = true;
+        return { ...b, columns: nextCols };
+      }
+    }
+    return b;
+  });
+  return changed ? next : blocks;
+}
+
 export function mapBlock(
   doc: VDocDocument,
   pageId: string,
   blockId: string,
   fn: (block: LayoutBlock) => LayoutBlock
 ): VDocDocument {
-  return mapPageBlocks(doc, pageId, (blocks) => {
-    let changed = false;
-    const next = blocks.map((b) => {
-      if (b.blockId !== blockId) return b;
-      const mapped = fn(b);
-      if (mapped !== b) changed = true;
-      return mapped;
-    });
-    return changed ? next : blocks;
-  });
+  return mapPageBlocks(doc, pageId, (blocks) => mapBlockInList(blocks, blockId, fn));
 }
 
 /** 같은 페이지 안에서 한 칸 위/아래로. */
@@ -112,10 +213,52 @@ export function moveBlockToPosition(
   };
 }
 
+function removeBlockInList(blocks: LayoutBlock[], blockId: string): LayoutBlock[] {
+  if (blocks.some((b) => b.blockId === blockId)) {
+    return blocks.filter((b) => b.blockId !== blockId);
+  }
+  let changed = false;
+  const next = blocks.map((b) => {
+    if (b.kind === "structured-table") {
+      let tblChanged = false;
+      const nextRows = b.rows.map((row) => {
+        let rowChanged = false;
+        const nextCells = row.cells.map((cell) => {
+          if (!cell.blocks || cell.blocks.length === 0) return cell;
+          const filtered = removeBlockInList(cell.blocks, blockId);
+          if (filtered === cell.blocks) return cell;
+          rowChanged = true;
+          return { ...cell, blocks: filtered };
+        });
+        if (!rowChanged) return row;
+        tblChanged = true;
+        return { ...row, cells: nextCells };
+      });
+      if (tblChanged) {
+        changed = true;
+        return { ...b, rows: nextRows };
+      }
+    } else if (b.kind === "columns-grid" && b.columns) {
+      let gridChanged = false;
+      const nextCols = b.columns.map((col) => {
+        if (!col.blocks || col.blocks.length === 0) return col;
+        const filtered = removeBlockInList(col.blocks, blockId);
+        if (filtered === col.blocks) return col;
+        gridChanged = true;
+        return { ...col, blocks: filtered };
+      });
+      if (gridChanged) {
+        changed = true;
+        return { ...b, columns: nextCols };
+      }
+    }
+    return b;
+  });
+  return changed ? next : blocks;
+}
+
 export function removeBlock(doc: VDocDocument, pageId: string, blockId: string): VDocDocument {
-  return mapPageBlocks(doc, pageId, (blocks) =>
-    blocks.some((b) => b.blockId === blockId) ? blocks.filter((b) => b.blockId !== blockId) : blocks
-  );
+  return mapPageBlocks(doc, pageId, (blocks) => removeBlockInList(blocks, blockId));
 }
 
 /**
@@ -268,10 +411,11 @@ export function importBlockFromDocument(
   return insertBlock(target, targetPageId, block, clonedSlots);
 }
 
-/** 블록의 모든 슬롯을 함께 잠그거나 푼다. */
+/** 블록의 모든 슬롯을 함께 잠그거나 푼다 (중첩 블록 포함). */
 export function toggleBlockLock(doc: VDocDocument, pageId: string, blockId: string): VDocDocument {
-  const block = doc.pages.find((p) => p.pageId === pageId)?.blocks.find((b) => b.blockId === blockId);
-  if (!block) return doc;
+  const loc = findBlock(doc, blockId);
+  if (!loc || loc.pageId !== pageId) return doc;
+  const block = loc.block;
   const lock = !isBlockLocked(block, doc.slots);
   const slots = { ...doc.slots };
   for (const id of getBlockSlotIds(block)) {

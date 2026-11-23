@@ -7,6 +7,7 @@ export const dividerBlock = defineBlockKind<DividerBlockDef>({
   label: "구분선",
   category: "layout",
   icon: "minus",
+  outlineTag: "---",
   slotIds: () => [],
   units: (b) => [{ unitId: b.blockId, kind: "static", label: "구분선" }],
   outline: (_b, ctx) => {

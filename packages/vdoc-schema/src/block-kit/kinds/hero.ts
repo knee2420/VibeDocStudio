@@ -10,6 +10,7 @@ export const heroBlock = defineBlockKind<HeroBlockDef>({
   label: "사진 표지",
   category: "media",
   icon: "image",
+  outlineTag: ">",
   slotIds: heroSlots,
   units: (b) => [
     ...(b.image ? [{ unitId: `${b.blockId}:image`, kind: "media" as const, label: "표지 사진" }] : []),

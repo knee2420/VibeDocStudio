@@ -3,10 +3,7 @@ import { useStore } from "zustand";
 import {
   BookOpen,
   Check,
-  ChevronDown,
-  ChevronRight,
   ChevronsUpDown,
-  Database,
   FilePlus2,
   FileText,
   FolderKanban,
@@ -14,7 +11,6 @@ import {
   FolderTree,
   HelpCircle,
   Keyboard,
-  Layers,
   ListTree,
   Lock,
   Moon,
@@ -23,6 +19,7 @@ import {
   RefreshCw,
   RotateCcw,
   Settings,
+  SlidersHorizontal,
   Sparkles,
   Sun,
   Terminal as TerminalIcon,
@@ -55,7 +52,6 @@ import { WorkspaceLayoutView, type ExternalDropResource } from "@vibe/workspace-
 import {
   getAllGroups,
   type EditorHostContext,
-  type EditorOutlineHostContext,
   type EditorSelectionSnapshot,
   type TabGroupNode,
   type WorkspaceTab,
@@ -79,13 +75,14 @@ import {
 import {
   bootstrapIdeWorkbench,
   createOrMountWorkbenchVault,
-  getVaultFileStats,
   mountDirectLocalFolderWorkbench,
   type IdeLogEntry,
   type IdeWorkbenchRuntime,
 } from "../model/useIdeWorkbench";
 import { PagedDocumentIcon, ScrollDocumentIcon } from "./DocumentSurfaceIcons";
 import { ImportReferenceModal } from "./ImportReferenceModal";
+import { TabWithOutlineDrawer } from "./TabWithOutlineDrawer";
+import { VDocInspectorPanel } from "./VDocInspectorPanel";
 import { IdeSettingsModal } from "./settings";
 
 /**
@@ -162,14 +159,20 @@ const IdeTerminalDrawer = React.memo<{
 });
 
 /**
- * Isolated Right AI-Composer Sidebar — owns composerDraft, @mentions, and activeSelection
- * subscription so typing or changing 2D/Markdown selection NEVER re-renders the workspace.
+ * Isolated Right Dock Sidebar — Figma-style `[Inspector | AI]` dual-tab panel.
+ * Owns tab state, composerDraft, @mentions, and activeSelection subscription so
+ * interacting with the inspector or composer NEVER re-renders the workspace layout.
  */
 const IdeComposerSidebar = React.memo<{
   readonly runtime: IdeWorkbenchRuntime;
   readonly width: number;
   readonly activeResourceId: string | null;
-}>(({ runtime, width, activeResourceId }) => {
+  readonly activeViewType: string | null;
+}>(({ runtime, width, activeResourceId, activeViewType }) => {
+  const isVDocActive = Boolean(
+    activeResourceId && (activeViewType === "vibe-vdoc" || isVDocPath(activeResourceId))
+  );
+  const [rightTab, setRightTab] = useState<"inspector" | "ai">("inspector");
   const [attachedContextPaths, setAttachedContextPaths] = useState<string[]>([
     "01. Architecture/00. System-Proposal.vdoc",
   ]);
@@ -194,6 +197,7 @@ const IdeComposerSidebar = React.memo<{
         );
         if (valid.length > 0) {
           setAttachedContextPaths((prev) => Array.from(new Set([...prev, ...valid])));
+          setRightTab("ai");
           runtime.pushLog("composer", "ok", `attached @mention context: ${valid.join(", ")}`);
         }
       }
@@ -251,127 +255,183 @@ const IdeComposerSidebar = React.memo<{
       onDrop={handleComposerDrop}
       className="flex h-full shrink-0 flex-col bg-[var(--obs-bg-secondary,#262626)]"
     >
-      <div className="flex h-9 shrink-0 select-none items-center justify-between border-b border-[var(--obs-border-subtle,#2d2d2d)] px-3 text-[12px] font-semibold">
-        <span className="flex items-center gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
-          <span>AI-Composer</span>
-        </span>
-        {activeProjectName ? (
+      {/* Figma-style Dual-Tab Header: [Inspector] | [AI] */}
+      <div className="flex h-9 shrink-0 select-none items-center justify-between gap-2 border-b border-[var(--obs-border-subtle,#2d2d2d)] px-2 text-[11.5px]">
+        <div role="tablist" aria-label="Right dock mode" className="flex items-center gap-0.5">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={rightTab === "inspector"}
+            onClick={() => setRightTab("inspector")}
+            className={`flex items-center gap-1.5 rounded-[5px] px-2 py-1 font-medium transition-colors ${
+              rightTab === "inspector"
+                ? "bg-[var(--obs-bg-hover,rgba(255,255,255,0.09))] text-[var(--obs-text-normal,#ececec)]"
+                : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
+            }`}
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
+            <span>Inspector</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={rightTab === "ai"}
+            onClick={() => setRightTab("ai")}
+            className={`flex items-center gap-1.5 rounded-[5px] px-2 py-1 font-medium transition-colors ${
+              rightTab === "ai"
+                ? "bg-[var(--obs-bg-hover,rgba(255,255,255,0.09))] text-[var(--obs-text-normal,#ececec)]"
+                : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
+            }`}
+          >
+            <Sparkles className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
+            <span>AI</span>
+          </button>
+        </div>
+
+        {activeProjectName && (
           <span
             title={`소속 프로젝트: ${activeProjectName}`}
-            className="flex max-w-[130px] items-center gap-1 rounded bg-[rgba(138,92,245,0.18)] px-1.5 py-0.5 font-code text-[10px] font-medium text-[#c4b5fd]"
+            className="flex max-w-[110px] items-center gap-1 rounded bg-[rgba(138,92,245,0.18)] px-1.5 py-0.5 font-code text-[10px] font-medium text-[#c4b5fd]"
           >
             <FolderKanban className="h-2.5 w-2.5 shrink-0" />
             <span className="truncate">{activeProjectName}</span>
           </span>
-        ) : (
-          <span className="font-code text-[10px] font-normal text-[var(--obs-text-faint,#666666)]">
-            2D Directing
-          </span>
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[12px] text-[var(--obs-text-muted,#b3b3b3)]">
-        {activeSelection && (
-          <div className="mb-3 rounded-md border border-[var(--obs-accent,#8a5cf5)] bg-[rgba(138,92,245,0.10)] p-2.5">
-            <div className="mb-1 flex items-center justify-between font-code text-[10.5px] font-semibold text-[var(--obs-accent-hover,#a68af9)]">
-              <span className="truncate">
-                {activeSelection.kind === "canvas-nodes" ? "2D Selection" : "Selection"} ·{" "}
-                {activeSelection.summary}
-              </span>
-              <button
-                type="button"
-                onClick={() => runtime.setActiveSelection(null)}
-                className="shrink-0 opacity-70 hover:opacity-100"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-            {activeSelection.text && (
-              <div className="line-clamp-3 font-code text-[11px] text-[var(--obs-text-normal,#dadada)]">
-                {activeSelection.text}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="rounded-md border border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-primary,#1e1e1e)] p-3 leading-5">
-          <div className="mb-1 font-semibold text-[var(--obs-text-normal,#dadada)]">
-            Registered Editor Adapters ({adapters.length})
-          </div>
-          <ul className="space-y-1 font-code text-[11px]">
-            {adapters.map((adapter) => (
-              <li key={adapter.id} className="flex items-center justify-between gap-2">
-                <span className="truncate text-[var(--obs-text-normal,#dadada)]">
-                  {adapter.id}
-                </span>
-                <span className="shrink-0 text-[var(--obs-text-faint,#666666)]">
-                  {adapter.extensions.join(", ")}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="mt-3">
-          <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-[var(--obs-text-faint,#666666)] uppercase">
-            <span>Attached @mentions ({attachedContextPaths.length})</span>
-            {attachedContextPaths.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setAttachedContextPaths([])}
-                className="flex items-center gap-0.5 text-[10px] normal-case hover:text-[var(--obs-text-normal,#dadada)]"
-              >
-                <Trash2 className="h-3 w-3" />
-                <span>Clear</span>
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {attachedContextPaths.map((p) => (
-              <span
-                key={p}
-                className="inline-flex max-w-full items-center gap-1 rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2 py-0.5 font-code text-[11px] text-[var(--obs-text-normal,#dadada)]"
-              >
-                <span className="truncate">@{p}</span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAttachedContextPaths((prev) => prev.filter((item) => item !== p))
-                  }
-                  className="shrink-0 text-[var(--obs-text-faint,#666666)] hover:text-[var(--obs-text-normal,#dadada)]"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <form
-        onSubmit={handleComposerSubmit}
-        className="shrink-0 border-t border-[var(--obs-border-subtle,#2d2d2d)] p-2.5"
-      >
-        <div className="rounded-md border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] p-2">
-          <input
-            type="text"
-            value={composerDraft}
-            onChange={(e) => setComposerDraft(e.target.value)}
-            placeholder="2D 디렉팅 입력 (새 .md/.outline 생성 + 링크카드)..."
-            className="w-full bg-transparent text-[12px] text-[var(--obs-text-normal,#dadada)] placeholder:text-[var(--obs-text-faint,#666666)] outline-none"
+      {rightTab === "inspector" ? (
+        isVDocActive && activeResourceId ? (
+          <VDocInspectorPanel
+            runtime={runtime}
+            path={activeResourceId}
+            onSwitchToAi={() => setRightTab("ai")}
           />
-          <div className="mt-2 flex items-center justify-between text-[10px] text-[var(--obs-text-faint,#666666)]">
-            <span className="font-code">/skill · @mention</span>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 p-5 text-center text-[12px] text-[var(--obs-text-muted,#9a9a9a)]">
+            <SlidersHorizontal className="h-6 w-6 opacity-40" />
+            <div className="space-y-1">
+              <p className="font-medium text-[var(--obs-text-normal,#dadada)]">
+                WYSIWYM 인스펙터
+              </p>
+              <p className="text-[11px] leading-4 text-[var(--obs-text-faint,#777777)]">
+                <code>.vdoc</code> 문서를 열면 스타일 팩·섹션 역할·블록 의미 속성을 이곳에서 바로 조작할 수 있습니다.
+              </p>
+            </div>
             <button
-              type="submit"
-              className="rounded bg-[var(--obs-accent,#8a5cf5)] px-2 py-0.5 font-medium text-white hover:opacity-90"
+              type="button"
+              onClick={() => setRightTab("ai")}
+              className="mt-1 flex items-center gap-1.5 rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2.5 py-1 text-[11px] text-[var(--obs-text-normal,#dadada)] hover:border-[var(--obs-accent,#8a5cf5)]"
             >
-              Direct
+              <Sparkles className="h-3 w-3 text-[var(--obs-accent,#8a5cf5)]" />
+              <span>AI 탭 열기</span>
             </button>
           </div>
-        </div>
-      </form>
+        )
+      ) : (
+        <>
+          <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[12px] text-[var(--obs-text-muted,#b3b3b3)]">
+            {activeSelection && (
+              <div className="mb-3 rounded-md border border-[var(--obs-accent,#8a5cf5)] bg-[rgba(138,92,245,0.10)] p-2.5">
+                <div className="mb-1 flex items-center justify-between font-code text-[10.5px] font-semibold text-[var(--obs-accent-hover,#a68af9)]">
+                  <span className="truncate">
+                    {activeSelection.kind === "canvas-nodes" ? "2D Selection" : "Selection"} ·{" "}
+                    {activeSelection.summary}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => runtime.setActiveSelection(null)}
+                    className="shrink-0 opacity-70 hover:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+                {activeSelection.text && (
+                  <div className="line-clamp-3 font-code text-[11px] text-[var(--obs-text-normal,#dadada)]">
+                    {activeSelection.text}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="rounded-md border border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-primary,#1e1e1e)] p-3 leading-5">
+              <div className="mb-1 font-semibold text-[var(--obs-text-normal,#dadada)]">
+                Registered Editor Adapters ({adapters.length})
+              </div>
+              <ul className="space-y-1 font-code text-[11px]">
+                {adapters.map((adapter) => (
+                  <li key={adapter.id} className="flex items-center justify-between gap-2">
+                    <span className="truncate text-[var(--obs-text-normal,#dadada)]">
+                      {adapter.id}
+                    </span>
+                    <span className="shrink-0 text-[var(--obs-text-faint,#666666)]">
+                      {adapter.extensions.join(", ")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-3">
+              <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-[var(--obs-text-faint,#666666)] uppercase">
+                <span>Attached @mentions ({attachedContextPaths.length})</span>
+                {attachedContextPaths.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setAttachedContextPaths([])}
+                    className="flex items-center gap-0.5 text-[10px] normal-case hover:text-[var(--obs-text-normal,#dadada)]"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    <span>Clear</span>
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {attachedContextPaths.map((p) => (
+                  <span
+                    key={p}
+                    className="inline-flex max-w-full items-center gap-1 rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2 py-0.5 font-code text-[11px] text-[var(--obs-text-normal,#dadada)]"
+                  >
+                    <span className="truncate">@{p}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAttachedContextPaths((prev) => prev.filter((item) => item !== p))
+                      }
+                      className="shrink-0 text-[var(--obs-text-faint,#666666)] hover:text-[var(--obs-text-normal,#dadada)]"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <form
+            onSubmit={handleComposerSubmit}
+            className="shrink-0 border-t border-[var(--obs-border-subtle,#2d2d2d)] p-2.5"
+          >
+            <div className="rounded-md border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] p-2">
+              <input
+                type="text"
+                value={composerDraft}
+                onChange={(e) => setComposerDraft(e.target.value)}
+                placeholder="2D 디렉팅 입력 (새 .md/.outline 생성 + 링크카드)..."
+                className="w-full bg-transparent text-[12px] text-[var(--obs-text-normal,#dadada)] placeholder:text-[var(--obs-text-faint,#666666)] outline-none"
+              />
+              <div className="mt-2 flex items-center justify-between text-[10px] text-[var(--obs-text-faint,#666666)]">
+                <span className="font-code">/skill · @mention</span>
+                <button
+                  type="submit"
+                  className="rounded bg-[var(--obs-accent,#8a5cf5)] px-2 py-0.5 font-medium text-white hover:opacity-90"
+                >
+                  Direct
+                </button>
+              </div>
+            </div>
+          </form>
+        </>
+      )}
     </aside>
   );
 });
@@ -403,10 +463,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
 }) => {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showExplorer, setShowExplorer] = useState(true);
-  const [explorerAccordionOpen, setExplorerAccordionOpen] = useState(true);
   const [explorerWidth, setExplorerWidth] = useState(270);
-  const [structureOpen, setStructureOpen] = useState(true);
-  const [structureHeight, setStructureHeight] = useState(260);
   const [showTerminal, setShowTerminal] = useState(true);
   const [terminalHeight, setTerminalHeight] = useState(145);
   const [showComposer, setShowComposer] = useState(true);
@@ -416,6 +473,19 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
     runtime.getSyncStatus()
   );
   const [vaultMenuOpen, setVaultMenuOpen] = useState(false);
+  const [manageVaultModalOpen, setManageVaultModalOpen] = useState(false);
+  const vaultMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!vaultMenuOpen) return;
+    const handleClickOutside = (ev: MouseEvent) => {
+      if (vaultMenuRef.current && !vaultMenuRef.current.contains(ev.target as Node)) {
+        setVaultMenuOpen(false);
+      }
+    };
+    window.addEventListener("mousedown", handleClickOutside);
+    return () => window.removeEventListener("mousedown", handleClickOutside);
+  }, [vaultMenuOpen]);
   const [newVaultName, setNewVaultName] = useState("");
   const [newVaultPath, setNewVaultPath] = useState("");
   const [mountReadOnly, setMountReadOnly] = useState(true);
@@ -456,7 +526,6 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
   const layoutRoot = useStore(runtime.layout, (s) => s.root);
   const activeGroupId = useStore(runtime.layout, (s) => s.activeGroupId);
   const isGroupExpanded = useStore(runtime.layout, (s) => Boolean(s.expandedTabGroup));
-  const explorerRevision = useStore(runtime.explorer, (s) => s.revision);
 
   const paneCount = useMemo(() => getAllGroups(layoutRoot).length, [layoutRoot]);
   const activeTab = useMemo(() => {
@@ -465,11 +534,6 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
     if (!activeGroup) return null;
     return activeGroup.tabs.find((t) => t.id === activeGroup.activeTabId) ?? null;
   }, [layoutRoot, activeGroupId]);
-
-  const vaultStats = useMemo(() => {
-    void explorerRevision;
-    return getVaultFileStats(runtime.vault);
-  }, [runtime.vault, explorerRevision]);
 
   const openImportReferenceModal = useCallback((replaceRefPath?: string, targetFolder?: string) => {
     setRefImportModal({
@@ -501,6 +565,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
       vault: runtime.vault,
       metadataCache: runtime.metadataCache,
       vdocUiBridge: runtime.vdocUiBridge,
+      openInPairTabGroup: runtime.openFileInPairTabGroup,
       openImportReferenceModal: (replaceRefPath) => openImportReferenceModal(replaceRefPath),
       startAsyncUrlRefImport: startAsyncUrlImport,
       settleRefFileName: runtime.settleRefFileName,
@@ -510,6 +575,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
       runtime.settleRefFileName,
       runtime.metadataCache,
       runtime.vdocUiBridge,
+      runtime.openFileInPairTabGroup,
       openImportReferenceModal,
       startAsyncUrlImport,
     ]
@@ -657,12 +723,6 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
     ],
     [openImportReferenceModal, runtime]
   );
-
-  // Resolve active adapter for Left-Bottom Document Structure panel
-  const activeAdapter = useMemo(() => {
-    if (!activeTab?.resourceId) return null;
-    return runtime.editorRegistry.resolveForTab(activeTab.resourceId, activeTab.viewType);
-  }, [activeTab, runtime.editorRegistry]);
 
   // Global IDE keyboard shortcuts
   useEffect(() => {
@@ -1007,25 +1067,16 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
         },
       };
 
-      const AdapterComponent = adapter.Component;
-      return <AdapterComponent key={`${adapter.id}:${tab.resourceId}`} host={host} />;
+      return (
+        <TabWithOutlineDrawer
+          key={`${tab.id}:${adapter.id}:${tab.resourceId}`}
+          adapter={adapter}
+          host={host}
+        />
+      );
     },
     [editorEnv, runtime]
   );
-
-  const outlineHost = useMemo<EditorOutlineHostContext<IdeEditorEnv> | null>(() => {
-    if (!activeTab?.resourceId || !activeAdapter) return null;
-    return {
-      env: editorEnv,
-      path: activeTab.resourceId,
-      viewType: activeAdapter.id,
-      openLink: (target, mode) => {
-        runtime.openWikilink(target, activeTab.resourceId!, mode ?? "current");
-      },
-    };
-  }, [activeAdapter, activeTab, editorEnv, runtime]);
-
-  const ActiveOutlineComponent = activeAdapter?.OutlineComponent;
 
   return (
     <div
@@ -1040,7 +1091,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
             <button
               type="button"
               onClick={() => setShowExplorer((v) => !v)}
-              title="Toggle File Explorer & Structure (Ctrl+B)"
+              title="Toggle File Explorer (Ctrl+B)"
               aria-label="Toggle File Explorer"
               className="flex h-8 w-8 items-center justify-center rounded-[5px] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
               style={{
@@ -1120,26 +1171,18 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           </div>
         </aside>
 
-        {/* 2. Left Sidebar: Vertical 2-Pane Split (Top: Obsidian File Explorer <-> Bottom: Adapter Document Structure) */}
+        {/* 2. Left Sidebar: Full-height Obsidian File Explorer + Bottom Vault Footer */}
         {showExplorer && (
           <>
             <aside
               style={{ width: `${explorerWidth}px` }}
               className="flex h-full shrink-0 flex-col overflow-hidden bg-[var(--obs-bg-secondary,#262626)]"
             >
-              {/* Top: Obsidian 90% File Explorer (Accordion) */}
-              <div
-                className={
-                  explorerAccordionOpen
-                    ? "min-h-0 flex-1 overflow-hidden"
-                    : "shrink-0 overflow-hidden"
-                }
-              >
+              {/* Obsidian File Explorer */}
+              <div className="min-h-0 flex-1 overflow-hidden">
                 <FileExplorer
                   store={runtime.explorer}
                   vaultName={runtime.vault.name}
-                  collapsed={!explorerAccordionOpen}
-                  onToggleCollapsed={() => setExplorerAccordionOpen((v) => !v)}
                   fileCreateSchemas={fileCreateSchemas}
                   customContextActions={explorerContextActions}
                   resolveFilePresentation={resolveExplorerFilePresentation}
@@ -1163,96 +1206,70 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                 />
               </div>
 
-              {/* Horizontal Resizer Splitter (File Explorer <-> Document Structure) */}
-              {explorerAccordionOpen && structureOpen && (
-                <div
-                  role="separator"
-                  aria-orientation="horizontal"
-                  onMouseDown={(ev) =>
-                    startVerticalResize(ev, structureHeight, 120, 720, setStructureHeight)
-                  }
-                  className="group relative z-20 h-px shrink-0 cursor-row-resize bg-[var(--obs-border,#363636)]"
-                >
-                  <div className="absolute right-0 left-0 -top-[3px] h-[7px] transition-colors group-hover:top-[-1px] group-hover:h-[3px] group-hover:bg-[var(--obs-accent,#8a5cf5)]" />
-                </div>
-              )}
-
-              {/* Bottom: Adapter-Driven Document Structure (Figma Pages & Elements / MD Outline / Outline Branches) */}
-              <div
-                style={
-                  !structureOpen
-                    ? { height: "28px" }
-                    : explorerAccordionOpen
-                      ? { height: `${structureHeight}px` }
-                      : undefined
-                }
-                className={`flex flex-col overflow-hidden border-t border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] ${
-                  structureOpen && !explorerAccordionOpen ? "min-h-0 flex-1" : "shrink-0"
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => setStructureOpen((v) => !v)}
-                  className="flex h-7 shrink-0 select-none items-center justify-between px-2.5 text-[11px] font-semibold tracking-wide text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
-                >
-                  <span className="flex items-center gap-1.5 truncate">
-                    {structureOpen ? (
-                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-                    ) : (
-                      <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-                    )}
-                    <Layers className="h-3 w-3 shrink-0 text-[var(--obs-accent,#8a5cf5)]" />
-                    <span className="truncate">
-                      {activeAdapter?.id === "vibe-vdoc"
-                        ? "PAGES & ELEMENTS"
-                        : activeAdapter?.id === "obsidian-markdown"
-                          ? "OUTLINE & BACKLINKS"
-                          : activeAdapter?.id === "vibe-ref"
-                            ? "REFERENCE CANVAS & PINS"
-                            : activeAdapter?.id === "vibe-syntax"
-                              ? "SYNTAX RULES"
-                              : activeAdapter?.id === "vibe-style"
-                                ? "STYLE GRID KITS"
-                                : "DOCUMENT STRUCTURE"}
-                    </span>
-                  </span>
-                  {activeAdapter && (
-                    <span className="font-code text-[9.5px] font-normal text-[var(--obs-text-faint,#666666)]">
-                      {activeAdapter.id}
-                    </span>
-                  )}
-                </button>
-
-                {structureOpen && (
-                  <div className="min-h-0 flex-1 overflow-hidden border-t border-[var(--obs-border-subtle,#2d2d2d)]">
-                    {ActiveOutlineComponent && outlineHost ? (
-                      <ActiveOutlineComponent
-                        key={`${outlineHost.viewType}:${outlineHost.path}`}
-                        host={outlineHost}
-                      />
-                    ) : (
-                      <div className="px-3 py-4 text-[11.5px] text-[var(--obs-text-faint,#666666)]">
-                        No structure view for this tab.
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
               {/* Obsidian 1.15 Left Sidebar Bottom Footer: [Vault ▾]   [?] [⚙️] */}
-              <div className="flex h-9 shrink-0 select-none items-center justify-between gap-1 border-t border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-2">
+              <div className="relative flex h-9 shrink-0 select-none items-center justify-between gap-1 border-t border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-2">
                 <button
                   type="button"
                   onClick={() => {
                     setVaultActionError(null);
                     setVaultMenuOpen((v) => !v);
                   }}
-                  title={`볼트 전환 · ${runtime.vault.name}`}
+                  title={`보관함 전환 · ${runtime.vault.name}`}
                   className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-1.5 py-1 text-left text-[12px] font-medium text-[var(--obs-text-muted,#b8b8b8)] transition-colors hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#ececec)]"
                 >
                   <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-[var(--obs-text-faint,#777)]" />
                   <span className="truncate">{runtime.vault.name}</span>
                 </button>
+
+                {/* Obsidian Popover Menu: Vaults list + Manage vaults */}
+                {vaultMenuOpen && (
+                  <div
+                    ref={vaultMenuRef}
+                    className="absolute bottom-full left-1 z-50 mb-1 w-64 rounded-md border border-[var(--obs-border,#333333)] bg-[#202020] p-1 font-sans text-[12px] shadow-2xl backdrop-blur"
+                  >
+                    <div className="max-h-60 space-y-0.5 overflow-y-auto py-0.5">
+                      {vaults.map((v) => {
+                        const isCurrent =
+                          (runtime.mode === "local" && runtime.vault.id === v.id) ||
+                          runtime.vault.name === v.name;
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            onClick={() => {
+                              onSwitchVault(v.id);
+                              setVaultMenuOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between gap-2 rounded px-2.5 py-1.5 text-left text-[12px] transition-colors ${
+                              isCurrent
+                                ? "bg-[rgba(255,255,255,0.08)] font-medium text-[#ececec]"
+                                : "text-[#b3b3b3] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#ececec]"
+                            }`}
+                          >
+                            <span className="truncate">{v.name}</span>
+                            {isCurrent && (
+                              <Check className="h-3.5 w-3.5 shrink-0 text-[var(--obs-accent,#8a5cf5)]" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="my-1 border-t border-[var(--obs-border-subtle,#2d2d2d)]" />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVaultMenuOpen(false);
+                        setManageVaultModalOpen(true);
+                      }}
+                      className="flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-left text-[12px] text-[#8b949e] transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-[#ececec]"
+                    >
+                      <FolderOpen className="h-3.5 w-3.5 shrink-0 text-[#8b949e]" />
+                      <span>보관함 관리하기...</span>
+                    </button>
+                  </div>
+                )}
 
                 <div className="flex shrink-0 items-center gap-0.5">
                   <button
@@ -1345,46 +1362,15 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
               runtime={runtime}
               width={composerWidth}
               activeResourceId={activeTab?.resourceId ?? null}
+              activeViewType={activeTab?.viewType ?? null}
             />
           </>
         )}
       </div>
 
-      {/* Obsidian Bottom Status Bar (24px) + Local Vault Switcher */}
+      {/* Obsidian Bottom Status Bar (24px) */}
       <footer className="relative flex h-6 shrink-0 select-none items-center justify-between border-t border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary-alt,#1a1a1a)] px-3 font-code text-[11px] text-[var(--obs-text-faint,#666666)]">
         <div className="flex items-center gap-3 truncate">
-          <button
-            type="button"
-            onClick={() => {
-              setVaultActionError(null);
-              setVaultMenuOpen((v) => !v);
-            }}
-            title={
-              runtime.vaultRootPath
-                ? `Local Vault: ${runtime.vaultRootPath} (클릭해 볼트 전환/마운트)`
-                : "Memory Fallback (클릭해 로컬 볼트 재연결)"
-            }
-            className="flex shrink-0 items-center gap-1.5 rounded px-1.5 py-0.5 text-[var(--obs-text-muted,#b3b3b3)] transition-colors hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] hover:text-[var(--obs-text-normal,#dadada)]"
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{
-                backgroundColor:
-                  runtime.mode === "local"
-                    ? syncStatus.status === "error"
-                      ? "#fb464c"
-                      : syncStatus.status === "syncing"
-                        ? "#facc15"
-                        : "#4ade80"
-                    : "#fb923c",
-              }}
-            />
-            <Database className="h-3 w-3" />
-            <span>
-              {runtime.mode === "local" ? `Local · ${runtime.vault.name}` : `Memory · ${runtime.vault.name}`}
-            </span>
-          </button>
-
           {supportsReadOnlyToggle && (
             <button
               type="button"
@@ -1412,10 +1398,6 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
               {syncStatus.lastError}
             </span>
           )}
-
-          <span>
-            {vaultStats.files} files · {vaultStats.folders} folders
-          </span>
           {activeTab?.resourceId &&
             (() => {
               const projPath = findOwningProjectPath(activeTab.resourceId);
@@ -1443,17 +1425,21 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           <span>{theme === "dark" ? "Obsidian Dark" : "Obsidian Light"}</span>
         </div>
 
-        {/* Local Vault Switcher Popover */}
-        {vaultMenuOpen && (
-          <div
-            role="dialog"
-            aria-label="Local Vault Switcher"
-            className="absolute bottom-7 left-2 z-50 w-[340px] rounded-lg border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] p-3 font-sans text-[12px] text-[var(--obs-text-normal,#dadada)] shadow-2xl"
-          >
-            <div className="mb-2 flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-semibold">
-                <FolderOpen className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
-                <span>Local Vaults</span>
+      </footer>
+
+      {/* Obsidian Style Manage Vaults Modal */}
+      {manageVaultModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="보관함 관리"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-lg rounded-lg border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] p-4 font-sans text-[12px] text-[var(--obs-text-normal,#dadada)] shadow-2xl">
+            <div className="mb-3 flex items-center justify-between border-b border-[var(--obs-border-subtle,#2d2d2d)] pb-2.5">
+              <span className="flex items-center gap-2 text-sm font-semibold text-[#ececec]">
+                <FolderOpen className="h-4 w-4 text-[var(--obs-accent,#8a5cf5)]" />
+                <span>보관함 관리</span>
               </span>
               <div className="flex items-center gap-1">
                 {isDirectLocalMount && (
@@ -1461,13 +1447,13 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                     type="button"
                     onClick={() => {
                       onReturnToDefaultVault();
-                      setVaultMenuOpen(false);
+                      setManageVaultModalOpen(false);
                     }}
-                    title="기본/샘플 볼트로 복귀"
-                    className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-[var(--obs-accent-hover,#a68af9)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                    title="기본 보관함으로 복귀"
+                    className="flex items-center gap-1 rounded px-2 py-1 text-[11px] text-[var(--obs-accent-hover,#a68af9)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
                   >
                     <RotateCcw className="h-3 w-3" />
-                    <span>기본 볼트</span>
+                    <span>기본 보관함</span>
                   </button>
                 )}
                 {runtime.mode === "local" ? (
@@ -1475,22 +1461,21 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                     type="button"
                     onClick={() => {
                       void runtime.resyncLocalVault();
-                      setVaultMenuOpen(false);
                     }}
                     title="디스크에서 다시 동기화"
-                    className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                    className="flex items-center gap-1 rounded px-2 py-1 text-[11px] text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
                   >
                     <RefreshCw className="h-3 w-3" />
-                    <span>Re-sync</span>
+                    <span>동기화</span>
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() => {
                       onRetryLocal();
-                      setVaultMenuOpen(false);
+                      setManageVaultModalOpen(false);
                     }}
-                    className="flex items-center gap-1 rounded bg-[var(--obs-accent,#8a5cf5)] px-2 py-0.5 text-[11px] font-medium text-white hover:opacity-90"
+                    className="flex items-center gap-1 rounded bg-[var(--obs-accent,#8a5cf5)] px-2 py-1 text-[11px] font-medium text-white hover:opacity-90"
                   >
                     <RefreshCw className="h-3 w-3" />
                     <span>로컬 연결 재시도</span>
@@ -1498,18 +1483,18 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                 )}
                 <button
                   type="button"
-                  onClick={() => setVaultMenuOpen(false)}
-                  className="flex h-5 w-5 items-center justify-center rounded text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                  onClick={() => setManageVaultModalOpen(false)}
+                  className="flex h-6 w-6 items-center justify-center rounded text-[var(--obs-text-muted,#b3b3b3)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
             {runtime.vaultRootPath && (
-              <div className="mb-2.5 flex items-center justify-between gap-2 rounded border border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-2 py-1 font-code text-[10.5px] text-[var(--obs-text-muted,#b3b3b3)]">
+              <div className="mb-3 flex items-center justify-between gap-2 rounded border border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-2.5 py-1.5 font-code text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
                 <span className="min-w-0 flex-1 truncate" title={runtime.vaultRootPath}>
-                  {runtime.vaultRootPath}
+                  현재 경로: {runtime.vaultRootPath}
                 </span>
                 {!isDirectLocalMount && (
                   <button
@@ -1518,47 +1503,58 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                       void runtime.revealInOsExplorer("");
                     }}
                     title="OS 파일 탐색기에서 열기"
-                    className="shrink-0 rounded px-1.5 py-0.5 font-sans text-[10.5px] text-[var(--obs-accent-hover,#a68af9)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                    className="shrink-0 rounded px-1.5 py-0.5 font-sans text-[11px] text-[var(--obs-accent-hover,#a68af9)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
                   >
-                    열기
+                    탐색기 열기
                   </button>
                 )}
               </div>
             )}
 
-            {vaults.length > 0 ? (
-              <div className="mb-2.5 max-h-36 space-y-1 overflow-y-auto">
+            <div className="mb-3">
+              <div className="mb-1.5 text-[11px] font-semibold text-[var(--obs-text-muted,#b3b3b3)]">
+                등록된 보관함 목록
+              </div>
+              <div className="max-h-48 space-y-1 overflow-y-auto rounded border border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] p-1.5">
                 {vaults.map((v) => {
-                  const isCurrent = runtime.mode === "local" && runtime.vault.id === v.id;
+                  const isCurrent =
+                    (runtime.mode === "local" && runtime.vault.id === v.id) ||
+                    runtime.vault.name === v.name;
                   return (
-                    <button
+                    <div
                       key={v.id}
-                      type="button"
-                      onClick={() => {
-                        onSwitchVault(v.id);
-                        setVaultMenuOpen(false);
-                      }}
-                      className="flex w-full items-center justify-between gap-2 rounded-[5px] px-2 py-1.5 text-left hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                      className="flex items-center justify-between gap-2 rounded px-2 py-1.5 hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
                     >
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium">{v.name}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate font-medium text-[#ececec]">{v.name}</span>
+                          {isCurrent && (
+                            <span className="rounded bg-[var(--obs-accent,#8a5cf5)]/20 px-1 py-0.2 text-[10px] text-[var(--obs-accent,#8a5cf5)]">
+                              현재
+                            </span>
+                          )}
+                        </div>
                         <span className="block truncate font-code text-[10px] text-[var(--obs-text-faint,#666666)]">
                           {v.rootPath}
                         </span>
-                      </span>
-                      {isCurrent && (
-                        <Check className="h-3.5 w-3.5 shrink-0 text-[var(--obs-accent,#8a5cf5)]" />
+                      </div>
+                      {!isCurrent && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSwitchVault(v.id);
+                            setManageVaultModalOpen(false);
+                          }}
+                          className="shrink-0 rounded bg-[var(--obs-bg-secondary-alt,#1a1a1a)] px-2 py-0.5 text-[11px] text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-accent,#8a5cf5)] hover:text-white"
+                        >
+                          열기
+                        </button>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
-            ) : (
-              <p className="mb-2.5 text-[11px] leading-4 text-[var(--obs-text-muted,#b3b3b3)]">
-                임시 Memory 모드로 동작 중입니다. 아래에 로컬 폴더 경로(전체 볼트 또는 부분 이관
-                폴더)를 입력하면 원본을 건드리지 않고 읽기 전용·지연 로딩으로 바로 열 수 있습니다.
-              </p>
-            )}
+            </div>
 
             <form
               onSubmit={async (ev) => {
@@ -1573,46 +1569,50 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                 setVaultActionError(null);
                 try {
                   if (trimmedPath) {
-                    await onMountDirectLocalFolder(trimmedPath, trimmedName, mountReadOnly);
+                    await onMountDirectLocalFolder(
+                      trimmedPath,
+                      trimmedName || trimmedPath.split(/[\\/]/).filter(Boolean).pop() || "Local Vault",
+                      mountReadOnly
+                    );
                   } else {
-                    await onCreateOrMountVault(trimmedName);
+                    await onCreateOrMountVault(trimmedName, undefined);
                   }
                   setNewVaultName("");
                   setNewVaultPath("");
-                  setVaultMenuOpen(false);
+                  setManageVaultModalOpen(false);
                 } catch (err) {
                   setVaultActionError(
-                    err instanceof Error ? err.message : "볼트 생성/마운트 실패"
+                    err instanceof Error ? err.message : "보관함 생성/마운트 실패"
                   );
                 } finally {
                   setVaultActionBusy(false);
                 }
               }}
-              className="space-y-1.5 border-t border-[var(--obs-border-subtle,#2d2d2d)] pt-2.5"
+              className="space-y-2 border-t border-[var(--obs-border-subtle,#2d2d2d)] pt-3"
             >
-              <div className="text-[10.5px] font-semibold text-[var(--obs-text-muted,#b3b3b3)]">
-                로컬 폴더 직접 마운트 (원본 무변경 · 지연 로딩)
+              <div className="text-[11px] font-semibold text-[var(--obs-text-muted,#b3b3b3)]">
+                새 로컬 폴더 직접 마운트
               </div>
               <input
                 type="text"
                 value={newVaultPath}
                 onChange={(e) => setNewVaultPath(e.target.value)}
                 placeholder="로컬 절대 경로 (예: C:\path\to\folder)"
-                className="w-full rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-secondary,#262626)] px-2 py-1 font-code text-[11px] outline-none focus:border-[var(--obs-accent,#8a5cf5)]"
+                className="w-full rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-secondary,#262626)] px-2.5 py-1.5 font-code text-[11px] outline-none focus:border-[var(--obs-accent,#8a5cf5)]"
               />
               <input
                 type="text"
                 value={newVaultName}
                 onChange={(e) => setNewVaultName(e.target.value)}
                 placeholder="표시 이름 (선택 · 비우면 폴더명 사용)"
-                className="w-full rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-secondary,#262626)] px-2 py-1 text-[11.5px] outline-none focus:border-[var(--obs-accent,#8a5cf5)]"
+                className="w-full rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-secondary,#262626)] px-2.5 py-1.5 text-[11px] outline-none focus:border-[var(--obs-accent,#8a5cf5)]"
               />
               <label className="flex cursor-pointer select-none items-center gap-1.5 text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
                 <input
                   type="checkbox"
                   checked={mountReadOnly}
                   onChange={(e) => setMountReadOnly(e.target.checked)}
-                  className="accent-[var(--obs-accent,#8a5cf5)]"
+                  className="rounded accent-[var(--obs-accent,#8a5cf5)]"
                 />
                 <span>읽기 전용 안전 잠금 (원본 볼트 보호 · 권장)</span>
               </label>
@@ -1626,7 +1626,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                   (!newVaultPath.trim() &&
                     (runtime.mode !== "local" || isDirectLocalMount || !newVaultName.trim()))
                 }
-                className="flex w-full items-center justify-center gap-1 rounded bg-[var(--obs-accent,#8a5cf5)] px-2 py-1 text-[11.5px] font-medium text-white hover:opacity-90 disabled:opacity-40"
+                className="flex w-full items-center justify-center gap-1.5 rounded bg-[var(--obs-accent,#8a5cf5)] px-3 py-1.5 text-[11.5px] font-medium text-white hover:opacity-90 disabled:opacity-40"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>
@@ -1636,13 +1636,13 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                       ? mountReadOnly
                         ? "로컬 폴더 마운트 (읽기 전용)"
                         : "로컬 폴더 마운트 (쓰기 허용)"
-                      : "새 볼트 생성"}
+                      : "새 보관함 등록"}
                 </span>
               </button>
             </form>
           </div>
-        )}
-      </footer>
+        </div>
+      )}
 
       <ImportReferenceModal
         open={refImportModal.open}

@@ -49,6 +49,7 @@ export const YESFORM_OFFICIAL_PACK: StylePack = {
         lineHeight: "1.65",
         color: "{text.body}",
         align: "left",
+        listMarker: "circle",
       },
       tableHeader: {
         fontSize: "13px",

@@ -54,6 +54,7 @@ export const GOV_RFP_PACK: StylePack = {
         lineHeight: "1.65",
         color: "{text.body}",
         align: "left",
+        listMarker: "circle",
       },
       spotTitle: {
         fontSize: "15px",

@@ -29,12 +29,16 @@ import { basename, dirname, type VaultPort } from "@vibe/vault-core";
 
 import {
   SETTINGS_GROUPS,
+  STANDARD_STYLE_PATH,
+  STANDARD_SYNTAX_PATH,
   createDefaultStylePackJson,
   createDefaultSyntaxJson,
   createSettingsSectionRegistry,
+  createStandardBaseStyleJson,
   detectSyntaxRuleConflicts,
   isStylePath,
   isSyntaxPath,
+  isSystemSettingsPath,
   parseStylePackJson,
   parseSyntaxSnapshot,
   serializeSyntaxSnapshot,
@@ -61,19 +65,42 @@ export interface IdeSettingsModalProps {
 }
 
 function collectVaultPaths(vault: VaultPort): {
+  standardSyntaxPath: string | null;
+  standardStylePath: string | null;
   syntaxPaths: string[];
-  stylePaths: string[];
+  individualStylePaths: string[];
 } {
   const syntaxPaths: string[] = [];
-  const stylePaths: string[] = [];
+  const individualStylePaths: string[] = [];
+  let standardSyntaxPath: string | null = null;
+  let standardStylePath: string | null = null;
+
   for (const node of vault.listAll()) {
     if (node.kind !== "file") continue;
-    if (isSyntaxPath(node.path)) syntaxPaths.push(node.path);
-    else if (isStylePath(node.path)) stylePaths.push(node.path);
+    if (isSyntaxPath(node.path)) {
+      syntaxPaths.push(node.path);
+      if (
+        node.path === STANDARD_SYNTAX_PATH ||
+        (!standardSyntaxPath && isSystemSettingsPath(node.path))
+      ) {
+        standardSyntaxPath = node.path;
+      }
+    } else if (isStylePath(node.path)) {
+      if (node.path === STANDARD_STYLE_PATH || isSystemSettingsPath(node.path)) {
+        if (!standardStylePath || node.path === STANDARD_STYLE_PATH) {
+          standardStylePath = node.path;
+        }
+      } else {
+        individualStylePaths.push(node.path);
+      }
+    }
   }
   syntaxPaths.sort((a, b) => a.localeCompare(b));
-  stylePaths.sort((a, b) => a.localeCompare(b));
-  return { syntaxPaths, stylePaths };
+  individualStylePaths.sort((a, b) => a.localeCompare(b));
+  if (!standardSyntaxPath && syntaxPaths.length > 0) {
+    standardSyntaxPath = syntaxPaths[0];
+  }
+  return { standardSyntaxPath, standardStylePath, syntaxPaths, individualStylePaths };
 }
 
 /**
@@ -119,7 +146,7 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
     });
   }, [open, vault]);
 
-  const { syntaxPaths, stylePaths } = useMemo(() => {
+  const { standardSyntaxPath, standardStylePath, syntaxPaths, individualStylePaths } = useMemo(() => {
     void vaultTick;
     return collectVaultPaths(vault);
   }, [vault, vaultTick]);
@@ -127,7 +154,11 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
   // Ensure lazy-loaded .vsyntax and .vstyle files are hydrated when modal opens
   useEffect(() => {
     if (!open || !vault.ensureLoaded) return;
-    const targets = [...syntaxPaths, ...stylePaths];
+    const targets = [
+      ...syntaxPaths,
+      ...(standardStylePath ? [standardStylePath] : []),
+      ...individualStylePaths,
+    ];
     let cancelled = false;
     const unloaded = targets.filter((p) => vault.isLoaded && !vault.isLoaded(p));
     if (unloaded.length === 0) return;
@@ -137,9 +168,9 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [open, vault, syntaxPaths, stylePaths]);
+  }, [open, vault, syntaxPaths, standardStylePath, individualStylePaths]);
 
-  const primarySyntaxPath = syntaxPaths[0] ?? null;
+  const primarySyntaxPath = standardSyntaxPath;
 
   const syntaxSnapshot = useMemo<ElementRegistrySnapshot>(() => {
     void vaultTick;
@@ -159,7 +190,7 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
 
   const styleCatalog = useMemo(() => {
     void vaultTick;
-    return stylePaths.map((p) => {
+    return individualStylePaths.map((p) => {
       const loaded = !vault.isLoaded || vault.isLoaded(p);
       const pack = loaded && vault.exists(p) ? parseStylePackJson(vault.read(p)) : null;
       const resolved = pack ? resolveStylePack(pack, "default") : null;
@@ -178,6 +209,7 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
       return {
         path: p,
         fileName: basename(p),
+        folder: dirname(p),
         name: pack?.name ?? basename(p).replace(/\.(vstyle|vstyle\.json)$/i, ""),
         description: pack?.description ?? "",
         primaryAccent: typeof accentCandidate === "string" ? accentCandidate : "#8a5cf5",
@@ -185,17 +217,25 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
         pack,
       };
     });
-  }, [vault, stylePaths, vaultTick]);
+  }, [vault, individualStylePaths, vaultTick]);
 
   const ensurePrimarySyntaxFile = useCallback((): string => {
     if (primarySyntaxPath && vault.exists(primarySyntaxPath)) return primarySyntaxPath;
-    const targetPath = "schema/element-registry.vsyntax";
-    if (!vault.exists(targetPath)) {
-      vault.createFile(targetPath, createDefaultSyntaxJson("VibeDoc 기본 규격"));
+    if (!vault.exists(STANDARD_SYNTAX_PATH)) {
+      vault.createFile(STANDARD_SYNTAX_PATH, createDefaultSyntaxJson("VibeDoc 표준 규격"));
     }
     setVaultTick((t) => t + 1);
-    return targetPath;
+    return STANDARD_SYNTAX_PATH;
   }, [primarySyntaxPath, vault]);
+
+  const ensureStandardStyleFile = useCallback((): string => {
+    if (standardStylePath && vault.exists(standardStylePath)) return standardStylePath;
+    if (!vault.exists(STANDARD_STYLE_PATH)) {
+      vault.createFile(STANDARD_STYLE_PATH, createStandardBaseStyleJson());
+    }
+    setVaultTick((t) => t + 1);
+    return STANDARD_STYLE_PATH;
+  }, [standardStylePath, vault]);
 
   const handleUpdateProfileWidth = useCallback(
     (profileId: string, width: number) => {
@@ -218,11 +258,7 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
     const title = newStyleName.trim();
     if (!title) return;
     const baseDir =
-      stylePaths.length > 0
-        ? dirname(stylePaths[0])
-        : primarySyntaxPath
-          ? `${dirname(primarySyntaxPath)}/styles`
-          : "schema/styles";
+      individualStylePaths.length > 0 ? dirname(individualStylePaths[0]) : "styles";
     const safeFileName = title.replace(/[\\/:*?"<>|]+/g, "-").trim();
     const filePath = baseDir ? `${baseDir}/${safeFileName}.vstyle` : `${safeFileName}.vstyle`;
     const uniquePath = vault.exists(filePath)
@@ -233,7 +269,7 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
     setCreatingStyle(false);
     setActiveSectionId(`style:${uniquePath}`);
     setVaultTick((t) => t + 1);
-  }, [newStyleName, stylePaths, primarySyntaxPath, vault]);
+  }, [newStyleName, individualStylePaths, vault]);
 
   const registry = useMemo(() => {
     const sections: SettingsSectionDefinition[] = [
@@ -322,100 +358,46 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
       {
         id: "options:appearance",
         group: "options",
-        label: "외형",
-        subtitle: "테마 및 볼트 스타일 팩 (.vstyle) 개요",
+        label: "표준 스타일 (CSS)",
+        subtitle: "5대 Grid Kit 공용 표준 스타일 사양 (.vibedoc/standard.vstyle)",
         icon: <Palette className="h-4 w-4" />,
-        keywords: ["외형", "appearance", "스타일", "style", "vstyle", "테마", "폰트", "그리드"],
-        badge: styleCatalog.length > 0 ? String(styleCatalog.length) : undefined,
-        render: () => (
-          <div className="h-full overflow-y-auto px-8 py-6">
-            <div className="mx-auto max-w-[780px] space-y-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-[18px] font-semibold text-[var(--obs-text-normal,#ececec)]">
-                    외형 및 스타일 팩
-                  </h2>
-                  <p className="mt-0.5 text-[12.5px] text-[var(--obs-text-muted,#9a9a9a)]">
-                    볼트 내 등록된 모든 <code className="font-code text-cyan-300">.vstyle</code>{" "}
-                    그리드 스타일 팩을 한눈에 보고 클릭해 세부 디자인을 편집할 수 있습니다.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setCreatingStyle(true)}
-                  className="flex shrink-0 items-center gap-1 rounded-[6px] bg-[var(--obs-accent,#8a5cf5)] px-3 py-1.5 text-[12px] font-medium text-white hover:opacity-90"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>새 스타일 팩</span>
-                </button>
+        keywords: [
+          "표준 스타일",
+          "외형",
+          "appearance",
+          "css",
+          "standard",
+          "base",
+          "style",
+          "vstyle",
+          "그리드",
+          "타이포그래피",
+        ],
+        badge: "표준",
+        render: () =>
+          standardStylePath ? (
+            <StylePackSettingsView vault={vault} path={standardStylePath} />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+              <Palette className="h-8 w-8 text-[var(--obs-text-faint,#666)]" />
+              <div className="text-[14px] font-medium text-[var(--obs-text-normal,#e2e2e2)]">
+                공용 CSS 표준 스타일 사양(.vibedoc/standard.vstyle)이 아직 초기화되지 않았습니다.
               </div>
-
-              <div className="rounded-xl border border-[var(--obs-border-subtle,#2b2b2b)] bg-[var(--obs-bg-secondary,#242424)] px-5 py-3">
-                <SettingRow
-                  title="기본 색상 테마"
-                  description="에디터 셸 UI의 명암 모드를 선택합니다."
-                >
-                  <SegmentedControl
-                    value={theme}
-                    options={[
-                      { value: "dark", label: "다크" },
-                      { value: "light", label: "라이트" },
-                    ]}
-                    onChange={onChangeTheme}
-                  />
-                </SettingRow>
-              </div>
-
-              <div className="rounded-xl border border-[var(--obs-border-subtle,#2b2b2b)] bg-[var(--obs-bg-secondary,#242424)] p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="text-[13.5px] font-semibold text-[var(--obs-text-normal,#e6e6e6)]">
-                    등록된 스타일 팩 ({styleCatalog.length})
-                  </div>
-                  <span className="font-code text-[11px] text-[var(--obs-text-faint,#777)]">
-                    5대 Grid Kit · CSS 변수 실시간 동기화
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                  {styleCatalog.map((item) => (
-                    <button
-                      key={item.path}
-                      type="button"
-                      onClick={() => setActiveSectionId(`style:${item.path}`)}
-                      className="group flex items-start gap-3 rounded-lg border border-[var(--obs-border-subtle,#303030)] bg-[var(--obs-bg-primary,#1c1c1c)] p-3 text-left transition-colors hover:border-[var(--obs-accent,#8a5cf5)]"
-                    >
-                      <div
-                        className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/10"
-                        style={{ backgroundColor: item.canvasBg }}
-                      >
-                        <span
-                          className="h-3.5 w-3.5 rounded-full shadow"
-                          style={{ backgroundColor: item.primaryAccent }}
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-[13px] font-semibold text-[var(--obs-text-normal,#e8e8e8)] group-hover:text-[var(--obs-accent-hover,#b79cff)]">
-                          {item.name}
-                        </div>
-                        <div className="mt-0.5 line-clamp-1 text-[11.5px] text-[var(--obs-text-muted,#969696)]">
-                          {item.description || item.fileName}
-                        </div>
-                        <div className="mt-1 font-code text-[10px] text-cyan-300/80">
-                          {item.fileName}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => ensureStandardStyleFile()}
+                className="rounded-md bg-[var(--obs-accent,#8a5cf5)] px-3.5 py-1.5 text-[12.5px] font-medium text-white hover:opacity-90"
+              >
+                표준 스타일 사양 생성하기
+              </button>
             </div>
-          </div>
-        ),
+          ),
       },
       {
         id: "options:syntax",
         group: "options",
         label: "표현 기호",
-        subtitle: "아웃라인 · 문서 요소 표현 기호 (.vsyntax) 통합 관리",
+        subtitle: "아웃라인 · 문서 요소 표준 표현 기호 (.vibedoc/element-registry.vsyntax)",
         icon: <Keyboard className="h-4 w-4" />,
         keywords: [
           "표현 기호",
@@ -438,7 +420,7 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
               vault={vault}
               path={primarySyntaxPath}
               onOpenInTab={
-                onOpenFileInTab
+                onOpenFileInTab && !isSystemSettingsPath(primarySyntaxPath)
                   ? () => {
                       onOpenFileInTab(primarySyntaxPath);
                       onClose();
@@ -450,14 +432,14 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
             <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
               <Keyboard className="h-8 w-8 text-[var(--obs-text-faint,#666)]" />
               <div className="text-[14px] font-medium text-[var(--obs-text-normal,#e2e2e2)]">
-                볼트에 아직 .vsyntax 규격 파일이 없습니다.
+                볼트에 아직 표준 .vsyntax 규격 파일이 없습니다.
               </div>
               <button
                 type="button"
                 onClick={() => ensurePrimarySyntaxFile()}
                 className="rounded-md bg-[var(--obs-accent,#8a5cf5)] px-3.5 py-1.5 text-[12.5px] font-medium text-white hover:opacity-90"
               >
-                기본 기호 규격(.vsyntax) 생성하기
+                표준 기호 규격(.vibedoc/element-registry.vsyntax) 생성하기
               </button>
             </div>
           ),
@@ -466,9 +448,9 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
         id: "options:files",
         group: "options",
         label: "파일 및 링크",
-        subtitle: "1급 확장자 및 포인터 참조 아키텍처",
+        subtitle: "전역 표준 사양(.vibedoc) vs 개별 문서 확장자 아키텍처",
         icon: <Link2 className="h-4 w-4" />,
-        keywords: ["파일", "링크", "확장자", "vdoc", "vsyntax", "vstyle", "outline", "ref", "포인터"],
+        keywords: ["파일", "링크", "확장자", "vdoc", "vsyntax", "vstyle", "outline", "ref", "포인터", "vibedoc"],
         render: () => (
           <div className="h-full overflow-y-auto px-8 py-6">
             <div className="mx-auto max-w-[780px] space-y-5">
@@ -477,41 +459,42 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
                   파일 및 링크 (Code as Doc)
                 </h2>
                 <p className="mt-0.5 text-[12.5px] text-[var(--obs-text-muted,#9a9a9a)]">
-                  VibeDoc Studio는 모든 문서·규격·스타일을 JSON 직렬화 가능한 1급 확장자 파일로 보관하며,
-                  비개발자도 비주얼 설정 화면에서 코드 없이 편집할 수 있습니다.
+                  전역 표준 사양(기호 규격 · CSS 기본 사양)은 옵시디언의 <code className="font-code">.obsidian/</code>처럼{" "}
+                  <code className="font-code">.vibedoc/</code>에 숨겨져 이 설정창에서만 관리되며,
+                  파일 탐색기에는 각 프로젝트·문서에 실제로 적용되는 개별 파일만 깔끔하게 표시됩니다.
                 </p>
               </div>
               <div className="rounded-xl border border-[var(--obs-border-subtle,#2b2b2b)] bg-[var(--obs-bg-secondary,#242424)] px-5 py-3">
                 <SettingRow
-                  title=".vsyntax — 요소 · 표현 기호 규격"
-                  description="표, 섹션 등 아웃라인 기호와 문서 프로파일(Blog/A4/Web) 정의 파일"
+                  title=".vibedoc/element-registry.vsyntax — 전역 표준 기호 규격"
+                  description="표, 섹션 등 모든 Element 표준 기호와 문서 프로파일(Blog/A4/Web) 정의 (탐색기 숨김 · 설정창 전용)"
                 >
                   <span className="rounded bg-indigo-500/15 px-2 py-0.5 font-code text-[11px] font-semibold text-indigo-300">
-                    SYNTAX · {syntaxPaths.length}개
+                    표준 SYNTAX
                   </span>
                 </SettingRow>
                 <SettingRow
-                  title=".vstyle — 그리드 스타일 팩"
-                  description="5대 Grid Kit(지면·타이포·프레임·표·미디어) 토큰 및 팔레트 정의 파일"
+                  title=".vibedoc/standard.vstyle — 전역 CSS 표준 스타일 사양"
+                  description="특정 장르에 종속되지 않은 5대 Grid Kit 표준 속성·토큰·기본값 사양 (탐색기 숨김 · 설정창 전용)"
                 >
                   <span className="rounded bg-cyan-500/15 px-2 py-0.5 font-code text-[11px] font-semibold text-cyan-300">
-                    STYLE · {stylePaths.length}개
+                    표준 STYLE
                   </span>
                 </SettingRow>
                 <SettingRow
-                  title=".vdoc — 2D 문서 캔버스"
-                  description="구조 본문과 schemaRef(.vsyntax) · styleRef(.vstyle) 포인터를 연결해 렌더링"
+                  title="프로젝트별 .vstyle — 개별 적용 스타일"
+                  description="특정 문서(예: 블로그, RFP, 서식, 기사)에 개별 적용되는 스타일 파일 (해당 프로젝트 폴더에 배치)"
+                >
+                  <span className="rounded bg-cyan-500/15 px-2 py-0.5 font-code text-[11px] font-semibold text-cyan-300">
+                    개별 STYLE · {individualStylePaths.length}개
+                  </span>
+                </SettingRow>
+                <SettingRow
+                  title=".vdoc / .outline / .ref — 작업 문서 · 아웃라인 · 표본"
+                  description="본문 구조와 schemaRef/styleRef 포인터를 연결해 렌더링하는 1급 작업 파일"
                 >
                   <span className="rounded bg-emerald-500/15 px-2 py-0.5 font-code text-[11px] font-semibold text-emerald-300">
-                    VDOC
-                  </span>
-                </SettingRow>
-                <SettingRow
-                  title=".outline / .ref — 아웃라인 · 레퍼런스 표본"
-                  description="트리 구조 설계 및 웹/PDF 원천 레퍼런스 2D 캔버스"
-                >
-                  <span className="rounded bg-amber-500/15 px-2 py-0.5 font-code text-[11px] font-semibold text-amber-300">
-                    OUTLINE · REF
+                    VDOC · OUTLINE · REF
                   </span>
                 </SettingRow>
               </div>
@@ -545,7 +528,7 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
                 path={primarySyntaxPath}
                 scopeElementId={el.id}
                 onOpenInTab={
-                  onOpenFileInTab
+                  onOpenFileInTab && !isSystemSettingsPath(primarySyntaxPath)
                     ? () => {
                         onOpenFileInTab(primarySyntaxPath);
                         onClose();
@@ -724,11 +707,12 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
     conflictSummary.totalConflicts,
     styleCatalog,
     primarySyntaxPath,
-    syntaxPaths.length,
-    stylePaths.length,
+    standardStylePath,
+    individualStylePaths.length,
     onOpenFileInTab,
     onClose,
     ensurePrimarySyntaxFile,
+    ensureStandardStyleFile,
     handleUpdateProfileWidth,
     extraSections,
   ]);

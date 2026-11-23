@@ -401,7 +401,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
               {table.rows.map((row, rowIndex) => {
                 const isHeaderRow = row.cells.some((c) => c.isHeader);
                 return (
-                  <tr key={row.rowId} style={{ height: row.height }}>
+                  <tr key={row.rowId} data-row-id={row.rowId} style={{ height: row.height }}>
                     {row.cells.map((cell) => {
                       const placement = placementByCellId.get(cell.cellId);
                       const lastRow = placement

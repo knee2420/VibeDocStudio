@@ -8,7 +8,22 @@ export const imageBlock = defineBlockKind<ImageBlockDef>({
   label: "이미지",
   category: "media",
   icon: "image",
+  outlineTag: "[img]",
   slotIds: () => [],
+  sceneNode: (b, ctx) => ({
+    id: b.blockId,
+    role: "block",
+    outlineTag: ctx.resolveTag("section", "image-slot", "[img]"),
+    label: b.alt || b.title || "이미지",
+    icon: "image",
+    badge: b.frame ? "2D" : b.width && b.width !== "100%" ? b.width : undefined,
+    selectBlockId: b.blockId,
+    sourceNodeId: b.sourceNodeId,
+    isBlock: true,
+    locked: Boolean(b.locked),
+    hidden: ctx.hiddenBlockIds.has(b.blockId),
+    active: b.blockId === ctx.selectedBlockId,
+  }),
   units: (b) => [{ unitId: b.blockId, kind: "media", label: b.alt || b.title || "이미지" }],
   outline: (b, ctx) => {
     ctx.emitStatic(ctx.blockTitle || "이미지", "이미지");

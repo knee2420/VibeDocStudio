@@ -47,6 +47,7 @@ export const YONHAP_NEWS_PACK: StylePack = {
         lineHeight: "1.85",
         color: "{text.body}",
         align: "left",
+        listMarker: "square",
       },
       quote: {
         fontSize: "17px",

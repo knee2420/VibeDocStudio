@@ -120,8 +120,15 @@ export const gridView = defineBlockView<ColumnsGridBlockDef>({
         style={{ gap: effectiveGap, gridTemplateColumns: widths.map((w) => (w.endsWith("fr") ? `minmax(0, ${w})` : w)).join(" ") }}
       >
         {columns.map((col, cIdx) => (
-          <div key={cIdx} className={cardClass} {...dropOn(cIdx)}>
-            {col.image ? (
+          <div
+            key={cIdx}
+            data-col-id={`${block.blockId}_col_${cIdx + 1}`}
+            className={cardClass}
+            {...dropOn(cIdx)}
+          >
+            {col.blocks && col.blocks.length > 0 ? (
+              ctx.renderNestedBlocks(col.blocks)
+            ) : col.image ? (
               <div
                 {...ctx.unitAttrs(`${block.blockId}:col${cIdx}`, "media")}
                 className={`flex ${isPlainStrip && effectiveGap !== undefined ? "py-0" : "py-1"} ${

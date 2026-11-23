@@ -3,7 +3,12 @@
  */
 import { resolveCascadedStyle } from "../core/cascade";
 import type { GridAlign } from "../core/grid-contract";
-import type { ResolvedStylePack, StyleOverrideDelta, TextStyleDef } from "../core/token-contract";
+import type {
+  ResolvedStylePack,
+  StyleListMarker,
+  StyleOverrideDelta,
+  TextStyleDef,
+} from "../core/token-contract";
 
 export interface ResolvedTextRole {
   fontFamily?: string;
@@ -14,6 +19,7 @@ export interface ResolvedTextRole {
   letterSpacing?: string;
   color: string;
   align: GridAlign;
+  listMarker: StyleListMarker;
 }
 
 export function resolveTextRoleStyle(
@@ -38,5 +44,6 @@ export function resolveTextRoleStyle(
     letterSpacing: cascaded.letterSpacing ?? roleDef.letterSpacing ?? baseBody.letterSpacing,
     color: cascaded.color ?? roleDef.color ?? baseBody.color ?? "#334155",
     align: cascaded.align ?? roleDef.align ?? baseBody.align ?? "left",
+    listMarker: cascaded.listMarker ?? roleDef.listMarker ?? baseBody.listMarker ?? "disc",
   };
 }

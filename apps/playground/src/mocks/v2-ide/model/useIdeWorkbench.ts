@@ -33,6 +33,8 @@ import {
 } from "@vibe/file-explorer/core";
 import {
   createWorkspaceLayoutStore,
+  findTabLocation,
+  getAllGroups,
   type EditorAiDirective,
   type EditorRegistry,
   type EditorSelectionSnapshot,
@@ -43,7 +45,11 @@ import {
 
 import { createIdeEditorRegistry, type IdeEditorEnv } from "./editorAdapters";
 import { mountLocalFolderAsVault } from "./localVaultMount";
-import { isOutlinePath, parseOutlineJson } from "./outlineCodec";
+import {
+  isOutlinePath,
+  parseOutlineJson,
+  rewriteOutlineBindingsOnRename,
+} from "./outlineCodec";
 import { importWebUrlAsRefStream } from "./refClient";
 import { V2_SAMPLE_VAULT_SEEDS, resolveTabTitle } from "./sampleVault";
 import {
@@ -81,6 +87,14 @@ export interface IdeWorkbenchRuntime {
     path: string,
     mode?: OpenResourceMode,
     explicitViewType?: string
+  ) => void;
+  /**
+   * 현재 탭과 같은 Chrome 스타일 그룹 탭(TabGroup)에 대상 파일을 추가(또는 재사용)하고,
+   * 그룹의 2분할 페어 뷰(L/R) 슬롯만 치환해 나란히 보여 준다. (별도 물리 분할 금지 · 기존 그룹 탭 보존)
+   */
+  readonly openFileInPairTabGroup: (
+    targetPath: string,
+    options?: { readonly sourceTabId?: string; readonly sourcePath?: string }
   ) => void;
   readonly openWikilink: (
     linkTarget: string,
@@ -283,6 +297,135 @@ export function createIdeWorkbenchRuntime(
     });
     explorer.getState().setActiveFilePath(node.path);
     pushLog("layout", "info", `open(${mode}, ${viewType}) -> ${node.path}`);
+  };
+
+  const openFileInPairTabGroup: IdeWorkbenchRuntime["openFileInPairTabGroup"] = (
+    targetPath,
+    options
+  ) => {
+    const node = vault.getNode(targetPath);
+    if (!node || node.kind !== "file") return;
+    const viewType = resolveViewTypeForPath(node.path);
+
+    const initialState = layout.getState();
+    const allPanes = getAllGroups(initialState.root);
+
+    // 1. Locate the source tab (exact tabId > sourcePath in active pane > sourcePath anywhere > active tab)
+    let sourceLoc = options?.sourceTabId
+      ? findTabLocation(initialState.root, options.sourceTabId)
+      : null;
+    if (!sourceLoc && options?.sourcePath) {
+      const activePane = initialState.getActiveGroup();
+      const inActive = activePane?.tabs.find((t) => t.resourceId === options.sourcePath);
+      if (inActive) {
+        sourceLoc = findTabLocation(initialState.root, inActive.id);
+      } else {
+        for (const pane of allPanes) {
+          const hit = pane.tabs.find((t) => t.resourceId === options.sourcePath);
+          if (hit) {
+            sourceLoc = findTabLocation(initialState.root, hit.id);
+            break;
+          }
+        }
+      }
+    }
+    if (!sourceLoc) {
+      const fallbackActive = initialState.getActiveTab();
+      if (fallbackActive) {
+        sourceLoc = findTabLocation(initialState.root, fallbackActive.id);
+      }
+    }
+    if (!sourceLoc) {
+      openVaultFile(node.path, "new-tab", viewType);
+      return;
+    }
+
+    const sourceTabId = sourceLoc.tab.id;
+    const sourcePaneId = sourceLoc.group.id;
+    const existingSourceGroupId =
+      sourceLoc.tab.tabGroupId && initialState.tabGroups[sourceLoc.tab.tabGroupId]
+        ? sourceLoc.tab.tabGroupId
+        : null;
+
+    // 2. Find an existing tab for targetPath (prefer same group > same pane > anywhere) or add to the same pane
+    let targetTabId: string | null = null;
+    if (existingSourceGroupId) {
+      const inSameGroup = sourceLoc.group.tabs.find(
+        (t) => t.resourceId === node.path && t.tabGroupId === existingSourceGroupId
+      );
+      if (inSameGroup) targetTabId = inSameGroup.id;
+    }
+    if (!targetTabId) {
+      const inSamePane = sourceLoc.group.tabs.find((t) => t.resourceId === node.path);
+      if (inSamePane) targetTabId = inSamePane.id;
+    }
+    if (!targetTabId) {
+      for (const pane of allPanes) {
+        const anywhere = pane.tabs.find((t) => t.resourceId === node.path);
+        if (anywhere) {
+          targetTabId = anywhere.id;
+          break;
+        }
+      }
+    }
+    if (!targetTabId) {
+      const created = layout.getState().openResource({
+        resourceId: node.path,
+        title: resolveTabTitle(node.path),
+        viewType,
+        mode: "new-tab",
+        groupId: sourcePaneId,
+      });
+      targetTabId = created.tabId;
+    }
+
+    if (targetTabId === sourceTabId) return;
+
+    // 3. Ensure targetTab belongs to sourceTab's Chrome Tab Group (adds to existing group pool, or creates a new group)
+    const afterOpen = layout.getState();
+    const curSourceLoc = findTabLocation(afterOpen.root, sourceTabId);
+    const curTargetLoc = findTabLocation(afterOpen.root, targetTabId);
+    if (!curSourceLoc || !curTargetLoc) return;
+
+    let tabGroupId =
+      curSourceLoc.tab.tabGroupId && afterOpen.tabGroups[curSourceLoc.tab.tabGroupId]
+        ? curSourceLoc.tab.tabGroupId
+        : null;
+
+    if (!tabGroupId || curTargetLoc.tab.tabGroupId !== tabGroupId) {
+      // mergeTabsIntoGroup(source, target): attaches `targetTabId` right next to `sourceTabId` in `sourceTabId`'s group
+      // (or creates a new Chrome Tab Group if neither had one), preserving all other tabs in the group pool.
+      tabGroupId = layout.getState().mergeTabsIntoGroup(targetTabId, sourceTabId);
+    }
+    if (!tabGroupId) return;
+
+    // 4. Replace ONLY the opposite Pair View slot inside the group (never closes existing group member tabs)
+    const latest = layout.getState();
+    const meta = latest.tabGroups[tabGroupId];
+    if (!meta) return;
+
+    if (meta.pair) {
+      if (sourceTabId === meta.pair.leftTabId) {
+        latest.setTabGroupPairSlot(tabGroupId, "right", targetTabId);
+      } else if (sourceTabId === meta.pair.rightTabId) {
+        latest.setTabGroupPairSlot(tabGroupId, "left", targetTabId);
+      } else {
+        latest.enableTabGroupPair(tabGroupId, {
+          leftTabId: sourceTabId,
+          rightTabId: targetTabId,
+          activeSide: "right",
+        });
+      }
+    } else {
+      latest.enableTabGroupPair(tabGroupId, {
+        leftTabId: sourceTabId,
+        rightTabId: targetTabId,
+        activeSide: "right",
+      });
+    }
+
+    explorer.getState().setActiveFilePath(node.path);
+    pushLog("layout", "info", `pair-group(${meta.title}, ${viewType}) -> ${node.path}`);
   };
 
   const openWikilink: IdeWorkbenchRuntime["openWikilink"] = (
@@ -737,6 +880,7 @@ ${selText || "(선택된 블록 요약)"}
             const summary = runVaultRenameRewriters(vault, mapping.oldPath, mapping.newPath, [
               rewriteWikilinksOnRename,
               rewriteVDocPointersOnRename,
+              rewriteOutlineBindingsOnRename,
               rewriteVaultRefPointersOnRename,
             ]);
             totalRefUpdates += summary.totalReplacements;
@@ -933,6 +1077,7 @@ ${selText || "(선택된 블록 요약)"}
     editorRegistry,
     vdocUiBridge,
     openVaultFile,
+    openFileInPairTabGroup,
     openWikilink,
     promoteFileToRef,
     importRefDocument,
@@ -1000,7 +1145,23 @@ export async function bootstrapIdeWorkbench(options?: {
 }): Promise<LocalVaultBootstrapResult> {
   const apiBaseUrl = options?.apiBaseUrl ?? "";
   try {
-    const listed = await listLocalVaults(apiBaseUrl);
+    let listed: Awaited<ReturnType<typeof listLocalVaults>> | null = null;
+    let lastErr: unknown = null;
+    const maxAttempts = 6;
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        listed = await listLocalVaults(apiBaseUrl);
+        break;
+      } catch (err) {
+        lastErr = err;
+        if (attempt < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+    }
+    if (!listed) {
+      throw lastErr ?? new Error("Local vault backend unreachable");
+    }
     const chosenId =
       options?.vaultId && listed.vaults.some((v) => v.id === options.vaultId)
         ? options.vaultId
@@ -1018,7 +1179,7 @@ export async function bootstrapIdeWorkbench(options?: {
       includeContents: meta.isDefault,
     });
 
-    await adapter.hydrate(meta.isDefault ? V2_SAMPLE_VAULT_SEEDS : undefined);
+    await adapter.hydrate();
     const initialSession = await adapter.loadWorkspaceSession().catch(() => null);
 
     if (options?.vaultId && options.vaultId !== listed.activeVaultId) {

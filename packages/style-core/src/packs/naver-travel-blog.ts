@@ -57,6 +57,7 @@ export const NAVER_TRAVEL_BLOG_PACK: StylePack = {
         lineHeight: "1.8",
         color: "{text.body}",
         align: "center",
+        listMarker: "disc",
       },
       quote: {
         fontSize: "15px",

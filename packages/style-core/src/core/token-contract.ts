@@ -21,6 +21,9 @@ export interface StylePrimitives {
 /** Layer 2: 의미 토큰 맵 (`{color.emerald700}` 같은 alias 또는 원시값). */
 export type SemanticTokenMap = Record<string, StyleTokenValue>;
 
+/** 목록(`<<view:list>>`) 글머리 기호 시각 토큰 (스타일 엔진 전용 — 구조 `.outline` 과 분리). */
+export type StyleListMarker = "disc" | "circle" | "square" | "dash" | "decimal";
+
 /** Layer 3-1: 타이포그래피 합성 스타일. */
 export interface TextStyleDef {
   fontFamily?: string;
@@ -31,6 +34,7 @@ export interface TextStyleDef {
   letterSpacing?: string;
   color?: string;
   align?: GridAlign;
+  listMarker?: StyleListMarker;
 }
 
 export type FrameOrnamentKind =

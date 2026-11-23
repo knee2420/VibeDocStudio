@@ -123,6 +123,8 @@ export interface GridColumnDef {
     align?: "left" | "center" | "right";
     objectFit?: "contain" | "cover" | "fill";
   };
+  /** Recursive nested blocks inside this column container (page-scale fractal layout). */
+  blocks?: LayoutBlock[];
 }
 
 /**
@@ -153,6 +155,8 @@ export interface TableCellSlotDef {
   fontSize?: string;
   lineHeight?: string;
   fontFamily?: string;
+  /** Recursive nested blocks inside this table cell (lists, images, callouts, nested tables/grids). */
+  blocks?: LayoutBlock[];
 }
 
 export interface StructuredTableSectionDef {
@@ -210,6 +214,8 @@ export interface VDocPage {
   sectionRole?: string;
   /** 섹션 단위로 역추출/보관할 수 있는 원본 Outline DSL 스냅샷 (선택). */
   outlineDsl?: string[];
+  /** 양방향 `.outline` ↔ `.vdoc` 동기화를 위한 원본 섹션 불릿 ID. */
+  sourceNodeId?: string;
   headerSlotId: string;
   blocks: LayoutBlock[];
   footerSlotId: string;
@@ -261,6 +267,19 @@ export interface VDocSchemaRef {
   elementIds?: string[];
 }
 
+/**
+ * `.vdoc` 문서가 바인딩된 원천 `.outline` 파일 및 마스터 아웃라인 내 루트 노드 포인터.
+ * 1개의 마스터 `.outline` 안에 여러 개의 `<<doc:...>>` / `<<view:...>>` 문서가 공존할 수 있다 (1:N 매핑).
+ */
+export interface VDocOutlineRef {
+  /** 볼트 내 `.outline` 파일 포인터 (예: `"vault://워크샵/2026_하반기_워크샵.outline"`). */
+  outlinePath: string;
+  /** 마스터 `.outline` 파일의 불변 고유 ID (`OutlineFilePayload.id`). 파일·폴더 이동 시 경로 자가 치유(Self-Healing)에 사용된다. */
+  outlineId?: string;
+  /** 마스터 `.outline` 안에서 이 `.vdoc` 이 바인딩된 루트 불릿 ID (`<<doc:...>>` 또는 `<<view:...>>`). */
+  rootNodeId?: string;
+}
+
 export interface VDocDocument {
   version: "1.0.0";
   docId: string;
@@ -289,6 +308,8 @@ export interface VDocDocument {
   styleRef?: VDocStyleRef;
   /** 원천 레퍼런스(.ref) 포인터 (예: `"vault://...ref"`). 본문 사본을 중복 저장하지 않는다. */
   sourceRef?: string;
+  /** 양방향 동기화 원천 `.outline` 파일 및 루트 불릿 포인터 (1:N 바인딩). */
+  outlineRef?: VDocOutlineRef;
   /** 누가 만들었나 — agent 가 만든 초안은 에이전트가 구조(블록 · 쪽)까지 직접 고칠 수 있다. */
   origin?: VDocOrigin;
   /** 속한 프로젝트 (프로젝트 manifest 의 docIds 와 짝). */

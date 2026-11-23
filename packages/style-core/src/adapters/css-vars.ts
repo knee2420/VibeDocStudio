@@ -28,6 +28,7 @@ export function buildStyleCssVars(resolvedPack: ResolvedStylePack): CssVarMap {
     "--vstyle-body-lh": body.lineHeight,
     "--vstyle-body-color": body.color,
     "--vstyle-body-align": body.align,
+    "--vstyle-list-marker": body.listMarker,
     "--vstyle-table-outer": table.borders.outer,
     "--vstyle-table-header-bg": table.headerFill,
     "--vstyle-table-header-color": table.headerTextColor,

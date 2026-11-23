@@ -111,6 +111,8 @@ export interface OutlineSyntaxNode {
   children?: OutlineSyntaxNode[];
   isFolded?: boolean;
   nodeType?: string;
+  note?: string;
+  file?: { target: string };
 }
 
 export interface OutlineSyntaxDocument {

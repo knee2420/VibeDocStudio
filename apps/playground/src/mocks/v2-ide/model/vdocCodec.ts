@@ -1,12 +1,13 @@
 import {
   A4_DOCUMENT_VIEW,
   BLOG_DOCUMENT_VIEW,
-  getBlockSlotIds,
-  isBlockLocked,
+  compilePageSceneGraph,
   resolveDocumentView,
   type DocumentViewId,
+  type ElementSyntaxRegistry,
   type LayoutBlock,
   type LinkCardBlockDef,
+  type SceneGraphNode,
   type VDocDocument,
   type VDocPage,
   type VDocSlot,
@@ -31,6 +32,20 @@ export function fromVaultUri(url: string): string | null {
   return normalizeVaultPath(url.slice(VAULT_URI_PREFIX.length));
 }
 
+/**
+ * 파일 또는 폴더가 `oldPath` → `newPath` 로 이동/이름변경될 때
+ * 정확히 일치하는 URI 뿐 아니라 하위 경로(`vault://<oldPath>/...`)까지 일괄 재작성한다.
+ */
+export function rewriteVaultUriPrefix(uri: string, oldPath: string, newPath: string): string {
+  const oldUri = toVaultUri(oldPath);
+  const newUri = toVaultUri(newPath);
+  if (uri === oldUri) return newUri;
+  if (uri.startsWith(`${oldUri}/`)) {
+    return `${newUri}${uri.slice(oldUri.length)}`;
+  }
+  return uri;
+}
+
 export function isVDocPath(path: string): boolean {
   return matchesCompoundExtension(path, "vdoc") || matchesCompoundExtension(path, "vdoc.json");
 }
@@ -46,9 +61,21 @@ export function detectVDocViewId(raw: string): "a4" | "blog" {
   return "a4";
 }
 
-/** 양식 메타(viewId·surface·genre·schemaRef·styleRef·sourceRef)를 JSON 최상단에 두어 사람이 열어봐도 바로 보이게 한다. */
+/** 양식 메타(viewId·surface·genre·schemaRef·styleRef·sourceRef·outlineRef)를 JSON 최상단에 두어 사람이 열어봐도 바로 보이게 한다. */
 function withFormatFieldsFirst(doc: VDocDocument): VDocDocument {
-  const { version, docId, title, viewId, surface, genre, schemaRef, styleRef, sourceRef, ...rest } = doc;
+  const {
+    version,
+    docId,
+    title,
+    viewId,
+    surface,
+    genre,
+    schemaRef,
+    styleRef,
+    sourceRef,
+    outlineRef,
+    ...rest
+  } = doc;
   return {
     version,
     docId,
@@ -59,6 +86,7 @@ function withFormatFieldsFirst(doc: VDocDocument): VDocDocument {
     ...(schemaRef ? { schemaRef } : {}),
     ...(styleRef ? { styleRef } : {}),
     ...(sourceRef ? { sourceRef } : {}),
+    ...(outlineRef ? { outlineRef } : {}),
     ...rest,
   } as VDocDocument;
 }
@@ -192,6 +220,7 @@ export function parseVDocJson(raw: string, fallbackTitle: string): VDocDocument 
         schemaRef: parsed.schemaRef,
         styleRef: parsed.styleRef,
         sourceRef: parsed.sourceRef,
+        outlineRef: parsed.outlineRef,
         status: parsed.status ?? "Draft",
         updatedAt: parsed.updatedAt ?? new Date().toISOString(),
         variables: parsed.variables ?? {},
@@ -256,19 +285,36 @@ export function createVaultLinkCardDraft(
   return { block, slots };
 }
 
+function sceneNodeToStructureNode(node: SceneGraphNode): DocumentStructureNode {
+  return {
+    id: node.id,
+    kind: node.isBlock ? "block" : "slot",
+    label: node.label,
+    badge: node.badge ?? node.outlineTag,
+    locked: node.locked,
+    hidden: node.hidden,
+    active: node.active,
+    ...(node.children && node.children.length > 0
+      ? { children: node.children.map(sceneNodeToStructureNode) }
+      : {}),
+  };
+}
+
 /**
- * Codec -> Schema-agnostic DocumentStructureNode 프로젝션 (하단 Figma Pages & Elements 패널용).
- * 향후 `.vdoc` 스키마가 개편되어도 이 매퍼만 바꾸면 하단 Document Structure UI는 무수정 유지된다.
+ * Codec -> 자동 컴파일 2D Scene Graph & Schema-agnostic DocumentStructureNode 프로젝션.
+ * `block-kit` 의 `compilePageSceneGraph` 를 통해 `.outline` 태그와 1:1 대칭되는 재귀 트리를 자동 생성한다.
  */
 export function projectVDocToStructure(
   doc: VDocDocument,
   activePageId: string,
   selectedBlockId: string | null,
   selectedSlotId: string | null,
-  hiddenBlockIds: ReadonlySet<string>
+  hiddenBlockIds: ReadonlySet<string>,
+  registry?: ElementSyntaxRegistry
 ): {
   pages: DocumentStructureNode[];
   elements: DocumentStructureNode[];
+  sceneGraph: SceneGraphNode[];
 } {
   const view = resolveDocumentView(doc);
   const pages: DocumentStructureNode[] = doc.pages.map((page) => {
@@ -286,43 +332,23 @@ export function projectVDocToStructure(
   const activePage: VDocPage | undefined =
     doc.pages.find((p) => p.pageId === activePageId) ?? doc.pages[0];
   if (!activePage) {
-    return { pages, elements: [] };
+    return { pages, elements: [], sceneGraph: [] };
   }
 
-  const elements: DocumentStructureNode[] = activePage.blocks.map((block: LayoutBlock) => {
-    const slotIds = getBlockSlotIds(block);
-    const locked = isBlockLocked(block, doc.slots);
-    const hidden = hiddenBlockIds.has(block.blockId);
-
-    const slotChildren: DocumentStructureNode[] = slotIds.map((sid) => {
-      const slot = doc.slots[sid];
-      return {
-        id: sid,
-        kind: "slot",
-        label: slot?.label || sid,
-        active: sid === selectedSlotId,
-        locked: Boolean(slot?.constraints?.locked),
-      };
-    });
-
-    return {
-      id: block.blockId,
-      kind: "block",
-      label: block.title || block.kind,
-      badge: block.frame ? "2D" : block.kind,
-      locked,
-      hidden,
-      active: block.blockId === selectedBlockId,
-      children: slotChildren,
-    };
+  const sceneGraph = compilePageSceneGraph(activePage, doc.slots, {
+    selectedBlockId,
+    selectedSlotId,
+    hiddenBlockIds,
+    registry,
   });
+  const elements = sceneGraph.map(sceneNodeToStructureNode);
 
-  return { pages, elements };
+  return { pages, elements, sceneGraph };
 }
 
 /**
- * Vault 내 파일이 이름변경/이동되었을 때 모든 `.vdoc` / `.vdoc.json` 파일 안의
- * `vault://<oldPath>` 포인터(link-card url, domain)를 자동 갱신하는 리라이트 훅.
+ * Vault 내 파일·폴더가 이름변경/이동되었을 때 모든 `.vdoc` / `.vdoc.json` 파일 안의
+ * `vault://<oldPath>` 및 하위 경로(`vault://<oldPath>/...`) 포인터를 자동 갱신하는 리라이트 훅.
  */
 export const rewriteVDocPointersOnRename: VaultRenameRewriter = (
   vault: VaultPort,
@@ -330,7 +356,6 @@ export const rewriteVDocPointersOnRename: VaultRenameRewriter = (
   newPath: string
 ) => {
   const oldUri = toVaultUri(oldPath);
-  const newUri = toVaultUri(newPath);
   const updatedFiles: string[] = [];
   let totalReplacements = 0;
 
@@ -345,33 +370,54 @@ export const rewriteVDocPointersOnRename: VaultRenameRewriter = (
       const nextPages = doc.pages.map((page) => ({
         ...page,
         blocks: page.blocks.map((blk) => {
-          if (blk.kind === "link-card" && blk.url === oldUri) {
-            fileReplacements += 1;
-            return {
-              ...blk,
-              title: basename(newPath),
-              url: newUri,
-              domain: `vault · ${newPath}`,
-            };
+          if (blk.kind === "link-card") {
+            const nextUrl = rewriteVaultUriPrefix(blk.url, oldPath, newPath);
+            if (nextUrl !== blk.url) {
+              fileReplacements += 1;
+              const nextTargetPath = fromVaultUri(nextUrl) ?? newPath;
+              return {
+                ...blk,
+                title: blk.url === oldUri ? basename(nextTargetPath) : blk.title,
+                url: nextUrl,
+                domain: `vault · ${nextTargetPath}`,
+              };
+            }
           }
           return blk;
         }),
       }));
 
       let nextStyleRef = doc.styleRef;
-      if (doc.styleRef?.packPath === oldUri) {
-        fileReplacements += 1;
-        nextStyleRef = { ...doc.styleRef, packPath: newUri };
+      if (doc.styleRef?.packPath) {
+        const rewritten = rewriteVaultUriPrefix(doc.styleRef.packPath, oldPath, newPath);
+        if (rewritten !== doc.styleRef.packPath) {
+          fileReplacements += 1;
+          nextStyleRef = { ...doc.styleRef, packPath: rewritten };
+        }
       }
       let nextSchemaRef = doc.schemaRef;
-      if (doc.schemaRef?.registryPath === oldUri) {
-        fileReplacements += 1;
-        nextSchemaRef = { ...doc.schemaRef, registryPath: newUri };
+      if (doc.schemaRef?.registryPath) {
+        const rewritten = rewriteVaultUriPrefix(doc.schemaRef.registryPath, oldPath, newPath);
+        if (rewritten !== doc.schemaRef.registryPath) {
+          fileReplacements += 1;
+          nextSchemaRef = { ...doc.schemaRef, registryPath: rewritten };
+        }
       }
       let nextSourceRef = doc.sourceRef;
-      if (doc.sourceRef === oldUri) {
-        fileReplacements += 1;
-        nextSourceRef = newUri;
+      if (doc.sourceRef) {
+        const rewritten = rewriteVaultUriPrefix(doc.sourceRef, oldPath, newPath);
+        if (rewritten !== doc.sourceRef) {
+          fileReplacements += 1;
+          nextSourceRef = rewritten;
+        }
+      }
+      let nextOutlineRef = doc.outlineRef;
+      if (doc.outlineRef?.outlinePath) {
+        const rewritten = rewriteVaultUriPrefix(doc.outlineRef.outlinePath, oldPath, newPath);
+        if (rewritten !== doc.outlineRef.outlinePath) {
+          fileReplacements += 1;
+          nextOutlineRef = { ...doc.outlineRef, outlinePath: rewritten };
+        }
       }
 
       if (fileReplacements > 0) {
@@ -382,6 +428,7 @@ export const rewriteVDocPointersOnRename: VaultRenameRewriter = (
             styleRef: nextStyleRef,
             schemaRef: nextSchemaRef,
             sourceRef: nextSourceRef,
+            outlineRef: nextOutlineRef,
             pages: nextPages,
           })
         );

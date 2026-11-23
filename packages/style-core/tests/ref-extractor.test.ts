@@ -17,7 +17,13 @@ import {
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const VAULT_ROOT = path.resolve(HERE, "../../../apps/playground/data/vaults/default-vault");
-const STYLES_DIR = path.join(VAULT_ROOT, "문서 스키마 표준 정비 프로젝트", "schema", "styles");
+const STANDARD_STYLE_FILE = path.join(VAULT_ROOT, ".vibedoc", "standard.vstyle");
+const BLOG_STYLE_FILE = path.join(
+  VAULT_ROOT,
+  "문서 스키마 표준 정비 프로젝트",
+  "naver-travel-blog.vstyle"
+);
+const SAMPLES_DIR = path.join(VAULT_ROOT, "신규 스키마 스펙 정리", "samples");
 
 function readJson<T>(filePath: string): T {
   return JSON.parse(fs.readFileSync(filePath, "utf-8")) as T;
@@ -60,17 +66,18 @@ describe("@vibe/style-core — Real .ref Style Extraction & Vault .vstyle.json V
     assert.equal(resolveTableGridStyle(rfpStyle).headerFill, "#e6ecf5");
   });
 
-  it("validates all 4 exported .vstyle files in the default-vault schema project", () => {
-    for (const file of [
-      "naver-travel-blog.vstyle",
-      "yonhap-news.vstyle",
-      "yesform-official.vstyle",
-      "gov-rfp.vstyle",
-    ]) {
-      const fullPath = path.join(STYLES_DIR, file);
-      assert.equal(fs.existsSync(fullPath), true, `Missing style pack file: ${file}`);
+  it("validates the global standard CSS base .vstyle (.vibedoc) and individual applied .vstyle files", () => {
+    const targets = [
+      STANDARD_STYLE_FILE,
+      BLOG_STYLE_FILE,
+      path.join(SAMPLES_DIR, "yonhap-news.vstyle"),
+      path.join(SAMPLES_DIR, "yesform-official.vstyle"),
+      path.join(SAMPLES_DIR, "gov-rfp.vstyle"),
+    ];
+    for (const fullPath of targets) {
+      assert.equal(fs.existsSync(fullPath), true, `Missing style pack file: ${fullPath}`);
       const parsed = readJson<unknown>(fullPath);
-      assert.equal(isValidStylePack(parsed), true, `Invalid StylePack format: ${file}`);
+      assert.equal(isValidStylePack(parsed), true, `Invalid StylePack format: ${fullPath}`);
     }
   });
 });

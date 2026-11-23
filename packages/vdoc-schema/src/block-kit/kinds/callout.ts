@@ -8,6 +8,8 @@ export const calloutBlock = defineBlockKind<CalloutBoxBlockDef>({
   label: "안내 상자",
   category: "text",
   icon: "message-square-quote",
+  outlineTag: (b) =>
+    b.variant === "accent-bar" ? "!" : b.variant === "disclosure" ? "[embed]" : ">",
   slotIds: (b) => (b.slotId ? [b.slotId] : []),
   outline: (b, ctx) => outlineSingleSlot(b.slotId, ctx),
   ai: {

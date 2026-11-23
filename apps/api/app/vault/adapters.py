@@ -47,6 +47,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_VAULT_ID = "default-vault"
 DEFAULT_VAULT_NAME = "VibeDoc Vault"
 VIBE_META_DIR = ".vibe"
+VIBEDOC_SETTINGS_DIR = ".vibedoc"
 WORKSPACE_SESSION_FILE = "workspace.json"
 METADATA_CACHE_FILE = "metadata-cache.json"
 
@@ -475,9 +476,12 @@ class LocalVaultRepository:
         files: dict[str, str] = {}
 
         for dirpath, dirnames, filenames in os.walk(root):
-            # 무시 폴더는 아예 탐색하지 않음
+            # 무시 폴더는 아예 탐색하지 않음 (.vibedoc 표준 설정 폴더는 VaultPort용으로 노출하되 Explorer UI가 숨김)
             dirnames[:] = sorted(
-                d for d in dirnames if d not in IGNORED_DIR_NAMES and not d.startswith(".")
+                d
+                for d in dirnames
+                if d not in IGNORED_DIR_NAMES
+                and (d == VIBEDOC_SETTINGS_DIR or not d.startswith("."))
             )
             cur_dir = Path(dirpath)
             if cur_dir != root:
@@ -866,7 +870,11 @@ class LocalVaultRepository:
                 return False
             parts = rel.split("/")
             for part in parts:
-                if part in IGNORED_DIR_NAMES or part in IGNORED_FILE_NAMES or part.startswith("."):
+                if (
+                    part in IGNORED_DIR_NAMES
+                    or part in IGNORED_FILE_NAMES
+                    or (part.startswith(".") and part != VIBEDOC_SETTINGS_DIR)
+                ):
                     return False
             return True
 

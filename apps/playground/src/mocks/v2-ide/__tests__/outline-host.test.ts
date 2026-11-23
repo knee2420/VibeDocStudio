@@ -6,6 +6,7 @@ import { MemoryVaultAdapter } from "@vibe/vault-core";
 
 import { createDefaultOutlineJson, parseOutlineJson } from "../model/outlineCodec";
 import { attachmentNameFor, createVaultOutlineFiles } from "../model/outlineFileHost";
+import { tokenizeOutlineInline } from "../model/outlineLiveRenderer";
 import { createIdeWorkbenchRuntime } from "../model/useIdeWorkbench";
 import { createOutlineFileSession } from "../ui/OutlineTabEditor";
 
@@ -150,5 +151,46 @@ describe("outline attachments host", () => {
     const items = await files.resolveDrop!(fakeDrop);
     assert.deepEqual(items, [{ fileTarget: "notes/photo.jpg" }, { text: "[[spec]]" }]);
     assert.equal(uploads.length, 0);
+  });
+
+  it("tokenizes inline image chips, CTA/Markdown links, wikilinks, directives, highlights, and bare URLs cleanly", () => {
+    const imgStrip = tokenizeOutlineInline(
+      "[img:좌측 컷 -> https://cdn.example.com/a.jpg] | ![우측 컷](https://cdn.example.com/b.jpg)"
+    );
+    assert.deepEqual(imgStrip, [
+      { kind: "image", label: "좌측 컷", url: "https://cdn.example.com/a.jpg" },
+      { kind: "text", value: " | " },
+      { kind: "image", label: "우측 컷", url: "https://cdn.example.com/b.jpg" },
+    ]);
+
+    const mixed = tokenizeOutlineInline(
+      "<<view:table:header>> 참고 [cta:계약서 보기 -> vault://01. Architecture/01. Vault-Contract.md] [[Spec|스펙]] ==핵심== #설계"
+    );
+    assert.deepEqual(mixed, [
+      { kind: "directive", raw: "<<view:table:header>>" },
+      { kind: "text", value: " 참고 " },
+      {
+        kind: "link",
+        label: "계약서 보기",
+        url: "vault://01. Architecture/01. Vault-Contract.md",
+        isCta: true,
+      },
+      { kind: "text", value: " " },
+      { kind: "wikilink", target: "Spec", alias: "스펙" },
+      { kind: "text", value: " " },
+      { kind: "highlight", value: "핵심" },
+      { kind: "text", value: " " },
+      { kind: "tag", value: "#설계" },
+    ]);
+
+    const bare = tokenizeOutlineInline("링크: https://postfiles.pstatic.net/a/b/066.JPG?type=w966");
+    assert.deepEqual(bare, [
+      { kind: "text", value: "링크: " },
+      {
+        kind: "link",
+        label: "postfiles.pstatic.net/066.JPG",
+        url: "https://postfiles.pstatic.net/a/b/066.JPG?type=w966",
+      },
+    ]);
   });
 });

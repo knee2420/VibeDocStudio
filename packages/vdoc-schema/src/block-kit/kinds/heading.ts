@@ -8,6 +8,7 @@ export const headingBlock = defineBlockKind<HeadingBlockDef | FormTitleBlockDef>
   label: "제목",
   category: "text",
   icon: "heading",
+  outlineTag: (b) => (b.kind === "form-title" ? "<<view:title>>" : `H${b.level ?? 2}`),
   slotIds: (b) => (b.slotId ? [b.slotId] : []),
   outline: (b, ctx) => outlineSingleSlot(b.slotId, ctx),
   ai: {
