@@ -1,0 +1,108 @@
+/* ───────────────────────────────────────────────────────────────────────────
+ * 정돈 배치 디자인 (reports/클로드 카드 리빌딩 · 피드백.md)
+ * 스튜디오 맨 바깥이 `.studio-tidy` 일 때만 적용된다 — View › 정돈 배치를 끄면 전부 예전 모양.
+ * 기능 · 동작은 건드리지 않고 겉모양만 다룬다.
+ *
+ * 디자인 책의 다섯 갈래로 정한 것
+ *  1 레이아웃: 세 칸 머리(왼쪽 · 가운데 탭 · 오른쪽 탭)를 모두 40px 한 줄에 맞춘다 — 가로 기준선 하나
+ *  2 배색: 바탕 무채색 70 · 글자 회색 단계 25 · 강조 5 (파랑 하나). 상태색은 점으로만 — 글자를 물들이지 않는다
+ *  3 타이포: UI 13px 기준, 보조 12px, 메타 11px. 그 아래는 쓰지 않는다
+ *  4 인쇄: A4 종이가 바탕에서 떠 보이게 — 바탕은 한 톤 어둡게, 종이는 흰색 + 얕은 그림자
+ *  5 UX: 같은 정보는 같은 모양 (선택 · 호버 · 포커스 색을 한 계열로)
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+.studio-tidy {
+  --tidy-app: #f4f5f7;
+  --tidy-surface: #ffffff;
+  --tidy-desk: #e7e9ee;
+  --tidy-line: #e4e6ea;
+  --tidy-ink: #16181d;
+  --tidy-ink-2: #565c66;
+  --tidy-ink-3: #8b919b;
+  --tidy-accent: #0d99ff;
+  --tidy-ai: #7c3aed;
+  --tidy-check: #d97706;
+  --tidy-risk: #e11d48;
+  --tidy-ok: #16a34a;
+  background: var(--tidy-app) !important;
+}
+
+/* 1 레이아웃 — 가로 기준선 */
+.studio-tidy [data-testid="studio-top-ribbon"] {
+  height: 40px;
+  background: var(--tidy-surface);
+  border-bottom-color: var(--tidy-line);
+}
+.studio-tidy [data-testid="studio-activity-bar"] {
+  background: var(--tidy-surface);
+  border-right-color: var(--tidy-line);
+}
+.studio-tidy [data-testid="studio-page-tab-bar"] {
+  height: 40px;
+  background: var(--tidy-surface);
+  border-bottom-color: var(--tidy-line);
+}
+.studio-tidy [data-testid="project-outliner-sidebar"],
+.studio-tidy [data-testid="studio-page-tab-bar"] ~ * {
+  border-color: var(--tidy-line);
+}
+
+/* 2 배색 — 상태는 점, 글자는 늘 먹색. "수정됨"은 경고가 아니라 평범한 상태다 */
+.studio-tidy .fig-row[data-diff="edited"] .fig-row-label,
+.studio-tidy .fig-row[data-diff="added"] .fig-row-label {
+  color: inherit !important;
+  font-weight: inherit;
+}
+.studio-tidy .fig-git-letter {
+  display: none;
+}
+.studio-tidy .fig-git-dot {
+  width: 5px;
+  height: 5px;
+  opacity: 0.8;
+}
+
+/* 3 타이포 — 13 · 12 · 11 */
+.studio-tidy .fig-panel {
+  --fig-text: var(--tidy-ink);
+  --fig-text-secondary: var(--tidy-ink-2);
+  --fig-text-tertiary: var(--tidy-ink-3);
+  --fig-border: var(--tidy-line);
+  --fig-brand: var(--tidy-accent);
+  font-size: 13px;
+  line-height: 20px;
+}
+.studio-tidy .fig-row {
+  height: 28px;
+}
+.studio-tidy .fig-section-header {
+  font-size: 12px;
+  color: var(--tidy-ink-2);
+}
+.studio-tidy .fig-search input {
+  font-size: 12px;
+}
+
+/* 4 인쇄 — 책상 위의 A4 */
+.studio-tidy [data-vdoc-canvas-main] {
+  background: var(--tidy-desk) !important;
+}
+
+/* 5 UX — 검토하는 동안은 그리기 도구가 필요 없다: 검토 서랍이 열리면 떠 있는 툴바를 비켜 준다 (가림 방지) */
+.studio-tidy:has([data-testid="ai-staging-drawer"]) [data-testid="figma-floating-toolbar"] {
+  display: none;
+}
+
+/* 2 배색 · 넛지 — "확인함"은 평범한 상태라 조용히 (올렸을 때만), "AI 초안 · 안 본 곳"만 늘 보인다 */
+.studio-tidy [data-fill-state="verified"] > button[title^="사람이 확인한"] {
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.studio-tidy [data-fill-state="verified"]:hover > button[title^="사람이 확인한"] {
+  opacity: 1;
+}
+
+/* 5 UX — 포커스 고리는 강조색 하나 */
+.studio-tidy :focus-visible {
+  outline-color: var(--tidy-accent);
+}

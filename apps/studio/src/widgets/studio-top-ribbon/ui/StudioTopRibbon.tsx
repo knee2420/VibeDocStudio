@@ -23,6 +23,7 @@ import { selectCurrentReferenceId, useReferenceStore } from "@/entities/referenc
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
 import { DocumentLifecycleMenuItems } from "@/features/manage-documents";
+import { PhaseNav } from "@/features/tidy-layout";
 import { ImportPdfButton } from "@/features/import-pdf-form";
 import { useHistoryStore } from "@/shared/lib";
 
@@ -71,6 +72,8 @@ export const StudioTopRibbon: React.FC = () => {
   const leftSidebarOpen = useWorkspaceLayoutStore((s) => s.leftSidebarOpen);
   const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
   const rightSidebarOpen = useWorkspaceLayoutStore((s) => s.rightSidebarOpen);
+  const tidyLayout = useWorkspaceLayoutStore((s) => s.tidyLayout);
+  const setTidyLayout = useWorkspaceLayoutStore((s) => s.setTidyLayout);
   const setRightSidebarOpen = useWorkspaceLayoutStore((s) => s.setRightSidebarOpen);
 
   if (!doc || !activeProject) return null;
@@ -200,9 +203,25 @@ export const StudioTopRibbon: React.FC = () => {
                   {rightSidebarOpen ? "닫기" : "열기"}
                 </span>
               </button>
+              <div className="my-1 border-t border-slate-100" />
+              <button
+                type="button"
+                data-testid="tidy-layout-toggle"
+                onClick={() => {
+                  setTidyLayout(!tidyLayout);
+                  setActiveMenu(null);
+                }}
+                className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-100 flex items-center justify-between cursor-pointer"
+                title="단계는 머리줄 · 다음 할 일은 오른쪽 아래 · 툴바는 캔버스 도구만 (끄면 예전 배치)"
+              >
+                <span>정돈 배치</span>
+                <span className="font-mono text-[10px] text-slate-400">{tidyLayout ? "켜짐" : "꺼짐"}</span>
+              </button>
             </div>
           )}
         </div>
+        {/* 정돈 배치: 단계 전환은 여기 한 곳 (Z 의 시작점) */}
+        {tidyLayout && <PhaseNav />}
       </div>
 
       {/* Center: Desktop Window Title */}

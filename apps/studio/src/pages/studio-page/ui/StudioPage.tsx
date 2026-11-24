@@ -14,7 +14,9 @@ import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { usePdfScaffoldSync } from "@/features/mutate-document-pages";
 import { HoverPagePeekCard } from "@/features/peek-page";
 import { useWorkspaceBootstrap, useWorkspaceUrlSync } from "@/features/workspace-persistence";
+import { NextStepButton, usePhaseDefaultPanels } from "@/features/tidy-layout";
 import { useZoomHierarchySync } from "@/features/zoom-hierarchy";
+import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { DocumentPreviewPanel, OutlinePreviewSidebar } from "@/widgets/outline-preview-sidebar";
 import { ResourceManagerSplitViewport, ResourcePreviewHost } from "@/widgets/resource-manager";
 import { SlotInspectorDrawer } from "@/widgets/slot-inspector-drawer";
@@ -49,9 +51,12 @@ const StudioWorkspace: React.FC = () => {
 
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const activeDiff = useActiveDiffStore((s) => s.activeDiff);
+  // 정돈 배치 (reports/기능 세분화와 정돈 배치.md): 단계를 바꿀 때 패널 기본값 · 오른쪽 아래 다음 할 일
+  const tidyLayout = useWorkspaceLayoutStore((s) => s.tidyLayout);
+  usePhaseDefaultPanels(tidyLayout);
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#f4f5f7] text-slate-900 overflow-hidden select-none">
+    <div className={`h-screen w-screen flex flex-col bg-[#f4f5f7] text-slate-900 overflow-hidden select-none ${tidyLayout ? "studio-tidy" : ""}`}>
       <StudioTopRibbon />
 
       <div className="flex-1 flex overflow-hidden relative">
@@ -60,7 +65,7 @@ const StudioWorkspace: React.FC = () => {
         <OutlinePreviewSidebar />
 
         {/* 중앙 에디터 작업 공간: 페이지 탭바 + 서식 툴바 + 중앙 캔버스 (좌/우 사이드바 사이에만 배치) */}
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative">
           <PageTabBar />
 
           {currentPhase === "drafting" && !activeDiff && (
@@ -68,6 +73,7 @@ const StudioWorkspace: React.FC = () => {
           )}
 
           <VDocPageCanvas />
+          {tidyLayout && !activeDiff && <NextStepButton />}
         </div>
 
         {/* 에디터 캔버스와 Composer 사이에 도킹되는 원문 뷰어 스플릿 패널 */}

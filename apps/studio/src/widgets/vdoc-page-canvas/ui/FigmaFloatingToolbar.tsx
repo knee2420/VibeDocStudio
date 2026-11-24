@@ -76,6 +76,8 @@ export const FigmaFloatingToolbar: React.FC = () => {
   const setActiveTool = useAssetLibraryStore((s) => s.setActiveTool);
   const armPlacement = useAssetLibraryStore((s) => s.armPlacement);
   const openRightPanel = useWorkspaceLayoutStore((s) => s.openRightPanel);
+  // 정돈 배치: 단계 전환은 머리줄, 패널 열기는 오른쪽 탭에 있으므로 여기서는 캔버스 도구만 보인다
+  const tidyLayout = useWorkspaceLayoutStore((s) => s.tidyLayout);
   const mode = useStudioDocumentStore((s) => s.mode);
   const toggleMode = useStudioDocumentStore((s) => s.toggleMode);
   const { currentPhase, switchPhase } = useSwitchWorkbenchPhase();
@@ -440,6 +442,7 @@ export const FigmaFloatingToolbar: React.FC = () => {
               <Hand className="w-4 h-4" />
             </button>
 
+            {!tidyLayout && (<>
             <button
               type="button"
               onClick={() => {
@@ -463,6 +466,7 @@ export const FigmaFloatingToolbar: React.FC = () => {
             >
               <Sparkles className="w-4 h-4" />
             </button>
+            </>)}
 
             <div className="w-px h-5 bg-black/10 mx-1" />
 
@@ -476,7 +480,7 @@ export const FigmaFloatingToolbar: React.FC = () => {
               {mode === "Editing" ? <PenLine className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
 
-            <div data-testid="execution-phase-stepper" className="flex items-center gap-0.5 bg-black/[0.05] p-0.5 rounded-[10px] ml-0.5">
+            {!tidyLayout && <div data-testid="execution-phase-stepper" className="flex items-center gap-0.5 bg-black/[0.05] p-0.5 rounded-[10px] ml-0.5">
               {PHASE_MODES.map((p) => {
                 const Icon = p.icon;
                 const active = currentPhase === p.id;
@@ -495,7 +499,7 @@ export const FigmaFloatingToolbar: React.FC = () => {
                   </button>
                 );
               })}
-            </div>
+            </div>}
           </>
         )}
       </div>

@@ -6,7 +6,9 @@ import { getBlockSlotIds, type StagedSlotHtmlChange } from "@vibe/vdoc-schema";
 import { useAiStagingStore } from "@/entities/ai-staging";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore, type ActivityBarTab } from "@/entities/workspace-layout";
+import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
+import { PHASE_HOME } from "@/features/tidy-layout";
 
 const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNode; testId: string }> = [
   {
@@ -41,6 +43,9 @@ const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNod
   },
 ];
 
+/** 정돈 배치의 순서: 자주 · 중요(아웃라인 · 레퍼런스 · 서식 허브) 위, 가끔(에셋 · 변경 기록) 선 아래 */
+const TIDY_ORDER: ActivityBarTab[] = ["explorer", "reference", "template-hub", "assets", "source-control"];
+
 const iconButton = (active: boolean) =>
   `relative w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer transition ${
     active ? "bg-slate-200/90 text-slate-900" : "text-slate-500 hover:bg-slate-200/60 hover:text-slate-900"
@@ -55,6 +60,9 @@ export const StudioActivityBar: React.FC = () => {
   const stagingQueue = useAiStagingStore((s) => s.queue);
   const activeDoc = useStudioDocumentStore(selectActiveDocument);
   const committedPageIds = useStudioDocumentStore((s) => s.committedPageIds);
+  const tidyLayout = useWorkspaceLayoutStore((s) => s.tidyLayout);
+  const phase = useWorkspaceSessionStore((s) => s.currentPhase);
+  const navItems = tidyLayout ? TIDY_ORDER.flatMap((id) => NAV_ITEMS.filter((n) => n.id === id)) : NAV_ITEMS;
 
   const sourceControlCount = useMemo(() => {
     if (!activeDoc) return stagingQueue.length;
@@ -90,12 +98,15 @@ export const StudioActivityBar: React.FC = () => {
       className="w-11 bg-[#f6f6f6] border-r border-slate-200/80 flex flex-col items-center py-2 shrink-0 z-30 select-none text-slate-500 justify-between"
     >
       <div className="w-full flex flex-col items-center space-y-1">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const isActive = leftSidebarOpen && activeTab === item.id;
           const badge = item.id === "source-control" ? sourceControlCount : 0;
+          // 지금 단계에서 "여기서 시작" — 열려 있지 않을 때만 작은 점으로 넛지
+          const home = tidyLayout && PHASE_HOME[phase].left === item.id && !isActive;
           return (
+            <React.Fragment key={item.id}>
+            {tidyLayout && item.id === "assets" && <div className="w-5 h-px bg-slate-300 my-1" aria-hidden />}
             <button
-              key={item.id}
               type="button"
               data-testid={item.testId}
               onClick={() => toggleActivityTab(item.id)}
@@ -103,6 +114,7 @@ export const StudioActivityBar: React.FC = () => {
               className={iconButton(isActive)}
             >
               {isActive && <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-[#0d99ff] rounded-r" />}
+              {home && <span data-testid="activity-phase-home" className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#0d99ff]" title="이 단계는 여기서 시작해요" />}
               {item.icon}
               {badge > 0 && (
                 <span
@@ -113,6 +125,7 @@ export const StudioActivityBar: React.FC = () => {
                 </span>
               )}
             </button>
+            </React.Fragment>
           );
         })}
       </div>

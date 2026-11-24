@@ -55,7 +55,20 @@ const saveRefViewerOpenToSession = (open: boolean) => {
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
+/** 정돈 배치 (reports/기능 세분화와 정돈 배치.md) — 브라우저에 기억. 처음엔 켠다. */
+const TIDY_LAYOUT_KEY = "vdoc:tidy_layout";
+const loadTidyLayout = (): boolean => {
+  try {
+    return window.localStorage.getItem(TIDY_LAYOUT_KEY) !== "0";
+  } catch {
+    return true;
+  }
+};
+
 export interface WorkspaceLayoutState {
+  /** 정돈 배치: 단계 전환은 머리줄 왼쪽, 다음 할 일은 오른쪽 아래, 떠 있는 툴바는 캔버스 도구만 (아무것도 지우지 않는다). */
+  tidyLayout: boolean;
+  setTidyLayout: (on: boolean) => void;
   activeActivityTab: ActivityBarTab;
   leftSidebarOpen: boolean;
   rightSidebarOpen: boolean;
@@ -114,6 +127,15 @@ export interface WorkspaceLayoutState {
 }
 
 export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) => ({
+  tidyLayout: loadTidyLayout(),
+  setTidyLayout: (on) => {
+    try {
+      window.localStorage.setItem(TIDY_LAYOUT_KEY, on ? "1" : "0");
+    } catch {
+      // 이번 세션만
+    }
+    set({ tidyLayout: on });
+  },
   activeActivityTab: "explorer",
   leftSidebarOpen: true,
   rightSidebarOpen: true,
