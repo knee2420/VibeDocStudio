@@ -182,13 +182,13 @@ export const ElementsSection: React.FC<
                 <button
                   type="button"
                   onClick={() => {
-                    useWorkspaceLayoutStore.getState().setActiveActivityTab("template-hub");
+                    useWorkspaceLayoutStore.getState().setActiveActivityTab("assets");
                     setMenuOpen(false);
                   }}
                   className="fig-menu-item"
                 >
                   <BookOpen className="w-3 h-3" />
-                  서식·템플릿 허브 열기
+                  에셋 · 템플릿 라이브러리 열기
                 </button>
                 <button type="button" onClick={() => setAllCollapsed(false)} className="fig-menu-item">
                   <ChevronsUpDown className="w-3 h-3" />

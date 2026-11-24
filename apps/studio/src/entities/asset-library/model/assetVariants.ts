@@ -53,6 +53,7 @@ const SAMPLE = {
   field: "홍길동 · 2026. 11. 16.",
   link: "<p><strong>문서 자동화 도입 가이드</strong></p><p>링크를 붙여 넣으면 제목과 설명이 이렇게 카드로 표시됩니다.</p>",
   list: ["첫 번째 핵심 항목", "두 번째 핵심 항목", "세 번째 핵심 항목"],
+  short: ["예시 항목", "홍길동", "2026. 11. 16.", "검토 완료", "1,200,000", "기획팀"],
 } as const;
 
 type Role = "title" | "subtitle" | "body" | "column" | "cell-head" | "cell" | "field" | "link";
@@ -117,12 +118,18 @@ function sampleHtml(role: Role, index: number, col: number, previous: string): s
       return `<p>${SAMPLE.field}</p>`;
     case "link":
       return SAMPLE.link;
-    default:
+    default: {
+      // 원래 글이 짧은 칸(표 · 양식 칸)은 짧은 예시로 — 긴 본문을 넣으면 좁은 칸이 넘친다.
+      const plain = previous.replace(/<[^>]+>/g, "").trim();
+      if (plain && plain.length <= 24 && !/<(ul|ol|h[1-4])/i.test(previous)) {
+        return `<p>${SAMPLE.short[index % SAMPLE.short.length]}</p>`;
+      }
       return /<(ul|ol)/i.test(previous)
         ? `<ul>${SAMPLE.list.map((t) => `<li>${t}</li>`).join("")}</ul>`
         : /<h[1-4]/i.test(previous)
           ? `<h3>${SAMPLE.title}</h3><p>${SAMPLE.body}</p>`
           : `<p>${SAMPLE.body}</p>`;
+    }
   }
 }
 
@@ -145,8 +152,8 @@ function withDummyImages(block: LayoutBlock): LayoutBlock {
   return b;
 }
 
-/** 같은 구조에 예시 문구 · 더미 이미지를 채운다. */
-function fillWithSamples(snapshots: readonly SectionAssetBlockSnapshot[]): SectionAssetBlockSnapshot[] {
+/** 같은 구조에 예시 문구 · 더미 이미지를 채운다 (블록 · 슬롯 id 는 그대로). */
+export function fillWithSamples(snapshots: readonly SectionAssetBlockSnapshot[]): SectionAssetBlockSnapshot[] {
   let bodyIndex = 0;
   return snapshots.map(({ block, slots }) => {
     const roles = slotRoles(block);
@@ -174,10 +181,14 @@ function blankBlockDraft(blockKind: string): SectionAssetBlockSnapshot[] {
   }
 }
 
-/** 그 에셋이 고를 수 있는 내용 (보여 줄 순서대로). */
+/**
+ * 그 에셋을 넣는 두 가지 방법 (보여 줄 순서대로):
+ * 원본 그대로 복사 · 같은 구조에 더미 데이터를 채워서. 원본이 없는 기본 블록은 더미 데이터 하나뿐이다.
+ * (`blank` 는 끌어다 놓기 · 예전 삽입 경로에만 남아 있다.)
+ */
 export function availableVariants(source: AssetSource): AssetVariantId[] {
-  if (source.type === "section") return source.section.originalBlocks?.length ? ["original", "sample", "blank"] : ["sample", "blank"];
-  return ["sample", "blank"];
+  if (source.type === "section" && source.section.originalBlocks?.length) return ["original", "sample"];
+  return ["sample"];
 }
 
 /** 미리보기 · 삽입에 쓸 블록 묶음. 없으면 null (예: 원본이 없는 옛 섹션 에셋). */
@@ -196,6 +207,6 @@ export function buildAssetVariant(source: AssetSource, variant: AssetVariantId):
 
 export const ASSET_VARIANT_LABEL: Record<AssetVariantId, string> = {
   original: "원본 그대로",
-  sample: "예시 포함",
+  sample: "더미 데이터",
   blank: "빈 칸",
 };

@@ -11,7 +11,6 @@ import { ReferenceManagerWidget } from "@/widgets/vdoc-page-canvas";
 import { FigmaAssetsSidebarPanel } from "./FigmaAssetsSidebarPanel";
 import { OutlineExplorer } from "./OutlineExplorer";
 import { SourceControlSidebarPanel } from "./SourceControlSidebarPanel";
-import { TemplateHubSidebarPanel } from "./TemplateHubSidebarPanel";
 
 /**
  * 좌측 사이드바: 최좌측 액티비티 바 탭(Layers · Source Control · Assets · Reference · Template Hub)에 따라 패널을 전환한다.
@@ -59,8 +58,6 @@ export const OutlinePreviewSidebar: React.FC = () => {
 
       {activeActivityTab === "source-control" ? (
         <SourceControlSidebarPanel />
-      ) : activeActivityTab === "template-hub" ? (
-        <TemplateHubSidebarPanel />
       ) : activeActivityTab === "assets" ? (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <div className="h-10 pl-3 pr-2 border-b border-[var(--fig-border)] flex items-center justify-between shrink-0">

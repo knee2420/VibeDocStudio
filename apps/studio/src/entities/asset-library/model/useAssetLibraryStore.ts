@@ -151,12 +151,19 @@ interface AssetLibraryState {
     label?: string,
   ) => string[];
   removeSectionAsset: (sectionId: string) => void;
+  /**
+   * 에셋 패널에서 뺀 템플릿 라이브러리 (문서 id). 피그마의 "라이브러리 추가 / 제거"와 같다.
+   * 나중에 커뮤니티에서 받은 라이브러리도 같은 목록으로 켜고 끈다.
+   */
+  hiddenTemplateIds: string[];
+  setTemplateEnabled: (docId: string, enabled: boolean) => void;
 }
 
 export const useAssetLibraryStore = create<AssetLibraryState>((set, get) => ({
   activeTool: "select",
   placement: null,
   sectionAssets: [],
+  hiddenTemplateIds: [],
 
   setActiveTool: (tool) => set({ activeTool: tool, placement: null }),
   armPlacement: (placement) =>
@@ -260,5 +267,12 @@ export const useAssetLibraryStore = create<AssetLibraryState>((set, get) => ({
   removeSectionAsset: (sectionId) =>
     set((state) => ({
       sectionAssets: state.sectionAssets.filter((s) => s.id !== sectionId),
+    })),
+
+  setTemplateEnabled: (docId, enabled) =>
+    set((state) => ({
+      hiddenTemplateIds: enabled
+        ? state.hiddenTemplateIds.filter((id) => id !== docId)
+        : Array.from(new Set([...state.hiddenTemplateIds, docId])),
     })),
 }));

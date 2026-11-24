@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { BookOpen, FolderTree, GitBranch, HelpCircle, LayoutGrid, Library, Settings } from "lucide-react";
+import { FolderTree, GitBranch, HelpCircle, LayoutGrid, Library, Settings } from "lucide-react";
 
 import { getBlockSlotIds, type StagedSlotHtmlChange } from "@vibe/vdoc-schema";
 
@@ -23,7 +23,7 @@ const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNod
   },
   {
     id: "assets",
-    label: "에셋 (Assets)",
+    label: "에셋 · 템플릿 (Assets)",
     icon: <LayoutGrid className="w-5 h-5" />,
     testId: "activity-tab-assets",
   },
@@ -32,12 +32,6 @@ const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNod
     label: "레퍼런스 (Reference)",
     icon: <Library className="w-5 h-5" />,
     testId: "activity-tab-reference",
-  },
-  {
-    id: "template-hub",
-    label: "서식·템플릿 허브 (Template Hub)",
-    icon: <BookOpen className="w-5 h-5" />,
-    testId: "activity-tab-template-hub",
   },
 ];
 
