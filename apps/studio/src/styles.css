@@ -669,3 +669,52 @@
 /* 변경 비교 화면: 원래 스크롤 막대를 숨기고 변경 위치 막대가 스크롤 막대를 대신한다 (VS Code 처럼 하나만). */
 .fig-scroll-hidden { scrollbar-width: none; }
 .fig-scroll-hidden::-webkit-scrollbar { display: none; }
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * 실험실 모드 (플레이그라운드 초안을 열어 둔 상태)
+ * 피그마 Dev Mode 처럼 배치 · 톤은 같고 강조색 · 크롬만 바꿔 "지금은 프로젝트가 아니다"를 보인다.
+ * 색: 프라이머리(파랑 #0d99ff)와 세컨더리(AI 보라 #7c3aed) 사이의 아이리스(Radix Colors iris 스케일) —
+ * 브랜드 팔레트 안에서 두 색 모두와 구분된다. iris3 #f0f1fe · iris4 #e6e7ff · iris6 #cbcdff · iris9 #5b5bd6 · iris12 #272962
+ * ─────────────────────────────────────────────────────────────────────────── */
+[data-studio-mode="lab"] .fig-panel,
+[data-studio-mode="lab"] {
+  --fig-brand: #5b5bd6;
+  --fig-hover: #f4f4fe;
+  --fig-selected: #e6e7ff;
+  --fig-selected-hover: #dadcff;
+  --fig-selected-child: #f0f1fe;
+}
+
+[data-studio-mode="lab"] [data-testid="studio-top-ribbon"] {
+  background: #eeeffd;
+  border-bottom: 2px solid #5b5bd6;
+}
+
+[data-studio-mode="lab"] [data-chrome="page-tabs"] {
+  background: #f3f3fe;
+  border-bottom-color: #cbcdff;
+}
+
+[data-studio-mode="lab"] [data-testid="studio-activity-bar"] {
+  background: #ebecfc;
+  border-right-color: #cbcdff;
+}
+[data-studio-mode="lab"] [data-testid="studio-activity-bar"] .bg-\[\#0d99ff\] {
+  background: #5b5bd6;
+}
+
+[data-studio-mode="lab"] [data-vdoc-canvas-main] {
+  background-color: #eff0fb;
+  background-image: radial-gradient(rgba(91, 91, 214, 0.2) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* 좌우 패널 가장자리 */
+[data-studio-mode="lab"] aside {
+  border-color: #cbcdff;
+}
+
+/* 패널 · 목록 곳곳의 파란 선택 강조를 아이리스로 */
+[data-studio-mode="lab"] .ring-\[\#0d99ff\] { --tw-ring-color: #5b5bd6; }
+[data-studio-mode="lab"] .border-\[\#0d99ff\] { border-color: #5b5bd6; }
+[data-studio-mode="lab"] .bg-\[\#e5f4ff\] { background-color: #e6e7ff; }

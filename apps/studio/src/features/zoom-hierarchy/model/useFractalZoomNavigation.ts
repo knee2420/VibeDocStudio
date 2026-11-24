@@ -11,7 +11,7 @@ import {
 
 import { useSlotSelectionStore } from "@/entities/slot";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
-import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
+import { selectActiveProject, selectOutlineProject, useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { revealCanvasElement, scrollToCanvasPage } from "@/shared/lib";
 
@@ -92,9 +92,10 @@ function shareStructure(prev: FractalOutlineProjection | null, next: FractalOutl
  * 전체 트리를 다시 만들고 캔버스까지 깨운다. `visibleNodes` 는 줌 범위만 반영한다.
  */
 export function getOutlineProjection(): FractalOutlineProjection {
+  const documents = useStudioDocumentStore.getState();
   return projectOutline(
-    selectActiveProject(useProjectStore.getState()) ?? EMPTY_PROJECT,
-    useStudioDocumentStore.getState().docs,
+    selectOutlineProject(useProjectStore.getState(), documents.activeDocId) ?? EMPTY_PROJECT,
+    documents.docs,
     useWorkspaceSessionStore.getState().zoomRootNodeId
   );
 }

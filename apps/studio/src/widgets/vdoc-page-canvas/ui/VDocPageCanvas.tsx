@@ -27,7 +27,7 @@ import { AiStagingDrawer } from "./AiStagingDrawer";
 import { SlotFrame } from "./SlotFrame";
 import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
-import { ReferenceSplitViewport } from "./ReferenceSplitViewport";
+import { ReferenceSplitViewport, ReferenceViewerPane } from "./ReferenceSplitViewport";
 import { SlotRangeAiBar } from "./SlotRangeAiBar";
 import { BlockPlacementLayer } from "./BlockPlacementLayer";
 import { FigmaFloatingToolbar } from "./FigmaFloatingToolbar";
@@ -318,6 +318,7 @@ export const VDocPageCanvas: React.FC = () => {
       <ZoomFocusStyle />
       <div className="flex-1 flex overflow-hidden">
         <ReferenceSplitViewport />
+        <ReferenceViewerPane />
         {activeDiff ? (
           <VersionAwareDiffView activeDiff={activeDiff} />
         ) : isNewTab ? (

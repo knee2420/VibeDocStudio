@@ -275,7 +275,10 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
     setActivePageId: (pageId) => {
       if (!pageId) return;
       const { docs, activeDocId, openTabs } = get();
-      const ownerDoc = docs.find((d) => d.pages.some((p) => p.pageId === pageId)) ?? docs.find((d) => d.docId === activeDocId);
+      // 사본(문서 복제 · 플레이그라운드 버전)은 원본과 쪽 id 가 같다 → 지금 문서에 그 쪽이 있으면 지금 문서를 먼저 본다.
+      const hasPage = (d: VDocDocument) => d.pages.some((p) => p.pageId === pageId);
+      const active = docs.find((d) => d.docId === activeDocId);
+      const ownerDoc = (active && hasPage(active) ? active : docs.find(hasPage)) ?? active;
       const docId = ownerDoc?.docId ?? activeDocId;
       if (!docId) {
         set({ activePageId: pageId });

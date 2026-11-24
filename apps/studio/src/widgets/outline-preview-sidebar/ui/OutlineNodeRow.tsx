@@ -26,6 +26,7 @@ import {
   Trash2,
   Type,
   Unlock,
+  GitBranchPlus,
 } from "lucide-react";
 
 import { documentSurface, type OutlinerNode, type WorkbenchPhase } from "@vibe/vdoc-schema";
@@ -175,6 +176,10 @@ export interface OutlineNodeRowProps {
   hidden?: RowHidden;
   /** 안티그래비티 (VS Code Git 트리) 스타일 변경 상태 (U / M 또는 상위 도트 ●). */
   diffState?: NodeDiffState;
+  /** 이 쪽 · 문서의 다른 버전 수 (있으면 원본 행에 "v1" 칩). */
+  variantCount?: number;
+  /** "새 버전으로 써 보기" — 이 쪽 · 문서를 복사해 다른 버전(v2 …)을 만든다. 없으면 버튼을 보이지 않는다. */
+  onCreateVariant?: (node: OutlinerNode) => void;
 }
 
 /**
@@ -197,6 +202,8 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
   lockSlotIds,
   hidden,
   diffState,
+  variantCount = 0,
+  onCreateVariant,
 }) {
   const docId = node.targetDocId || fallbackDocId;
   const isPageRow = isPageTargetNode(node);
@@ -377,7 +384,7 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
       {!isRenaming && (
         <>
           {node.nameNeedsReview && (
-            <span data-testid={`outline-node-review-${node.nodeId}`} title="이름 확인 필요" className="ml-1 text-[11px] text-amber-500 shrink-0">
+            <span data-testid={`outline-node-review-${node.nodeId}`} title="이름 확인 필요" className="ml-1 text-[11px] text-indigo-500 shrink-0">
               ⚠
             </span>
           )}
@@ -391,9 +398,29 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
               참조
             </span>
           )}
+          {variantCount > 0 && (
+            <span
+              data-testid={`variant-chip-${node.nodeId}`}
+              title={`원본 (v1) · 다른 버전 ${variantCount}개`}
+              className="ml-1 shrink-0 h-4 px-1 rounded border border-indigo-300 bg-indigo-50 text-indigo-800 text-[10px] font-semibold leading-[14px]"
+            >
+              버전 {variantCount + 1}개
+            </span>
+          )}
           <FigmaDiffBadge diffState={diffState} />
 
           <div className="fig-row-actions">
+            {onCreateVariant && (isPageRow || isDocRow) && (
+              <button
+                type="button"
+                data-testid={`create-variant-btn-${node.nodeId}`}
+                onClick={stop(() => onCreateVariant(node))}
+                title={isPageRow ? "이 쪽을 다른 버전으로 써 보기 (원본은 그대로)" : "이 문서를 다른 버전으로 써 보기 (원본은 그대로)"}
+                className="fig-icon-btn"
+              >
+                <GitBranchPlus className={ICON} />
+              </button>
+            )}
             {!isPageOrDoc && (
               <button type="button" data-testid={`zoom-bullet-${node.nodeId}`} onClick={stop(() => actions.zoomIn(node))} title="이 엘리먼트 안으로 Zoom-In" className="fig-icon-btn">
                 <CircleDot className={ICON} />

@@ -272,6 +272,8 @@ export interface VDocOrigin {
   createdAt?: string;
   /** agent 가 만들었으면 그 작업 세션. */
   sessionId?: string;
+  /** 플레이그라운드로 복사해 온 원본 (나중에 원본에 합칠 때 쓴다). */
+  copiedFrom?: { docId: string; title: string; pageIds?: string[]; copiedAt: string };
 }
 
 /** 문서의 지면 (없으면 A4 쪽 나눔). */

@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
-import { FolderTree, GitBranch, HelpCircle, LayoutGrid, Library, Settings } from "lucide-react";
+import { FlaskConical, FolderTree, GitBranch, HelpCircle, LayoutGrid, Library, Settings } from "lucide-react";
 
-import { getBlockSlotIds, type StagedSlotHtmlChange } from "@vibe/vdoc-schema";
 
 import { useAiStagingStore } from "@/entities/ai-staging";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore, type ActivityBarTab } from "@/entities/workspace-layout";
 import { StudioAgentSettingsButton } from "@/features/agent-settings";
+import { useWorkingPagesByDoc } from "@/features/document-revisions";
 
 const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNode; testId: string }> = [
   {
@@ -33,6 +33,12 @@ const NAV_ITEMS: Array<{ id: ActivityBarTab; label: string; icon: React.ReactNod
     icon: <Library className="w-5 h-5" />,
     testId: "activity-tab-reference",
   },
+  {
+    id: "playground",
+    label: "플레이그라운드 · 프로젝트를 건드리지 않고 끄적이는 안전지대",
+    icon: <FlaskConical className="w-5 h-5" />,
+    testId: "activity-tab-playground",
+  },
 ];
 
 const iconButton = (active: boolean) =>
@@ -48,34 +54,11 @@ export const StudioActivityBar: React.FC = () => {
   const setShortcutHelpOpen = useWorkspaceLayoutStore((s) => s.setShortcutHelpOpen);
   const stagingQueue = useAiStagingStore((s) => s.queue);
   const activeDoc = useStudioDocumentStore(selectActiveDocument);
-  const committedPageIds = useStudioDocumentStore((s) => s.committedPageIds);
-
-  const sourceControlCount = useMemo(() => {
-    if (!activeDoc) return stagingQueue.length;
-    const stagedSlotIds = new Set(
-      stagingQueue
-        .filter((d): d is StagedSlotHtmlChange => d.targetKind === "slot-html")
-        .map((d) => d.payload.slotId),
-    );
-    let pageChanges = 0;
-    for (const page of activeDoc.pages) {
-      const isAddedPage = page.pageLabel.includes("새 페이지") && !committedPageIds.has(page.pageId);
-      if (isAddedPage) {
-        pageChanges++;
-        continue;
-      }
-      const blockSlots = page.blocks.flatMap((b) => getBlockSlotIds(b));
-      const allSlotIds = [
-        ...blockSlots,
-        ...(page.headerSlotId ? [page.headerSlotId] : []),
-        ...(page.footerSlotId ? [page.footerSlotId] : []),
-      ];
-      if (allSlotIds.some((sid) => Boolean(activeDoc.slots[sid]?.isEdited) || stagedSlotIds.has(sid))) {
-        pageChanges++;
-      }
-    }
-    return Math.max(pageChanges, stagingQueue.length);
-  }, [activeDoc, committedPageIds, stagingQueue]);
+  // 변경 기록(Changes)과 같은 기준: 마지막 버전 이후 바뀐 쪽 수
+  const activeDocIds = useMemo(() => (activeDoc ? [activeDoc.docId] : []), [activeDoc?.docId]);
+  const working = useWorkingPagesByDoc(activeDocIds);
+  const pageChanges = activeDoc ? (working[activeDoc.docId]?.length ?? 0) : 0;
+  const sourceControlCount = Math.max(pageChanges, stagingQueue.length);
 
   return (
     <aside

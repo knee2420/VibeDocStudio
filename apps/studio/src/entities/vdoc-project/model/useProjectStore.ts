@@ -21,6 +21,13 @@ import { projectApi } from "../api/projectApi";
  */
 export type ProjectLoadStatus = "idle" | "loading" | "ready" | "error";
 
+/**
+ * 플레이그라운드 — 프로젝트를 건드리지 않고 끄적이는 개인 안전지대.
+ * 서버에서는 평범한 프로젝트 하나지만, 작업 프로젝트(활성 프로젝트)로는 고르지 않는다.
+ */
+export const PLAYGROUND_PROJECT_ID = "playground";
+export const isPlaygroundProjectId = (projectId: string | null | undefined): boolean => projectId === PLAYGROUND_PROJECT_ID;
+
 export interface ProjectStoreState {
   projects: VProjectManifest[];
   activeProjectId: string;
@@ -125,7 +132,8 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
       try {
         const projects = await projectApi.list();
         const current = get();
-        const active = projects.find((p) => p.projectId === current.activeProjectId) ?? projects[0];
+        const workProjects = projects.filter((p) => !isPlaygroundProjectId(p.projectId));
+        const active = workProjects.find((p) => p.projectId === current.activeProjectId) ?? workProjects[0];
         set({
           projects,
           activeProjectId: active?.projectId ?? "",
@@ -137,6 +145,7 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
     },
 
     setActiveProjectId: (projectId) => {
+      if (isPlaygroundProjectId(projectId)) return;
       useHistoryStore.getState().clearScope("project");
       set({ activeProjectId: projectId });
     },
@@ -201,3 +210,17 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
 /** 활성 프로젝트 (없으면 `undefined`). 셀렉터로 쓰면 다른 프로젝트 변경에는 다시 그리지 않는다. */
 export const selectActiveProject = (s: ProjectStoreState): VProjectManifest | undefined =>
   s.projects.find((p) => p.projectId === s.activeProjectId);
+
+/**
+ * 아웃라인을 그릴 프로젝트 — 열린 문서가 플레이그라운드 문서면 플레이그라운드, 아니면 작업 프로젝트.
+ * (플레이그라운드 문서를 열었는데 작업 프로젝트 트리를 그리면 Elements 가 비어 보인다.)
+ */
+export const selectOutlineProject = (s: ProjectStoreState, activeDocId: string | null | undefined): VProjectManifest | undefined => {
+  const playground = s.projects.find((p) => isPlaygroundProjectId(p.projectId));
+  if (playground && activeDocId && playground.docIds.includes(activeDocId)) return playground;
+  return selectActiveProject(s);
+};
+
+/** 플레이그라운드 프로젝트 (아직 한 번도 안 썼으면 없다). */
+export const selectPlaygroundProject = (s: ProjectStoreState): VProjectManifest | undefined =>
+  s.projects.find((p) => isPlaygroundProjectId(p.projectId));

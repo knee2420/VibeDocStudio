@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, ChevronsDownUp, ChevronsUpDown, Plus } from "lucide-react";
 
 import type { OutlinerNode } from "@vibe/vdoc-schema";
@@ -7,12 +7,15 @@ import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { isPageTargetNode } from "@/features/edit-outline";
+import { playgroundActions, usePlaygroundDocIds, usePlaygroundVariants, variantKey } from "@/features/playground";
+import { errorMessage } from "@/shared/lib";
 
 import { useSplitterDrag } from "../lib/useSplitterDrag";
 import { minDepth, selectPageTreeForZoom } from "../model/outlineSections";
 import { useFigmaDiffStatusMap } from "../model/useFigmaDiffStatus";
 import { ADD_PAGE_TRIGGER_ATTR } from "./AddPageFlow";
 import { OutlineNodeRow } from "./OutlineNodeRow";
+import { VariantRows } from "./VariantRows";
 import { AddNodeButton, type SectionProps } from "./outlineSectionParts";
 
 /**
@@ -66,6 +69,35 @@ export const DocumentsPagesSection: React.FC<
   );
   const depthOffset = useMemo(() => minDepth(nodes), [nodes]);
   const diffStatusMap = useFigmaDiffStatusMap(allNodes);
+
+  // 버전(v1 · v2 …): 플레이그라운드 사본이 곧 그 쪽 · 문서의 다른 버전이다. 플레이그라운드 트리를 보는 중에는 쓰지 않는다.
+  const variants = usePlaygroundVariants();
+  const playgroundIds = usePlaygroundDocIds();
+  const showingPlayground = playgroundIds.has(activeDocId);
+  const variantsRef = useRef(variants);
+  variantsRef.current = variants;
+  const nodeVariants = (node: OutlinerNode) => {
+    if (showingPlayground || !node.targetDocId) return undefined;
+    if (isPageTargetNode(node)) return node.targetPageId ? variants.get(variantKey(node.targetDocId, node.targetPageId)) : undefined;
+    return node.zoomLevel === "document" ? variants.get(variantKey(node.targetDocId)) : undefined;
+  };
+  const createVariant = useCallback(async (node: OutlinerNode) => {
+    const docId = node.targetDocId;
+    const doc = useStudioDocumentStore.getState().docs.find((d) => d.docId === docId);
+    if (!docId || !doc) return;
+    try {
+      if (isPageTargetNode(node) && node.targetPageId) {
+        const page = doc.pages.find((p) => p.pageId === node.targetPageId);
+        const n = (variantsRef.current.get(variantKey(docId, node.targetPageId))?.length ?? 0) + 2;
+        await playgroundActions.copyPage(docId, node.targetPageId, { title: `${page?.pageLabel ?? "쪽"} v${n}` });
+      } else {
+        const n = (variantsRef.current.get(variantKey(docId))?.length ?? 0) + 2;
+        await playgroundActions.copyDocument(docId, { title: `${doc.title} v${n}` });
+      }
+    } catch (err) {
+      window.alert(errorMessage(err, "새 버전을 만들지 못했어요."));
+    }
+  }, []);
   useLayoutEffect(() => reportOrder(folded ? [] : nodes), [folded, nodes, reportOrder]);
 
   const paneHeight = useWorkspaceLayoutStore((s) => s.pagesPaneHeight);
@@ -136,7 +168,10 @@ export const DocumentsPagesSection: React.FC<
           {nodes.map((node) => {
             const isPage = isPageTargetNode(node);
             const isCurrent = isPage && node.targetPageId === activePageId && (node.targetDocId || activeDocId) === activeDocId;
+            const rowVariants = nodeVariants(node);
+            const docCollapsed = node.zoomLevel === "document" && collapsedNodeIds.includes(node.nodeId);
             return (
+              <React.Fragment key={node.nodeId}>
               <OutlineNodeRow
                 key={node.nodeId}
                 node={node}
@@ -150,7 +185,17 @@ export const DocumentsPagesSection: React.FC<
                 hasChildren={node.zoomLevel === "document"}
                 renamingInitialTitle={renaming?.nodeId === node.nodeId ? renaming.initialTitle : undefined}
                 diffState={diffStatusMap[node.nodeId]}
+                variantCount={rowVariants?.length ?? 0}
+                onCreateVariant={showingPlayground ? undefined : createVariant}
               />
+              {rowVariants && !docCollapsed && (
+                <VariantRows
+                  variants={rowVariants}
+                  level={Math.max(0, node.depth - depthOffset) + 1}
+                  targetName={isPage ? (useStudioDocumentStore.getState().docs.find((d) => d.docId === node.targetDocId)?.pages.find((p) => p.pageId === node.targetPageId)?.pageLabel ?? node.title) : node.title}
+                />
+              )}
+              </React.Fragment>
             );
           })}
           {onAddNode && <AddNodeButton onClick={onAddNode} />}

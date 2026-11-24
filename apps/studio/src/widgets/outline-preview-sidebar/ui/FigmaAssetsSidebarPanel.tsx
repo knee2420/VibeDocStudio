@@ -22,6 +22,7 @@ import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-do
 import { useProjectStore } from "@/entities/vdoc-project";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { pageMutations } from "@/features/mutate-document-pages";
+import { useProjectVisibleDocFilter } from "@/features/playground";
 import { AssetWireframeThumb } from "@/shared/ui";
 
 import { AssetDetailPopover } from "./asset-insert/AssetDetailPopover";
@@ -132,7 +133,10 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
 
-  const templates = useMemo(() => docs.filter((d) => !hiddenTemplateIds.includes(d.docId)), [docs, hiddenTemplateIds]);
+  // 플레이그라운드 문서는 백데이터 제외가 켜져 있으면 템플릿 후보에서 뺀다
+  const projectVisible = useProjectVisibleDocFilter();
+  const libraryDocs = useMemo(() => docs.filter(projectVisible), [docs, projectVisible]);
+  const templates = useMemo(() => libraryDocs.filter((d) => !hiddenTemplateIds.includes(d.docId)), [libraryDocs, hiddenTemplateIds]);
 
   const sectionItems = useMemo<AssetItem[]>(
     () =>
@@ -662,7 +666,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
 
       {libraryOpen && (
         <LibraryManagerDialog
-          docs={docs}
+          docs={libraryDocs}
           activeDocId={activeDocId}
           localAssetCount={folderCount("local")}
           onClose={() => setLibraryOpen(false)}

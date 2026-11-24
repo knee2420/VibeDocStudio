@@ -20,7 +20,8 @@ import { useKnowledgeDeckStore } from "@/entities/knowledge-deck";
 import { useResourceStore } from "@/entities/resource";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import { useProjectStore } from "@/entities/vdoc-project";
+import { selectPlaygroundProject, useProjectStore } from "@/entities/vdoc-project";
+import { usePlaygroundSettings } from "@/features/playground";
 import type { VDocDocument } from "@vibe/vdoc-schema";
 import { aiRuntime, composerController } from "@/shared/ai";
 
@@ -63,7 +64,12 @@ function scopeForSend(_text: string, contexts: ContextRef[]): ContextRef[] {
 
   const projectState = useProjectStore.getState();
   const activeProjectId = projectState.activeProjectId;
-  const projectDocIds = projectState.projects.find((p) => p.projectId === activeProjectId)?.docIds;
+  const workDocIds = projectState.projects.find((p) => p.projectId === activeProjectId)?.docIds;
+  // 플레이그라운드: 지금 그 안에서 작업 중이면 자기 문서는 쓰고, 프로젝트 쪽에서는 백데이터 제외가 꺼져 있을 때만 @지정으로 쓴다
+  const playgroundDocIds = selectPlaygroundProject(projectState)?.docIds ?? [];
+  const inPlayground = Boolean(currentDoc && playgroundDocIds.includes(currentDoc.docId));
+  const shareSandbox = inPlayground || !usePlaygroundSettings.getState().excludeFromBackdata;
+  const projectDocIds = workDocIds && (shareSandbox ? [...workDocIds, ...playgroundDocIds] : workDocIds);
   const isWorkspaceDoc = (id: string) =>
     (!projectDocIds || projectDocIds.includes(id)) && docState.docs.some((item) => item.docId === id);
 

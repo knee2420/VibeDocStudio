@@ -12,6 +12,7 @@ import { DeckCardPreview, registerKnowledgeDeckAi, useKnowledgeDeckBootstrap } f
 import { SlotFormattingSubToolbar } from "@/features/edit-slot-richtext";
 import { useMutateCanvasBlocks } from "@/features/mutate-canvas-blocks";
 import { usePdfScaffoldSync } from "@/features/mutate-document-pages";
+import { PlaygroundBanner, useLabMode } from "@/features/playground";
 import { HoverPagePeekCard } from "@/features/peek-page";
 import { useWorkspaceBootstrap, useWorkspaceUrlSync } from "@/features/workspace-persistence";
 import { useZoomHierarchySync } from "@/features/zoom-hierarchy";
@@ -49,9 +50,14 @@ const StudioWorkspace: React.FC = () => {
 
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const activeDiff = useActiveDiffStore((s) => s.activeDiff);
+  // 실험실 모드(플레이그라운드 초안)면 화면 전체 색을 바꾼다 — styles.css 의 [data-studio-mode="lab"]
+  const lab = useLabMode();
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#f4f5f7] text-slate-900 overflow-hidden select-none">
+    <div
+      data-studio-mode={lab ? "lab" : "project"}
+      className="h-screen w-screen flex flex-col bg-[#f4f5f7] text-slate-900 overflow-hidden select-none"
+    >
       <StudioTopRibbon />
 
       <div className="flex-1 flex overflow-hidden relative">
@@ -62,6 +68,7 @@ const StudioWorkspace: React.FC = () => {
         {/* 중앙 에디터 작업 공간: 페이지 탭바 + 서식 툴바 + 중앙 캔버스 (좌/우 사이드바 사이에만 배치) */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <PageTabBar />
+          <PlaygroundBanner />
 
           {currentPhase === "drafting" && !activeDiff && (
             <SlotFormattingSubToolbar onTableCommand={blocks.runTableCommand} />

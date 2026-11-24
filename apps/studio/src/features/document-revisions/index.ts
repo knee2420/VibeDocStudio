@@ -21,3 +21,12 @@ export {
 export { DocumentHistoryList } from "./ui/DocumentHistoryList";
 export { SaveVersionForm } from "./ui/SaveVersionForm";
 export { VersionList } from "./ui/VersionList";
+export {
+  computeWorkingPages,
+  stagedSlotHtml,
+  useLastVersionBases,
+  useWorkingPagesByDoc,
+  type WorkingChangesInput,
+  type WorkingKind,
+  type WorkingPage,
+} from "./model/workingChanges";

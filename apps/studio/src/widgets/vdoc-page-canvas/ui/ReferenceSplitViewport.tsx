@@ -64,6 +64,8 @@ import {
 import { useDragResize } from "@/shared/lib";
 import { CollapsedPanelRail } from "@/shared/ui";
 
+import { ReferenceLibraryView } from "./reference-library/ReferenceLibraryView";
+
 const FEEDBACK_MS = 2000;
 const EMPTY_PINS: ReferencePin[] = [];
 const ACCEPT_FILES = ".pdf,.html,.htm,.png,.jpg,.jpeg,.webp,.gif";
@@ -82,34 +84,99 @@ const kindBadge = (item: ReferenceItem) =>
 const LayerStrip: React.FC<{ entry: BoundReference }> = ({ entry }) => {
   const report = useReferenceStore((s) => s.layers[entry.refId]);
   const toggleLayer = useReferenceStore((s) => s.toggleLayer);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ left: false, right: false });
+
+  // 넘치는지 · 어디까지 봤는지 — 양끝 화살표와 흐림을 그때만 보인다
+  const measure = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setEdges({ left: el.scrollLeft > 2, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 2 });
+  }, []);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    measure();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    ro?.observe(el);
+    return () => ro?.disconnect();
+  }, [measure, report]);
+
   if (!report || report.layers.length === 0) return null;
+  const onCount = report.layers.filter((l) => isLayerOn(entry, l.id)).length;
+  const scrollBy = (dx: number) => {
+    scrollRef.current?.scrollBy({ left: dx });
+    measure();
+  };
+
   return (
-    <div data-testid="reference-layer-strip" className="px-2.5 py-1 border-b border-slate-200 bg-white flex items-center gap-1 flex-wrap shrink-0">
-      <span className="text-[10px] text-slate-500 mr-0.5" title="이 레퍼런스에서 따를 결정의 층위 (끄면 AI 가 그 층위는 따르지 않는다)">
-        층위
+    <div data-testid="reference-layer-strip" className="fig-panel h-8 pl-2.5 pr-1 border-b border-[var(--fig-border)] bg-white flex items-center gap-1 shrink-0">
+      <span className="text-[11px] text-black/45 shrink-0" title="이 레퍼런스에서 따를 결정의 층위 (끄면 AI 가 그 층위는 따르지 않는다)">
+        따를 층위 <span className="text-black/30">{onCount}/{report.layers.length}</span>
       </span>
-      {report.layers.map((layer) => {
-        const on = isLayerOn(entry, layer.id);
-        const values = Object.entries(layer.values)
-          .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
-          .join("\n");
-        return (
+      <div className="relative flex-1 min-w-0 h-full flex items-center">
+        <div
+          ref={scrollRef}
+          onScroll={measure}
+          onWheel={(e) => {
+            // 세로 휠도 가로로 넘긴다 (가로 스크롤 줄)
+            const el = scrollRef.current;
+            if (!el || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+            el.scrollLeft += e.deltaY;
+            measure();
+          }}
+          className="w-full flex items-center gap-1 overflow-x-auto no-scrollbar"
+        >
+          {report.layers.map((layer) => {
+            const on = isLayerOn(entry, layer.id);
+            const values = Object.entries(layer.values)
+              .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
+              .join("\n");
+            return (
+              <button
+                key={layer.id}
+                type="button"
+                data-testid={`reference-layer-${layer.id}`}
+                onClick={() => void toggleLayer(entry.refId, layer.id)}
+                title={`${layer.id} ${layer.name}\n${layer.question}\n${values || "(정성 판단 층위)"}\n\n클릭: ${on ? "끄기" : "켜기"}`}
+                aria-pressed={on}
+                className={`h-5 px-1.5 rounded-[4px] text-[10.5px] shrink-0 inline-flex items-center gap-1 cursor-default transition-colors ${
+                  on ? "bg-[var(--fig-selected)] text-[#0a7fd4] hover:bg-[var(--fig-selected-hover)]" : "text-black/35 line-through hover:bg-[var(--fig-hover)]"
+                }`}
+              >
+                <span className="font-mono">{layer.id}</span>
+                <span className="max-w-[72px] truncate">{layer.name.split("·")[0]}</span>
+              </button>
+            );
+          })}
+        </div>
+        {edges.left && <div aria-hidden className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent" />}
+        {edges.right && <div aria-hidden className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent" />}
+      </div>
+      {(edges.left || edges.right) && (
+        <div className="flex items-center shrink-0">
           <button
-            key={layer.id}
             type="button"
-            data-testid={`reference-layer-${layer.id}`}
-            onClick={() => void toggleLayer(entry.refId, layer.id)}
-            title={`${layer.id} ${layer.name}\n${layer.question}\n${values || "(정성 판단 층위)"}\n\n클릭: ${on ? "끄기" : "켜기"}`}
-            className={`px-1.5 py-0.5 rounded-sm text-[10px] font-mono border transition cursor-pointer ${
-              on
-                ? "bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100"
-                : "bg-slate-50 text-slate-400 border-slate-200 line-through hover:text-slate-600"
-            }`}
+            data-testid="reference-layer-prev"
+            disabled={!edges.left}
+            onClick={() => scrollBy(-160)}
+            className="fig-icon-btn !w-5 disabled:opacity-25"
+            title="앞 층위"
           >
-            {layer.id}
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
-        );
-      })}
+          <button
+            type="button"
+            data-testid="reference-layer-next"
+            disabled={!edges.right}
+            onClick={() => scrollBy(160)}
+            className="fig-icon-btn !w-5 disabled:opacity-25"
+            title="다음 층위"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -157,11 +224,11 @@ const PendingCardRow: React.FC<{ refId: string; card: ConsensusCard }> = ({ refI
   const [choice, setChoice] = useState<number>(-1); // -1 = 본 해석
   const readings = [card.reading, ...card.alternatives.map((a) => a.reading)];
   return (
-    <li data-testid={`consensus-pending-${card.cardId}`} className="rounded-sm border border-amber-300 bg-amber-50/60 p-1.5 space-y-1">
+    <li data-testid={`consensus-pending-${card.cardId}`} className="rounded-sm border border-sky-300 bg-sky-50/60 p-1.5 space-y-1">
       <div className="flex items-center gap-1.5">
-        <span className="font-mono text-[10px] px-1 rounded-xs bg-amber-200 text-amber-900">{card.layer}</span>
+        <span className="font-mono text-[10px] px-1 rounded-xs bg-sky-200 text-sky-900">{card.layer}</span>
         <span className="text-[10px] text-slate-500">{scopeLabel(card.scope)}</span>
-        <span className="ml-auto text-[9px] text-amber-700">AI 제안</span>
+        <span className="ml-auto text-[9px] text-sky-700">AI 제안</span>
       </div>
       {readings.map((text, i) => (
         <label key={i} className={`flex gap-1 text-[11px] leading-snug ${readings.length > 1 ? "cursor-pointer" : ""}`}>
@@ -186,7 +253,7 @@ const PendingCardRow: React.FC<{ refId: string; card: ConsensusCard }> = ({ refI
           type="button"
           data-testid={`consensus-confirm-${card.cardId}`}
           onClick={() => void confirmCard(refId, card.cardId, { adoption, alternative: choice >= 0 ? choice : undefined })}
-          className="ml-auto inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-sm bg-amber-600 text-white text-[10px] font-bold hover:bg-amber-700 cursor-pointer"
+          className="ml-auto inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-sm bg-sky-600 text-white text-[10px] font-bold hover:bg-sky-700 cursor-pointer"
         >
           <Check className="w-2.5 h-2.5" /> 확정
         </button>
@@ -222,10 +289,10 @@ const ConsensusPanel: React.FC<{ entry: BoundReference }> = ({ entry }) => {
         onClick={() => setOpen((v) => !v)}
         className="w-full px-2.5 py-1 flex items-center gap-1.5 text-[10px] text-slate-600 hover:bg-slate-50 cursor-pointer"
       >
-        <Sparkles className="w-3 h-3 text-amber-600" />
+        <Sparkles className="w-3 h-3 text-sky-600" />
         <span className="font-bold text-slate-800">해석 합의</span>
         <span>확정 {confirmed.length}</span>
-        {pending.length > 0 && <span className="px-1 rounded-xs bg-amber-100 text-amber-800">확정 대기 {pending.length}</span>}
+        {pending.length > 0 && <span className="px-1 rounded-xs bg-sky-100 text-sky-800">확정 대기 {pending.length}</span>}
         {open ? <ChevronUp className="w-3 h-3 ml-auto" /> : <ChevronDown className="w-3 h-3 ml-auto" />}
       </button>
       {open && (
@@ -267,11 +334,16 @@ const ConsensusPanel: React.FC<{ entry: BoundReference }> = ({ entry }) => {
  * 레퍼런스 원본 카드 — 원본(PDF · 웹 · 이미지)을 그대로 보여 주고 핀을 꽂는다.
  * PDF: [텍스트] 글자 드래그 · [영역 선택] 사각 드래그 / 웹: 리더(추출 본문) · 스냅샷 · 라이브
  */
-const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: () => void }> = ({
-  entry,
-  number,
-  onClose,
-}) => {
+const ReferenceCard: React.FC<{
+  entry: BoundReference;
+  number: number;
+  onClose: () => void;
+  /** 머리말 제목을 눌러 다른 레퍼런스로 바꾸기 (예전 탭 줄 자리) */
+  references?: { refId: string; number: number; title: string }[];
+  onSelectReference?: (refId: string) => void;
+  /** 머리말 오른쪽 끝에 더할 버튼 (분할 작업창으로 옮기기 등) */
+  headerExtra?: React.ReactNode;
+}> = ({ entry, number, onClose, references, onSelectReference, headerExtra }) => {
   const { refId, item } = entry;
   const sourceUrl = referenceApi.sourceUrl(refId);
   const extraction = useReferenceStore((s) => s.extraction[refId]);
@@ -290,6 +362,7 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
   const [feedback, setFeedback] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [capturingLive, setCapturingLive] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const articleRef = React.useRef<HTMLElement>(null);
 
   const liveShots = useMemo(
@@ -487,51 +560,66 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
       ref={articleRef}
       data-testid={`reference-card-${refId}`}
       data-ai-entity={refId}
-      className="w-full h-full bg-white rounded border border-slate-300 shadow-sm ring-1 ring-slate-900/5 flex flex-col overflow-hidden"
+      className="w-full h-full bg-white flex flex-col overflow-hidden"
     >
-      <header className="px-3 py-2 bg-slate-300 text-slate-800 border-b border-slate-300 flex items-center justify-between gap-2 shrink-0 rounded-t select-none">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-white/90 text-slate-700 border border-slate-300/90 text-[10px] font-bold shrink-0">
-            <Lock className="w-2.5 h-2.5 text-slate-500" />
-            참조 {number}
-          </span>
-          <h4 className="text-xs font-bold truncate text-slate-800" title={item.title}>
-            {item.title}
-          </h4>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {isPdf && (
-            <div className="inline-flex items-center p-0.5 rounded-sm bg-slate-200 border border-slate-300 text-[10px]">
-              {(["text", "box"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => {
-                    setPdfMode(mode);
-                    setSelectedText(null);
-                    window.getSelection()?.removeAllRanges();
-                  }}
-                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-xs transition cursor-pointer ${
-                    pdfMode === mode ? "bg-amber-600 text-white font-bold" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  title={mode === "text" ? "글자나 문장을 드래그해 고르는 모드" : "사각 영역을 드래그해 고르는 모드"}
-                >
-                  {mode === "text" ? <Type className="w-2.5 h-2.5" /> : <MousePointerClick className="w-2.5 h-2.5" />}
-                  <span>{mode === "text" ? "텍스트" : "영역 선택"}</span>
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="w-px h-3 bg-slate-400 mx-0.5" />
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-sm hover:bg-rose-100 hover:text-rose-700 text-slate-500 cursor-pointer transition-colors"
-            title="뷰어 닫기"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
+      {/* 머리말 한 줄 (피그마 패널): 레퍼런스 고르기 · 텍스트/영역 선택 · 닫기 */}
+      <header className="fig-panel relative h-10 pl-2 pr-1.5 border-b border-[var(--fig-border)] bg-white flex items-center gap-1.5 shrink-0 select-none">
+        <button
+          type="button"
+          data-testid="reference-viewer-picker"
+          onClick={() => references && references.length > 1 && setPickerOpen((v) => !v)}
+          title={references && references.length > 1 ? "다른 레퍼런스 보기" : item.title}
+          className="min-w-0 flex-1 h-7 px-1.5 rounded-[5px] flex items-center gap-1.5 hover:bg-[var(--fig-hover)] cursor-default text-left"
+        >
+          <Lock className="w-3 h-3 text-black/35 shrink-0" aria-label="읽기 전용" />
+          <span className="font-mono text-[10.5px] text-black/40 shrink-0">참조{number}</span>
+          <span className="text-[12.5px] font-semibold text-black/85 truncate">{item.title}</span>
+          {references && references.length > 1 && <ChevronDown className="w-3 h-3 text-black/45 shrink-0" />}
+        </button>
+        {isPdf && (
+          <div className="fig-seg w-[148px] shrink-0" role="group" aria-label="고르는 방식">
+            {(["text", "box"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                data-testid={`reference-mode-${mode}`}
+                aria-pressed={pdfMode === mode}
+                onClick={() => {
+                  setPdfMode(mode);
+                  setSelectedText(null);
+                  window.getSelection()?.removeAllRanges();
+                }}
+                title={mode === "text" ? "글자나 문장을 드래그해 고르기" : "사각 영역을 드래그해 고르기"}
+              >
+                {mode === "text" ? <Type className="w-3 h-3" /> : <MousePointerClick className="w-3 h-3" />}
+                {mode === "text" ? "텍스트" : "영역 선택"}
+              </button>
+            ))}
+          </div>
+        )}
+        {headerExtra}
+        <button type="button" onClick={onClose} className="fig-icon-btn shrink-0" title="뷰어 닫기">
+          <X className="w-3.5 h-3.5" />
+        </button>
+        {pickerOpen && references && (
+          <div className="fig-menu absolute left-2 top-9 z-40 w-[min(320px,calc(100%-16px))] max-h-[320px] overflow-y-auto" onMouseLeave={() => setPickerOpen(false)}>
+            {references.map((r) => (
+              <button
+                key={r.refId}
+                type="button"
+                onClick={() => {
+                  setPickerOpen(false);
+                  onSelectReference?.(r.refId);
+                }}
+                className={`fig-menu-item ${r.refId === refId ? "font-semibold" : ""}`}
+              >
+                <span className="font-mono text-[10.5px] opacity-60 w-9 shrink-0">참조{r.number}</span>
+                <span className="truncate">{r.title}</span>
+                {r.refId === refId && <Check className="w-3 h-3 ml-auto shrink-0" />}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       <LayerStrip entry={entry} />
@@ -558,13 +646,13 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
       >
         {item.status === "failed" ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-2 p-6 text-xs text-slate-500 bg-slate-50 text-center">
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
+            <AlertTriangle className="w-5 h-5 text-sky-500" />
             <span>원본을 가져오거나 해체하지 못했습니다.</span>
             <span className="text-[10px] text-slate-400 max-w-[320px] break-all">{item.error}</span>
             <button
               type="button"
               onClick={() => void reanalyze(refId)}
-              className="mt-1 inline-flex items-center gap-1 px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-semibold cursor-pointer"
+              className="mt-1 inline-flex items-center gap-1 px-2 py-1 rounded bg-sky-600 hover:bg-sky-500 text-white text-[11px] font-semibold cursor-pointer"
             >
               <RefreshCw className="w-3 h-3" /> 다시 시도
             </button>
@@ -627,7 +715,7 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
                     useReferenceRegionStore.getState().setFocus({ refId, page: pin.page ?? 1, box: pin.bbox ?? [0, 0, 60, 1000] });
                   }}
                   style={{ top: `${topPct}%` }}
-                  className="absolute right-0 w-2.5 h-1.5 bg-amber-500 hover:w-4 hover:h-2.5 -translate-y-1/2 rounded-xs hover:bg-amber-600 transition-all cursor-pointer pointer-events-auto border border-amber-600/60"
+                  className="absolute right-0 w-2.5 h-1.5 bg-sky-500 hover:w-4 hover:h-2.5 -translate-y-1/2 rounded-xs hover:bg-sky-600 transition-all cursor-pointer pointer-events-auto border border-sky-600/60"
                   title={`${pin.label} (클릭 시 이동)`}
                 />
               );
@@ -636,24 +724,24 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
         )}
       </div>
 
-      <footer className="p-2.5 bg-slate-50 border-t border-slate-200/90 flex flex-col gap-1.5 shrink-0 rounded-b select-none">
-        <div className="flex items-center justify-between text-[11px] px-1 text-slate-600">
-          <span className="truncate max-w-[340px]">
+      <footer className="fig-panel px-2.5 py-2 bg-white border-t border-[var(--fig-border)] flex flex-col gap-1.5 shrink-0 select-none">
+        <div className="flex items-center justify-between gap-2 text-[11px] px-0.5 text-black/55">
+          <span className="truncate min-w-0">
             {feedback ? (
-              <span className="text-amber-800 font-bold flex items-center gap-1">
-                <Check className="w-3 h-3 text-emerald-600" /> {feedback}
+              <span className="text-[#0a7fd4] font-semibold flex items-center gap-1">
+                <Check className="w-3 h-3" /> {feedback}
               </span>
             ) : segments.length > 0 ? (
-              <span className="text-amber-800 font-bold">영역을 골랐습니다. [핀 꽂기] 로 남기세요</span>
+              <span className="text-black/80 font-medium">영역을 골랐어요 — 핀으로 남기세요</span>
             ) : selectedText ? (
-              <span className="text-amber-800 font-bold">
-                선택한 글 ({selectedText.page}p, {selectedText.text.length}자) — [핀 꽂기] 로 남기세요
+              <span className="text-black/80 font-medium">
+                선택한 글 {selectedText.page}p · {selectedText.text.length}자 — 핀으로 남기세요
               </span>
             ) : (
-              <span className="text-slate-500">💡 따라 하고 싶은 부분에 핀을 꽂으세요 (내용이 아니라 결정 방식을 가져옵니다)</span>
+              <span title="내용이 아니라 결정 방식을 가져옵니다">따라 하고 싶은 부분을 골라 핀을 꽂으세요</span>
             )}
           </span>
-          <span className="text-[10px] text-slate-400 font-mono">
+          <span className="text-[10.5px] text-black/35 shrink-0">
             {item.kind.toUpperCase()} · {item.pageCount || 1}p
           </span>
         </div>
@@ -665,7 +753,7 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
                 data-testid={segments.length > 0 ? "reference-pin-create-btn" : "reference-text-pin-create-btn"}
                 disabled={busy}
                 onClick={() => void (segments.length > 0 ? createRegionPin() : createTextPin())}
-                className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-sm text-xs font-bold cursor-pointer disabled:opacity-50"
+                className="h-7 px-3 rounded-[6px] bg-[#0d99ff] hover:bg-[#0b8ae6] text-white text-[12px] font-semibold inline-flex items-center gap-1 cursor-default disabled:opacity-50"
               >
                 {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MapPin className="w-3.5 h-3.5" />}
                 핀 꽂기
@@ -673,9 +761,9 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
               <button
                 type="button"
                 onClick={() => void copyText(segments.length > 0 ? regionText?.text || "" : selectedText?.text || "")}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-sm text-xs cursor-pointer"
+                className="h-7 px-2.5 rounded-[6px] border border-[#e6e6e6] hover:bg-[#f5f5f5] text-black/80 text-[12px] inline-flex items-center gap-1 cursor-default"
               >
-                <Copy className="w-3 h-3 text-slate-500" /> 복사
+                <Copy className="w-3 h-3" /> 복사
               </button>
               <button
                 type="button"
@@ -690,9 +778,9 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
                   }
                   showFeedback("✦ AI Composer 에 첨부했습니다");
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-amber-50 text-amber-800 border border-amber-300 rounded-sm text-xs font-semibold cursor-pointer disabled:opacity-50"
+                className="h-7 px-2.5 rounded-[6px] border border-[#e6e6e6] hover:bg-[#f5f5f5] text-black/80 text-[12px] inline-flex items-center gap-1 cursor-default disabled:opacity-50"
               >
-                <Sparkles className="w-3 h-3 text-amber-600" /> AI 첨부
+                <Sparkles className="w-3 h-3 text-violet-600" /> AI 첨부
               </button>
               <button
                 type="button"
@@ -702,7 +790,7 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
                   setSelectedText(null);
                   window.getSelection()?.removeAllRanges();
                 }}
-                className="inline-flex items-center px-2 py-1.5 bg-white hover:bg-rose-50 text-rose-600 border border-slate-300 rounded-sm text-xs cursor-pointer ml-auto"
+                className="ml-auto h-7 px-2 rounded-[6px] text-black/55 hover:bg-[#f5f5f5] text-[12px] cursor-default"
               >
                 취소
               </button>
@@ -711,9 +799,9 @@ const ReferenceCard: React.FC<{ entry: BoundReference; number: number; onClose: 
             <button
               type="button"
               onClick={() => void copyText(article.textContent || "")}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-300 hover:bg-slate-400/80 text-slate-800 border border-slate-400/70 rounded-sm text-xs font-semibold cursor-pointer"
+              className="flex-1 h-7 rounded-[6px] border border-[#e6e6e6] hover:bg-[#f5f5f5] text-black/80 text-[12px] inline-flex items-center justify-center gap-1.5 cursor-default"
             >
-              <Copy className="w-3.5 h-3.5 text-slate-600" /> 추출 텍스트 복사
+              <Copy className="w-3.5 h-3.5" /> 추출한 글 전체 복사
             </button>
           )}
         </div>
@@ -764,7 +852,7 @@ const AddReferencePopover: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   };
 
   const tabs = [
-    { id: "file" as const, icon: <FileUp className="w-3.5 h-3.5 text-amber-700" />, title: "파일 하나 (PDF · HTML · 이미지)" },
+    { id: "file" as const, icon: <FileUp className="w-3.5 h-3.5 text-sky-700" />, title: "파일 하나 (PDF · HTML · 이미지)" },
     { id: "url" as const, icon: <Globe className="w-3.5 h-3.5 text-blue-600" />, title: "웹 주소 하나" },
     { id: "library" as const, icon: <Library className="w-3.5 h-3.5 text-slate-600" />, title: "라이브러리에서 연결" },
   ];
@@ -784,7 +872,7 @@ const AddReferencePopover: React.FC<{ onClose: () => void }> = ({ onClose }) => 
               data-testid={`reference-add-tab-${t.id}`}
               onClick={() => setTab(t.id)}
               title={t.title}
-              className={`p-1 rounded transition cursor-pointer ${tab === t.id ? "bg-amber-100 shadow-2xs" : "hover:bg-slate-200"}`}
+              className={`p-1 rounded transition cursor-pointer ${tab === t.id ? "bg-sky-100 shadow-2xs" : "hover:bg-slate-200"}`}
             >
               {t.icon}
             </button>
@@ -816,7 +904,7 @@ const AddReferencePopover: React.FC<{ onClose: () => void }> = ({ onClose }) => 
               type="button"
               disabled={busy}
               onClick={() => fileRef.current?.click()}
-              className="w-full inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded border border-dashed border-amber-300 bg-amber-50/60 hover:bg-amber-50 text-amber-800 font-semibold cursor-pointer disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded border border-dashed border-sky-300 bg-sky-50/60 hover:bg-sky-50 text-sky-800 font-semibold cursor-pointer disabled:opacity-50"
             >
               {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileUp className="w-3.5 h-3.5" />}
               파일 고르기 (PDF · HTML · 이미지)
@@ -869,9 +957,9 @@ const AddReferencePopover: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                   type="button"
                   disabled={busy}
                   onClick={() => void run(() => bind(it.refId))}
-                  className="w-full flex items-center gap-1.5 px-1.5 py-1 rounded hover:bg-amber-50 text-left cursor-pointer"
+                  className="w-full flex items-center gap-1.5 px-1.5 py-1 rounded hover:bg-sky-50 text-left cursor-pointer"
                 >
-                  <BookOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <BookOpen className="w-3.5 h-3.5 text-sky-500 shrink-0" />
                   <span className="truncate flex-1">{it.title}</span>
                   <span className={`text-[9px] font-mono px-1 rounded border ${kindBadge(it).tone}`}>{kindBadge(it).label}</span>
                 </button>
@@ -891,12 +979,119 @@ const AddReferencePopover: React.FC<{ onClose: () => void }> = ({ onClose }) => 
  * 통합 레퍼런스 매니저 위젯 (좌측 탭 · 독립 스플릿 공용).
  * 위: 연결된 레퍼런스와 핀 / 가운데: 빠른 전환 탭 / 아래: 원본 뷰어
  */
+const LIST_HEIGHT = { default: 260, min: 120, max: 900 } as const;
+const LIST_HEIGHT_KEY = "vdoc:reference-list-height";
+const readListHeight = (): number => {
+  try {
+    const v = Number(window.localStorage.getItem(LIST_HEIGHT_KEY));
+    return Number.isFinite(v) && v >= LIST_HEIGHT.min ? v : LIST_HEIGHT.default;
+  } catch {
+    return LIST_HEIGHT.default;
+  }
+};
+
+/** 뷰어가 닫혀 있을 때 (분할 작업창 아래). */
+const ViewerClosedHint: React.FC = () => {
+  const bound = useReferenceStore((s) => s.bound);
+  const setViewerOpen = useWorkspaceLayoutStore((s) => s.setRefViewerOpen);
+  return (
+    <div className="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-400 flex items-center justify-between shrink-0">
+      <span className="text-[11px] text-slate-500">뷰어가 닫혀 있습니다 (목록을 클릭하면 열립니다)</span>
+      {bound.length > 0 && (
+        <button type="button" onClick={() => setViewerOpen(true)} className="px-2 py-1 rounded bg-sky-600 hover:bg-sky-700 text-white text-[10px] font-bold cursor-pointer">
+          뷰어 열기
+        </button>
+      )}
+    </div>
+  );
+};
+
+/** 레퍼런스 뷰어 본문: 열린 레퍼런스 탭 줄 + 원본 · 핀 카드 (분할 작업창 · 사이드바 옆 창 공용). */
+const ReferenceViewerBody: React.FC<{ headerExtra?: React.ReactNode }> = ({ headerExtra }) => {
+  const bound = useReferenceStore((s) => s.bound);
+  const activeRefId = useReferenceStore((s) => s.activeRefId);
+  const setViewerOpen = useWorkspaceLayoutStore((s) => s.setRefViewerOpen);
+  const current = bound.find((b) => b.refId === activeRefId) ?? bound[0] ?? null;
+  const currentNumber = current ? bound.indexOf(current) + 1 : 0;
+  const references = useMemo(() => bound.map((b, i) => ({ refId: b.refId, number: i + 1, title: b.item.title })), [bound]);
+  return (
+    <div className="flex-1 min-h-0 overflow-hidden flex flex-col bg-white">
+      {current ? (
+        <ReferenceCard
+          key={current.refId}
+          entry={current}
+          number={currentNumber}
+          onClose={() => setViewerOpen(false)}
+          references={references}
+          onSelectReference={(refId) => {
+            useReferenceStore.getState().setActiveRefId(refId);
+            setViewerOpen(true);
+          }}
+          headerExtra={headerExtra}
+        />
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400">
+          <BookOpen className="w-8 h-8 mb-2 text-slate-300" />
+          <p className="font-semibold text-slate-600">연결된 레퍼런스가 없습니다.</p>
+          <p className="text-xs text-slate-400 mt-1">+ 버튼으로 남이 만든 완성물을 하나씩 추가하세요.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * 좌측 탭에서 레퍼런스를 고르면 뷰어는 사이드바 바로 오른쪽 창에 열린다
+ * (사이드바 안은 목록이 높이를 다 쓰고, 원본은 넓게 본다). 너비는 분할 작업창과 같은 값을 쓴다.
+ */
+export const ReferenceViewerPane: React.FC = () => {
+  const refPlacement = useWorkspaceLayoutStore((s) => s.refPlacement);
+  const leftSidebarOpen = useWorkspaceLayoutStore((s) => s.leftSidebarOpen);
+  const activeTab = useWorkspaceLayoutStore((s) => s.activeActivityTab);
+  const viewerOpen = useWorkspaceLayoutStore((s) => s.refViewerOpen);
+  const setViewerOpen = useWorkspaceLayoutStore((s) => s.setRefViewerOpen);
+  const setRefPlacement = useWorkspaceLayoutStore((s) => s.setRefPlacement);
+  const width = useWorkspaceLayoutStore((s) => s.referenceSplitWidth);
+  const setWidth = useWorkspaceLayoutStore((s) => s.setReferenceSplitWidth);
+  const resetWidth = useWorkspaceLayoutStore((s) => s.resetReferenceSplitWidth);
+  const hasRefs = useReferenceStore((s) => s.bound.length > 0);
+  const { onResizeStart } = useDragResize({ axis: "x", size: width, onResize: setWidth });
+
+  const show = refPlacement !== "split" && leftSidebarOpen && activeTab === "reference" && viewerOpen && hasRefs;
+  if (!show) return null;
+  return (
+    <aside
+      data-testid="reference-viewer-pane"
+      style={{ width }}
+      className="relative h-full bg-white border-r border-[var(--fig-border,#e6e6e6)] flex flex-col overflow-hidden shrink-0 z-10 select-text"
+    >
+      <ReferenceViewerBody
+        headerExtra={
+          <button
+            type="button"
+            onClick={() => setRefPlacement("split")}
+            className="fig-icon-btn shrink-0"
+            title="목록과 뷰어를 에디터 옆 한 창으로 (분할 작업창)"
+          >
+            <SquareSplitHorizontal className="w-3.5 h-3.5" />
+          </button>
+        }
+      />
+      <div
+        onMouseDown={onResizeStart}
+        onDoubleClick={resetWidth}
+        title={`드래그하여 너비 조절 · 더블클릭 시 기본 너비(${REFERENCE_SPLIT_WIDTH.default}px)`}
+        className="absolute -right-1 top-0 bottom-0 w-2 hover:w-3 cursor-col-resize hover:bg-sky-400/40 active:bg-sky-600/60 transition-all z-30"
+      />
+    </aside>
+  );
+};
+
 export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSplit = false }) => {
   const activeProject = useProjectStore(selectActiveProject);
   const bound = useReferenceStore((s) => s.bound);
   const pins = useReferenceStore((s) => s.pins);
   const checkedPinIds = useReferenceStore((s) => s.checkedPinIds);
-  const focusedPin = useReferenceStore((s) => s.focusedPin);
   const activeRefId = useReferenceStore((s) => s.activeRefId);
   const loading = useReferenceStore((s) => s.loading);
   const storeError = useReferenceStore((s) => s.error);
@@ -911,7 +1106,28 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
 
   const [listExpanded, setListExpanded] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [listHeight, setListHeightState] = useState(readListHeight);
+  const setListHeight = (h: number) => {
+    const next = Math.round(Math.min(LIST_HEIGHT.max, Math.max(LIST_HEIGHT.min, h)));
+    setListHeightState(next);
+    try {
+      window.localStorage.setItem(LIST_HEIGHT_KEY, String(next));
+    } catch {
+      /* 기억 못 해도 화면은 바뀐다 */
+    }
+  };
+  const startListResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = listHeight;
+    const move = (m: MouseEvent) => setListHeight(startH + (m.clientY - startY));
+    const up = () => {
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    };
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  };
 
   const current = bound.find((b) => b.refId === activeRefId) ?? bound[0] ?? null;
   const currentNumber = current ? bound.indexOf(current) + 1 : 0;
@@ -938,14 +1154,14 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
 
   return (
     <div data-testid="reference-manager-widget" className="flex-1 flex flex-col h-full bg-white select-none overflow-hidden min-h-0 relative">
-      <header className="px-3 py-2 border-b border-slate-200 bg-slate-50/90 flex items-center justify-between shrink-0 select-none">
+      <header className="fig-panel h-10 px-2.5 border-b border-[var(--fig-border)] bg-white flex items-center justify-between shrink-0 select-none">
         <div className="flex items-center gap-1.5 min-w-0">
           {!isSplit ? (
             <button
               type="button"
               data-testid="ref-popout-btn"
               onClick={() => setRefPlacement("split")}
-              className="p-1 rounded hover:bg-amber-100 text-slate-500 hover:text-amber-800 transition cursor-pointer"
+              className="p-1 rounded hover:bg-sky-100 text-slate-500 hover:text-sky-800 transition cursor-pointer"
               title="에디터 옆 독립 스플릿 뷰로 꺼내기"
             >
               <SquareSplitHorizontal className="w-3.5 h-3.5" />
@@ -956,7 +1172,7 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
                 type="button"
                 data-testid="ref-dockin-btn"
                 onClick={() => setRefPlacement("left-tab")}
-                className="p-1 rounded hover:bg-amber-100 text-slate-500 hover:text-amber-800 transition cursor-pointer"
+                className="p-1 rounded hover:bg-sky-100 text-slate-500 hover:text-sky-800 transition cursor-pointer"
                 title="좌측 패널 탭으로 다시 넣기"
               >
                 <PanelLeftClose className="w-3.5 h-3.5" />
@@ -972,16 +1188,13 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
               </button>
             </>
           )}
-          <span className="font-bold text-xs text-slate-800 tracking-tight flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-            Reference Manager
-          </span>
+          <span className="text-[12.5px] font-semibold text-black/85">레퍼런스</span>
           <span
             data-testid="reference-count-badge"
-            className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold font-mono"
+            className="text-[11px] text-black/40"
             title="이 프로젝트에 연결된 레퍼런스 및 핀 수"
           >
-            {bound.length}종 참조{totalPins > 0 ? ` · 핀 ${totalPins}개` : ""}
+            {bound.length}개{totalPins > 0 ? ` · 핀 ${totalPins}` : ""}
           </span>
           {loading && <Loader2 className="w-3 h-3 animate-spin text-slate-400" />}
         </div>
@@ -991,7 +1204,7 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
             data-testid="reference-add-btn"
             disabled={!activeProject}
             onClick={() => setAddOpen(!addOpen)}
-            className={`p-1 rounded transition cursor-pointer ${addOpen ? "bg-amber-100 text-amber-900" : "hover:bg-slate-200 text-slate-600"}`}
+            className={`p-1 rounded transition cursor-pointer ${addOpen ? "bg-sky-100 text-sky-900" : "hover:bg-slate-200 text-slate-600"}`}
             title="레퍼런스 추가 (파일 · 웹 주소 · 라이브러리)"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -1031,13 +1244,13 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
       )}
 
       {checkedPinIds.length > 0 && (
-        <div className="px-2.5 py-1 bg-amber-50 border-b border-amber-200 flex items-center justify-between text-xs font-semibold text-amber-950 shrink-0">
-          <span className="text-[11px] font-mono text-amber-900">핀 {checkedPinIds.length}개 선택 (AI 는 이 핀만 본다)</span>
+        <div className="px-2.5 py-1 bg-sky-50 border-b border-sky-200 flex items-center justify-between text-xs font-semibold text-sky-950 shrink-0">
+          <span className="text-[11px] font-mono text-sky-900">핀 {checkedPinIds.length}개 선택 (AI 는 이 핀만 본다)</span>
           <div className="flex items-center gap-1">
-            <button type="button" onClick={attachChecked} className="p-1 bg-amber-600 hover:bg-amber-500 text-white rounded-xs cursor-pointer" title="선택한 핀을 AI Composer 에 첨부">
+            <button type="button" onClick={attachChecked} className="p-1 bg-sky-600 hover:bg-sky-500 text-white rounded-xs cursor-pointer" title="선택한 핀을 AI Composer 에 첨부">
               <Sparkles className="w-3.5 h-3.5" />
             </button>
-            <button type="button" onClick={() => store().clearChecked()} className="p-1 hover:bg-amber-100 text-amber-700 rounded-xs cursor-pointer" title="선택 해제">
+            <button type="button" onClick={() => store().clearChecked()} className="p-1 hover:bg-sky-100 text-sky-700 rounded-xs cursor-pointer" title="선택 해제">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -1045,206 +1258,30 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
       )}
 
       {listExpanded && (
-        <div className={`border-b border-slate-200 bg-white p-1 overflow-y-auto shrink-0 text-xs ${viewerOpen ? "max-h-[190px]" : "flex-1 min-h-0"}`}>
-          {bound.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center text-slate-400 select-none">
-              <BookOpen className="w-6 h-6 text-slate-300 stroke-[1.2] mb-1.5" />
-              <span className="text-[11px] mb-2">연결된 레퍼런스가 없습니다</span>
-              <button
-                type="button"
-                disabled={!activeProject}
-                onClick={() => setAddOpen(true)}
-                className="p-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white cursor-pointer disabled:opacity-40"
-                title="레퍼런스 추가"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : (
-            bound.map((entry, idx) => {
-              const { refId, item } = entry;
-              const refPins = pins[refId] ?? EMPTY_PINS;
-              const isSelected = viewerOpen && current?.refId === refId;
-              const isOpen = expanded[refId] ?? refPins.length > 0;
-              const badge = kindBadge(item);
-              return (
-                <div key={refId} className="flex flex-col group/node" data-testid={`reference-row-${idx + 1}`}>
-                  <div
-                    onClick={() => openViewer(refId)}
-                    className={`py-1 px-1.5 flex items-center justify-between rounded hover:bg-slate-100 transition cursor-pointer ${
-                      isSelected ? "bg-amber-100/60 font-semibold text-amber-950" : "text-slate-700"
-                    } ${entry.enabled ? "" : "opacity-50"}`}
-                    title="클릭하여 아래 뷰어에서 열기"
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-1">
-                      {refPins.length > 0 ? (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpanded((prev) => ({ ...prev, [refId]: !isOpen }));
-                          }}
-                          className="p-0.5 rounded hover:bg-slate-200 text-slate-500 cursor-pointer shrink-0"
-                        >
-                          {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                        </button>
-                      ) : (
-                        <span className="w-4 shrink-0" />
-                      )}
-                      <input
-                        type="checkbox"
-                        checked={entry.enabled}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={() => void store().setEnabled(refId, !entry.enabled)}
-                        className="rounded-xs border-slate-300 text-amber-600 focus:ring-0 cursor-pointer w-3 h-3 shrink-0"
-                        title={entry.enabled ? "AI 에 사용 중 (끄기)" : "AI 에 쓰지 않음 (켜기)"}
-                      />
-                      <BookOpen className={`w-3.5 h-3.5 shrink-0 ${isSelected ? "text-amber-600" : "text-amber-500/80"}`} />
-                      <span className="text-[11px] font-mono shrink-0 text-amber-800">참조 {idx + 1}</span>
-                      <span className="text-xs truncate" title={item.title}>
-                        {item.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {item.status === "failed" && <AlertTriangle className="w-3 h-3 text-amber-500" aria-label="가져오기 실패" />}
-                      {refPins.length > 0 && (
-                        <span className="text-[10px] font-mono px-1 rounded bg-amber-50 text-amber-800 font-bold">{refPins.length}</span>
-                      )}
-                      <span className={`text-[9px] font-mono px-1 rounded border uppercase font-medium ${badge.tone}`}>{badge.label}</span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void store().unbind(refId);
-                        }}
-                        className="p-0.5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50 cursor-pointer opacity-0 group-hover/node:opacity-100"
-                        title="이 프로젝트에서 연결 해제 (라이브러리에는 남는다)"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                  {isOpen && refPins.length > 0 && (
-                    <div className="ml-6 pl-2.5 border-l border-slate-200 my-0.5 space-y-0.5">
-                      {refPins.map((pin) => {
-                        const checked = checkedPinIds.includes(pin.pinId);
-                        const focused = focusedPin?.pinId === pin.pinId;
-                        return (
-                          <div
-                            key={pin.pinId}
-                            data-testid={`reference-pin-${pin.pinId}`}
-                            onClick={() => {
-                              openViewer(refId);
-                              store().setFocusedPin(pin);
-                              if (pin.kind === "region" && pin.bbox && pin.page) {
-                                useReferenceRegionStore.getState().setFocus({ refId, page: pin.page, box: pin.bbox });
-                              }
-                            }}
-                            className={`py-0.5 px-1.5 flex items-center justify-between rounded hover:bg-slate-100 transition cursor-pointer group/pin ${
-                              focused ? "bg-amber-100 text-amber-950 font-semibold" : checked ? "bg-amber-50/60 text-slate-800" : "text-slate-600"
-                            }`}
-                          >
-                            <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-1">
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onClick={(e) => e.stopPropagation()}
-                                onChange={() => store().toggleChecked(pin.pinId)}
-                                className="rounded-xs border-slate-300 text-amber-600 focus:ring-0 cursor-pointer w-3 h-3 shrink-0"
-                                title="체크한 핀만 AI 에 보낸다 (아무것도 체크하지 않으면 전부)"
-                              />
-                              {pin.kind === "text" ? (
-                                <Type className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                              ) : (
-                                <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                              )}
-                              <span className="truncate text-xs">{pin.label}</span>
-                            </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <select
-                                value={pin.layer}
-                                onClick={(e) => e.stopPropagation()}
-                                onChange={(e) => void store().updatePin(refId, pin.pinId, { layer: e.target.value })}
-                                className="text-[10px] font-mono bg-transparent border border-slate-200 rounded px-0.5 cursor-pointer"
-                                title="이 핀이 보여 주는 결정의 층위"
-                              >
-                                <option value="">층위</option>
-                                {LAYER_IDS.map((id) => (
-                                  <option key={id} value={id}>
-                                    {id}
-                                  </option>
-                                ))}
-                              </select>
-                              <span className="text-[10px] font-mono text-slate-400">{pin.page ?? 1}p</span>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  void store().removePin(refId, pin.pinId);
-                                }}
-                                className="p-0.5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50 cursor-pointer opacity-0 group-hover/pin:opacity-100"
-                                title="핀 삭제"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
+        <ReferenceLibraryView
+          bound={bound}
+          currentRefId={current?.refId ?? null}
+          viewerOpen={viewerOpen}
+          height={isSplit && viewerOpen ? listHeight : undefined}
+          canAdd={Boolean(activeProject)}
+          onAdd={() => setAddOpen(true)}
+          onOpen={openViewer}
+        />
       )}
 
-      {!viewerOpen && (
-        <div className="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-400 flex items-center justify-between shrink-0">
-          <span className="text-[11px] text-slate-500">뷰어가 닫혀 있습니다 (목록을 클릭하면 열립니다)</span>
-          {current && (
-            <button type="button" onClick={() => setViewerOpen(true)} className="px-2 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold cursor-pointer">
-              뷰어 열기
-            </button>
-          )}
-        </div>
+      {isSplit && viewerOpen && listExpanded && bound.length > 0 && (
+        <div
+          role="separator"
+          aria-orientation="horizontal"
+          title="끌어서 목록 높이 조절 · 더블클릭: 기본 높이"
+          onMouseDown={startListResize}
+          onDoubleClick={() => setListHeight(LIST_HEIGHT.default)}
+          className="fig-splitter shrink-0"
+        />
       )}
 
-      {viewerOpen && bound.length > 1 && (
-        <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 border-b border-slate-200 overflow-x-auto shrink-0">
-          {bound.map((b, idx) => (
-            <button
-              key={b.refId}
-              type="button"
-              onClick={() => openViewer(b.refId)}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-[11px] whitespace-nowrap cursor-pointer ${
-                b.refId === current?.refId
-                  ? "bg-amber-600 text-white font-bold"
-                  : "bg-white text-slate-700 hover:bg-amber-50 hover:text-amber-800 border border-slate-200"
-              }`}
-            >
-              <BookOpen className="w-3 h-3" />
-              참조{idx + 1}: {b.item.title.slice(0, 14)}
-              {b.item.title.length > 14 ? "…" : ""}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {viewerOpen && (
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col p-1.5 bg-slate-100/60">
-          {current ? (
-            <ReferenceCard key={current.refId} entry={current} number={currentNumber} onClose={() => setViewerOpen(false)} />
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400">
-              <BookOpen className="w-8 h-8 mb-2 text-slate-300" />
-              <p className="font-semibold text-slate-600">연결된 레퍼런스가 없습니다.</p>
-              <p className="text-xs text-slate-400 mt-1">+ 버튼으로 남이 만든 완성물을 하나씩 추가하세요.</p>
-            </div>
-          )}
-        </div>
-      )}
+      {/* 분할 작업창: 목록 아래에 뷰어. 좌측 탭: 뷰어는 사이드바 오른쪽 창(ReferenceViewerPane)에 열린다. */}
+      {isSplit && (viewerOpen ? <ReferenceViewerBody /> : <ViewerClosedHint />)}
     </div>
   );
 };
@@ -1281,14 +1318,14 @@ export const ReferenceSplitViewport: React.FC = () => {
     <aside
       data-testid="reference-bento-viewport-container"
       style={{ width: `${splitWidth}px` }}
-      className="relative h-full bg-slate-100/90 border-r border-slate-300 flex flex-col overflow-hidden shrink-0 shadow-xs z-10 transition-[width] duration-75 select-text"
+      className="relative h-full bg-white border-r border-[#e6e6e6] flex flex-col overflow-hidden shrink-0 z-10 transition-[width] duration-75 select-text"
     >
       <div
         data-testid="reference-split-resize-handle"
         onMouseDown={onResizeStart}
         onDoubleClick={resetSplitWidth}
         title={`드래그하여 너비 조절 · 더블클릭 시 기본 너비(${REFERENCE_SPLIT_WIDTH.default}px)`}
-        className="absolute -right-1 top-0 bottom-0 w-2 hover:w-3 cursor-col-resize hover:bg-amber-400/40 active:bg-amber-600/60 transition-all z-30"
+        className="absolute -right-1 top-0 bottom-0 w-2 hover:w-3 cursor-col-resize hover:bg-sky-400/40 active:bg-sky-600/60 transition-all z-30"
       />
       <ReferenceManagerWidget isSplit={true} />
     </aside>

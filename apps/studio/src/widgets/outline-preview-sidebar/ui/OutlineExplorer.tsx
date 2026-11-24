@@ -17,7 +17,11 @@ import { DocumentsPagesSection } from "./OutlineDocumentsPagesSection";
 import { OutlineZoomBreadcrumb } from "./OutlineZoomBreadcrumb";
 
 /** 아웃라이너 본체: 머리말 · Documents & Pages 구역 · Elements 구역 · 페이지 추가 흐름. */
-export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId }) => {
+export const OutlineExplorer: React.FC<{
+  activeDocId: string;
+  /** 다른 패널 안에 끼워 넣을 때 (플레이그라운드) — 프로젝트 머리말을 그리지 않는다. */
+  embedded?: boolean;
+}> = ({ activeDocId, embedded = false }) => {
   const projection = useOutlineProjection();
   const phase = useWorkspaceSessionStore((s) => s.currentPhase);
   const [isAllMode, setIsAllMode] = useState(false);
@@ -42,10 +46,12 @@ export const OutlineExplorer: React.FC<{ activeDocId: string }> = ({ activeDocId
 
   return (
     <>
-      <ExplorerHeader
-        isAllMode={isAllMode}
-        onToggleAllMode={() => setIsAllMode((v) => !v)}
-      />
+      {!embedded && (
+        <ExplorerHeader
+          isAllMode={isAllMode}
+          onToggleAllMode={() => setIsAllMode((v) => !v)}
+        />
+      )}
 
       <OutlineZoomBreadcrumb />
 

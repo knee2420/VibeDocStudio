@@ -24,6 +24,7 @@ import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
 import { DocumentLifecycleMenuItems } from "@/features/manage-documents";
 import { ImportPdfButton } from "@/features/import-pdf-form";
+import { LabModeToggle, useLabMode } from "@/features/playground";
 import { useHistoryStore } from "@/shared/lib";
 
 import { ScaffoldJobStatusPill } from "./ScaffoldJobStatusPill";
@@ -59,6 +60,7 @@ export const StudioTopRibbon: React.FC = () => {
   const canRedo = Boolean(editor?.can().redo()) || totalRedoCount > 0;
 
   const activeProject = useProjectStore(selectActiveProject);
+  const lab = useLabMode();
   const referenceId = useReferenceStore(selectCurrentReferenceId);
 
   const isAiRunning = useAiStagingStore((s) => s.isRunning);
@@ -205,10 +207,11 @@ export const StudioTopRibbon: React.FC = () => {
         </div>
       </div>
 
-      {/* Center: Desktop Window Title */}
-      <div className="flex-1 flex items-center justify-center min-w-0 px-4">
-        <span className="text-xs text-slate-500 font-medium truncate">
-          {activeProject.title} — {doc.title}
+      {/* Center: 모드 전환 (프로젝트 ↔ 실험실, 피그마 Design ↔ Dev Mode 자리) + 창 제목 */}
+      <div className="flex-1 flex items-center justify-center gap-3 min-w-0 px-4">
+        <LabModeToggle />
+        <span className={`text-xs font-medium truncate ${lab ? "text-[#272962]" : "text-slate-500"}`}>
+          {lab ? "실험실" : activeProject.title} — {doc.title}
         </span>
       </div>
 

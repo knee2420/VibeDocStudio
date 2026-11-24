@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FilePlus2, FileText, GitCompare, Plus, X } from "lucide-react";
-
-import { getBlockSlotIds } from "@vibe/vdoc-schema";
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useActiveDiffStore } from "@/features/document-diff";
+import { useWorkingPagesByDoc } from "@/features/document-revisions";
 import { FigmaDiffBadge } from "@/widgets/outline-preview-sidebar/ui/FigmaDiffBadge";
 
 /**
@@ -15,12 +14,14 @@ export const PageTabBar: React.FC = () => {
   const docs = useStudioDocumentStore((s) => s.docs);
   const openTabs = useStudioDocumentStore((s) => s.openTabs);
   const activeTabKey = useStudioDocumentStore((s) => s.activeTabKey);
-  const committedPageIds = useStudioDocumentStore((s) => s.committedPageIds);
   const openNewTab = useStudioDocumentStore((s) => s.openNewTab);
   const selectTab = useStudioDocumentStore((s) => s.selectTab);
   const closeTab = useStudioDocumentStore((s) => s.closeTab);
   const activeDiff = useActiveDiffStore((s) => s.activeDiff);
   const closeDiff = useActiveDiffStore((s) => s.closeDiff);
+  // 변경 기록(Changes)과 같은 기준: 마지막 버전 이후 새 쪽(U) · 고친 쪽(M)
+  const tabDocIds = useMemo(() => openTabs.flatMap((t) => (t.kind === "page" && t.docId ? [t.docId] : [])), [openTabs]);
+  const working = useWorkingPagesByDoc(tabDocIds);
 
   if (openTabs.length === 0 && !activeDiff) return null;
   // 개정 이력 비교에 "(Working Tree)"가 붙던 문제: 종류별로 붙인다 (개정 번호는 label 에 이미 있다).
@@ -35,6 +36,7 @@ export const PageTabBar: React.FC = () => {
   return (
     <div
       data-testid="studio-page-tab-bar"
+      data-chrome="page-tabs"
       className="h-9 bg-[#f6f6f6] border-b border-slate-200/90 px-2 flex items-end gap-0.5 shrink-0 select-none overflow-x-auto no-scrollbar"
     >
       {openTabs.map((tab) => {
@@ -76,19 +78,8 @@ export const PageTabBar: React.FC = () => {
 
         let diffKind: "added" | "edited" | undefined;
         if (tabDoc && tabPage) {
-          if (tabPage.pageLabel.includes("새 페이지") && !committedPageIds.has(tabPage.pageId)) {
-            diffKind = "added";
-          } else {
-            const blockSlots = tabPage.blocks.flatMap((b) => getBlockSlotIds(b));
-            const allSlotIds = [
-              ...blockSlots,
-              ...(tabPage.headerSlotId ? [tabPage.headerSlotId] : []),
-              ...(tabPage.footerSlotId ? [tabPage.footerSlotId] : []),
-            ];
-            if (allSlotIds.some((sid) => Boolean(tabDoc.slots[sid]?.isEdited))) {
-              diffKind = "edited";
-            }
-          }
+          const wp = working[tabDoc.docId]?.find((w) => w.page.pageId === tabPage.pageId);
+          if (wp && wp.kind !== "deleted") diffKind = wp.kind;
         }
 
         return (
