@@ -12,7 +12,7 @@ import {
 import type { EditorHostContext, EditorOutlineHostContext } from "@vibe/workspace-layout/core";
 
 import type { IdeEditorEnv } from "../model/editorAdapters";
-import { parseStylePackJson } from "../model/settingsRegistry";
+import { parseStylePackJson } from "@vibe/vault-formats";
 import { StylePackSettingsView } from "./settings";
 
 export const StyleTabEditor: React.FC<{

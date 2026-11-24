@@ -1,5 +1,5 @@
 import React from "react";
-import { AtSign, Crosshair, MousePointerSquareDashed, Paperclip, Pin, X } from "lucide-react";
+import { AtSign, Crosshair, Folder, Image as ImageIcon, MousePointerSquareDashed, Paperclip, Pin, X } from "lucide-react";
 
 import { contextRole, type ContextRef, type EntityInfo } from "@vibe/ai-kernel";
 
@@ -11,6 +11,8 @@ const ICON_OVERRIDES: Record<string, React.ComponentType<{ className?: string }>
   "text-range": MousePointerSquareDashed,
   document: Paperclip,
   scope: Crosshair,
+  folder: Folder,
+  image: ImageIcon,
 };
 
 /** 첨부가 가리키는 화면 요소 id (영역 · 발췌는 소속 문서). */
@@ -77,7 +79,15 @@ export const ContextChip: React.FC<ContextChipProps> = ({ context, tone = "light
         muted ? "opacity-45 line-through" : ""
       } ${onClick ? "cursor-pointer" : ""}`}
     >
-      <Icon className="w-3 h-3 shrink-0 opacity-70" />
+      {context.kind === "image" && (context.media?.previewUrl || context.media?.dataBase64) ? (
+        <img
+          src={context.media.previewUrl ?? `data:${context.media.mimeType || "image/png"};base64,${context.media.dataBase64}`}
+          alt={context.label}
+          className="w-4 h-4 rounded-sm object-cover shrink-0 border border-black/10"
+        />
+      ) : (
+        <Icon className="w-3 h-3 shrink-0 opacity-70" />
+      )}
       {context.handle && <span className="shrink-0 font-bold">{context.handle}</span>}
       <span className="truncate">{context.label}</span>
       {explicit && (

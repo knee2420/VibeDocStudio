@@ -40,6 +40,17 @@ export const LAYOUT_BLOCK_KINDS = [
 
 export type LayoutBlockKind = (typeof LAYOUT_BLOCK_KINDS)[number];
 
+export interface VDocAssetRef {
+  /** 적용된 구조 에셋의 불변 ID (`VDocAsset.assetId`). */
+  assetId: string;
+  /** 볼트 공용 `.vasset` 파일 포인터 (예: `"vault://.vibedoc/assets/table-category-rich-cell.vasset"`). */
+  assetPath?: string;
+  /** 적용 당시 원본 `.outline` 데이터의 해시 (원본 변경 시 재적용 알림용). */
+  sourceInputHash?: string;
+  /** 마지막 에셋 적용 시각 (ISO 8601). */
+  appliedAt: string;
+}
+
 export interface BaseLayoutBlock {
   blockId: string;
   kind: LayoutBlockKind;
@@ -56,5 +67,7 @@ export interface BaseLayoutBlock {
   styleOverrides?: StyleOverrideDelta;
   /** Immutable OutlineNode.id provenance pointer for non-destructive `.outline` ↔ `.vdoc` sync. */
   sourceNodeId?: string;
+  /** Applied structural Asset reference pointer (never duplicates asset definition). */
+  assetRef?: VDocAssetRef;
 }
 

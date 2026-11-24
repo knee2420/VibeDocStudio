@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowUp, AtSign, Pin, Plus, Slash, Square } from "lucide-react";
+import { ArrowUp, AtSign, FolderOpen, ImagePlus, Pin, Plus, Slash, Square } from "lucide-react";
 
 import {
   assignHandle,
@@ -42,7 +42,13 @@ export interface PromptInputProps {
   onPinContext?(ref: ContextRef): void;
   /** 이미 고정된 첨부인가 */
   isPinned?(ref: ContextRef): boolean;
+  /** `+` 파일 피커 · 클립보드 붙여넣기(Ctrl+V)로 받은 파일을 첨부 컨텍스트로 변환. */
+  onAttachFiles?(files: File[]): Promise<ContextRef[]> | ContextRef[];
+  /** `+` 메뉴에서 폴더 첨부를 눌렀을 때 커스텀 동작 (생략 시 `@` 폴더 멘션 열기). */
+  onOpenFolderPicker?(): void;
 }
+
+const FILE_ACCEPT = "image/*,.pdf,.md,.markdown,.txt,.outline,.vdoc,.json,.csv,.yaml,.yml,.html,.htm,.xml,.ts,.tsx,.js,.jsx,.py";
 
 /** Composer 입력창 — `@` 멘션(컨텍스트 레지스트리) · `/` 명령(액션 레지스트리) · 첨부 칩. */
 export const PromptInput: React.FC<PromptInputProps> = ({
@@ -60,13 +66,18 @@ export const PromptInput: React.FC<PromptInputProps> = ({
   pinnable,
   onPinContext,
   isPinned,
+  onAttachFiles,
+  onOpenFolderPicker,
 }) => {
   const [text, setText] = React.useState("");
   const [attached, setAttached] = React.useState<ContextRef[]>([]);
   const [disabledAuto, setDisabledAuto] = React.useState<Set<string>>(new Set());
   const [popover, setPopover] = React.useState<Popover | null>(null);
+  const [addMenuOpen, setAddMenuOpen] = React.useState(false);
+  const [attachingFiles, setAttachingFiles] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(0);
   const areaRef = React.useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     if (!draft || draft.revision === 0) return;
@@ -203,13 +214,56 @@ export const PromptInput: React.FC<PromptInputProps> = ({
     requestAnimationFrame(() => areaRef.current?.focus());
   };
 
+  const handleIncomingFiles = async (files: File[]) => {
+    if (!files.length) return;
+    setAttachingFiles(true);
+    try {
+      const refs = onAttachFiles ? await onAttachFiles(files) : await fallbackFilesToContexts(files);
+      if (!refs.length) return;
+      const { next, handles } = addAttachments(refs);
+      setAttached(next);
+      const el = areaRef.current;
+      const value = el?.value ?? text;
+      const joined = handles.filter((h) => !new RegExp(`${escapeRegExp(h)}(?![0-9])`).test(value)).join(" ");
+      if (joined) {
+        const from = el && document.activeElement === el ? el.selectionStart : value.length;
+        const to = el && document.activeElement === el ? el.selectionEnd : value.length;
+        insertAtCaret(value, joined, from, to);
+      }
+    } finally {
+      setAttachingFiles(false);
+    }
+  };
+
+  const onPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const dt = e.clipboardData;
+    if (!dt) return;
+    const files: File[] = [];
+    if (dt.items && dt.items.length > 0) {
+      for (const item of Array.from(dt.items)) {
+        if (item.kind === "file") {
+          const f = item.getAsFile();
+          if (f) files.push(f);
+        }
+      }
+    } else if (dt.files && dt.files.length > 0) {
+      files.push(...Array.from(dt.files));
+    }
+    if (files.length > 0) {
+      e.preventDefault();
+      void handleIncomingFiles(files);
+    }
+  };
+
   const submit = () => {
     const body = text.trim();
-    if (!body) return;
-    onSubmit(body, [...activeAuto, ...attached]);
+    if (!body && attached.length === 0) return;
+    const effectiveBody = body || attached.map((c) => c.handle ?? `@${c.label}`).join(" ");
+    onSubmit(effectiveBody, [...activeAuto, ...attached]);
     setText("");
     setAttached([]);
     setPopover(null);
+    setAddMenuOpen(false);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -232,7 +286,10 @@ export const PromptInput: React.FC<PromptInputProps> = ({
       }
     }
     if (e.key === "Escape") {
-      if (popover) {
+      if (addMenuOpen) {
+        e.preventDefault();
+        setAddMenuOpen(false);
+      } else if (popover) {
         e.preventDefault();
         setPopover(null);
       } else if (busy) {
@@ -371,26 +428,115 @@ export const PromptInput: React.FC<PromptInputProps> = ({
             ))}
           </div>
         )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept={FILE_ACCEPT}
+          data-testid="composer-file-input"
+          className="hidden"
+          onChange={(e) => {
+            const list = e.target.files ? Array.from(e.target.files) : [];
+            e.target.value = "";
+            if (list.length > 0) void handleIncomingFiles(list);
+          }}
+        />
         <textarea
           ref={areaRef}
           data-testid="composer-input"
           value={text}
           rows={1}
-          placeholder={placeholder ?? "무엇을 할까요?  @ 로 컨텍스트 첨부, / 로 명령"}
+          placeholder={placeholder ?? "무엇을 할까요?  @ 컨텍스트 · / 명령 · Ctrl+V 이미지 첨부"}
           onChange={(e) => {
             setText(e.target.value);
             refreshPopover(e.target.value, e.target.selectionStart ?? e.target.value.length);
           }}
+          onPaste={onPaste}
           onKeyDown={onKeyDown}
           onBlur={() => window.setTimeout(() => setPopover(null), 120)}
           className="block w-full resize-none bg-transparent px-3 py-2 text-[13px] text-slate-900 placeholder-slate-400 focus:outline-none select-text"
         />
-        <div className="flex items-center justify-between px-2 pb-1.5">
+        <div className="relative flex items-center justify-between px-2 pb-1.5">
+          {addMenuOpen && (
+            <div
+              data-testid="composer-add-menu"
+              className="absolute bottom-full left-2 mb-1.5 z-50 w-56 rounded-lg border border-slate-200 bg-white py-1 shadow-xl text-xs text-slate-700"
+            >
+              <button
+                type="button"
+                data-testid="composer-add-files"
+                onClick={() => {
+                  setAddMenuOpen(false);
+                  fileInputRef.current?.click();
+                }}
+                className="w-full px-2.5 py-1.5 flex items-center gap-2 hover:bg-indigo-50 text-left cursor-pointer"
+              >
+                <ImagePlus className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium text-slate-800">이미지 · 파일 첨부</span>
+                  <span className="block text-[10px] text-slate-400">PNG · JPG · PDF · MD (Ctrl+V 가능)</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                data-testid="composer-add-folder"
+                onClick={() => {
+                  setAddMenuOpen(false);
+                  if (onOpenFolderPicker) {
+                    onOpenFolderPicker();
+                  } else {
+                    const next = `${text}${text && !text.endsWith(" ") ? " " : ""}@folder:`;
+                    setText(next);
+                    refreshPopover(next, next.length);
+                    areaRef.current?.focus();
+                  }
+                }}
+                className="w-full px-2.5 py-1.5 flex items-center gap-2 hover:bg-indigo-50 text-left cursor-pointer"
+              >
+                <FolderOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium text-slate-800">볼트 폴더 첨부 (@folder:)</span>
+                  <span className="block text-[10px] text-slate-400">디렉토리 참조 · 쓰기 대상으로 지정</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                data-testid="composer-add-mention"
+                onClick={() => {
+                  setAddMenuOpen(false);
+                  const next = `${text}${text && !text.endsWith(" ") ? " " : ""}@`;
+                  setText(next);
+                  refreshPopover(next, next.length);
+                  areaRef.current?.focus();
+                }}
+                className="w-full px-2.5 py-1.5 flex items-center gap-2 hover:bg-indigo-50 text-left cursor-pointer"
+              >
+                <AtSign className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium text-slate-800">문서 · 파일 · 요소 멘션 (@)</span>
+                  <span className="block text-[10px] text-slate-400">문서, 슬롯, 블록, 레퍼런스 검색</span>
+                </span>
+              </button>
+            </div>
+          )}
           <div className="flex items-center gap-0.5 text-slate-400">
+            <button
+              type="button"
+              data-testid="composer-add-context"
+              title="컨텍스트 · 이미지 · 폴더 추가 (+)"
+              onClick={() => {
+                setPopover(null);
+                setAddMenuOpen((v) => !v);
+              }}
+              className={`p-1 rounded hover:bg-slate-100 hover:text-slate-700 cursor-pointer ${addMenuOpen ? "bg-indigo-50 text-indigo-600" : ""}`}
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
             <button
               type="button"
               title="컨텍스트 첨부 (@)"
               onClick={() => {
+                setAddMenuOpen(false);
                 const next = `${text}${text && !text.endsWith(" ") ? " " : ""}@`;
                 setText(next);
                 refreshPopover(next, next.length);
@@ -404,6 +550,7 @@ export const PromptInput: React.FC<PromptInputProps> = ({
               type="button"
               title="명령 (/)"
               onClick={() => {
+                setAddMenuOpen(false);
                 setText("/");
                 refreshPopover("/", 1);
                 areaRef.current?.focus();
@@ -412,11 +559,13 @@ export const PromptInput: React.FC<PromptInputProps> = ({
             >
               <Slash className="w-3.5 h-3.5" />
             </button>
-            <span className="ml-1 text-[10px]">Enter 보내기 · Shift+Enter 줄바꿈{busy ? " · 실행 중 보내면 대기열" : ""}</span>
+            <span className="ml-1 text-[10px]">
+              {attachingFiles ? "첨부 중…" : `Enter 보내기 · Shift+Enter 줄바꿈${busy ? " · 실행 중 보내면 대기열" : ""}`}
+            </span>
           </div>
           {busy ? (
             <div className="flex items-center gap-1">
-              {text.trim() && (
+              {(text.trim() || attached.length > 0) && (
                 <button
                   type="button"
                   onClick={submit}
@@ -441,7 +590,7 @@ export const PromptInput: React.FC<PromptInputProps> = ({
               type="button"
               data-testid="composer-send"
               onClick={submit}
-              disabled={!text.trim()}
+              disabled={!text.trim() && attached.length === 0}
               className="p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white cursor-pointer disabled:cursor-default"
               title="보내기 (Enter)"
             >
@@ -461,5 +610,40 @@ function escapeRegExp(value: string): string {
 function mergeContexts(prev: ContextRef[], next: ContextRef[]): ContextRef[] {
   const out = [...prev];
   for (const ref of next) if (!out.some((p) => p.kind === ref.kind && p.id === ref.id)) out.push(ref);
+  return out;
+}
+
+async function fallbackFilesToContexts(files: File[]): Promise<ContextRef[]> {
+  const out: ContextRef[] = [];
+  for (const file of files) {
+    const name = file.name || `pasted-${Date.now()}.png`;
+    if (file.type.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(name)) {
+      const buf = typeof file.arrayBuffer === "function" ? new Uint8Array(await file.arrayBuffer()) : new Uint8Array();
+      let binary = "";
+      for (let i = 0; i < buf.length; i += 0x8000) binary += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+      const b64 = btoa(binary);
+      const mimeType = file.type || "image/png";
+      out.push({
+        kind: "image",
+        id: `img:${name}:${Date.now().toString(36)}`,
+        label: name,
+        content: `[첨부 이미지] ${name} (${mimeType})`,
+        access: "read",
+        role: "reference",
+        media: { mimeType, dataBase64: b64, previewUrl: `data:${mimeType};base64,${b64}`, sizeBytes: file.size, fileName: name },
+      });
+    } else {
+      const content = typeof file.text === "function" ? (await file.text()).slice(0, 16_000) : "";
+      out.push({
+        kind: "file",
+        id: `file:${name}:${Date.now().toString(36)}`,
+        label: name,
+        content: `[첨부 파일] ${name}\n${content}`,
+        access: "read",
+        role: "reference",
+        media: { mimeType: file.type || "text/plain", sizeBytes: file.size, fileName: name },
+      });
+    }
+  }
   return out;
 }

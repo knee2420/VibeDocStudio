@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Blocks,
   BookOpen,
   FileCode2,
   FileImage,
@@ -18,25 +19,53 @@ import {
   type EditorRegistry,
 } from "@vibe/workspace-layout/core";
 
-import type { VDocUiBridgeStore } from "./vdocUiBridge";
-import { CodeTabEditor } from "../ui/CodeTabEditor";
+import type { V2AiWorkspace } from "@vibe/ai-vault";
+import type { VDocStore } from "@vibe/vault-formats";
+import type { VDocUiBridgeStore } from "@vibe/canvas-state";
 import {
   MarkdownStructurePanel,
   OutlineStructurePanel,
   VDocFigmaStructurePanel,
 } from "../ui/DocumentStructurePanels";
 import { LazyVaultFileGate } from "../ui/LazyVaultFileGate";
-import { ImageTabViewer, PdfTabViewer } from "../ui/MediaTabViewers";
-import { OutlineTabEditor } from "../ui/OutlineTabEditor";
-import { RefStructurePanel, RefTabEditor } from "../ui/RefTabEditor";
-import { StyleStructurePanel, StyleTabEditor } from "../ui/StyleTabEditor";
-import { SyntaxStructurePanel, SyntaxTabEditor } from "../ui/SyntaxTabEditor";
 import { VDocTabEditor } from "../ui/VDocTabEditor";
+
+// 처음 화면(.vdoc · .md)에 없는 편집기는 그 파일을 열 때 싣는다 (코드 분할 — 부팅 때 아웃라이너 · 레퍼런스 · 에셋 코드를 받지 않는다)
+const OutlineTabEditor = React.lazy(() => import("../ui/OutlineTabEditor").then((m) => ({ default: m.OutlineTabEditor })));
+const RefTabEditor = React.lazy(() => import("../ui/RefTabEditor").then((m) => ({ default: m.RefTabEditor })));
+const LazyRefStructurePanel = React.lazy(() => import("../ui/RefTabEditor").then((m) => ({ default: m.RefStructurePanel })));
+const StyleTabEditor = React.lazy(() => import("../ui/StyleTabEditor").then((m) => ({ default: m.StyleTabEditor })));
+const LazyStyleStructurePanel = React.lazy(() => import("../ui/StyleTabEditor").then((m) => ({ default: m.StyleStructurePanel })));
+const SyntaxTabEditor = React.lazy(() => import("../ui/SyntaxTabEditor").then((m) => ({ default: m.SyntaxTabEditor })));
+const LazySyntaxStructurePanel = React.lazy(() => import("../ui/SyntaxTabEditor").then((m) => ({ default: m.SyntaxStructurePanel })));
+const AssetTabEditor = React.lazy(() => import("../ui/AssetTabEditor").then((m) => ({ default: m.AssetTabEditor })));
+const LazyAssetStructurePanel = React.lazy(() => import("../ui/AssetTabEditor").then((m) => ({ default: m.AssetStructurePanel })));
+const ImageTabViewer = React.lazy(() => import("../ui/MediaTabViewers").then((m) => ({ default: m.ImageTabViewer })));
+const PdfTabViewer = React.lazy(() => import("../ui/MediaTabViewers").then((m) => ({ default: m.PdfTabViewer })));
+const CodeTabEditor = React.lazy(() => import("../ui/CodeTabEditor").then((m) => ({ default: m.CodeTabEditor })));
+
+/** 지연 로딩 구조 패널 — 패널 자리에서 잠깐 비워 둔다. */
+function suspended<P extends object>(Lazy: React.ComponentType<P>): React.FC<P> {
+  const Wrapped: React.FC<P> = (props) => (
+    <React.Suspense fallback={null}>
+      <Lazy {...props} />
+    </React.Suspense>
+  );
+  return Wrapped;
+}
+const RefStructurePanel = suspended(LazyRefStructurePanel);
+const StyleStructurePanel = suspended(LazyStyleStructurePanel);
+const SyntaxStructurePanel = suspended(LazySyntaxStructurePanel);
+const AssetStructurePanel = suspended(LazyAssetStructurePanel);
 
 export interface IdeEditorEnv {
   readonly vault: VaultPort;
   readonly metadataCache: VaultMetadataCache;
   readonly vdocUiBridge: VDocUiBridgeStore;
+  /** AI Composer 워크스페이스 (아웃라인 인라인 Unified Diff 검토 · 승인 연동용). */
+  readonly ai?: V2AiWorkspace;
+  /** 경로별 `.vdoc` 캐시 — 읽기는 `docs.get`, 쓰기는 `docs.write` (다시 파싱하지 않고 다른 화면에 전한다). */
+  readonly docs: VDocStore;
   /** 같은 Chrome 스타일 그룹 탭에 추가하고 페어 뷰 슬롯을 치환해 연다. */
   readonly openInPairTabGroup?: (
     targetPath: string,
@@ -111,6 +140,10 @@ const OutlinerAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }
       <OutlineTabEditor
         vault={host.env.vault}
         path={host.path}
+        vdocUiBridge={host.env.vdocUiBridge}
+        ai={host.env.ai}
+        reportSelection={host.reportSelection}
+        onAiDirect={(prompt) => host.dispatchAiDirective?.({ prompt: prompt ?? "", resourceId: host.path })}
         openFile={(target) => host.openLink(target, "split-right")}
         openLink={(target, mode) => host.openLink(target, mode ?? "split-right")}
         openInPairGroup={(target) => {
@@ -156,13 +189,30 @@ const StyleAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }>(
   areHostPropsStable
 );
 
+const AssetAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }>(
+  ({ host }) => (
+    <LazyVaultFileGate vault={host.env.vault} path={host.path}>
+      <AssetTabEditor host={host} />
+    </LazyVaultFileGate>
+  ),
+  areHostPropsStable
+);
+
 const ImageAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }>(
-  ({ host }) => <ImageTabViewer vault={host.env.vault} path={host.path} />,
+  ({ host }) => (
+    <React.Suspense fallback={null}>
+      <ImageTabViewer vault={host.env.vault} path={host.path} />
+    </React.Suspense>
+  ),
   areHostPropsStable
 );
 
 const PdfAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }>(
-  ({ host }) => <PdfTabViewer vault={host.env.vault} path={host.path} />,
+  ({ host }) => (
+    <React.Suspense fallback={null}>
+      <PdfTabViewer vault={host.env.vault} path={host.path} />
+    </React.Suspense>
+  ),
   areHostPropsStable
 );
 
@@ -262,6 +312,20 @@ export const BUILTIN_IDE_EDITOR_ADAPTERS: readonly DocumentEditorAdapter<IdeEdit
     },
     Component: StyleAdapterView,
     OutlineComponent: StyleStructurePanel,
+  },
+  {
+    id: "vibe-asset",
+    label: "Structural Asset (.vasset)",
+    description: "AI-Native 재사용 구조 에셋(.outline 골격 + 뉘앙스 규칙 + 2D 라이브 프리뷰) 에디터",
+    extensions: ["vasset", "vasset.json"],
+    priority: 100,
+    icon: Blocks,
+    capabilities: {
+      canEdit: true,
+      supportsSourceToggle: true,
+    },
+    Component: AssetAdapterView,
+    OutlineComponent: AssetStructurePanel,
   },
   {
     id: "media-image",

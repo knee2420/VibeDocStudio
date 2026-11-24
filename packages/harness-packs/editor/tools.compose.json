@@ -8,7 +8,8 @@
     "title": {"type": "string", "description": "문서 제목"},
     "surface": {"type": "string", "enum": ["scroll", "paged"], "description": "지면 (기본 scroll)"},
     "genre": {"type": "string", "description": "장르 = 측정 층위 세트 (blog · document). 레퍼런스의 층위 세트와 맞춘다"},
-    "width": {"type": "integer", "description": "scroll 지면 폭 px (기본 720)"}
+    "width": {"type": "integer", "description": "scroll 지면 폭 px (기본 720)"},
+    "folder": {"type": "string", "description": "(볼트 모드) 초안 파일을 둘 볼트 폴더 — 리서치로 만든 주제 폴더 등. 생략하면 지금 문서 폴더"}
    },
    "required": ["title"]
   }

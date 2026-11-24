@@ -61,6 +61,7 @@ const GridPhotoCell: React.FC<{
       alt={image.alt || "Image"}
       referrerPolicy="no-referrer"
       loading="lazy"
+      decoding="async"
       draggable={false}
       onError={() => setFailed(true)}
       className="block select-none"

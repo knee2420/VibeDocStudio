@@ -1,0 +1,45 @@
+{
+  "$comment": "패키지 역할 층. 낮은 층은 높은 층을 import 하지 않는다. 같은 층끼리는 package.json 에 선언한 것만. 'ai' 역할 패키지는 ai 역할이 아닌 화면 · 도메인 패키지가 import 하지 않는다 (AI 는 어댑터 층에서만 문서 · 화면에 닿는다). pure 층은 React 를 모른다. subpaths 는 같은 패키지 안의 더 낮은 층 입구 (예: 화면 패키지의 순수 core).",
+  "layers": ["foundation", "schema", "domain", "ui", "adapter", "app"],
+  "pureLayers": ["foundation", "schema", "domain"],
+  "packages": {
+    "@vibe/vault-core": { "layer": "foundation", "role": "볼트 파일 시스템 포트 · 경로 · 이벤트 · 메모리/로컬 어댑터" },
+    "@vibe/style-core": { "layer": "foundation", "role": "스타일 팩 · 토큰 · 키트 해석" },
+    "@vibe/selection-core": { "layer": "foundation", "role": "다중 선택 모델 · 마키 적중 판정" },
+    "@vibe/harness-packs": { "layer": "foundation", "role": "AI 하네스 데이터 (도구 명세 · 규칙 · 메시지 JSON)", "tags": ["data"] },
+
+    "@vibe/vdoc-schema": { "layer": "schema", "role": "VDoc 문서 모델 · 블록 · 순수 편집 연산 · 컴파일러" },
+
+    "@vibe/vault-formats": { "layer": "domain", "role": "볼트 파일 형식 · 포인터 · 리라이트 · 문서 캐시" },
+    "@vibe/outline-sync": { "layer": "domain", "role": ".outline ↔ .vdoc 동기화 엔진" },
+    "@vibe/canvas-state": { "layer": "domain", "role": "문서 캔버스 화면 상태 (선택 · 호버 · 모드)" },
+    "@vibe/ai-scope": { "layer": "domain", "role": "AI 작업 범위 규칙", "tags": ["ai"] },
+    "@vibe/ai-kernel": { "layer": "domain", "role": "AI 커널 (엔진 클라이언트 · 컨텍스트 · 도구 · 세션 루프)", "tags": ["ai"] },
+
+    "@vibe/slot-editor": { "layer": "ui", "role": "칸 리치 텍스트 편집기" },
+    "@vibe/slot-canvas": { "layer": "ui", "role": "VDoc 쪽 · 블록 렌더링 · 2D 상호작용" },
+    "@vibe/file-explorer": { "layer": "ui", "role": "볼트 탐색기", "subpaths": { "./core": "domain" } },
+    "@vibe/markdown-editor": { "layer": "ui", "role": "마크다운 편집기" },
+    "@vibe/ref-canvas": { "layer": "ui", "role": "레퍼런스 뷰어", "subpaths": { "./core": "domain" } },
+    "@vibe/workspace-layout": { "layer": "ui", "role": "탭 · 분할 · 도크 레이아웃", "subpaths": { "./core": "domain" } },
+    "@vibe/outliner": { "layer": "ui", "role": "아웃라이너 (VibePatchNote 저장소)", "external": true, "subpaths": { "./core": "domain", "./dto": "domain" } },
+    "@vibe/document-viewer": { "layer": "ui", "role": "문서 뷰어 (VibePatchNote 저장소)", "external": true },
+    "@vibe/agent-core": { "layer": "ui", "role": "에이전트 설정 화면", "sourceDirs": ["agent-settings-ui"] },
+    "@vibe/ai-react": { "layer": "ui", "role": "AI React 바인딩", "tags": ["ai"] },
+    "@vibe/ai-composer": { "layer": "ui", "role": "AI Composer 패널", "tags": ["ai"] },
+    "@vibe/ai-inline": { "layer": "ui", "role": "인라인 AI 셸", "tags": ["ai"] },
+
+    "@vibe/ai-vault": { "layer": "adapter", "role": "AI ↔ 볼트 문서 어댑터 (Composer 도구 · 컨텍스트 · 에셋 AI)", "tags": ["ai"] },
+
+    "@vibe/studio": { "layer": "app", "role": "스튜디오 앱" },
+    "@vibe/playground": { "layer": "app", "role": "플레이그라운드 (목업 화면 조립)" }
+  },
+  "appThinness": {
+    "$comment": "앱(목업 포함)은 화면 조립 · 배선만 한다. 볼트 파일 형식 파싱은 @vibe/vault-formats 가 맡는다.",
+    "roots": ["apps/playground/src/mocks/v2-ide"],
+    "forbidden": [
+      { "pattern": "JSON\\.parse\\(\\s*(?:\\w+\\.)?vault\\.read\\(", "why": "볼트 파일 파싱은 @vibe/vault-formats 코덱 · 문서 캐시로" }
+    ],
+    "exclude": ["__tests__/", "ui/perfProbe.ts"]
+  }
+}

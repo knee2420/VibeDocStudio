@@ -1,0 +1,204 @@
+[
+  {
+    "name": "vf_stat",
+    "description": "볼트 내 파일 또는 폴더의 상세 메타정보(종류 · 크기 · 수정시각 · 하위 항목 수 · 확장자 분포)를 조회한다 (ls -la / stat 대체).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "볼트 상대 경로 (비우면 볼트 루트)"
+        }
+      }
+    }
+  },
+  {
+    "name": "vf_du",
+    "description": "볼트 폴더별 파일 수와 용량을 깊이별로 집계한다 (du -h 대체). 대량 정리 전 구조 파악에 쓴다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "기준 볼트 상대 경로 (비우면 볼트 루트)"
+        },
+        "depth": {
+          "type": "integer",
+          "description": "표시 깊이 1~5 (기본 2)"
+        }
+      }
+    }
+  },
+  {
+    "name": "vf_mkdir",
+    "description": "볼트 안에 중첩 디렉토리를 하나 또는 여러 개 생성한다 (mkdir -p 대체). 이미 있으면 그대로 통과하고 저널에 기록한다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "생성할 볼트 상대 폴더 경로 목록"
+        },
+        "path": {
+          "type": "string",
+          "description": "단일 폴더만 만들 때의 볼트 상대 경로"
+        }
+      }
+    }
+  },
+  {
+    "name": "vf_move",
+    "description": "볼트 내 파일 또는 폴더를 다른 경로로 이동한다 (mv 대체). 대상 상위 폴더가 없으면 자동 생성한다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "src": { "type": "string", "description": "원본 볼트 상대 경로" },
+        "dst": { "type": "string", "description": "대상 볼트 상대 경로 (또는 대상 폴더 경로)" },
+        "onConflict": {
+          "type": "string",
+          "enum": ["error", "skip", "rename"],
+          "description": "대상이 이미 있을 때 정책 (기본 error)"
+        }
+      },
+      "required": ["src", "dst"]
+    }
+  },
+  {
+    "name": "vf_rename",
+    "description": "볼트 내 파일 또는 폴더의 이름을 같은 부모 폴더 안에서 바꾼다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "원본 볼트 상대 경로" },
+        "newName": { "type": "string", "description": "새 이름 (슬래시 없이 파일·폴더명만)" }
+      },
+      "required": ["path", "newName"]
+    }
+  },
+  {
+    "name": "vf_copy",
+    "description": "볼트 내 파일 또는 폴더 트리를 통째로 복제한다 (cp -r 대체).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "src": { "type": "string", "description": "원본 볼트 상대 경로" },
+        "dst": { "type": "string", "description": "복제 대상 볼트 상대 경로" },
+        "onConflict": {
+          "type": "string",
+          "enum": ["error", "skip", "rename"],
+          "description": "대상이 이미 있을 때 정책 (기본 error)"
+        }
+      },
+      "required": ["src", "dst"]
+    }
+  },
+  {
+    "name": "vf_write",
+    "description": "볼트 내 텍스트 파일(.md · .txt · .outline · .json · .yaml · .csv 등)을 생성·덮어쓰기·추가한다. 이전 내용은 되돌리기 저널에 백업된다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 파일 경로" },
+        "content": { "type": "string", "description": "UTF-8 텍스트 본문" },
+        "mode": {
+          "type": "string",
+          "enum": ["create", "overwrite", "append"],
+          "description": "쓰기 모드 (기본 create — 이미 있으면 오류)"
+        }
+      },
+      "required": ["path", "content"]
+    }
+  },
+  {
+    "name": "vf_patch",
+    "description": "볼트 내 텍스트 파일의 특정 문자열·정규식을 안전하게 치환한다 (sed 대체). dryRun=true 로 미리보기 가능.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 파일 경로" },
+        "find": { "type": "string", "description": "찾을 문자열 또는 정규식 패턴" },
+        "replace": { "type": "string", "description": "바꿀 문자열" },
+        "regex": { "type": "boolean", "description": "정규식 사용 여부 (기본 false)" },
+        "replaceAll": { "type": "boolean", "description": "모든 일치 치환 여부 (기본 false)" },
+        "dryRun": { "type": "boolean", "description": "true 면 파일을 고치지 않고 diff 미리보기만 반환" }
+      },
+      "required": ["path", "find", "replace"]
+    }
+  },
+  {
+    "name": "vf_trash",
+    "description": "볼트 내 파일 또는 폴더를 영구 삭제하지 않고 안전 휴지통(.vibe-trash/<batchId>/)으로 이동한다. vf_undo 로 100% 복원 가능.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "휴지통으로 보낼 볼트 상대 경로 목록"
+        },
+        "path": {
+          "type": "string",
+          "description": "단일 항목 경로"
+        }
+      }
+    }
+  },
+  {
+    "name": "vf_batch",
+    "description": "여러 디렉토리·파일 연산(mkdir · move · rename · copy · write · patch · trash)을 1개의 원자적 트랜잭션으로 실행한다. dryRun=true 로 사전 검증·미리보기 가능, 실패 시 자동 롤백, 완료 후 vf_undo 로 통째 되돌리기 가능.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "summary": { "type": "string", "description": "이번 일괄 정리의 한 줄 요약" },
+        "dryRun": { "type": "boolean", "description": "true 면 디스크를 바꾸지 않고 검증 결과와 변경 계획만 반환" },
+        "ops": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "op": { "type": "string", "enum": ["mkdir", "move", "rename", "copy", "write", "patch", "trash"] },
+              "path": { "type": "string" },
+              "src": { "type": "string" },
+              "dst": { "type": "string" },
+              "newName": { "type": "string" },
+              "content": { "type": "string" },
+              "mode": { "type": "string", "enum": ["create", "overwrite", "append"] },
+              "find": { "type": "string" },
+              "replace": { "type": "string" },
+              "regex": { "type": "boolean" },
+              "replaceAll": { "type": "boolean" },
+              "onConflict": { "type": "string", "enum": ["error", "skip", "rename"] }
+            },
+            "required": ["op"]
+          },
+          "description": "순서대로 실행할 FS 연산 목록"
+        }
+      },
+      "required": ["ops"]
+    }
+  },
+  {
+    "name": "vf_undo",
+    "description": "이전 vf_* 디렉토리·파일 변경 배치를 통째로 되돌린다 (이동·이름변경·덮어쓰기·휴지통 복원).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "batchId": {
+          "type": "string",
+          "description": "되돌릴 배치 ID (비우면 가장 최근 실행된 배치)"
+        }
+      }
+    }
+  },
+  {
+    "name": "vf_history",
+    "description": "이 세션에서 실행한 vf_* 디렉토리·파일 변경 배치 이력을 조회한다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": { "type": "integer", "description": "최대 건수 (기본 10)" }
+      }
+    }
+  }
+]

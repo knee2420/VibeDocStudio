@@ -17,23 +17,25 @@ import type {
 } from "@vibe/vdoc-schema";
 
 import {
+  buildStyleRefForEntry,
+  collectVaultStyleEntries,
+  createDefaultVDoc,
+  resolveActiveStyleEntry,
+} from "@vibe/vault-formats";
+import {
   applyGridRatioPreset,
   applyTableColumnRatio,
   applyTableNestedListMarker,
   applyTableVisualPreset,
-  buildStyleRefForEntry,
-  collectVaultStyleEntries,
   convertCalloutToText,
   convertTextToCallout,
   detectTableNestedListMarker,
   reorderPageByOffset,
   resolveAccentPaletteChips,
-  resolveActiveStyleEntry,
   resolveBlockStyleBinding,
   swapTwoGridColumns,
   toggleTableTopRowHeader,
-} from "../model/vdocInspectorModel";
-import { createDefaultVDoc } from "../model/vdocCodec";
+} from "@vibe/vdoc-schema";
 
 describe("v2-ide — Figma-style WYSIWYM VDoc Inspector Model", () => {
   it("discovers Vault .vstyle packs alongside built-in packs and builds clean VDocStyleRef pointers", () => {

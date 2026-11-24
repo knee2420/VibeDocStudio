@@ -1,0 +1,50 @@
+{
+  "R1_refs": 2,
+  "R1_min_blocks": 15,
+  "R1_distinct_hosts": 2,
+  "R2_images": 50,
+  "R2_licensed_ratio": 1.0,
+  "R2_duplicates": 0,
+  "R2_wide_ratio": 1.0,
+  "R2_distinct_captions": 50,
+  "refs": [
+    {
+      "file": "여행/도쿄/Japan Guide 도쿄 일정.ref",
+      "title": "Japan Guide 도쿄 일정",
+      "blocks": 15,
+      "host": "www.japan-guide.com",
+      "library": true
+    },
+    {
+      "file": "여행/도쿄/Nomadic Matt 도쿄 가이드.ref",
+      "title": "Nomadic Matt 도쿄 가이드",
+      "blocks": 134,
+      "host": "www.nomadicmatt.com",
+      "library": true
+    }
+  ],
+  "R3_blocks": 34,
+  "R3_image_blocks": 16,
+  "R3_images_from_collection": 1.0,
+  "R3_missing_files": [],
+  "R3_credits": 1,
+  "R3_copied_spans": 0,
+  "R3_sections": 8,
+  "doc": "여행/도쿄/[도쿄 여행기] 도심의 전통과 현대를 넘나드는 3박 4일 핵심 가이드.vdoc",
+  "title": "[도쿄 여행기] 도심의 전통과 현대를 넘나드는 3박 4일 핵심 가이드",
+  "verdict": {
+    "R1_refs": true,
+    "R1_min_blocks": false,
+    "R1_distinct_hosts": true,
+    "R2_images": true,
+    "R2_licensed_ratio": true,
+    "R2_duplicates": true,
+    "R2_wide_ratio": true,
+    "R2_distinct_captions": true,
+    "R3_image_blocks": true,
+    "R3_images_from_collection": true,
+    "R3_credits": true,
+    "R3_copied_spans": true,
+    "R3_sections": true
+  }
+}

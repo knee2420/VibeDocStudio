@@ -1,0 +1,9 @@
+{
+  "rawWriteBlocked": ".outline 파일은 vf_write/vf_patch 로 직접 덮어쓸 수 없습니다. 새 파일 생성은 ol_create, 기존 파일 수정은 ol_propose_patch 또는 ol_attach_resource 를 사용하세요.",
+  "docBindingProtected": "vdoc 에 바인딩된 <<doc:...>> 노드({nodeId})는 삭제할 수 없습니다.",
+  "outOfScope": "현재 아웃라인 작업 범위({scopeLabel}) 밖의 노드({nodeId})는 수정할 수 없습니다.",
+  "proposalQueued": "[Staged 제출 · proposalId={proposalId}] {summary} (요청 {count}건 · 대상 {targets} · 사용자 승인 전까지 원본 파일은 변경되지 않음)",
+  "createdOutline": "[.outline 생성 · batchId={batchId}] {path} (제목={title} · 노드 {nodeCount}개 · 되돌리기: vf_undo(batchId=\"{batchId}\"))",
+  "replaceNestedNotAllowed": "replace 는 단일 노드의 text 만 변경하며 items/children 을 무시합니다. 하위 트리를 추가하려면 insert_after(targetId=\"{nodeId}\", inside=true, items=[{{\"text\": \"...\", \"children\": [...]}}]) 를 사용하세요.",
+  "deleteChildrenNeedsRecursive": "하위 자식이 있는 노드({nodeId})는 recursively=true 를 명시해야 삭제할 수 있습니다."
+}

@@ -21,3 +21,5 @@ export * from "./outline-compiler";
 export * from "./resource";
 export * from "./view-registry";
 export * from "./element-syntax";
+export * from "./asset-kit";
+export * from "./inspector-presets";

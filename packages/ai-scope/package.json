@@ -1,0 +1,20 @@
+{
+  "name": "@vibe/ai-scope",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "[L1 도메인] AI 작업 범위 규칙 (선택 · 페이지 · 문서 · 끔) — studio · playground 가 함께 쓰는 순수 함수",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/ai-scope.test.ts"
+  },
+  "dependencies": {
+    "@vibe/vdoc-schema": "workspace:*"
+  }
+}

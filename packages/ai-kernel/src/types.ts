@@ -12,7 +12,17 @@ export type RiskLevel = "read" | "ui" | "stage" | "write";
  */
 export type PermissionMode = "ask" | "auto-stage" | "plan";
 
-/** 컨텍스트 한 조각 — `@슬롯`, `@참조 문서`, 현재 선택 영역, 백데이터 …. */
+/** 첨부 미디어(이미지 · 파일) 메타데이터. `previewUrl` 은 화면 표시 전용(서버 전송 제외). */
+export interface ContextMedia {
+  readonly mimeType: string;
+  readonly dataBase64?: string;
+  readonly previewUrl?: string;
+  readonly vaultPath?: string;
+  readonly sizeBytes?: number;
+  readonly fileName?: string;
+}
+
+/** 컨텍스트 한 조각 — `@슬롯`, `@참조 문서`, `@폴더`, `@이미지`, 현재 선택 영역, 백데이터 …. */
 export interface ContextRef {
   kind: string;
   id: string;
@@ -27,6 +37,8 @@ export interface ContextRef {
   role?: ContextRole;
   /** 프롬프트에서 가리키는 짧은 이름 (`@블록1`). 입력창이 첨부할 때 붙인다. */
   handle?: string;
+  /** 첨부 이미지 · 파일의 멀티모달 페이로드 (base64 · MIME · 볼트 경로). */
+  media?: ContextMedia;
   /** 화면 복원용 부가 정보 (페이지 · 좌표 · 소속 문서 …). 모델에는 가지 않는다. */
   meta?: Record<string, unknown>;
 }
@@ -241,6 +253,8 @@ export type AssistantEvent =
   | { type: "evidence"; items: { id: string; tier: string; locator: Record<string, unknown> }[] }
   /** 작업대: AI 가 wb_propose 로 제안해 검증을 통과한 개편안 (Staged Diff 큐로 흘러간다). */
   | { type: "workbench_proposals"; proposals: WorkbenchProposal[] }
+  /** 볼트 FS 연산: vf_* 도구가 실행한 트랜잭션 배치 (UI 에서 이력 조회 · 1클릭 되돌리기). */
+  | { type: "fs_batches"; batches: VaultFsBatchSummary[] }
   | {
       type: "turn_done";
       stopReason: "end_turn" | "tool_calls" | "error" | "tool_limit";
@@ -292,4 +306,21 @@ export interface WorkbenchProposal {
   candidates: WorkbenchProposalCandidate[];
   warnings?: string[];
   createdAt?: number;
+  /** `.outline` Staged 패치 제안 (기존 `workbench_proposals` 채널 재사용). */
+  outlinePatch?: {
+    path: string;
+    baseHash: string;
+    targetNodeIds: string[];
+    requests: Record<string, unknown>[];
+    nodeEvidence?: Record<string, unknown[]>;
+  };
+}
+
+export interface VaultFsBatchSummary {
+  batchId: string;
+  summary: string;
+  opCount: number;
+  ops: string[];
+  createdAt: number;
+  undone: boolean;
 }

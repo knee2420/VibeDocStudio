@@ -300,13 +300,26 @@ class AcpClient:
             logger.warning("[acp] set_config_option %s=%s 실패: %s", config_id, value, res["error"])
         return res.get("result", {})
 
-    def prompt(self, session_id: str, prompt_text: str, timeout: Optional[float] = None) -> dict[str, Any]:
+    def prompt(
+        self,
+        session_id: str,
+        prompt_text: str,
+        timeout: Optional[float] = None,
+        *,
+        images: Optional[list[dict[str, str]]] = None,
+    ) -> dict[str, Any]:
         """턴 실행(동기 요청 대기). 진행 알림은 subscribe 한 큐로 실시간 스트리밍된다."""
+        blocks: list[dict[str, Any]] = [{"type": "text", "text": prompt_text}]
+        for img in images or []:
+            data = str(img.get("data") or "").strip()
+            mime = str(img.get("mimeType") or "image/png").strip()
+            if data:
+                blocks.append({"type": "image", "data": data, "mimeType": mime})
         res = self.request(
             "session/prompt",
             {
                 "sessionId": session_id,
-                "prompt": [{"type": "text", "text": prompt_text}],
+                "prompt": blocks,
             },
             timeout=timeout,
         )

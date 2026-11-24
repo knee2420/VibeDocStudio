@@ -18,6 +18,7 @@ import type { StructuredTableBlockDef } from "../blocks/table-block";
 import type { TextBlockDef } from "../blocks/text-block";
 import type { LayoutBlock } from "../blocks";
 import { getBlockSlotIds } from "../block-ops";
+import { evidenceKey, type EvidenceLink, type EvidenceLocator } from "../evidence";
 import { htmlToPlainText } from "../html-text";
 import type {
   GridColumnDef,
@@ -74,6 +75,8 @@ export interface CompileOutlineToVDocOptions {
   outlineAssets?: Record<string, ParsedOutlineAsset>;
   /** 표 등에 강제로 적용할 에셋 ID (예: UI 드롭다운 선택). */
   assetHint?: string;
+  /** `.outline` 사이드카 근거(`nodeId -> EvidenceLocator[]`) — 컴파일된 블록 슬롯의 `evidenceLinks` 로 자동 승계한다. */
+  nodeEvidence?: Record<string, EvidenceLocator[]>;
   /** 고정 타임스탬프 (테스트/결정적 빌드용). */
   now?: string;
 }
@@ -1381,13 +1384,16 @@ export function compileOutlineToVDoc(
     if (!raw && !hasFile && !(node.children?.length)) return;
 
     // Fast path: untouched bound node -> preserve original rich block & slots 100% verbatim!
+    // Guard against legacy corrupted baseDoc where two blocks shared the same slotId.
     const prevBoundBlock = overlay?.blocksBySourceNodeId.get(node.id);
     if (prevBoundBlock && overlay) {
       const explicitAssetOverride =
         prevBoundBlock.kind === "structured-table" &&
         Boolean(options.assetHint || parseOutlineDirective(raw)?.assetHint);
+      const prevSlotCollides = getBlockSlotIds(prevBoundBlock).some((sid) => slots[sid] !== undefined);
       if (
         !explicitAssetOverride &&
+        !prevSlotCollides &&
         isOutlineNodeUnchangedFromBlock(node, prevBoundBlock, overlay.slots, registry)
       ) {
         copyBlockSlotsFromPrev(prevBoundBlock, overlay.slots, slots);
@@ -2061,6 +2067,43 @@ export function compileOutlineToVDoc(
     elementIds: profile?.allowedElementIds ?? ["section", "table"],
   };
 
+  // `.outline` 사이드카 `nodeEvidence` -> 컴파일된 블록 슬롯 `evidenceLinks` 자동 승계
+  const mergedEvidenceLinks: EvidenceLink[] = [...(baseDoc?.evidenceLinks ?? [])];
+  if (options.nodeEvidence && Object.keys(options.nodeEvidence).length > 0) {
+    const seenEvidence = new Set(
+      mergedEvidenceLinks.map((l) => `${l.slotId}|${evidenceKey(l.locator)}`)
+    );
+    let linkSeq = mergedEvidenceLinks.length + 1;
+    const attachNodeEvidenceToBlock = (sourceNodeId: string | undefined, blk: LayoutBlock) => {
+      if (!sourceNodeId) return;
+      const locs = options.nodeEvidence?.[sourceNodeId];
+      if (!locs || locs.length === 0) return;
+      for (const slotId of getBlockSlotIds(blk)) {
+        for (const locator of locs) {
+          const dedup = `${slotId}|${evidenceKey(locator)}`;
+          if (seenEvidence.has(dedup)) continue;
+          seenEvidence.add(dedup);
+          mergedEvidenceLinks.push({
+            linkId: `ev-ol-${linkSeq++}`,
+            slotId,
+            locator,
+            origin: "ai",
+            createdAt: now,
+            status: "ok",
+          });
+        }
+      }
+    };
+    for (const page of pages) {
+      for (const blk of page.blocks) {
+        attachNodeEvidenceToBlock(blk.sourceNodeId, blk);
+        if (page.sourceNodeId && page.sourceNodeId !== blk.sourceNodeId) {
+          attachNodeEvidenceToBlock(page.sourceNodeId, blk);
+        }
+      }
+    }
+  }
+
   return {
     version: "1.0.0",
     docId,
@@ -2075,7 +2118,7 @@ export function compileOutlineToVDoc(
     ...(effectiveSourceRef ? { sourceRef: effectiveSourceRef } : {}),
     ...(effectiveOutlineRef ? { outlineRef: effectiveOutlineRef } : {}),
     ...(baseDoc?.preview ? { preview: baseDoc.preview } : {}),
-    ...(baseDoc?.evidenceLinks ? { evidenceLinks: baseDoc.evidenceLinks } : {}),
+    ...(mergedEvidenceLinks.length > 0 ? { evidenceLinks: mergedEvidenceLinks } : {}),
     ...(baseDoc?.revision !== undefined ? { revision: baseDoc.revision } : {}),
     ...(baseDoc?.projectId ? { projectId: baseDoc.projectId } : {}),
     origin: baseDoc?.origin ?? {
@@ -2113,26 +2156,29 @@ export function compileDirectiveSubtreeToVDoc(
   if (directive.kind === "doc") {
     const docProfileId = options.profileId ?? (directive.target || "blog");
     const children = targetNode.children ?? [];
-    const hasStructuredChild = children.some((c) => {
+    const isMetaNode = (c: OutlineSyntaxNode) =>
+      Boolean(kvSym && c.text.trim().startsWith("문서 메타") && c.text.includes(kvSym));
+    // Only explicit `<<view:section>>` splits pages/sections!
+    // Block-level directives (`<<view:list>>`, `<<view:table>>`, `<<view:title>>`, `<<view:columns>>`)
+    // directly under `<<doc>>` without `<<view:section>>` stay together on a single default page.
+    const hasExplicitSectionChild = children.some((c) => {
       const d = parseOutlineDirective(c.text);
-      return (
-        (d && (d.kind === "view" || d.kind === "doc")) ||
-        (kvSym && c.text.trim().startsWith("문서 메타") && c.text.includes(kvSym))
-      );
+      return d?.kind === "view" && d.target === "section";
     });
 
-    const docRootNodes: OutlineSyntaxNode[] = hasStructuredChild
+    const docRootNodes: OutlineSyntaxNode[] = hasExplicitSectionChild
       ? children.filter((c) => {
         const d = parseOutlineDirective(c.text);
         if (d?.kind === "view") return true;
-        if (kvSym && c.text.trim().startsWith("문서 메타") && c.text.includes(kvSym)) return true;
+        if (isMetaNode(c)) return true;
         return false;
       })
       : [
+        ...children.filter(isMetaNode),
         {
           id: targetNode.id,
           text: `<<view:section>> ${directive.label || "본문"}`,
-          children,
+          children: children.filter((c) => !isMetaNode(c)),
         },
       ];
 

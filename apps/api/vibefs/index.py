@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional
 
 from docstruct_engine.acquire import doc_text
+from harness_kit import packs
 
 #: agy `read_file` 이 줄 범위 없이 불렸을 때 보여 주는 줄 수 (agy 1.5.3 실측: "Showing lines 1-800 of N")
 READ_WINDOW = 800
@@ -157,11 +158,35 @@ def _read_text(path: str) -> Optional[str]:
     return raw.decode("utf-8", "replace")
 
 
+def is_document_file(path: str) -> bool:
+    """앱 문서 형식(.vdoc · .outline · .ref …)인가 — 리소스(사실 근거)가 아니다. 목록은 하네스 core 샌드박스 정책."""
+    lowered = path.lower()
+    return any(lowered.endswith(ext) for ext in packs.data("core:sandbox/policy.json").get("documentExtensions") or [])
+
+
+VAULT_ID_PREFIX = "vault:"
+
+
+def _vault_base(item: "MountItem", path: str) -> Optional[str]:
+    """`vault:<폴더 상대 경로>` 로 마운트된 폴더 → 볼트 루트 절대 경로 (아니면 None)."""
+    rid = str(item.resource_id or "")
+    if not rid.startswith(VAULT_ID_PREFIX):
+        return None
+    rel = rid[len(VAULT_ID_PREFIX):].strip("/").replace("/", os.sep)
+    base = os.path.normpath(path)
+    if not rel:
+        return base
+    if os.path.normcase(base).endswith(os.sep + os.path.normcase(os.path.normpath(rel))):
+        return base[: -len(os.path.normpath(rel)) - 1]
+    return None
+
+
 def _walk_files(path: str) -> Iterable[str]:
     for dirpath, dirnames, filenames in os.walk(path):
         dirnames[:] = sorted(d for d in dirnames if not d.startswith(".") and d not in IGNORED_DIRS)
         for name in sorted(filenames):
-            if not name.startswith("."):
+            # 볼트 폴더를 리소스로 걸어도 앱 문서(작업 문서 · 레퍼런스)는 사실 근거로 섞지 않는다
+            if not name.startswith(".") and not is_document_file(name):
                 yield os.path.join(dirpath, name)
 
 
@@ -209,8 +234,11 @@ class WorkspaceIndex:
                 bases.append(path)
                 dir_roots.append(path)
                 if os.path.isdir(path):
+                    vault_base = _vault_base(item, path)
                     for file_path in _walk_files(path):
-                        self._add(file_path, "", "", seen)
+                        # 볼트 폴더 마운트(playground v2): 파일마다 `vault:<볼트 상대 경로>` 리소스 id — 문서에 resource:vault:… 로 넣는다
+                        rid = ("vault:" + os.path.relpath(file_path, vault_base).replace(os.sep, "/")) if vault_base else ""
+                        self._add(file_path, rid, "", seen)
                 else:
                     self.missing.append(item.path)
             elif os.path.isfile(path):

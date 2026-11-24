@@ -2,19 +2,21 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useStore } from "zustand";
 import {
   AlertTriangle,
+  Check,
   Columns2,
   Eye,
-  FileCode2,
   FilePlus2,
   FolderInput,
   Heading1,
   Info,
   Link2,
   ListTree,
+  Loader2,
   Minus,
   MousePointer2,
   Pencil,
   RefreshCw,
+  RotateCcw,
   Search,
   Sparkles,
   Table2,
@@ -25,6 +27,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import {
+  BUILTIN_VDOC_ASSETS,
   applyTableCommandToDocument,
   createInsertableBlock,
   documentSurface,
@@ -37,6 +40,7 @@ import {
   moveBlockFrame,
   moveBlockToPosition,
   removeBlock,
+  removeBlocks,
   resizeBlockFrame,
   resolveDocumentView,
   setSlotContent,
@@ -49,43 +53,50 @@ import {
   type VDocPage,
 } from "@vibe/vdoc-schema";
 import {
-  BUILTIN_STYLE_PACKS,
-  getBuiltinStylePack,
-  isValidStylePack,
-  resolveDefaultStylePack,
-  type StylePack,
-} from "@vibe/style-core";
-import {
+  MarqueeOverlay,
   MemoVDocPageSheet,
   VDocStyleProvider,
   WindowedPageChunker,
+  useMarqueeSelection,
+  type MarqueeCandidate,
   type VDocPageSheetProps,
 } from "@vibe/slot-canvas";
+import { intentFromModifiers, selectionKey } from "@vibe/selection-core";
 import { VIBE_VAULT_PATHS_MIME } from "@vibe/file-explorer/core";
-import type { EditorAiDirective, EditorHostContext } from "@vibe/workspace-layout/core";
+import type { EditorHostContext } from "@vibe/workspace-layout/core";
 import { basename, findOwningProjectPath, stem } from "@vibe/vault-core";
 
-import type { IdeEditorEnv } from "../model/editorAdapters";
-import { requestOutlineReveal } from "../model/outlineRevealBus";
+import { applyAssetPreviewViaAi } from "@vibe/ai-vault";
+import {
+  describeCanvasSelection,
+  type CanvasSelectionItem,
+  type VDocUiBridgeStore,
+  type VDocWorkMode,
+} from "@vibe/canvas-state";
 import {
   bindVDocToExistingOutline,
   collectOutlineCandidatesForVDoc,
+  commitStagedAssetToOutlineAndVDoc,
   compileBoundOutlineIntoVDoc,
   formatProjectScopeLabel,
   importPartnerIntoProjectAndBind,
   inspectVDocOutlineLink,
   openOrCreateOutlineForVDoc,
+  requestOutlineReveal,
   resolveOutlineForVDoc,
   syncVDocMeaningBackToOutline,
   unlinkVDocFromOutline,
-} from "../model/outlineVDocBridge";
-import type { VDocUiBridgeStore } from "../model/vdocUiBridge";
+} from "@vibe/outline-sync";
 import {
+  collectVaultAssets,
+  collectVaultStyleEntries,
   createVaultLinkCardDraft,
   fromVaultUri,
   parseVDocJson,
-  serializeVDocJson,
-} from "../model/vdocCodec";
+  resolveActiveStyleEntry,
+} from "@vibe/vault-formats";
+
+import type { IdeEditorEnv } from "../model/editorAdapters";
 import { DocumentViewIcon } from "./DocumentSurfaceIcons";
 
 export interface VDocTabEditorProps {
@@ -125,6 +136,7 @@ const VDocOverlayStyle = React.memo<{
 }>(({ bridge, path, structureMode }) => {
   const hoveredSceneNode = useStore(bridge, (s) => s.byPath[path]?.hoveredSceneNode ?? null);
   const selectedSceneNode = useStore(bridge, (s) => s.byPath[path]?.selectedSceneNode ?? null);
+  const selection = useStore(bridge, (s) => s.byPath[path]?.selection ?? null);
   const hiddenBlockIds = useStore(bridge, (s) => s.byPath[path]?.hiddenBlockIds);
 
   const cssText = useMemo(() => {
@@ -147,6 +159,21 @@ const VDocOverlayStyle = React.memo<{
       );
     }
 
+    // 다중 선택: 주 항목 말고 나머지도 같은 색 테두리 (디자인 · 구조 모드 모두)
+    if (selection && selection.items.length > 1) {
+      const others = selection.items
+        .filter((it) => selectionKey(it) !== selection.primaryKey)
+        .map((it) => selectorForSceneNode(it.kind, it.id));
+      if (others.length) {
+        rules.push(
+          `${others.join(", ")} { outline: 2px solid rgba(13, 153, 255, 0.9) !important; outline-offset: 2px; border-radius: 2px; position: relative; z-index: 3; }`
+        );
+      }
+      if (!structureMode && selectedSceneNode?.role === "block") {
+        rules.push(`${selectorForSceneNode("block", selectedSceneNode.id)} { outline: 2.5px solid #0d99ff !important; outline-offset: 2px; position: relative; z-index: 4; }`);
+      }
+    }
+
     if (hoveredSceneNode) {
       const hovSel = selectorForSceneNode(hoveredSceneNode.role, hoveredSceneNode.id);
       const isTableSub = hoveredSceneNode.role === "row" || hoveredSceneNode.role === "cell";
@@ -163,40 +190,39 @@ const VDocOverlayStyle = React.memo<{
       }
     }
     return rules.join("\n");
-  }, [hoveredSceneNode, selectedSceneNode, hiddenBlockIds, structureMode]);
+  }, [hoveredSceneNode, selectedSceneNode, selection, hiddenBlockIds, structureMode]);
 
   return cssText ? <style>{cssText}</style> : null;
 });
 
-type VDocWorkMode = "Structure" | "Design" | "Preview";
-
 const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
-  const { vault, vdocUiBridge } = host.env;
+  const { vault, vdocUiBridge, docs } = host.env;
   const path = host.path;
   const fallbackTitle = stem(path);
 
-  const [doc, setDoc] = useState<VDocDocument>(() => {
-    try {
-      return vault.exists(path)
-        ? parseVDocJson(vault.read(path), fallbackTitle)
-        : parseVDocJson("", fallbackTitle);
-    } catch {
-      return parseVDocJson("", fallbackTitle);
-    }
-  });
-  const [workMode, setWorkMode] = useState<VDocWorkMode>(() =>
-    doc.outlineRef ? "Structure" : "Design"
+  const [doc, setDoc] = useState<VDocDocument>(() => docs.get(path) ?? parseVDocJson("", fallbackTitle));
+  const storedWorkMode = useStore(vdocUiBridge, (s) => s.byPath[path]?.workMode ?? null);
+  const workMode: VDocWorkMode = storedWorkMode ?? (doc.outlineRef ? "Structure" : "Design");
+  const setWorkMode = useCallback(
+    (nextMode: VDocWorkMode) => {
+      vdocUiBridge.getState().setWorkMode(path, nextMode);
+    },
+    [vdocUiBridge, path]
   );
+  const stagedPreview = useStore(vdocUiBridge, (s) => s.byPath[path]?.stagedAssetPreview ?? null);
+  const [stagedFeedback, setStagedFeedback] = useState("");
+  const [stagedSyncOutline, setStagedSyncOutline] = useState(true);
   const [syncFlash, setSyncFlash] = useState<"idle" | "synced" | "noop">("idle");
   const sheetMode: "Editing" | "Viewing" = workMode === "Design" ? "Editing" : "Viewing";
   const [zoom, setZoom] = useState(92);
   const [canvasDropActive, setCanvasDropActive] = useState(false);
   const [aiBarOpen, setAiBarOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
-  const [aiAction, setAiAction] = useState<NonNullable<EditorAiDirective["action"]>>("extract-md");
   const [styleRevision, setStyleRevision] = useState(0);
+  const [outlineRevision, setOutlineRevision] = useState(0);
 
   const canvasScrollRef = useRef<HTMLDivElement>(null);
+  const editorRootRef = useRef<HTMLDivElement>(null);
   const localWriteRef = useRef(false);
   const hostRef = useRef(host);
   const docRef = useRef(doc);
@@ -217,6 +243,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
   const activePageId = storedActivePageId ?? doc.pages[0]?.pageId ?? "";
   const selectedBlockId = useStore(vdocUiBridge, (s) => s.byPath[path]?.selectedBlockId ?? null);
   const selectedSlotId = useStore(vdocUiBridge, (s) => s.byPath[path]?.selectedSlotId ?? null);
+  const selection = useStore(vdocUiBridge, (s) => s.byPath[path]?.selection ?? null);
   const scrollSeq = useStore(vdocUiBridge, (s) => s.byPath[path]?.scrollSeq ?? 0);
   const scrollTargetId = useStore(vdocUiBridge, (s) => s.byPath[path]?.scrollTargetId ?? null);
 
@@ -231,11 +258,11 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     localWriteRef.current = true;
     try {
       // `.vdoc` 편집 중에는 `.vdoc` 만 저장한다 (`.outline` 반영은 명시적 [구조 동기화] 클릭 시에만 실행).
-      vault.write(path, serializeVDocJson(toWrite));
+      docs.write(path, toWrite);
     } finally {
       localWriteRef.current = false;
     }
-  }, [vault, path]);
+  }, [docs, path]);
 
   useEffect(() => {
     return () => {
@@ -243,47 +270,42 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     };
   }, [flushVaultWrite]);
 
-  // Sync with Vault when edited in another split pane or by AI
+  // 다른 분할 창 · AI · 디스크가 이 문서를 바꾸면 공유 캐시가 새 문서를 준다 (다시 파싱은 캐시가 한 번만)
   useEffect(() => {
-    const reload = () => {
-      if (!vault.exists(path)) return;
-      try {
-        setDoc(parseVDocJson(vault.read(path), fallbackTitle));
-      } catch {
-        // Ignore transient read errors
-      }
-    };
-    reload();
-    return vault.subscribe((ev) => {
-      if (localWriteRef.current) return;
-      if ((ev.type === "modify" && ev.path === path) || ev.type === "vault-reset") {
-        reload();
-      }
-      const changedPath =
-        ev.type === "create"
-          ? ev.node.path
-          : ev.type === "modify" || ev.type === "delete"
-            ? ev.path
-            : ev.type === "rename"
-              ? ev.newPath
-              : "";
-      if (
-        ev.type === "vault-reset" ||
-        changedPath.endsWith(".vstyle") ||
-        changedPath.endsWith(".vstyle.json") ||
-        changedPath.endsWith(".outline")
-      ) {
-        setStyleRevision((r) => r + 1);
-      }
+    const current = docs.get(path);
+    if (current) setDoc(current);
+    return docs.subscribe(path, (next) => {
+      if (localWriteRef.current || !next) return;
+      setDoc(next);
     });
-  }, [vault, path, fallbackTitle]);
+  }, [docs, path]);
 
-  // Ensure an activePageId is set
+  // `.vstyle` 이 바뀌면 스타일 목록만, `.outline` 이 바뀌면 연결 상태만 다시 본다
+  useEffect(
+    () =>
+      vault.subscribe((ev) => {
+        if (ev.type === "vault-reset") {
+          setStyleRevision((r) => r + 1);
+          setOutlineRevision((r) => r + 1);
+          return;
+        }
+        const changed =
+          ev.type === "create" ? ev.node.path : ev.type === "rename" ? ev.newPath : ev.path;
+        if (changed.endsWith(".vstyle") || changed.endsWith(".vstyle.json")) setStyleRevision((r) => r + 1);
+        else if (changed.endsWith(".outline")) setOutlineRevision((r) => r + 1);
+      }),
+    [vault]
+  );
+
+  // Ensure an activePageId & initial workMode are published to the bridge for Right Dock sync
   useEffect(() => {
     if (!storedActivePageId && doc.pages[0]) {
       vdocUiBridge.getState().setActivePage(path, doc.pages[0].pageId);
     }
-  }, [doc.pages, path, storedActivePageId, vdocUiBridge]);
+    if (storedWorkMode === null) {
+      vdocUiBridge.getState().setWorkMode(path, doc.outlineRef ? "Structure" : "Design");
+    }
+  }, [doc.pages, doc.outlineRef, path, storedActivePageId, storedWorkMode, vdocUiBridge]);
 
   // Scroll canvas to target when clicked from Left-Bottom Figma Structure panel
   useEffect(() => {
@@ -343,47 +365,70 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     [flushVaultWrite]
   );
 
-  // Report 2D selection snapshot to AI-Composer WITHOUT depending on ephemeral `host` object!
+  // 캔버스 선택(여러 개 포함)을 AI Composer 에 알린다 — `host` 객체가 아니라 ref 로 (매 렌더 재보고 방지)
   useEffect(() => {
     const report = hostRef.current.reportSelection;
     if (!report) return;
-    if (!selectedBlockId && !selectedSlotId) {
+    const snap = selection ? describeCanvasSelection(doc, selection, activePageId) : null;
+    if (!snap) {
       if (lastReportedSelectionSigRef.current !== null) {
         lastReportedSelectionSigRef.current = null;
         report(null);
       }
       return;
     }
-    const page = doc.pages.find((p) => p.pageId === activePageId) ?? doc.pages[0];
-    const block = page?.blocks.find((b) => b.blockId === selectedBlockId);
-    const slot = selectedSlotId ? doc.slots[selectedSlotId] : null;
-    const rawText = slot
-      ? slot.content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
-      : block?.title ?? "";
-
-    const linkedPaths: string[] = [];
-    if (block?.kind === "link-card") {
-      const vaultTarget = fromVaultUri(block.url);
-      if (vaultTarget) linkedPaths.push(vaultTarget);
-    }
-
-    const summary = `${page?.pageLabel ?? "Page"} › ${block?.title ?? slot?.label ?? "Block"}`;
-    const snippet = rawText.slice(0, 220);
-    const sig = `${path}|${page?.pageId ?? ""}|${selectedBlockId ?? ""}|${selectedSlotId ?? ""}|${summary}|${snippet}`;
+    const sig = `${path}|${snap.pageId ?? ""}|${snap.blockIds.join(",")}|${snap.slotIds.join(",")}|${snap.summary}|${snap.text}`;
     if (lastReportedSelectionSigRef.current === sig) return;
     lastReportedSelectionSigRef.current = sig;
-
     report({
       resourceId: path,
       kind: "canvas-nodes",
-      summary,
-      text: snippet,
-      pageId: page?.pageId,
-      blockIds: selectedBlockId ? [selectedBlockId] : [],
-      slotIds: selectedSlotId ? [selectedSlotId] : [],
-      linkedPaths,
+      summary: snap.summary,
+      text: snap.text,
+      pageId: snap.pageId,
+      blockIds: snap.blockIds,
+      slotIds: snap.slotIds,
+      linkedPaths: snap.linkedPaths,
     });
-  }, [activePageId, doc, path, selectedBlockId, selectedSlotId]);
+  }, [activePageId, doc, path, selection]);
+
+  /** 읽는 순서의 최상위 블록 (Shift 범위 · 마키 · 전체 선택의 단위). */
+  const topLevelOrder = useMemo<CanvasSelectionItem[]>(
+    () =>
+      doc.pages.flatMap((p) =>
+        p.blocks.map((b) => ({ id: b.blockId, kind: "block" as const, blockId: b.blockId, pageId: p.pageId }))
+      ),
+    [doc.pages]
+  );
+  const topLevelOrderRef = useRef(topLevelOrder);
+  topLevelOrderRef.current = topLevelOrder;
+
+  /** 클릭한 요소 → 고를 단위 (보조키 클릭용). 칸을 Ctrl 로 누르면 칸, 아니면 그 칸을 품은 최상위 블록. */
+  const selectionItemFromTarget = useCallback(
+    (targetEl: HTMLElement, preferSlot: boolean): CanvasSelectionItem | null => {
+      const topIds = new Set(topLevelOrderRef.current.map((i) => i.id));
+      if (preferSlot) {
+        // 칸 안이 아니어도 그리드 열 · 단위 상자(테두리 · 여백)를 누르면 그 안의 칸으로
+        const slotEl =
+          targetEl.closest<HTMLElement>("[data-slot-id]") ??
+          targetEl.closest<HTMLElement>("[data-col-id], [data-vdoc-unit]")?.querySelector<HTMLElement>("[data-slot-id]") ??
+          null;
+        const sid = slotEl?.dataset.slotId;
+        if (sid && docRef.current.slots[sid]) {
+          const loc = findBlockBySlotId(docRef.current, sid);
+          return { id: sid, kind: "slot", blockId: loc?.block.blockId ?? null, pageId: loc?.pageId ?? null };
+        }
+      }
+      let el: HTMLElement | null = targetEl.closest<HTMLElement>("[data-block-id]");
+      while (el) {
+        const bid = el.dataset.blockId;
+        if (bid && topIds.has(bid)) return topLevelOrderRef.current.find((i) => i.id === bid) ?? null;
+        el = el.parentElement?.closest<HTMLElement>("[data-block-id]") ?? null;
+      }
+      return null;
+    },
+    []
+  );
 
   const handleInsertQuickBlock = (kind: InsertableBlockKind | "callout-box" | "divider") => {
     const targetPage = doc.pages.find((p) => p.pageId === activePageId) ?? doc.pages[0];
@@ -466,6 +511,10 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
 
   // Intercept clicks on `vault://` links, and in Structure mode perform v1-style Block Select ONLY!
   const handleCanvasClickCapture = (ev: React.MouseEvent) => {
+    if (modifierSelectRef.current) {
+      swallowIfModifierSelect(ev);
+      return;
+    }
     const targetEl = ev.target as HTMLElement | null;
     const anchor = targetEl?.closest<HTMLAnchorElement>("a[href]");
     if (anchor) {
@@ -538,13 +587,13 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
 
   // Read-only link status (never mutates vault during render)
   const linkStatus = useMemo(() => {
-    void styleRevision;
+    void outlineRevision;
     return inspectVDocOutlineLink(vault, path, doc);
-  }, [vault, path, doc, styleRevision]);
+  }, [vault, path, doc, outlineRevision]);
 
   const outlineCandidates = useMemo(() => {
     if (!outlinePickerOpen) return [];
-    void styleRevision;
+    void outlineRevision;
     const all = collectOutlineCandidatesForVDoc(vault, path, doc, { includeExternal: false });
     const q = outlineSearch.trim().toLowerCase();
     if (!q) return all;
@@ -554,7 +603,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         c.title.toLowerCase().includes(q) ||
         c.docDirectives.some((d) => d.label.toLowerCase().includes(q))
     );
-  }, [outlinePickerOpen, styleRevision, vault, path, doc, outlineSearch]);
+  }, [outlinePickerOpen, outlineRevision, vault, path, doc, outlineSearch]);
 
   const handleEnterStructureMode = () => {
     setWorkMode("Structure");
@@ -607,26 +656,21 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
 
   const handleRunAiDirective = (ev: React.FormEvent) => {
     ev.preventDefault();
-    const promptText = aiPrompt.trim() || "선택한 2D 섹션 기반으로 문서를 확장해줘";
-    const page = doc.pages.find((p) => p.pageId === activePageId) ?? doc.pages[0];
-    const block = page?.blocks.find((b) => b.blockId === selectedBlockId);
-    const slot = selectedSlotId ? doc.slots[selectedSlotId] : null;
-    const text = slot
-      ? slot.content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
-      : block?.title ?? doc.title;
-
+    const promptText = aiPrompt.trim();
+    if (!promptText) return;
+    const snap = selection ? describeCanvasSelection(doc, selection, activePageId) : null;
+    const page = doc.pages.find((p) => p.pageId === (snap?.pageId ?? activePageId)) ?? doc.pages[0];
     hostRef.current.dispatchAiDirective?.({
       resourceId: path,
       prompt: promptText,
-      action: aiAction,
       selection: {
         resourceId: path,
         kind: "canvas-nodes",
-        summary: `${page?.pageLabel ?? "Page"} › ${block?.title ?? doc.title}`,
-        text,
+        summary: snap?.summary ?? `${page?.pageLabel ?? "Page"} › ${doc.title}`,
+        text: snap?.text ?? doc.title,
         pageId: page?.pageId,
-        blockIds: selectedBlockId ? [selectedBlockId] : [],
-        slotIds: selectedSlotId ? [selectedSlotId] : [],
+        blockIds: snap?.blockIds ?? [],
+        slotIds: snap?.slotIds ?? [],
       },
     });
     setAiPrompt("");
@@ -636,58 +680,18 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
   const activeView = resolveDocumentView(doc);
   const surface = documentSurface(doc);
 
-  // Discover vault `.vstyle.json` files + built-in style packs (re-runs on vault `.vstyle.json` edits!)
+  // 볼트 `.vstyle` + 기본 팩 목록 (`.vstyle` 이 바뀔 때만 다시 모은다) — 형식 해석은 @vibe/vault-formats
   const styleCatalog = useMemo(() => {
     void styleRevision;
-    const byId = new Map<string, { pack: StylePack; vaultPath?: string }>();
-    for (const builtin of BUILTIN_STYLE_PACKS) {
-      byId.set(builtin.id, { pack: builtin });
-    }
-    for (const node of vault.listAll()) {
-      if (
-        node.kind !== "file" ||
-        (!node.path.endsWith(".vstyle") && !node.path.endsWith(".vstyle.json"))
-      ) {
-        continue;
-      }
-      try {
-        const parsed = JSON.parse(vault.read(node.path)) as unknown;
-        if (isValidStylePack(parsed)) {
-          byId.set(parsed.id, { pack: parsed, vaultPath: node.path });
-        }
-      } catch {
-        // Ignore malformed style file safely
-      }
-    }
-    return byId;
+    return collectVaultStyleEntries(vault);
   }, [vault, styleRevision]);
 
-  const activeStyleEntry = useMemo(() => {
-    if (doc.styleRef?.packPath) {
-      const targetPath = fromVaultUri(doc.styleRef.packPath);
-      if (targetPath && vault.exists(targetPath)) {
-        try {
-          const parsed = JSON.parse(vault.read(targetPath)) as unknown;
-          if (isValidStylePack(parsed)) {
-            return { pack: parsed, vaultPath: targetPath };
-          }
-        } catch {
-          // Fall through to packId lookup
-        }
-      }
-    }
-    if (doc.styleRef?.packId) {
-      const fromCatalog = styleCatalog.get(doc.styleRef.packId);
-      if (fromCatalog) return fromCatalog;
-      const builtin = getBuiltinStylePack(doc.styleRef.packId);
-      if (builtin) return { pack: builtin };
-    }
-    if (activeView.id === "blog" || activeView.id === "web") {
-      const defPack = resolveDefaultStylePack(activeView.id);
-      return styleCatalog.get(defPack.id) ?? { pack: defPack };
-    }
-    return null;
-  }, [doc.styleRef, styleCatalog, vault, activeView.id]);
+  const activeStyleEntry = useMemo(
+    () => resolveActiveStyleEntry(doc, vault, styleCatalog),
+    // 스타일 연결 · 보기만 따른다 (본문 편집으로 다시 찾지 않는다)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [doc.styleRef, doc.viewId, doc.surface, styleCatalog, vault]
+  );
 
   // Stable MemoVDocPageSheet callbacks (100% referential stability so arePageSheetPropsEqual hits!)
   const handleSelectPage = useCallback(
@@ -803,6 +807,106 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     [commitDoc]
   );
 
+  // Non-destructive Staged AI Asset Preview overlay (never mutates Vault until Apply!)
+  const displayDoc = useMemo<VDocDocument>(() => {
+    if (
+      !stagedPreview ||
+      stagedPreview.status !== "ready" ||
+      stagedPreview.previewBlocks.length === 0
+    ) {
+      return doc;
+    }
+    const nextPages = doc.pages.map((p) => {
+      if (p.pageId !== stagedPreview.targetPageId) return p;
+      if (stagedPreview.targetScope === "block" && stagedPreview.targetBlockId) {
+        const idx = p.blocks.findIndex((b) => b.blockId === stagedPreview.targetBlockId);
+        if (idx >= 0) {
+          const replaced = [
+            ...p.blocks.slice(0, idx),
+            ...stagedPreview.previewBlocks,
+            ...p.blocks.slice(idx + 1),
+          ];
+          return { ...p, blocks: replaced };
+        }
+      }
+      if (stagedPreview.mode === "insert") {
+        return { ...p, blocks: [...p.blocks, ...stagedPreview.previewBlocks] };
+      }
+      return { ...p, blocks: [...stagedPreview.previewBlocks] };
+    });
+    return {
+      ...doc,
+      pages: nextPages,
+      slots: { ...doc.slots, ...stagedPreview.previewSlots },
+    };
+  }, [doc, stagedPreview]);
+
+  const handleApplyStagedAsset = useCallback(() => {
+    if (!stagedPreview || stagedPreview.status !== "ready") return;
+    flushVaultWrite();
+    const result = commitStagedAssetToOutlineAndVDoc(vault, path, stagedPreview, {
+      syncOutline: stagedSyncOutline && linkStatus.kind === "linked",
+    });
+    if (result.updatedVDoc) {
+      docRef.current = result.updatedVDoc;
+      setDoc(result.updatedVDoc);
+    }
+    vdocUiBridge.getState().clearStagedAssetPreview(path);
+    setStagedFeedback("");
+    if (result.firstBlockId) {
+      vdocUiBridge
+        .getState()
+        .selectBlock(path, result.firstBlockId, stagedPreview.targetPageId);
+    }
+  }, [stagedPreview, stagedSyncOutline, linkStatus.kind, flushVaultWrite, vault, path, vdocUiBridge]);
+
+  const handleRegenerateStagedAsset = useCallback(
+    async (ev: React.FormEvent) => {
+      ev.preventDefault();
+      if (!stagedPreview) return;
+      const fb = stagedFeedback.trim();
+      const catalog = collectVaultAssets(vault);
+      const asset =
+        catalog.find((e) => e.asset.assetId === stagedPreview.assetId)?.asset ??
+        BUILTIN_VDOC_ASSETS.find((a) => a.assetId === stagedPreview.assetId);
+      if (!asset) return;
+
+      const combinedFeedback = [...stagedPreview.feedbackHistory, ...(fb ? [fb] : [])];
+      vdocUiBridge.getState().setStagedAssetPreview(path, {
+        ...stagedPreview,
+        status: "loading",
+        rationale: fb
+          ? `피드백("${fb}")을 반영해 구조를 다시 구성하고 있습니다...`
+          : "구조를 다시 생성하고 있습니다...",
+        feedbackHistory: combinedFeedback,
+      });
+
+      const res = await applyAssetPreviewViaAi({
+        asset,
+        userOutlineDsl: stagedPreview.userOutlineDsl,
+        userPlainText: stagedPreview.userPlainText,
+        documentTitle: docRef.current.title,
+        targetScope: stagedPreview.targetScope,
+        mode: stagedPreview.mode,
+        feedback: combinedFeedback.join(" / "),
+        viewId: resolveDocumentView(docRef.current).id === "blog" ? "blog" : "a4",
+      });
+
+      vdocUiBridge.getState().setStagedAssetPreview(path, {
+        ...stagedPreview,
+        status: "ready",
+        engine: res.engine,
+        rationale: res.rationale,
+        suggestedOutlineDsl: res.outlineDsl,
+        previewBlocks: res.blocks,
+        previewSlots: res.slots,
+        feedbackHistory: combinedFeedback,
+      });
+      setStagedFeedback("");
+    },
+    [stagedPreview, stagedFeedback, vault, vdocUiBridge, path]
+  );
+
   const renderPage = useCallback(
     (page: VDocPage) => (
       <div
@@ -815,15 +919,15 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         className="text-slate-900"
       >
         <MemoVDocPageSheet
-          docTitle={doc.title}
-          totalPages={doc.pages.length}
+          docTitle={displayDoc.title}
+          totalPages={displayDoc.pages.length}
           seamless={surface.kind === "scroll"}
           page={page}
-          slots={doc.slots}
-          backdata={doc.backdata}
-          mode={sheetMode}
-          selectedBlockId={workMode === "Design" ? selectedBlockId : null}
-          selectedSlotId={workMode === "Design" ? selectedSlotId : null}
+          slots={displayDoc.slots}
+          backdata={displayDoc.backdata}
+          mode={stagedPreview ? "Viewing" : sheetMode}
+          selectedBlockId={workMode === "Design" && !stagedPreview ? selectedBlockId : null}
+          selectedSlotId={workMode === "Design" && !stagedPreview ? selectedSlotId : null}
           composerOpenSlotId={null}
           onSelectPage={handleSelectPage}
           onSelectBlock={handleSelectBlock}
@@ -845,10 +949,10 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       </div>
     ),
     [
-      doc.backdata,
-      doc.pages.length,
-      doc.slots,
-      doc.title,
+      displayDoc.backdata,
+      displayDoc.pages.length,
+      displayDoc.slots,
+      displayDoc.title,
       handleDeleteBlock,
       handleDuplicateBlock,
       handleInsertBlock,
@@ -868,14 +972,114 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       selectedBlockId,
       selectedSlotId,
       sheetMode,
+      stagedPreview,
       surface.kind,
       vdocUiBridge,
       workMode,
     ]
   );
 
+  // --- 마키 선택: 빈 곳에서 끌어 최상위 블록 여러 개 고르기 ---------------------------------------
+  const marqueeBaseRef = useRef<readonly CanvasSelectionItem[]>([]);
+  const applyMarquee = useCallback(
+    (ids: readonly string[], mods: { additive: boolean }) => {
+      const byId = new Map(topLevelOrderRef.current.map((i) => [i.id, i] as const));
+      const hit = ids.map((id) => byId.get(id)).filter((x): x is CanvasSelectionItem => Boolean(x));
+      const items = mods.additive ? [...marqueeBaseRef.current, ...hit] : hit;
+      vdocUiBridge.getState().setSelection(path, items);
+    },
+    [vdocUiBridge, path]
+  );
+  const marquee = useMarqueeSelection({
+    containerRef: canvasScrollRef,
+    enabled: workMode !== "Preview" && !stagedPreview,
+    canStart: (target) =>
+      !target.closest("[data-block-id], button, input, textarea, select, a[href], [contenteditable='true'], form"),
+    collect: () => {
+      const hostEl = canvasScrollRef.current;
+      if (!hostEl) return [];
+      const top = new Set(topLevelOrderRef.current.map((i) => i.id));
+      const out: MarqueeCandidate[] = [];
+      for (const el of hostEl.querySelectorAll<HTMLElement>("[data-vdoc-page-id] [data-block-id]")) {
+        const id = el.dataset.blockId;
+        if (id && top.has(id)) out.push({ id, el });
+      }
+      return out;
+    },
+    onStart: () => {
+      marqueeBaseRef.current = vdocUiBridge.getState().getForPath(path).selection.items;
+    },
+    onUpdate: applyMarquee,
+    onCommit: applyMarquee,
+  });
+
+  // --- 키보드: Esc 해제 · Ctrl/⌘+A 이 쪽 전부 · Delete 고른 블록 지우기 (글을 고치는 중엔 끼어들지 않는다) ---
+  const handleCanvasKeyDown = (ev: React.KeyboardEvent) => {
+    const t = ev.target as HTMLElement;
+    if (t.closest("input, textarea, select, [contenteditable='true']")) return;
+    const bridge = vdocUiBridge.getState();
+    if (ev.key === "Escape") {
+      if (bridge.getForPath(path).selection.items.length) {
+        ev.preventDefault();
+        bridge.clearSelection(path);
+      }
+      return;
+    }
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "a" && workMode !== "Preview") {
+      ev.preventDefault();
+      const pageItems = topLevelOrderRef.current.filter((i) => i.pageId === activePageId);
+      bridge.setSelection(path, pageItems.length ? pageItems : topLevelOrderRef.current);
+      return;
+    }
+    if ((ev.key === "Delete" || ev.key === "Backspace") && workMode === "Structure" && !stagedPreview) {
+      const blocks = bridge.getForPath(path).selection.items.filter((i) => i.kind === "block");
+      if (!blocks.length) return;
+      ev.preventDefault();
+      commitDoc((prev) => removeBlocks(prev, blocks.map((b) => b.id)).doc, { immediate: true });
+      bridge.clearSelection(path);
+    }
+  };
+
+  // 보조키 클릭 = 여러 개 고르기 (Ctrl/⌘ 토글 · Shift 범위 · Ctrl+Shift 범위 더하기).
+  // 시트는 mousedown 에서 바로 선택을 바꾸고 다시 그리므로(그 뒤 click 이 오지 않는다) pointerdown 캡처에서 먼저 가로챈다.
+  const modifierSelectRef = useRef(false);
+  const handleCanvasPointerDownCapture = (ev: React.PointerEvent) => {
+    modifierSelectRef.current = false;
+    const t = ev.target as HTMLElement;
+    const editingText = Boolean(t.closest("input, textarea, select, [contenteditable='true']"));
+    const intent = ev.button === 0 ? intentFromModifiers(ev) : "replace";
+    if (intent !== "replace" && workMode !== "Preview" && !stagedPreview && !t.closest("a[href]")) {
+      // 표 안 Shift = 표 칸 범위 선택 (표가 직접 처리)
+      const inTableCell = Boolean(t.closest("td[data-cell-id]"));
+      if (!(intent === "range" && inTableCell)) {
+        const item = selectionItemFromTarget(t, workMode === "Design" && intent === "toggle");
+        if (item) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          modifierSelectRef.current = true;
+          vdocUiBridge.getState().applySelectIntent(path, intent, item, topLevelOrderRef.current);
+          editorRootRef.current?.focus({ preventScroll: true });
+          return;
+        }
+      }
+    }
+    if (!editingText) editorRootRef.current?.focus({ preventScroll: true });
+  };
+  /** 보조키 선택이 가로챈 누름의 mousedown · click 은 시트로 보내지 않는다. */
+  const swallowIfModifierSelect = (ev: React.MouseEvent) => {
+    if (!modifierSelectRef.current) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (ev.type === "click") modifierSelectRef.current = false;
+  };
+
   return (
     <div
+      ref={editorRootRef}
+      tabIndex={-1}
+      onKeyDown={handleCanvasKeyDown}
+      onPointerDownCapture={handleCanvasPointerDownCapture}
+      onMouseDownCapture={swallowIfModifierSelect}
       onDragOver={handleCanvasDragOver}
       onDragLeave={(ev) => {
         if (!ev.currentTarget.contains(ev.relatedTarget as Node | null)) {
@@ -886,7 +1090,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       onClickCapture={handleCanvasClickCapture}
       onDoubleClickCapture={handleCanvasDoubleClickCapture}
       data-vdoc-structure-mode={workMode === "Structure" ? "true" : undefined}
-      className="relative flex h-full w-full flex-col overflow-hidden bg-[#2b2d31]"
+      className="relative flex h-full w-full flex-col overflow-hidden bg-[#2b2d31] outline-none"
       style={{
         boxShadow: canvasDropActive
           ? "inset 0 0 0 2px var(--obs-accent,#8a5cf5)"
@@ -1324,8 +1528,10 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       <div
         ref={canvasScrollRef}
         onClick={() => vdocUiBridge.getState().selectBlock(path, null)}
-        className="min-h-0 flex-1 overflow-auto px-4 py-6 pb-28"
+        onPointerDown={marquee.onPointerDown}
+        className="relative min-h-0 flex-1 overflow-auto px-4 py-6 pb-28"
       >
+        <MarqueeOverlay rect={marquee.rect} />
         <div
           className="mx-auto flex flex-col items-center gap-6 transition-transform"
           style={{
@@ -1339,7 +1545,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
             viewKey={activeView.id}
           >
             <WindowedPageChunker
-              pages={doc.pages}
+              pages={displayDoc.pages}
               chunkSize={6}
               activePageId={activePageId}
               pageGapPx={surface.kind === "scroll" ? 0 : 24}
@@ -1359,7 +1565,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           <div className="mb-2 flex items-center justify-between">
             <span className="flex items-center gap-1.5 font-semibold text-[#c4b5fd]">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>2D AI Directing → Vault &amp; Explorer 자동 반영</span>
+              <span>AI Composer 에 지시 — 선택한 칸 · 블록이 이번 메시지 범위가 됩니다</span>
             </span>
             <button
               type="button"
@@ -1370,35 +1576,12 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
             </button>
           </div>
 
-          <div className="mb-2 flex flex-wrap gap-1">
-            {(
-              [
-                { id: "extract-md", label: "새 .md 문서 추출 + 링크카드", Icon: FilePlus2 },
-                { id: "extract-outline", label: "새 .outline 추출 + 링크카드", Icon: ListTree },
-                { id: "enhance-slot", label: "선택 슬롯 보강", Icon: FileCode2 },
-              ] as const
-            ).map(({ id, label, Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setAiAction(id)}
-                className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] transition-colors ${aiAction === id
-                  ? "border-[#8a5cf5] bg-[#8a5cf5]/25 text-white"
-                  : "border-[#363636] bg-[#262626] text-slate-300 hover:bg-[#303030]"
-                  }`}
-              >
-                <Icon className="h-3 w-3" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-
           <div className="flex items-center gap-1.5">
             <input
               type="text"
               value={aiPrompt}
               onChange={(ev) => setAiPrompt(ev.target.value)}
-              placeholder="예: 이 섹션의 상세 스펙 문서를 뽑아서 탐색기에 추가해줘"
+              placeholder="예: 이 칸을 리소스를 근거로 채워서 변경안으로 올려줘"
               autoFocus
               className="min-w-0 flex-1 rounded-md border border-[#363636] bg-[#141414] px-2.5 py-1.5 text-[12px] text-white placeholder:text-slate-500 outline-none focus:border-[#8a5cf5]"
             />
@@ -1406,25 +1589,147 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
               type="submit"
               className="shrink-0 rounded-md bg-[#8a5cf5] px-3 py-1.5 font-medium text-white hover:bg-[#7c4dff]"
             >
-              실행
+              보내기
             </button>
           </div>
         </form>
       )}
 
+      {/* Floating Staged AI Asset Preview Bar (Non-Destructive Preview -> Apply / Feedback / Revert) */}
+      {stagedPreview && (
+        <div
+          onClick={(ev) => ev.stopPropagation()}
+          className="absolute bottom-5 left-1/2 z-40 w-[580px] max-w-[94%] -translate-x-1/2 rounded-xl border border-[var(--obs-accent,#8a5cf5)] bg-[#1c1b24]/95 p-3 text-[11.5px] text-[#e6edf3] shadow-[0_14px_40px_rgba(0,0,0,0.6)] backdrop-blur-md"
+        >
+          {stagedPreview.status === "loading" ? (
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-[#ddd6fe]">
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[var(--obs-accent,#8a5cf5)]" />
+                <div className="min-w-0">
+                  <div className="font-semibold">에셋 느낌 보기: {stagedPreview.assetTitle}</div>
+                  <div className="truncate text-[10.5px] text-white/70">
+                    {stagedPreview.rationale}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => vdocUiBridge.getState().clearStagedAssetPreview(path)}
+                className="shrink-0 rounded border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-white/80 hover:bg-white/15"
+              >
+                취소
+              </button>
+            </div>
+          ) : stagedPreview.status === "error" ? (
+            <div className="flex items-center justify-between gap-2 text-rose-200">
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-rose-400" />
+                <span>{stagedPreview.errorMessage ?? "에셋 미리보기 생성에 실패했습니다."}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => vdocUiBridge.getState().clearStagedAssetPreview(path)}
+                className="rounded bg-white/10 px-2 py-1 text-[11px] text-white hover:bg-white/20"
+              >
+                닫기
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 font-semibold text-[#ddd6fe]">
+                    <Sparkles className="h-3.5 w-3.5 shrink-0 text-[var(--obs-accent,#8a5cf5)]" />
+                    <span className="truncate">에셋 느낌 보기 · {stagedPreview.assetTitle}</span>
+                    <span className="rounded bg-[var(--obs-accent,#8a5cf5)]/25 px-1.5 py-0 font-code text-[9.5px] text-[#e9d5ff]">
+                      {stagedPreview.engine === "llm" ? "AI" : "규칙 폴백"}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[10.5px] leading-4 text-white/75">
+                    {stagedPreview.rationale}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => vdocUiBridge.getState().clearStagedAssetPreview(path)}
+                  title="되돌리기"
+                  className="shrink-0 rounded p-0.5 text-white/50 hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              <form onSubmit={(ev) => void handleRegenerateStagedAsset(ev)} className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={stagedFeedback}
+                  onChange={(ev) => setStagedFeedback(ev.target.value)}
+                  placeholder="한 줄 피드백 (예: 비고 열 추가해줘 / 항목을 2그룹으로 나눠줘)"
+                  className="min-w-0 flex-1 rounded-md border border-white/15 bg-black/35 px-2.5 py-1 text-[11px] text-white placeholder:text-white/40 outline-none focus:border-[var(--obs-accent,#8a5cf5)]"
+                />
+                <button
+                  type="submit"
+                  className="flex shrink-0 items-center gap-1 rounded-md border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-white/20"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  <span>재생성</span>
+                </button>
+              </form>
+
+              <div className="flex items-center justify-between gap-2 pt-0.5">
+                {linkStatus.kind === "linked" ? (
+                  <label className="flex cursor-pointer items-center gap-1.5 text-[10.5px] text-white/75">
+                    <input
+                      type="checkbox"
+                      checked={stagedSyncOutline}
+                      onChange={(ev) => setStagedSyncOutline(ev.target.checked)}
+                      className="h-3 w-3 accent-emerald-400"
+                    />
+                    <span>연결된 .outline 구조에도 함께 반영</span>
+                  </label>
+                ) : (
+                  <span className="text-[10px] text-white/50">
+                    적용 전까지 원본 .vdoc 파일은 변경되지 않습니다
+                  </span>
+                )}
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => vdocUiBridge.getState().clearStagedAssetPreview(path)}
+                    className="flex items-center gap-1 rounded-md border border-white/15 bg-black/30 px-2.5 py-1 text-[11px] text-white/80 hover:bg-white/10"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    <span>되돌리기</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleApplyStagedAsset}
+                    className="flex items-center gap-1 rounded-md bg-emerald-500 px-3 py-1 text-[11px] font-semibold text-slate-950 shadow hover:bg-emerald-400"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    <span>적용 (Apply)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Structure Mode Subtle Hint Pill (v1-parity frame selection mode) */}
-      {workMode === "Structure" && (
+      {workMode === "Structure" && !stagedPreview && (
         <div
           onClick={(ev) => ev.stopPropagation()}
           className="pointer-events-none absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 select-none items-center gap-2 rounded-full border border-emerald-500/30 bg-[#1e2422]/90 px-3.5 py-1.5 text-[11px] text-emerald-200 shadow-lg backdrop-blur-sm"
         >
           <ListTree className="h-3.5 w-3.5 text-emerald-400" />
-          <span>구조 모드 · 블록 클릭으로 틀/인스펙터 선택 · 더블클릭으로 디자인(Filling) 진입</span>
+          <span>구조 모드 · 우측 에셋 패널에서 양식 느낌 보기 · 더블클릭으로 디자인(Filling) 진입</span>
         </div>
       )}
 
       {/* Bottom Figma-style Floating 2D Toolbar (only in Design / Filling mode) */}
-      {workMode === "Design" && (
+      {workMode === "Design" && !stagedPreview && (
         <div
           onClick={(ev) => ev.stopPropagation()}
           className="absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 select-none items-center gap-0.5 rounded-2xl border border-white/10 bg-[#2c2c2c] p-1 text-xs text-white/90 shadow-[0_12px_32px_rgba(0,0,0,0.45)]"

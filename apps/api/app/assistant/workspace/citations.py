@@ -5,6 +5,8 @@ import re
 from dataclasses import dataclass
 from typing import Any, Optional
 
+from vibefs.index import READ_WINDOW
+
 # 인용 패턴:
 # 1. [label](file:///path/to/file#L10-L20)
 # 2. [label](vdoc:resource/id#L10-L20)
@@ -145,7 +147,8 @@ def verify_citations(
     for r in reads:
         p = str(r.get("path") or "").replace("\\", "/").lower()
         s = int(r.get("start") or 1)
-        e = int(r.get("end") or s)
+        # 줄 범위 없이 읽으면 agy 는 앞 READ_WINDOW 줄을 보여 준다 — 커버리지(vibefs.index)와 같은 자로 센다
+        e = int(r.get("end") or (s + READ_WINDOW - 1))
         if not p:
             continue
         read_map.setdefault(p, []).append((s, e))

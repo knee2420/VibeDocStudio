@@ -1,0 +1,118 @@
+{
+  "R0_role_folders": 1,
+  "R1_refs": 2,
+  "R1_min_blocks": 35,
+  "R1_distinct_hosts": 2,
+  "R2_images": 50,
+  "R2_licensed_ratio": 1.0,
+  "R2_duplicates": 0,
+  "R2_wide_ratio": 1.0,
+  "R2_distinct_captions": 50,
+  "refs": [
+    {
+      "file": "홈카페/핸드드립/레퍼런스/초보자를 위한 핸드드립 커피 입문 가이드.ref",
+      "title": "초보자를 위한 핸드드립 커피 입문 가이드",
+      "blocks": 35,
+      "ko_ratio": 0.976,
+      "host": "minhy3038.tistory.com",
+      "library": true
+    },
+    {
+      "file": "홈카페/핸드드립/레퍼런스/핸드드립 입문자를 위한 도구 구성 리스트.ref",
+      "title": "핸드드립 입문자를 위한 도구 구성 리스트",
+      "blocks": 39,
+      "ko_ratio": 0.962,
+      "host": "ssindong24.tistory.com",
+      "library": true
+    }
+  ],
+  "R1_lang_match_ratio": 1.0,
+  "R3_blocks": 30,
+  "R3_image_blocks": 8,
+  "R3_images_from_collection": 1.0,
+  "R3_missing_files": [],
+  "R3_credits": 1,
+  "R3_copied_spans": 0,
+  "R3_sections": 6,
+  "doc": "홈카페/핸드드립/글/[홈카페 입문] 나만의 한 잔을 위한 핸드드립 커피 완벽 입문 가이드.vdoc",
+  "title": "[홈카페 입문] 나만의 한 잔을 위한 핸드드립 커피 완벽 입문 가이드",
+  "verdict": {
+    "R0_role_folders": true,
+    "R1_refs": true,
+    "R1_min_blocks": true,
+    "R1_distinct_hosts": true,
+    "R2_images": true,
+    "R2_licensed_ratio": true,
+    "R2_duplicates": true,
+    "R2_wide_ratio": true,
+    "R2_distinct_captions": true,
+    "R3_image_blocks": false,
+    "R3_images_from_collection": true,
+    "R3_credits": true,
+    "R3_copied_spans": true,
+    "R3_sections": true,
+    "R1_lang_match_ratio": true
+  },
+  "targets": {
+    "R0_role_folders": [
+      ">=",
+      1
+    ],
+    "R1_refs": [
+      ">=",
+      2
+    ],
+    "R1_min_blocks": [
+      ">=",
+      20
+    ],
+    "R1_distinct_hosts": [
+      ">=",
+      2
+    ],
+    "R2_images": [
+      ">=",
+      50
+    ],
+    "R2_licensed_ratio": [
+      ">=",
+      1.0
+    ],
+    "R2_duplicates": [
+      "<=",
+      0
+    ],
+    "R2_wide_ratio": [
+      ">=",
+      1.0
+    ],
+    "R2_distinct_captions": [
+      ">=",
+      40
+    ],
+    "R3_image_blocks": [
+      ">=",
+      10
+    ],
+    "R3_images_from_collection": [
+      ">=",
+      1.0
+    ],
+    "R3_credits": [
+      ">=",
+      1
+    ],
+    "R3_copied_spans": [
+      "<=",
+      0
+    ],
+    "R3_sections": [
+      ">=",
+      5
+    ],
+    "R1_lang_match_ratio": [
+      ">=",
+      1.0
+    ]
+  }
+}

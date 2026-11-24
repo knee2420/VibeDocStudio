@@ -16,9 +16,12 @@ import traceback
 from harness_kit import packs
 
 from .doc_tools import DC_TOOL_SPECS, DocTools
-from .index import WorkspaceIndex
+from .fs_tools import VF_TOOL_SPECS, VaultFsTools
+from .index import MountItem, WorkspaceIndex
+from .outline_tools import OL_TOOL_SPECS, OutlineTools
 from .proposals import ProposalStore
 from .ref_tools import RF_TOOL_SPECS, RefTools, cards_for
+from .research_tools import RS_TOOL_SPECS, ResearchTools
 from .store import WorkspaceStore
 from .tools import TOOL_SPECS, WorkspaceTools
 from .wb_tools import WB_TOOL_SPECS, WorkbenchTools
@@ -42,7 +45,18 @@ class Server:
             self.store.bind_conversation(self.session_id, conversation_id)
             self.store.bind_workbench_conversation(self.session_id, conversation_id)
         mount = self.store.mount_for(conversation_id or None, self.session_id or None)
-        if mount is None:
+        if mount is None or not mount.items:
+            wb = self.store.workbench_for_conversation(conversation_id or None, self.session_id or None) or {}
+            vault_root = str(wb.get("vaultRoot") or "").strip()
+            if vault_root and os.path.isdir(vault_root):
+                abs_vr = os.path.abspath(vault_root)
+                sig = f"vault-fallback:{abs_vr.lower()}"
+                cached = self._cache.get(sig)
+                if cached is None or time.time() - cached[0] > 30:
+                    item = MountItem(abs_vr, "vault:/", os.path.basename(abs_vr) or "vault", kind="dir")
+                    self._cache = {sig: (time.time(), WorkspaceIndex.build([item]))}
+                convs = [str(c) for c in (wb.get("conversationIds") or []) if c]
+                return self._cache[sig][1], convs
             return WorkspaceIndex([]), []
         sig = mount.signature
         cached = self._cache.get(sig)
@@ -57,7 +71,25 @@ class Server:
         index, conv_ids = self.index_for(conv)
         ids = set(conv_ids) | ({conv} if conv else set())
         reads = lambda: self.store.reads(conversation_ids=ids)  # noqa: E731
-        if DocTools.handles(name):
+        if OutlineTools.handles(name):
+            session = self.session_id
+            if not session:
+                mount = self.store.mount_for(conv or None)
+                session = mount.session_id if mount else ""
+            tools = OutlineTools(self.store, session, proposals=self.proposals, reads=reads, conversation_id=conv)
+        elif VaultFsTools.handles(name):
+            session = self.session_id
+            if not session:
+                mount = self.store.mount_for(conv or None)
+                session = mount.session_id if mount else ""
+            tools = VaultFsTools(self.store, session, conversation_id=conv)
+        elif ResearchTools.handles(name):
+            session = self.session_id
+            if not session:
+                mount = self.store.mount_for(conv or None)
+                session = mount.session_id if mount else ""
+            tools = ResearchTools(self.store, session, conversation_id=conv)
+        elif DocTools.handles(name):
             session = self.session_id
             if not session:
                 mount = self.store.mount_for(conv or None)
@@ -109,7 +141,7 @@ def main(argv: list[str] | None = None) -> int:
                       "capabilities": {"tools": {}}, "serverInfo": {"name": "vibefs", "version": "1.0"},
                       "instructions": packs.message("core:messages.json", "sandbox.serverInstructions")}
         elif method == "tools/list":
-            result = {"tools": [*TOOL_SPECS, *WB_TOOL_SPECS, *DC_TOOL_SPECS, *RF_TOOL_SPECS]}
+            result = {"tools": [*TOOL_SPECS, *WB_TOOL_SPECS, *DC_TOOL_SPECS, *RF_TOOL_SPECS, *RS_TOOL_SPECS, *VF_TOOL_SPECS, *OL_TOOL_SPECS]}
         elif method == "tools/call":
             try:
                 text = server.call(str(params.get("name") or ""), dict(params.get("arguments") or {}), dict(params.get("_meta") or {}))

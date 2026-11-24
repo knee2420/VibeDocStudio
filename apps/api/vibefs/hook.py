@@ -23,7 +23,7 @@ from typing import Optional
 from docstruct_engine.acquire import doc_text
 from harness_kit import packs
 
-from .index import _roots, _walk_files, norm
+from .index import MountItem, _roots, _walk_files, is_document_file, norm
 from .store import WorkspaceStore
 
 #: 허용하는 agy 도구 · 거부 사유 · vibefs 서버 표식은 하네스 core 팩(`sandbox/policy.json`)에 있다.
@@ -96,7 +96,15 @@ class Mounted:
         """모델이 준 경로(상대 경로 · `/` 구분 · 파일 이름만) → 마운트 안 절대 경로. 못 찾으면 None."""
         cleaned = raw.strip().strip('"').replace("/", os.sep)
         if os.path.isabs(cleaned):
-            return cleaned if self.contains(cleaned) and os.path.exists(cleaned) else None
+            if self.contains(cleaned) and os.path.exists(cleaned):
+                return cleaned
+            # 모델이 빈 샌드박스 CWD(`.../assistant/sandbox/<볼트 상대경로>`)를 붙인 경우 상대 경로로 재해석
+            marker = f"{os.sep}sandbox{os.sep}"
+            idx = cleaned.lower().find(marker)
+            if idx >= 0 and not os.path.exists(cleaned):
+                cleaned = cleaned[idx + len(marker):]
+            else:
+                return None
         # 1. alias 접두사 (e.g. discussions/26.10.06/decisions/D01.md)
         if os.sep in cleaned:
             alias, _, sub = cleaned.partition(os.sep)
@@ -225,6 +233,12 @@ def decide(payload: dict, store: WorkspaceStore) -> dict:
     policy = _policy()
     if name.lower().startswith(MCP_NAME_PREFIX):
         return {"decision": "deny", "reason": _msg("otherMcpTool", name=name)}
+    if name in set(policy.get("researchTools") or []):
+        # 웹 검색은 리서치 결과를 둘 볼트가 있는 세션(볼트 모드 · 쓰기 가능)에서만 연다
+        wb = store.workbench_for_conversation(conv or None) or {}
+        if wb.get("vaultId") and not wb.get("readOnly"):
+            return {"decision": "allow"}
+        return {"decision": "deny", "reason": _msg("researchOff")}
     if name not in set(policy["allowedTools"]):
         reason = policy["denyReasons"].get(name) or _msg("toolDefault", name=name)
         return {"decision": "deny", "reason": reason}
@@ -245,11 +259,25 @@ def decide(payload: dict, store: WorkspaceStore) -> dict:
         if os.path.isabs(raw) and norm(raw) == norm(shot_hit):
             return {"decision": "allow"}
         return {"decision": "allow", "overwrite": {"Path": shot_hit}, "_fixed": True}
-    if mount is None or not mount.items:
-        return {"decision": "deny", "reason": _msg("noMount")}
-    mounted = Mounted(mount.items, roots=getattr(mount, "roots", None))
     if not raw:
         return {"decision": "deny", "reason": _msg("noPath")}
+    # 앱 문서 파일(.outline · .vdoc · .ref 등)은 마운트 여부와 무관하게 전용 도구로 안내한다
+    if is_document_file(raw):
+        return {"decision": "deny", "reason": _msg("documentFile", path=raw)}
+    # 볼트 모드(workbench.vaultRoot 연결)에서는 별도 리소스 마운트가 없어도 볼트 안 리소스 파일 읽기를 자동 허용한다
+    items = list(mount.items) if (mount is not None and mount.items) else []
+    roots = list(getattr(mount, "roots", None) or []) if mount is not None else []
+    wb = store.workbench_for_conversation(conv or None, getattr(mount, "session_id", None) if mount else None) or {}
+    vault_root = str(wb.get("vaultRoot") or "").strip()
+    if vault_root and os.path.isdir(vault_root):
+        abs_vr = os.path.abspath(vault_root)
+        if not any(norm(getattr(it, "path", "")) == norm(abs_vr) for it in items):
+            items.append(MountItem(abs_vr, "vault:/", os.path.basename(abs_vr) or "vault", kind="dir"))
+        if roots and not any(norm(r) == norm(abs_vr) for r in roots):
+            roots.append(abs_vr)
+    if not items:
+        return {"decision": "deny", "reason": _msg("noMount")}
+    mounted = Mounted(items, roots=roots or None)
     # 앞서 돌려 준 렌더 캐시 파일을 다시 읽는 경우 — 원본이 마운트 안이면 그대로 허용
     source = doc_text.source_of(raw) if os.path.isabs(raw) else None
     if source and mounted.contains(source):

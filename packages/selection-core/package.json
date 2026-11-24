@@ -1,0 +1,18 @@
+{
+  "name": "@vibe/selection-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "[L0 순수] 2D · 트리 · 목록 공용 다중 선택 모델 (선택 집합 · 앵커 · 범위 · 토글 · 마키 적중 판정). React · 문서 형식을 모른다",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/selection-core.test.ts"
+  },
+  "dependencies": {}
+}

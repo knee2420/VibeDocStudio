@@ -1,0 +1,118 @@
+{
+  "R0_role_folders": 1,
+  "R1_refs": 2,
+  "R1_min_blocks": 85,
+  "R1_distinct_hosts": 1,
+  "R2_images": 51,
+  "R2_licensed_ratio": 1.0,
+  "R2_duplicates": 0,
+  "R2_wide_ratio": 1.0,
+  "R2_distinct_captions": 51,
+  "refs": [
+    {
+      "file": "여행/오사카/레퍼런스/오사카 3박4일 코스 핵심정리.ref",
+      "title": "오사카 3박4일 코스 핵심정리",
+      "blocks": 146,
+      "ko_ratio": 0.885,
+      "host": "vertexaisearch.cloud.google.com",
+      "library": true
+    },
+    {
+      "file": "여행/오사카/레퍼런스/오사카 교토 3박4일 감성 여행기.ref",
+      "title": "오사카 교토 3박4일 감성 여행기",
+      "blocks": 85,
+      "ko_ratio": 0.885,
+      "host": "vertexaisearch.cloud.google.com",
+      "library": true
+    }
+  ],
+  "R1_lang_match_ratio": 1.0,
+  "R3_blocks": 33,
+  "R3_image_blocks": 15,
+  "R3_images_from_collection": 1.0,
+  "R3_missing_files": [],
+  "R3_credits": 1,
+  "R3_copied_spans": 0,
+  "R3_sections": 6,
+  "doc": "여행/오사카/글/[오사카 3박 4일 여행기] 화려한 네온사인과 깊은 역사가 공존하는 미식의 도시 탐방기.vdoc",
+  "title": "[오사카 3박 4일 여행기] 화려한 네온사인과 깊은 역사가 공존하는 미식의 도시 탐방기",
+  "verdict": {
+    "R0_role_folders": true,
+    "R1_refs": true,
+    "R1_min_blocks": true,
+    "R1_distinct_hosts": false,
+    "R2_images": true,
+    "R2_licensed_ratio": true,
+    "R2_duplicates": true,
+    "R2_wide_ratio": true,
+    "R2_distinct_captions": true,
+    "R3_image_blocks": true,
+    "R3_images_from_collection": true,
+    "R3_credits": true,
+    "R3_copied_spans": true,
+    "R3_sections": true,
+    "R1_lang_match_ratio": true
+  },
+  "targets": {
+    "R0_role_folders": [
+      ">=",
+      1
+    ],
+    "R1_refs": [
+      ">=",
+      2
+    ],
+    "R1_min_blocks": [
+      ">=",
+      20
+    ],
+    "R1_distinct_hosts": [
+      ">=",
+      2
+    ],
+    "R2_images": [
+      ">=",
+      50
+    ],
+    "R2_licensed_ratio": [
+      ">=",
+      1.0
+    ],
+    "R2_duplicates": [
+      "<=",
+      0
+    ],
+    "R2_wide_ratio": [
+      ">=",
+      1.0
+    ],
+    "R2_distinct_captions": [
+      ">=",
+      40
+    ],
+    "R3_image_blocks": [
+      ">=",
+      10
+    ],
+    "R3_images_from_collection": [
+      ">=",
+      1.0
+    ],
+    "R3_credits": [
+      ">=",
+      1
+    ],
+    "R3_copied_spans": [
+      "<=",
+      0
+    ],
+    "R3_sections": [
+      ">=",
+      5
+    ],
+    "R1_lang_match_ratio": [
+      ">=",
+      1.0
+    ]
+  }
+}

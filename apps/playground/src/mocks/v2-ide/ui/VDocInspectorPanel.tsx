@@ -8,6 +8,7 @@ import {
   ArrowDown,
   ArrowLeftRight,
   ArrowUp,
+  Blocks,
   BookOpen,
   ChevronRight,
   Copy,
@@ -31,31 +32,59 @@ import {
   Unlock,
 } from "lucide-react";
 import {
+  applyGridRatioPreset,
+  applyTableColumnRatio,
   applyTableCommandToDocument,
-  documentSurface,
-  duplicateBlock,
-  duplicatePage,
-  findBlock,
-  mapBlock,
-  moveBlockByOffset,
-  removeBlock,
-  removePage,
-  resolveDocumentView,
-  toggleBlockLock,
+  applyTableNestedListMarker,
+  applyTableVisualPreset,
+  CALLOUT_VARIANT_OPTIONS,
   type CalloutAccentColor,
   type CalloutBoxBlockDef,
   type CalloutBoxVariant,
   type ColumnsGridBlockDef,
+  convertCalloutToText,
+  convertTextToCallout,
+  detectTableNestedListMarker,
+  documentSurface,
+  duplicateBlock,
+  duplicatePage,
+  extractAssetFromVDocBlock,
+  findBlock,
+  GRID_RATIO_PRESETS_2COL,
+  GRID_RATIO_PRESETS_3COL,
   type ImageBlockDef,
   type LayoutBlock,
   type LinkCardBlockDef,
+  LIST_MARKER_OPTIONS,
+  mapBlock,
+  moveBlockByOffset,
+  removeBlock,
+  removePage,
+  reorderPageByOffset,
+  resolveAccentPaletteChips,
+  resolveBlockStyleBinding,
+  resolveDocumentView,
+  SECTION_ROLE_PRESETS,
   type StructuredTableBlockDef,
+  swapTwoGridColumns,
+  TABLE_COLUMN_RATIO_PRESETS_2COL,
+  TABLE_VISUAL_PRESET_OPTIONS,
   type TextBlockDef,
-  type VDocDocument,
+  toggleBlockLock,
+  toggleTableTopRowHeader,
   type VDocPage,
 } from "@vibe/vdoc-schema";
-import { basename, stem } from "@vibe/vault-core";
+import { basename } from "@vibe/vault-core";
 
+import {
+  buildStyleRefForEntry,
+  collectVaultStyleEntries,
+  fromVaultUri,
+  resolveActiveStyleEntry,
+  saveAssetToVault,
+  STANDARD_SYNTAX_PATH,
+  toVaultUri,
+} from "@vibe/vault-formats";
 import type { IdeWorkbenchRuntime } from "../model/useIdeWorkbench";
 import {
   bindVDocToExistingOutline,
@@ -65,38 +94,17 @@ import {
   inspectVDocOutlineLink,
   openOrCreateOutlineForVDoc,
   unlinkVDocFromOutline,
-} from "../model/outlineVDocBridge";
-import { STANDARD_SYNTAX_PATH } from "../model/settingsRegistry";
-import { fromVaultUri, parseVDocJson, serializeVDocJson } from "../model/vdocCodec";
-import {
-  CALLOUT_VARIANT_OPTIONS,
-  GRID_RATIO_PRESETS_2COL,
-  GRID_RATIO_PRESETS_3COL,
-  LIST_MARKER_OPTIONS,
-  SECTION_ROLE_PRESETS,
-  TABLE_COLUMN_RATIO_PRESETS_2COL,
-  TABLE_VISUAL_PRESET_OPTIONS,
-  applyGridRatioPreset,
-  applyTableColumnRatio,
-  applyTableNestedListMarker,
-  applyTableVisualPreset,
-  buildStyleRefForEntry,
-  collectVaultStyleEntries,
-  convertCalloutToText,
-  convertTextToCallout,
-  detectTableNestedListMarker,
-  reorderPageByOffset,
-  resolveAccentPaletteChips,
-  resolveActiveStyleEntry,
-  resolveBlockStyleBinding,
-  swapTwoGridColumns,
-  toggleTableTopRowHeader,
-} from "../model/vdocInspectorModel";
+} from "@vibe/outline-sync";
+import { MultiSelectionInspector } from "./MultiSelectionInspector";
+import { useVDocDocument } from "./useVDocDocument";
 
 export interface VDocInspectorPanelProps {
   readonly runtime: IdeWorkbenchRuntime;
   readonly path: string;
   readonly onSwitchToAi: () => void;
+  readonly onSwitchToAssets?: () => void;
+  /** 고른 것(여러 개)을 AI Composer 첨부로 보내고 AI 탭으로. */
+  readonly onAttachSelectionToAi?: () => void;
 }
 
 const uidFactory = () =>
@@ -149,13 +157,10 @@ const AlignButtons: React.FC<{
 );
 
 export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
-  ({ runtime, path, onSwitchToAi }) => {
-    const { vault, vdocUiBridge } = runtime;
-    const fallbackTitle = stem(path);
+  ({ runtime, path, onSwitchToAi, onSwitchToAssets, onAttachSelectionToAi }) => {
+    const { vault, vdocUiBridge, docs } = runtime;
 
-    const [doc, setDoc] = useState<VDocDocument>(() =>
-      parseVDocJson(vault.exists(path) ? vault.read(path) : "", fallbackTitle)
-    );
+    const [doc, mutateDoc] = useVDocDocument(docs, path);
     const [styleRev, setStyleRev] = useState(0);
     const [scopeState, setScopeState] = useState<{
       readonly scope: InspectorScopeOverride;
@@ -170,6 +175,8 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
     // Fine-grained Zustand selectors: NEVER subscribe to hoveredBlockId (M5 perf SLA!)
     const storedActivePageId = useStore(vdocUiBridge, (s) => s.byPath[path]?.activePageId ?? null);
     const selectedBlockId = useStore(vdocUiBridge, (s) => s.byPath[path]?.selectedBlockId ?? null);
+    const selection = useStore(vdocUiBridge, (s) => s.byPath[path]?.selection ?? null);
+    const isMultiSelection = Boolean(selection && selection.items.length > 1);
     const rawHiddenBlockIds = useStore(vdocUiBridge, (s) => s.byPath[path]?.hiddenBlockIds);
 
     const anchorKey = `${path}|${selectedBlockId ?? ""}`;
@@ -179,50 +186,17 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
       setScopeState({ scope: next, anchorKey });
     };
 
-    // Stay in sync with vault writes from VDocTabEditor, Structure panel, or `.vstyle` edits
-    useEffect(() => {
-      const reload = () => {
-        if (!vault.exists(path)) return;
-        try {
-          setDoc(parseVDocJson(vault.read(path), fallbackTitle));
-        } catch {
-          // Ignore transient read error
-        }
-      };
-      reload();
-      return vault.subscribe((ev) => {
-        if ((ev.type === "modify" && ev.path === path) || ev.type === "vault-reset") {
-          reload();
-        }
-        const changedPath =
-          ev.type === "create"
-            ? ev.node.path
-            : ev.type === "modify" || ev.type === "delete"
-              ? ev.path
-              : ev.type === "rename"
-                ? ev.newPath
-                : "";
-        if (
-          ev.type === "vault-reset" ||
-          changedPath.endsWith(".vstyle") ||
-          changedPath.endsWith(".vstyle.json") ||
-          changedPath.endsWith(".outline")
-        ) {
-          setStyleRev((r) => r + 1);
-        }
-      });
-    }, [vault, path, fallbackTitle]);
-
-    const mutateDoc = useCallback(
-      (updater: (prev: VDocDocument) => VDocDocument) => {
-        setDoc((prev) => {
-          const next = updater(prev);
-          if (next === prev) return prev;
-          vault.write(path, serializeVDocJson(next));
-          return next;
-        });
-      },
-      [vault, path]
+    // `.vstyle` · `.outline` 변경 → 스타일 목록 · 연결 상태만 다시 본다
+    useEffect(
+      () =>
+        vault.subscribe((ev) => {
+          const changed =
+            ev.type === "vault-reset" ? ".vstyle" : ev.type === "create" ? ev.node.path : ev.type === "rename" ? ev.newPath : ev.path;
+          if (changed.endsWith(".vstyle") || changed.endsWith(".vstyle.json") || changed.endsWith(".outline")) {
+            setStyleRev((r) => r + 1);
+          }
+        }),
+      [vault]
     );
 
     const linkStatus = useMemo(() => {
@@ -1024,7 +998,17 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
           )}
 
           {/* ===================== 3. BLOCK CONTEXT ===================== */}
-          {effectiveScope === "block" && selectedBlockLoc && (
+          {isMultiSelection && selection && effectiveScope === "block" && (
+            <MultiSelectionInspector
+              path={path}
+              doc={doc}
+              selection={selection}
+              bridge={vdocUiBridge}
+              mutateDoc={mutateDoc}
+              onSendToAi={onAttachSelectionToAi}
+            />
+          )}
+          {effectiveScope === "block" && selectedBlockLoc && !isMultiSelection && (
             <>
               {/* Block Common Header & Actions */}
               <section className="rounded-md border border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-primary,#1e1e1e)] p-2.5">
@@ -1157,14 +1141,58 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
                   className="w-full rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-secondary,#262626)] px-2 py-1 text-[11.5px] outline-none focus:border-[var(--obs-accent,#8a5cf5)]"
                 />
 
-                <button
-                  type="button"
-                  onClick={onSwitchToAi}
-                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded border border-[var(--obs-accent,#8a5cf5)]/40 bg-[var(--obs-accent,#8a5cf5)]/12 px-2 py-1 text-[11px] font-medium text-[#c4b5fd] transition-colors hover:bg-[var(--obs-accent,#8a5cf5)]/25"
-                >
-                  <Sparkles className="h-3 w-3" />
-                  <span>이 블록을 AI로 다듬기</span>
-                </button>
+                {selectedBlockLoc.block.assetRef && (
+                  <div className="mt-2 flex items-center justify-between gap-1.5 rounded border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-200">
+                    <span className="flex min-w-0 items-center gap-1 truncate">
+                      <Blocks className="h-3 w-3 shrink-0 text-emerald-400" />
+                      <span className="truncate font-code">
+                        {selectedBlockLoc.block.assetRef.assetId}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const ap = selectedBlockLoc.block.assetRef?.assetPath;
+                        if (ap) {
+                          handleOpenVaultPointer(ap);
+                        } else {
+                          onSwitchToAssets?.();
+                        }
+                      }}
+                      className="shrink-0 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9.5px] font-medium hover:bg-emerald-500/30"
+                    >
+                      열기
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-2 grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={onSwitchToAi}
+                    className="flex items-center justify-center gap-1 rounded border border-[var(--obs-accent,#8a5cf5)]/40 bg-[var(--obs-accent,#8a5cf5)]/12 px-2 py-1 text-[10.5px] font-medium text-[#c4b5fd] transition-colors hover:bg-[var(--obs-accent,#8a5cf5)]/25"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>AI 다듬기</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const draft = extractAssetFromVDocBlock(selectedBlockLoc.block, doc.slots, {
+                        title: `${selectedBlockLoc.block.title || selectedBlockLoc.block.kind} 양식`,
+                        sourceRef: `${toVaultUri(path)}#${selectedBlockLoc.block.blockId}`,
+                      });
+                      const savedPath = saveAssetToVault(vault, draft);
+                      runtime.pushLog("vault", "ok", `captured block asset: ${savedPath}`);
+                      onSwitchToAssets?.();
+                    }}
+                    title="이 블록의 순수 구조 골격을 .vasset 에셋으로 즉시 등록"
+                    className="flex items-center justify-center gap-1 rounded border border-emerald-500/35 bg-emerald-500/12 px-2 py-1 text-[10.5px] font-medium text-emerald-200 transition-colors hover:bg-emerald-500/25"
+                  >
+                    <Blocks className="h-3 w-3 text-emerald-400" />
+                    <span>에셋 등록</span>
+                  </button>
+                </div>
               </section>
 
               {/* ---- 3A. Callout-Box Inspector (quote / info-frame / accent-bar / disclosure) ---- */}

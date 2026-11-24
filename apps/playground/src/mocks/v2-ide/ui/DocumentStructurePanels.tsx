@@ -40,7 +40,6 @@ import {
   toggleBlockLock,
   type OutlineDirectiveKind,
   type SceneGraphNode,
-  type VDocDocument,
 } from "@vibe/vdoc-schema";
 import { dirname, stem } from "@vibe/vault-core";
 import type {
@@ -50,21 +49,19 @@ import type {
 
 import type { OutlineNode } from "@vibe/outliner";
 
-import type { IdeEditorEnv } from "../model/editorAdapters";
-import { requestOutlineReveal } from "../model/outlineRevealBus";
-import { parseOutlineJson } from "../model/outlineCodec";
+import type { CanvasSelectionItem } from "@vibe/canvas-state";
 import {
   collectOutlineBacklinks,
   importPartnerIntoProjectAndBind,
+  requestOutlineReveal,
   resolveOutlineForVDoc,
-} from "../model/outlineVDocBridge";
-import { STANDARD_SYNTAX_PATH } from "../model/settingsRegistry";
-import {
-  fromVaultUri,
-  parseVDocJson,
-  projectVDocToStructure,
-  serializeVDocJson,
-} from "../model/vdocCodec";
+} from "@vibe/outline-sync";
+import { intentFromModifiers, type ModifierState } from "@vibe/selection-core";
+import { STANDARD_SYNTAX_PATH, fromVaultUri, parseOutlineJson } from "@vibe/vault-formats";
+
+import type { IdeEditorEnv } from "../model/editorAdapters";
+import { projectVDocToStructure } from "../model/vdocStructure";
+import { useVDocDocument } from "./useVDocDocument";
 
 const uidFactory = () =>
   `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
@@ -83,15 +80,38 @@ const SCENE_NODE_ICON: Record<string, React.ComponentType<{ className?: string }
   minus: Minus,
 };
 
+/** 장면 노드 → 캔버스 선택 단위 (블록 노드는 블록 id, 나머지는 자기 id · 역할). */
+function sceneNodeItem(node: SceneGraphNode, pageId: string): CanvasSelectionItem {
+  return node.role === "block"
+    ? { id: node.selectBlockId, kind: "block", blockId: node.selectBlockId, pageId }
+    : node.role === "slot"
+      ? { id: node.selectSlotId ?? node.id, kind: "slot", blockId: node.selectBlockId, pageId }
+      : { id: node.id, kind: node.role, blockId: node.selectBlockId, pageId };
+}
+const sceneNodeKey = (node: SceneGraphNode) => {
+  const it = sceneNodeItem(node, "");
+  return `${it.kind}:${it.id}`;
+};
+/** 트리 읽는 순서 (Shift 범위 선택용). */
+function flattenScene(nodes: readonly SceneGraphNode[], out: SceneGraphNode[] = []): SceneGraphNode[] {
+  for (const n of nodes) {
+    out.push(n);
+    if (n.children?.length) flattenScene(n.children, out);
+  }
+  return out;
+}
+
 const SceneGraphTreeItem: React.FC<{
   readonly node: SceneGraphNode;
   readonly depth: number;
   readonly selectedSceneNodeId: string | null;
+  /** 다중 선택 키 (`역할:id`). 2개 이상일 때만 쓴다. */
+  readonly selectedKeys: ReadonlySet<string>;
   readonly expandedIds: ReadonlySet<string>;
   readonly autoExpandedIds: ReadonlySet<string>;
   readonly manuallyCollapsedIds: ReadonlySet<string>;
   readonly onToggleExpand: (nodeId: string, currentlyExpanded: boolean) => void;
-  readonly onSelectNode: (node: SceneGraphNode) => void;
+  readonly onSelectNode: (node: SceneGraphNode, ev: ModifierState) => void;
   readonly onHoverNode: (node: SceneGraphNode | null) => void;
   readonly onToggleLock: (blockId: string) => void;
   readonly onToggleHidden: (blockId: string) => void;
@@ -99,6 +119,7 @@ const SceneGraphTreeItem: React.FC<{
   node,
   depth,
   selectedSceneNodeId,
+  selectedKeys,
   expandedIds,
   autoExpandedIds,
   manuallyCollapsedIds,
@@ -113,7 +134,12 @@ const SceneGraphTreeItem: React.FC<{
     hasChildren &&
     (expandedIds.has(node.id) ||
       (autoExpandedIds.has(node.id) && !manuallyCollapsedIds.has(node.id)));
-  const isActive = selectedSceneNodeId ? selectedSceneNodeId === node.id : Boolean(node.active);
+  const isActive =
+    selectedKeys.size > 1
+      ? selectedKeys.has(sceneNodeKey(node))
+      : selectedSceneNodeId
+        ? selectedSceneNodeId === node.id
+        : Boolean(node.active);
   const Icon = SCENE_NODE_ICON[node.icon] ?? Box;
 
   const iconTintClass =
@@ -136,7 +162,7 @@ const SceneGraphTreeItem: React.FC<{
       <div
         onMouseEnter={() => onHoverNode(node)}
         onMouseLeave={() => onHoverNode(null)}
-        onClick={() => onSelectNode(node)}
+        onClick={(ev) => onSelectNode(node, ev)}
         title={
           node.outlineTag ? `${node.outlineTag} · ${node.label}` : node.label
         }
@@ -240,6 +266,7 @@ const SceneGraphTreeItem: React.FC<{
               node={child}
               depth={depth + 1}
               selectedSceneNodeId={selectedSceneNodeId}
+              selectedKeys={selectedKeys}
               expandedIds={expandedIds}
               autoExpandedIds={autoExpandedIds}
               manuallyCollapsedIds={manuallyCollapsedIds}
@@ -263,13 +290,10 @@ const SceneGraphTreeItem: React.FC<{
 export const VDocFigmaStructurePanel: React.FC<{
   host: EditorOutlineHostContext<IdeEditorEnv>;
 }> = ({ host }) => {
-  const { vault, vdocUiBridge } = host.env;
+  const { vault, vdocUiBridge, docs } = host.env;
   const path = host.path;
-  const fallbackTitle = stem(path);
 
-  const [doc, setDoc] = useState<VDocDocument>(() =>
-    parseVDocJson(vault.exists(path) ? vault.read(path) : "", fallbackTitle)
-  );
+  const [doc, mutateDoc] = useVDocDocument(docs, path);
   const [syntaxTick, setSyntaxTick] = useState(0);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(() => new Set());
   const [manuallyCollapsed, setManuallyCollapsed] = useState<Set<string>>(() => new Set());
@@ -286,6 +310,11 @@ export const VDocFigmaStructurePanel: React.FC<{
     vdocUiBridge,
     (s) => s.byPath[path]?.selectedSceneNode?.id ?? null
   );
+  const selection = useStore(vdocUiBridge, (s) => s.byPath[path]?.selection ?? null);
+  const selectedKeys = useMemo(
+    () => new Set(selection && selection.items.length > 1 ? selection.items.map((i) => `${i.kind}:${i.id}`) : []),
+    [selection]
+  );
   const rawHiddenBlockIds = useStore(vdocUiBridge, (s) => s.byPath[path]?.hiddenBlockIds);
   const hiddenBlockIds = useMemo(
     () => rawHiddenBlockIds ?? new Set<string>(),
@@ -293,19 +322,7 @@ export const VDocFigmaStructurePanel: React.FC<{
   );
 
   useEffect(() => {
-    const reload = () => {
-      if (!vault.exists(path)) return;
-      try {
-        setDoc(parseVDocJson(vault.read(path), fallbackTitle));
-      } catch {
-        // Ignore
-      }
-    };
-    reload();
     return vault.subscribe((ev) => {
-      if ((ev.type === "modify" && ev.path === path) || ev.type === "vault-reset") {
-        reload();
-      }
       if (
         ev.type === "vault-reset" ||
         (ev.type === "modify" && ev.path === STANDARD_SYNTAX_PATH)
@@ -313,13 +330,8 @@ export const VDocFigmaStructurePanel: React.FC<{
         setSyntaxTick((t) => t + 1);
       }
     });
-  }, [vault, path, fallbackTitle]);
+  }, [vault]);
 
-  const mutateDoc = (updater: (prev: VDocDocument) => VDocDocument) => {
-    const next = updater(doc);
-    setDoc(next);
-    vault.write(path, serializeVDocJson(next));
-  };
 
   const syntaxRegistry = useMemo(() => {
     void syntaxTick;
@@ -369,7 +381,14 @@ export const VDocFigmaStructurePanel: React.FC<{
     }
   };
 
-  const handleSelectSceneNode = (node: SceneGraphNode) => {
+  const handleSelectSceneNode = (node: SceneGraphNode, ev: ModifierState) => {
+    // Ctrl/⌘ 토글 · Shift 범위 — 캔버스와 같은 규칙 (선택 집합은 하나)
+    const intent = intentFromModifiers(ev);
+    if (intent !== "replace") {
+      const order = flattenScene(sceneGraph).map((n) => sceneNodeItem(n, activePageId));
+      vdocUiBridge.getState().applySelectIntent(path, intent, sceneNodeItem(node, activePageId), order);
+      return;
+    }
     vdocUiBridge.getState().selectSceneNode(
       path,
       {
@@ -570,6 +589,7 @@ export const VDocFigmaStructurePanel: React.FC<{
                 node={node}
                 depth={0}
                 selectedSceneNodeId={selectedSceneNodeId}
+                selectedKeys={selectedKeys}
                 expandedIds={expandedNodes}
                 autoExpandedIds={autoExpandedIds}
                 manuallyCollapsedIds={manuallyCollapsed}

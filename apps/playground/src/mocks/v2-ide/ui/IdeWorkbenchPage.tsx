@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import {
+  Blocks,
   BookOpen,
   Check,
   ChevronsUpDown,
@@ -23,7 +24,6 @@ import {
   Sparkles,
   Sun,
   Terminal as TerminalIcon,
-  Trash2,
   Unlock,
   X,
 } from "lucide-react";
@@ -52,26 +52,26 @@ import { WorkspaceLayoutView, type ExternalDropResource } from "@vibe/workspace-
 import {
   getAllGroups,
   type EditorHostContext,
-  type EditorSelectionSnapshot,
   type TabGroupNode,
   type WorkspaceTab,
 } from "@vibe/workspace-layout/core";
 
-import type { IdeEditorEnv } from "../model/editorAdapters";
-import { resolveTabTitle } from "../model/sampleVault";
+import { createV2AiWorkspace, vaultPathContext, type V2AiWorkspace } from "@vibe/ai-vault";
 import {
-  createDefaultVDoc,
-  detectVDocViewId,
-  isVDocPath,
-  serializeVDocJson,
-} from "../model/vdocCodec";
-import { createDefaultOutlineJson } from "../model/outlineCodec";
-import {
+  createDefaultOutlineJson,
   createDefaultStylePackJson,
   createDefaultSyntaxJson,
+  createDefaultVDoc,
+  detectVDocViewId,
+  isAssetPath,
+  isOutlinePath,
   isStylePath,
   isSyntaxPath,
-} from "../model/settingsRegistry";
+  isVDocPath,
+  serializeVDocJson,
+} from "@vibe/vault-formats";
+import type { IdeEditorEnv } from "../model/editorAdapters";
+import { resolveTabTitle } from "../model/sampleVault";
 import {
   bootstrapIdeWorkbench,
   createOrMountWorkbenchVault,
@@ -82,7 +82,10 @@ import {
 import { PagedDocumentIcon, ScrollDocumentIcon } from "./DocumentSurfaceIcons";
 import { ImportReferenceModal } from "./ImportReferenceModal";
 import { TabWithOutlineDrawer } from "./TabWithOutlineDrawer";
+import { VDocAssetPanel } from "./VDocAssetPanel";
 import { VDocInspectorPanel } from "./VDocInspectorPanel";
+import { V2ComposerView } from "./ai/V2ComposerView";
+import { installV2PerfProbe, shouldInstallPerfProbe } from "./perfProbe";
 import { IdeSettingsModal } from "./settings";
 
 /**
@@ -159,76 +162,106 @@ const IdeTerminalDrawer = React.memo<{
 });
 
 /**
- * Isolated Right Dock Sidebar — Figma-style `[Inspector | AI]` dual-tab panel.
- * Owns tab state, composerDraft, @mentions, and activeSelection subscription so
- * interacting with the inspector or composer NEVER re-renders the workspace layout.
+ * Isolated Right Dock Sidebar — `[에셋 | Inspector | AI]` tri-tab panel.
+ * Automatically shows `에셋` in `.vdoc` `[구조]` mode & `.outline` tabs, and `Inspector` in `[디자인]` mode.
+ * Never subscribes to `hoveredBlockId` so canvas hover stays 0-re-render (M5 SLA).
  */
 const IdeComposerSidebar = React.memo<{
   readonly runtime: IdeWorkbenchRuntime;
+  readonly ai: V2AiWorkspace;
+  readonly subscribeAi: (cb: () => void) => () => void;
+  /** 바뀌면 AI 탭으로 (캔버스 2D 디렉팅 · 칸 AI 버튼) */
+  readonly focusAiSeq: number;
   readonly width: number;
   readonly activeResourceId: string | null;
   readonly activeViewType: string | null;
-}>(({ runtime, width, activeResourceId, activeViewType }) => {
+}>(({ runtime, ai, subscribeAi, focusAiSeq, width, activeResourceId, activeViewType }) => {
   const isVDocActive = Boolean(
     activeResourceId && (activeViewType === "vibe-vdoc" || isVDocPath(activeResourceId))
   );
-  const [rightTab, setRightTab] = useState<"inspector" | "ai">("inspector");
-  const [attachedContextPaths, setAttachedContextPaths] = useState<string[]>([
-    "01. Architecture/00. System-Proposal.vdoc",
-  ]);
-  const [activeSelection, setActiveSelection] = useState<EditorSelectionSnapshot | null>(() =>
-    runtime.getActiveSelection()
+  const isOutlineActive = Boolean(
+    activeResourceId && (activeViewType === "vibe-outliner" || isOutlinePath(activeResourceId))
   );
-  const [composerDraft, setComposerDraft] = useState("");
+  const activeVDocWorkMode = useStore(runtime.vdocUiBridge, (s) =>
+    isVDocActive && activeResourceId ? (s.byPath[activeResourceId]?.workMode ?? null) : null
+  );
+
+  type RightDockTab = "assets" | "inspector" | "ai";
+  const autoDefaultTab: RightDockTab = isVDocActive
+    ? activeVDocWorkMode === "Design"
+      ? "inspector"
+      : "assets"
+    : isOutlineActive
+      ? "assets"
+      : "inspector";
+  const tabAnchorKey = `${activeResourceId ?? ""}|${activeVDocWorkMode ?? "default"}`;
+
+  const [tabState, setTabState] = useState<{
+    readonly tab: RightDockTab;
+    readonly anchorKey: string;
+  }>({ tab: autoDefaultTab, anchorKey: tabAnchorKey });
+
+  // Keep `AI` tab sticky across document tab switches (L8), while still auto-switching
+  // `에셋` <-> `Inspector` when toggling `.vdoc` [구조] <-> [디자인] modes.
+  const rightTab: RightDockTab =
+    tabState.tab === "ai"
+      ? "ai"
+      : tabState.anchorKey === tabAnchorKey
+        ? tabState.tab
+        : autoDefaultTab;
+  const setRightTab = useCallback(
+    (next: RightDockTab) => {
+      setTabState({ tab: next, anchorKey: tabAnchorKey });
+    },
+    [tabAnchorKey]
+  );
+
   const [composerDragOver, setComposerDragOver] = useState(false);
 
-  useEffect(() => runtime.subscribeSelection(setActiveSelection), [runtime]);
+  // 캔버스에서 AI 를 부르면 AI 탭으로
+  const lastFocusSeqRef = useRef(focusAiSeq);
+  useEffect(() => {
+    if (focusAiSeq !== lastFocusSeqRef.current) {
+      lastFocusSeqRef.current = focusAiSeq;
+      setRightTab("ai");
+    }
+  }, [focusAiSeq, setRightTab]);
 
+  // 탐색기에서 파일 · 폴더를 끌어 놓거나 OS 외부 파일을 드롭하면 Composer 첨부로
   const handleComposerDrop = (ev: React.DragEvent) => {
-    ev.preventDefault();
-    setComposerDragOver(false);
     const raw = ev.dataTransfer.getData(VIBE_VAULT_PATHS_MIME);
-    if (!raw) return;
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        const valid = parsed.filter(
-          (p): p is string => typeof p === "string" && runtime.vault.exists(p)
-        );
-        if (valid.length > 0) {
-          setAttachedContextPaths((prev) => Array.from(new Set([...prev, ...valid])));
+    if (raw) {
+      ev.preventDefault();
+      setComposerDragOver(false);
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return;
+        const refs = parsed
+          .filter((p): p is string => typeof p === "string" && runtime.vault.exists(p))
+          .map((p) => vaultPathContext(ai, p))
+          .filter((r): r is NonNullable<typeof r> => r !== null);
+        if (refs.length > 0) {
+          ai.controller.attach(refs);
           setRightTab("ai");
-          runtime.pushLog("composer", "ok", `attached @mention context: ${valid.join(", ")}`);
+          runtime.pushLog("composer", "ok", `attached @mention context: ${refs.map((r) => r.label).join(", ")}`);
         }
+      } catch {
+        // Ignore
       }
-    } catch {
-      // Ignore
+      return;
     }
-  };
-
-  const handleComposerSubmit = (ev: React.FormEvent) => {
-    ev.preventDefault();
-    const trimmed = composerDraft.trim();
-    if (!trimmed) return;
-    const targetResource = activeSelection?.resourceId ?? activeResourceId ?? "";
-    if (targetResource) {
-      runtime.executeAiDirective({
-        resourceId: targetResource,
-        prompt: trimmed,
-        action:
-          trimmed.includes("아웃라인") || trimmed.includes("outline")
-            ? "extract-outline"
-            : "extract-md",
-        selection: activeSelection,
+    if (ev.dataTransfer.files && ev.dataTransfer.files.length > 0) {
+      ev.preventDefault();
+      setComposerDragOver(false);
+      const files = Array.from(ev.dataTransfer.files);
+      void ai.attachFiles(files).then((refs) => {
+        if (refs.length > 0) {
+          ai.controller.attach(refs);
+          setRightTab("ai");
+          runtime.pushLog("composer", "ok", `attached external file(s): ${refs.map((r) => r.label).join(", ")}`);
+        }
       });
-    } else {
-      runtime.pushLog(
-        "composer",
-        "info",
-        `prompt("${trimmed}") with [${attachedContextPaths.length} files]`
-      );
     }
-    setComposerDraft("");
   };
 
   const activeProjectName = useMemo(() => {
@@ -237,7 +270,6 @@ const IdeComposerSidebar = React.memo<{
     return projPath ? stripProjectFolderExt(basename(projPath)) : null;
   }, [activeResourceId]);
 
-  const adapters = useMemo(() => runtime.editorRegistry.listAll(), [runtime.editorRegistry]);
 
   return (
     <aside
@@ -246,7 +278,7 @@ const IdeComposerSidebar = React.memo<{
         boxShadow: composerDragOver ? "inset 0 0 0 2px var(--obs-accent,#8a5cf5)" : undefined,
       }}
       onDragOver={(ev) => {
-        if (ev.dataTransfer.types.includes(VIBE_VAULT_PATHS_MIME)) {
+        if (ev.dataTransfer.types.includes(VIBE_VAULT_PATHS_MIME) || ev.dataTransfer.types.includes("Files")) {
           ev.preventDefault();
           setComposerDragOver(true);
         }
@@ -255,15 +287,29 @@ const IdeComposerSidebar = React.memo<{
       onDrop={handleComposerDrop}
       className="flex h-full shrink-0 flex-col bg-[var(--obs-bg-secondary,#262626)]"
     >
-      {/* Figma-style Dual-Tab Header: [Inspector] | [AI] */}
-      <div className="flex h-9 shrink-0 select-none items-center justify-between gap-2 border-b border-[var(--obs-border-subtle,#2d2d2d)] px-2 text-[11.5px]">
+      {/* Mode-Aware Tri-Tab Header: [에셋] | [Inspector] | [AI] */}
+      <div className="flex h-9 shrink-0 select-none items-center justify-between gap-1.5 border-b border-[var(--obs-border-subtle,#2d2d2d)] px-2 text-[11.5px]">
         <div role="tablist" aria-label="Right dock mode" className="flex items-center gap-0.5">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={rightTab === "assets"}
+            onClick={() => setRightTab("assets")}
+            className={`flex items-center gap-1 rounded-[5px] px-2 py-1 font-medium transition-colors ${
+              rightTab === "assets"
+                ? "bg-emerald-500/20 text-emerald-200"
+                : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
+            }`}
+          >
+            <Blocks className="h-3.5 w-3.5 text-emerald-400" />
+            <span>에셋</span>
+          </button>
           <button
             type="button"
             role="tab"
             aria-selected={rightTab === "inspector"}
             onClick={() => setRightTab("inspector")}
-            className={`flex items-center gap-1.5 rounded-[5px] px-2 py-1 font-medium transition-colors ${
+            className={`flex items-center gap-1 rounded-[5px] px-2 py-1 font-medium transition-colors ${
               rightTab === "inspector"
                 ? "bg-[var(--obs-bg-hover,rgba(255,255,255,0.09))] text-[var(--obs-text-normal,#ececec)]"
                 : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
@@ -277,7 +323,7 @@ const IdeComposerSidebar = React.memo<{
             role="tab"
             aria-selected={rightTab === "ai"}
             onClick={() => setRightTab("ai")}
-            className={`flex items-center gap-1.5 rounded-[5px] px-2 py-1 font-medium transition-colors ${
+            className={`flex items-center gap-1 rounded-[5px] px-2 py-1 font-medium transition-colors ${
               rightTab === "ai"
                 ? "bg-[var(--obs-bg-hover,rgba(255,255,255,0.09))] text-[var(--obs-text-normal,#ececec)]"
                 : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
@@ -291,7 +337,7 @@ const IdeComposerSidebar = React.memo<{
         {activeProjectName && (
           <span
             title={`소속 프로젝트: ${activeProjectName}`}
-            className="flex max-w-[110px] items-center gap-1 rounded bg-[rgba(138,92,245,0.18)] px-1.5 py-0.5 font-code text-[10px] font-medium text-[#c4b5fd]"
+            className="flex max-w-[92px] items-center gap-1 rounded bg-[rgba(138,92,245,0.18)] px-1.5 py-0.5 font-code text-[10px] font-medium text-[#c4b5fd]"
           >
             <FolderKanban className="h-2.5 w-2.5 shrink-0" />
             <span className="truncate">{activeProjectName}</span>
@@ -299,12 +345,19 @@ const IdeComposerSidebar = React.memo<{
         )}
       </div>
 
-      {rightTab === "inspector" ? (
+      {rightTab === "assets" ? (
+        <VDocAssetPanel runtime={runtime} activeResourceId={activeResourceId} />
+      ) : rightTab === "inspector" ? (
         isVDocActive && activeResourceId ? (
           <VDocInspectorPanel
             runtime={runtime}
             path={activeResourceId}
             onSwitchToAi={() => setRightTab("ai")}
+            onSwitchToAssets={() => setRightTab("assets")}
+            onAttachSelectionToAi={() => {
+              ai.directFromCanvas();
+              setRightTab("ai");
+            }}
           />
         ) : (
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 p-5 text-center text-[12px] text-[var(--obs-text-muted,#9a9a9a)]">
@@ -317,120 +370,28 @@ const IdeComposerSidebar = React.memo<{
                 <code>.vdoc</code> 문서를 열면 스타일 팩·섹션 역할·블록 의미 속성을 이곳에서 바로 조작할 수 있습니다.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setRightTab("ai")}
-              className="mt-1 flex items-center gap-1.5 rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2.5 py-1 text-[11px] text-[var(--obs-text-normal,#dadada)] hover:border-[var(--obs-accent,#8a5cf5)]"
-            >
-              <Sparkles className="h-3 w-3 text-[var(--obs-accent,#8a5cf5)]" />
-              <span>AI 탭 열기</span>
-            </button>
+            <div className="mt-1 flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setRightTab("assets")}
+                className="flex items-center gap-1 rounded border border-emerald-500/35 bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-200 hover:bg-emerald-500/25"
+              >
+                <Blocks className="h-3 w-3 text-emerald-400" />
+                <span>에셋 보기</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setRightTab("ai")}
+                className="flex items-center gap-1 rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2.5 py-1 text-[11px] text-[var(--obs-text-normal,#dadada)] hover:border-[var(--obs-accent,#8a5cf5)]"
+              >
+                <Sparkles className="h-3 w-3 text-[var(--obs-accent,#8a5cf5)]" />
+                <span>AI 탭</span>
+              </button>
+            </div>
           </div>
         )
       ) : (
-        <>
-          <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[12px] text-[var(--obs-text-muted,#b3b3b3)]">
-            {activeSelection && (
-              <div className="mb-3 rounded-md border border-[var(--obs-accent,#8a5cf5)] bg-[rgba(138,92,245,0.10)] p-2.5">
-                <div className="mb-1 flex items-center justify-between font-code text-[10.5px] font-semibold text-[var(--obs-accent-hover,#a68af9)]">
-                  <span className="truncate">
-                    {activeSelection.kind === "canvas-nodes" ? "2D Selection" : "Selection"} ·{" "}
-                    {activeSelection.summary}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => runtime.setActiveSelection(null)}
-                    className="shrink-0 opacity-70 hover:opacity-100"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-                {activeSelection.text && (
-                  <div className="line-clamp-3 font-code text-[11px] text-[var(--obs-text-normal,#dadada)]">
-                    {activeSelection.text}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="rounded-md border border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-primary,#1e1e1e)] p-3 leading-5">
-              <div className="mb-1 font-semibold text-[var(--obs-text-normal,#dadada)]">
-                Registered Editor Adapters ({adapters.length})
-              </div>
-              <ul className="space-y-1 font-code text-[11px]">
-                {adapters.map((adapter) => (
-                  <li key={adapter.id} className="flex items-center justify-between gap-2">
-                    <span className="truncate text-[var(--obs-text-normal,#dadada)]">
-                      {adapter.id}
-                    </span>
-                    <span className="shrink-0 text-[var(--obs-text-faint,#666666)]">
-                      {adapter.extensions.join(", ")}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="mt-3">
-              <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-[var(--obs-text-faint,#666666)] uppercase">
-                <span>Attached @mentions ({attachedContextPaths.length})</span>
-                {attachedContextPaths.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setAttachedContextPaths([])}
-                    className="flex items-center gap-0.5 text-[10px] normal-case hover:text-[var(--obs-text-normal,#dadada)]"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    <span>Clear</span>
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {attachedContextPaths.map((p) => (
-                  <span
-                    key={p}
-                    className="inline-flex max-w-full items-center gap-1 rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] px-2 py-0.5 font-code text-[11px] text-[var(--obs-text-normal,#dadada)]"
-                  >
-                    <span className="truncate">@{p}</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setAttachedContextPaths((prev) => prev.filter((item) => item !== p))
-                      }
-                      className="shrink-0 text-[var(--obs-text-faint,#666666)] hover:text-[var(--obs-text-normal,#dadada)]"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <form
-            onSubmit={handleComposerSubmit}
-            className="shrink-0 border-t border-[var(--obs-border-subtle,#2d2d2d)] p-2.5"
-          >
-            <div className="rounded-md border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] p-2">
-              <input
-                type="text"
-                value={composerDraft}
-                onChange={(e) => setComposerDraft(e.target.value)}
-                placeholder="2D 디렉팅 입력 (새 .md/.outline 생성 + 링크카드)..."
-                className="w-full bg-transparent text-[12px] text-[var(--obs-text-normal,#dadada)] placeholder:text-[var(--obs-text-faint,#666666)] outline-none"
-              />
-              <div className="mt-2 flex items-center justify-between text-[10px] text-[var(--obs-text-faint,#666666)]">
-                <span className="font-code">/skill · @mention</span>
-                <button
-                  type="submit"
-                  className="rounded bg-[var(--obs-accent,#8a5cf5)] px-2 py-0.5 font-medium text-white hover:opacity-90"
-                >
-                  Direct
-                </button>
-              </div>
-            </div>
-          </form>
-        </>
+        <V2ComposerView ai={ai} subscribe={subscribeAi} />
       )}
     </aside>
   );
@@ -467,7 +428,81 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
   const [showTerminal, setShowTerminal] = useState(true);
   const [terminalHeight, setTerminalHeight] = useState(145);
   const [showComposer, setShowComposer] = useState(true);
-  const [composerWidth, setComposerWidth] = useState(296);
+  const [composerWidth, setComposerWidth] = useState(360);
+  const [focusAiSeq, setFocusAiSeq] = useState(0);
+
+  // AI Composer 런타임 (볼트마다 하나) — studio @/shared/ai + ai-workspace 를 볼트 모델로 옮긴 것
+  const ai = useMemo(
+    () =>
+      createV2AiWorkspace({
+        vault: runtime.vault,
+        vaultRootPath: runtime.vaultRootPath,
+        layout: runtime.layout,
+        explorer: runtime.explorer,
+        vdocUiBridge: runtime.vdocUiBridge,
+        docs: runtime.docs,
+        openVaultFile: (path, mode) => runtime.openVaultFile(path, mode ?? "current"),
+        getTextSelection: () => {
+          const sel = runtime.getActiveSelection();
+          // 글 선택(.md · .ref) · 아웃라인 불릿 선택 → "선택한 글" 첨부 후보
+          return sel && (sel.kind === "text" || sel.kind === "outline-nodes")
+            ? { resourceId: sel.resourceId, text: sel.text, summary: sel.summary }
+            : null;
+        },
+        pushLog: (level, message) => runtime.pushLog("composer", level, message),
+      }),
+    [runtime]
+  );
+  useEffect(() => {
+    // 개발 중 화면 검증 스크립트(CDP)가 대화 · 첨부 · 대기열을 직접 잰다 (studio window.__studioPerf 와 같은 자리)
+    if (import.meta.env.DEV) (window as unknown as { __v2ai?: V2AiWorkspace }).__v2ai = ai;
+    // StrictMode 의 정리 → 재마운트에도 도구 · 제공자가 남도록 등록만 걸고 푼다
+    return ai.start();
+  }, [ai]);
+  useEffect(() => (shouldInstallPerfProbe() ? installV2PerfProbe(runtime) : undefined), [runtime]);
+  useEffect(() => {
+    // 페이지를 떠나면 서버 세션(agy 프로세스)을 바로 놓는다 (bfcache 보관은 둔다) — studio @/shared/ai 와 같다
+    const onHide = (e: PageTransitionEvent) => {
+      if (!e.persisted) ai.dispose();
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, [ai]);
+  // 자동 첨부를 다시 계산할 때: 탭 · 선택(호버는 빼고) · 설정 · 볼트 · 텍스트 선택
+  const subscribeAi = useCallback(
+    (cb: () => void) => {
+      const uiSig = () => {
+        const path = ai.env.activeDocPath();
+        const ui = path ? runtime.vdocUiBridge.getState().byPath[path] : undefined;
+        const sel = ui?.selection.items.map((i) => `${i.kind}:${i.id}`).join(",") ?? "";
+        return `${path}|${ui?.activePageId ?? ""}|${ui?.selectedBlockId ?? ""}|${ui?.selectedSlotId ?? ""}|${sel}`;
+      };
+      let lastUi = uiSig();
+      let lastExplorerSel = runtime.explorer.getState().selectedPaths;
+      const offs = [
+        runtime.layout.subscribe(cb),
+        runtime.vdocUiBridge.subscribe(() => {
+          const next = uiSig();
+          if (next !== lastUi) {
+            lastUi = next;
+            cb();
+          }
+        }),
+        // 탐색기 다중 선택 → "탐색기에서 고른 파일" 첨부 후보
+        runtime.explorer.subscribe((s) => {
+          if (s.selectedPaths !== lastExplorerSel) {
+            lastExplorerSel = s.selectedPaths;
+            cb();
+          }
+        }),
+        ai.store.subscribe(cb),
+        runtime.vault.subscribe(cb),
+        runtime.subscribeSelection(cb),
+      ];
+      return () => offs.forEach((off) => off());
+    },
+    [ai, runtime]
+  );
 
   const [syncStatus, setSyncStatus] = useState<LocalApiVaultStatusSnapshot>(() =>
     runtime.getSyncStatus()
@@ -565,6 +600,8 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
       vault: runtime.vault,
       metadataCache: runtime.metadataCache,
       vdocUiBridge: runtime.vdocUiBridge,
+      ai,
+      docs: runtime.docs,
       openInPairTabGroup: runtime.openFileInPairTabGroup,
       openImportReferenceModal: (replaceRefPath) => openImportReferenceModal(replaceRefPath),
       startAsyncUrlRefImport: startAsyncUrlImport,
@@ -575,6 +612,8 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
       runtime.settleRefFileName,
       runtime.metadataCache,
       runtime.vdocUiBridge,
+      ai,
+      runtime.docs,
       runtime.openFileInPairTabGroup,
       openImportReferenceModal,
       startAsyncUrlImport,
@@ -720,8 +759,40 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           openImportReferenceModal(undefined, folderPath);
         },
       },
+      {
+        id: "attach-folder-to-ai",
+        label: "AI 입력창에 폴더 첨부 (@폴더)",
+        icon: <Sparkles className="h-3.5 w-3.5 text-violet-400" />,
+        targetKinds: ["folder", "root"],
+        onSelect: (folderPath) => {
+          const ref = vaultPathContext(ai, folderPath) ?? {
+            kind: "folder",
+            id: `folder:${folderPath || "/"}`,
+            label: folderPath || runtime.vault.name,
+            access: "write" as const,
+            role: "reference" as const,
+            meta: { path: folderPath, entityKind: "folder" },
+          };
+          ai.controller.attach([ref]);
+          setShowComposer(true);
+          setFocusAiSeq((n) => n + 1);
+          runtime.pushLog("composer", "ok", `attached folder to AI: ${folderPath || "/"}`);
+        },
+      },
+      {
+        id: "toggle-resource-folder",
+        label: "AI 리소스 폴더 켜기 / 끄기",
+        icon: <FolderOpen className="h-3.5 w-3.5 text-emerald-400" />,
+        targetKinds: ["folder", "root"],
+        onSelect: (folderPath) => {
+          const clean = folderPath.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+          ai.store.getState().toggleResourceFolder(clean);
+          if (!ai.store.getState().sourcesOn) ai.store.getState().setSourcesOn(true);
+          runtime.pushLog("composer", "info", `toggled AI resource folder: ${clean || "/"}`);
+        },
+      },
     ],
-    [openImportReferenceModal, runtime]
+    [openImportReferenceModal, runtime, ai]
   );
 
   // Global IDE keyboard shortcuts
@@ -888,6 +959,9 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
       }
       if (tab.resourceId && isStylePath(tab.resourceId) && tab.viewType === "vibe-style") {
         return <Palette className="h-3.5 w-3.5 shrink-0 text-cyan-400" />;
+      }
+      if (tab.resourceId && isAssetPath(tab.resourceId) && tab.viewType === "vibe-asset") {
+        return <Blocks className="h-3.5 w-3.5 shrink-0 text-emerald-400" />;
       }
       const adapter = tab.resourceId
         ? runtime.editorRegistry.resolveForTab(tab.resourceId, tab.viewType)
@@ -1063,7 +1137,13 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           runtime.setActiveSelection(sel);
         },
         dispatchAiDirective: (directive) => {
-          runtime.executeAiDirective(directive);
+          // 캔버스 2D 디렉팅 → 진짜 Composer: 선택을 첨부하고 그 지시를 보낸다 (키워드 목업 실행기를 쓰지 않는다)
+          setShowComposer(true);
+          setFocusAiSeq((n) => n + 1);
+          const prompt = directive.prompt.trim();
+          if (prompt) void ai.sendFromCanvas(prompt);
+          else ai.directFromCanvas();
+          runtime.pushLog("composer", "info", `2D directive -> composer: "${prompt}" [${directive.selection?.summary ?? directive.resourceId}]`);
         },
       };
 
@@ -1075,7 +1155,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
         />
       );
     },
-    [editorEnv, runtime]
+    [editorEnv, runtime, ai]
   );
 
   return (
@@ -1351,7 +1431,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
               role="separator"
               aria-orientation="vertical"
               onMouseDown={(ev) =>
-                startHorizontalPanelResize(ev, composerWidth, -1, 240, 520, setComposerWidth)
+                startHorizontalPanelResize(ev, composerWidth, -1, 280, 760, setComposerWidth)
               }
               className="group relative z-20 w-px shrink-0 cursor-col-resize bg-[var(--obs-border,#363636)]"
             >
@@ -1360,6 +1440,9 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
 
             <IdeComposerSidebar
               runtime={runtime}
+              ai={ai}
+              subscribeAi={subscribeAi}
+              focusAiSeq={focusAiSeq}
               width={composerWidth}
               activeResourceId={activeTab?.resourceId ?? null}
               activeViewType={activeTab?.viewType ?? null}

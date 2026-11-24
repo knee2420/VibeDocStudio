@@ -24,7 +24,7 @@ import {
   isSyntaxRuleModified,
   parseSyntaxSnapshot,
   serializeSyntaxSnapshot,
-} from "../../model/settingsRegistry";
+} from "@vibe/vault-formats";
 import { CodeTabEditor } from "../CodeTabEditor";
 import { CodeAsDocHeader } from "./ObsidianSettingsPrimitives";
 

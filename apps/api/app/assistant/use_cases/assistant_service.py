@@ -7,14 +7,17 @@
 """
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import logging
+import mimetypes
 import os
 import threading
 import time
 import uuid
 from dataclasses import dataclass, field, replace
+from pathlib import Path
 from typing import Any, Generator, Iterator, Optional
 
 from harness_kit import packs
@@ -22,6 +25,7 @@ from harness_kit import packs
 from app.llm.models import EngineChoice
 from app.llm.policy import RuntimeExecutionPolicy
 from app.llm.ports import ConversationEngine, EngineProvider
+from vibefs.fs_tools import FsJournal, VaultFsTools, to_public_batch_summary
 from vibefs.mapper import find_clusters, partition, target_entries
 from vibefs.workbench import Workbench
 
@@ -257,8 +261,9 @@ class AssistantService:
         self._maybe_switch_engine(session, provider, model)
         session.map_attached = False
         contexts, workspace_rules = self._mount_context(session, contexts)
-        contexts = self._workbench_context(session, contexts)
+        contexts = self._workbench_context(session, contexts, mode=mode)
         contexts, scope, server_specs = self._server_context(contexts, session.briefed)
+        turn_images = self._extract_images(session, contexts)
         all_tools = [*tools, *server_specs]
         digest = _tools_hash(all_tools)
         include_tools = all_tools if digest != session.tools_hash else None
@@ -296,7 +301,7 @@ class AssistantService:
         session.tool_rounds = 0
         session.pending_calls.clear()
         session.carry_results = []
-        return self._drive(session, message)
+        return self._drive(session, message, images=turn_images)
 
     def submit_tool_results(self, session_id: str, results: list[dict[str, Any]]) -> Iterator[dict[str, Any]]:
         session = self._get(session_id)
@@ -427,8 +432,14 @@ class AssistantService:
                            content=content, role="reference")
         return [item, *rest], first
 
-    def _workbench_context(self, session: _Session, contexts: list[ContextItem]) -> list[ContextItem]:
-        """`workbench` 첨부 → 세션 작업대 저장(vibefs 의 wb_* 가 읽는다) + 본문을 작업대 지도로 바꾼다.
+    def _workbench_context(
+        self,
+        session: _Session,
+        contexts: list[ContextItem],
+        *,
+        mode: str = "agent",
+    ) -> list[ContextItem]:
+        """`workbench` 첨부 → 세션 작업대 저장(vibefs 의 wb_* · vf_* 가 읽는다) + 본문을 작업대 지도로 바꾼다.
 
         지도는 문서 · 레퍼런스 · 핀 구성이 바뀐 턴에만 통째로 보내고, 그 밖의 턴엔 범위 · 선택만 짧게 보낸다.
         """
@@ -446,6 +457,8 @@ class AssistantService:
             meta = json.loads(raw)
         except ValueError:
             meta = {}
+        if isinstance(meta, dict):
+            meta["mode"] = mode
         # 사용자가 @문서(target) 로 작업 문서를 명시 지정한 경우 작업대 대상도 함께 맞춘다
         explicit_doc = next(
             (c.ref_id for c in reversed(rest) if c.role == "target" and c.kind in ("doc", "document") and c.ref_id),
@@ -459,6 +472,13 @@ class AssistantService:
                 meta["scope"] = {"mode": "doc"}
             meta["docId"] = explicit_doc
             meta["designatedDocId"] = explicit_doc
+            if meta.get("vaultId"):
+                # 볼트 모드: 문서는 경로로 찾는다 — 같은 프로젝트 문서 목록에서 그 문서의 볼트 경로를 고른다
+                hit = next((d for d in meta.get("projectDocs") or []
+                            if isinstance(d, dict) and str(d.get("docId") or "") == explicit_doc and d.get("vaultPath")), None)
+                if hit is not None:
+                    meta["docVaultPath"] = hit["vaultPath"]
+        if isinstance(meta, dict):
             raw = json.dumps(meta, ensure_ascii=False)
         try:
             wb = self._workspace.set_workbench(session.session_id, raw)
@@ -467,7 +487,8 @@ class AssistantService:
             return rest
         if wb is None:
             return rest
-        sig = json.dumps({"doc": meta.get("docId"), "docs": [d.get("docId") for d in meta.get("projectDocs") or []],
+        sig = json.dumps({"doc": meta.get("docId"), "path": meta.get("docVaultPath"),
+                          "docs": [d.get("docId") for d in meta.get("projectDocs") or []],
                           "refs": [(r.get("refId"), sorted(r.get("pinIds") or []), r.get("layers") or {})
                                    for r in meta.get("references") or []]}, sort_keys=True)
         line = (f"파일 {len(session.mount.index.files)}개 (ws_overview · ws_collect · read_file)"
@@ -513,19 +534,24 @@ class AssistantService:
             if not pid or pid in session.emitted_proposal_ids:
                 continue
             candidates = rec.get("candidates") or []
-            if not candidates:
+            outline_patch = rec.get("outlinePatch")
+            if not candidates and not isinstance(outline_patch, dict):
                 continue
             session.emitted_proposal_ids.add(pid)
-            ready.append({
+            warnings = list((rec.get("report") or {}).get("warnings") or rec.get("warnings") or [])
+            item = {
                 "proposalId": pid,
                 "docId": str(rec.get("docId") or ""),
                 "target": str(rec.get("target") or ""),
                 "mode": str(rec.get("mode") or "compose"),
                 "summary": str(rec.get("summary") or ""),
                 "candidates": candidates,
-                "warnings": list((rec.get("report") or {}).get("warnings") or []),
+                "warnings": warnings,
                 "createdAt": rec.get("createdAt") or 0,
-            })
+            }
+            if isinstance(outline_patch, dict):
+                item["outlinePatch"] = outline_patch
+            ready.append(item)
         return ready
 
     def _source_usage(self, session: _Session):
@@ -643,9 +669,78 @@ class AssistantService:
             logger.warning("[assistant] 읽은 범위 계산 실패: %s", exc)
             return None
 
+    def _new_fs_batches(self, session: _Session) -> list[dict[str, Any]]:
+        if self._workspace is None:
+            return []
+        journal = FsJournal(self._workspace.store.dir)
+        rows = journal.list_batches(session_id=session.session_id, since=session.msg_started, limit=20)
+        return [to_public_batch_summary(r) for r in rows]
+
+    def list_fs_batches(self, session_id: str) -> list[dict[str, Any]]:
+        self._get(session_id)
+        if self._workspace is None:
+            return []
+        journal = FsJournal(self._workspace.store.dir)
+        return [to_public_batch_summary(r) for r in journal.list_batches(session_id=session_id, limit=30)]
+
+    def undo_fs_batch(self, session_id: str, batch_id: str) -> dict[str, Any]:
+        self._get(session_id)
+        if self._workspace is None:
+            return {"ok": False, "batchId": batch_id, "message": "리소스 작업 공간이 활성화되어 있지 않습니다."}
+        tools = VaultFsTools(self._workspace.store, session_id)
+        try:
+            msg = tools.call("vf_undo", {"batchId": batch_id})
+            return {"ok": True, "batchId": batch_id, "message": msg}
+        except Exception as exc:
+            return {"ok": False, "batchId": batch_id, "message": str(exc)}
+
+    def _extract_images(self, session: _Session, contexts: list[ContextItem]) -> list[dict[str, str]]:
+        """첨부된 이미지 컨텍스트에서 멀티모달 엔진 블록(`{mimeType, data}`)을 꺼낸다.
+
+        1순위: 프론트가 직접 실어 보낸 `data_base64`
+        2순위: 볼트 내 기존 이미지 경로(`vault_path`) — 현재 작업대 `vaultRoot` 내부 경로만 안전하게 읽는다.
+        """
+        out: list[dict[str, str]] = []
+        vault_root: Optional[Path] = None
+        if self._workspace is not None:
+            wb_state = self._workspace.store.workbench_for(session.session_id) or {}
+            raw_root = str(wb_state.get("vaultRoot") or "").strip()
+            if raw_root:
+                vault_root = Path(raw_root).resolve()
+
+        for item in contexts:
+            if item.kind != "image":
+                continue
+            mime = item.mime_type or mimetypes.guess_type(item.vault_path or item.label)[0] or "image/png"
+            if item.data_base64:
+                out.append({"mimeType": mime, "data": item.data_base64})
+                continue
+            if item.vault_path and vault_root is not None:
+                rel = item.vault_path.replace("\\", "/").lstrip("/")
+                if ".." in rel.split("/"):
+                    continue
+                target = (vault_root / rel).resolve()
+                try:
+                    target.relative_to(vault_root)
+                except ValueError:
+                    continue
+                if target.is_file() and target.stat().st_size <= 10 * 1024 * 1024:
+                    try:
+                        b64 = base64.b64encode(target.read_bytes()).decode("ascii")
+                        out.append({"mimeType": mime, "data": b64})
+                    except OSError:
+                        continue
+        return out
+
     # --- 실행 루프 --------------------------------------------------------------------
 
-    def _drive(self, session: _Session, message: str) -> Iterator[dict[str, Any]]:
+    def _drive(
+        self,
+        session: _Session,
+        message: str,
+        *,
+        images: Optional[list[dict[str, str]]] = None,
+    ) -> Iterator[dict[str, Any]]:
         def stream() -> Iterator[dict[str, Any]]:
             # 잠금은 스트림이 실제로 시작될 때 잡는다 (시작 전에 끊긴 요청이 세션을 잠그지 않게).
             # 직전 실행이 중단 처리 중일 수 있으므로(agy 종료 · 정리) 잠깐 기다린다.
@@ -672,9 +767,11 @@ class AssistantService:
                     "model": session.engine.choice.model,
                 }
                 current = message
+                pending_images = list(images or [])
                 turn_accumulated_text = ""
                 while True:
-                    calls, done, errored, model_text = yield from self._model_turn(session, current)
+                    calls, done, errored, model_text = yield from self._model_turn(session, current, images=pending_images or None)
+                    pending_images = []
                     turn_accumulated_text += model_text
                     self._bind_conversation(session)
                     usage = _add_usage(usage, done.get("usage") or {})
@@ -797,6 +894,9 @@ class AssistantService:
                         if proposals:
                             # 검증 통과한 wb_propose 개편안을 Staged Diff 큐로 내려보낸다
                             yield {"type": "workbench_proposals", "proposals": proposals}
+                        fs_batches = self._new_fs_batches(session)
+                        if fs_batches:
+                            yield {"type": "fs_batches", "batches": fs_batches}
                     yield {"type": "turn_done", **meta, "stopReason": stop}
                     return
             finally:
@@ -808,7 +908,11 @@ class AssistantService:
         return stream()
 
     def _model_turn(
-        self, session: _Session, message: str
+        self,
+        session: _Session,
+        message: str,
+        *,
+        images: Optional[list[dict[str, str]]] = None,
     ) -> Generator[dict[str, Any], None, tuple[list[ToolCall], dict[str, Any], bool, str]]:
         """모델 한 턴: 텍스트 · 도구 호출 이벤트를 흘리고 (결과를 기다릴 도구 호출, 턴 메타, 오류 여부, 누적 텍스트)를 돌려준다."""
         extractor = ToolCallExtractor(id_prefix=f"c{session.tool_rounds}")
@@ -817,7 +921,12 @@ class AssistantService:
         errored = False
         reported = 0
         chunks: list[str] = []
-        for event in session.engine.run_turn(message, session.cancel):
+        turn_iter = (
+            session.engine.run_turn(message, session.cancel, images=images)
+            if images
+            else session.engine.run_turn(message, session.cancel)
+        )
+        for event in turn_iter:
             kind = event.get("type")
             if kind == "text_delta":
                 raw_chunk = event.get("text", "")

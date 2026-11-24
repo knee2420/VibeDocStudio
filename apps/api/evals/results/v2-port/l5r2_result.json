@@ -1,0 +1,5 @@
+{
+ "conversation": "AI Composer\nagy CLI\nGoogle API\nGemini 4 Neon (High)\nGemini 4 Neon (XHigh)\nGemini 4 Neon (Medium)\nGemini 4 Neon (Low)\nGemini 4 Argon (Medium)\nGemini 4 Argon (High)\nGemini 4 Argon (Low)\nGemini 4 Hydrogen (High)\nGemini 4 Hydrogen (XHigh)\nGemini 4 Hydrogen (Medium)\nGemini 4 Hydrogen (Low)\nOrchestrator (Neon)\nOrchestrator (Argon)\nGemini 3.8 Flash (High)\nGemini 3.8 Flash (Medium)\nGemini 3.8 Flash (Low)\nClaude Opus 5.5 (Low)\nClaude Opus 5.5 (Medium)\nClaude Opus 5.5 (High)\nClaude Sonnet 5.5 (Low)\nClaude Sonnet 5.5 (Medium)\nClaude Sonnet 5.5 (High)\nGPT-OSS 120B (Medium)\nGemini 3.8 Flash\nGemini 4 Argon\n자동 제출\n매번 확인\n계획만\n워크스페이스 AI Composer\n\n문서 구조를 읽고, 슬롯을 찾아 이동하고, 변경안을 Staged 대기열에 올립니다. @ 로 슬롯 · 참조 · 백데이터를 첨부하고 / 로 명령을 고르세요.\n\n이 문서 구조를 요약하고 비어 있는 슬롯을 찾아줘선택한 칸을 리소스를 근거로 채워 변경안으로 올려줘결론에 해당하는 칸을 찾아서 캔버스에서 보여줘\n레퍼런스 1/4\n리소스 1곳\n이 페이지 · p1 섹션 1\n선택\n통합 AX 포털 시스템 아키텍처 대표컷\nEnter 보내기 · Shift+Enter 줄바꿈",
+ "staged": null,
+ "elapsed_s": 3089
+}

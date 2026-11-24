@@ -16,7 +16,7 @@ export const heroView = defineBlockView<HeroBlockDef>({
       <div className="relative w-full overflow-hidden rounded-md bg-gradient-to-br from-slate-700 to-emerald-900" style={{ height: block.height ?? 280 }}>
         {src && (
           <div {...ctx.unitAttrs(`${block.blockId}:image`, "media")} className="absolute inset-0">
-            <img src={src} alt="" draggable={false} className="h-full w-full select-none object-cover" />
+            <img src={src} alt="" decoding="async" draggable={false} className="h-full w-full select-none object-cover" />
           </div>
         )}
         <div className="absolute inset-0" style={{ background: `rgba(15, 23, 42, ${overlay})` }} />

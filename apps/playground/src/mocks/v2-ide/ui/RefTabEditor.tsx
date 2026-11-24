@@ -1,14 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { BookOpen, MapPin } from "lucide-react";
+import { Blocks, BookOpen, Loader2, MapPin, Sparkles } from "lucide-react";
 import {
   parseRefJson,
   serializeRefJson,
   type RefDocument,
 } from "@vibe/ref-canvas/core";
+import type { VDocAssetKind } from "@vibe/vdoc-schema";
 import { RefCanvasWorkbench } from "@vibe/ref-canvas/ui";
 import { dirname } from "@vibe/vault-core";
 import type { EditorHostContext, EditorOutlineHostContext } from "@vibe/workspace-layout/core";
 
+import { parseAssetFromRefViaAi } from "@vibe/ai-vault";
+import { saveAssetToVault, toVaultUri } from "@vibe/vault-formats";
 import type { IdeEditorEnv } from "../model/editorAdapters";
 import { importLocalFileAsRef, importWebUrlAsRef } from "../model/refClient";
 
@@ -117,31 +120,105 @@ export const RefTabEditor: React.FC<{
     [host]
   );
 
+  const [extractKind, setExtractKind] = useState<VDocAssetKind>("a4-page");
+  const [extractingAsset, setExtractingAsset] = useState(false);
+
+  const handleExtractAssetFromRef = useCallback(async () => {
+    if (extractingAsset) return;
+    setExtractingAsset(true);
+    try {
+      const blockSummaries = doc.blocks
+        .map((b) => {
+          const text = (b.text ?? "").trim();
+          const kind = b.kind ?? "";
+          return kind && text ? `[${kind}] ${text}` : text || kind;
+        })
+        .filter(Boolean)
+        .slice(0, 24);
+      const firstFrameUrl = doc.frames[0]?.assetUrl;
+      const { asset } = await parseAssetFromRefViaAi({
+        refTitle: doc.title,
+        assetKind: extractKind,
+        blockSummaries,
+        sourceRef: toVaultUri(host.path),
+        thumbnailUrl: typeof firstFrameUrl === "string" ? firstFrameUrl : undefined,
+      });
+      const savedPath = saveAssetToVault(vault, asset);
+      host.openLink(savedPath, "split-right");
+    } finally {
+      setExtractingAsset(false);
+    }
+  }, [doc, extractKind, extractingAsset, host, vault]);
+
+  const hasRefContent = doc.frames.length > 0 || doc.blocks.length > 0;
+
   return (
-    <RefCanvasWorkbench
-      doc={doc}
-      readOnly={isReadOnly}
-      resolveAssetUrl={resolveAssetUrl}
-      onChangeDoc={handleChangeDoc}
-      onImportUrl={importWebUrlAsRef}
-      onStartAsyncUrlImport={
-        host.env.startAsyncUrlRefImport
-          ? (url, title, fileName) =>
-              host.env.startAsyncUrlRefImport?.({
-                url,
-                title,
-                fileName,
-                targetFolder: dirname(host.path),
-                replacePath: host.path,
-              })
-          : undefined
-      }
-      onImportedIntoEmpty={handleImportedIntoEmpty}
-      onImportFile={importLocalFileAsRef}
-      onRequestImportDialog={() => host.env.openImportReferenceModal?.(host.path)}
-      onAttachToAi={handleAttachToAi}
-      onSelectionChange={handleSelectionChange}
-    />
+    <div className="flex h-full w-full flex-col overflow-hidden">
+      {hasRefContent && !isReadOnly && (
+        <div className="flex h-8 shrink-0 items-center justify-between border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#242424)] px-3 text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
+          <div className="flex items-center gap-1.5">
+            <Blocks className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="font-medium text-[var(--obs-text-normal,#ececec)]">
+              레퍼런스 → 구조 에셋 추출
+            </span>
+            <span className="hidden text-[10px] text-[var(--obs-text-faint,#808080)] sm:inline">
+              (이 레퍼런스의 레이아웃·표 뉘앙스를 .vasset 으로 등록)
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <select
+              value={extractKind}
+              onChange={(ev) => setExtractKind(ev.target.value as VDocAssetKind)}
+              aria-label="추출할 에셋 종류"
+              className="rounded border border-[var(--obs-border,#3a3a3a)] bg-[var(--obs-bg-primary,#1a1a1a)] px-1.5 py-0.5 text-[10.5px] text-emerald-300 outline-none"
+            >
+              <option value="a4-page">A4 페이지</option>
+              <option value="blog-section">블로그 섹션</option>
+              <option value="table">표 · 서식</option>
+            </select>
+            <button
+              type="button"
+              disabled={extractingAsset}
+              onClick={() => void handleExtractAssetFromRef()}
+              className="flex items-center gap-1 rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10.5px] font-medium text-emerald-200 transition-colors hover:bg-emerald-500/30 disabled:opacity-50"
+            >
+              {extractingAsset ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Sparkles className="h-3 w-3" />
+              )}
+              <span>구조 에셋으로 추출</span>
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <RefCanvasWorkbench
+          doc={doc}
+          readOnly={isReadOnly}
+          resolveAssetUrl={resolveAssetUrl}
+          onChangeDoc={handleChangeDoc}
+          onImportUrl={importWebUrlAsRef}
+          onStartAsyncUrlImport={
+            host.env.startAsyncUrlRefImport
+              ? (url, title, fileName) =>
+                  host.env.startAsyncUrlRefImport?.({
+                    url,
+                    title,
+                    fileName,
+                    targetFolder: dirname(host.path),
+                    replacePath: host.path,
+                  })
+              : undefined
+          }
+          onImportedIntoEmpty={handleImportedIntoEmpty}
+          onImportFile={importLocalFileAsRef}
+          onRequestImportDialog={() => host.env.openImportReferenceModal?.(host.path)}
+          onAttachToAi={handleAttachToAi}
+          onSelectionChange={handleSelectionChange}
+        />
+      </div>
+    </div>
   );
 };
 

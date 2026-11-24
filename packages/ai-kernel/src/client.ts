@@ -1,4 +1,4 @@
-import type { AssistantEvent, ContextRef, EngineStatus, PermissionMode, ToolManifestEntry } from "./types";
+import type { AssistantEvent, ContextRef, EngineStatus, PermissionMode, ToolManifestEntry, VaultFsBatchSummary } from "./types";
 import { contextRole } from "./types";
 
 export interface AssistantClientOptions {
@@ -124,6 +124,16 @@ export class AssistantClient {
     return this.json("PUT", "/api/runtime/policy", { primaryProvider: provider, primaryModel: model });
   }
 
+  /** 볼트 FS 트랜잭션 이력 조회 (`vf_*` 실행 배치 목록). */
+  listFsBatches(sessionId: string): Promise<{ batches: VaultFsBatchSummary[] }> {
+    return this.json("GET", `/api/assistant/sessions/${encodeURIComponent(sessionId)}/fs-batches`);
+  }
+
+  /** 볼트 FS 트랜잭션 1클릭 되돌리기 (`vf_undo`). */
+  undoFsBatch(sessionId: string, batchId: string): Promise<{ ok: boolean; message: string; batchId: string }> {
+    return this.json("POST", `/api/assistant/sessions/${encodeURIComponent(sessionId)}/fs-batches/${encodeURIComponent(batchId)}/undo`);
+  }
+
   // --- 내부 ---------------------------------------------------------------------
 
   private async json<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -200,7 +210,21 @@ async function errorText(res: Response): Promise<string> {
 function toWireContext(ref: ContextRef) {
   // 역할은 명시한 첨부(handle 이 있는 것)에만 붙인다 — 자동 첨부(현재 선택 · 문서)는 배경 정보.
   const role = ref.handle ? contextRole(ref) : "";
-  return { kind: ref.kind, id: ref.id, label: ref.label, content: ref.content ?? "", role, handle: ref.handle ?? "" };
+  return {
+    kind: ref.kind,
+    id: ref.id,
+    label: ref.label,
+    content: ref.content ?? "",
+    role,
+    handle: ref.handle ?? "",
+    ...(ref.media
+      ? {
+          mimeType: ref.media.mimeType,
+          dataBase64: ref.media.dataBase64 ?? "",
+          vaultPath: ref.media.vaultPath ?? "",
+        }
+      : {}),
+  };
 }
 
 function toWireMessage(payload: SendMessagePayload) {

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
+import { intentFromModifiers } from "@vibe/selection-core";
 import {
   ArrowUpDown,
   Check,
@@ -344,11 +345,13 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     const state = store.getState();
     if (state.renameState?.path === row.path) return;
 
-    if (ev.shiftKey) {
+    // 화면 공통 선택 규칙 (@vibe/selection-core): Shift = 범위 · Ctrl/⌘ = 토글. 새 탭 열기는 Alt+클릭 · 가운데 클릭.
+    const intent = intentFromModifiers(ev);
+    if (intent === "range" || intent === "range-add") {
       state.selectRange(row.path);
       return;
     }
-    if (ev.altKey) {
+    if (intent === "toggle") {
       state.selectToggle(row.path);
       return;
     }
@@ -360,9 +363,16 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     if (row.node.kind === "folder") {
       state.toggleExpand(row.path);
     } else {
-      const mode = ev.ctrlKey || ev.metaKey ? "new-tab" : "current";
-      onOpenFile?.(row.path, mode);
+      onOpenFile?.(row.path, ev.altKey ? "new-tab" : "current");
     }
+  };
+
+  /** 가운데 클릭 = 새 탭에서 열기 (브라우저 · VS Code 와 같다). */
+  const handleRowAuxClick = (ev: React.MouseEvent, row: ExplorerFlatRow) => {
+    if (ev.button !== 1 || row.node.kind !== "file") return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    onOpenFile?.(row.path, "new-tab");
   };
 
   const handleRowContextMenu = (ev: React.MouseEvent, row: ExplorerFlatRow) => {
@@ -413,8 +423,11 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
       if (node.kind === "folder") {
         state.toggleExpand(node.path);
       } else {
-        onOpenFile?.(node.path, ev.ctrlKey || ev.metaKey ? "new-tab" : "current");
+        onOpenFile?.(node.path, ev.ctrlKey || ev.metaKey || ev.altKey ? "new-tab" : "current");
       }
+    } else if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "a") {
+      ev.preventDefault();
+      state.selectAllVisible();
     } else if (ev.key === "F2" && focusedPath) {
       ev.preventDefault();
       state.startRename(focusedPath);
@@ -863,9 +876,13 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                 onMouseEnter={() => setHoveredPath(row.path)}
                 onMouseLeave={() => setHoveredPath((cur) => (cur === row.path ? null : cur))}
                 onClick={(ev) => handleRowClick(ev, row)}
+                onAuxClick={(ev) => handleRowAuxClick(ev, row)}
                 onContextMenu={(ev) => handleRowContextMenu(ev, row)}
                 className="group relative flex h-[27px] cursor-pointer items-center rounded-[4px] pr-2 text-[13px] leading-[18px] transition-colors"
                 style={{
+                  // 큰 볼트(수천 행): 화면 밖 행은 그리기 · 레이아웃을 건너뛴다 (높이는 고정 27px 로 예약)
+                  contentVisibility: "auto",
+                  containIntrinsicSize: "auto 27px",
                   paddingLeft: `${8 + row.depth * INDENT_STEP_PX}px`,
                   backgroundColor: isDropHighlight
                     ? "var(--obs-bg-selected,rgba(138,92,245,0.22))"

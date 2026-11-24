@@ -5,13 +5,12 @@ import { createFileExplorerStore } from "@vibe/file-explorer/core";
 import { MemoryVaultAdapter } from "@vibe/vault-core";
 import { createDefaultRegistrySnapshot } from "@vibe/vdoc-schema";
 import { createIdeEditorRegistry } from "../model/editorAdapters";
+import { SETTINGS_GROUPS, createSettingsSectionRegistry } from "../model/settingsSectionRegistry";
 import {
-  SETTINGS_GROUPS,
   STANDARD_STYLE_PATH,
   STANDARD_SYNTAX_PATH,
   createDefaultStylePackJson,
   createDefaultSyntaxJson,
-  createSettingsSectionRegistry,
   createStandardBaseStyleJson,
   detectSyntaxRuleConflicts,
   getDefaultRuleSymbol,
@@ -23,7 +22,7 @@ import {
   parseSyntaxSnapshot,
   serializeStylePack,
   serializeSyntaxSnapshot,
-} from "../model/settingsRegistry";
+} from "@vibe/vault-formats";
 
 describe("v2-ide — Obsidian Settings Platform & Code-as-Doc (.vsyntax / .vstyle)", () => {
   it("matches .vsyntax, .vstyle, and legacy .vstyle.json paths and resolves first-class EditorAdapters", () => {

@@ -87,21 +87,45 @@ importers:
 
   apps/playground:
     dependencies:
+      '@vibe/ai-composer':
+        specifier: workspace:*
+        version: link:../../packages/ai-composer
       '@vibe/ai-kernel':
         specifier: workspace:*
         version: link:../../packages/ai-kernel
+      '@vibe/ai-react':
+        specifier: workspace:*
+        version: link:../../packages/ai-react
+      '@vibe/ai-scope':
+        specifier: workspace:*
+        version: link:../../packages/ai-scope
+      '@vibe/ai-vault':
+        specifier: workspace:*
+        version: link:../../packages/ai-vault
+      '@vibe/canvas-state':
+        specifier: workspace:*
+        version: link:../../packages/canvas-state
       '@vibe/file-explorer':
         specifier: workspace:*
         version: link:../../packages/file-explorer
+      '@vibe/harness-packs':
+        specifier: workspace:*
+        version: link:../../packages/harness-packs
       '@vibe/markdown-editor':
         specifier: workspace:*
         version: link:../../packages/markdown-editor
+      '@vibe/outline-sync':
+        specifier: workspace:*
+        version: link:../../packages/outline-sync
       '@vibe/outliner':
         specifier: workspace:*
         version: link:../../../VibePatchNote/packages/outliner
       '@vibe/ref-canvas':
         specifier: workspace:*
         version: link:../../packages/ref-canvas
+      '@vibe/selection-core':
+        specifier: workspace:*
+        version: link:../../packages/selection-core
       '@vibe/slot-canvas':
         specifier: workspace:*
         version: link:../../packages/slot-canvas
@@ -114,6 +138,9 @@ importers:
       '@vibe/vault-core':
         specifier: workspace:*
         version: link:../../packages/vault-core
+      '@vibe/vault-formats':
+        specifier: workspace:*
+        version: link:../../packages/vault-formats
       '@vibe/vdoc-schema':
         specifier: workspace:*
         version: link:../../packages/vdoc-schema
@@ -175,6 +202,9 @@ importers:
       '@vibe/ai-react':
         specifier: workspace:*
         version: link:../../packages/ai-react
+      '@vibe/ai-scope':
+        specifier: workspace:*
+        version: link:../../packages/ai-scope
       '@vibe/document-viewer':
         specifier: workspace:*
         version: link:../../../VibePatchNote/packages/document-viewer
@@ -303,8 +333,77 @@ importers:
         specifier: ^19.0.0
         version: 19.3.1(react@19.3.1)
 
+  packages/ai-scope:
+    dependencies:
+      '@vibe/vdoc-schema':
+        specifier: workspace:*
+        version: link:../vdoc-schema
+
+  packages/ai-vault:
+    dependencies:
+      '@vibe/ai-kernel':
+        specifier: workspace:*
+        version: link:../ai-kernel
+      '@vibe/ai-scope':
+        specifier: workspace:*
+        version: link:../ai-scope
+      '@vibe/canvas-state':
+        specifier: workspace:*
+        version: link:../canvas-state
+      '@vibe/file-explorer':
+        specifier: workspace:*
+        version: link:../file-explorer
+      '@vibe/harness-packs':
+        specifier: workspace:*
+        version: link:../harness-packs
+      '@vibe/outline-sync':
+        specifier: workspace:*
+        version: link:../outline-sync
+      '@vibe/outliner':
+        specifier: workspace:*
+        version: link:../../../VibePatchNote/packages/outliner
+      '@vibe/ref-canvas':
+        specifier: workspace:*
+        version: link:../ref-canvas
+      '@vibe/slot-canvas':
+        specifier: workspace:*
+        version: link:../slot-canvas
+      '@vibe/vault-core':
+        specifier: workspace:*
+        version: link:../vault-core
+      '@vibe/vault-formats':
+        specifier: workspace:*
+        version: link:../vault-formats
+      '@vibe/vdoc-schema':
+        specifier: workspace:*
+        version: link:../vdoc-schema
+      '@vibe/workspace-layout':
+        specifier: workspace:*
+        version: link:../workspace-layout
+      zustand:
+        specifier: ^5.0.3
+        version: 5.0.16(@types/react@19.3.0)(react@19.3.1)(use-sync-external-store@1.7.0(react@19.3.1))
+
+  packages/canvas-state:
+    dependencies:
+      '@vibe/selection-core':
+        specifier: workspace:*
+        version: link:../selection-core
+      '@vibe/vault-formats':
+        specifier: workspace:*
+        version: link:../vault-formats
+      '@vibe/vdoc-schema':
+        specifier: workspace:*
+        version: link:../vdoc-schema
+      zustand:
+        specifier: ^5.0.3
+        version: 5.0.16(@types/react@19.3.0)(react@19.3.1)(use-sync-external-store@1.7.0(react@19.3.1))
+
   packages/file-explorer:
     dependencies:
+      '@vibe/selection-core':
+        specifier: workspace:*
+        version: link:../selection-core
       '@vibe/vault-core':
         specifier: workspace:*
         version: link:../vault-core
@@ -365,11 +464,23 @@ importers:
         specifier: ^19.0.0
         version: 19.3.1(react@19.3.1)
 
-  packages/ref-canvas:
+  packages/outline-sync:
     dependencies:
+      '@vibe/outliner':
+        specifier: workspace:*
+        version: link:../../../VibePatchNote/packages/outliner
       '@vibe/vault-core':
         specifier: workspace:*
         version: link:../vault-core
+      '@vibe/vault-formats':
+        specifier: workspace:*
+        version: link:../vault-formats
+      '@vibe/vdoc-schema':
+        specifier: workspace:*
+        version: link:../vdoc-schema
+
+  packages/ref-canvas:
+    dependencies:
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.3.1)
@@ -383,11 +494,13 @@ importers:
         specifier: ^19.0.0
         version: 19.3.1(react@19.3.1)
 
+  packages/selection-core: {}
+
   packages/slot-canvas:
     dependencies:
-      '@vibe/ai-composer':
+      '@vibe/selection-core':
         specifier: workspace:*
-        version: link:../ai-composer
+        version: link:../selection-core
       '@vibe/slot-editor':
         specifier: workspace:*
         version: link:../slot-editor
@@ -445,9 +558,6 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^2.11.5
         version: 2.27.3
-      '@vibe/vdoc-schema':
-        specifier: workspace:*
-        version: link:../vdoc-schema
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.3.1)
@@ -464,6 +574,21 @@ importers:
   packages/style-core: {}
 
   packages/vault-core: {}
+
+  packages/vault-formats:
+    dependencies:
+      '@vibe/outliner':
+        specifier: workspace:*
+        version: link:../../../VibePatchNote/packages/outliner
+      '@vibe/style-core':
+        specifier: workspace:*
+        version: link:../style-core
+      '@vibe/vault-core':
+        specifier: workspace:*
+        version: link:../vault-core
+      '@vibe/vdoc-schema':
+        specifier: workspace:*
+        version: link:../vdoc-schema
 
   packages/vdoc-schema:
     dependencies:

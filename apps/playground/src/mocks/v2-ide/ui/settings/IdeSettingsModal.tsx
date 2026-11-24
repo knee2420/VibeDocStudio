@@ -29,11 +29,14 @@ import { basename, dirname, type VaultPort } from "@vibe/vault-core";
 
 import {
   SETTINGS_GROUPS,
+  createSettingsSectionRegistry,
+  type SettingsSectionDefinition,
+} from "../../model/settingsSectionRegistry";
+import {
   STANDARD_STYLE_PATH,
   STANDARD_SYNTAX_PATH,
   createDefaultStylePackJson,
   createDefaultSyntaxJson,
-  createSettingsSectionRegistry,
   createStandardBaseStyleJson,
   detectSyntaxRuleConflicts,
   isStylePath,
@@ -42,8 +45,7 @@ import {
   parseStylePackJson,
   parseSyntaxSnapshot,
   serializeSyntaxSnapshot,
-  type SettingsSectionDefinition,
-} from "../../model/settingsRegistry";
+} from "@vibe/vault-formats";
 import {
   SegmentedControl,
   SettingRow,

@@ -95,7 +95,8 @@ def prepare_sandbox(sandbox_dir: Path, state_dir: Path, python_exe: str, include
         if plugin_dir.exists():
             shutil.rmtree(plugin_dir, ignore_errors=True)
             changed.append(f".agents/plugins/{PLUGIN} (removed)")
-    for rel, content in build_files(python_exe, state_dir, include_plugin=include_plugin).items():
+    for rel, raw_content in build_files(python_exe, state_dir, include_plugin=include_plugin).items():
+        content = raw_content.replace("\r\n", "\n")
         path = sandbox_dir / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         try:
@@ -103,6 +104,6 @@ def prepare_sandbox(sandbox_dir: Path, state_dir: Path, python_exe: str, include
                 continue
         except OSError:
             pass
-        path.write_text(content, encoding="utf-8")
+        path.write_text(content, encoding="utf-8", newline="\n")
         changed.append(rel)
     return changed

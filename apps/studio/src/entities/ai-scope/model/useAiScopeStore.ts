@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { DEFAULT_SCOPE, type DocScopeSetting, type ResolvedScope, type ScopeMode, type ScopeTarget } from "./scope";
+import { DEFAULT_SCOPE, type DocScopeSetting, type ResolvedScope, type ScopeMode, type ScopeTarget } from "@vibe/ai-scope";
 
 /**
  * Composer 설정바의 범위 상태.

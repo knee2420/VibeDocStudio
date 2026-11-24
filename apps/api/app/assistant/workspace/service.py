@@ -19,7 +19,7 @@ import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional
 
 from harness_kit import packs
 
@@ -99,8 +99,11 @@ class MountState:
 class ResourceWorkspace:
     def __init__(self, *, state_dir: Path, sandbox_dir: Path, python_exe: str = sys.executable,
                  agy_executable: Optional[str] = None, transport: str = "acp",
-                 documents_root: Optional[Path] = None, references_root: Optional[Path] = None) -> None:
+                 documents_root: Optional[Path] = None, references_root: Optional[Path] = None,
+                 vault_roots: Optional[Callable[[str], Optional[str]]] = None) -> None:
         self.state_dir = Path(state_dir)
+        #: 볼트 id → 볼트 루트 절대 경로 (playground v2: 문서가 볼트 파일이다). 없으면 볼트 모드를 받지 않는다.
+        self.vault_roots = vault_roots
         #: 작업 문서 저장소 (`data/knowledge/documents/<docId>/document.vdoc.json`)
         self.documents_root = Path(documents_root) if documents_root else None
         #: 레퍼런스 라이브러리 항목 폴더 (`data/knowledge/references/items/<refId>/`)
@@ -279,6 +282,38 @@ class ResourceWorkspace:
         path = root / safe / "document.vdoc.json"
         return str(path) if path.is_file() else None
 
+    def _vault_root(self, vault_id: str) -> Optional[Path]:
+        if not vault_id or self.vault_roots is None:
+            return None
+        try:
+            root = self.vault_roots(vault_id)
+        except Exception as exc:  # 없는 볼트 · 레지스트리 오류 — 볼트 모드 없이 이어간다
+            logger.warning("[workspace] 볼트 루트를 찾지 못했다 %s: %s", vault_id, exc)
+            return None
+        if not root or not os.path.isdir(root):
+            return None
+        return Path(root).resolve()
+
+    @staticmethod
+    def vault_rel_path(raw: Any) -> Optional[str]:
+        """볼트 상대 경로 정규화 — 절대 경로 · 상위 폴더(`..`) · 드라이브 문자는 거부한다."""
+        rel = str(raw or "").replace("\\", "/").strip().strip("/")
+        if not rel or ":" in rel or any(part in ("", ".", "..") for part in rel.split("/")):
+            return None
+        return rel
+
+    def _vault_doc_path(self, root: Optional[Path], raw: Any) -> Optional[str]:
+        rel = self.vault_rel_path(raw)
+        if root is None or rel is None:
+            return None
+        path = (root / rel).resolve()
+        try:
+            path.relative_to(root)
+        except ValueError:
+            logger.warning("[workspace] 볼트 밖 문서 경로 거부: %s", raw)
+            return None
+        return str(path) if path.is_file() else None
+
     def _ref_dir(self, ref_id: str, root: Optional[Path]) -> Optional[str]:
         if not ref_id or root is None:
             return None
@@ -330,16 +365,49 @@ class ResourceWorkspace:
         if designated and designated not in adopted:
             adopted.append(designated)
         consensus = self._consensus(project_id, ref_root)
+        # 볼트 모드 (playground v2): 문서는 볼트 파일이다 — docId 대신 볼트 상대 경로로 찾는다
+        vault_id = str(raw.get("vaultId") or "").strip()
+        vault_root = self._vault_root(vault_id)
+        if vault_root is not None:
+            doc_rel = self.vault_rel_path(raw.get("docVaultPath"))
+            doc_path = None if scope.get("mode") == "off" else self._vault_doc_path(vault_root, doc_rel)
+            project_docs = []
+            for d in raw.get("projectDocs") or []:
+                if not isinstance(d, dict) or not d.get("docId"):
+                    continue
+                rel = self.vault_rel_path(d.get("vaultPath"))
+                if rel is None:
+                    continue
+                project_docs.append({**d, "vaultPath": rel})
+        else:
+            doc_rel = None
+            doc_path = None if scope.get("mode") == "off" else self._doc_path(str(raw.get("docId") or ""), root)
+            project_docs = [dict(d) for d in (raw.get("projectDocs") or []) if isinstance(d, dict) and d.get("docId")]
         state = {
             "projectId": project_id,
-            "documentsRoot": str(root) if root else None,
+            "documentsRoot": None if vault_root is not None else (str(root) if root else None),
             "docId": raw.get("docId"),
-            "docPath": None if scope.get("mode") == "off" else self._doc_path(str(raw.get("docId") or ""), root),
+            "docPath": doc_path,
+            **({"vaultId": vault_id, "vaultRoot": str(vault_root), "docVaultPath": doc_rel,
+                "draftFolder": self.vault_rel_path(raw.get("draftFolder")) or "",
+                # 화면의 RW/RO — 에이전트 쓰기(dc_* · rs_* · vf_*)도 이것을 따른다
+                "readOnly": bool(raw.get("readOnly")),
+                # 사용자가 @폴더(대상) 으로 지정한 허용 쓰기 범위 (비면 볼트 전체)
+                "targetFolders": [
+                    rel for rel in (self.vault_rel_path(f) if f else "" for f in (raw.get("targetFolders") or []))
+                    if rel is not None
+                ],
+                "activeOutlinePath": self.vault_rel_path(raw.get("activeOutlinePath")) or "",
+                "outlineScope": raw.get("outlineScope") if isinstance(raw.get("outlineScope"), dict) else None,
+                "selectedOutlineNodeIds": [str(x) for x in (raw.get("selectedOutlineNodeIds") or []) if x],
+                "mode": str(raw.get("mode") or "agent")} if vault_root is not None else {}),
+            # 리서치가 새로 등록한 레퍼런스(rs_ref_import)를 작업대에 켤 때 라이브러리 폴더를 안다
+            "referencesRoot": str(ref_root) if ref_root else None,
             "scope": scope,
             "selection": list(raw.get("selection") or []),
             "designatedDocId": designated,
             "adoptedDocs": adopted,
-            "projectDocs": [dict(d) for d in (raw.get("projectDocs") or []) if isinstance(d, dict) and d.get("docId")],
+            "projectDocs": project_docs,
             # 레퍼런스는 라이브러리 폴더를 가리킨다 (vdoc 이 아니다). pinIds 가 없으면(None) 핀 전부, 목록이면 그 핀만.
             "references": [
                 {"refId": r.get("refId"), "title": r.get("title"), "dir": self._ref_dir(str(r.get("refId") or ""), ref_root),

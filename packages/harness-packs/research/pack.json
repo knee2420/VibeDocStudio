@@ -1,0 +1,15 @@
+{
+ "name": "research",
+ "version": "1.0.0",
+ "description": "리서치 — 밖의 자료를 볼트로 들여온다: 웹 검색(agy search_web) · 페이지 보기 · URL→레퍼런스(.ref) 등록 · 자유 라이선스 사진 수집 · 폴더 만들기 (playground v2 볼트 모드)",
+ "dependsOn": [
+  "core"
+ ],
+ "tools": [
+  {
+   "file": "tools.json",
+   "source": "research"
+  }
+ ],
+ "messages": "messages.json"
+}

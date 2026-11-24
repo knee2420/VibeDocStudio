@@ -51,6 +51,8 @@ const HANDLE_PREFIX: Record<string, string> = {
   "slot-range": "선택",
   page: "페이지",
   node: "노드",
+  "outline-node": "불릿",
+  "outline-subtree": "아웃라인",
   reference: "참조",
   "ref-region": "영역",
   "ref-text": "발췌",
@@ -61,6 +63,9 @@ const HANDLE_PREFIX: Record<string, string> = {
   message: "답변",
   image: "이미지",
   document: "문서",
+  doc: "문서",
+  file: "파일",
+  folder: "폴더",
   deck: "덱",
   kcard: "카드",
 };

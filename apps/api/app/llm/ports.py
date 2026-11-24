@@ -20,7 +20,13 @@ class ConversationEngine(Protocol):
 
     choice: EngineChoice
 
-    def run_turn(self, text: str, cancel: threading.Event) -> Iterator[dict[str, Any]]: ...
+    def run_turn(
+        self,
+        text: str,
+        cancel: threading.Event,
+        *,
+        images: Optional[list[dict[str, str]]] = None,
+    ) -> Iterator[dict[str, Any]]: ...
 
     def export_state(self) -> dict[str, Any]:
         """엔진을 바꿔 끼울 때 대화를 이어가기 위한 상태 (agy conversation_id, 대화록 …)."""

@@ -1,0 +1,119 @@
+[
+  {
+    "name": "ol_map",
+    "description": ".outline 파일의 압축 트리 지도를 반환한다 (nodeId · depth · <<doc/view/asset>> 태그 · 첨부/근거 수 · 요약). raw .outline JSON 대신 항상 이것을 먼저 읽는다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
+        "rootNodeId": { "type": "string", "description": "특정 서브트리 루트 nodeId (생략 시 전체)" },
+        "maxDepth": { "type": "integer", "description": "표시 최대 깊이 (기본 4)" }
+      }
+    }
+  },
+  {
+    "name": "ol_read",
+    "description": "지정한 .outline 노드(및 하위 서브트리)의 전체 텍스트 · 노트 · file 첨부 · nodeEvidence 사이드카 · docBinding · 서브트리 baseHash 를 조회한다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
+        "nodeId": { "type": "string", "description": "조회할 노드 id (생략 시 루트 전체)" },
+        "depth": { "type": "integer", "description": "하위 탐색 깊이 (기본 3)" }
+      }
+    }
+  },
+  {
+    "name": "ol_find",
+    "description": ".outline 안에서 본문 · <<view:...>> 태그 · 첨부 유무로 노드를 검색한다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
+        "query": { "type": "string", "description": "검색어" },
+        "tag": { "type": "string", "description": "지시어 필터 (예: view:table, doc:blog)" },
+        "hasFile": { "type": "boolean", "description": "true 면 파일 첨부가 있는 노드만" }
+      }
+    }
+  },
+  {
+    "name": "ol_create",
+    "description": "볼트 안에 새 .outline 파일을 생성한다 (상위 폴더 자동 생성, 기존 파일 덮어쓰기 금지, vf_undo 되돌리기 지원). 초기 rootNodes 트리까지 한 번에 넣을 수 있다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "생성할 볼트 상대 .outline 경로 (예: 재편 계획/볼트_재편_계획.outline)" },
+        "title": { "type": "string", "description": "아웃라인 문서 제목 (생략 시 파일명)" },
+        "rootNodes": {
+          "type": "array",
+          "description": "초기 루트 불릿 배열. 각 항목은 {text: string, note?: string, nodeType?: string, file?: {target: string}, children?: [...]} 형식 (중첩 자식은 children 사용, id 는 서버가 자동 발급)",
+          "items": { "type": "object" }
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "ol_propose_patch",
+    "description": "기존 .outline 파일에 @vibe/outliner TreePatchRequest 배열을 검증해 Staged 변경안(workbench_proposals)으로 제출한다. 디스크를 직접 덮어쓰지 않으므로 승인 전까지 ol_map 은 원본을 유지한다. op별 필수 필드: replace={op,id,text}(단일 텍스트만, items 불가) | insert_after={op,targetId,inside?,items:[{text,note?,children?:[...]}]} | insert_before={op,targetId,items} | move={op,ids,under,inside?} | delete={op,id,recursively?} | set_note={op,id,note} | set_file={op,id,file:{target}}.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
+        "summary": { "type": "string", "description": "변경안 한 줄 요약" },
+        "baseHash": { "type": "string", "description": "ol_read 로 받은 대상 서브트리 지문 (생략 시 서버가 자동 계산)" },
+        "requests": {
+          "type": "array",
+          "description": "@vibe/outliner TreePatchRequest 배열. 하위 트리 삽입은 반드시 insert_after(targetId, inside=true, items=[{text, children:[...]}]) 를 쓰고, replace 에는 items 를 넣지 마라.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": ["replace", "insert_after", "insert_before", "move", "delete", "set_note", "set_node_type", "set_file", "set_view_mode", "complete", "uncomplete"]
+              },
+              "id": { "type": "string" },
+              "targetId": { "type": "string" },
+              "ids": { "type": "array", "items": { "type": "string" } },
+              "under": { "type": "string" },
+              "inside": { "type": "boolean" },
+              "recursively": { "type": "boolean" },
+              "text": { "type": "string" },
+              "note": { "type": "string" },
+              "nodeType": { "type": "string" },
+              "viewMode": { "type": "string" },
+              "file": { "type": "object" },
+              "items": { "type": "array", "items": { "type": "object" }, "description": "insert_after / insert_before 전용. 각 원소는 {text, note?, children?: [...]} (중첩 자식은 children)" }
+            },
+            "required": ["op"]
+          }
+        },
+        "nodeEvidence": {
+          "type": "object",
+          "description": "nodeId -> EvidenceLocator[] 사이드카 맵 (실제 읽은 리소스 파일·줄 근거)"
+        }
+      },
+      "required": ["requests"]
+    }
+  },
+  {
+    "name": "ol_attach_resource",
+    "description": "볼트 리소스(이미지 · PDF · 마크다운 · 폴더)를 .outline 노드에 Staged 연결한다 (내부적으로 TreePatchRequest 생성).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
+        "nodeId": { "type": "string", "description": "대상 노드 id" },
+        "target": { "type": "string", "description": "볼트 상대 리소스 경로 (예: 여행/도쿄/사진/01.jpg)" },
+        "mode": {
+          "type": "string",
+          "enum": ["file", "img-token", "wikilink"],
+          "description": "연결 방식: file(set_file 첨부), img-token([img:캡션 -> 경로] 불릿 삽입), wikilink([[이름]] 참조)"
+        },
+        "caption": { "type": "string", "description": "img-token 모드일 때 캡션 라벨" },
+        "insertInside": { "type": "boolean", "description": "img-token/wikilink 삽입 시 nodeId 안쪽 자식으로 넣을지 여부 (기본 true)" }
+      },
+      "required": ["nodeId", "target"]
+    }
+  }
+]

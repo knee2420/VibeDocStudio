@@ -225,7 +225,9 @@ def layer_gaps(ref_m: dict[str, Any], doc_m: dict[str, Any]) -> list[dict[str, A
 
 def score(args: argparse.Namespace) -> dict[str, Any]:
     lo, hi = (int(x) for x in args.pages.split("-"))
-    doc = load_doc(args.doc)
+    # playground v2: 결과 문서가 볼트 파일이면 --doc-file 로 그 파일을 잰다 (docId 는 파일 안 값)
+    doc = json.loads(Path(args.doc_file).read_text(encoding="utf-8")) if args.doc_file else load_doc(args.doc)
+    args.doc = args.doc or str(doc.get("docId") or "")
     blocks = doc_blocks(doc)
     ref_blocks = load_ref(args.ref, (lo, hi))
     root = Path(args.resources)
@@ -394,13 +396,16 @@ def to_md(r: dict[str, Any]) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--doc", required=True)
+    ap.add_argument("--doc", default="")
+    ap.add_argument("--doc-file", default="", help="볼트 .vdoc 파일 경로 (playground v2)")
     ap.add_argument("--ref", required=True)
     ap.add_argument("--pages", default="1-23")
     ap.add_argument("--resources", required=True)
     ap.add_argument("--genre", default="")
     ap.add_argument("--label", default="run")
     args = ap.parse_args()
+    if not args.doc and not args.doc_file:
+        ap.error("--doc 또는 --doc-file 이 필요하다")
     sys.stdout.reconfigure(encoding="utf-8")
     r = score(args)
     OUT.mkdir(parents=True, exist_ok=True)

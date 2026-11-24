@@ -1,0 +1,856 @@
+{
+  "version": "1.0.0",
+  "docId": "vdoc-system-proposal",
+  "title": "VibeDoc 2D 아키텍처 제안서",
+  "viewId": "a4",
+  "surface": {
+    "kind": "paged",
+    "width": 794
+  },
+  "genre": "document",
+  "schemaRef": {
+    "profileId": "a4",
+    "registryPath": "vault://.vibedoc/element-registry.vsyntax",
+    "registryVersion": "1.0.0",
+    "elementIds": [
+      "table",
+      "section"
+    ]
+  },
+  "outlineRef": {
+    "outlinePath": "vault://01. Architecture/00. System-Proposal.outline",
+    "outlineId": "outline-vdoc-system-proposal",
+    "rootNodeId": "doc_vdoc-system-proposal"
+  },
+  "status": "Draft",
+  "updatedAt": "2026-11-23T08:51:56.415Z",
+  "variables": {
+    "project": "VibeDocStudio v2",
+    "version": "2.0"
+  },
+  "pages": [
+    {
+      "pageId": "page-1",
+      "pageNumber": 1,
+      "pageLabel": "Page 1 · 개요 및 구조",
+      "unitKind": "page",
+      "sectionRole": "body",
+      "outlineDsl": [
+        "<<view:section>> Page 1 · 개요 및 구조",
+        "  > VibeDoc 2D 아키텍처 제안서",
+        "    판다독 4층 페이지 + 피그마 2D 좌표/레이어 + 옵시디언 Vault & 탭 통합 워크벤치",
+        "  2D-First 디렉팅\n캔버스 위에서 블록을 선택해 바로 AI 디렉팅을 내리면, 새 마크다운·아웃라인 파일이 좌측 File Explorer에 즉시 생성됩니다. | Figma Pages & Elements\n좌측 하단 Document Structure에서 페이지 추가, 레이어 선택·호버 강조, 잠금(🔒), 숨김(👁)을 실시간 조작할 수 있습니다.",
+        "  <<view:table>> 모듈별 구현 현황표",
+        "    영역 | Headless 패키지 | 역할 및 확장 포인트",
+        "    Vault & Cache | @vibe/vault-core | 단일 정본 · 위키링크 & .vdoc 포인터 자동 갱신",
+        "    2D Editor | @vibe/slot-canvas | A4/Scroll · 피그마 2D 좌표 · Tiptap 슬롯",
+        "  [cta:01. Vault-Contract.md\n파일 이름을 바꾸면 이 카드의 vault:// 포인터도 자동 업데이트됩니다. 좌측 탐색기에서 다른 파일을 중앙으로 드래그해 보세요. -> vault://01. Architecture/01. Vault-Contract.md]"
+      ],
+      "sourceNodeId": "nd_oposal_3",
+      "headerSlotId": "slot-p1-hdr",
+      "footerSlotId": "slot-p1-ftr",
+      "hideHeaderFooter": true,
+      "blocks": [
+        {
+          "blockId": "blk-p1-hero",
+          "kind": "hero",
+          "title": "표지 배너",
+          "titleSlotId": "slot-p1-hero",
+          "subtitleSlotId": "slot-p1-hero-sub",
+          "height": 150,
+          "align": "left",
+          "sourceNodeId": "nd_oposal_4"
+        },
+        {
+          "blockId": "blk-p1-grid",
+          "kind": "columns-grid",
+          "title": "핵심 2단 요약",
+          "widths": [
+            "50%",
+            "50%"
+          ],
+          "columns": [
+            {
+              "slotId": "slot-p1-col1"
+            },
+            {
+              "slotId": "slot-p1-col2"
+            }
+          ],
+          "sourceNodeId": "nd_oposal_6"
+        },
+        {
+          "blockId": "blk-p1-table",
+          "kind": "structured-table",
+          "title": "모듈별 구현 현황표",
+          "columnWidths": [
+            "28%",
+            "34%",
+            "38%"
+          ],
+          "rows": [
+            {
+              "rowId": "r-hdr",
+              "cells": [
+                {
+                  "cellId": "c-h1",
+                  "slotId": "slot-t-h1",
+                  "isHeader": true
+                },
+                {
+                  "cellId": "c-h2",
+                  "slotId": "slot-t-h2",
+                  "isHeader": true
+                },
+                {
+                  "cellId": "c-h3",
+                  "slotId": "slot-t-h3",
+                  "isHeader": true
+                }
+              ]
+            },
+            {
+              "rowId": "r-1",
+              "cells": [
+                {
+                  "cellId": "c-11",
+                  "slotId": "slot-t-11"
+                },
+                {
+                  "cellId": "c-12",
+                  "slotId": "slot-t-12"
+                },
+                {
+                  "cellId": "c-13",
+                  "slotId": "slot-t-13"
+                }
+              ]
+            },
+            {
+              "rowId": "r-2",
+              "cells": [
+                {
+                  "cellId": "c-21",
+                  "slotId": "slot-t-21"
+                },
+                {
+                  "cellId": "c-22",
+                  "slotId": "slot-t-22"
+                },
+                {
+                  "cellId": "c-23",
+                  "slotId": "slot-t-23"
+                }
+              ]
+            }
+          ],
+          "sourceNodeId": "nd_oposal_7"
+        },
+        {
+          "blockId": "blk-p1-link",
+          "kind": "link-card",
+          "title": "01. Vault-Contract.md",
+          "slotId": "slot-p1-link",
+          "url": "vault://01. Architecture/01. Vault-Contract.md",
+          "domain": "vault · 01. Architecture/01. Vault-Contract.md",
+          "sourceNodeId": "nd_oposal_11"
+        }
+      ]
+    },
+    {
+      "pageId": "page-2",
+      "pageNumber": 2,
+      "pageLabel": "Page 2 · 피그마 2D 자유 배치",
+      "unitKind": "page",
+      "sectionRole": "body",
+      "outlineDsl": [
+        "<<view:section>> Page 2 · 피그마 2D 자유 배치",
+        "  > 피그마 자유 좌표 (Fixed Frame)\n상단 ⋮⋮ 핸들을 드래그해 자유롭게 이동하고, 모서리를 끌어 크기를 조절해 보세요.",
+        "  > 정렬 스냅 가이드\n다른 블록과 좌·우·상·하·중앙선이 맞으면 피그마식 빨간 정렬 가이드선이 자동 스냅됩니다.",
+        "  이 블록을 선택한 뒤 하단 플로팅 바의 AI Direct를 눌러 새 .md 또는 .outline 파일을 추출해 보세요. 좌측 탐색기에 AI 배지와 함께 자동 반영됩니다."
+      ],
+      "sourceNodeId": "nd_oposal_12",
+      "headerSlotId": "slot-p2-hdr",
+      "footerSlotId": "slot-p2-ftr",
+      "hideHeaderFooter": true,
+      "blocks": [
+        {
+          "blockId": "blk-p2-fixed-1",
+          "kind": "callout-box",
+          "title": "자유 배치 카드 A",
+          "slotId": "slot-p2-c1",
+          "tone": "info",
+          "frame": {
+            "x": 44,
+            "y": 48,
+            "w": 330,
+            "h": 170
+          },
+          "sourceNodeId": "nd_oposal_13"
+        },
+        {
+          "blockId": "blk-p2-fixed-2",
+          "kind": "callout-box",
+          "title": "자유 배치 카드 B",
+          "slotId": "slot-p2-c2",
+          "tone": "warning",
+          "frame": {
+            "x": 404,
+            "y": 48,
+            "w": 340,
+            "h": 170
+          },
+          "sourceNodeId": "nd_oposal_14"
+        },
+        {
+          "blockId": "blk-p2-fixed-3",
+          "kind": "text",
+          "title": "2D 디렉팅 메모",
+          "slotId": "slot-p2-note",
+          "frame": {
+            "x": 44,
+            "y": 248,
+            "w": 700,
+            "h": 140
+          },
+          "sourceNodeId": "nd_oposal_15"
+        }
+      ]
+    },
+    {
+      "pageId": "sec_3_body",
+      "pageNumber": 3,
+      "pageLabel": "Page 3 · [붙임 6호 서식] 기술적용계획표",
+      "unitKind": "page",
+      "sectionRole": "body",
+      "outlineDsl": [
+        "<<view:section>> Page 3 · [붙임 6호 서식] 기술적용계획표",
+        "  [붙임 6호 서식]",
+        "  <<view:title>> [   ]기술적용계획표",
+        "  <<view:table>> 사업 기본 정보",
+        "    사업명 | 통합 AX 포털 사이트 구축",
+        "    작성일 | 2025. 9. 19.",
+        "  ◇ 법률 및 고시 등",
+        "  <<view:table:header>> 법률 및 고시 등",
+        "    구분 | 항 목",
+        "    법률 | <<cell>>",
+        "      <<view:list>>",
+        "        지능정보화 기본법",
+        "        공공기관의 정보공개에 관한 법률",
+        "        개인정보 보호법",
+        "        소프트웨어 진흥법",
+        "        인터넷주소자원에 관한 법률",
+        "        전자서명법",
+        "        전자정부법",
+        "        국가정보원법",
+        "      아키텍처 대표 전경 (1/4)",
+        "      [img:세부 구성 좌측 컷 (2/4)] | [img:세부 구성 우측 컷 (3/4)]",
+        "      현장 적용 참고 컷 (4/4)",
+        "      <<view:list>>",
+        "        정보통신기반 보호법",
+        "        정보통신망 이용촉진 및 정보보호 등에 관한 법률",
+        "        통신비밀보호법",
+        "        국가를 당사자로 하는 계약에 관한 법률",
+        "        하도급거래 공정화에 관한 법률",
+        "        지방자치단체를 당사자로 하는 계약에 관한 법률",
+        "        공공데이터의 제공 및 이용 활성화에 관한 법률",
+        "        클라우드컴퓨팅 발전 및 이용자 보호에 관한 법률",
+        "    고시 등 | <<cell>>",
+        "      <<view:list>>",
+        "        보안업무규정(대통령령)",
+        "        사이버안보 업무규정(대통령령)",
+        "        행정기관 정보시스템 접근권한 관리 규정(국무총리훈령)",
+        "        장애인·고령자 등의 정보 접근 및 이용 편의 증진을 위한 고시(과학기술정보통신부고시)",
+        "        전자서명인증업무 운영기준(과학기술정보통신부고시)",
+        "        전자정부 웹사이트 품질관리 지침(행정안전부고시)",
+        "        정보보호시스템 공통평가기준(미래창조과학부고시)",
+        "        정보보호시스템 평가·인증 등에 관한 고시(과학기술정보통신부고시)",
+        "        정보시스템 감리기준(행정안전부고시)",
+        "        전자정부사업관리 위탁에 관한 규정(행정안전부고시)",
+        "        전자정부사업관리 위탁용역계약 특수조건(행정안전부예규)",
+        "        행정전자서명 인증업무지침(행정안전부고시)",
+        "        행정기관 도메인이름 및 IP주소체계 표준(행정안전부고시)",
+        "        개인정보의 안전성 확보조치 기준(개인정보보호위원회고시)",
+        "        정보보호 및 개인정보보호 관리체계 인증 등에 관한 고시(개인정보보호위원회고시)"
+      ],
+      "sourceNodeId": "o1YT1wkkmdLI",
+      "headerSlotId": "slot_sec_3_body_hdr",
+      "footerSlotId": "slot_sec_3_body_ftr",
+      "hideHeaderFooter": true,
+      "blocks": [
+        {
+          "blockId": "blk_txt_1",
+          "kind": "text",
+          "title": "[붙임 6호 서식]",
+          "slotId": "slot_blk_txt_1",
+          "sourceNodeId": "p3_form_tag"
+        },
+        {
+          "blockId": "blk_title_2",
+          "kind": "form-title",
+          "title": "[ ]기술적용계획표",
+          "slotId": "slot_blk_title_1",
+          "align": "center",
+          "sourceNodeId": "p3_form_title"
+        },
+        {
+          "blockId": "tbl_3_table",
+          "kind": "structured-table",
+          "title": "사업 기본 정보",
+          "sourceNodeId": "p3_meta_tbl",
+          "columnWidths": [
+            "18%",
+            "82%"
+          ],
+          "borderRules": {
+            "outer": "none",
+            "headerTop": "1.5px solid #0f172a",
+            "headerBottom": "1px solid #475569",
+            "rowBottom": "1px solid #64748b",
+            "vertical": "1px solid #94a3b8",
+            "radius": "0px"
+          },
+          "headerStyle": {
+            "bg": "#ffffff",
+            "textColor": "#0f172a",
+            "fontWeight": "600",
+            "padding": "8px 10px"
+          },
+          "cellPadding": "8px 10px",
+          "rows": [
+            {
+              "rowId": "tbl_3_r1",
+              "cells": [
+                {
+                  "cellId": "tbl_3_r1_c1",
+                  "slotId": "slot_tbl_3_r1_c1",
+                  "isHeader": false,
+                  "hAlign": "center",
+                  "vAlign": "middle",
+                  "borderTop": "1.5px solid #0f172a"
+                },
+                {
+                  "cellId": "tbl_3_r1_c2",
+                  "slotId": "slot_tbl_3_r1_c2",
+                  "isHeader": false,
+                  "hAlign": "left",
+                  "vAlign": "middle",
+                  "borderTop": "1.5px solid #0f172a"
+                }
+              ]
+            },
+            {
+              "rowId": "tbl_3_r2",
+              "cells": [
+                {
+                  "cellId": "tbl_3_r2_c1",
+                  "slotId": "slot_tbl_3_r2_c1",
+                  "isHeader": false,
+                  "hAlign": "center",
+                  "vAlign": "middle",
+                  "borderBottom": "1.5px solid #0f172a"
+                },
+                {
+                  "cellId": "tbl_3_r2_c2",
+                  "slotId": "slot_tbl_3_r2_c2",
+                  "isHeader": false,
+                  "hAlign": "left",
+                  "vAlign": "middle",
+                  "borderBottom": "1.5px solid #0f172a"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "blockId": "blk_txt_4",
+          "kind": "text",
+          "title": "◇ 법률 및 고시 등",
+          "slotId": "slot_blk_txt_4",
+          "sourceNodeId": "p3_sub_heading"
+        },
+        {
+          "blockId": "tbl_5_table",
+          "kind": "structured-table",
+          "title": "법률 및 고시 등",
+          "sourceNodeId": "p3_laws_tbl",
+          "columnWidths": [
+            "18%",
+            "82%"
+          ],
+          "borderRules": {
+            "outer": "none",
+            "headerTop": "1.5px solid #0f172a",
+            "headerBottom": "1px solid #475569",
+            "rowBottom": "1px solid #64748b",
+            "vertical": "1px solid #94a3b8",
+            "radius": "0px"
+          },
+          "headerStyle": {
+            "bg": "#d9dde3",
+            "textColor": "#0f172a",
+            "fontWeight": "600",
+            "padding": "8px 10px"
+          },
+          "cellPadding": "8px 10px",
+          "rows": [
+            {
+              "rowId": "tbl_2_r1",
+              "cells": [
+                {
+                  "cellId": "tbl_2_r1_c1",
+                  "slotId": "slot_tbl_2_r1_c1",
+                  "isHeader": true,
+                  "hAlign": "center",
+                  "vAlign": "middle",
+                  "backgroundColor": "#d9dde3",
+                  "color": "#0f172a",
+                  "borderTop": "1.5px solid #0f172a"
+                },
+                {
+                  "cellId": "tbl_2_r1_c2",
+                  "slotId": "slot_tbl_2_r1_c2",
+                  "isHeader": true,
+                  "hAlign": "center",
+                  "vAlign": "middle",
+                  "backgroundColor": "#d9dde3",
+                  "color": "#0f172a",
+                  "borderTop": "1.5px solid #0f172a"
+                }
+              ]
+            },
+            {
+              "rowId": "tbl_2_r2",
+              "cells": [
+                {
+                  "cellId": "tbl_2_r2_c1",
+                  "slotId": "slot_tbl_2_r2_c1",
+                  "isHeader": false,
+                  "hAlign": "center",
+                  "vAlign": "middle"
+                },
+                {
+                  "cellId": "tbl_2_r2_c2",
+                  "slotId": "slot_tbl_2_r2_c2",
+                  "isHeader": false,
+                  "hAlign": "left",
+                  "vAlign": "top",
+                  "padding": "8px 12px",
+                  "blocks": [
+                    {
+                      "blockId": "lst_3_list",
+                      "kind": "text",
+                      "title": "목록",
+                      "slotId": "slot_lst_3_list",
+                      "sourceNodeId": "p3_laws_list1a",
+                      "listMarker": "circle"
+                    },
+                    {
+                      "blockId": "blk_img_4",
+                      "kind": "image",
+                      "title": "아키텍처 대표 전경 (1/4)",
+                      "src": "https://postfiles.pstatic.net/MjAyNjExMDlfMjkw/MDAxNzk0MjIxNzc3OTE1.JS41bBpzzxdFJOpro8Pzg2t2GYQyyfWlHdBE8uQQZ2sg.8MsY_NM_yuHUj-IhRyrkqPjBTXBs_wXxxQbdS2dS6OYg.JPEG/066.JPG?type=w966",
+                      "alt": "아키텍처 대표 전경 (1/4)",
+                      "width": "100%",
+                      "align": "center",
+                      "objectFit": "cover",
+                      "sourceNodeId": "p3_cell_img1",
+                      "height": "175px",
+                      "maxHeight": "185px"
+                    },
+                    {
+                      "blockId": "blk_grid_5",
+                      "kind": "columns-grid",
+                      "title": "사진 스트립 (2장)",
+                      "widths": [
+                        "2fr",
+                        "1fr"
+                      ],
+                      "cardStyle": "plain",
+                      "gap": 4,
+                      "columns": [
+                        {
+                          "image": {
+                            "src": "https://postfiles.pstatic.net/MjAyNjExMDlfMTcx/MDAxNzk0MjIxNzQxMzUz.eKagSINQop2P3k45c5j3qKmEewfBOyWAcWjL_qve5H8g.qVyQjxkiLrLHsJOghcB-w_b3GkIw47bJG5-z1nDVTPcg.JPEG/067.JPG?type=w966",
+                            "alt": "세부 구성 좌측 컷 (2/4)",
+                            "width": "100%",
+                            "height": "145px",
+                            "maxHeight": "155px",
+                            "align": "center",
+                            "objectFit": "cover"
+                          }
+                        },
+                        {
+                          "image": {
+                            "src": "https://postfiles.pstatic.net/MjAyNjExMDlfMTM1/MDAxNzk0MjIxNzM5OTY1.1T-RlbD9TvABPjcPonH5yhw43JfpY46x6EstCdYWwf8g.yxjWXFAURI2mrW2pJhp0lQI-lbZmp-4YozcupoD9dm0g.JPEG/068.JPG?type=w966",
+                            "alt": "세부 구성 우측 컷 (3/4)",
+                            "width": "100%",
+                            "height": "145px",
+                            "maxHeight": "155px",
+                            "align": "center",
+                            "objectFit": "cover"
+                          }
+                        }
+                      ],
+                      "sourceNodeId": "p3_cell_strip23"
+                    },
+                    {
+                      "blockId": "blk_img_6",
+                      "kind": "image",
+                      "title": "현장 적용 참고 컷 (4/4)",
+                      "src": "https://postfiles.pstatic.net/MjAyNjExMDlfMTgz/MDAxNzk0MjIxNzQxMjAy.y6PSDN1NJgqSYu_PsZuRFCq48cgwsw9Hz2yEkD90Dlwg.9bNXcZHISDXTlECrfirYmO6XWaZhkmxtJTsoTu7N5z8g.JPEG/069.JPG?type=w966",
+                      "alt": "현장 적용 참고 컷 (4/4)",
+                      "width": "100%",
+                      "align": "center",
+                      "objectFit": "cover",
+                      "sourceNodeId": "p3_cell_img4",
+                      "height": "175px",
+                      "maxHeight": "185px"
+                    },
+                    {
+                      "blockId": "lst_7_list",
+                      "kind": "text",
+                      "title": "목록",
+                      "slotId": "slot_lst_6_list",
+                      "sourceNodeId": "p3_laws_list1b",
+                      "listMarker": "circle"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "rowId": "tbl_2_r3",
+              "cells": [
+                {
+                  "cellId": "tbl_2_r3_c1",
+                  "slotId": "slot_tbl_2_r3_c1",
+                  "isHeader": false,
+                  "hAlign": "center",
+                  "vAlign": "middle",
+                  "borderBottom": "1.5px solid #0f172a"
+                },
+                {
+                  "cellId": "tbl_2_r3_c2",
+                  "slotId": "slot_tbl_2_r3_c2",
+                  "isHeader": false,
+                  "hAlign": "left",
+                  "vAlign": "top",
+                  "padding": "8px 12px",
+                  "blocks": [
+                    {
+                      "blockId": "lst_7_list_10",
+                      "kind": "text",
+                      "title": "목록",
+                      "slotId": "slot_lst_7_list",
+                      "sourceNodeId": "p3_laws_list2",
+                      "listMarker": "circle"
+                    }
+                  ],
+                  "borderBottom": "1.5px solid #0f172a"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "layout": {
+        "margin": {
+          "top": 20,
+          "right": 32,
+          "bottom": 20,
+          "left": 32
+        },
+        "blockGap": 10,
+        "fontSize": "14px",
+        "lineHeight": "1.8",
+        "color": "#334155"
+      },
+      "pageRect": {
+        "width": 794,
+        "height": 1123,
+        "unit": "px"
+      }
+    }
+  ],
+  "slots": {
+    "slot-p1-hero": {
+      "slotId": "slot-p1-hero",
+      "label": "표지 타이틀",
+      "role": "editable-slot",
+      "content": "<h1>VibeDoc 2D 아키텍처 제안서</h1>",
+      "backDataRefs": []
+    },
+    "slot-p1-hero-sub": {
+      "slotId": "slot-p1-hero-sub",
+      "label": "표지 부제",
+      "role": "editable-slot",
+      "content": "<p>판다독 4층 페이지 + 피그마 2D 좌표/레이어 + 옵시디언 Vault &amp; 탭 통합 워크벤치</p>",
+      "backDataRefs": []
+    },
+    "slot-p1-col1": {
+      "slotId": "slot-p1-col1",
+      "label": "좌측 요약",
+      "role": "editable-slot",
+      "content": "<h3>2D-First 디렉팅</h3><p>캔버스 위에서 블록을 선택해 바로 AI 디렉팅을 내리면, 새 마크다운·아웃라인 파일이 좌측 File Explorer에 즉시 생성됩니다.</p>",
+      "backDataRefs": []
+    },
+    "slot-p1-col2": {
+      "slotId": "slot-p1-col2",
+      "label": "우측 요약",
+      "role": "editable-slot",
+      "content": "<h3>Figma Pages &amp; Elements</h3><p>좌측 하단 Document Structure에서 페이지 추가, 레이어 선택·호버 강조, 잠금(🔒), 숨김(👁)을 실시간 조작할 수 있습니다.</p>",
+      "backDataRefs": []
+    },
+    "slot-t-h1": {
+      "slotId": "slot-t-h1",
+      "label": "영역",
+      "role": "editable-slot",
+      "content": "<p><strong>영역</strong></p>",
+      "backDataRefs": []
+    },
+    "slot-t-h2": {
+      "slotId": "slot-t-h2",
+      "label": "패키지",
+      "role": "editable-slot",
+      "content": "<p><strong>Headless 패키지</strong></p>",
+      "backDataRefs": []
+    },
+    "slot-t-h3": {
+      "slotId": "slot-t-h3",
+      "label": "역할",
+      "role": "editable-slot",
+      "content": "<p><strong>역할 및 확장 포인트</strong></p>",
+      "backDataRefs": []
+    },
+    "slot-t-11": {
+      "slotId": "slot-t-11",
+      "label": "Vault",
+      "role": "editable-slot",
+      "content": "<p>Vault &amp; Cache</p>",
+      "backDataRefs": []
+    },
+    "slot-t-12": {
+      "slotId": "slot-t-12",
+      "label": "패키지1",
+      "role": "editable-slot",
+      "content": "<p>@vibe/vault-core</p>",
+      "backDataRefs": []
+    },
+    "slot-t-13": {
+      "slotId": "slot-t-13",
+      "label": "역할1",
+      "role": "editable-slot",
+      "content": "<p>단일 정본 · 위키링크 &amp; .vdoc 포인터 자동 갱신</p>",
+      "backDataRefs": []
+    },
+    "slot-t-21": {
+      "slotId": "slot-t-21",
+      "label": "2D 캔버스",
+      "role": "editable-slot",
+      "content": "<p>2D Editor</p>",
+      "backDataRefs": []
+    },
+    "slot-t-22": {
+      "slotId": "slot-t-22",
+      "label": "패키지2",
+      "role": "editable-slot",
+      "content": "<p>@vibe/slot-canvas</p>",
+      "backDataRefs": []
+    },
+    "slot-t-23": {
+      "slotId": "slot-t-23",
+      "label": "역할2",
+      "role": "editable-slot",
+      "content": "<p>A4/Scroll · 피그마 2D 좌표 · Tiptap 슬롯</p>",
+      "backDataRefs": []
+    },
+    "slot-p1-link": {
+      "slotId": "slot-p1-link",
+      "label": "연결 문서",
+      "role": "editable-slot",
+      "content": "<p><strong>01. Vault-Contract.md</strong></p><p>파일 이름을 바꾸면 이 카드의 vault:// 포인터도 자동 업데이트됩니다. 좌측 탐색기에서 다른 파일을 중앙으로 드래그해 보세요.</p>",
+      "backDataRefs": []
+    },
+    "slot-p1-hdr": {
+      "slotId": "slot-p1-hdr",
+      "label": "Header",
+      "role": "editable-slot",
+      "content": "",
+      "backDataRefs": []
+    },
+    "slot-p1-ftr": {
+      "slotId": "slot-p1-ftr",
+      "label": "Footer",
+      "role": "editable-slot",
+      "content": "",
+      "backDataRefs": []
+    },
+    "slot-p2-c1": {
+      "slotId": "slot-p2-c1",
+      "label": "카드 A",
+      "role": "editable-slot",
+      "content": "<h3>피그마 자유 좌표 (Fixed Frame)</h3><p>상단 ⋮⋮ 핸들을 드래그해 자유롭게 이동하고, 모서리를 끌어 크기를 조절해 보세요.</p>",
+      "backDataRefs": []
+    },
+    "slot-p2-c2": {
+      "slotId": "slot-p2-c2",
+      "label": "카드 B",
+      "role": "editable-slot",
+      "content": "<h3>정렬 스냅 가이드</h3><p>다른 블록과 좌·우·상·하·중앙선이 맞으면 피그마식 빨간 정렬 가이드선이 자동 스냅됩니다.</p>",
+      "backDataRefs": []
+    },
+    "slot-p2-note": {
+      "slotId": "slot-p2-note",
+      "label": "디렉팅 메모",
+      "role": "editable-slot",
+      "content": "<p>이 블록을 선택한 뒤 하단 플로팅 바의 <strong>AI Direct</strong>를 눌러 새 <code>.md</code> 또는 <code>.outline</code> 파일을 추출해 보세요. 좌측 탐색기에 <code>AI</code> 배지와 함께 자동 반영됩니다.</p>",
+      "backDataRefs": []
+    },
+    "slot-p2-hdr": {
+      "slotId": "slot-p2-hdr",
+      "label": "Header",
+      "role": "editable-slot",
+      "content": "",
+      "backDataRefs": []
+    },
+    "slot-p2-ftr": {
+      "slotId": "slot-p2-ftr",
+      "label": "Footer",
+      "role": "editable-slot",
+      "content": "",
+      "backDataRefs": []
+    },
+    "slot_sec_3_body_hdr": {
+      "slotId": "slot_sec_3_body_hdr",
+      "label": "Header",
+      "role": "editable-slot",
+      "content": "",
+      "backDataRefs": []
+    },
+    "slot_sec_3_body_ftr": {
+      "slotId": "slot_sec_3_body_ftr",
+      "label": "Footer",
+      "role": "editable-slot",
+      "content": "",
+      "backDataRefs": []
+    },
+    "slot_blk_txt_1": {
+      "slotId": "slot_blk_txt_1",
+      "label": "[붙임 6호 서식]",
+      "role": "editable-slot",
+      "content": "<p>[붙임 6호 서식]</p>",
+      "backDataRefs": []
+    },
+    "slot_blk_title_1": {
+      "slotId": "slot_blk_title_1",
+      "label": "[ ]기술적용계획표",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: center\"><strong>[ ]기술적용계획표</strong></p>",
+      "backDataRefs": []
+    },
+    "slot_tbl_3_r1_c1": {
+      "slotId": "slot_tbl_3_r1_c1",
+      "label": "사업명",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: center\">사업명</p>",
+      "backDataRefs": []
+    },
+    "slot_tbl_3_r1_c2": {
+      "slotId": "slot_tbl_3_r1_c2",
+      "label": "통합 AX 포털 사이트 구축",
+      "role": "editable-slot",
+      "content": "<p>통합 AX 포털 사이트 구축</p>",
+      "backDataRefs": []
+    },
+    "slot_tbl_3_r2_c1": {
+      "slotId": "slot_tbl_3_r2_c1",
+      "label": "작성일",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: center\">작성일</p>",
+      "backDataRefs": []
+    },
+    "slot_tbl_3_r2_c2": {
+      "slotId": "slot_tbl_3_r2_c2",
+      "label": "2025. 9. 19.",
+      "role": "editable-slot",
+      "content": "<p>2025. 9. 19.</p>",
+      "backDataRefs": []
+    },
+    "slot_blk_txt_4": {
+      "slotId": "slot_blk_txt_4",
+      "label": "◇ 법률 및 고시 등",
+      "role": "editable-slot",
+      "content": "<p>◇ 법률 및 고시 등</p>",
+      "backDataRefs": []
+    },
+    "slot_tbl_2_r1_c1": {
+      "slotId": "slot_tbl_2_r1_c1",
+      "label": "구분",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: center\"><strong>구분</strong></p>",
+      "backDataRefs": []
+    },
+    "slot_tbl_2_r1_c2": {
+      "slotId": "slot_tbl_2_r1_c2",
+      "label": "항 목",
+      "role": "editable-slot",
+      "content": "<p style=\"text-align: center\"><strong>항 목</strong></p>",
+      "backDataRefs": []
+    },
+    "slot_tbl_2_r2_c1": {
+      "slotId": "slot_tbl_2_r2_c1",
+      "label": "법률",
+      "role": "editable-slot",
+      "content": "<p>법률</p>",
+      "backDataRefs": []
+    },
+    "slot_lst_3_list": {
+      "slotId": "slot_lst_3_list",
+      "label": "목록",
+      "role": "editable-slot",
+      "content": "<ul><li><p>지능정보화 기본법</p></li><li><p>공공기관의 정보공개에 관한 법률</p></li><li><p>개인정보 보호법</p></li><li><p>소프트웨어 진흥법</p></li><li><p>인터넷주소자원에 관한 법률</p></li><li><p>전자서명법</p></li><li><p>전자정부법</p></li><li><p>국가정보원법</p></li></ul>",
+      "backDataRefs": []
+    },
+    "slot_lst_6_list": {
+      "slotId": "slot_lst_6_list",
+      "label": "목록",
+      "role": "editable-slot",
+      "content": "<ul><li><p>정보통신기반 보호법</p></li><li><p>정보통신망 이용촉진 및 정보보호 등에 관한 법률</p></li><li><p>통신비밀보호법</p></li><li><p>국가를 당사자로 하는 계약에 관한 법률</p></li><li><p>하도급거래 공정화에 관한 법률</p></li><li><p>지방자치단체를 당사자로 하는 계약에 관한 법률</p></li><li><p>공공데이터의 제공 및 이용 활성화에 관한 법률</p></li><li><p>클라우드컴퓨팅 발전 및 이용자 보호에 관한 법률</p></li></ul>",
+      "backDataRefs": []
+    },
+    "slot_tbl_2_r2_c2": {
+      "slotId": "slot_tbl_2_r2_c2",
+      "label": "컨테이너 셀 (2,2)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "backDataRefs": []
+    },
+    "slot_tbl_2_r3_c1": {
+      "slotId": "slot_tbl_2_r3_c1",
+      "label": "고시 등",
+      "role": "editable-slot",
+      "content": "<p>고시 등</p>",
+      "backDataRefs": []
+    },
+    "slot_lst_7_list": {
+      "slotId": "slot_lst_7_list",
+      "label": "목록",
+      "role": "editable-slot",
+      "content": "<ul><li><p>보안업무규정(대통령령)</p></li><li><p>사이버안보 업무규정(대통령령)</p></li><li><p>행정기관 정보시스템 접근권한 관리 규정(국무총리훈령)</p></li><li><p>장애인·고령자 등의 정보 접근 및 이용 편의 증진을 위한 고시(과학기술정보통신부고시)</p></li><li><p>전자서명인증업무 운영기준(과학기술정보통신부고시)</p></li><li><p>전자정부 웹사이트 품질관리 지침(행정안전부고시)</p></li><li><p>정보보호시스템 공통평가기준(미래창조과학부고시)</p></li><li><p>정보보호시스템 평가·인증 등에 관한 고시(과학기술정보통신부고시)</p></li><li><p>정보시스템 감리기준(행정안전부고시)</p></li><li><p>전자정부사업관리 위탁에 관한 규정(행정안전부고시)</p></li><li><p>전자정부사업관리 위탁용역계약 특수조건(행정안전부예규)</p></li><li><p>행정전자서명 인증업무지침(행정안전부고시)</p></li><li><p>행정기관 도메인이름 및 IP주소체계 표준(행정안전부고시)</p></li><li><p>개인정보의 안전성 확보조치 기준(개인정보보호위원회고시)</p></li><li><p>정보보호 및 개인정보보호 관리체계 인증 등에 관한 고시(개인정보보호위원회고시)</p></li></ul>",
+      "backDataRefs": []
+    },
+    "slot_tbl_2_r3_c2": {
+      "slotId": "slot_tbl_2_r3_c2",
+      "label": "컨테이너 셀 (3,2)",
+      "role": "editable-slot",
+      "content": "<p></p>",
+      "backDataRefs": []
+    }
+  },
+  "backdata": {},
+  "origin": {
+    "createdBy": "import",
+    "createdAt": "2026-11-23T05:30:39.930Z"
+  }
+}

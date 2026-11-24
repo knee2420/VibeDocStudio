@@ -4,9 +4,9 @@ import assert from "node:assert/strict";
 import { createOutlineEditorStore } from "@vibe/outliner/editor";
 import { MemoryVaultAdapter } from "@vibe/vault-core";
 
-import { createDefaultOutlineJson, parseOutlineJson } from "../model/outlineCodec";
+import { createDefaultOutlineJson, parseOutlineJson } from "@vibe/vault-formats";
 import { attachmentNameFor, createVaultOutlineFiles } from "../model/outlineFileHost";
-import { tokenizeOutlineInline } from "../model/outlineLiveRenderer";
+import { tokenizeOutlineInline } from "../ui/outlineLiveRenderer";
 import { createIdeWorkbenchRuntime } from "../model/useIdeWorkbench";
 import { createOutlineFileSession } from "../ui/OutlineTabEditor";
 

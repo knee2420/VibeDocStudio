@@ -91,6 +91,8 @@ export interface FileExplorerState {
   selectSingle(path: string): void;
   selectToggle(path: string): void;
   selectRange(path: string): void;
+  /** 보이는 행 전부 고르기 (Ctrl/⌘+A). */
+  selectAllVisible(): void;
   clearSelection(): void;
   setFocusedPath(path: string | null): void;
 

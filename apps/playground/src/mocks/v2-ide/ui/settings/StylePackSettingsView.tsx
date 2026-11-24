@@ -14,7 +14,7 @@ import {
 } from "@vibe/style-core";
 import type { VaultPort } from "@vibe/vault-core";
 
-import { parseStylePackJson, serializeStylePack } from "../../model/settingsRegistry";
+import { parseStylePackJson, serializeStylePack } from "@vibe/vault-formats";
 import { CodeTabEditor } from "../CodeTabEditor";
 import {
   CodeAsDocHeader,

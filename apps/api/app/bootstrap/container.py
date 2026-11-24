@@ -16,6 +16,7 @@ from dependency_injector import containers, providers
 from harness_kit import packs
 from harness_kit import patterns as layer_patterns
 
+from app.assets.use_cases import AssetAiService
 from app.assistant.use_cases import AssistantService
 from app.assistant.workspace import ResourceWorkspace
 from app.authoring.adapters import (
@@ -129,6 +130,11 @@ from app.resource.ledger.adapters import (
 from app.resource.ledger.use_cases import ResourceLedgerService
 from app.vault.adapters import LocalVaultRepository
 from app.vault.use_cases import VaultService
+
+
+def _make_asset_one_shot(sandbox: Path):
+    sandbox.mkdir(parents=True, exist_ok=True)
+    return partial(run_agy_print, cwd=sandbox)
 
 
 def _card_enricher_factory(settings: Settings, policy: RuntimeExecutionPolicy, sandbox: Path):
@@ -377,6 +383,18 @@ class Container(containers.DeclarativeContainer):
         skill_dir=providers.Callable(lambda: packs.path("resource:index/skills/knowledge_deck_reader")),
     )
 
+    # --- 10. vault 도메인 (로컬 파일시스템 Vault · 기본 데이터 위치: `apps/playground/data/`) ---
+    # assistant 작업대가 볼트 문서 경로를 풀어야 해서 assistant 보다 먼저 둔다.
+    vault_repository = providers.Singleton(
+        LocalVaultRepository,
+        vault_home_dir=providers.Callable(lambda s: s.vault_home_dir, settings),
+        denied_roots=providers.Callable(
+            lambda st: (st.knowledge, st.state, st.cache),
+            storage,
+        ),
+    )
+    vault_service = providers.Singleton(VaultService, repo=vault_repository)
+
     # --- 8. assistant 도메인 (AI Composer · 인라인 AI 공용 실행 계층) ---
     # 리소스 작업 공간: RM 에서 체크한 자료를 agy 에 읽기 전용으로 마운트한다 (훅 · vibefs MCP 는 샌드박스 `.agents/`)
     resource_workspace = providers.Singleton(
@@ -387,6 +405,8 @@ class Container(containers.DeclarativeContainer):
         transport=providers.Callable(lambda s: s.agy_transport, settings),
         documents_root=providers.Callable(lambda st: st.knowledge_of("documents"), storage),
         references_root=providers.Callable(lambda st: st.knowledge_of("references") / "items", storage),
+        # playground v2: 작업대 문서 = 볼트 파일 (볼트 id → 루트 경로)
+        vault_roots=providers.Callable(lambda repo: (lambda vid: repo.get_vault_summary(vid).rootPath), vault_repository),
     )
     assistant_engines = providers.Singleton(
         AssistantEngineProvider,
@@ -438,13 +458,13 @@ class Container(containers.DeclarativeContainer):
         ),
     )
 
-    # --- 10. vault 도메인 (로컬 파일시스템 Vault · 기본 데이터 위치: `apps/playground/data/`) ---
-    vault_repository = providers.Singleton(
-        LocalVaultRepository,
-        vault_home_dir=providers.Callable(lambda s: s.vault_home_dir, settings),
-        denied_roots=providers.Callable(
-            lambda st: (st.knowledge, st.state, st.cache),
+    # --- 11. assets 도메인 (AI-Native 구조 에셋 파싱 · 뉘앙스 적용 프리뷰) ---
+    asset_ai_service = providers.Singleton(
+        AssetAiService,
+        policy=runtime_policy,
+        external_llm_enabled=providers.Callable(lambda s: s.external_llm_enabled, settings),
+        one_shot=providers.Callable(
+            lambda st: _make_asset_one_shot(st.state / "assets" / "sandbox"),
             storage,
         ),
     )
-    vault_service = providers.Singleton(VaultService, repo=vault_repository)

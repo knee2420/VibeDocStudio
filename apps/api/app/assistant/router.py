@@ -82,6 +82,18 @@ def interrupt(session_id: str, service: ServiceDep) -> Response:
     return Response(status_code=204)
 
 
+@router.get("/sessions/{session_id}/fs-batches")
+@inject
+def list_fs_batches(session_id: str, service: ServiceDep) -> dict[str, Any]:
+    return {"batches": service.list_fs_batches(session_id)}
+
+
+@router.post("/sessions/{session_id}/fs-batches/{batch_id}/undo")
+@inject
+def undo_fs_batch(session_id: str, batch_id: str, service: ServiceDep) -> dict[str, Any]:
+    return service.undo_fs_batch(session_id, batch_id)
+
+
 @router.post("/inline/run")
 @inject
 def run_inline(payload: InlineRunRequest, service: ServiceDep) -> StreamingResponse:

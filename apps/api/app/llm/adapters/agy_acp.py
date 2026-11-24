@@ -171,7 +171,13 @@ class AcpConversation:
         self._thought_level = thought
         self._apply_config()
 
-    def run_turn(self, text: str, cancel: threading.Event) -> Iterator[dict[str, Any]]:
+    def run_turn(
+        self,
+        text: str,
+        cancel: threading.Event,
+        *,
+        images: Optional[list[dict[str, str]]] = None,
+    ) -> Iterator[dict[str, Any]]:
         if not self._client.alive:
             yield {"type": "error", "message": "ACP 프로세스가 종료되어 있습니다."}
             return
@@ -201,7 +207,7 @@ class AcpConversation:
 
         def do_prompt():
             try:
-                res = self._client.prompt(self._session_id, text, timeout=None)
+                res = self._client.prompt(self._session_id, text, timeout=None, images=images)
                 fut.set_result(res)
             except Exception as exc:
                 fut.set_exception(exc)

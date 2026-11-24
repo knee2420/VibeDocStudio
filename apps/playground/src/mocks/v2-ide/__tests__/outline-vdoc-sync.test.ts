@@ -12,16 +12,16 @@ import {
 import { getAllGroups } from "@vibe/workspace-layout/core";
 
 import {
-  parseOutlineJson,
-  rewriteOutlineBindingsOnRename,
-  serializeOutlineJson,
+  createDefaultVDoc,
   type OutlineFilePayload,
-} from "../model/outlineCodec";
-import {
-  requestOutlineReveal,
-  subscribeOutlineReveal,
-  type OutlineRevealOptions,
-} from "../model/outlineRevealBus";
+  parseOutlineJson,
+  parseVDocJson,
+  rewriteOutlineBindingsOnRename,
+  rewriteVDocPointersOnRename,
+  serializeOutlineJson,
+  serializeVDocJson,
+  toVaultUri,
+} from "@vibe/vault-formats";
 import {
   bindVDocToExistingOutline,
   collectOutlineBacklinks,
@@ -33,23 +33,19 @@ import {
   isInSameProjectScope,
   materializeVDocFromOutlineDirective,
   openOrCreateOutlineForVDoc,
+  type OutlineRevealOptions,
   outlineSemanticSignature,
+  requestOutlineReveal,
   resolveOutlineForVDoc,
   resolveVDocForOutlineBinding,
+  subscribeOutlineReveal,
   syncAllBoundVDocsFromOutline,
   syncVDocMeaningBackToOutline,
   unlinkOutlineNodeBinding,
   unlinkVDocFromOutline,
-} from "../model/outlineVDocBridge";
+} from "@vibe/outline-sync";
 import { createIdeWorkbenchRuntime } from "../model/useIdeWorkbench";
-import {
-  createDefaultVDoc,
-  createSampleProposalVDoc,
-  parseVDocJson,
-  rewriteVDocPointersOnRename,
-  serializeVDocJson,
-  toVaultUri,
-} from "../model/vdocCodec";
+import { createSampleProposalVDoc } from "../model/sampleProposalVDoc";
 
 describe("Bidirectional .outline <-> .vdoc (WYSIWYM <-> WYSIWYG) Sync Engine", () => {
   it("supports 1:N master .outline with deep <<view:table @asset>>, multiple <<doc>> bindings, and non-destructive live sync", () => {

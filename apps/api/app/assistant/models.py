@@ -7,7 +7,7 @@ from typing import Any
 
 @dataclass(frozen=True)
 class ContextItem:
-    """프론트의 컨텍스트 제공자가 만든 한 조각 (`@슬롯`, `@참조`, 현재 선택 …)."""
+    """프론트의 컨텍스트 제공자가 만든 한 조각 (`@슬롯`, `@참조`, `@폴더`, `@이미지`, 현재 선택 …)."""
 
     kind: str
     ref_id: str
@@ -17,6 +17,12 @@ class ContextItem:
     role: str = ""
     #: 프롬프트에서 사용자가 가리킬 때 쓰는 짧은 이름 (`@블록1`)
     handle: str = ""
+    #: 첨부 미디어의 MIME 타입 (예: "image/png")
+    mime_type: str = ""
+    #: 첨부 미디어의 base64 페이로드 (텍스트 프롬프트에 그대로 덤프하지 않고 멀티모달 블록으로 전달)
+    data_base64: str = ""
+    #: 볼트 내 저장된 상대 경로 (예: "_attachments/shot.png")
+    vault_path: str = ""
 
 
 @dataclass(frozen=True)

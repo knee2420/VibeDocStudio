@@ -70,6 +70,10 @@ export interface ComposerPanelProps {
   isPinned?(ref: ContextRef): boolean;
   /** 보내기 직전에 첨부를 고친다 (이번 메시지의 범위 확정 등). */
   onBeforeSend?(text: string, contexts: ContextRef[]): ContextRef[];
+  /** `+` 파일 피커 · 클립보드 붙여넣기 · OS 외부 드래그 앤 드롭으로 받은 파일을 첨부 컨텍스트로 변환. */
+  onAttachFiles?(files: File[]): Promise<ContextRef[]> | ContextRef[];
+  /** `+` 메뉴에서 폴더 첨부를 눌렀을 때 커스텀 동작 (생략 시 `@` 폴더 멘션 열기). */
+  onOpenFolderPicker?(): void;
 }
 
 const MODE_META: Record<PermissionMode, { label: string; icon: React.ComponentType<{ className?: string }>; hint: string }> = {
@@ -101,6 +105,8 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   onPinContext,
   isPinned,
   onBeforeSend,
+  onAttachFiles,
+  onOpenFolderPicker,
 }) => {
   const send = (text: string, contexts: ContextRef[]) => void controller.send(text, onBeforeSend ? onBeforeSend(text, contexts) : contexts);
   const state = useComposerState(controller);
@@ -114,15 +120,18 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   // 패널 전체가 놓는 곳 — 자식 요소를 오가며 생기는 dragenter/leave 짝을 세어 깜빡임을 막는다.
   const [dropping, setDropping] = React.useState(false);
   const dragDepth = React.useRef(0);
+  const isExternalFileDrag = (dt: DataTransfer | null) =>
+    Boolean(onAttachFiles && dt && Array.from(dt.types).includes("Files"));
+  const canDrop = (dt: DataTransfer | null) => isAttachableDrag(dt, runtime) || isExternalFileDrag(dt);
   const dropHandlers = {
     onDragEnter: (e: React.DragEvent) => {
-      if (!isAttachableDrag(e.dataTransfer, runtime)) return;
+      if (!canDrop(e.dataTransfer)) return;
       e.preventDefault();
       dragDepth.current += 1;
       setDropping(true);
     },
     onDragOver: (e: React.DragEvent) => {
-      if (!isAttachableDrag(e.dataTransfer, runtime)) return;
+      if (!canDrop(e.dataTransfer)) return;
       e.preventDefault();
       // 출처가 허용한 효과와 맞춰야 drop 이 일어난다 (캔버스 블록 핸들은 재배치용이라 move 만 허용).
       const allowed = e.dataTransfer.effectAllowed;
@@ -135,10 +144,19 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
     onDrop: (e: React.DragEvent) => {
       dragDepth.current = 0;
       setDropping(false);
-      if (!isAttachableDrag(e.dataTransfer, runtime)) return;
-      e.preventDefault(); // 입력창에 텍스트로 붙는 기본 동작 막기
-      const refs = readContextDrag(e.dataTransfer, runtime);
-      if (refs.length) controller.attach(refs);
+      if (isAttachableDrag(e.dataTransfer, runtime)) {
+        e.preventDefault(); // 입력창에 텍스트로 붙는 기본 동작 막기
+        const refs = readContextDrag(e.dataTransfer, runtime);
+        if (refs.length) controller.attach(refs);
+        return;
+      }
+      if (onAttachFiles && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        e.preventDefault();
+        const files = Array.from(e.dataTransfer.files);
+        void Promise.resolve(onAttachFiles(files)).then((refs) => {
+          if (refs.length) controller.attach(refs);
+        });
+      }
     },
   };
 
@@ -214,6 +232,8 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
           inbox={state.inbox}
           onSubmit={(text, contexts) => send(text, contexts)}
           onStop={() => controller.stop()}
+          onAttachFiles={onAttachFiles}
+          onOpenFolderPicker={onOpenFolderPicker}
         />
       </div>
     </div>
@@ -363,16 +383,23 @@ const UserBubble: React.FC<{ item: Extract<ComposerItem, { kind: "user" }> }> = 
       <div className="max-w-[88%] rounded-2xl rounded-br-md bg-indigo-600 text-white px-3 py-2 text-[13px] whitespace-pre-wrap break-words">
         {contexts.length > 0 && (
           <div className="flex flex-wrap items-center gap-1 mb-1.5">
-            {visibleContexts.map((c) => (
-              <span
-                key={`${c.kind}:${c.id}`}
-                title={c.hint ?? c.label}
-                className={`px-1.5 py-px rounded text-[10.5px] ${c.handle && c.role === "target" ? "bg-amber-300/30 ring-1 ring-amber-200/60" : "bg-white/15"}`}
-              >
-                {c.handle ? `${c.handle} ${c.label}` : `@${c.label}`}
-                {c.handle && <span className="ml-1 opacity-75">{c.role === "target" ? "대상" : "참조"}</span>}
-              </span>
-            ))}
+            {visibleContexts.map((c) => {
+              const imgSrc =
+                c.kind === "image"
+                  ? (c.media?.previewUrl ?? (c.media?.dataBase64 ? `data:${c.media.mimeType || "image/png"};base64,${c.media.dataBase64}` : undefined))
+                  : undefined;
+              return (
+                <span
+                  key={`${c.kind}:${c.id}`}
+                  title={c.hint ?? c.label}
+                  className={`inline-flex items-center gap-1 px-1.5 py-px rounded text-[10.5px] ${c.handle && c.role === "target" ? "bg-amber-300/30 ring-1 ring-amber-200/60" : "bg-white/15"}`}
+                >
+                  {imgSrc && <img src={imgSrc} alt={c.label} className="w-4 h-4 rounded-sm object-cover shrink-0 border border-white/30" />}
+                  <span>{c.handle ? `${c.handle} ${c.label}` : `@${c.label}`}</span>
+                  {c.handle && <span className="opacity-75">{c.role === "target" ? "대상" : "참조"}</span>}
+                </span>
+              );
+            })}
             {shouldCollapse && (
               <button
                 type="button"

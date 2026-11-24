@@ -17,6 +17,7 @@
     "@vibe/ai-inline": "workspace:*",
     "@vibe/ai-kernel": "workspace:*",
     "@vibe/ai-react": "workspace:*",
+    "@vibe/ai-scope": "workspace:*",
     "@vibe/document-viewer": "workspace:*",
     "@vibe/harness-packs": "workspace:*",
     "@vibe/outliner": "workspace:*",

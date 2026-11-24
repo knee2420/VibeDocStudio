@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExtern
 import { useStore } from "zustand";
 import {
   AlertTriangle,
+  Check,
   ChevronDown,
   Eye,
   EyeOff,
@@ -9,13 +10,17 @@ import {
   FolderInput,
   FolderKanban,
   Link2,
+  Loader2,
   RefreshCw,
+  RotateCcw,
   Search,
   Sparkles,
   Unlink,
   X,
 } from "lucide-react";
 import { getPath, type OutlineNode } from "@vibe/outliner";
+import type { TreePatchRequest } from "@vibe/outliner/core";
+import type { V2AiWorkspace, V2StagedChange } from "@vibe/ai-vault";
 import {
   OutlineBoard,
   OutlineEditorProvider,
@@ -42,31 +47,37 @@ import {
 } from "@vibe/vdoc-schema";
 import { basename, dirname, findOwningProjectPath, type VaultPort } from "@vibe/vault-core";
 
-import { parseOutlineJson, type OutlineFilePayload } from "../model/outlineCodec";
-import { createVaultOutlineFiles } from "../model/outlineFileHost";
-import { renderOutlineInlineMarkdown } from "../model/outlineLiveRenderer";
 import {
-  subscribeOutlineReveal,
-  type OutlineRevealOptions,
-} from "../model/outlineRevealBus";
+  collectVaultStyleEntries,
+  fromVaultUri,
+  type OutlineFilePayload,
+  parseOutlineJson,
+  resolveActiveStyleEntry,
+} from "@vibe/vault-formats";
+import { createVaultOutlineFiles } from "../model/outlineFileHost";
+import { renderOutlineInlineMarkdown } from "./outlineLiveRenderer";
 import {
   bindVDocToExistingOutline,
+  type BridgeOpenMode,
+  buildOutlineUnifiedDiff,
   collectVDocCandidatesForOutline,
+  commitStagedAssetToOutlineAndVDoc,
   compileOutlineTargetForPreview,
   formatProjectScopeLabel,
   importPartnerIntoProjectAndBind,
   inspectOutlineNodeVDocLink,
   materializeVDocFromOutlineDirective,
+  mergeOutlineNodeEvidence,
+  type OutlineRevealOptions,
+  type OutlineUnifiedDiffLine,
   outlineSemanticSignature,
+  registerLiveOutlineSession,
   resolveVDocForOutlineBinding,
+  subscribeOutlineReveal,
   unlinkOutlineNodeBinding,
-  type BridgeOpenMode,
-} from "../model/outlineVDocBridge";
-import { fromVaultUri } from "../model/vdocCodec";
-import {
-  collectVaultStyleEntries,
-  resolveActiveStyleEntry,
-} from "../model/vdocInspectorModel";
+} from "@vibe/outline-sync";
+import type { VDocUiBridgeStore } from "@vibe/canvas-state";
+import type { EditorSelectionSnapshot } from "@vibe/workspace-layout/core";
 
 /**
  * 탭 하나가 보는 `.outline` 파일. 파일 내용이 그대로인 동안에는 **같은 객체**를 돌려준다.
@@ -168,7 +179,161 @@ function revealNode(
   });
 }
 
-const NOOP = () => {};
+const NOOP = () => { };
+
+/**
+ * Isolated leaf overlay for `.outline` tab — subscribes ONLY to `stagedAssetPreview`
+ * matching this `.outline` (NEVER `hoveredBlockId`) so `.outline` and `.vdoc` show
+ * synchronized Staged AI Tag Preview + Apply / Revert controls simultaneously.
+ */
+const OutlineStagedAssetBar = React.memo<{
+  readonly bridge: VDocUiBridgeStore;
+  readonly outlinePath: string;
+  readonly vault: VaultPort;
+  readonly boundVDocPaths: readonly string[];
+}>(({ bridge, outlinePath, vault, boundVDocPaths }) => {
+  const matchedVDocPath = useStore(bridge, (s) => {
+    for (const [vdocPath, ui] of Object.entries(s.byPath)) {
+      const staged = ui.stagedAssetPreview;
+      if (!staged) continue;
+      if (staged.linkedOutlinePath === outlinePath) return vdocPath;
+      if (boundVDocPaths.includes(vdocPath)) return vdocPath;
+    }
+    return null;
+  });
+
+  const staged = useStore(bridge, (s) =>
+    matchedVDocPath ? (s.byPath[matchedVDocPath]?.stagedAssetPreview ?? null) : null
+  );
+
+  if (!matchedVDocPath || !staged) return null;
+
+  const handleApply = () => {
+    if (staged.status !== "ready") return;
+    const res = commitStagedAssetToOutlineAndVDoc(vault, matchedVDocPath, staged, {
+      syncOutline: true,
+    });
+    bridge.getState().clearStagedAssetPreview(matchedVDocPath);
+    if (res.firstBlockId) {
+      bridge.getState().selectBlock(matchedVDocPath, res.firstBlockId, staged.targetPageId);
+    }
+  };
+
+  const handleRevert = () => {
+    bridge.getState().clearStagedAssetPreview(matchedVDocPath);
+  };
+
+  return (
+    <div className="shrink-0 border-t border-[var(--obs-accent,#8a5cf5)]/60 bg-[#1c1b24]/95 px-3.5 py-2.5 text-[11.5px] text-[#e6edf3] shadow-[0_-10px_28px_rgba(0,0,0,0.45)]">
+      {staged.status === "loading" ? (
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2 text-[#ddd6fe]">
+            <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-[var(--obs-accent,#8a5cf5)]" />
+            <span className="truncate font-medium">
+              AI가 &lsquo;{staged.assetTitle}&rsquo; 구조 태그를 생성 중입니다...
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleRevert}
+            className="shrink-0 rounded border border-white/15 bg-white/5 px-2 py-0.5 text-[10.5px] text-white/80 hover:bg-white/15"
+          >
+            취소
+          </button>
+        </div>
+      ) : staged.status === "error" ? (
+        <div className="flex items-center justify-between gap-2 text-rose-200">
+          <span className="truncate">{staged.errorMessage ?? "에셋 태그 미리보기 생성 실패"}</span>
+          <button
+            type="button"
+            onClick={handleRevert}
+            className="shrink-0 rounded bg-white/10 px-2 py-0.5 text-[10.5px] text-white"
+          >
+            닫기
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-1.5 font-semibold text-[#ddd6fe]">
+              <Sparkles className="h-3.5 w-3.5 shrink-0 text-[var(--obs-accent,#8a5cf5)]" />
+              <span className="truncate">아웃라인 구조 태그 미리보기 · {staged.assetTitle}</span>
+              <span className="shrink-0 rounded bg-[var(--obs-accent,#8a5cf5)]/25 px-1.5 py-0 font-code text-[9.5px] text-[#e9d5ff]">
+                {staged.engine === "llm" ? "AI" : "규칙 폴백"}
+              </span>
+              <span className="hidden shrink-0 rounded bg-emerald-500/15 px-1.5 py-0 font-code text-[9.5px] text-emerald-300 sm:inline">
+                {basename(matchedVDocPath)}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleRevert}
+              title="되돌리기"
+              className="shrink-0 rounded p-0.5 text-white/50 hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* Preview of exact `.outline` DSL tags that will be written on Apply */}
+          <div className="max-h-36 overflow-y-auto rounded-md border border-[var(--obs-accent,#8a5cf5)]/35 bg-[#14141b] px-2.5 py-2 font-code text-[11px] leading-5">
+            {staged.suggestedOutlineDsl.map((rawLine, idx) => {
+              const indent = rawLine.length - rawLine.trimStart().length;
+              const depth = Math.floor(indent / 2);
+              const trimmed = rawLine.trim();
+              return (
+                <div
+                  key={`${idx}-${trimmed.slice(0, 16)}`}
+                  style={{ paddingLeft: `${depth * 14}px` }}
+                  className="flex items-start gap-1.5 text-emerald-100/95"
+                >
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--obs-accent,#8a5cf5)]" />
+                  <span className="min-w-0 flex-1 break-words">
+                    {trimmed.startsWith("<<") ? (
+                      <span className="rounded bg-violet-500/25 px-1 py-0.5 text-violet-200">
+                        {trimmed}
+                      </span>
+                    ) : trimmed.startsWith("[img:") || trimmed.startsWith("[cta:") || trimmed.startsWith("[embed:") ? (
+                      <span className="text-sky-300">{trimmed}</span>
+                    ) : trimmed.startsWith("> ") || trimmed.startsWith("! ") ? (
+                      <span className="text-amber-200">{trimmed}</span>
+                    ) : (
+                      trimmed
+                    )}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between gap-2">
+            <span className="truncate text-[10.5px] text-white/65">
+              적용 시 이 아웃라인 태그와 연결된 .vdoc 이 함께 저장됩니다
+            </span>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleRevert}
+                className="flex items-center gap-1 rounded-md border border-white/15 bg-black/30 px-2.5 py-1 text-[11px] text-white/80 hover:bg-white/10"
+              >
+                <RotateCcw className="h-3 w-3" />
+                <span>되돌리기</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleApply}
+                className="flex items-center gap-1 rounded-md bg-emerald-500 px-3 py-1 text-[11px] font-semibold text-slate-950 shadow hover:bg-emerald-400"
+              >
+                <Check className="h-3.5 w-3.5" />
+                <span>적용 (Apply)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
 
 interface CompiledPreviewSnapshot {
   readonly doc: VDocDocument | null;
@@ -177,23 +342,406 @@ interface CompiledPreviewSnapshot {
   readonly signature: string;
 }
 
+/**
+ * `.outline` 에디터 인라인 Unified Diff 리뷰 레이어 (`agy-ide` Review Changes 스타일).
+ * - 대기 중인 `outline-patch` Staged 제안이 있으면 코드 에디터처럼 `-`(삭제/원문) · `+`(추가/수정) 인라인 Diff 로 보여 준다.
+ * - `Alt+Enter` 로 즉시 승인, `Alt+Shift+Enter` 로 거절 가능하며, 실패 연산(`failedOps`)이 있으면 위험한 부분 적용을 차단한다.
+ */
+const OutlineDiffRow: React.FC<{ readonly line: OutlineUnifiedDiffLine }> = React.memo(({ line }) => {
+  const isRemoved = line.kind === "removed" || line.kind === "modified-old";
+  const isAdded = line.kind === "added" || line.kind === "modified-new";
+  const gutterChar = isRemoved ? "−" : isAdded ? "+" : " ";
+  const rowCls = isRemoved
+    ? "border-l-2 border-rose-500/80 bg-rose-500/12 text-rose-200/85"
+    : isAdded
+      ? "border-l-2 border-emerald-400/90 bg-emerald-500/12 text-emerald-100"
+      : "border-l-2 border-transparent text-slate-400";
+  const gutterCls = isRemoved
+    ? "text-rose-400 font-bold"
+    : isAdded
+      ? "text-emerald-400 font-bold"
+      : "text-slate-600";
+
+  return (
+    <div
+      data-testid="outline-diff-line"
+      data-diff-kind={line.kind}
+      className={`flex items-start gap-2 rounded-r px-2 py-0.5 text-[13px] leading-[1.55] transition-colors ${rowCls}`}
+    >
+      <span className={`w-4 shrink-0 select-none text-center font-mono text-[12px] ${gutterCls}`}>
+        {gutterChar}
+      </span>
+      <div
+        className="flex min-w-0 flex-1 items-start gap-2"
+        style={{ paddingLeft: `${Math.min(line.depth, 10) * 18}px` }}
+      >
+        <span
+          className={`mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full ${
+            isRemoved ? "bg-rose-400/80" : isAdded ? "bg-emerald-400" : "bg-slate-500/70"
+          }`}
+        />
+        <div className="min-w-0 flex-1">
+          <span className={`break-words ${isRemoved ? "line-through decoration-rose-400/70" : ""}`}>
+            {line.text}
+          </span>
+          {line.detail && (
+            <span className="ml-2 inline-block rounded bg-white/10 px-1.5 py-px text-[10px] font-medium text-amber-200">
+              {line.detail}
+            </span>
+          )}
+          {line.note && (
+            <div className="mt-0.5 text-[11.5px] text-slate-400/90 whitespace-pre-wrap">{line.note}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const EMPTY_STAGED_QUEUE: readonly V2StagedChange[] = [];
+
+const OutlineDiffAwareCanvas: React.FC<{
+  readonly ai?: V2AiWorkspace;
+  readonly path: string;
+  readonly doc: OutlineFilePayload;
+  readonly editorStore: OutlineEditorStore;
+  readonly host: OutlineHost;
+  readonly onUpdateRootTitle: (next: string) => void;
+}> = React.memo(({ ai, path, doc, editorStore, host, onUpdateRootTitle }) => {
+  const subscribeQueue = useCallback(
+    (onStoreChange: () => void) => (ai ? ai.store.subscribe(onStoreChange) : () => {}),
+    [ai]
+  );
+  const getQueueSnapshot = useCallback(
+    () => (ai ? ai.store.getState().queue : EMPTY_STAGED_QUEUE),
+    [ai]
+  );
+  const queue = useSyncExternalStore(subscribeQueue, getQueueSnapshot, getQueueSnapshot);
+
+  const pendingChange = useMemo(
+    () =>
+      queue.find(
+        (c): c is Extract<V2StagedChange, { targetKind: "outline-patch" }> =>
+          c.targetKind === "outline-patch" && c.path === path
+      ) ?? null,
+    [queue, path]
+  );
+
+  // diffId 기준으로 모드/에러를 격리하여 새 outline-patch 유입 시 자동으로 Unified Diff 로 전환한다
+  const [modeOverride, setModeOverride] = useState<{
+    readonly diffId: string;
+    readonly mode: "diff" | "edit";
+  } | null>(null);
+  const [changesOnly, setChangesOnly] = useState(false);
+  const [errorState, setErrorState] = useState<{
+    readonly diffId: string;
+    readonly message: string;
+  } | null>(null);
+
+  const activeDiffId = pendingChange?.diffId ?? null;
+  const viewMode: "diff" | "edit" =
+    activeDiffId && modeOverride?.diffId === activeDiffId ? modeOverride.mode : "diff";
+  const applyError =
+    activeDiffId && errorState?.diffId === activeDiffId ? errorState.message : null;
+
+  const setViewMode = useCallback(
+    (mode: "diff" | "edit") => {
+      if (!activeDiffId) return;
+      setModeOverride({ diffId: activeDiffId, mode });
+    },
+    [activeDiffId]
+  );
+
+  const diff = useMemo(() => {
+    if (!pendingChange) return null;
+    return buildOutlineUnifiedDiff(
+      doc.rootNodes,
+      pendingChange.payload.requests as unknown as TreePatchRequest[]
+    );
+  }, [pendingChange, doc.rootNodes]);
+
+  const stale = Boolean(ai && pendingChange && ai.isStale(pendingChange));
+
+  const hasBoundVDoc = Boolean(
+    pendingChange?.payload.compiledDocPath ||
+      (doc.docBindings && Object.keys(doc.docBindings).length > 0)
+  );
+  const canApprove = Boolean(ai && pendingChange && diff && diff.failedOps.length === 0);
+
+  const handleApprove = useCallback(
+    (recompileBoundVDocs = false) => {
+      if (!ai || !pendingChange || !canApprove) return;
+      const res = ai.approve([pendingChange.diffId], { recompileBoundVDocs });
+      if (res.failed.length > 0) {
+        setErrorState({
+          diffId: pendingChange.diffId,
+          message: res.failed.map((f) => f.why).join(" · "),
+        });
+      } else {
+        setErrorState(null);
+      }
+    },
+    [ai, pendingChange, canApprove]
+  );
+
+  const handleReject = useCallback(() => {
+    if (!ai || !pendingChange) return;
+    setErrorState(null);
+    ai.reject([pendingChange.diffId]);
+  }, [ai, pendingChange]);
+
+  // agy-ide 동일 단축키: Alt+Enter 승인 / Alt+Shift+Enter 거절
+  useEffect(() => {
+    if (!pendingChange || viewMode !== "diff") return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!e.altKey || e.key !== "Enter") return;
+      e.preventDefault();
+      if (e.shiftKey) handleReject();
+      else handleApprove(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [pendingChange, viewMode, handleApprove, handleReject]);
+
+  const visibleLines = useMemo(() => {
+    if (!diff) return [];
+    if (!changesOnly) return diff.lines;
+    return diff.lines.filter((l) => l.kind !== "context");
+  }, [diff, changesOnly]);
+
+  const showUnifiedDiff = Boolean(pendingChange && diff && viewMode === "diff");
+
+  return (
+    <div className="mx-auto w-full max-w-3xl">
+      {pendingChange && diff && (
+        <div
+          data-testid="outline-diff-review-bar"
+          className="mb-4 rounded-lg border border-amber-500/40 bg-[#25262b] px-3 py-2 text-[11.5px] text-slate-200 shadow-lg"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded bg-amber-500/20 px-1.5 py-0.5 text-[10.5px] font-semibold text-amber-200">
+                <Sparkles className="h-3 w-3" />
+                AI Unified Diff
+              </span>
+              <span className="truncate font-medium text-slate-100" title={pendingChange.title}>
+                {pendingChange.title.replace(/^\[(AI Composer|Outline AI)\]\s*/, "")}
+              </span>
+              <span className="flex shrink-0 items-center gap-1 font-mono text-[10.5px]">
+                {diff.stats.added > 0 && (
+                  <span className="rounded bg-emerald-500/15 px-1 text-emerald-300">+{diff.stats.added}</span>
+                )}
+                {diff.stats.modified > 0 && (
+                  <span className="rounded bg-amber-500/15 px-1 text-amber-300">~{diff.stats.modified}</span>
+                )}
+                {diff.stats.deleted > 0 && (
+                  <span className="rounded bg-rose-500/15 px-1 text-rose-300">−{diff.stats.deleted}</span>
+                )}
+              </span>
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <div className="inline-flex overflow-hidden rounded border border-white/15 bg-black/20 text-[10.5px]">
+                <button
+                  type="button"
+                  data-testid="outline-diff-mode-diff"
+                  onClick={() => setViewMode("diff")}
+                  className={`px-2 py-0.5 ${viewMode === "diff" ? "bg-violet-500/30 font-semibold text-violet-100" : "text-slate-400 hover:text-slate-200"}`}
+                >
+                  Unified Diff
+                </button>
+                <button
+                  type="button"
+                  data-testid="outline-diff-mode-edit"
+                  onClick={() => setViewMode("edit")}
+                  className={`px-2 py-0.5 ${viewMode === "edit" ? "bg-violet-500/30 font-semibold text-violet-100" : "text-slate-400 hover:text-slate-200"}`}
+                >
+                  원본 편집
+                </button>
+              </div>
+              {viewMode === "diff" && (
+                <button
+                  type="button"
+                  data-testid="outline-diff-filter-toggle"
+                  onClick={() => setChangesOnly((v) => !v)}
+                  className={`rounded border px-2 py-0.5 text-[10.5px] ${
+                    changesOnly
+                      ? "border-sky-400/50 bg-sky-500/20 text-sky-200"
+                      : "border-white/15 bg-white/5 text-slate-300 hover:bg-white/10"
+                  }`}
+                >
+                  {changesOnly ? "변경만" : "전체 트리"}
+                </button>
+              )}
+              <button
+                type="button"
+                data-testid="outline-diff-approve"
+                disabled={!canApprove}
+                onClick={() => handleApprove(false)}
+                title="이 변경안을 아웃라인에 반영 (Alt+Enter)"
+                className="inline-flex items-center gap-1 rounded bg-emerald-600 px-2.5 py-0.5 text-[11px] font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Check className="h-3 w-3" />
+                승인
+              </button>
+              {hasBoundVDoc && (
+                <button
+                  type="button"
+                  data-testid="outline-diff-approve-recompile"
+                  disabled={!canApprove}
+                  onClick={() => handleApprove(true)}
+                  title="아웃라인 승인 후 연결된 .vdoc 도 즉시 재컴파일"
+                  className="inline-flex items-center gap-1 rounded border border-emerald-400/40 bg-emerald-500/15 px-2 py-0.5 text-[10.5px] font-medium text-emerald-200 hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  승인+.vdoc
+                </button>
+              )}
+              <button
+                type="button"
+                data-testid="outline-diff-reject"
+                onClick={handleReject}
+                title="변경안 거절 (Alt+Shift+Enter)"
+                className="inline-flex items-center gap-1 rounded border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] text-slate-300 hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-200"
+              >
+                <X className="h-3 w-3" />
+                거절
+              </button>
+            </div>
+          </div>
+
+          {diff.failedOps.length > 0 && (
+            <div
+              data-testid="outline-diff-failed-warning"
+              className="mt-2 flex items-start gap-1.5 rounded border border-rose-500/40 bg-rose-500/15 px-2.5 py-1.5 text-[11px] text-rose-200"
+            >
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-400" />
+              <span>
+                패치 연산 {diff.failedOps.length}건이 현재 트리와 맞지 않아 부분 삭제 방지를 위해 승인을 차단했습니다 (
+                {diff.failedOps.slice(0, 2).map((f) => `#${f.index + 1}: ${f.error}`).join(" · ")}). 거절 후 AI에게 다시 요청하세요.
+              </span>
+            </div>
+          )}
+
+          {stale && diff.failedOps.length === 0 && (
+            <div className="mt-2 flex items-center gap-1.5 rounded border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[11px] text-amber-200">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+              <span>제안 이후 아웃라인이 수정되었습니다. 아래 Diff 내용을 확인한 뒤 승인하세요.</span>
+            </div>
+          )}
+
+          {applyError && (
+            <div className="mt-2 rounded border border-rose-500/40 bg-rose-500/15 px-2.5 py-1 text-[11px] text-rose-200">
+              {applyError}
+            </div>
+          )}
+        </div>
+      )}
+
+      {showUnifiedDiff ? (
+        <div data-testid="outline-unified-diff">
+          <h1 className="mb-4 text-[22px] font-bold tracking-tight text-[var(--obs-text-normal,#ececec)]">
+            {doc.title}
+          </h1>
+          <div className="space-y-0.5 rounded-lg border border-white/10 bg-[#18191c] p-2.5 font-sans">
+            {visibleLines.length === 0 ? (
+              <p className="px-2 py-4 text-center text-[12px] text-slate-400">
+                표시할 변경 줄이 없습니다.
+              </p>
+            ) : (
+              visibleLines.map((line) => <OutlineDiffRow key={line.key} line={line} />)
+            )}
+          </div>
+          <p className="mt-2 text-right text-[10.5px] text-slate-500">
+            단축키: Alt+Enter 승인 · Alt+Shift+Enter 거절
+          </p>
+        </div>
+      ) : (
+        <OutlineEditorProvider
+          store={editorStore}
+          host={host}
+          rootNodes={doc.rootNodes}
+          defaultView={doc.defaultView}
+        >
+          <OutlineHeader
+            rootTitle={doc.title}
+            onUpdateRootTitle={onUpdateRootTitle}
+            showViewToggle
+            showBreadcrumb
+          />
+          <div className="mt-4">
+            <OutlineBody />
+          </div>
+        </OutlineEditorProvider>
+      )}
+    </div>
+  );
+});
+
 export interface OutlineTabEditorProps {
   readonly vault: VaultPort;
   readonly path: string;
+  readonly vdocUiBridge?: VDocUiBridgeStore;
+  /** AI Composer 워크스페이스 — 대기 중인 `outline-patch` 를 인라인 Unified Diff 로 검토 · 승인한다. */
+  readonly ai?: V2AiWorkspace;
   /** 붙인 파일(그림·PDF 등)을 워크벤치 탭으로 연다. */
   readonly openFile?: (path: string) => void;
   /** 일반 연결 문서를 워크벤치 탭으로 연다. */
   readonly openLink?: (path: string, mode?: BridgeOpenMode) => void;
   /** `.vdoc` 파트너 문서를 같은 그룹 탭의 페어 뷰 슬롯으로 연다. */
   readonly openInPairGroup?: (path: string) => void;
+  /** 고른 불릿(여러 개)을 AI Composer 에 알린다. */
+  readonly reportSelection?: (sel: EditorSelectionSnapshot | null) => void;
+  /** 선택 불릿을 AI Composer 로 바로 디렉팅한다. */
+  readonly onAiDirect?: (prompt?: string) => void;
+}
+
+/** 고른 불릿 → 들여쓴 글 (하위 불릿 포함, 최대 글자 수). */
+function outlineSelectionText(roots: readonly OutlineNode[], ids: readonly string[], max = 6000): { text: string; labels: string[] } {
+  const byId = new Map<string, OutlineNode>();
+  const walk = (nodes: readonly OutlineNode[]) => {
+    for (const n of nodes) {
+      byId.set(n.id, n);
+      walk(n.children);
+    }
+  };
+  walk(roots);
+  const picked = new Set(ids);
+  const lines: string[] = [];
+  const labels: string[] = [];
+  const emit = (n: OutlineNode, depth: number) => {
+    lines.push(`${"  ".repeat(depth)}- ${n.text}`);
+    if (n.note) lines.push(`${"  ".repeat(depth + 1)}${n.note}`);
+    for (const c of n.children) emit(c, depth + 1);
+  };
+  for (const id of ids) {
+    const n = byId.get(id);
+    if (!n) continue;
+    // 이미 고른 조상 밑에 있으면 조상이 함께 낸다
+    let skip = false;
+    for (const other of ids) {
+      if (other !== id && picked.has(other) && containsNode(byId.get(other), id)) skip = true;
+    }
+    if (skip) continue;
+    labels.push(n.text.slice(0, 40));
+    emit(n, 0);
+  }
+  return { text: lines.join("\n").slice(0, max), labels };
+}
+
+function containsNode(root: OutlineNode | undefined, id: string): boolean {
+  if (!root) return false;
+  return root.children.some((c) => c.id === id || containsNode(c, id));
 }
 
 export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
   vault,
   path,
+  vdocUiBridge,
+  ai,
   openFile,
   openLink,
   openInPairGroup,
+  reportSelection,
+  onAiDirect,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const previewScrollRef = useRef<HTMLDivElement>(null);
@@ -271,6 +819,34 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
   );
 
   const focusedNodeId = useStore(editorStore, (s) => s.focusedNodeId);
+  const selectedNodeIds = useStore(editorStore, (s) => s.selectedNodeIds);
+
+  // 고른 불릿(여러 개)을 AI Composer 에 알린다 — 캔버스 선택과 같은 통로 (text 첨부 후보)
+  const reportSelectionRef = useRef(reportSelection);
+  useEffect(() => {
+    reportSelectionRef.current = reportSelection;
+  }, [reportSelection]);
+  const lastOutlineSelSig = useRef<string | null>(null);
+  useEffect(() => {
+    const report = reportSelectionRef.current;
+    if (!report) return;
+    const ids = selectedNodeIds ?? [];
+    const sig = `${path}|${ids.join(",")}`;
+    if (sig === lastOutlineSelSig.current) return;
+    lastOutlineSelSig.current = sig;
+    if (!ids.length) {
+      report(null);
+      return;
+    }
+    const { text, labels } = outlineSelectionText(session.snapshot().rootNodes, ids);
+    report({
+      resourceId: path,
+      kind: "outline-nodes",
+      summary: ids.length === 1 ? labels[0] ?? "불릿" : `불릿 ${ids.length}개 (${labels.slice(0, 3).join(", ")}${ids.length > 3 ? " …" : ""})`,
+      text,
+      nodeIds: ids,
+    });
+  }, [selectedNodeIds, path, session]);
   const activeRootId = useStore(editorStore, (s) => s.activeRootId);
 
   useEffect(
@@ -278,6 +854,39 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
       subscribeOutlineReveal(path, (nodeId, options) =>
         revealNode(editorStore, session.snapshot().rootNodes, nodeId, containerRef.current, options)
       ),
+    [path, editorStore, session]
+  );
+
+  // AI Staged `.outline` 승인 반영 시 열린 에디터 세션(`applyPatch` + Undo 스택)을 경유하게 등록한다 (덮어쓰기 경합 방지)
+  useEffect(
+    () =>
+      registerLiveOutlineSession(path, {
+        applyPatch: (requests, nodeEvidence) => {
+          const outcome = editorStore.getState().applyPatch([...requests]);
+          if (nodeEvidence && Object.keys(nodeEvidence).length > 0) {
+            const cur = session.snapshot();
+            session.write({
+              ...cur,
+              updatedAt: new Date().toISOString(),
+              nodeEvidence: mergeOutlineNodeEvidence(cur.nodeEvidence, nodeEvidence),
+            });
+          }
+          return outcome.every((r) => r.ok);
+        },
+        undo: () => {
+          const st = editorStore.getState();
+          if (typeof st.undo !== "function") return false;
+          st.undo();
+          return true;
+        },
+        selectNodes: (nodeIds, zoom) => {
+          editorStore.getState().selectNodes([...nodeIds]);
+          if (nodeIds[0]) {
+            revealNode(editorStore, session.snapshot().rootNodes, nodeIds[0], containerRef.current, { zoom });
+          }
+        },
+        getSnapshot: () => session.snapshot(),
+      }),
     [path, editorStore, session]
   );
 
@@ -612,9 +1221,9 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
   const previewDoc = compiledPreview?.doc ?? null;
   const previewIsStale = Boolean(
     previewOpen &&
-      compiledPreview &&
-      (compiledPreview.signature !== currentSemanticSig ||
-        (effectiveTarget && compiledPreview.targetNodeId !== effectiveTarget.nodeId))
+    compiledPreview &&
+    (compiledPreview.signature !== currentSemanticSig ||
+      (effectiveTarget && compiledPreview.targetNodeId !== effectiveTarget.nodeId))
   );
   const vdocHasPendingChanges = Boolean(
     boundVDocPath && lastSyncedSig !== null && lastSyncedSig !== currentSemanticSig
@@ -689,15 +1298,14 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                       ? `프로젝트 외부 파일: ${activeLinkStatus.externalVDocPath}`
                       : "클릭해 같은 프로젝트의 .vdoc 연결 관리"
                 }
-                className={`flex min-w-0 max-w-[300px] items-center gap-1.5 rounded border px-2 py-0.5 text-[11px] transition-colors ${
-                  activeLinkStatus.kind === "linked"
-                    ? "border-emerald-500/35 bg-emerald-500/12 text-emerald-200 hover:bg-emerald-500/20"
-                    : activeLinkStatus.kind === "out-of-scope"
-                      ? "border-amber-500/40 bg-amber-500/15 text-amber-200 hover:bg-amber-500/25"
-                      : activeLinkStatus.kind === "broken"
-                        ? "border-rose-500/40 bg-rose-500/15 text-rose-200 hover:bg-rose-500/25"
-                        : "border-[var(--obs-border,#3a3a3a)] bg-[var(--obs-bg-primary,#1e1e1e)] text-[var(--obs-text-normal,#dadada)] hover:border-emerald-500/40"
-                }`}
+                className={`flex min-w-0 max-w-[300px] items-center gap-1.5 rounded border px-2 py-0.5 text-[11px] transition-colors ${activeLinkStatus.kind === "linked"
+                  ? "border-emerald-500/35 bg-emerald-500/12 text-emerald-200 hover:bg-emerald-500/20"
+                  : activeLinkStatus.kind === "out-of-scope"
+                    ? "border-amber-500/40 bg-amber-500/15 text-amber-200 hover:bg-amber-500/25"
+                    : activeLinkStatus.kind === "broken"
+                      ? "border-rose-500/40 bg-rose-500/15 text-rose-200 hover:bg-rose-500/25"
+                      : "border-[var(--obs-border,#3a3a3a)] bg-[var(--obs-bg-primary,#1e1e1e)] text-[var(--obs-text-normal,#dadada)] hover:border-emerald-500/40"
+                  }`}
               >
                 {activeLinkStatus.kind === "out-of-scope" || activeLinkStatus.kind === "broken" ? (
                   <AlertTriangle className="h-3 w-3 shrink-0" />
@@ -765,11 +1373,10 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                     ? `현재 아웃라인을 컴파일해 바인딩된 .vdoc 에 반영 (${boundVDocPath})`
                     : "이 지시어 블록을 컴파일해 새 .vdoc 파일 생성 및 그룹 페어 열기"
                 }
-                className={`flex items-center gap-1 rounded border px-2 py-0.5 text-[10.5px] font-medium transition-colors ${
-                  boundVDocPath
-                    ? "border-emerald-500/35 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
-                    : "border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
-                }`}
+                className={`flex items-center gap-1 rounded border px-2 py-0.5 text-[10.5px] font-medium transition-colors ${boundVDocPath
+                  ? "border-emerald-500/35 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
+                  : "border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                  }`}
               >
                 {boundVDocPath ? (
                   <>
@@ -795,11 +1402,10 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
               type="button"
               onClick={handleTogglePreview}
               title="현재 지시어를 컴파일해 인라인 프리뷰 열기/닫기"
-              className={`flex items-center gap-1 rounded border px-2 py-0.5 text-[10.5px] font-medium transition-colors ${
-                previewOpen
-                  ? "border-[var(--obs-accent,#8a5cf5)] bg-[var(--obs-accent,#8a5cf5)]/25 text-[#e9d5ff]"
-                  : "border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
-              }`}
+              className={`flex items-center gap-1 rounded border px-2 py-0.5 text-[10.5px] font-medium transition-colors ${previewOpen
+                ? "border-[var(--obs-accent,#8a5cf5)] bg-[var(--obs-accent,#8a5cf5)]/25 text-[#e9d5ff]"
+                : "border-[var(--obs-border,#363636)] bg-[var(--obs-bg-primary,#1e1e1e)] text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+                }`}
             >
               {previewOpen ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
               <span>프리뷰</span>
@@ -846,11 +1452,10 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                       key={item.nodeId}
                       type="button"
                       onClick={() => handleSelectDocTarget(item.nodeId)}
-                      className={`flex w-full items-center justify-between gap-1.5 rounded px-1.5 py-1 text-left text-[10.5px] transition-colors ${
-                        isCurrent
-                          ? "bg-[var(--obs-accent,#8a5cf5)]/20 text-white"
-                          : "text-[var(--obs-text-muted,#b3b3b3)] hover:bg-white/5 hover:text-white"
-                      }`}
+                      className={`flex w-full items-center justify-between gap-1.5 rounded px-1.5 py-1 text-left text-[10.5px] transition-colors ${isCurrent
+                        ? "bg-[var(--obs-accent,#8a5cf5)]/20 text-white"
+                        : "text-[var(--obs-text-muted,#b3b3b3)] hover:bg-white/5 hover:text-white"
+                        }`}
                     >
                       <span className="min-w-0 flex-1 truncate">
                         <span className="mr-1 font-code text-[9.5px] text-violet-300">
@@ -859,13 +1464,12 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                         {item.directive.label || "(제목 없음)"}
                       </span>
                       <span
-                        className={`shrink-0 truncate max-w-[115px] rounded px-1 py-0 text-[9.5px] ${
-                          st.kind === "linked"
-                            ? "bg-emerald-500/15 text-emerald-300"
-                            : st.kind === "out-of-scope"
-                              ? "bg-amber-500/15 text-amber-200"
-                              : "bg-white/5 text-[var(--obs-text-faint,#808080)]"
-                        }`}
+                        className={`shrink-0 truncate max-w-[115px] rounded px-1 py-0 text-[9.5px] ${st.kind === "linked"
+                          ? "bg-emerald-500/15 text-emerald-300"
+                          : st.kind === "out-of-scope"
+                            ? "bg-amber-500/15 text-amber-200"
+                            : "bg-white/5 text-[var(--obs-text-faint,#808080)]"
+                          }`}
                       >
                         {st.kind === "linked"
                           ? basename(st.vdocPath)
@@ -1045,29 +1649,58 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
       {/* Main Workspace: Outline Editor + Explicit On-Demand Preview */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div
-          ref={containerRef}
-          className={`obs-outliner-surface min-h-0 flex-1 overflow-auto bg-[var(--obs-bg-primary,#1e1e1e)] px-8 py-6 ${
-            previewOpen ? "border-r border-[var(--obs-border-subtle,#2d2d2d)]" : ""
-          }`}
+          className={`flex min-h-0 flex-1 flex-col overflow-hidden ${previewOpen ? "border-r border-[var(--obs-border-subtle,#2d2d2d)]" : ""
+            }`}
         >
-          <div className="mx-auto w-full max-w-3xl">
-            <OutlineEditorProvider
-              store={editorStore}
+          <div
+            ref={containerRef}
+            className="obs-outliner-surface min-h-0 flex-1 overflow-auto bg-[var(--obs-bg-primary,#1e1e1e)] px-8 py-6"
+          >
+            <OutlineDiffAwareCanvas
+              ai={ai}
+              path={path}
+              doc={doc}
+              editorStore={editorStore}
               host={host}
-              rootNodes={doc.rootNodes}
-              defaultView={doc.defaultView}
-            >
-              <OutlineHeader
-                rootTitle={doc.title}
-                onUpdateRootTitle={handleUpdateTitle}
-                showViewToggle
-                showBreadcrumb
-              />
-              <div className="mt-4">
-                <OutlineBody />
-              </div>
-            </OutlineEditorProvider>
+              onUpdateRootTitle={handleUpdateTitle}
+            />
           </div>
+
+          {onAiDirect && (
+            <div className="flex items-center justify-between gap-2 border-t border-white/10 bg-[#202124] px-3 py-1.5 text-[11px] text-slate-300">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="truncate text-slate-400">
+                  {selectedNodeIds.length > 0
+                    ? `선택 불릿 ${selectedNodeIds.length}개`
+                    : doc.nodeEvidence && Object.keys(doc.nodeEvidence).length > 0
+                      ? `근거 연결 노드 ${Object.keys(doc.nodeEvidence).length}개`
+                      : "불릿을 선택하거나 AI 에 구조 작업을 요청하세요"}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  data-testid="outline-ai-direct"
+                  onClick={() => onAiDirect()}
+                  className="inline-flex items-center gap-1 rounded border border-violet-400/40 bg-violet-500/15 px-2 py-0.5 text-[11px] font-medium text-violet-200 hover:bg-violet-500/25"
+                  title="선택 불릿을 AI Composer 에 첨부해 지시하기"
+                >
+                  <span>AI Direct</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {vdocUiBridge && (
+            <OutlineStagedAssetBar
+              bridge={vdocUiBridge}
+              outlinePath={path}
+              vault={vault}
+              boundVDocPaths={Object.values(doc.docBindings ?? {})
+                .map((b) => fromVaultUri(b.vdocPath))
+                .filter((p): p is string => Boolean(p))}
+            />
+          )}
         </div>
 
         {/* Inline On-Demand Compiled Preview Pane */}
@@ -1086,11 +1719,10 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                     type="button"
                     onClick={() => runPreviewCompile(effectiveTarget.nodeId, effectiveAssetHint)}
                     title="현재 아웃라인으로 프리뷰 다시 컴파일"
-                    className={`flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
-                      previewIsStale
-                        ? "border-amber-500/50 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30"
-                        : "border-white/15 bg-white/5 text-slate-200 hover:bg-white/15"
-                    }`}
+                    className={`flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium transition-colors ${previewIsStale
+                      ? "border-amber-500/50 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30"
+                      : "border-white/15 bg-white/5 text-slate-200 hover:bg-white/15"
+                      }`}
                   >
                     <RefreshCw className="h-2.5 w-2.5" />
                     <span>{previewIsStale ? "재컴파일" : "컴파일"}</span>
@@ -1101,11 +1733,10 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                     key={z}
                     type="button"
                     onClick={() => setPreviewZoom(z)}
-                    className={`rounded px-1.5 py-0.5 font-code text-[10px] ${
-                      previewZoom === z
-                        ? "bg-white/15 text-white"
-                        : "text-slate-400 hover:text-white"
-                    }`}
+                    className={`rounded px-1.5 py-0.5 font-code text-[10px] ${previewZoom === z
+                      ? "bg-white/15 text-white"
+                      : "text-slate-400 hover:text-white"
+                      }`}
                   >
                     {z}%
                   </button>

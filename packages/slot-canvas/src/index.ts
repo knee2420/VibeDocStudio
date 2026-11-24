@@ -13,3 +13,4 @@ export * from "./block-views";
 export * from "./keyLayer";
 export * from "./mediaSrc";
 export * from "./styleContext";
+export * from "./useMarqueeSelection";

@@ -18,6 +18,7 @@
     "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/file-explorer.test.ts"
   },
   "dependencies": {
+    "@vibe/selection-core": "workspace:*",
     "@vibe/vault-core": "workspace:*",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",

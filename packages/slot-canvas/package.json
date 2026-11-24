@@ -14,7 +14,7 @@
     "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/block-views.test.tsx tests/windowed-page-chunker.test.tsx"
   },
   "dependencies": {
-    "@vibe/ai-composer": "workspace:*",
+    "@vibe/selection-core": "workspace:*",
     "@vibe/slot-editor": "workspace:*",
     "@vibe/style-core": "workspace:*",
     "@vibe/vdoc-schema": "workspace:*",

@@ -96,6 +96,13 @@ def render_contexts(contexts: Iterable[ContextItem], limit: int = 24000) -> str:
 
     for item in sorted_items:
         content = item.content or ""
+        if item.kind == "image" and not content:
+            parts_info = [f"[첨부 이미지] {item.label}"]
+            if item.mime_type:
+                parts_info.append(f"mime={item.mime_type}")
+            if item.vault_path:
+                parts_info.append(f"vaultPath={item.vault_path} (문서 삽입 시 resource:vault:{item.vault_path})")
+            content = " · ".join(parts_info)
 
         # 높은 우선순위(scope · 작업 공간 지도, @핸들, target)는 넉넉하게, 일반 배경 참조는 독식 방지 상한 적용
         is_high_priority = item.kind in _ALWAYS_FULL or bool(item.handle) or item.role == "target"

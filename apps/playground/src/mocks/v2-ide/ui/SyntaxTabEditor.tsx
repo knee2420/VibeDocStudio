@@ -4,7 +4,7 @@ import type { ElementRegistrySnapshot } from "@vibe/vdoc-schema";
 import type { EditorHostContext, EditorOutlineHostContext } from "@vibe/workspace-layout/core";
 
 import type { IdeEditorEnv } from "../model/editorAdapters";
-import { detectSyntaxRuleConflicts, parseSyntaxSnapshot } from "../model/settingsRegistry";
+import { detectSyntaxRuleConflicts, parseSyntaxSnapshot } from "@vibe/vault-formats";
 import { SyntaxSettingsView } from "./settings";
 
 export const SyntaxTabEditor: React.FC<{

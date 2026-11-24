@@ -46,20 +46,20 @@ import {
 import { createIdeEditorRegistry, type IdeEditorEnv } from "./editorAdapters";
 import { mountLocalFolderAsVault } from "./localVaultMount";
 import {
-  isOutlinePath,
-  parseOutlineJson,
-  rewriteOutlineBindingsOnRename,
-} from "./outlineCodec";
-import { importWebUrlAsRefStream } from "./refClient";
-import { V2_SAMPLE_VAULT_SEEDS, resolveTabTitle } from "./sampleVault";
-import {
   createVaultLinkCardDraft,
+  createVDocStore,
+  isOutlinePath,
   isVDocPath,
+  parseOutlineJson,
   parseVDocJson,
+  rewriteOutlineBindingsOnRename,
   rewriteVDocPointersOnRename,
   serializeVDocJson,
-} from "./vdocCodec";
-import { createVDocUiBridgeStore, type VDocUiBridgeStore } from "./vdocUiBridge";
+  type VDocStore,
+} from "@vibe/vault-formats";
+import { importWebUrlAsRefStream } from "./refClient";
+import { V2_SAMPLE_VAULT_SEEDS, resolveTabTitle } from "./sampleVault";
+import { createVDocUiBridgeStore, type VDocUiBridgeStore } from "@vibe/canvas-state";
 
 export interface IdeLogEntry {
   readonly id: string;
@@ -83,6 +83,7 @@ export interface IdeWorkbenchRuntime {
   readonly layout: WorkspaceLayoutStore;
   readonly editorRegistry: EditorRegistry<IdeEditorEnv>;
   readonly vdocUiBridge: VDocUiBridgeStore;
+  readonly docs: VDocStore;
   readonly openVaultFile: (
     path: string,
     mode?: OpenResourceMode,
@@ -238,6 +239,8 @@ export function createIdeWorkbenchRuntime(
   const metadataCache = new VaultMetadataCache(vault);
   const editorRegistry = createIdeEditorRegistry();
   const vdocUiBridge = createVDocUiBridgeStore();
+  // 경로별 문서 캐시 — 편집기 · 인스펙터 · 구조 패널 · AI 가 같은 파싱 결과를 나눠 쓴다
+  const docs = createVDocStore(vault);
 
   const savedExplorer = options?.initialSession?.explorer as
     | {
@@ -1076,6 +1079,7 @@ ${selText || "(선택된 블록 요약)"}
     layout,
     editorRegistry,
     vdocUiBridge,
+    docs,
     openVaultFile,
     openFileInPairTabGroup,
     openWikilink,
@@ -1126,6 +1130,7 @@ ${selText || "(선택된 블록 요약)"}
       unsubVault();
       unsubLayout();
       metadataCache.dispose();
+      docs.dispose();
       explorer.getState().dispose();
       layout.getState().dispose();
       vault.dispose?.();

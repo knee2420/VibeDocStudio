@@ -23,6 +23,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any, Callable, Optional
@@ -150,14 +151,97 @@ class DocTools:
             raise ValueError(packs.message(MSG, "compose.noDoc"))
         return doc_id
 
+    # --- 문서 저장소: studio 는 `/api/documents`, playground v2 는 볼트 파일(`/api/vaults/{id}/file`) ----------
+
+    @staticmethod
+    def _vault_of(state: dict[str, Any]) -> str:
+        """작업대가 볼트 모드면 볼트 id (문서 = 볼트 파일), 아니면 ''."""
+        return str(state.get("vaultId") or "").strip()
+
+    @staticmethod
+    def _require_writable(state: dict[str, Any]) -> None:
+        """볼트가 읽기 전용(화면 RO)이면 에이전트도 쓰지 않는다."""
+        if state.get("vaultId") and state.get("readOnly"):
+            raise ValueError(packs.message("research:messages.json", "readOnly"))
+
+    @staticmethod
+    def _vault_path_of(doc_id: str, state: dict[str, Any]) -> str:
+        if doc_id and doc_id == str(state.get("docId") or "") and state.get("docVaultPath"):
+            return str(state["docVaultPath"])
+        for d in state.get("projectDocs") or []:
+            if isinstance(d, dict) and str(d.get("docId") or "") == doc_id and d.get("vaultPath"):
+                return str(d["vaultPath"])
+        raise ValueError(packs.message(MSG, "compose.notFound", doc=doc_id))
+
+    def _vault_url(self, vault_id: str, tail: str = "file") -> str:
+        return f"/api/vaults/{urllib.parse.quote(vault_id, safe='')}/{tail}"
+
+    def _vault_read(self, vault_id: str, rel: str) -> dict[str, Any]:
+        res = self.api.call("GET", self._vault_url(vault_id) + "?path=" + urllib.parse.quote(rel, safe=""))
+        try:
+            return json.loads(res.get("content") or "")
+        except ValueError as exc:
+            raise ValueError(f"볼트 문서를 읽지 못했다 ({rel}): {exc}") from exc
+
+    @staticmethod
+    def _vault_json(doc: dict[str, Any]) -> str:
+        return json.dumps(doc, ensure_ascii=False, indent=2)
+
+    def _vault_full_path(self, state: dict[str, Any], rel: str) -> Optional[str]:
+        root = str(state.get("vaultRoot") or "")
+        return os.path.join(root, *rel.split("/")) if root and rel else None
+
     def _load(self, doc: str = "") -> dict[str, Any]:
         doc_id = self._doc_id(doc)
+        state = self._wb_state()
+        vault_id = self._vault_of(state)
+        if vault_id:
+            return self._vault_read(vault_id, self._vault_path_of(doc_id, state))
         return self.api.call("GET", f"/api/documents/{doc_id}")["document"]
 
     def _save(self, doc: dict[str, Any], slot_ids: list[str], label: str) -> dict[str, Any]:
+        state = self._wb_state()
+        vault_id = self._vault_of(state)
+        if vault_id:
+            self._require_writable(state)
+            rel = self._vault_path_of(str(doc.get("docId") or ""), state)
+            saved = {**doc, "revision": int(doc.get("revision") or 0) + 1,
+                     "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+            self.api.call("PUT", self._vault_url(vault_id), {"path": rel, "content": self._vault_json(saved)})
+            return saved
         body = {"document": doc, "baseRevision": doc.get("revision"),
                 "changes": [{"slotIds": slot_ids[:200], "author": "ai", "label": label, "runId": self.session_id or None}]}
         return self.api.call("PUT", f"/api/documents/{doc['docId']}", body)["document"]
+
+    def _vault_new(self, state: dict[str, Any], title: str, surface: str, genre: str, width: Any) -> tuple[dict[str, Any], str]:
+        """볼트 모드 초안: 활성 문서 폴더(또는 작업대 draftFolder · `AI Drafts`)에 새 `.vdoc` 파일을 만든다."""
+        vault_id = self._vault_of(state)
+        self._require_writable(state)
+        doc_id = f"vdoc-{int(time.time() * 1000):x}-{os.urandom(4).hex()}"
+        now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        page, slots = blank_page(f"{doc_id}_p1", 1, surface=surface, surface_width=int(width) if width else None,
+                                 label="본문" if surface == "scroll" else "")
+        doc: dict[str, Any] = {
+            "version": "1.0.0", "docId": doc_id, "title": title, "status": "Draft", "updatedAt": now,
+            "variables": {}, "pages": [page], "slots": slots, "backdata": {}, "revision": 1,
+            "surface": {"kind": surface, **({"width": int(width)} if width else {})}, "genre": genre,
+            "origin": {"createdBy": "agent", "createdAt": now, **({"sessionId": self.session_id} if self.session_id else {})},
+        }
+        folder = str(state.get("draftFolder") or "").strip("/")
+        if not folder:
+            active = str(state.get("docVaultPath") or "")
+            folder = active.rsplit("/", 1)[0] if "/" in active else ("AI Drafts" if not active else "")
+        stem = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "", title).strip().rstrip(".")[:80] or "새 글"
+        for n in range(1, 50):
+            name = f"{stem}.vdoc" if n == 1 else f"{stem} ({n}).vdoc"
+            rel = f"{folder}/{name}" if folder else name
+            try:
+                self.api.call("POST", self._vault_url(vault_id), {"path": rel, "content": self._vault_json(doc)})
+                return doc, rel
+            except ValueError as exc:
+                if "오류 409" not in str(exc):  # 같은 이름이 있으면 번호를 붙여 다시
+                    raise
+        raise ValueError(f"초안 파일 이름을 정하지 못했다: {stem}")
 
     @staticmethod
     def _is_empty_draft(doc: dict[str, Any]) -> bool:
@@ -197,6 +281,14 @@ class DocTools:
         partial = [str(d["docId"]) for d in docs if lowered in str(d.get("title") or "").casefold()]
         if len(partial) == 1:
             return partial[0]
+        if self._vault_of(state):
+            # 볼트 모드: 문서는 프로젝트 문서 목록(볼트 경로)으로만 찾는다 — 경로 · 파일 이름으로도 받는다
+            for d in docs:
+                rel = str(d.get("vaultPath") or "")
+                name = rel.rsplit("/", 1)[-1]
+                if target in (rel, name) or target.casefold() == name.rsplit(".", 1)[0].casefold():
+                    return str(d["docId"])
+            raise ValueError(packs.message(MSG, "compose.notFound", doc=target))
         root = state.get("documentsRoot") or (os.path.dirname(os.path.dirname(state["docPath"])) if state.get("docPath") else "")
         if root and os.path.isdir(root):
             if os.path.isfile(os.path.join(root, target, "document.vdoc.json")):
@@ -247,18 +339,31 @@ class DocTools:
 
     # --- 도구 ----------------------------------------------------------------------------------
 
-    def _dc_new(self, title: str = "", surface: str = "scroll", genre: str = "blog", width: Any = None, **_: Any) -> str:
+    def _dc_new(self, title: str = "", surface: str = "scroll", genre: str = "blog", width: Any = None, folder: str = "",
+                **_: Any) -> str:
         state = self._wb_state()
-        project_id = str(state.get("projectId") or "").strip()
-        if not project_id:
-            raise ValueError(packs.message(MSG, "compose.noProject"))
-        body = {"projectId": project_id, "title": title or "새 글", "surface": "scroll" if surface == "scroll" else "paged",
-                "genre": str(genre or "blog"), "createdBy": "agent", "sessionId": self.session_id}
-        if width:
-            body["surfaceWidth"] = int(width)
-        doc = self.api.call("POST", "/api/documents", body)["document"]
-        root = state.get("documentsRoot") or (os.path.dirname(os.path.dirname(state["docPath"])) if state.get("docPath") else "")
-        doc_path = os.path.join(root, doc["docId"], "document.vdoc.json") if root else None
+        if folder and self._vault_of(state):
+            rel = str(folder).replace("\\", "/").strip().strip("/")
+            if not rel or ":" in rel or any(p in ("", ".", "..") for p in rel.split("/")):
+                raise ValueError(packs.message("research:messages.json", "badPath", path=folder))
+            state = {**state, "draftFolder": rel}
+        surface_kind = "scroll" if surface == "scroll" else "paged"
+        vault_rel = ""
+        if self._vault_of(state):
+            doc, vault_rel = self._vault_new(state, " ".join((title or "").split())[:120] or "새 글", surface_kind,
+                                             str(genre or "blog").strip()[:40], width)
+            doc_path = self._vault_full_path(state, vault_rel)
+        else:
+            project_id = str(state.get("projectId") or "").strip()
+            if not project_id:
+                raise ValueError(packs.message(MSG, "compose.noProject"))
+            body = {"projectId": project_id, "title": title or "새 글", "surface": surface_kind,
+                    "genre": str(genre or "blog"), "createdBy": "agent", "sessionId": self.session_id}
+            if width:
+                body["surfaceWidth"] = int(width)
+            doc = self.api.call("POST", "/api/documents", body)["document"]
+            root = state.get("documentsRoot") or (os.path.dirname(os.path.dirname(state["docPath"])) if state.get("docPath") else "")
+            doc_path = os.path.join(root, doc["docId"], "document.vdoc.json") if root else None
         docs_list = [d for d in (state.get("projectDocs") or []) if isinstance(d, dict) and d.get("docId") != doc["docId"]]
         docs_list.append({
             "docId": doc["docId"],
@@ -266,21 +371,32 @@ class DocTools:
             "surface": (doc.get("surface") or {}).get("kind", "scroll"),
             "pages": len(doc.get("pages") or []),
             "blocks": 0,
+            **({"vaultPath": vault_rel} if vault_rel else {}),
         })
-        self._set_state(docId=doc["docId"], docPath=doc_path, scope={"mode": "doc"}, selection=[], projectDocs=docs_list)
+        self._set_state(docId=doc["docId"], docPath=doc_path, scope={"mode": "doc"}, selection=[], projectDocs=docs_list,
+                        **({"docVaultPath": vault_rel} if vault_rel else {}))
         page = doc["pages"][0]
-        return packs.message(MSG, "compose.created", docId=doc["docId"], title=doc["title"], surface=doc["surface"]["kind"],
-                             genre=doc.get("genre"), pageId=page["pageId"])
+        out = packs.message(MSG, "compose.created", docId=doc["docId"], title=doc["title"], surface=doc["surface"]["kind"],
+                            genre=doc.get("genre"), pageId=page["pageId"])
+        # 화면(볼트 탐색기 · 탭)이 이 초안 파일을 열 수 있게 경로를 밝힌다
+        return out + (f"\n볼트 파일: vault://{vault_rel}" if vault_rel else "")
 
     def _dc_use(self, doc: str = "", **_: Any) -> str:
         state = self._wb_state()
         resolved_id = self._resolve_doc_id(doc, state)
+        vault_rel = self._vault_path_of(resolved_id, state) if self._vault_of(state) else ""
         try:
-            loaded = self.api.call("GET", f"/api/documents/{resolved_id}")["document"]
+            if vault_rel:
+                loaded = self._vault_read(self._vault_of(state), vault_rel)
+            else:
+                loaded = self.api.call("GET", f"/api/documents/{resolved_id}")["document"]
         except ValueError as exc:
             raise ValueError(packs.message(MSG, "compose.notFound", doc=doc)) from exc
-        root = state.get("documentsRoot") or (os.path.dirname(os.path.dirname(state["docPath"])) if state.get("docPath") else "")
-        doc_path = os.path.join(root, loaded["docId"], "document.vdoc.json") if root else None
+        if vault_rel:
+            doc_path = self._vault_full_path(state, vault_rel)
+        else:
+            root = state.get("documentsRoot") or (os.path.dirname(os.path.dirname(state["docPath"])) if state.get("docPath") else "")
+            doc_path = os.path.join(root, loaded["docId"], "document.vdoc.json") if root else None
         is_empty = self._is_empty_draft(loaded)
         adopted = list(dict.fromkeys([*(state.get("adoptedDocs") or []), *([loaded["docId"]] if is_empty else [])]))
         blocks_count = sum(len(p.get("blocks") or []) for p in loaded.get("pages") or [])
@@ -291,9 +407,11 @@ class DocTools:
             "surface": (loaded.get("surface") or {}).get("kind", "paged"),
             "pages": len(loaded.get("pages") or []),
             "blocks": blocks_count,
+            **({"vaultPath": vault_rel} if vault_rel else {}),
         })
         self._set_state(docId=loaded["docId"], docPath=doc_path, scope={"mode": "doc"},
-                        selection=[], adoptedDocs=adopted, projectDocs=docs_list)
+                        selection=[], adoptedDocs=adopted, projectDocs=docs_list,
+                        **({"docVaultPath": vault_rel} if vault_rel else {}))
         head = packs.message(
             MSG, "compose.selected",
             docId=loaded["docId"],
@@ -310,7 +428,8 @@ class DocTools:
             if can_compose
             else f"\n참고: 이미 블록 {blocks_count}개가 있는 문서다 — 구조(dc_build)는 바꾸지 말고 칸 내용은 slots.proposeBatch 로 제안한다."
         )
-        return head + hint + "\n" + self._outline(loaded)
+        where = f"\n볼트 파일: vault://{vault_rel}" if vault_rel else ""
+        return head + hint + where + "\n" + self._outline(loaded)
 
     def _dc_outline(self, doc: str = "", page: str = "", **_: Any) -> str:
         data = self._load(doc)

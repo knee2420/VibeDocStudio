@@ -415,7 +415,14 @@ class AgyConversation:
         self._respawn = threading.Thread(target=spawn, name="agy-respawn", daemon=True)
         self._respawn.start()
 
-    def run_turn(self, text: str, cancel: threading.Event) -> Iterator[dict[str, Any]]:
+    def run_turn(
+        self,
+        text: str,
+        cancel: threading.Event,
+        *,
+        images: Optional[list[dict[str, str]]] = None,
+    ) -> Iterator[dict[str, Any]]:
+        _ = images
         if self._respawn is not None:
             self._respawn.join(timeout=30)
             self._respawn = None

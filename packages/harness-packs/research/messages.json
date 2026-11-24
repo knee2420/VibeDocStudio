@@ -1,0 +1,23 @@
+{
+ "notVault": "리서치 도구는 볼트 모드(playground v2)에서만 쓴다 — 지금 작업대에 볼트가 없다.",
+ "readOnly": "볼트가 읽기 전용이다 — 사용자가 하단 RW/RO 를 RW 로 바꿔야 폴더 · 파일을 만들 수 있다.",
+ "badPath": "볼트 상대 경로가 아니다: {path} (절대 경로 · .. · 드라이브 문자는 쓸 수 없다)",
+ "folderMade": "폴더 준비됨: {path} (역할별로 레퍼런스 · 사진 · 글 폴더를 나누면 자료와 산출물이 섞이지 않는다)",
+ "badUrl": "http(s) 주소가 아니다: {url}",
+ "pageFailed": "열지 못했다 ({status}): {url} — 다른 후보를 본다.",
+ "page": "[페이지] {title}\n주소: {url}\n언어: {lang_summary} · 형식 신호: {format_signals}\n작성자/날짜: {byline}\n본문 {chars}자 (문단 {paragraphs}개 · 평균 {avg_p}자 · 링크 비율 {link_ratio}%) · 사진 {images}장 · 소제목 {headings}개\n소제목: {heading_list}\n첫 문단: {lead}",
+ "refFailed": "레퍼런스 등록 실패: {url} — {reason}. 다른 후보로 바꾼다.",
+ "refEmpty": "등록은 됐지만 내용이 비었다 (블록 0 · 상태 {status}): {url} — 차단 · 로그인 페이지일 수 있다. 다른 후보로 바꾼다.",
+ "refThinWarn": "⚠ 블록 {blocks}개 — 글 한 편 레퍼런스로 얇다 (권장 {minBlocks}개 이상). 목록·안내 페이지이거나 본문이 덜 잡혔을 수 있으니 더 풍부한 후보를 찾아 보충한다.",
+ "refBlocksOk": "블록 {blocks}개 (구성 참고 충분)",
+ "refDone": "[레퍼런스 등록] ref:{refId} 「{title}」\n볼트 파일: vault://{path}\n상태 {status} · 화면 {frames}장 · {block_note} · 한글 {ko_pct}% · 소제목 {outline}개 · 핀 {pins}개 · 층위 세트 {layerSet}\n작업대에 켜졌다 — rf_map · rf_skeleton(refId) 으로 구성을 읽는다.",
+ "searchEmpty": "자유 라이선스 사진을 찾지 못했다: {query} — 영문 고유명사 · 더 넓은 낱말로 바꾼다.",
+ "searchHead": "[사진 후보 {count}장 — {query}] id · 가로×세로 · 라이선스 · 작가 · 설명",
+ "searchRow": "- {id} · {width}×{height} · {license} · {artist} · {desc}",
+ "saveHead": "[사진 저장] {folder} — 저장 {saved}장 · 건너뜀 {skipped}장 (출처 노트: {note})",
+ "saveRow": "- {file} — {caption} ({license} · {artist})",
+ "saveSkip": "- 건너뜀 {id}: {why}",
+ "saveTail": "이 폴더는 리소스로 마운트됐다 — ws_images(folder=\"{rel}\") 로 resource:<id> 를 얻어 dc_build 에 넣는다. 글 끝에 사진 출처(작가 · 라이선스)를 밝힌다.",
+ "noteHead": "# 사진 출처\n\n이 폴더의 사진은 리서치 에이전트가 자유 라이선스 저장소(Wikimedia Commons)에서 내려받았다. 글에 쓸 때 작가 · 라이선스를 밝힌다.\n",
+ "noteRow": "\n## {caption}\n\n![[{file}]]\n\n- 라이선스: {license}\n- 작가: {artist}\n- 원본: {source}\n- 받은 시각: {at}\n"
+}

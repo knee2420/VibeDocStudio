@@ -18,9 +18,23 @@ export function resourceMediaSrc(resourceId: string): string {
   return `${RESOURCE_SRC_PREFIX}${resourceId}`;
 }
 
+/**
+ * 앱별 주소 해석기 — 앱이 자기 저장소의 `resource:` 주소를 먼저 푼다 (예: playground v2 볼트의 `resource:vault:<경로>`).
+ * null 을 돌려주면 기본 규칙(리소스 매니저)으로 넘어간다.
+ */
+let customResolver: ((src: string) => string | null) | null = null;
+
+export function setMediaSrcResolver(resolver: ((src: string) => string | null) | null): void {
+  customResolver = resolver;
+}
+
 export function resolveMediaSrc(src: string | undefined | null): string {
   const value = (src || "").trim();
   if (!value) return "";
+  if (customResolver) {
+    const custom = customResolver(value);
+    if (custom !== null) return custom;
+  }
   if (value.startsWith(RESOURCE_SRC_PREFIX)) {
     const id = value.slice(RESOURCE_SRC_PREFIX.length).trim();
     return id ? `${apiBase}/api/resources/raw/${encodeURIComponent(id)}` : "";

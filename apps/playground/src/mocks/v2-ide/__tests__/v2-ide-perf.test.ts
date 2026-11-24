@@ -9,8 +9,8 @@ import { createWorkspaceLayoutStore } from "@vibe/workspace-layout/core";
 
 import { V2_SAMPLE_VAULT_SEEDS } from "../model/sampleVault";
 import { createIdeWorkbenchRuntime } from "../model/useIdeWorkbench";
-import { parseVDocJson } from "../model/vdocCodec";
-import { createVDocUiBridgeStore } from "../model/vdocUiBridge";
+import { parseVDocJson } from "@vibe/vault-formats";
+import { createVDocUiBridgeStore } from "@vibe/canvas-state";
 
 function installMockLocalStorage() {
   let writes = 0;

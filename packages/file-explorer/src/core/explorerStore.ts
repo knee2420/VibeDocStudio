@@ -239,6 +239,32 @@ export function createFileExplorerStore(
 
   let unsubscribeVault: (() => void) | null = null;
 
+  /** 보이는 행이 그대로면 (내용 수정 등) 이전 배열을 다시 쓴다 — 탐색기가 다시 그려지지 않는다. */
+  const sameRows = (a: readonly ExplorerFlatRow[], b: readonly ExplorerFlatRow[]): boolean => {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      const x = a[i];
+      const y = b[i];
+      if (
+        x.path !== y.path ||
+        x.depth !== y.depth ||
+        x.isExpanded !== y.isExpanded ||
+        x.hasChildren !== y.hasChildren ||
+        x.isSelected !== y.isSelected ||
+        x.isFocused !== y.isFocused ||
+        x.isActiveFile !== y.isActiveFile ||
+        x.isRenaming !== y.isRenaming ||
+        x.recentBadge !== y.recentBadge ||
+        x.isProjectFolder !== y.isProjectFolder ||
+        x.node.kind !== y.node.kind ||
+        x.node.name !== y.node.name
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   const store = createStore<FileExplorerState>((set, get) => {
     const recompute = (
       patch: Partial<
@@ -280,9 +306,11 @@ export function createFileExplorerStore(
         recentBadges,
       });
 
+      const keepRows = sameRows(prev.rows, rows);
+      if (keepRows && Object.keys(patch).length === 0 && prev.hasAnyExpandedFolder === hasAnyExpandedFolder) return;
       set({
         ...patch,
-        rows,
+        rows: keepRows ? prev.rows : rows,
         hasAnyExpandedFolder,
         revision: prev.revision + 1,
       });
@@ -514,6 +542,16 @@ export function createFileExplorerStore(
           selectedPaths: next,
           focusedPath: norm,
           selectionAnchorPath: anchor,
+        });
+      },
+
+      selectAllVisible() {
+        const { rows, focusedPath } = get();
+        if (!rows.length) return;
+        recompute({
+          selectedPaths: new Set(rows.map((r) => r.path)),
+          selectionAnchorPath: rows[0].path,
+          focusedPath: focusedPath ?? rows[0].path,
         });
       },
 

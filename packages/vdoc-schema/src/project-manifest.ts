@@ -118,8 +118,25 @@ export interface StagedVariablesChange extends StagedAiChangeBase {
   payload: { variables: Record<string, string> };
 }
 
+/** Playground v2 `.outline` 트리 패치안 (`@vibe/outliner` 의 `TreePatchRequest[]` + 사이드카 근거). */
+export interface StagedOutlinePatchChange extends Omit<StagedAiChangeBase, "phase"> {
+  phase: WorkbenchPhase | "outlining";
+  targetKind: "outline-patch";
+  payload: {
+    /** `@vibe/outliner` `TreePatchRequest[]` (직렬화 호환 형태) */
+    requests: ReadonlyArray<Record<string, unknown>>;
+    /** 패치가 영향을 주는 루트/대상 nodeId 목록 (서브트리 `baseHash` 계산 기준) */
+    targetNodeIds: string[];
+    /** `nodeId -> EvidenceLocator[]` 사이드카 추가·병합분 */
+    nodeEvidence?: Record<string, EvidenceLocator[]>;
+    /** 바인딩된 `.vdoc` 경로가 있으면 승인 후 선택 재컴파일에 사용 */
+    compiledDocPath?: string;
+  };
+}
+
 export type StagedAiChange =
   | StagedOutlineNodeChange
+  | StagedOutlinePatchChange
   | StagedTemplateBlockChange
   | StagedSlotHtmlChange
   | StagedBlockPropsChange

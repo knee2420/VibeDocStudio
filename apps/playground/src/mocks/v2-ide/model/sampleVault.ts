@@ -1,5 +1,7 @@
+import { BUILTIN_VDOC_ASSETS } from "@vibe/vdoc-schema";
 import { getObsidianDisplayName, type MemoryVaultSeedEntry } from "@vibe/vault-core";
-import { createDefaultVDoc, createSampleProposalVDoc, serializeVDocJson } from "./vdocCodec";
+import { assetDefaultVaultPath, createDefaultVDoc, serializeVAssetJson, serializeVDocJson } from "@vibe/vault-formats";
+import { createSampleProposalVDoc } from "./sampleProposalVDoc";
 
 export function resolveTabTitle(path: string): string {
   const name = path.split("/").pop() ?? path;
@@ -311,4 +313,11 @@ tags: [readme, obsidian, agy-ide]
 - 에디터에서 텍스트를 드래그해 선택하면 우측 **AI-Composer** 패널에 실시간 선택 컨텍스트가 연동됩니다.
 `,
   },
+  ...BUILTIN_VDOC_ASSETS.map<MemoryVaultSeedEntry>((asset, idx) => ({
+    path: assetDefaultVaultPath(asset.assetId),
+    kind: "file",
+    ctime: 1763508000000 + idx * 1000,
+    mtime: 1763542000000 + idx * 1000,
+    content: serializeVAssetJson(asset),
+  })),
 ];

@@ -1,0 +1,259 @@
+import type { VaultFsBatchSummary } from "@vibe/ai-kernel";
+import type { StagedAiChange } from "@vibe/vdoc-schema";
+import { createStore, type StoreApi } from "zustand/vanilla";
+
+import {
+  DEFAULT_OUTLINE_SCOPE,
+  DEFAULT_SCOPE,
+  type DocScopeSetting,
+  type OutlineScopeMode,
+  type OutlineScopeSetting,
+  type ResolvedScope,
+  type ScopeMode,
+  type ScopeTarget,
+} from "@vibe/ai-scope";
+
+/**
+ * v2 Composer 설정 · 대기열 (볼트 하나당 하나).
+ *
+ * studio 의 `useAiScopeStore` · `useAiStagingStore` · RM/Reference Manager 체크를 v2 볼트 모델로 옮긴 것:
+ *   - 범위 설정은 **볼트 문서 경로**별 (studio: docId)
+ *   - 레퍼런스 = 켠 `.ref` 파일 경로, 리소스 = 고른 볼트 폴더 + 외부 폴더(절대 경로)
+ *   - 변경안(Staged)은 대상 문서의 볼트 경로를 함께 든다 — 승인하면 그 파일에 쓴다
+ */
+export type V2StagedChange = StagedAiChange & { readonly path: string };
+
+export interface V2AiSettings {
+  readonly scopeOn: boolean;
+  readonly sourcesOn: boolean;
+  readonly referencePaths: readonly string[];
+  /** 볼트 상대 폴더. "" = 볼트 전체 */
+  readonly resourceFolders: readonly string[];
+  readonly externalFolders: readonly string[];
+  readonly scopeByPath: Readonly<Record<string, DocScopeSetting>>;
+  readonly outlineScopeByPath: Readonly<Record<string, OutlineScopeSetting>>;
+}
+
+export interface V2AiState extends V2AiSettings {
+  /** 지금 보내는(처리 중인) 메시지의 범위 — 문서 도구 가드가 읽는다 */
+  readonly turn: (ResolvedScope & { readonly path: string }) | null;
+  readonly queue: readonly V2StagedChange[];
+  /** 이번 세션에서 vf_* 가 실행한 볼트 디렉토리/파일 변경 배치 이력 (UI 에서 1클릭 되돌리기). */
+  readonly fsBatches: readonly VaultFsBatchSummary[];
+  /** 최근 승인된 `.outline` 패치 경로 목록 (1클릭 되돌리기 버튼 노출용) */
+  readonly approvedOutlinePaths: readonly string[];
+  /** 지연 로딩된 볼트 파일(.ref 등)이 도착하면 오른다 — 설정바 · 첨부를 다시 계산하게 한다 */
+  readonly loadedRevision: number;
+  bumpLoaded(): void;
+  setFsBatches(batches: readonly VaultFsBatchSummary[]): void;
+  markFsBatchUndone(batchId: string): void;
+  recordApprovedOutline(path: string): void;
+  clearApprovedOutline(path: string): void;
+
+  setScopeOn(on: boolean): void;
+  setSourcesOn(on: boolean): void;
+  settingFor(path: string): DocScopeSetting;
+  outlineSettingFor(path: string): OutlineScopeSetting;
+  setOutlineScopeMode(path: string, mode: OutlineScopeMode): void;
+  pinOutlineNodes(path: string, rootNodeIds: readonly string[]): void;
+  clearOutlinePin(path: string): void;
+  setScopeMode(path: string, mode: ScopeMode): void;
+  pinTarget(path: string, target: ScopeTarget): void;
+  clearPin(path: string): void;
+  setExcludedPages(path: string, pageIds: string[]): void;
+  toggleReference(refPath: string, on?: boolean): void;
+  toggleResourceFolder(folder: string, on?: boolean): void;
+  addExternalFolder(absPath: string): void;
+  removeExternalFolder(absPath: string): void;
+  setTurn(turn: (ResolvedScope & { readonly path: string }) | null): void;
+  enqueue(changes: V2StagedChange[]): void;
+  remove(diffIds: readonly string[]): void;
+  remapPath(oldPath: string, newPath: string): void;
+}
+
+export type V2AiStore = StoreApi<V2AiState>;
+
+const SETTINGS_KEY = (vaultId: string) => `vibe.playground.v2ide.ai.${vaultId}.v1`;
+/** 변경안 대기열 — 새로고침 · 개발 서버 리로드에도 남는다 (studio 는 서버 staging 에 둔다) */
+const QUEUE_KEY = (vaultId: string) => `vibe.playground.v2ide.ai.${vaultId}.queue.v1`;
+
+function dedupeQueue(items: readonly V2StagedChange[]): V2StagedChange[] {
+  // 같은 대상(슬롯 · 아웃라인 파일 · 블록 속성)의 새 변경안이 오면 예전 것을 교체 (마지막 것 유지)
+  const out: V2StagedChange[] = [];
+  const seenKeys = new Set<string>();
+  for (let i = items.length - 1; i >= 0; i--) {
+    const c = items[i];
+    const k = stagedDedupeKey(c);
+    if (k && seenKeys.has(k)) continue;
+    if (k) seenKeys.add(k);
+    out.push(c);
+  }
+  return out.reverse();
+}
+
+function loadQueue(vaultId: string, storage: Storage | null): V2StagedChange[] {
+  if (!storage) return [];
+  try {
+    const raw = JSON.parse(storage.getItem(QUEUE_KEY(vaultId)) ?? "[]") as unknown;
+    const valid = Array.isArray(raw)
+      ? (raw as V2StagedChange[]).filter((c) => c && typeof c.diffId === "string" && typeof c.path === "string")
+      : [];
+    return dedupeQueue(valid);
+  } catch {
+    return [];
+  }
+}
+
+const DEFAULT_SETTINGS: V2AiSettings = {
+  scopeOn: true,
+  sourcesOn: true,
+  referencePaths: [],
+  resourceFolders: [],
+  externalFolders: [],
+  scopeByPath: {},
+  outlineScopeByPath: {},
+};
+
+function loadSettings(vaultId: string, storage: Storage | null): V2AiSettings {
+  if (!storage) return DEFAULT_SETTINGS;
+  try {
+    const raw = storage.getItem(SETTINGS_KEY(vaultId));
+    if (!raw) return DEFAULT_SETTINGS;
+    const parsed = JSON.parse(raw) as Partial<V2AiSettings>;
+    return {
+      ...DEFAULT_SETTINGS,
+      ...parsed,
+      referencePaths: Array.isArray(parsed.referencePaths) ? parsed.referencePaths : [],
+      resourceFolders: Array.isArray(parsed.resourceFolders) ? parsed.resourceFolders : [],
+      externalFolders: Array.isArray(parsed.externalFolders) ? parsed.externalFolders : [],
+      scopeByPath: parsed.scopeByPath && typeof parsed.scopeByPath === "object" ? parsed.scopeByPath : {},
+      outlineScopeByPath: parsed.outlineScopeByPath && typeof parsed.outlineScopeByPath === "object" ? parsed.outlineScopeByPath : {},
+    };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
+function toggleIn(list: readonly string[], item: string, on?: boolean): string[] {
+  const has = list.includes(item);
+  const next = on ?? !has;
+  if (next && !has) return [...list, item];
+  if (!next && has) return list.filter((x) => x !== item);
+  return [...list];
+}
+
+const stagedDedupeKey = (c: V2StagedChange): string | null => {
+  if (c.targetKind === "slot-html") return `slot:${c.path}#${c.payload.slotId}`;
+  if (c.targetKind === "outline-patch") return `outline:${c.path}`;
+  if (c.targetKind === "block-props") return `block:${c.path}#${c.payload.blockId}`;
+  return null;
+};
+
+export function createV2AiStore(vaultId: string, storage: Storage | null = safeLocalStorage()): V2AiStore {
+  const store = createStore<V2AiState>((set, get) => {
+    const patchSetting = (path: string, patch: Partial<DocScopeSetting>) =>
+      set((s) => ({ scopeByPath: { ...s.scopeByPath, [path]: { ...(s.scopeByPath[path] ?? DEFAULT_SCOPE), ...patch } } }));
+    const patchOutlineSetting = (path: string, patch: Partial<OutlineScopeSetting>) =>
+      set((s) => ({
+        outlineScopeByPath: { ...s.outlineScopeByPath, [path]: { ...(s.outlineScopeByPath[path] ?? DEFAULT_OUTLINE_SCOPE), ...patch } },
+      }));
+    return {
+      ...loadSettings(vaultId, storage),
+      turn: null,
+      queue: loadQueue(vaultId, storage),
+      fsBatches: [],
+      approvedOutlinePaths: [],
+      loadedRevision: 0,
+      bumpLoaded: () => set((s) => ({ loadedRevision: s.loadedRevision + 1 })),
+      setFsBatches: (batches) =>
+        set((s) => {
+          const map = new Map(s.fsBatches.map((b) => [b.batchId, b]));
+          for (const b of batches) map.set(b.batchId, b);
+          return { fsBatches: [...map.values()].sort((a, b) => b.createdAt - a.createdAt).slice(0, 20) };
+        }),
+      markFsBatchUndone: (batchId) =>
+        set((s) => ({ fsBatches: s.fsBatches.map((b) => (b.batchId === batchId ? { ...b, undone: true } : b)) })),
+      recordApprovedOutline: (path) =>
+        set((s) => ({ approvedOutlinePaths: [path, ...s.approvedOutlinePaths.filter((p) => p !== path)].slice(0, 10) })),
+      clearApprovedOutline: (path) =>
+        set((s) => ({ approvedOutlinePaths: s.approvedOutlinePaths.filter((p) => p !== path) })),
+      setScopeOn: (on) => set({ scopeOn: on }),
+      setSourcesOn: (on) => set({ sourcesOn: on }),
+      settingFor: (path) => get().scopeByPath[path] ?? DEFAULT_SCOPE,
+      outlineSettingFor: (path) => get().outlineScopeByPath[path] ?? DEFAULT_OUTLINE_SCOPE,
+      setOutlineScopeMode: (path, mode) =>
+        patchOutlineSetting(path, { mode, ...(mode === "document" ? { fixed: false, rootNodeIds: [] } : {}) }),
+      pinOutlineNodes: (path, rootNodeIds) =>
+        patchOutlineSetting(path, { mode: "selection", fixed: true, rootNodeIds: [...rootNodeIds] }),
+      clearOutlinePin: (path) => patchOutlineSetting(path, { fixed: false, rootNodeIds: [] }),
+      setScopeMode: (path, mode) => patchSetting(path, { mode, ...(mode === "selection" ? {} : { fixed: false, target: null }) }),
+      pinTarget: (path, target) => patchSetting(path, { mode: "selection", fixed: true, target }),
+      clearPin: (path) => patchSetting(path, { fixed: false, target: null }),
+      setExcludedPages: (path, pageIds) => patchSetting(path, { excludedPageIds: [...pageIds] }),
+      toggleReference: (refPath, on) => set((s) => ({ referencePaths: toggleIn(s.referencePaths, refPath, on) })),
+      toggleResourceFolder: (folder, on) => set((s) => ({ resourceFolders: toggleIn(s.resourceFolders, folder, on) })),
+      addExternalFolder: (absPath) => {
+        const clean = absPath.trim().replace(/[\\/]+$/, "");
+        if (clean) set((s) => ({ externalFolders: toggleIn(s.externalFolders, clean, true) }));
+      },
+      removeExternalFolder: (absPath) => set((s) => ({ externalFolders: s.externalFolders.filter((p) => p !== absPath) })),
+      setTurn: (turn) => set({ turn }),
+      enqueue: (changes) =>
+        set((s) => ({
+          queue: dedupeQueue([...s.queue, ...changes]),
+        })),
+      remove: (diffIds) => set((s) => ({ queue: s.queue.filter((c) => !diffIds.includes(c.diffId)) })),
+      remapPath: (oldPath, newPath) =>
+        set((s) => ({
+          queue: s.queue.map((c) => (c.path === oldPath ? { ...c, path: newPath } : c)),
+          referencePaths: s.referencePaths.map((p) => (p === oldPath ? newPath : p)),
+          scopeByPath: Object.fromEntries(Object.entries(s.scopeByPath).map(([k, v]) => [k === oldPath ? newPath : k, v])),
+          outlineScopeByPath: Object.fromEntries(Object.entries(s.outlineScopeByPath).map(([k, v]) => [k === oldPath ? newPath : k, v])),
+        })),
+    };
+  });
+  if (storage) {
+    store.subscribe((s, prev) => {
+      if (s.queue !== prev.queue) {
+        try {
+          storage.setItem(QUEUE_KEY(vaultId), JSON.stringify(s.queue));
+        } catch {
+          /* 가득 찼으면 이번 세션만 */
+        }
+      }
+      if (
+        s.scopeOn === prev.scopeOn &&
+        s.sourcesOn === prev.sourcesOn &&
+        s.referencePaths === prev.referencePaths &&
+        s.resourceFolders === prev.resourceFolders &&
+        s.externalFolders === prev.externalFolders &&
+        s.scopeByPath === prev.scopeByPath &&
+        s.outlineScopeByPath === prev.outlineScopeByPath
+      )
+        return;
+      try {
+        const settings: V2AiSettings = {
+          scopeOn: s.scopeOn,
+          sourcesOn: s.sourcesOn,
+          referencePaths: s.referencePaths,
+          resourceFolders: s.resourceFolders,
+          externalFolders: s.externalFolders,
+          scopeByPath: s.scopeByPath,
+          outlineScopeByPath: s.outlineScopeByPath,
+        };
+        storage.setItem(SETTINGS_KEY(vaultId), JSON.stringify(settings));
+      } catch {
+        /* 저장소가 막혀 있으면 이번 세션만 */
+      }
+    });
+  }
+  return store;
+}
+
+function safeLocalStorage(): Storage | null {
+  try {
+    return typeof localStorage === "undefined" ? null : localStorage;
+  } catch {
+    return null;
+  }
+}

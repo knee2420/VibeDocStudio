@@ -1,0 +1,52 @@
+[
+  {
+    "name": "outline.selectNodes",
+    "description": "열린 .outline 에디터에서 지정한 불릿 노드들을 선택하고 화면을 그 위치로 스크롤한다.",
+    "risk": "ui",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
+        "nodeIds": { "type": "array", "items": { "type": "string" }, "description": "선택할 nodeId 목록" },
+        "zoom": { "type": "boolean", "description": "첫 번째 노드로 줌인할지 여부 (기본 false)" }
+      },
+      "required": ["nodeIds"]
+    }
+  },
+  {
+    "name": "outline.getSyntax",
+    "description": "현재 볼트의 ElementSyntaxRegistry CRUD 문법 규칙(<<doc:...>>, <<view:...>>, 인라인 기호)과 사용 가능한 .vasset 구조 에셋 목록을 반환한다.",
+    "risk": "read",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "profileId": { "type": "string", "description": "특정 문서 프로파일 필터 (예: a4, blog, web)" }
+      }
+    }
+  },
+  {
+    "name": "outline.compileCheck",
+    "description": "TS directive-scanner + ir-compiler + applyPatch 드라이런으로 .outline (또는 Staged 패치 적용 결과)의 컴파일 측정 리포트(파싱 경고 · 미해석 이미지 · 블록 수 · 깊이 · 최장 불릿 · 근거 미연결 수치 노드 수)를 반환한다.",
+    "risk": "read",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
+        "rootNodeId": { "type": "string", "description": "컴파일 대상 지시어 노드 id (생략 시 첫 <<doc:...>> 또는 루트)" },
+        "diffId": { "type": "string", "description": "특정 Staged 패치(diffId)를 가상 적용해 검사할 때 지정" }
+      }
+    }
+  },
+  {
+    "name": "outline.previewCompile",
+    "description": "현재 .outline 의 대상 노드를 .vdoc 으로 프리뷰 컴파일하고 결과 요약(페이지·블록·슬롯 수, 미해석 이미지)을 반환한다.",
+    "risk": "ui",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
+        "rootNodeId": { "type": "string", "description": "대상 지시어 노드 id" }
+      }
+    }
+  }
+]

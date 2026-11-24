@@ -79,5 +79,17 @@ export const LazyVaultFileGate: React.FC<LazyVaultFileGateProps> = ({
     );
   }
 
-  return <>{children}</>;
+  // 편집기 코드도 열 때 싣는다 (React.lazy) — 그동안 같은 로딩 표시
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex h-full w-full items-center justify-center gap-2 bg-[var(--obs-bg-primary,#1e1e1e)] text-[12px] text-[var(--obs-text-muted,#b3b3b3)]">
+          <Loader2 className="h-4 w-4 animate-spin text-[var(--obs-accent,#8a5cf5)]" />
+          <span>Loading editor…</span>
+        </div>
+      }
+    >
+      {children}
+    </React.Suspense>
+  );
 };

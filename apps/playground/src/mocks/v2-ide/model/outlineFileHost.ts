@@ -135,12 +135,17 @@ export function createVaultOutlineFiles(options: VaultOutlineFilesOptions): Outl
       const vaultPaths = readVaultDragPaths(dt);
       if (vaultPaths.length > 0) {
         return vaultPaths
-          .filter((p) => vault.getNode(p)?.kind === "file")
-          .map((p): DroppedItem =>
-            DOCUMENT_EXTENSIONS.has(extensionOf(p))
+          .filter((p) => {
+            const node = vault.getNode(p);
+            return node?.kind === "file" || node?.kind === "folder";
+          })
+          .map((p): DroppedItem => {
+            const node = vault.getNode(p);
+            if (node?.kind === "folder") return { fileTarget: p };
+            return DOCUMENT_EXTENSIONS.has(extensionOf(p))
               ? { text: `[[${basename(p).replace(/\.md$/i, "")}]]` }
-              : { fileTarget: p }
-          );
+              : { fileTarget: p };
+          });
       }
       const osFiles = Array.from(dt?.files ?? []);
       const stored = await importFiles(osFiles);

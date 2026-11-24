@@ -16,6 +16,7 @@ from agent_core.react import RunLogContextFilter
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.assets import router as assets_router_module
 from app.assistant import router as assistant_router_module
 from app.authoring import harness_router as harness_router_module
 from app.authoring import router as authoring_router_module
@@ -57,6 +58,7 @@ _DOMAIN_ROUTERS = (
     (harness_router_module, "/api/assistant", "authoring.harness"),
     (reference_router_module, "/api/reference", "reference"),
     (vault_router_module, "/api/vaults", "vault"),
+    (assets_router_module, "/api/assets", "assets"),
 )
 
 

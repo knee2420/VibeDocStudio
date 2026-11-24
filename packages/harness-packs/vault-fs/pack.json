@@ -1,0 +1,14 @@
+{
+ "name": "vault-fs",
+ "version": "1.0.0",
+ "description": "볼트 샌드박스 디렉토리·파일 운영(vf_*) — Raw 터미널 없이 안전하게 폴더 생성·이동·이름변경·복제·치환·휴지통·일괄 트랜잭션·되돌리기 수행",
+ "dependsOn": [
+  "core"
+ ],
+ "tools": [
+  {
+   "file": "tools.json",
+   "source": "vault-fs"
+  }
+ ]
+}

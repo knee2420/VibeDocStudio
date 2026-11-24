@@ -136,6 +136,30 @@
   }
  },
  {
+  "name": "canvas.select",
+  "description": "캔버스에서 칸 · 블록 여러 개를 한꺼번에 골라 사용자에게 보여 준다 (변경안을 낸 칸들 · 질문에 해당하는 곳을 가리킬 때). 첫 항목으로 화면을 옮긴다. 문서는 바꾸지 않는다",
+  "risk": "ui",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "slotIds": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "고를 칸 id (document.getOutline 에서 확인)"
+    },
+    "blockIds": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "고를 블록 id"
+    }
+   }
+  }
+ },
+ {
   "name": "slots.listByState",
   "description": "범위 안 칸들의 채움 상태 목록 (빈 칸 지도). scope: slot|block|page|document, state: empty|ai-draft|staged|filled|verified (생략하면 채울 대상 전부). 일괄 채우기 · 진행 확인에 쓴다",
   "risk": "read",

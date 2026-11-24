@@ -6,7 +6,8 @@ import { findOwningProjectPath } from "@vibe/vault-core";
 import { applyDocumentView, resolveDocumentView } from "@vibe/vdoc-schema";
 import { createEmptyRefDocument, parseRefJson, serializeRefJson } from "@vibe/ref-canvas/core";
 import { createIdeWorkbenchRuntime } from "../model/useIdeWorkbench";
-import { detectVDocViewId, parseVDocJson, projectVDocToStructure, serializeVDocJson } from "../model/vdocCodec";
+import { projectVDocToStructure } from "../model/vdocStructure";
+import { detectVDocViewId, parseVDocJson, serializeVDocJson } from "@vibe/vault-formats";
 
 describe("v2-ide — 2D-First Workbench Integration (Vault + Explorer + Layout + Markdown + 2D VDoc)", () => {
   it("boots 2D-First (.vdoc + CM6 .md), projects Figma Pages & Elements, rewrites .vdoc/.md pointers, and runs 2D AI directing", () => {

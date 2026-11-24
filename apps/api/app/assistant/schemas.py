@@ -15,6 +15,9 @@ class ContextItemPayload(BaseModel):
     content: str = ""
     role: str = ""
     handle: str = ""
+    mimeType: str = ""
+    dataBase64: str = ""
+    vaultPath: str = ""
 
     def to_model(self) -> ContextItem:
         return ContextItem(
@@ -24,6 +27,9 @@ class ContextItemPayload(BaseModel):
             content=self.content,
             role=self.role if self.role in ("target", "reference") else "",
             handle=self.handle[:40],
+            mime_type=self.mimeType[:80],
+            data_base64=self.dataBase64,
+            vault_path=self.vaultPath[:500],
         )
 
 

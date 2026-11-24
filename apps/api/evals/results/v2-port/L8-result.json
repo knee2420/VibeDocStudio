@@ -1,0 +1,24 @@
+{
+  "A1_tokyo": {
+    "doc": "여행/도쿄/[도쿄 여행기] 도심의 전통과 현대를 넘나드는 3박 4일 핵심 가이드.vdoc",
+    "aiSelected": "true",
+    "sessionId": null,
+    "itemCount": 55,
+    "firstUserText": "도쿄 여행 블로그를 쓰려고 해. 1) 도쿄 여행에 관한 레퍼런스 블로그를 수집해서 2개를 .ref로 직접 등록해 2) 도쿄 여행에 대해 사용할 이미지를 50개 수"
+  },
+  "B1_proposal": {
+    "doc": "01. Architecture/00. System-Proposal.vdoc",
+    "aiSelected": "true",
+    "sessionId": "asst-764753226ebe",
+    "itemCount": 44,
+    "firstUserText": "도쿄 여행 블로그를 쓰려고 해. 1) 도쿄 여행에 관한 레퍼런스 블로그를 수집해서 2개를 .ref로 직접 등록해 2) 도쿄 여행에 대해 사용할 이미지를 50개 수"
+  },
+  "A2_back_to_tokyo": {
+    "doc": "여행/도쿄/[도쿄 여행기] 도심의 전통과 현대를 넘나드는 3박 4일 핵심 가이드.vdoc",
+    "aiSelected": "true",
+    "sessionId": null,
+    "itemCount": 55,
+    "firstUserText": "도쿄 여행 블로그를 쓰려고 해. 1) 도쿄 여행에 관한 레퍼런스 블로그를 수집해서 2개를 .ref로 직접 등록해 2) 도쿄 여행에 대해 사용할 이미지를 50개 수"
+  },
+  "passed": true
+}

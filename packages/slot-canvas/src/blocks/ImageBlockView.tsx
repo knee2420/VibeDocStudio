@@ -47,6 +47,7 @@ export const ImageBlockView: React.FC<ImageBlockViewProps> = ({ block }) => {
             alt={label}
             referrerPolicy="no-referrer"
             loading="lazy"
+            decoding="async"
             draggable={false}
             onError={() => setFailed(true)}
             className="block select-none max-w-full"

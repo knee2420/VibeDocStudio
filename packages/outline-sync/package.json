@@ -1,0 +1,23 @@
+{
+  "name": "@vibe/outline-sync",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "[L1 도메인] .outline ↔ .vdoc 비파괴 동기화 엔진 (지시자 컴파일 · 역동기화 · 바인딩 · 드러내기 요청)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "test": "..\\..\\..\\VibePatchNote\\apps\\web\\node_modules\\.bin\\tsx.CMD --test tests/outline-sync.test.ts"
+  },
+  "dependencies": {
+    "@vibe/outliner": "workspace:*",
+    "@vibe/vault-core": "workspace:*",
+    "@vibe/vault-formats": "workspace:*",
+    "@vibe/vdoc-schema": "workspace:*"
+  }
+}

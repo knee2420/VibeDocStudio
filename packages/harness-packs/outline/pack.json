@@ -1,0 +1,19 @@
+{
+ "name": "outline",
+ "version": "1.0.0",
+ "description": ".outline 불릿 트리 AI 인지·조작·리소스 연결(ol_* · outline.*) — TreePatchRequest 기반 Staged 제안과 사이드카 근거 관리",
+ "dependsOn": [
+  "core",
+  "resource",
+  "reference",
+  "editor"
+ ],
+ "tools": [
+  {
+   "file": "tools.server.json",
+   "source": "outline"
+  }
+ ],
+ "playgroundClientTools": "tools.client.json",
+ "messages": "messages.json"
+}

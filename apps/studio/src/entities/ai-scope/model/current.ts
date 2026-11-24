@@ -3,7 +3,7 @@ import type { VDocDocument } from "@vibe/vdoc-schema";
 
 import { composerController } from "@/shared/ai";
 
-import { isRestricted, pageTitle, resolveScope, targetFromBlock, targetFromSlots, type ResolvedScope, type ScopeTarget } from "./scope";
+import { isRestricted, pageTitle, resolveScope, targetFromBlock, targetFromSlots, type ResolvedScope, type ScopeTarget } from "@vibe/ai-scope";
 import { useAiScopeStore } from "./useAiScopeStore";
 
 /**
