@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import type { ContextRef, EngineStatus } from "@vibe/ai-kernel";
-import { ComposerPanel, type ComposerSuggestion } from "@vibe/ai-composer";
+import type { ComposerSessionController, ContextRef, EngineStatus } from "@vibe/ai-kernel";
+import { ComposerPanel, ComposerTabs, type ComposerSuggestion } from "@vibe/ai-composer";
 import { useRegistryList } from "@vibe/ai-react";
 
 import type { V2AiWorkspace } from "@vibe/ai-vault";
@@ -38,9 +38,14 @@ function useEngineStatus(ai: V2AiWorkspace) {
 }
 
 /** 자동 첨부 · 첨부 제안 — 설정 · 선택 · 탭 · 볼트가 바뀌면 다시 계산 (값이 같으면 다시 그리지 않는다). */
-function useAutoContexts(ai: V2AiWorkspace, subscribe: (cb: () => void) => () => void): { auto: ContextRef[]; suggested: ContextRef[]; revision: number } {
+function useAutoContexts(
+  ai: V2AiWorkspace,
+  subscribe: (cb: () => void) => () => void,
+  sessionKey: string
+): { auto: ContextRef[]; suggested: ContextRef[]; revision: number } {
   const providers = useRegistryList(ai.runtime.contexts);
-  const compute = () => ({ auto: ai.runtime.contexts.autoContexts(), suggested: ai.runtime.contexts.suggestedContexts() });
+  // 메인은 지금 화면 기준, 기준점 세션은 기준점 기준
+  const compute = () => ai.contextsFor(sessionKey);
   const [value, setValue] = useState(() => ({ ...compute(), revision: 0 }));
   const keyRef = useRef(JSON.stringify(value.auto) + JSON.stringify(value.suggested));
   useEffect(() => {
@@ -63,7 +68,7 @@ function useAutoContexts(ai: V2AiWorkspace, subscribe: (cb: () => void) => () =>
       if (timer) clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [providers, ai, subscribe]);
+  }, [providers, ai, subscribe, sessionKey]);
   return value;
 }
 
@@ -72,14 +77,40 @@ export const V2ComposerView: React.FC<{
   /** 탭 · 선택 · 볼트 변경 구독 (런타임이 넘긴다) */
   readonly subscribe: (cb: () => void) => () => void;
 }> = ({ ai, subscribe }) => {
-  const { engines, error, refresh } = useEngineStatus(ai);
-  const { auto, suggested, revision } = useAutoContexts(ai, subscribe);
+  const engineStatus = useEngineStatus(ai);
+  return (
+    <div data-testid="v2-ai-composer" className="flex min-h-0 flex-1 flex-col bg-white text-slate-900">
+      <ComposerTabs
+        registry={ai.sessions}
+        onSelect={ai.openSession}
+        onReveal={ai.revealAnchor}
+        onComplete={ai.requestCompleteSession}
+        renderPanel={(key, controller) => (
+          <V2SessionPanel ai={ai} subscribe={subscribe} sessionKey={key} controller={controller} engineStatus={engineStatus} />
+        )}
+      />
+    </div>
+  );
+};
+
+/** 탭 하나의 Composer (메인 또는 기준점 세션) */
+const V2SessionPanel: React.FC<{
+  readonly ai: V2AiWorkspace;
+  readonly subscribe: (cb: () => void) => () => void;
+  readonly sessionKey: string;
+  readonly controller: ComposerSessionController;
+  readonly engineStatus: ReturnType<typeof useEngineStatus>;
+}> = ({ ai, subscribe, sessionKey, controller, engineStatus }) => {
+  const { engines, error, refresh } = engineStatus;
+  const isMain = sessionKey === ai.sessions.mainKey;
+  const { auto, suggested, revision } = useAutoContexts(ai, subscribe, sessionKey);
   const scopeByPath = useStore(ai, "scopeByPath");
   const resourceFolders = useStore(ai, "resourceFolders");
   const isPinned = useCallback((ref: ContextRef) => ai.isPinned(ref), [ai, scopeByPath, resourceFolders]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onChangeEngine = async (provider: string, model: string) => {
-    ai.controller.setEngine(provider, model);
+    controller.setEngine(provider, model);
+    if (!isMain) return; // 기준점 세션은 그 세션만 바꾼다 (기본 엔진 정책은 메인에서)
     try {
       await ai.runtime.client.updatePrimaryEngine(provider, model);
       await ai.runtime.client.warmup();
@@ -90,29 +121,30 @@ export const V2ComposerView: React.FC<{
   };
 
   return (
-    <div data-testid="v2-ai-composer" className="flex min-h-0 flex-1 flex-col bg-white text-slate-900">
-      <ComposerPanel
-        runtime={ai.runtime}
-        controller={ai.controller}
-        autoContexts={auto}
-        suggestedContexts={suggested}
-        engines={engines}
-        enginesError={error}
-        onChangeEngine={(p, m) => void onChangeEngine(p, m)}
-        suggestions={SUGGESTIONS}
-        settingsBar={
-          <>
-            <V2StagedChangesPanel ai={ai} />
-            <V2ComposerSettingsBar ai={ai} revision={revision} />
-          </>
-        }
-        pinnable={ai.pinnable}
-        onPinContext={ai.pinContext}
-        isPinned={isPinned}
-        onBeforeSend={ai.scopeForSend}
-        onAttachFiles={(files) => ai.attachFiles(files)}
-      />
-    </div>
+    <ComposerPanel
+      runtime={ai.runtime}
+      controller={controller}
+      autoContexts={auto}
+      suggestedContexts={suggested}
+      engines={engines}
+      enginesError={error}
+      onChangeEngine={(p, m) => void onChangeEngine(p, m)}
+      suggestions={isMain ? SUGGESTIONS : []}
+      settingsBar={
+        <>
+          <V2StagedChangesPanel ai={ai} sessionKey={sessionKey} />
+          <V2ComposerSettingsBar ai={ai} revision={revision} />
+        </>
+      }
+      pinnable={ai.pinnable}
+      onPinContext={ai.pinContext}
+      isPinned={isPinned}
+      onBeforeSend={isMain ? ai.scopeForSend : ai.scopeForSendIn(sessionKey)}
+      onAttachFiles={(files) => ai.attachFiles(files)}
+      onOpenResource={(rawTag) => {
+        ai.revealResource(rawTag);
+      }}
+    />
   );
 };
 

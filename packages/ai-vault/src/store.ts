@@ -21,7 +21,19 @@ import {
  *   - 레퍼런스 = 켠 `.ref` 파일 경로, 리소스 = 고른 볼트 폴더 + 외부 폴더(절대 경로)
  *   - 변경안(Staged)은 대상 문서의 볼트 경로를 함께 든다 — 승인하면 그 파일에 쓴다
  */
-export type V2StagedChange = StagedAiChange & { readonly path: string };
+export type V2StagedChange = StagedAiChange & {
+  readonly path: string;
+  /** 이 변경안을 만든 Composer 세션 (메인이면 없음) — 세션별 검토 · 완료 시 버리기 */
+  readonly sessionKey?: string;
+};
+
+/** 볼트 FS 묶음 + 만든 세션 (되돌리기는 그 서버 세션으로) */
+export type V2FsBatch = VaultFsBatchSummary & {
+  readonly sessionKey?: string;
+  readonly serverSessionId?: string;
+};
+
+export type V2Turn = ResolvedScope & { readonly path: string };
 
 export interface V2AiSettings {
   readonly scopeOn: boolean;
@@ -36,16 +48,18 @@ export interface V2AiSettings {
 
 export interface V2AiState extends V2AiSettings {
   /** 지금 보내는(처리 중인) 메시지의 범위 — 문서 도구 가드가 읽는다 */
-  readonly turn: (ResolvedScope & { readonly path: string }) | null;
+  readonly turn: V2Turn | null;
+  /** 기준점 세션별 범위 (메인은 `turn`) */
+  readonly turnBySession: Readonly<Record<string, V2Turn>>;
   readonly queue: readonly V2StagedChange[];
   /** 이번 세션에서 vf_* 가 실행한 볼트 디렉토리/파일 변경 배치 이력 (UI 에서 1클릭 되돌리기). */
-  readonly fsBatches: readonly VaultFsBatchSummary[];
+  readonly fsBatches: readonly V2FsBatch[];
   /** 최근 승인된 `.outline` 패치 경로 목록 (1클릭 되돌리기 버튼 노출용) */
   readonly approvedOutlinePaths: readonly string[];
   /** 지연 로딩된 볼트 파일(.ref 등)이 도착하면 오른다 — 설정바 · 첨부를 다시 계산하게 한다 */
   readonly loadedRevision: number;
   bumpLoaded(): void;
-  setFsBatches(batches: readonly VaultFsBatchSummary[]): void;
+  setFsBatches(batches: readonly VaultFsBatchSummary[], tag?: { sessionKey?: string; serverSessionId?: string }): void;
   markFsBatchUndone(batchId: string): void;
   recordApprovedOutline(path: string): void;
   clearApprovedOutline(path: string): void;
@@ -65,9 +79,12 @@ export interface V2AiState extends V2AiSettings {
   toggleResourceFolder(folder: string, on?: boolean): void;
   addExternalFolder(absPath: string): void;
   removeExternalFolder(absPath: string): void;
-  setTurn(turn: (ResolvedScope & { readonly path: string }) | null): void;
+  /** 이번 메시지 범위. `sessionKey` 가 있으면 그 기준점 세션 몫 */
+  setTurn(turn: V2Turn | null, sessionKey?: string): void;
   enqueue(changes: V2StagedChange[]): void;
   remove(diffIds: readonly string[]): void;
+  /** 세션이 만든 변경안을 모두 뺀다 (세션 완료 시). 돌려준 값 = 뺀 수 */
+  removeBySession(sessionKey: string): number;
   remapPath(oldPath: string, newPath: string): void;
 }
 
@@ -160,16 +177,24 @@ export function createV2AiStore(vaultId: string, storage: Storage | null = safeL
     return {
       ...loadSettings(vaultId, storage),
       turn: null,
+      turnBySession: {},
       queue: loadQueue(vaultId, storage),
       fsBatches: [],
       approvedOutlinePaths: [],
       loadedRevision: 0,
       bumpLoaded: () => set((s) => ({ loadedRevision: s.loadedRevision + 1 })),
-      setFsBatches: (batches) =>
+      setFsBatches: (batches, tag) =>
         set((s) => {
-          const map = new Map(s.fsBatches.map((b) => [b.batchId, b]));
-          for (const b of batches) map.set(b.batchId, b);
-          return { fsBatches: [...map.values()].sort((a, b) => b.createdAt - a.createdAt).slice(0, 20) };
+          const map = new Map<string, V2FsBatch>(s.fsBatches.map((b) => [b.batchId, b]));
+          for (const b of batches) {
+            const prev = map.get(b.batchId);
+            map.set(b.batchId, {
+              ...b,
+              sessionKey: tag?.sessionKey ?? prev?.sessionKey,
+              serverSessionId: tag?.serverSessionId ?? prev?.serverSessionId,
+            });
+          }
+          return { fsBatches: [...map.values()].sort((a, b) => b.createdAt - a.createdAt).slice(0, 40) };
         }),
       markFsBatchUndone: (batchId) =>
         set((s) => ({ fsBatches: s.fsBatches.map((b) => (b.batchId === batchId ? { ...b, undone: true } : b)) })),
@@ -197,12 +222,32 @@ export function createV2AiStore(vaultId: string, storage: Storage | null = safeL
         if (clean) set((s) => ({ externalFolders: toggleIn(s.externalFolders, clean, true) }));
       },
       removeExternalFolder: (absPath) => set((s) => ({ externalFolders: s.externalFolders.filter((p) => p !== absPath) })),
-      setTurn: (turn) => set({ turn }),
+      setTurn: (turn, sessionKey) => {
+        if (!sessionKey) {
+          set({ turn });
+          return;
+        }
+        set((s) => {
+          const next = { ...s.turnBySession };
+          if (turn) next[sessionKey] = turn;
+          else delete next[sessionKey];
+          return { turnBySession: next };
+        });
+      },
       enqueue: (changes) =>
         set((s) => ({
           queue: dedupeQueue([...s.queue, ...changes]),
         })),
       remove: (diffIds) => set((s) => ({ queue: s.queue.filter((c) => !diffIds.includes(c.diffId)) })),
+      removeBySession: (sessionKey) => {
+        const before = get().queue.length;
+        set((s) => {
+          const next = { ...s.turnBySession };
+          delete next[sessionKey];
+          return { queue: s.queue.filter((c) => c.sessionKey !== sessionKey), turnBySession: next };
+        });
+        return before - get().queue.length;
+      },
       remapPath: (oldPath, newPath) =>
         set((s) => ({
           queue: s.queue.map((c) => (c.path === oldPath ? { ...c, path: newPath } : c)),

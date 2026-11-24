@@ -15,7 +15,7 @@ export const DEFAULT_DOCUMENT_PROFILES: readonly DocumentProfileSchema[] = [
     description: "이음매 없는 720px 스크롤 지면, SECTION 최상위 단위 기반 블로그 문서",
     unitKind: "section",
     surface: { kind: "scroll", width: 720 },
-    allowedElementIds: ["section", "table"],
+    allowedElementIds: ["section", "table", "resource"],
     defaultSkin: "korean-editorial-blog",
   },
   {
@@ -24,7 +24,7 @@ export const DEFAULT_DOCUMENT_PROFILES: readonly DocumentProfileSchema[] = [
     description: "794px 인쇄 페이지 단위 일반·공공 서식 문서",
     unitKind: "page",
     surface: { kind: "paged", width: 794 },
-    allowedElementIds: ["table", "section"],
+    allowedElementIds: ["table", "section", "resource"],
     defaultSkin: "korean-form-sheet",
   },
   {
@@ -33,7 +33,7 @@ export const DEFAULT_DOCUMENT_PROFILES: readonly DocumentProfileSchema[] = [
     description: "960px 와이드 SECTION 기반 웹 문서 및 랜딩",
     unitKind: "section",
     surface: { kind: "scroll", width: 960 },
-    allowedElementIds: ["section", "table"],
+    allowedElementIds: ["section", "table", "resource"],
     defaultSkin: "korean-editorial-blog",
   },
 ];
@@ -240,6 +240,114 @@ export const DEFAULT_SECTION_ELEMENT_DEF: ElementSyntaxDefinition = {
   ],
 };
 
+export const DEFAULT_RESOURCE_ELEMENT_DEF: ElementSyntaxDefinition = {
+  id: "resource",
+  viewTag: "cite",
+  version: "1.0.0",
+  label: "리소스 · 근거 형식 (Resource / Citation)",
+  description:
+    "원본 리소스·백데이터의 인용문, 출처, 산출 근거, 여백 주석, 1:N 추적 매트릭스, 근거 바인딩 팩트 토큰을 편집 가능한 하위 불릿으로 선언하는 표준 근거 규격",
+  allowedInViews: ["a4", "blog", "web"],
+  defaultSkin: "provenance-review",
+  fallbackPolicy: "plain-text",
+  skins: {
+    "provenance-review": {
+      id: "provenance-review",
+      label: "검토 · 출처 추적 레이어 (기본)",
+      align: "left",
+      quoteStyle: "left-bar",
+      accentColor: "emerald",
+    },
+  },
+  rules: [
+    {
+      id: "resource-unified",
+      symbol: "<<resource: 대상 위치 | 본문>>",
+      primitive: "embed",
+      position: "prefix",
+      description:
+        "통합 리소스 참조 태그 (웹 URL · PDF #pN/#bbox · MD/CSV #L.. · Outline #node: · VDoc #slot: · Ref #block: · 이미지 #bbox · 클릭 시 페어 하이라이팅)",
+      options: { presentation: "quote-embed" },
+    },
+    {
+      id: "cite-footnote",
+      symbol: "<<cite:footnote>>",
+      primitive: "slot",
+      position: "prefix",
+      description: "각주 번호 표기 ([1], [1,2] + 하단 출처 목록 자동 생성)",
+      options: { presentation: "footnote" },
+    },
+    {
+      id: "cite-rationale",
+      symbol: "<<cite:rationale>>",
+      primitive: "accent",
+      position: "prefix",
+      description: "인라인 산출 근거 표기 (← 산출 근거: ... · N:1 복수 출처 합산)",
+      options: { presentation: "inline-rationale" },
+    },
+    {
+      id: "cite-sidenote",
+      symbol: "<<cite:sidenote>>",
+      primitive: "frame",
+      position: "prefix",
+      description: "여백 주석 · 사이드노트 (§N 마커 + 본문 우측 발췌 레일)",
+      options: { presentation: "sidenote" },
+    },
+    {
+      id: "cite-quote",
+      symbol: "<<cite:quote>>",
+      primitive: "embed",
+      position: "prefix",
+      description: "원문 직접 인용 · 트랜스클루전 카드 (원문 구절·표 발췌 직접 삽입)",
+      options: { presentation: "quote-embed" },
+    },
+    {
+      id: "cite-matrix",
+      symbol: "<<cite:matrix>>",
+      primitive: "kv",
+      position: "prefix",
+      description: "1:N / M:N 요구사항·출처 추적 매트릭스 (<<cite:matrix @REQ-ID>>)",
+      options: { presentation: "matrix" },
+    },
+    {
+      id: "cite-bound",
+      symbol: "<<cite:bound>>",
+      primitive: "slot",
+      position: "prefix",
+      description: "근거 바인딩 팩트 토큰 (<<cite:bound {값} = 산식>> · 동일 수치 1:N 재사용)",
+      options: { presentation: "bound-value" },
+    },
+    {
+      id: "cite-source-link",
+      symbol: "[[파일명]]",
+      primitive: "embed",
+      position: "bracket",
+      description: "원본 리소스·백데이터 파일 포인터 (클릭 시 페어 그룹 탭으로 열림)",
+    },
+    {
+      id: "cite-page-anchor",
+      symbol: "#pN",
+      primitive: "kv",
+      position: "inline",
+      description: "원본 문서 페이지 번호 앵커 (예: #p12, #p42)",
+    },
+    {
+      id: "cite-line-range",
+      symbol: "#L시작-L끝",
+      primitive: "kv",
+      position: "inline",
+      description: "원본 텍스트·CSV 줄 범위 앵커 (예: #L2-L36)",
+    },
+    {
+      id: "cite-segment-split",
+      symbol: "|",
+      primitive: "split",
+      position: "infix",
+      description: "산출 근거 문구 · 복수 출처 · 원문 발췌문 구분자",
+    },
+  ],
+};
+
 export function createDefaultRegistrySnapshot(updatedAt = new Date().toISOString()): ElementRegistrySnapshot {
   return {
     version: "1.0.0",
@@ -250,7 +358,11 @@ export function createDefaultRegistrySnapshot(updatedAt = new Date().toISOString
       surface: { ...p.surface },
       allowedElementIds: [...p.allowedElementIds],
     })),
-    elements: [cloneElementDef(DEFAULT_TABLE_ELEMENT_DEF), cloneElementDef(DEFAULT_SECTION_ELEMENT_DEF)],
+    elements: [
+      cloneElementDef(DEFAULT_TABLE_ELEMENT_DEF),
+      cloneElementDef(DEFAULT_SECTION_ELEMENT_DEF),
+      cloneElementDef(DEFAULT_RESOURCE_ELEMENT_DEF),
+    ],
   };
 }
 

@@ -90,9 +90,26 @@
      }
     }
    },
-   "required": [
-    "citations"
-   ]
+    "required": [
+     "citations"
+    ]
+   }
+  },
+  {
+   "name": "resource.reveal",
+   "description": "통일 리소스 태그(<<resource: 대상 위치 | 인용 본문>>)를 현재 탭과 같은 페어 탭 그룹으로 열고 정확한 위치(PDF 페이지·문장, MD/CSV 줄, Outline 노드, VDoc 슬롯, Ref 블록, 이미지 영역, 웹 스냅샷)를 하이라이팅한다.",
+   "risk": "ui",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "rawTag": {
+      "type": "string",
+      "description": "예: <<resource: [[제안요청서_샘플_5P.pdf]] #p5 | 테넌트 단위 AES-256 암호화>> 또는 <<resource: https://... | 인용 문장>>"
+     }
+    },
+    "required": [
+     "rawTag"
+    ]
+   }
   }
- }
-]
+ ]

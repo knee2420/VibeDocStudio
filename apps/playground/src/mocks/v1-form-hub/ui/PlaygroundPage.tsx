@@ -21,9 +21,25 @@ import {
   PanelRightClose,
   PanelRightOpen,
   RotateCcw,
+  Sparkles,
   Table2,
   Tag,
 } from "lucide-react";
+import {
+  AGUI_A2UI_CANDIDATE_GROUPS,
+  buildInitialSubagents,
+  buildInitialSuggestions,
+  buildSeedWireEvents,
+  createTimestamp,
+  type A2uiCandidateCard,
+  type A2uiCandidateGroup,
+  type AguiSurfacePlacement,
+  type AguiToneFilter,
+  type AguiWireEvent,
+  type CandidateApplyAction,
+  type SubagentRunState,
+  type WysiwygSuggestion,
+} from "../model/aguiDemoModel";
 import {
   hasBlockTag,
   hasDocumentTag,
@@ -35,8 +51,10 @@ import {
 import { PLAYGROUND_PRESET_LIST } from "../model/presets";
 import type { PlaygroundNode, PlaygroundPresetId } from "../model/types";
 import { findPlaygroundNode, usePlaygroundStore } from "../model/usePlaygroundStore";
+import { AguiA2uiDemoPanel } from "./AguiA2uiDemoPanel";
 import { FormAssetHubSidebar } from "./FormAssetHubSidebar";
 import { UnifiedSheetViewport } from "./UnifiedSheetViewport";
+import { WysiwygSuggestionOverlay } from "./WysiwygSuggestionOverlay";
 
 function unescapeInlineMarkdownPrefix(text: string): string {
   return text
@@ -160,6 +178,7 @@ function renderPresetIcon(id: PlaygroundPresetId): React.ReactNode {
   if (id === "workshop-request") return <ClipboardList className="w-3.5 h-3.5 shrink-0" />;
   if (id === "rfp-complex") return <Table2 className="w-3.5 h-3.5 shrink-0" />;
   if (id === "a4-report") return <FileText className="w-3.5 h-3.5 shrink-0" />;
+  if (id === "agui-protocol-demo") return <Sparkles className="w-3.5 h-3.5 shrink-0 text-indigo-400" />;
   return <Globe className="w-3.5 h-3.5 shrink-0" />;
 }
 
@@ -271,25 +290,23 @@ function HeaderDropdown<T extends string>({
                     onChange(opt.value);
                   }
                 }}
-                className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-left text-xs transition cursor-pointer ${
-                  selected
-                    ? isIndigo
-                      ? "bg-indigo-50 text-indigo-900 font-semibold"
-                      : "bg-slate-100 text-slate-900 font-semibold"
-                    : "text-slate-700 hover:bg-slate-50"
-                }`}
+                className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-left text-xs transition cursor-pointer ${selected
+                  ? isIndigo
+                    ? "bg-indigo-50 text-indigo-900 font-semibold"
+                    : "bg-slate-100 text-slate-900 font-semibold"
+                  : "text-slate-700 hover:bg-slate-50"
+                  }`}
               >
                 <span className="flex items-center gap-1.5 min-w-0">
                   {opt.icon}
                   {opt.badge ? (
                     <span
-                      className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase shrink-0 ${
-                        selected
-                          ? isIndigo
-                            ? "bg-indigo-600 text-white"
-                            : "bg-slate-900 text-white"
-                          : "bg-slate-200 text-slate-700"
-                      }`}
+                      className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase shrink-0 ${selected
+                        ? isIndigo
+                          ? "bg-indigo-600 text-white"
+                          : "bg-slate-900 text-white"
+                        : "bg-slate-200 text-slate-700"
+                        }`}
                     >
                       {opt.badge}
                     </span>
@@ -303,13 +320,12 @@ function HeaderDropdown<T extends string>({
                     <span className="text-[10px] text-slate-400">{opt.meta}</span>
                   ) : null}
                   <Check
-                    className={`w-3.5 h-3.5 ${
-                      selected
-                        ? isIndigo
-                          ? "text-indigo-600 opacity-100"
-                          : "text-slate-900 opacity-100"
-                        : "opacity-0"
-                    }`}
+                    className={`w-3.5 h-3.5 ${selected
+                      ? isIndigo
+                        ? "text-indigo-600 opacity-100"
+                        : "text-slate-900 opacity-100"
+                      : "opacity-0"
+                      }`}
                   />
                 </span>
               </button>
@@ -323,6 +339,26 @@ function HeaderDropdown<T extends string>({
 
 export const PlaygroundPage: React.FC = () => {
   const [hubOpen, setHubOpen] = useState(true);
+  const [rightPanelMode, setRightPanelMode] = useState<"hub" | "agui-lab">("hub");
+  const [surfacePlacement, setSurfacePlacement] = useState<AguiSurfacePlacement>("drawer");
+  const [toneFilter, setToneFilter] = useState<AguiToneFilter>("all");
+  const [activeCandidateGroupId, setActiveCandidateGroupId] = useState<string>("cand-hwp-title");
+  const [selectedCandidateByGroup, setSelectedCandidateByGroup] = useState<Record<string, string>>({
+    "cand-hwp-title": "hwp-title-underline",
+    "cand-hwp-table": "hwp-tbl-grouped",
+    "cand-blog-kpi": "blog-kpi-cards",
+    "cand-blog-hero": "blog-hdr-hero",
+    "cand-webform-theme": "wf-theme-google",
+    "cand-rfp-spec": "rfp-view-spec",
+  });
+  const [suggestions, setSuggestions] = useState<WysiwygSuggestion[]>(() => buildInitialSuggestions());
+  const [activeSuggestionId, setActiveSuggestionId] = useState<string | null>(null);
+  const [runStatus, setRunStatus] = useState<"running" | "interrupted" | "success">("interrupted");
+  const [subagents, setSubagents] = useState<SubagentRunState[]>(() => buildInitialSubagents());
+  const [wireEvents, setWireEvents] = useState<AguiWireEvent[]>(() =>
+    buildSeedWireEvents("agui-doc-hwp")
+  );
+  const scanTimersRef = useRef<number[]>([]);
 
   const presetId = usePlaygroundStore((s) => s.presetId);
   const spec = usePlaygroundStore((s) => s.spec);
@@ -348,6 +384,7 @@ export const PlaygroundPage: React.FC = () => {
   const setMode = usePlaygroundStore((s) => s.setMode);
   const selectBlock = usePlaygroundStore((s) => s.selectBlock);
   const setBlockVariant = usePlaygroundStore((s) => s.setBlockVariant);
+  const changeNodeLayout = usePlaygroundStore((s) => s.changeNodeLayout);
   const applyTableViewToCache = usePlaygroundStore((s) => s.applyTableViewToCache);
   const revertTableViewToCache = usePlaygroundStore((s) => s.revertTableViewToCache);
   const runTableAiCompile = usePlaygroundStore((s) => s.runTableAiCompile);
@@ -449,11 +486,29 @@ export const PlaygroundPage: React.FC = () => {
   const handleSelectPreset = (nextId: PlaygroundPresetId) => {
     selectPreset(nextId);
     editorStore.getState().resetView();
+    if (nextId === "agui-protocol-demo") {
+      setHubOpen(true);
+      setRightPanelMode("agui-lab");
+      setSuggestions(buildInitialSuggestions());
+      setActiveSuggestionId(null);
+      setRunStatus("interrupted");
+      setSubagents(buildInitialSubagents());
+      setWireEvents(buildSeedWireEvents("agui-doc-hwp"));
+    } else {
+      setRightPanelMode("hub");
+    }
   };
 
   const handleReset = () => {
     reset();
     editorStore.getState().resetView();
+    if (presetId === "agui-protocol-demo") {
+      setSuggestions(buildInitialSuggestions());
+      setActiveSuggestionId(null);
+      setRunStatus("interrupted");
+      setSubagents(buildInitialSubagents());
+      setWireEvents(buildSeedWireEvents(activeLinkedDoc?.nodeId ?? "agui-doc-hwp"));
+    }
   };
 
   const editedCustomCount = useMemo(
@@ -479,6 +534,352 @@ export const PlaygroundPage: React.FC = () => {
     () => resolveNodesForLinkedDoc(spec, activeLinkedDoc),
     [spec, activeLinkedDoc]
   );
+
+  const isAguiDemoActive = presetId === "agui-protocol-demo" && rightPanelMode === "agui-lab";
+  const activeDocNodeId = activeLinkedDoc?.nodeId ?? "agui-doc-hwp";
+
+  const docCandidateGroups = useMemo(
+    () => AGUI_A2UI_CANDIDATE_GROUPS.filter((g) => g.docNodeId === activeDocNodeId),
+    [activeDocNodeId]
+  );
+
+  const activeCandidateGroup = useMemo(
+    () =>
+      docCandidateGroups.find((g) => g.id === activeCandidateGroupId) ??
+      docCandidateGroups[0] ??
+      null,
+    [docCandidateGroups, activeCandidateGroupId]
+  );
+
+  const docSuggestions = useMemo(
+    () => suggestions.filter((s) => s.docNodeId === activeDocNodeId),
+    [suggestions, activeDocNodeId]
+  );
+
+  useEffect(() => {
+    return () => {
+      for (const timer of scanTimersRef.current) window.clearTimeout(timer);
+    };
+  }, []);
+
+  const appendWireEvent = (
+    event: Omit<AguiWireEvent, "seq" | "timestamp">
+  ) => {
+    setWireEvents((prev) => [
+      ...prev.slice(-39),
+      {
+        ...event,
+        seq: (prev[prev.length - 1]?.seq ?? 0) + 1,
+        timestamp: createTimestamp(),
+      },
+    ]);
+  };
+
+  const applyCandidateAction = (action: CandidateApplyAction) => {
+    if (action.kind === "block-variant") {
+      setBlockVariant(action.blockId, action.variantId);
+      return;
+    }
+    if (action.kind === "node-layout") {
+      changeNodeLayout(action.nodeId, action.layoutChoice);
+      return;
+    }
+    setWebFormTheme(action.theme);
+  };
+
+  const handleSelectLinkedDocWithWire = (docId: string) => {
+    selectLinkedDocument(docId);
+    const nextDoc = linkExtraction.documents.find((d) => d.id === docId);
+    if (presetId === "agui-protocol-demo" && nextDoc) {
+      setActiveSuggestionId(null);
+      const nextGroups = AGUI_A2UI_CANDIDATE_GROUPS.filter((g) => g.docNodeId === nextDoc.nodeId);
+      if (nextGroups[0]) setActiveCandidateGroupId(nextGroups[0].id);
+      appendWireEvent({
+        protocol: "A2UI 1.0",
+        type: "createSurface",
+        subagentRunId: "sub_asset_recommender",
+        summary: `포맷 전환(${nextDoc.docFormat ?? "DOC"}) → ${nextGroups[0]?.surfaceId ?? "surface"}`,
+        payload: {
+          docNodeId: nextDoc.nodeId,
+          docFormat: nextDoc.docFormat,
+          surfaceId: nextGroups[0]?.surfaceId ?? null,
+          placement: surfacePlacement,
+        },
+      });
+    }
+  };
+
+  const handleChangeSurfacePlacement = (placement: AguiSurfacePlacement) => {
+    setSurfacePlacement(placement);
+    appendWireEvent({
+      protocol: "A2UI 1.0",
+      type: "updateComponents",
+      summary: `Surface 위치 전환 → ${placement}`,
+      payload: {
+        surfaceId: activeCandidateGroup?.surfaceId ?? "surface://asset-picker",
+        placement,
+        note: "동일한 A2UI 데이터 모델의 렌더링 표면(Surface)만 교체",
+      },
+    });
+  };
+
+  const handleChangeToneFilter = (tone: AguiToneFilter) => {
+    setToneFilter(tone);
+    appendWireEvent({
+      protocol: "A2UI 1.0",
+      type: "updateDataModel",
+      summary: `후보 필터 갱신 (@path: "/filter" → "${tone}")`,
+      payload: {
+        surfaceId: activeCandidateGroup?.surfaceId ?? "surface://asset-picker",
+        "@path": "/filter",
+        value: tone,
+      },
+    });
+  };
+
+  const handleSelectCandidate = (group: A2uiCandidateGroup, card: A2uiCandidateCard) => {
+    setActiveCandidateGroupId(group.id);
+    setSelectedCandidateByGroup((prev) => ({ ...prev, [group.id]: card.id }));
+    applyCandidateAction(card.action);
+    appendWireEvent({
+      protocol: "A2UI 1.0",
+      type: "callAgentFunction",
+      summary: `에셋 라이브 미리보기: ${card.title}`,
+      payload: {
+        surfaceId: group.surfaceId,
+        "@call": "previewAssetCandidate",
+        candidateId: card.id,
+        action: card.action,
+      },
+    });
+  };
+
+  const handleSelectVariant = (suggestionId: string, variantId: "A" | "B") => {
+    setSuggestions((prev) =>
+      prev.map((s) => (s.id === suggestionId ? { ...s, selectedVariantId: variantId } : s))
+    );
+    appendWireEvent({
+      protocol: "AG-UI 1.0",
+      type: "STATE_DELTA",
+      summary: `제안(${suggestionId}) 비교안 전환 → ${variantId}안`,
+      payload: {
+        delta: [{ op: "replace", path: `/suggestions/${suggestionId}/selectedVariantId`, value: variantId }],
+      },
+    });
+  };
+
+  const resolveLiveSlotId = (sug: WysiwygSuggestion): string => {
+    const cur = usePlaygroundStore.getState().compiled;
+    if (cur.doc.slots[sug.targetSlotId]) return sug.targetSlotId;
+    return cur.nodeSlotIds[sug.targetNodeId]?.[0] ?? sug.targetSlotId;
+  };
+
+  const handleAcceptSuggestion = (suggestionId: string) => {
+    const sug = suggestions.find((s) => s.id === suggestionId);
+    if (!sug) return;
+    const activeVariant =
+      sug.variants.find((v) => v.id === sug.selectedVariantId) ?? sug.variants[0];
+    const resolvedSlotId = resolveLiveSlotId(sug);
+    const curSlotHtml =
+      sug.originalHtmlSnapshot ??
+      usePlaygroundStore.getState().compiled.doc.slots[resolvedSlotId]?.content ??
+      `<p>${sug.beforeText}</p>`;
+
+    if (activeVariant.layoutAction) {
+      applyCandidateAction(activeVariant.layoutAction);
+    }
+    const postLayoutSlotId = resolveLiveSlotId(sug);
+    updateSlotContent(postLayoutSlotId, activeVariant.afterHtml);
+
+    setSuggestions((prev) =>
+      prev.map((s) =>
+        s.id === suggestionId
+          ? { ...s, status: "accepted", originalHtmlSnapshot: curSlotHtml }
+          : s
+      )
+    );
+    appendWireEvent({
+      protocol: "AG-UI 1.0",
+      type: "STATE_DELTA",
+      summary: `위지윅 수정 적용 (${sug.targetLabel} · ${activeVariant.id}안)`,
+      payload: {
+        delta: [
+          { op: "replace", path: `/suggestions/${suggestionId}/status`, value: "accepted" },
+          { op: "replace", path: `/slots/${postLayoutSlotId}`, value: activeVariant.afterText },
+        ],
+      },
+    });
+  };
+
+  const handleRejectSuggestion = (suggestionId: string) => {
+    setSuggestions((prev) =>
+      prev.map((s) => (s.id === suggestionId ? { ...s, status: "rejected" } : s))
+    );
+    appendWireEvent({
+      protocol: "AG-UI 1.0",
+      type: "STATE_DELTA",
+      summary: `위지윅 수정 거절 (${suggestionId})`,
+      payload: {
+        delta: [{ op: "replace", path: `/suggestions/${suggestionId}/status`, value: "rejected" }],
+      },
+    });
+  };
+
+  const handleRevertSuggestion = (suggestionId: string) => {
+    const sug = suggestions.find((s) => s.id === suggestionId);
+    if (!sug) return;
+    if (sug.status === "accepted" && sug.originalHtmlSnapshot) {
+      const resolvedSlotId = resolveLiveSlotId(sug);
+      updateSlotContent(resolvedSlotId, sug.originalHtmlSnapshot);
+    }
+    setSuggestions((prev) =>
+      prev.map((s) => (s.id === suggestionId ? { ...s, status: "pending" } : s))
+    );
+    appendWireEvent({
+      protocol: "AG-UI 1.0",
+      type: "STATE_DELTA",
+      summary: `제안 상태 복원 (${suggestionId} → pending)`,
+      payload: {
+        delta: [{ op: "replace", path: `/suggestions/${suggestionId}/status`, value: "pending" }],
+      },
+    });
+  };
+
+  const handleAcceptAllSuggestions = () => {
+    const pending = docSuggestions.filter((s) => s.status === "pending");
+    for (const sug of pending) {
+      handleAcceptSuggestion(sug.id);
+    }
+    handleResumeDecision(`위지윅 수정 제안 ${pending.length}건 일괄 승인`);
+  };
+
+  const handleResumeDecision = (reason: string) => {
+    setRunStatus("success");
+    appendWireEvent({
+      protocol: "AG-UI 1.0",
+      type: "RUN_RESUME",
+      summary: `사용자 결정 전달 → ${reason}`,
+      payload: {
+        runId: "run_agui_demo_01",
+        resumeInput: { decision: reason, docNodeId: activeDocNodeId },
+      },
+    });
+    appendWireEvent({
+      protocol: "AG-UI 1.0",
+      type: "RUN_FINISHED",
+      summary: "에이전트 턴 정상 종료 (outcome: success)",
+      payload: {
+        runId: "run_agui_demo_01",
+        outcome: "success",
+      },
+    });
+  };
+
+  const handleRunParallelScan = () => {
+    for (const timer of scanTimersRef.current) window.clearTimeout(timer);
+    scanTimersRef.current = [];
+    setRunStatus("running");
+    setSubagents([
+      {
+        subagentRunId: "sub_asset_recommender",
+        name: "asset-recommender",
+        role: "A2UI 에셋 후보 생성",
+        status: "running",
+        progress: 20,
+        activityText: "포맷 스키마 분석 중...",
+      },
+      {
+        subagentRunId: "sub_wysiwyg_reviewer",
+        name: "wysiwyg-reviewer",
+        role: "AG-UI 위지윅 수정 제안",
+        status: "running",
+        progress: 15,
+        activityText: "슬롯 문구·수치 스캔 중...",
+      },
+    ]);
+
+    appendWireEvent({
+      protocol: "AG-UI 1.0",
+      type: "RUN_STARTED",
+      summary: `병렬 스캔 시작 (${activeDocNodeId})`,
+      payload: { runId: `run_${Date.now()}`, docNodeId: activeDocNodeId, parallelWorkers: 2 },
+    });
+    appendWireEvent({
+      protocol: "AG-UI 1.0",
+      type: "SUBAGENT_STARTED",
+      subagentRunId: "sub_asset_recommender",
+      summary: "병렬 워커 #1 실행 (A2UI 에셋 추천)",
+      payload: { subagentRunId: "sub_asset_recommender", parallel: true },
+    });
+    appendWireEvent({
+      protocol: "AG-UI 1.0",
+      type: "SUBAGENT_STARTED",
+      subagentRunId: "sub_wysiwyg_reviewer",
+      summary: "병렬 워커 #2 실행 (AG-UI 위지윅 검토)",
+      payload: { subagentRunId: "sub_wysiwyg_reviewer", parallel: true },
+    });
+
+    const t1 = window.setTimeout(() => {
+      setSubagents((prev) =>
+        prev.map((s) =>
+          s.subagentRunId === "sub_asset_recommender"
+            ? { ...s, progress: 70, activityText: "카탈로그 후보 랭킹 산출 중..." }
+            : { ...s, progress: 60, activityText: "A/B안 Unified Diff 생성 중..." }
+        )
+      );
+      appendWireEvent({
+        protocol: "AG-UI 1.0",
+        type: "ACTIVITY_DELTA",
+        subagentRunId: "sub_asset_recommender",
+        summary: "병렬 진행률 업데이트 (70% / 60%)",
+        payload: { delta: [{ op: "replace", path: "/progress", value: 70 }] },
+      });
+    }, 360);
+
+    const t2 = window.setTimeout(() => {
+      setSubagents([
+        {
+          subagentRunId: "sub_asset_recommender",
+          name: "asset-recommender",
+          role: "A2UI 에셋 후보 생성",
+          status: "finished",
+          progress: 100,
+          activityText: "후보 생성 완료",
+        },
+        {
+          subagentRunId: "sub_wysiwyg_reviewer",
+          name: "wysiwyg-reviewer",
+          role: "AG-UI 위지윅 수정 제안",
+          status: "finished",
+          progress: 100,
+          activityText: "수정 제안 준비 완료",
+        },
+      ]);
+      setRunStatus("interrupted");
+      appendWireEvent({
+        protocol: "AG-UI 1.0",
+        type: "SUBAGENT_FINISHED",
+        subagentRunId: "sub_asset_recommender",
+        summary: "워커 #1 완료 → A2UI Surface 갱신",
+        payload: { subagentRunId: "sub_asset_recommender", candidates: activeCandidateGroup?.candidates.length ?? 0 },
+      });
+      appendWireEvent({
+        protocol: "AG-UI 1.0",
+        type: "SUBAGENT_FINISHED",
+        subagentRunId: "sub_wysiwyg_reviewer",
+        summary: "워커 #2 완료 → AG-UI STATE_DELTA 반영",
+        payload: { subagentRunId: "sub_wysiwyg_reviewer", suggestions: docSuggestions.length },
+      });
+      appendWireEvent({
+        protocol: "AG-UI 1.0",
+        type: "RUN_FINISHED",
+        summary: "웨이크업: 사용자 선택 대기 (outcome: interrupted)",
+        payload: { outcome: "interrupted", wakeup: true },
+      });
+    }, 850);
+
+    scanTimersRef.current = [t1, t2];
+  };
 
   return (
     <div className="h-full w-full flex flex-col overflow-hidden bg-white text-slate-900">
@@ -542,13 +943,44 @@ export const PlaygroundPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setHubOpen((v) => !v)}
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-medium cursor-pointer transition ${hubOpen
+            onClick={() => {
+              if (presetId !== "agui-protocol-demo") {
+                handleSelectPreset("agui-protocol-demo");
+                return;
+              }
+              if (hubOpen && rightPanelMode === "agui-lab") {
+                setRightPanelMode("hub");
+              } else {
+                setHubOpen(true);
+                setRightPanelMode("agui-lab");
+              }
+            }}
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold cursor-pointer transition ${isAguiDemoActive && hubOpen
+              ? "border-indigo-500 bg-indigo-600 text-white shadow-2xs"
+              : "border-indigo-200 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100"
+              }`}
+            title="AG-UI 1.0 + A2UI 1.0 인터랙션 목업 문서 & 랩 열기"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AG-UI · A2UI 목업</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (hubOpen && rightPanelMode === "hub") {
+                setHubOpen(false);
+              } else {
+                setHubOpen(true);
+                setRightPanelMode("hub");
+              }
+            }}
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-medium cursor-pointer transition ${hubOpen && rightPanelMode === "hub"
               ? "border-indigo-200 bg-indigo-50 text-indigo-700"
               : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
               }`}
           >
-            {hubOpen ? (
+            {hubOpen && rightPanelMode === "hub" ? (
               <PanelRightClose className="w-3.5 h-3.5" />
             ) : (
               <PanelRightOpen className="w-3.5 h-3.5" />
@@ -654,11 +1086,11 @@ export const PlaygroundPage: React.FC = () => {
                     value: doc.id,
                     label: doc.title,
                     badge: doc.docFormat,
-                    meta: doc.docFormat?.toLowerCase().includes("web")
+                    meta: doc.docFormat?.toLowerCase().includes("web") || doc.docFormat?.toLowerCase().includes("blog")
                       ? "(스크롤)"
                       : `(${doc.pages.length}P)`,
                   }))}
-                  onChange={selectLinkedDocument}
+                  onChange={handleSelectLinkedDocWithWire}
                 />
               )}
             </div>
@@ -710,43 +1142,118 @@ export const PlaygroundPage: React.FC = () => {
                 onUpdateSlotContent={updateSlotContent}
                 onTableCommand={runTableCommand}
                 onSwitchMode={setMode}
+                renderPageOverlay={
+                  isAguiDemoActive
+                    ? ({ pageId, hostEl, renderWidth, scale }) => (
+                      <WysiwygSuggestionOverlay
+                        pageId={pageId}
+                        hostEl={hostEl}
+                        renderWidth={renderWidth}
+                        scale={scale}
+                        surfacePlacement={surfacePlacement}
+                        suggestions={docSuggestions}
+                        activeSuggestionId={activeSuggestionId}
+                        activeCandidateGroup={activeCandidateGroup}
+                        selectedCandidateId={
+                          activeCandidateGroup
+                            ? selectedCandidateByGroup[activeCandidateGroup.id] ?? null
+                            : null
+                        }
+                        toneFilter={toneFilter}
+                        onSelectSuggestion={setActiveSuggestionId}
+                        onSelectVariant={handleSelectVariant}
+                        onAcceptSuggestion={handleAcceptSuggestion}
+                        onRejectSuggestion={handleRejectSuggestion}
+                        onRevertSuggestion={handleRevertSuggestion}
+                        onSelectCandidate={handleSelectCandidate}
+                        onResumeDecision={handleResumeDecision}
+                        onChangeToneFilter={handleChangeToneFilter}
+                      />
+                    )
+                    : undefined
+                }
               />
             )}
           </div>
         </section>
 
         {hubOpen ? (
-          <FormAssetHubSidebar
-            linkedDocs={linkExtraction.documents}
-            activeLinkedDocId={activeLinkedDoc?.id ?? null}
-            activeLinkedPageId={activeLinkedPageId}
-            activeAssetId={activeAssetId}
-            sheetElements={Object.values(compiled.blockMetaMap)}
-            selectedBlockMeta={
-              selectedBlockId ? compiled.blockMetaMap[selectedBlockId] ?? null : null
-            }
-            blockVariants={blockVariants}
-            viewCache={viewCache}
-            dirtyViewBlocks={dirtyViewBlocks}
-            aiCompileStatus={aiCompileStatus}
-            webFormTheme={webFormTheme}
-            locked={isEditing}
-            onSelectAsset={selectAsset}
-            onSelectElementBlock={(bid) => selectBlock(bid)}
-            onSelectBlockVariant={setBlockVariant}
-            onApplyTableView={applyTableViewToCache}
-            onRevertTableView={revertTableViewToCache}
-            onRegenerateTableAi={(bid, vid, feedback) => {
-              void runTableAiCompile(bid, vid, feedback);
-            }}
-            onCancelAiCompile={cancelAiCompile}
-            onSelectWebFormTheme={setWebFormTheme}
-            onClearBlockSelection={() => selectBlock(null)}
-            onSelectLinkedDoc={selectLinkedDocument}
-            onSelectLinkedPage={selectLinkedPage}
-            onUnlockToWysiwym={() => setMode("wysiwym")}
-            onEnterPhase3Edit={() => setMode("wysiwyg")}
-          />
+          isAguiDemoActive ? (
+            <AguiA2uiDemoPanel
+              linkedDocs={linkExtraction.documents}
+              activeLinkedDocId={activeLinkedDoc?.id ?? null}
+              candidateGroups={docCandidateGroups}
+              activeGroupId={activeCandidateGroup?.id ?? ""}
+              selectedCandidateByGroup={selectedCandidateByGroup}
+              suggestions={docSuggestions}
+              activeSuggestionId={activeSuggestionId}
+              surfacePlacement={surfacePlacement}
+              toneFilter={toneFilter}
+              runStatus={runStatus}
+              subagents={subagents}
+              wireEvents={wireEvents}
+              onSelectLinkedDoc={handleSelectLinkedDocWithWire}
+              onSelectGroup={(gid) => {
+                setActiveCandidateGroupId(gid);
+                const g = docCandidateGroups.find((item) => item.id === gid);
+                if (g) {
+                  appendWireEvent({
+                    protocol: "A2UI 1.0",
+                    type: "createSurface",
+                    summary: `대상 블록 변경 → ${g.targetLabel}`,
+                    payload: { surfaceId: g.surfaceId, targetBlockId: g.targetBlockId },
+                  });
+                }
+              }}
+              onChangeSurfacePlacement={handleChangeSurfacePlacement}
+              onChangeToneFilter={handleChangeToneFilter}
+              onSelectCandidate={handleSelectCandidate}
+              onFocusBlock={(nodeId, switchToWysiwyg) => {
+                if (switchToWysiwyg) setMode("wysiwyg");
+                focusNodeInSheet(nodeId);
+              }}
+              onSelectSuggestion={setActiveSuggestionId}
+              onSelectVariant={handleSelectVariant}
+              onAcceptSuggestion={handleAcceptSuggestion}
+              onRejectSuggestion={handleRejectSuggestion}
+              onRevertSuggestion={handleRevertSuggestion}
+              onAcceptAllSuggestions={handleAcceptAllSuggestions}
+              onRunParallelScan={handleRunParallelScan}
+              onResumeDecision={handleResumeDecision}
+            />
+          ) : (
+            <FormAssetHubSidebar
+              linkedDocs={linkExtraction.documents}
+              activeLinkedDocId={activeLinkedDoc?.id ?? null}
+              activeLinkedPageId={activeLinkedPageId}
+              activeAssetId={activeAssetId}
+              sheetElements={Object.values(compiled.blockMetaMap)}
+              selectedBlockMeta={
+                selectedBlockId ? compiled.blockMetaMap[selectedBlockId] ?? null : null
+              }
+              blockVariants={blockVariants}
+              viewCache={viewCache}
+              dirtyViewBlocks={dirtyViewBlocks}
+              aiCompileStatus={aiCompileStatus}
+              webFormTheme={webFormTheme}
+              locked={isEditing}
+              onSelectAsset={selectAsset}
+              onSelectElementBlock={(bid) => selectBlock(bid)}
+              onSelectBlockVariant={setBlockVariant}
+              onApplyTableView={applyTableViewToCache}
+              onRevertTableView={revertTableViewToCache}
+              onRegenerateTableAi={(bid, vid, feedback) => {
+                void runTableAiCompile(bid, vid, feedback);
+              }}
+              onCancelAiCompile={cancelAiCompile}
+              onSelectWebFormTheme={setWebFormTheme}
+              onClearBlockSelection={() => selectBlock(null)}
+              onSelectLinkedDoc={handleSelectLinkedDocWithWire}
+              onSelectLinkedPage={selectLinkedPage}
+              onUnlockToWysiwym={() => setMode("wysiwym")}
+              onEnterPhase3Edit={() => setMode("wysiwyg")}
+            />
+          )
         ) : null}
       </div>
     </div>

@@ -29,11 +29,13 @@ import {
 import {
   BUILTIN_VDOC_ASSETS,
   applyTableCommandToDocument,
+  buildEvidenceBacklinkIndex,
   createInsertableBlock,
   documentSurface,
   duplicateBlock,
   findBlock,
   findBlockBySlotId,
+  getBlockSlotIds,
   insertBlock,
   mapBlock,
   moveBlockByOffset,
@@ -45,12 +47,14 @@ import {
   resolveDocumentView,
   setSlotContent,
   toggleBlockLock,
+  type EvidenceLink,
   type InsertableBlockKind,
   type LayoutBlock,
   type SceneGraphNodeRole,
   type TableCommand,
   type VDocDocument,
   type VDocPage,
+  type VDocSlot,
 } from "@vibe/vdoc-schema";
 import {
   MarqueeOverlay,
@@ -98,6 +102,21 @@ import {
 
 import type { IdeEditorEnv } from "../model/editorAdapters";
 import { DocumentViewIcon } from "./DocumentSurfaceIcons";
+import { AnchorChips, vdocUnitSelector } from "./ai/AnchorChips";
+import { V2SlotReview } from "./ai/V2SlotReview";
+import {
+  VDocEvidenceBottomPanel,
+  VDocSidenoteRail,
+  VDocSlotEvidenceInline,
+  collectVDocEvidenceEntries,
+  resolveEvidenceVaultPath,
+  type EvidenceLayerMode,
+} from "./EvidenceExpressions";
+import {
+  clearResourceHighlight,
+  subscribeResourceHighlight,
+  type ResourceHighlightRequest,
+} from "../model/resourceHighlightBus";
 
 export interface VDocTabEditorProps {
   readonly host: EditorHostContext<IdeEditorEnv>;
@@ -220,8 +239,80 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
   const [aiPrompt, setAiPrompt] = useState("");
   const [styleRevision, setStyleRevision] = useState(0);
   const [outlineRevision, setOutlineRevision] = useState(0);
+  const [evidenceMode, setEvidenceMode] = useState<EvidenceLayerMode>("review");
+
+  const openEvidenceSource = useCallback(
+    (targetPath: string) => {
+      const openPair = hostRef.current.env.openInPairTabGroup;
+      if (openPair) {
+        openPair(targetPath, { sourceTabId: hostRef.current.tabId, sourcePath: path });
+      } else {
+        hostRef.current.openLink(targetPath, "split-right");
+      }
+    },
+    [path]
+  );
+
+  const vdocEvidenceIndex = useMemo(
+    () => buildEvidenceBacklinkIndex(collectVDocEvidenceEntries(doc)),
+    [doc]
+  );
+
+  const evidenceLinksBySlotId = useMemo(() => {
+    const map = new Map<string, EvidenceLink[]>();
+    for (const link of doc.evidenceLinks ?? []) {
+      const list = map.get(link.slotId);
+      if (list) list.push(link);
+      else map.set(link.slotId, [link]);
+    }
+    return map;
+  }, [doc.evidenceLinks]);
 
   const canvasScrollRef = useRef<HTMLDivElement>(null);
+  /** 세션 표시 겹층용 — 캔버스 스크롤 컨테이너 요소 */
+  const [canvasEl, setCanvasEl] = useState<HTMLDivElement | null>(null);
+  /** 칸 안 변경안 검토 (승인 · 거절 · 부분 승인) + 근거·인용 표현(Case 1~6) */
+  const aiWorkspace = host.env.ai;
+  const wrapSlotContent = useCallback(
+    (slot: VDocSlot, content: React.ReactNode) => {
+      const slotLinks = evidenceLinksBySlotId.get(slot.slotId);
+      const inner =
+        slotLinks && slotLinks.length > 0 && evidenceMode !== "clean" ? (
+          <>
+            {content}
+            <VDocSlotEvidenceInline
+              links={slotLinks}
+              mode={evidenceMode}
+              citationNumberBySourceKey={vdocEvidenceIndex.citationNumberBySourceKey}
+              backlinkGroups={vdocEvidenceIndex.groups}
+              onOpenSource={openEvidenceSource}
+            />
+          </>
+        ) : (
+          content
+        );
+      return aiWorkspace ? (
+        <V2SlotReview ai={aiWorkspace} path={path} slot={slot}>
+          {inner}
+        </V2SlotReview>
+      ) : (
+        inner
+      );
+    },
+    [
+      aiWorkspace,
+      path,
+      evidenceLinksBySlotId,
+      evidenceMode,
+      vdocEvidenceIndex.citationNumberBySourceKey,
+      vdocEvidenceIndex.groups,
+      openEvidenceSource,
+    ]
+  );
+  const attachCanvas = useCallback((el: HTMLDivElement | null) => {
+    canvasScrollRef.current = el;
+    setCanvasEl(el);
+  }, []);
   const editorRootRef = useRef<HTMLDivElement>(null);
   const localWriteRef = useRef(false);
   const hostRef = useRef(host);
@@ -516,6 +607,23 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       return;
     }
     const targetEl = ev.target as HTMLElement | null;
+    const citeEl = targetEl?.closest<HTMLElement>("sup[data-cite]");
+    if (citeEl) {
+      const citeId = citeEl.getAttribute("data-cite") ?? "";
+      const slotEl = citeEl.closest<HTMLElement>("[data-slot-id]");
+      const sid = slotEl?.dataset.slotId;
+      const links = docRef.current.evidenceLinks ?? [];
+      const hit =
+        links.find((l) => (!sid || l.slotId === sid) && l.citationIds?.includes(citeId)) ??
+        links.find((l) => l.citationIds?.includes(citeId));
+      const vp = hit ? resolveEvidenceVaultPath(hit.locator) : null;
+      if (vp) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        openEvidenceSource(vp);
+        return;
+      }
+    }
     const anchor = targetEl?.closest<HTMLAnchorElement>("a[href]");
     if (anchor) {
       const href = anchor.getAttribute("href") ?? "";
@@ -523,7 +631,18 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       if (vaultTarget) {
         ev.preventDefault();
         ev.stopPropagation();
-        hostRef.current.openLink(vaultTarget, ev.ctrlKey || ev.metaKey ? "new-tab" : "split-right");
+        if (ev.ctrlKey || ev.metaKey) {
+          hostRef.current.openLink(vaultTarget, "new-tab");
+        } else if (ev.altKey) {
+          hostRef.current.openLink(vaultTarget, "split-right");
+        } else if (hostRef.current.env.openInPairTabGroup) {
+          hostRef.current.env.openInPairTabGroup(vaultTarget, {
+            sourceTabId: hostRef.current.tabId,
+            sourcePath: path,
+          });
+        } else {
+          hostRef.current.openLink(vaultTarget, "split-right");
+        }
         return;
       }
     }
@@ -908,51 +1027,93 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
   );
 
   const renderPage = useCallback(
-    (page: VDocPage) => (
-      <div
-        key={page.pageId}
-        data-vdoc-page-id={page.pageId}
-        onClick={(ev) => {
-          ev.stopPropagation();
-          vdocUiBridge.getState().setActivePage(path, page.pageId);
-        }}
-        className="text-slate-900"
-      >
-        <MemoVDocPageSheet
-          docTitle={displayDoc.title}
-          totalPages={displayDoc.pages.length}
-          seamless={surface.kind === "scroll"}
-          page={page}
-          slots={displayDoc.slots}
-          backdata={displayDoc.backdata}
-          mode={stagedPreview ? "Viewing" : sheetMode}
-          selectedBlockId={workMode === "Design" && !stagedPreview ? selectedBlockId : null}
-          selectedSlotId={workMode === "Design" && !stagedPreview ? selectedSlotId : null}
-          composerOpenSlotId={null}
-          onSelectPage={handleSelectPage}
-          onSelectBlock={handleSelectBlock}
-          onSelectSlot={handleSelectSlot}
-          onToggleComposerForSlot={handleOpenAiForSlot}
-          onOpenBackdataDrawer={handleOpenAiForSlot}
-          onUpdateSlotContent={handleUpdateSlotContent}
-          onMoveBlock={handleMoveBlock}
-          onDeleteBlock={handleDeleteBlock}
-          onMoveBlockTo={handleMoveBlockTo}
-          onInsertBlock={handleInsertBlock}
-          onDuplicateBlock={handleDuplicateBlock}
-          onToggleBlockLock={handleToggleBlockLock}
-          onMoveBlockFrame={handleMoveBlockFrame}
-          onResizeBlockFrame={handleResizeBlockFrame}
-          onUpdateBlock={handleUpdateBlock}
-          onTableCommand={handleTableCommand}
-        />
-      </div>
-    ),
+    (page: VDocPage) => {
+      const pageSlotIds = new Set<string>();
+      const collectBlockSlots = (blk: LayoutBlock) => {
+        for (const sid of getBlockSlotIds(blk)) pageSlotIds.add(sid);
+        if (blk.kind === "columns-grid") {
+          for (const c of blk.columns ?? []) {
+            for (const nested of c.blocks ?? []) collectBlockSlots(nested);
+          }
+        } else if (blk.kind === "structured-table") {
+          for (const r of blk.rows ?? []) {
+            for (const cell of r.cells ?? []) {
+              for (const nested of cell.blocks ?? []) collectBlockSlots(nested);
+            }
+          }
+        }
+      };
+      for (const blk of page.blocks) collectBlockSlots(blk);
+      const pageLinks =
+        evidenceMode === "review"
+          ? (displayDoc.evidenceLinks ?? []).filter((l) => pageSlotIds.has(l.slotId))
+          : [];
+      const hasSidenotes = pageLinks.some(
+        (l) => (l.presentation ?? l.locator.presentation) === "sidenote"
+      );
+
+      const sheetEl = (
+        <div
+          key={page.pageId}
+          data-vdoc-page-id={page.pageId}
+          onClick={(ev) => {
+            ev.stopPropagation();
+            vdocUiBridge.getState().setActivePage(path, page.pageId);
+          }}
+          className="text-slate-900"
+        >
+          <MemoVDocPageSheet
+            docTitle={displayDoc.title}
+            totalPages={displayDoc.pages.length}
+            seamless={surface.kind === "scroll"}
+            page={page}
+            slots={displayDoc.slots}
+            backdata={displayDoc.backdata}
+            mode={stagedPreview ? "Viewing" : sheetMode}
+            selectedBlockId={workMode === "Design" && !stagedPreview ? selectedBlockId : null}
+            selectedSlotId={workMode === "Design" && !stagedPreview ? selectedSlotId : null}
+            composerOpenSlotId={null}
+            onSelectPage={handleSelectPage}
+            onSelectBlock={handleSelectBlock}
+            onSelectSlot={handleSelectSlot}
+            onToggleComposerForSlot={handleOpenAiForSlot}
+            onOpenBackdataDrawer={handleOpenAiForSlot}
+            onUpdateSlotContent={handleUpdateSlotContent}
+            onMoveBlock={handleMoveBlock}
+            onDeleteBlock={handleDeleteBlock}
+            onMoveBlockTo={handleMoveBlockTo}
+            onInsertBlock={handleInsertBlock}
+            onDuplicateBlock={handleDuplicateBlock}
+            onToggleBlockLock={handleToggleBlockLock}
+            onMoveBlockFrame={handleMoveBlockFrame}
+            onResizeBlockFrame={handleResizeBlockFrame}
+            onUpdateBlock={handleUpdateBlock}
+            onTableCommand={handleTableCommand}
+            wrapSlotContent={wrapSlotContent}
+          />
+        </div>
+      );
+
+      if (!hasSidenotes) return sheetEl;
+      return (
+        <div key={page.pageId} className="flex items-start gap-4">
+          {sheetEl}
+          <VDocSidenoteRail
+            links={pageLinks}
+            citationNumberBySourceKey={vdocEvidenceIndex.citationNumberBySourceKey}
+            onOpenSource={openEvidenceSource}
+          />
+        </div>
+      );
+    },
     [
+      wrapSlotContent,
       displayDoc.backdata,
+      displayDoc.evidenceLinks,
       displayDoc.pages.length,
       displayDoc.slots,
       displayDoc.title,
+      evidenceMode,
       handleDeleteBlock,
       handleDuplicateBlock,
       handleInsertBlock,
@@ -968,12 +1129,14 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       handleToggleBlockLock,
       handleUpdateBlock,
       handleUpdateSlotContent,
+      openEvidenceSource,
       path,
       selectedBlockId,
       selectedSlotId,
       sheetMode,
       stagedPreview,
       surface.kind,
+      vdocEvidenceIndex.citationNumberBySourceKey,
       vdocUiBridge,
       workMode,
     ]
@@ -1073,6 +1236,48 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     if (ev.type === "click") modifierSelectRef.current = false;
   };
 
+  const [incomingHighlight, setIncomingHighlight] = useState<ResourceHighlightRequest | null>(null);
+
+  useEffect(
+    () =>
+      subscribeResourceHighlight(path, (req) => {
+        setIncomingHighlight(req);
+        if (!req) return;
+        let hitSlotId: string | null = req.slotId ?? null;
+        if (!hitSlotId && req.quoteText?.trim()) {
+          const needle = req.quoteText.trim().toLowerCase();
+          for (const [sid, slot] of Object.entries(doc.slots)) {
+            const plain = String(slot.content ?? "").replace(/<[^>]+>/g, " ").toLowerCase();
+            if (plain.includes(needle)) {
+              hitSlotId = sid;
+              break;
+            }
+          }
+        }
+        if (hitSlotId) {
+          const hitBlock = findBlockBySlotId(doc, hitSlotId);
+          if (hitBlock) {
+            vdocUiBridge.getState().selectBlock(path, hitBlock.block.blockId, hitBlock.pageId);
+          }
+          window.setTimeout(() => {
+            const root = editorRootRef.current;
+            if (!root) return;
+            const el = root.querySelector<HTMLElement>(`[data-slot-id="${CSS.escape(hitSlotId!)}"]`);
+            if (el) {
+              el.scrollIntoView({ block: "center", behavior: "smooth" });
+              el.style.outline = "2px solid #fbbf24";
+              el.style.backgroundColor = "rgba(251, 191, 36, 0.22)";
+              window.setTimeout(() => {
+                el.style.outline = "";
+                el.style.backgroundColor = "";
+              }, 3500);
+            }
+          }, 80);
+        }
+      }),
+    [path, doc, vdocUiBridge]
+  );
+
   return (
     <div
       ref={editorRootRef}
@@ -1102,6 +1307,30 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         path={path}
         structureMode={workMode === "Structure"}
       />
+
+      {incomingHighlight && (
+        <div
+          data-testid="vdoc-resource-highlight-banner"
+          className="flex shrink-0 items-center justify-between gap-2 border-b border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-[11.5px] text-amber-100"
+        >
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="font-semibold text-amber-200">
+              🎯 2D 문서 하이라이트{incomingHighlight.slotId ? ` · #${incomingHighlight.slotId}` : ""}
+            </span>
+            {incomingHighlight.quoteText && (
+              <span className="truncate text-amber-100/85">“{incomingHighlight.quoteText}”</span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => clearResourceHighlight(path)}
+            className="shrink-0 rounded p-0.5 text-amber-200/80 hover:bg-amber-500/20 hover:text-white"
+            title="하이라이트 해제"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* 2D Canvas Top Control Strip */}
       <div className="relative flex h-8 shrink-0 select-none items-center justify-between border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-3 text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
@@ -1245,6 +1474,36 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
                       : "→ 구조로 반영"}
               </span>
             </button>
+          )}
+
+          {/* 근거 레이어 표시 모드 토글 (근거 링크가 있는 문서에서만 표시) */}
+          {(displayDoc.evidenceLinks?.length ?? 0) > 0 && (
+            <div
+              data-testid="vdoc-evidence-layer-toggle"
+              className="inline-flex shrink-0 overflow-hidden rounded-[4px] border border-amber-500/35 bg-black/25 text-[10px]"
+              title="근거 레이어 전환: 검토(전체) / 각주만 / 제출본(숨김)"
+            >
+              {(
+                [
+                  { id: "review", label: "근거: 검토" },
+                  { id: "footnote-only", label: "각주만" },
+                  { id: "clean", label: "제출본" },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setEvidenceMode(opt.id)}
+                  className={`px-1.5 py-0.5 transition-colors ${
+                    evidenceMode === opt.id
+                      ? "bg-amber-500/30 font-semibold text-amber-100"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           )}
 
           {/* 양식은 문서 생성 시 하나로 정해진다 — 전환 토글 없이 읽기 전용 배지로만 보여준다. */}
@@ -1526,12 +1785,13 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
 
       {/* Scrollable 2D Canvas Viewport */}
       <div
-        ref={canvasScrollRef}
+        ref={attachCanvas}
         onClick={() => vdocUiBridge.getState().selectBlock(path, null)}
         onPointerDown={marquee.onPointerDown}
         className="relative min-h-0 flex-1 overflow-auto px-4 py-6 pb-28"
       >
         <MarqueeOverlay rect={marquee.rect} />
+        {host.env.ai && <AnchorChips ai={host.env.ai} surface="vdoc" path={path} container={canvasEl} selector={vdocUnitSelector} />}
         <div
           className="mx-auto flex flex-col items-center gap-6 transition-transform"
           style={{
@@ -1550,6 +1810,13 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
               activePageId={activePageId}
               pageGapPx={surface.kind === "scroll" ? 0 : 24}
               renderPage={renderPage}
+            />
+            <VDocEvidenceBottomPanel
+              doc={displayDoc}
+              mode={evidenceMode}
+              groups={vdocEvidenceIndex.groups}
+              onOpenSource={openEvidenceSource}
+              onSelectSlot={handleSelectSlot}
             />
           </VDocStyleProvider>
         </div>

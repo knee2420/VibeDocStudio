@@ -40,8 +40,13 @@ describe("@vibe/vdoc-schema — CRUD ElementSyntaxRegistry & Bidirectional Compi
     // Read built-in seeds
     assert.ok(registry.getElement("table"));
     assert.ok(registry.getElement("section"));
+    assert.ok(registry.getElement("resource"));
+    assert.equal(registry.getElementByViewTag("cite")?.id, "resource");
+    assert.equal(parseOutlineDirective("<<cite:rationale>> 산출 근거 | [[참석_설문지.csv]]")?.kind, "cite");
+    assert.equal(parseOutlineDirective("<<cite:matrix @REQ-SEC-01>> [[rfp.md]]")?.assetHint, "req-sec-01");
     assert.equal(registry.getProfile("blog")?.unitKind, "section");
     assert.equal(registry.getProfile("a4")?.unitKind, "page");
+    assert.ok(registry.getProfile("a4")?.allowedElementIds.includes("resource"));
 
     // Create custom element (`faq`)
     registry.createElement({

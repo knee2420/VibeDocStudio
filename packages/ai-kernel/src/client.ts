@@ -48,6 +48,19 @@ export interface ToolResultPayload {
 
 export type EventHandler = (event: AssistantEvent) => void;
 
+export interface AssistantSessionInfo {
+  sessionId: string;
+  label: string | null;
+  retained: boolean;
+  /** 지금 턴을 실행 중인가 */
+  running: boolean;
+  /** 프론트 도구 결과를 기다리는 호출 수 */
+  pendingCalls: number;
+  idleSeconds: number;
+  provider: string;
+  model: string;
+}
+
 export class AssistantHttpError extends Error {
   constructor(
     message: string,
@@ -75,8 +88,19 @@ export class AssistantClient {
     return this.json("POST", "/api/assistant/warmup");
   }
 
-  createSession(engine?: { provider?: string; model?: string }): Promise<{ sessionId: string; provider: string; model: string }> {
-    return this.json("POST", "/api/assistant/sessions", engine ?? {});
+  /** `retain` 세션은 서버 유휴 정리(30분)에서 닫히지 않는다 (엔진 프로세스만 내린다). */
+  createSession(options?: {
+    provider?: string;
+    model?: string;
+    retain?: boolean;
+    label?: string;
+  }): Promise<{ sessionId: string; provider: string; model: string }> {
+    return this.json("POST", "/api/assistant/sessions", options ?? {});
+  }
+
+  /** 서버에 살아 있는 대화 세션 목록 (새로고침 뒤 대시보드가 실행 상태를 맞춰 본다). */
+  listSessions(): Promise<{ sessions: AssistantSessionInfo[] }> {
+    return this.json("GET", "/api/assistant/sessions");
   }
 
   /** `keepalive` 는 페이지를 떠나는 중에도 요청이 끝까지 가게 한다 (새로고침 · 탭 닫기). */

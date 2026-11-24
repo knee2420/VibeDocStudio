@@ -8,11 +8,11 @@
 import type { TableBorderRules, TableHeaderStyle } from "../types";
 import type { OutlineSyntaxNode } from "./contract";
 
-export type OutlineDirectiveKind = "doc" | "view" | "asset" | "template";
+export type OutlineDirectiveKind = "doc" | "view" | "asset" | "template" | "cite" | "resource";
 
 export interface ParsedOutlineDirective {
   readonly kind: OutlineDirectiveKind;
-  /** 예: `doc` -> `"blog" | "a4" | "web"`, `view` -> `"section" | "table" | "list" | "columns" | "title"`, `asset` -> `"table-grouped-compare"` */
+  /** 예: `doc` -> `"blog" | "a4" | "web"`, `view` -> `"section" | "table" | "list" | "columns" | "title"`, `cite` -> `"footnote" | "rationale" | "sidenote" | "quote" | "matrix" | "bound"` */
   readonly target: string;
   /** 선택적 의미 역할 힌트 (예: `<<view:section:spot>>` -> `"spot"`, `<<view:table:header>>` -> `"header"`). */
   readonly role?: string;
@@ -68,7 +68,7 @@ export interface TableAssetVisualPreset {
 }
 
 const DIRECTIVE_RE =
-  /<<\s*(doc|view|asset|template)\s*:\s*([a-zA-Z0-9_-]+)(?::([a-zA-Z0-9_-]+))?(?:\s+@([a-zA-Z0-9_-]+))?\s*>>/i;
+  /<<\s*(doc|view|asset|template|cite|resource)\s*:\s*([^\s:>@\n]+)(?::([a-zA-Z0-9_-]+))?(?:\s+@([a-zA-Z0-9_-]+))?(?:\s+[^>\n]+)?\s*>>/i;
 
 /**
  * 불릿 텍스트의 **어느 위치**에 있든 첫 번째 `<<doc|view|asset|template:...>>` 지시어를 파싱한다.

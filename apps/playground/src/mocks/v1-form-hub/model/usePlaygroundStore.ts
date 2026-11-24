@@ -512,7 +512,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
               );
               nextSpec = writeViewRowsToTableNode(state.spec, tableId, fallbackRows);
               nodesUpdated = true;
-              if (typeof window !== "undefined") {
+              if (typeof window !== "undefined" && state.presetId !== "agui-protocol-demo") {
                 shouldTriggerAiCompile = true;
               }
             }

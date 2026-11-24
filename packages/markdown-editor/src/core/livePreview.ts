@@ -14,11 +14,106 @@ import {
   type VaultPort,
 } from "@vibe/vault-core";
 
+export interface MarkdownHighlightTarget {
+  readonly id?: string;
+  readonly lines?: readonly [number, number];
+  readonly heading?: string;
+  readonly quoteText?: string;
+}
+
 export interface LivePreviewOptions {
   readonly vault: VaultPort;
   readonly currentPath: string;
   readonly enabled: boolean;
   readonly onOpenLink?: (target: string, mode: "current" | "new-tab") => void;
+  /** `<<resource: ...>>` 배지 클릭 시 호스트(페어 탭 하이라이트)로 전달한다. */
+  readonly onOpenResource?: (rawResourceTag: string) => void;
+  /** 외부 리소스 점프로 전달된 하이라이트 대상 (줄 범위 · 헤딩 · 인용 문구). */
+  readonly highlight?: MarkdownHighlightTarget | null;
+}
+
+class ResourceTagChipWidget extends WidgetType {
+  constructor(
+    private readonly raw: string,
+    private readonly label: string,
+    private readonly onOpenResource?: (raw: string) => void
+  ) {
+    super();
+  }
+
+  eq(other: ResourceTagChipWidget): boolean {
+    return other.raw === this.raw && other.label === this.label;
+  }
+
+  toDOM(): HTMLElement {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cm-obs-resource-chip";
+    btn.textContent = this.label;
+    btn.title = `클릭 시 페어 탭으로 열고 하이라이트 · ${this.raw}`;
+    btn.style.cssText =
+      "display:inline-flex;align-items:center;gap:4px;padding:1px 8px;margin:0 2px;border-radius:6px;font-size:12px;line-height:1.45;color:#a5f3fc;background:rgba(6,182,212,0.16);border:1px solid rgba(34,211,238,0.44);cursor:pointer;vertical-align:baseline;font-family:inherit;";
+    btn.addEventListener("mousedown", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      this.onOpenResource?.(this.raw);
+    });
+    return btn;
+  }
+
+  ignoreEvent(): boolean {
+    return true;
+  }
+}
+
+function formatResourceChipLabel(rawTag: string): string {
+  const inner = rawTag.replace(/^<<\s*resource\s*:\s*/i, "").replace(/\s*>>$/, "").trim();
+  const pipeIdx = inner.indexOf("|");
+  const addr = (pipeIdx >= 0 ? inner.slice(0, pipeIdx) : inner).trim();
+  const quote = pipeIdx >= 0 ? inner.slice(pipeIdx + 1).trim() : "";
+  const isWeb = /^https?:\/\//i.test(addr);
+  const wikiM = /\[\[([^[\]|]+)(?:\|[^[\]]+)?\]\]/.exec(addr);
+  const rawTarget = wikiM ? wikiM[1].split("#")[0].trim() : addr.split(/\s+/)[0] ?? addr;
+  let shortTarget = rawTarget;
+  if (isWeb) {
+    try {
+      const u = new URL(rawTarget);
+      shortTarget = u.hostname;
+    } catch {
+      shortTarget = rawTarget.slice(0, 28);
+    }
+  } else {
+    shortTarget = rawTarget.replace(/^vault:\/\//i, "").split("/").pop() || rawTarget;
+  }
+  const icon = isWeb
+    ? "🌐"
+    : /\.pdf$/i.test(rawTarget)
+      ? "📕"
+      : /\.(png|jpe?g|gif|webp|svg)$/i.test(rawTarget)
+        ? "🖼"
+        : /\.csv$/i.test(rawTarget)
+          ? "📊"
+          : /\.ref$/i.test(rawTarget)
+            ? "🗂"
+            : /\.vdoc(\.json)?$/i.test(rawTarget)
+              ? "📐"
+              : /\.outline$/i.test(rawTarget)
+                ? "🌿"
+                : "📄";
+  const pageM = /#p(\d+)\b/i.exec(addr);
+  const lineM = /#L(\d+)(?:-L?(\d+))?\b/i.exec(addr);
+  const bboxM = /[@#]bbox\(/i.exec(addr);
+  const extra = [
+    pageM ? `p.${pageM[1]}` : "",
+    lineM ? (lineM[2] ? `L${lineM[1]}-L${lineM[2]}` : `L${lineM[1]}`) : "",
+    bboxM ? "영역" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const head = `${icon} ${shortTarget}${extra ? ` · ${extra}` : ""}`;
+  if (!quote) return head;
+  const clipQuote = quote.length > 40 ? `${quote.slice(0, 39)}…` : quote;
+  return `${head}  |  “${clipQuote}”`;
 }
 
 class CheckboxWidget extends WidgetType {
@@ -206,13 +301,75 @@ function buildLivePreviewDecorations(
   view: EditorView,
   options: LivePreviewOptions
 ): DecorationSet {
-  if (!options.enabled) return Decoration.none;
-
   const { state } = view;
   const docText = state.doc.toString();
-  const { bodyStartLine } = extractFrontmatterBlock(docText);
-
   const pending: PendingDecoration[] = [];
+
+  // Incoming resource highlight (works in BOTH Live Preview and Source mode!)
+  if (options.highlight) {
+    const hl = options.highlight;
+    let matchedStartLine: number | null = null;
+    let matchedEndLine: number | null = null;
+    if (hl.lines && hl.lines[0] >= 1) {
+      matchedStartLine = Math.max(1, Math.min(state.doc.lines, hl.lines[0]));
+      matchedEndLine = Math.max(
+        matchedStartLine,
+        Math.min(state.doc.lines, hl.lines[1] ?? hl.lines[0])
+      );
+    }
+    if (hl.quoteText && hl.quoteText.trim().length > 0) {
+      const needle = hl.quoteText.trim().toLowerCase();
+      const idx = docText.toLowerCase().indexOf(needle);
+      if (idx >= 0) {
+        pending.push({
+          from: idx,
+          to: idx + needle.length,
+          deco: Decoration.mark({
+            attributes: {
+              style:
+                "background:rgba(251,191,36,0.34);color:#fef3c7;border-bottom:2px solid #fbbf24;border-radius:3px;padding:0 2px;",
+            },
+          }),
+        });
+        const hitLine = state.doc.lineAt(idx).number;
+        if (matchedStartLine === null) {
+          matchedStartLine = hitLine;
+          matchedEndLine = state.doc.lineAt(idx + needle.length).number;
+        }
+      }
+    }
+    if (matchedStartLine !== null && matchedEndLine !== null) {
+      for (let ln = matchedStartLine; ln <= matchedEndLine; ln += 1) {
+        const lineObj = state.doc.line(ln);
+        pending.push({
+          from: lineObj.from,
+          to: lineObj.from,
+          deco: Decoration.line({
+            attributes: {
+              style:
+                "background:rgba(245,158,11,0.14);box-shadow:inset 3px 0 0 #fbbf24;",
+            },
+          }),
+        });
+      }
+    }
+  }
+
+  if (!options.enabled) {
+    if (pending.length === 0) return Decoration.none;
+    pending.sort((a, b) => a.from - b.from || a.to - b.to);
+    const b = new RangeSetBuilder<Decoration>();
+    for (const item of pending) {
+      try {
+        b.add(item.from, item.to, item.deco);
+      } catch {
+        // ignore
+      }
+    }
+    return b.finish();
+  }
+
+  const { bodyStartLine } = extractFrontmatterBlock(docText);
   const hiddenMark = Decoration.replace({});
 
   let inFence = false;
@@ -438,11 +595,44 @@ function buildLivePreviewDecorations(
       }
     }
 
-    // Wikilinks [[target]] or [[target|alias]]
+    // Unified Resource tags <<resource: target [anchor] | quote>>
+    const resourceRanges: Array<{ from: number; to: number }> = [];
+    const resourceRe = /<<\s*resource\s*:[^>\n]+\s*>>/gi;
+    while ((m = resourceRe.exec(text)) !== null) {
+      const start = line.from + m.index;
+      const end = start + m[0].length;
+      resourceRanges.push({ from: start, to: end });
+      if (!isRangeTouchedBySelection(state, start, end)) {
+        pending.push({
+          from: start,
+          to: end,
+          deco: Decoration.replace({
+            widget: new ResourceTagChipWidget(
+              m[0],
+              formatResourceChipLabel(m[0]),
+              options.onOpenResource
+            ),
+          }),
+        });
+      } else {
+        pending.push({
+          from: start,
+          to: end,
+          deco: Decoration.mark({
+            attributes: {
+              style: "color:#67e8f9;background:rgba(6,182,212,0.14);border-radius:3px;",
+            },
+          }),
+        });
+      }
+    }
+
+    // Wikilinks [[target]] or [[target|alias]] (skip links already inside a collapsed <<resource:...>> tag)
     const wikiRe = /(?<!!)\[\[([^\]\n]+)\]\]/g;
     while ((m = wikiRe.exec(text)) !== null) {
       const start = line.from + m.index;
       const end = start + m[0].length;
+      if (resourceRanges.some((r) => start >= r.from && end <= r.to)) continue;
       const inner = m[1];
       const parsed = parseWikilinkInner(inner);
       const pipeIdx = inner.indexOf("|");

@@ -13,15 +13,59 @@ export interface OutlineLiveSessionHandle {
   /** 열린 에디터에서 불릿 선택 및 스크롤/줌 */
   selectNodes(nodeIds: readonly string[], zoom?: boolean): void;
   getSnapshot(): OutlineFilePayload;
+  /** 열린 에디터의 트리가 바뀔 때 (편집 · 완료 표시 · 패치). 없으면 변경 감지는 볼트 저장으로만 된다 */
+  subscribe?(listener: () => void): () => void;
 }
 
 const liveSessions = new Map<string, OutlineLiveSessionHandle>();
 const closedUndoStack = new Map<string, string[]>();
+/** 경로별 감시자 — 에디터가 열리고 닫힐 때 새 핸들에 다시 붙는다 */
+const pathWatchers = new Map<string, Set<() => void>>();
+
+function notifyPath(path: string): void {
+  pathWatchers.get(path)?.forEach((fn) => {
+    try {
+      fn();
+    } catch {
+      /* 감시자 오류가 에디터를 막지 않게 */
+    }
+  });
+}
 
 export function registerLiveOutlineSession(path: string, handle: OutlineLiveSessionHandle): () => void {
   liveSessions.set(path, handle);
+  notifyPath(path);
   return () => {
-    if (liveSessions.get(path) === handle) liveSessions.delete(path);
+    if (liveSessions.get(path) === handle) {
+      liveSessions.delete(path);
+      notifyPath(path);
+    }
+  };
+}
+
+/**
+ * `.outline` 의 열린 에디터 변화를 지켜본다 — 에디터가 열리거나 닫히면 새 핸들로 옮겨 붙고, 그때도 한 번 부른다.
+ * 닫힌 파일의 변화(디스크 · 다른 창)는 볼트 이벤트로 따로 본다.
+ */
+export function watchLiveOutline(path: string, listener: () => void): () => void {
+  let offHandle: (() => void) | null = null;
+  const attach = () => {
+    offHandle?.();
+    offHandle = liveSessions.get(path)?.subscribe?.(listener) ?? null;
+  };
+  const onRegistration = () => {
+    attach();
+    listener();
+  };
+  const set = pathWatchers.get(path) ?? new Set<() => void>();
+  set.add(onRegistration);
+  pathWatchers.set(path, set);
+  attach();
+  return () => {
+    offHandle?.();
+    offHandle = null;
+    set.delete(onRegistration);
+    if (set.size === 0) pathWatchers.delete(path);
   };
 }
 

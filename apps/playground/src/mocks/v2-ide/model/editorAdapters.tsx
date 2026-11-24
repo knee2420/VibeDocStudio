@@ -29,6 +29,12 @@ import {
 } from "../ui/DocumentStructurePanels";
 import { LazyVaultFileGate } from "../ui/LazyVaultFileGate";
 import { VDocTabEditor } from "../ui/VDocTabEditor";
+import {
+  clearResourceHighlight,
+  openResourceTagInPair,
+  subscribeResourceHighlight,
+  type ResourceHighlightRequest,
+} from "./resourceHighlightBus";
 
 // 처음 화면(.vdoc · .md)에 없는 편집기는 그 파일을 열 때 싣는다 (코드 분할 — 부팅 때 아웃라이너 · 레퍼런스 · 에셋 코드를 받지 않는다)
 const OutlineTabEditor = React.lazy(() => import("../ui/OutlineTabEditor").then((m) => ({ default: m.OutlineTabEditor })));
@@ -106,31 +112,66 @@ const VDocAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }>(
 );
 
 const ObsidianMarkdownAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }>(
-  ({ host }) => (
-    <LazyVaultFileGate vault={host.env.vault} path={host.path}>
-      <ObsidianMarkdownEditor
-        vault={host.env.vault}
-        path={host.path}
-        metadataCache={host.env.metadataCache}
-        onOpenLink={(target, mode) => host.openLink(target, mode)}
-        onRenameSelf={(newName) => host.renameSelf(newName)}
-        onSelectionChange={(sel) => {
-          if (!host.reportSelection) return;
-          if (!sel) {
-            host.reportSelection(null);
-            return;
-          }
-          host.reportSelection({
-            resourceId: host.path,
-            kind: "text",
-            summary: `${host.path} (L${sel.lineRange[0]}-L${sel.lineRange[1]})`,
-            text: sel.text,
-            lineRange: sel.lineRange,
-          });
-        }}
-      />
-    </LazyVaultFileGate>
-  ),
+  ({ host }) => {
+    const [highlight, setHighlight] = React.useState<ResourceHighlightRequest | null>(null);
+    React.useEffect(
+      () => subscribeResourceHighlight(host.path, (req) => setHighlight(req)),
+      [host.path]
+    );
+
+    return (
+      <LazyVaultFileGate vault={host.env.vault} path={host.path}>
+        <ObsidianMarkdownEditor
+          vault={host.env.vault}
+          path={host.path}
+          metadataCache={host.env.metadataCache}
+          onOpenLink={(target, mode) => {
+            if (host.env.openInPairTabGroup && mode === "current") {
+              host.env.openInPairTabGroup(target, {
+                sourceTabId: host.tabId,
+                sourcePath: host.path,
+              });
+            } else {
+              host.openLink(target, mode);
+            }
+          }}
+          onOpenResource={(rawTag) => {
+            openResourceTagInPair(rawTag, {
+              vault: host.env.vault,
+              sourcePath: host.path,
+              openInPair: (targetPath) => {
+                if (host.env.openInPairTabGroup) {
+                  host.env.openInPairTabGroup(targetPath, {
+                    sourceTabId: host.tabId,
+                    sourcePath: host.path,
+                  });
+                } else {
+                  host.openLink(targetPath, "split-right");
+                }
+              },
+            });
+          }}
+          highlightRequest={highlight}
+          onClearHighlight={() => clearResourceHighlight(host.path)}
+          onRenameSelf={(newName) => host.renameSelf(newName)}
+          onSelectionChange={(sel) => {
+            if (!host.reportSelection) return;
+            if (!sel) {
+              host.reportSelection(null);
+              return;
+            }
+            host.reportSelection({
+              resourceId: host.path,
+              kind: "text",
+              summary: `${host.path} (L${sel.lineRange[0]}-L${sel.lineRange[1]})`,
+              text: sel.text,
+              lineRange: sel.lineRange,
+            });
+          }}
+        />
+      </LazyVaultFileGate>
+    );
+  },
   areHostPropsStable
 );
 
@@ -143,8 +184,25 @@ const OutlinerAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }
         vdocUiBridge={host.env.vdocUiBridge}
         ai={host.env.ai}
         reportSelection={host.reportSelection}
-        onAiDirect={(prompt) => host.dispatchAiDirective?.({ prompt: prompt ?? "", resourceId: host.path })}
-        openFile={(target) => host.openLink(target, "split-right")}
+        onAiDirect={(prompt, nodeIds) =>
+          host.dispatchAiDirective?.({
+            prompt: prompt ?? "",
+            resourceId: host.path,
+            ...(nodeIds?.length
+              ? { selection: { resourceId: host.path, kind: "outline-nodes", summary: `불릿 ${nodeIds.length}개`, nodeIds: [...nodeIds] } }
+              : {}),
+          })
+        }
+        openFile={(target) => {
+          if (host.env.openInPairTabGroup) {
+            host.env.openInPairTabGroup(target, {
+              sourceTabId: host.tabId,
+              sourcePath: host.path,
+            });
+          } else {
+            host.openLink(target, "split-right");
+          }
+        }}
         openLink={(target, mode) => host.openLink(target, mode ?? "split-right")}
         openInPairGroup={(target) => {
           if (host.env.openInPairTabGroup) {

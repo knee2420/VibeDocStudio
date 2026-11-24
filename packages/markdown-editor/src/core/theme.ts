@@ -51,8 +51,17 @@ export const obsidianEditorTheme: Extension = [
       borderLeftColor: "var(--obs-accent, #8a5cf5)",
       borderLeftWidth: "2px",
     },
-    ".cm-selectionBackground, &.cm-focused .cm-selectionBackground": {
-      backgroundColor: "var(--obs-bg-selected, rgba(138, 92, 245, 0.25))",
+    ".cm-selectionBackground": {
+      backgroundColor: "rgba(138, 92, 245, 0.22) !important",
+      borderRadius: "2px",
+    },
+    "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground": {
+      backgroundColor: "var(--obs-bg-selected, rgba(138, 92, 245, 0.34)) !important",
+      borderRadius: "2px",
+    },
+    ".cm-content ::selection": {
+      backgroundColor: "rgba(138, 92, 245, 0.34)",
+      color: "inherit",
     },
     ".cm-activeLine": {
       backgroundColor: "transparent",
@@ -214,5 +223,5 @@ export const obsidianEditorTheme: Extension = [
       padding: "10px 12px",
       fontSize: "13px",
     },
-  }),
+  }, { dark: true }),
 ];

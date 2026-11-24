@@ -11,13 +11,86 @@ from app.llm.models import EngineChoice
 
 
 def test_split_model_and_thought():
+    assert _split_model_and_thought("gemini-4-hydrogen-low") == ("gemini-4-hydrogen", "low")
+    assert _split_model_and_thought("gemini-4-hydrogen-medium") == ("gemini-4-hydrogen", "medium")
+    assert _split_model_and_thought("gemini-4-hydrogen-high") == ("gemini-4-hydrogen", "high")
+    assert _split_model_and_thought("gemini-4-hydrogen-xhigh") == ("gemini-4-hydrogen", "xhigh")
+    assert _split_model_and_thought("gemini-4-hydrogen") == ("gemini-4-hydrogen", "medium")
+    assert _split_model_and_thought("gemini-4-neon-xhigh") == ("gemini-4-neon", "xhigh")
+    assert _split_model_and_thought("gemini-4-carbon-high") == ("gemini-4-carbon", "high")
     assert _split_model_and_thought("gemini-3.8-flash-low") == ("gemini-3.8-flash", "low")
     assert _split_model_and_thought("gemini-3.8-flash-medium") == ("gemini-3.8-flash", "medium")
     assert _split_model_and_thought("gemini-3.8-flash-high") == ("gemini-3.8-flash", "high")
     assert _split_model_and_thought("gemini-4-argon") == ("gemini-4-argon", "medium")
     assert _split_model_and_thought("claude-sonnet-5-5", default_thought="high") == ("claude-sonnet-5-5", "high")
-    # gpt-oss-120b-medium 은 고유 모델명이므로 접미사가 잘리지 않는다
+    assert _split_model_and_thought("claude-opus-5-5-high") == ("claude-opus-5-5", "high")
+    # gpt-oss-120b-medium · orchestrator 계열은 고유 모델명이므로 접미사가 잘리지 않는다
     assert _split_model_and_thought("gpt-oss-120b-medium") == ("gpt-oss-120b-medium", "medium")
+    assert _split_model_and_thought("gemini-pro-orchestrator-neon") == ("gemini-pro-orchestrator-neon", "medium")
+    assert _split_model_and_thought("gemini-pro-orchestrator") == ("gemini-pro-orchestrator", "medium")
+    assert _split_model_and_thought("gemini-pro-orchestrator-argon") == ("gemini-pro-orchestrator-argon", "medium")
+
+
+def test_catalog_hydrogen_default_and_dynamic_options(tmp_path: Path):
+    from app.llm import catalog
+    from app.llm.adapters.engine_provider import AssistantEngineProvider
+    from app.llm.policy import CLI_PROVIDER, GOOGLE_PROVIDER, RuntimeExecutionPolicy
+    from app.llm.use_cases.runtime_policy import GetRuntimeDashboardUseCase
+
+    assert catalog.DEFAULT_AGY_MODEL == "gemini-4-hydrogen-medium"
+    assert catalog.DEFAULT_AGY_STREAM_MODEL == "gemini-4-hydrogen-low"
+    assert catalog.is_agy_model("gemini-4-hydrogen-xhigh")
+    assert catalog.is_agy_model("gemini-4-hydrogen")
+    assert catalog.is_agy_model("gemini-pro-orchestrator-neon")
+    assert catalog.normalize_agy_model(None) == "gemini-4-hydrogen-medium"
+    assert catalog.normalize_agy_model("Gemini 4 Hydrogen (XHigh)") == "gemini-4-hydrogen-xhigh"
+    assert catalog.normalize_agy_model("gemini-4-neon-xhigh") == "gemini-4-neon-xhigh"
+    assert catalog.normalize_agy_model("gemini-pro-orchestrator-argon") == "gemini-pro-orchestrator-argon"
+
+    # 동적 모델 목록: 실측 목록이 있으면 Hydrogen 최상단 정렬 + 신규 모델도 자동 포함
+    provider = AssistantEngineProvider(
+        agy_executable="agy",
+        sandbox_dir=tmp_path,
+        external_llm_enabled=True,
+        google_api_key=lambda: None,
+    )
+    provider._read_agy_models = lambda: [  # type: ignore[method-assign]
+        ("gemini-4-neon-high", "Gemini 4 Neon (High)"),
+        ("gemini-4-hydrogen-medium", "Gemini 4 Hydrogen (Medium)"),
+        ("gemini-4-future-xhigh", "Gemini 4 Future (XHigh)"),
+    ]
+    models = provider.available_models(CLI_PROVIDER)
+    assert models[0]["id"] == "gemini-4-hydrogen-medium"
+    assert any(m["id"] == "gemini-4-future-xhigh" for m in models)
+    assert provider.resolve(CLI_PROVIDER, None).model == "gemini-4-hydrogen-medium"
+    assert provider.resolve(CLI_PROVIDER, "gemini-4-hydrogen").model == "gemini-4-hydrogen-medium"
+    assert provider.resolve(CLI_PROVIDER, "gemini-4-future-xhigh").model == "gemini-4-future-xhigh"
+
+    # GetRuntimeDashboardUseCase 도 실측 목록을 그대로 반영
+    class _Creds:
+        def get_google_api_key(self):
+            return None
+
+    policy = RuntimeExecutionPolicy(
+        primary_provider=CLI_PROVIDER,
+        fallback_provider=GOOGLE_PROVIDER,
+        google_api_model=catalog.DEFAULT_GOOGLE_MODEL,
+        google_api_timeout_seconds=180,
+        agent_cli_model=catalog.DEFAULT_AGY_MODEL,
+        agent_cli_timeout_seconds=180,
+        agent_cli_bin="agy",
+    )
+    uc = GetRuntimeDashboardUseCase(
+        policy=policy,
+        credentials=_Creds(),  # type: ignore[arg-type]
+        model_options=catalog.SETTINGS_OPTIONS,
+        agy_models_provider=lambda refresh=False: provider.refresh_models() if refresh else provider.available_models(CLI_PROVIDER),
+    )
+    dash = uc.execute()
+    ids = [m.model_id for m in dash.models]
+    assert ids[0] == "gemini-4-hydrogen-medium"
+    assert "gemini-4-future-xhigh" in ids
+    assert "gemini-3.5-flash-lite" in ids
 
 
 def test_citation_extraction_and_verification():

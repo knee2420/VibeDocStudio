@@ -45,6 +45,16 @@ body,
   --obs-danger: #fb464c;
 }
 
+.obs-theme-dark ::selection {
+  background-color: rgba(138, 92, 245, 0.34);
+  color: inherit;
+}
+
+.obs-theme-light ::selection {
+  background-color: rgba(124, 58, 237, 0.22);
+  color: inherit;
+}
+
 .obs-theme-light {
   --obs-bg-primary: #ffffff;
   --obs-bg-primary-alt: #fafafa;

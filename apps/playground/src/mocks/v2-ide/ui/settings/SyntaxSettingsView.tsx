@@ -57,6 +57,22 @@ const RULE_NAME_KO: Record<string, string> = {
   "cta-slot": "할인 · 액션 CTA 슬롯",
   "embed-slot": "확장형 외부 임베드 슬롯",
   "inline-highlight": "본문 인라인 형광펜 강조",
+  "form-title": "문서·서식 상단 제목 블록",
+  "list-view": "항목 목록 컨테이너",
+  "columns-container": "다단 컨테이너",
+  "col-container": "다단 컬럼 컨테이너",
+  "cell-container": "복합 컨테이너 셀",
+  "row-container": "다중 복합 셀 행",
+  "cite-footnote": "각주 번호 표기 ([1], [1,2])",
+  "cite-rationale": "인라인 산출 근거 (N:1 합산)",
+  "cite-sidenote": "여백 주석 · 사이드노트 (§N)",
+  "cite-quote": "원문 직접 인용 · 트랜스클루전",
+  "cite-matrix": "1:N / M:N 요구사항·출처 추적 매트릭스",
+  "cite-bound": "근거 바인딩 팩트 토큰 ({값} = 산식)",
+  "cite-source-link": "원본 리소스 파일 위키링크",
+  "cite-page-anchor": "원본 페이지 번호 앵커 (#pN)",
+  "cite-line-range": "원본 줄 범위 앵커 (#L시작-L끝)",
+  "cite-segment-split": "산출 근거 · 복수 출처 · 발췌 구분자",
 };
 
 export interface SyntaxSettingsViewProps {

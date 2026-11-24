@@ -36,7 +36,8 @@ export const MarkdownText: React.FC<MarkdownTextProps> = ({
     () => entities?.list() ?? null
   );
 
-  const blocks = React.useMemo(() => parseBlocks(text, entities), [text, entities, resolvers]); // eslint-disable-line react-hooks/exhaustive-deps
+  const openResource = surface?.openResource;
+  const blocks = React.useMemo(() => parseBlocks(text, entities, openResource), [text, entities, resolvers, openResource]); // eslint-disable-line react-hooks/exhaustive-deps
   const collectedEntities = React.useMemo(() => (showGroupByFooter ? extractEntities(text, entities) : []), [text, entities, resolvers, showGroupByFooter]);
 
   return (
@@ -236,8 +237,12 @@ function extractEntities(text: string, entities: EntityRegistry | null): EntityI
 
 // --- 블록 및 인라인 파싱 -----------------------------------------------------------
 
-function parseBlocks(text: string, entities: EntityRegistry | null): React.ReactNode[] {
-  const inline = (value: string) => inlineNodes(value, entities);
+function parseBlocks(
+  text: string,
+  entities: EntityRegistry | null,
+  openResource?: (rawTag: string) => void
+): React.ReactNode[] {
+  const inline = (value: string) => inlineNodes(value, entities, openResource);
   const lines = text.replace(/\r\n/g, "\n").split("\n");
   const out: React.ReactNode[] = [];
   let i = 0;
@@ -334,9 +339,63 @@ export function attachTrailingLines(baseId: string, tail: string): { id: string;
   return { id: `${baseId}#L${start}-L${end}`, consumed: m[0].length };
 }
 
-function inlineNodes(text: string, entities: EntityRegistry | null): React.ReactNode[] {
+function formatChatResourceLabel(rawTag: string): { icon: string; head: string; quote: string } {
+  const inner = rawTag.replace(/^<<\s*resource\s*:\s*/i, "").replace(/\s*>>$/, "").trim();
+  const pipeIdx = inner.indexOf("|");
+  const addr = (pipeIdx >= 0 ? inner.slice(0, pipeIdx) : inner).trim();
+  const quote = pipeIdx >= 0 ? inner.slice(pipeIdx + 1).trim() : "";
+  const isWeb = /^https?:\/\//i.test(addr);
+  const wikiM = /\[\[([^[\]|]+)(?:\|[^[\]]+)?\]\]/.exec(addr);
+  const rawTarget = wikiM ? wikiM[1].split("#")[0].trim() : addr.split(/\s+/)[0] ?? addr;
+  let shortTarget = rawTarget;
+  if (isWeb) {
+    try {
+      shortTarget = new URL(rawTarget).hostname;
+    } catch {
+      shortTarget = rawTarget.slice(0, 28);
+    }
+  } else {
+    shortTarget = rawTarget.replace(/^vault:\/\//i, "").split("/").pop() || rawTarget;
+  }
+  const icon = isWeb
+    ? "🌐"
+    : /\.pdf$/i.test(rawTarget)
+      ? "📕"
+      : /\.(png|jpe?g|gif|webp|svg)$/i.test(rawTarget)
+        ? "🖼"
+        : /\.csv$/i.test(rawTarget)
+          ? "📊"
+          : /\.ref$/i.test(rawTarget)
+            ? "🗂"
+            : /\.vdoc(\.json)?$/i.test(rawTarget)
+              ? "📐"
+              : /\.outline$/i.test(rawTarget)
+                ? "🌿"
+                : "📄";
+  const pageM = /#p(\d+)\b/i.exec(addr);
+  const lineM = /#L(\d+)(?:-L?(\d+))?\b/i.exec(addr);
+  const bboxM = /[@#]bbox\(/i.exec(addr);
+  const loc = [
+    pageM ? `p.${pageM[1]}` : "",
+    lineM ? (lineM[2] ? `L${lineM[1]}-L${lineM[2]}` : `L${lineM[1]}`) : "",
+    bboxM ? "영역" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return {
+    icon,
+    head: `${shortTarget}${loc ? ` · ${loc}` : ""}`,
+    quote: quote.length > 42 ? `${quote.slice(0, 41)}…` : quote,
+  };
+}
+
+function inlineNodes(
+  text: string,
+  entities: EntityRegistry | null,
+  openResource?: (rawTag: string) => void
+): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|\[(?:\[[^\]]*\]|[^\]])+\]\([^)]+\))/g;
+  const pattern = /(<<\s*resource\s*:[^>\n]+\s*>>|`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|\[(?:\[[^\]]*\]|[^\]])+\]\([^)]+\))/gi;
   let last = 0;
   let key = 0;
   const pushText = (value: string) => {
@@ -365,7 +424,26 @@ function inlineNodes(text: string, entities: EntityRegistry | null): React.React
     const tail = text.slice(match.index! + token.length);
 
     if (match.index! > last) pushText(text.slice(last, match.index));
-    if (token.startsWith("`")) {
+    if (/^<<\s*resource\s*:/i.test(token)) {
+      const info = formatChatResourceLabel(token);
+      parts.push(
+        <button
+          key={`res-${key++}`}
+          type="button"
+          data-testid="chat-resource-chip"
+          onClick={() => openResource?.(token)}
+          title={`클릭 시 페어 탭으로 열고 하이라이트 · ${token}`}
+          className="mx-0.5 inline-flex max-w-full items-center gap-1 rounded-md border border-cyan-500/45 bg-cyan-50 px-1.5 py-0.5 align-baseline text-[11.5px] font-medium text-cyan-900 transition-colors hover:border-cyan-600 hover:bg-cyan-100 cursor-pointer"
+        >
+          <span>{info.icon}</span>
+          <span className="truncate">{info.head}</span>
+          {info.quote && (
+            <span className="truncate text-cyan-700/90 font-normal">| “{info.quote}”</span>
+          )}
+        </button>
+      );
+      last = match.index! + token.length;
+    } else if (token.startsWith("`")) {
       const body = token.slice(1, -1);
       const code = (
         <code key={key++} className="px-1 py-0.5 rounded bg-slate-100 text-[12px] font-mono text-rose-700">
@@ -382,7 +460,7 @@ function inlineNodes(text: string, entities: EntityRegistry | null): React.React
         last = match.index! + token.length;
       }
     } else if (token.startsWith("**")) {
-      parts.push(<strong key={key++}>{inlineNodes(token.slice(2, -2), entities)}</strong>);
+      parts.push(<strong key={key++}>{inlineNodes(token.slice(2, -2), entities, openResource)}</strong>);
       last = match.index! + token.length;
     } else if (token.startsWith("[")) {
       const sepIdx = token.lastIndexOf("](");

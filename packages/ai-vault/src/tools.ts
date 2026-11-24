@@ -22,6 +22,7 @@ import {
   getSlotBackdata,
   htmlToSummary,
   newEvidenceLinkId,
+  parseResourceTag,
   patchBlockProps,
   scanOutlineDirectives,
   setSlotContent,
@@ -43,6 +44,7 @@ import {
   activeOutlinePath,
   activeReferences,
   deserializeScope,
+  envTurn,
   listReferences,
   readOutline,
   readVDoc,
@@ -79,6 +81,12 @@ export function clientTool(name: string): ClientToolSpec {
 }
 
 const clip = (text: string, n: number) => (text.length <= n ? text : `${text.slice(0, n - 1)}…`);
+
+/** 변경안을 대기열에 올린다 — 기준점 세션 env 면 그 세션 꼬리표를 붙인다 (세션별 검토 · 완료 시 버리기). */
+export function stage(env: Pick<V2AiEnv, "store" | "sessionKey">, changes: readonly V2StagedChange[]): void {
+  const key = env.sessionKey;
+  env.store.getState().enqueue(key ? changes.map((c) => ({ ...c, sessionKey: key })) : [...changes]);
+}
 let seq = 0;
 const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${(seq++).toString(36)}`;
 
@@ -90,6 +98,8 @@ export interface V2ToolHost {
   revealSelection(path: string, items: readonly { id: string; kind: "slot" | "block"; blockId: string | null; pageId: string | null }[]): void;
   /** 탭 열기 (references.open) */
   openPath(path: string): void;
+  /** 통일 리소스 태그(`<<resource:...>>`) 페어 탭 오픈 · 하이라이팅 (resource.reveal) */
+  revealResource?(rawTag: string, sourcePath?: string): boolean;
   /** 좌측 패널 (layout.openPanel) */
   showExplorer(): void;
 }
@@ -113,14 +123,14 @@ function fromOtherSession(host: V2ToolHost, ctx?: ToolRunContext): boolean {
 }
 
 export function toolScope(env: V2AiEnv, host: V2ToolHost, doc: VDocDocument, ctx?: ToolRunContext): ResolvedScope | null {
-  const turn = messageScope(host) ?? env.store.getState().turn;
+  const turn = messageScope(host) ?? envTurn(env);
   if (!turn || turn.docId !== doc.docId || fromOtherSession(host, ctx)) return null;
   if (turn.mode === "off") return turn;
   return isRestricted(turn) ? turn : null;
 }
 
 function toolSourcesOff(env: V2AiEnv, host: V2ToolHost, ctx?: ToolRunContext): boolean {
-  const turn = messageScope(host) ?? env.store.getState().turn;
+  const turn = messageScope(host) ?? envTurn(env);
   return Boolean(turn?.sourcesOff) && !fromOtherSession(host, ctx);
 }
 
@@ -396,7 +406,7 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
         if (slot.constraints?.locked) throw new Error(`잠긴 슬롯입니다: ${slot.label}`);
         if (typeof args.html !== "string" || !args.html.trim()) throw new Error("html 이 비어 있습니다.");
         const change = buildSlotHtmlChange(doc, path, slot, args.html, { reason: args.reason, evidence: evidenceArg(args.evidence), runId: ctx?.callId });
-        env.store.getState().enqueue([change]);
+        stage(env, [change]);
         return { staged: true, diffId: change.diffId, note: "Staged 대기열에 올렸습니다. 사용자가 승인하면 반영됩니다." };
       },
     },
@@ -416,7 +426,7 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
           else if (change.html.trim() === slot.content.trim()) skipped.push({ slotId: slot.slotId, why: "변경 없음" });
           else staged.push(buildSlotHtmlChange(doc, path, slot, change.html, { reason: args.reason, evidence: evidenceArg(change.evidence), runId: ctx?.callId }));
         }
-        if (staged.length) env.store.getState().enqueue(staged);
+        if (staged.length) stage(env, staged);
         return {
           staged: staged.length,
           diffIds: staged.map((c) => c.diffId),
@@ -453,7 +463,7 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
           harnessId: "composer",
           createdAt: new Date().toISOString(),
         } as V2StagedChange;
-        env.store.getState().enqueue([change]);
+        stage(env, [change]);
         return { staged: true, diffId: change.diffId, applied: ok, rejected };
       },
     },
@@ -765,6 +775,35 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
       run: (args: { citations?: Array<{ resourceId: string; label?: string; lines?: [number, number]; snippet?: string }> }) => {
         const list = args.citations ?? [];
         return { ok: true, count: list.length, citations: list.map((c) => ({ resourceId: c.resourceId, title: c.label || c.resourceId, lines: c.lines, snippet: c.snippet ?? "" })) };
+      },
+    },
+    {
+      ...clientTool("resource.reveal"),
+      describe: (args: { rawTag?: string }) => `리소스 페어 하이라이팅 (${clip(String(args?.rawTag ?? ""), 48)})`,
+      run: (args: { rawTag: string }) => {
+        const raw = String(args?.rawTag ?? "").trim();
+        const normalized = /^<<\s*resource\s*:/i.test(raw) ? raw : `<<resource: ${raw}>>`;
+        const parsed = parseResourceTag(normalized);
+        if (!parsed) throw new Error(`유효하지 않은 리소스 태그입니다: ${raw}`);
+        const opened = host.revealResource
+          ? host.revealResource(normalized, env.activeTabPath() ?? undefined)
+          : false;
+        if (!opened && !parsed.isWebUrl && env.vault.exists(parsed.target)) {
+          host.openPath(parsed.target);
+        }
+        return {
+          ok: true,
+          opened,
+          target: parsed.target,
+          isWebUrl: parsed.isWebUrl,
+          page: parsed.page ?? null,
+          lines: parsed.lines ?? null,
+          bbox: parsed.bbox ?? null,
+          nodeId: parsed.nodeId ?? null,
+          slotId: parsed.slotId ?? null,
+          blockId: parsed.blockId ?? null,
+          quote: parsed.quote ?? null,
+        };
       },
     },
     {

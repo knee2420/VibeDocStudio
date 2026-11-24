@@ -29,6 +29,7 @@ ARG_ALIASES: dict[str, dict[str, str]] = {
     "ws_tree": {"folder": "path", "dir": "path", "directory": "path"},
     "ws_coverage": {"path": "folder", "dir": "folder"},
     "ws_collect": {"target": "query", "name": "query", "cluster": "query", "pattern": "query"},
+    "ws_read_pdf": {"file": "path", "target": "path", "keyword": "query", "search": "query"},
 }
 
 #: ws_* 도구 명세 — 하네스 resource 팩
@@ -327,6 +328,103 @@ class WorkspaceTools:
             cov.partial = [p for p in cov.partial if keep(p[0])]
             cov.unread = [r for r in cov.unread if keep(r)]
         return f"루트: {_root_line(self.index)}\n" + cov.render()
+
+    def ws_read_pdf(
+        self,
+        path: str,
+        page: Optional[int] = None,
+        pages: str = "",
+        query: str = "",
+    ) -> str:
+        """마운트된 PDF 파일의 페이지 목차 · 지정 페이지 원문 · 키워드 검색 결과를 반환한다."""
+        entry = self._file(path)
+        if not entry.abs_path.lower().endswith(".pdf"):
+            return f"PDF 파일이 아닙니다: {entry.rel} (텍스트 파일은 read_file 로 읽으세요)"
+        try:
+            import pymupdf  # type: ignore
+        except ImportError:
+            try:
+                import fitz as pymupdf  # type: ignore
+            except ImportError:
+                return "PDF 파싱 라이브러리(pymupdf)가 설치되어 있지 않습니다."
+
+        doc = pymupdf.open(entry.abs_path)
+        try:
+            total = len(doc)
+            fname = os.path.basename(entry.rel)
+            if total == 0:
+                return f"{entry.rel}: 빈 PDF (0페이지)"
+
+            # 1) 키워드 검색 모드
+            if query and query.strip():
+                needle = query.strip().lower()
+                compact_needle = re.sub(r"\s+", "", needle)
+                hits: list[str] = []
+                for idx in range(total):
+                    txt = doc[idx].get_text("text") or ""
+                    lines = [ln.strip() for ln in txt.splitlines() if ln.strip()]
+                    matched_lines = [
+                        ln for ln in lines
+                        if needle in ln.lower() or (len(compact_needle) >= 3 and compact_needle in re.sub(r"\s+", "", ln.lower()))
+                    ]
+                    if matched_lines:
+                        snippet = matched_lines[0][:160]
+                        hits.append(
+                            f"- p.{idx + 1}: {snippet}\n  → 인용 예시: <<resource: [[{fname}]] #p{idx + 1} | {snippet[:80]}>>"
+                        )
+                if not hits:
+                    return f"{entry.rel} (총 {total}쪽): '{query}' 일치 구간 없음"
+                return "\n".join([f"{entry.rel} (총 {total}쪽) · '{query}' 검색 결과 {len(hits)}페이지:"] + hits)
+
+            # 2) 특정 페이지 / 범위 읽기 모드
+            target_pages: list[int] = []
+            if page is not None:
+                p_num = max(1, min(total, int(page)))
+                target_pages.append(p_num)
+            elif pages and pages.strip():
+                for part in pages.split(","):
+                    part = part.strip()
+                    if "-" in part:
+                        a_s, _, b_s = part.partition("-")
+                        try:
+                            a, b = max(1, int(a_s)), min(total, int(b_s))
+                            target_pages.extend(range(a, b + 1))
+                        except ValueError:
+                            continue
+                    else:
+                        try:
+                            p_num = int(part)
+                            if 1 <= p_num <= total:
+                                target_pages.append(p_num)
+                        except ValueError:
+                            continue
+                target_pages = sorted(dict.fromkeys(target_pages))[:10]
+
+            if target_pages:
+                out = [f"{entry.rel} (총 {total}쪽 · 절대경로: {entry.abs_path})"]
+                for p_num in target_pages:
+                    raw_text = (doc[p_num - 1].get_text("text") or "").strip()
+                    out.append(f"\n=== p.{p_num} / {total} ===\n{raw_text or '(추출된 텍스트 없음 — 스캔본일 수 있음)'}")
+                return "\n".join(out)
+
+            # 3) 개요/목차 모드 (60p+ 대응)
+            out = [f"{entry.rel} (총 {total}쪽 · 절대경로: {entry.abs_path})"]
+            toc = doc.get_toc() or []
+            if toc:
+                out.append("목차(TOC):")
+                for lvl, title, p_num in toc[:40]:
+                    out.append(f"{'  ' * max(0, int(lvl) - 1)}- p.{p_num} {title}")
+            out.append("페이지별 첫 줄 미리보기:")
+            for idx in range(min(total, 80)):
+                txt = (doc[idx].get_text("text") or "").strip()
+                first_lines = [ln.strip() for ln in txt.splitlines() if ln.strip()][:2]
+                preview = " / ".join(first_lines)[:140] if first_lines else "(텍스트 없음)"
+                out.append(f"- p.{idx + 1}: {preview}")
+            if total > 80:
+                out.append(f"… 외 {total - 80}페이지 (ws_read_pdf(path, query=...) 또는 page=N 으로 조회)")
+            return "\n".join(out)
+        finally:
+            doc.close()
 
     # --- 내부 --------------------------------------------------------------------
 

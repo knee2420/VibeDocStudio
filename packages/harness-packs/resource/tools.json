@@ -232,5 +232,33 @@
     }
    }
   }
+ },
+ {
+  "name": "ws_read_pdf",
+  "description": "볼트/마운트 안의 .pdf 파일 본문을 페이지 단위로 직접 읽거나 키워드로 검색한다. page 를 생략하면 총 페이지 수와 각 페이지 첫 줄 목차를, page(또는 pages='3-5')를 주면 해당 페이지의 실제 본문 텍스트를, query 를 주면 일치하는 페이지와 인용 문장을 반환한다. <<resource: [[파일.pdf]] #pN | 인용 본문>> 을 정확히 작성하기 전에 반드시 호출한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "path": {
+     "type": "string",
+     "description": "볼트 상대 경로 또는 파일명 (예: 07. 리소스_통합_테스트/resources/제안요청서_샘플_5P.pdf)"
+    },
+    "page": {
+     "type": "integer",
+     "description": "읽을 1-based 페이지 번호 (예: 5)"
+    },
+    "pages": {
+     "type": "string",
+     "description": "페이지 범위 (예: '3-5', '1,5')"
+    },
+    "query": {
+     "type": "string",
+     "description": "PDF 전체에서 찾을 키워드/문구 (일치 페이지와 주변 문장 반환)"
+    }
+   },
+   "required": [
+    "path"
+   ]
+  }
  }
 ]

@@ -6,7 +6,7 @@ Dify 의 `AIModelEntity` / `ParameterRule` 사상을 따르되, 카탈로그의 
 핵심 사실 두 가지:
 
 1. **agy CLI 는 reasoning effort 를 모델명 접미사로 표현한다.**
-   `gemini-3.8-flash-low` / `-medium` / `-high` 가 각각 별도 모델로 노출된다.
+   `gemini-4-hydrogen-low` / `-medium` / `-high` / `-xhigh` 가 각각 별도 모델로 노출된다.
    따라서 접미사가 붙은 모델에 `--effort` 를 다시 붙이는 것은 중복 지정이다.
    effort 를 바꾸고 싶으면 **플래그가 아니라 모델을 바꾼다.**
 
@@ -17,13 +17,13 @@ Dify 의 `AIModelEntity` / `ParameterRule` 사상을 따르되, 카탈로그의 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, Optional, Sequence
 
-# 모델명 접미사로 노출되는 reasoning effort 등급
-EFFORT_SUFFIXES = ("low", "medium", "high")
+# 모델명 접미사로 노출되는 reasoning effort 등급 (xhigh 를 high 보다 먼저 확인)
+EFFORT_SUFFIXES = ("xhigh", "low", "medium", "high")
 
 DEFAULT_GOOGLE_MODEL_NAME = "gemini-3.5-flash-lite"
-DEFAULT_CLI_MODEL_NAME = "gemini-3.8-flash-low"
+DEFAULT_CLI_MODEL_NAME = "gemini-4-hydrogen-medium"
 DEFAULT_MODEL_NAME = DEFAULT_CLI_MODEL_NAME
 
 
@@ -50,63 +50,115 @@ class ModelSpec:
         return any(self.name.endswith(f"-{s}") for s in EFFORT_SUFFIXES)
 
 
-def _gemini_flash_family(version: str) -> Dict[str, ModelSpec]:
-    """`gemini-<version>-flash-{low,medium,high}` 3종을 한 번에 만든다."""
+def _effort_label(effort: str) -> str:
+    return "XHigh" if effort == "xhigh" else effort.capitalize()
+
+
+def _agy_effort_family(
+    prefix: str,
+    title: str,
+    efforts: Sequence[str],
+    *,
+    family: str = "gemini",
+    max_input_tokens: int = 1_000_000,
+    max_output_tokens: int = 8_192,
+    description_prefix: str = "",
+) -> Dict[str, ModelSpec]:
     specs: Dict[str, ModelSpec] = {}
-    for effort in EFFORT_SUFFIXES:
-        name = f"gemini-{version}-flash-{effort}"
+    for effort in efforts:
+        name = f"{prefix}-{effort}"
         specs[name] = ModelSpec(
             name=name,
-            family="gemini",
+            family=family,
             provider="agy_cli",
-            max_input_tokens=1_000_000,
-            max_output_tokens=8_192,
+            max_input_tokens=max_input_tokens,
+            max_output_tokens=max_output_tokens,
             default_effort=effort,
-            display_name=f"Gemini {version} Flash ({effort.capitalize()})",
-            description=f"Gemini {version} Flash — effort={effort} 고정 변형",
+            display_name=f"{title} ({_effort_label(effort)})",
+            description=f"{description_prefix or title} — effort={effort} 고정 변형",
         )
     return specs
 
 
-# --- 카탈로그 (기준: `agy models`) ---------------------------------------
+# --- 카탈로그 (기준: `agy models` v1.5.15) ---------------------------------------
 MODEL_REGISTRY: Dict[str, ModelSpec] = {
-    **_gemini_flash_family("3.8"),
-    **_gemini_flash_family("3.7"),
-    **_gemini_flash_family("3.6"),
+    **_agy_effort_family(
+        "gemini-4-hydrogen",
+        "Gemini 4 Hydrogen",
+        ("low", "medium", "high", "xhigh"),
+        description_prefix="기본 주력 Gemini 4 Hydrogen",
+    ),
+    **_agy_effort_family(
+        "gemini-4-neon",
+        "Gemini 4 Neon",
+        ("low", "medium", "high", "xhigh"),
+        description_prefix="고난도 추론 Gemini 4 Neon",
+    ),
+    **_agy_effort_family(
+        "gemini-4-carbon",
+        "Gemini 4 Carbon",
+        ("low", "medium", "high"),
+        description_prefix="안정적 범용 Gemini 4 Carbon",
+    ),
+    **_agy_effort_family(
+        "gemini-4-argon",
+        "Gemini 4 Argon",
+        ("low", "medium", "high"),
+        description_prefix="복합 구조 분석 Gemini 4 Argon",
+    ),
+    **_agy_effort_family(
+        "gemini-3.8-flash",
+        "Gemini 3.8 Flash",
+        ("low", "medium", "high"),
+        description_prefix="고속 Gemini 3.8 Flash",
+    ),
+    **_agy_effort_family(
+        "claude-opus-5-5",
+        "Claude Opus 5.5",
+        ("low", "medium", "high"),
+        family="claude",
+        max_input_tokens=200_000,
+        max_output_tokens=32_000,
+        description_prefix="최고 난도 서술/추론 Claude Opus 5.5",
+    ),
+    **_agy_effort_family(
+        "claude-sonnet-5-5",
+        "Claude Sonnet 5.5",
+        ("low", "medium", "high"),
+        family="claude",
+        max_input_tokens=200_000,
+        max_output_tokens=32_000,
+        description_prefix="장문 서술/판단 Claude Sonnet 5.5",
+    ),
 }
 
-# Gemini 3.1 Pro 는 low / high 두 등급만 노출된다 (medium 없음).
-for _effort in ("low", "high"):
-    _name = f"gemini-3.1-pro-{_effort}"
-    MODEL_REGISTRY[_name] = ModelSpec(
-        name=_name,
+MODEL_REGISTRY.update({
+    "gemini-pro-orchestrator-neon": ModelSpec(
+        name="gemini-pro-orchestrator-neon",
         family="gemini",
         provider="agy_cli",
         max_input_tokens=1_000_000,
         max_output_tokens=8_192,
-        default_effort=_effort,
-        display_name=f"Gemini 3.1 Pro ({_effort.capitalize()})",
-        description="복잡한 문서 구조 분석용 심층 추론 Pro 모델",
-    )
-
-MODEL_REGISTRY.update({
-    "claude-sonnet-4-6": ModelSpec(
-        name="claude-sonnet-4-6",
-        family="claude",
-        provider="agy_cli",
-        max_input_tokens=200_000,
-        max_output_tokens=32_000,
-        display_name="Claude Sonnet 4.6 (Thinking)",
-        description="장문 서술/판단 품질이 필요한 작업용",
+        display_name="Orchestrator (Neon)",
+        description="멀티 스텝 오케스트레이터 (Neon)",
     ),
-    "claude-opus-4-6-thinking": ModelSpec(
-        name="claude-opus-4-6-thinking",
-        family="claude",
+    "gemini-pro-orchestrator": ModelSpec(
+        name="gemini-pro-orchestrator",
+        family="gemini",
         provider="agy_cli",
-        max_input_tokens=200_000,
-        max_output_tokens=32_000,
-        display_name="Claude Opus 4.6 (Thinking)",
-        description="최고 난도 추론용. 비용이 크므로 상시 경로에 두지 말 것",
+        max_input_tokens=1_000_000,
+        max_output_tokens=8_192,
+        display_name="Orchestrator (Carbon)",
+        description="멀티 스텝 오케스트레이터 (Carbon)",
+    ),
+    "gemini-pro-orchestrator-argon": ModelSpec(
+        name="gemini-pro-orchestrator-argon",
+        family="gemini",
+        provider="agy_cli",
+        max_input_tokens=1_000_000,
+        max_output_tokens=8_192,
+        display_name="Orchestrator (Argon)",
+        description="멀티 스텝 오케스트레이터 (Argon)",
     ),
     "gpt-oss-120b-medium": ModelSpec(
         name="gpt-oss-120b-medium",
@@ -116,7 +168,7 @@ MODEL_REGISTRY.update({
         max_output_tokens=32_000,
         default_effort="medium",
         display_name="GPT-OSS 120B (Medium)",
-        description="오픈 웨이트 대조군",
+        description="오픈 웨이트 모델",
     ),
     # 아직 서빙 백엔드가 붙지 않은 예약 프로필.
     # 프로바이더 라우팅이 실제로 갈라지는지 검증하는 대조군 역할도 한다.
@@ -129,7 +181,7 @@ MODEL_REGISTRY.update({
         display_name="Gemma 4 31B (Local)",
         description="로컬 환경(vLLM/Ollama) 호스팅 예정 — 어댑터 미연결",
     ),
-    # --- Google Generative Language Direct API 정규 시나리오 모델 ---
+    # --- Google Generative Language Direct API 정규 모델 ---
     "gemini-3.5-flash-lite": ModelSpec(
         name="gemini-3.5-flash-lite",
         family="gemini",
@@ -148,24 +200,6 @@ MODEL_REGISTRY.update({
         display_name="Gemini 3.5 Flash (Direct API)",
         description="Google Direct API 정규 고속 멀티모달 비전 및 구조화 모델",
     ),
-    "gemini-3.1-pro": ModelSpec(
-        name="gemini-3.1-pro",
-        family="gemini",
-        provider="google_api",
-        max_input_tokens=1_000_000,
-        max_output_tokens=8_192,
-        display_name="Gemini 3.1 Pro (Direct API)",
-        description="Google Direct API 정규 심층 추론 및 복잡 서식 분석 Pro 모델",
-    ),
-    "gemini-3.1-flash-lite": ModelSpec(
-        name="gemini-3.1-flash-lite",
-        family="gemini",
-        provider="google_api",
-        max_input_tokens=1_000_000,
-        max_output_tokens=8_192,
-        display_name="Gemini 3.1 Flash Lite (Direct API)",
-        description="Google Direct API 정규 경량 고속 구조화 모델",
-    ),
 })
 
 
@@ -182,7 +216,7 @@ def get_model_spec(model_name: Optional[str] = None) -> ModelSpec:
 
     if is_gemma:
         provider = "local_serving"
-    elif is_gemini and not has_cli_suffix:
+    elif is_gemini and not has_cli_suffix and "orchestrator" not in lowered and not lowered.startswith("gemini-4-"):
         provider = "google_api"
     else:
         provider = "agy_cli"

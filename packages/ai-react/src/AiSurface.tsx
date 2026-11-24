@@ -9,6 +9,8 @@ import type { AiRuntime, ContextRef } from "@vibe/ai-kernel";
 export interface AiSurfaceValue {
   runtime: AiRuntime;
   attach?(refs: ContextRef[]): void;
+  /** 채팅 답변 속 `<<resource: 대상 위치 | 본문>>` 배지 클릭 시 페어 탭으로 열고 하이라이트한다. */
+  openResource?(rawTag: string): void;
 }
 
 const AiSurfaceContext = React.createContext<AiSurfaceValue | null>(null);

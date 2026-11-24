@@ -25,6 +25,7 @@ from typing import Any, Optional
 
 from harness_kit import packs
 
+from .fslock import vault_write_lock
 from .store import WorkspaceStore
 
 VF_TOOL_SPECS: list[dict[str, Any]] = packs.data("vault-fs:tools.json")
@@ -281,10 +282,16 @@ class VaultFsTools:
         allowed = ", ".join(target_folders)
         raise ValueError(f"지정된 대상 폴더({allowed}) 밖은 수정할 수 없습니다: {rel}")
 
+    #: 볼트를 바꾸는 도구 — 프로세스 사이 잠금 안에서 실행한다 (세션 여럿이 같은 볼트에 동시에 쓸 때 묶음 · 저널이 끼어들지 않게)
+    WRITE_TOOLS = frozenset({"vf_mkdir", "vf_move", "vf_rename", "vf_copy", "vf_write", "vf_patch", "vf_trash", "vf_batch", "vf_undo"})
+
     def call(self, name: str, args: dict[str, Any]) -> str:
         fn = getattr(self, f"_{name}", None)
         if not name.startswith("vf_") or fn is None:
             raise ValueError(f"알 수 없는 볼트 FS 도구: {name}")
+        if name in self.WRITE_TOOLS:
+            with vault_write_lock(self.store.dir):
+                return fn(**(args or {}))
         return fn(**(args or {}))
 
     # --- 읽기 · 현황 파악 --------------------------------------------------------------------

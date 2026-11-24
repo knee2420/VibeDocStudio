@@ -10,6 +10,7 @@ from typing import Any, Callable, Optional
 from app.core.process_tree import CREATE_NO_WINDOW
 
 from ..catalog import (
+    AGY_BASE_MODELS,
     AGY_MODELS,
     AGY_PROVIDER,
     DEFAULT_AGY_MODEL,
@@ -18,6 +19,7 @@ from ..catalog import (
     GOOGLE_MODELS,
     GOOGLE_PROVIDER,
     OFFLINE_PROVIDER,
+    sort_agy_models,
 )
 from ..models import EngineChoice, Lane
 from .acp_client import AcpClient
@@ -87,12 +89,18 @@ class AssistantEngineProvider:
             return EngineChoice(GOOGLE_PROVIDER, model if model in known else DEFAULT_GOOGLE_MODEL)
         known = {m for m, _ in self._agy_model_list()}
         default_model = DEFAULT_AGY_MODEL if self.transport == "acp" else DEFAULT_AGY_STREAM_MODEL
-        if model and model not in known:
+        if not model:
+            resolved_model = default_model if default_model in known else next(iter(known), default_model)
+        elif model in known:
+            resolved_model = model
+        elif f"{model}-{self.default_thought_level}" in known:
+            resolved_model = f"{model}-{self.default_thought_level}"
+        elif self.transport == "acp" and model in AGY_BASE_MODELS:
+            resolved_model = model
+        else:
             logger.warning("[assistant] 알 수 없는 모델 요청 '%s' — 기본값 '%s' 로 대체합니다.", model, default_model)
             self._last_unrecognized_model = model
-            resolved_model = default_model
-        else:
-            resolved_model = model or default_model
+            resolved_model = default_model if default_model in known else next(iter(known), default_model)
         return EngineChoice(AGY_PROVIDER, resolved_model)
 
     def open_conversation(
@@ -151,6 +159,12 @@ class AssistantEngineProvider:
 
     # --- 모델 목록 --------------------------------------------------------------
 
+    def refresh_models(self) -> list[dict[str, str]]:
+        """캐시된 agy 모델 목록을 비우고 CLI 에서 다시 읽는다."""
+        with self._models_lock:
+            self._agy_models = None
+        return self.available_models(AGY_PROVIDER)
+
     def available_models(self, provider: str) -> list[dict[str, str]]:
         if provider == GOOGLE_PROVIDER:
             rows = list(GOOGLE_MODELS)
@@ -165,13 +179,14 @@ class AssistantEngineProvider:
             return self._agy_models
         with self._models_lock:
             if self._agy_models is None:
-                self._agy_models = self._read_agy_models() or list(AGY_MODELS)
+                live = self._read_agy_models()
+                self._agy_models = sort_agy_models(live) if live else list(AGY_MODELS)
         return self._agy_models
 
     def _read_agy_models(self) -> list[tuple[str, str]]:
         if not self.external_llm_enabled:
             return []
-        rows = []
+        rows: list[tuple[str, str]] = []
         try:
             out = subprocess.run(
                 [self._executable, "models"],
@@ -190,12 +205,6 @@ class AssistantEngineProvider:
                     rows.append((mid.strip(), name.strip()))
         except (OSError, subprocess.SubprocessError) as exc:
             logger.warning("[assistant] agy models 조회 실패: %s", exc)
-
-        # ACP 기본 지원 모델 스냅샷 병합
-        existing = {mid for mid, _ in rows}
-        for mid, name in AGY_MODELS:
-            if mid not in existing:
-                rows.append((mid, name))
         return rows
 
     # --- 상태 ---------------------------------------------------------------------

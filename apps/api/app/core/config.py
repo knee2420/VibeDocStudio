@@ -22,11 +22,11 @@ _DEFAULT_CORS_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 
-# 현재 분기 주력 모델 라인업 (Gemma4 31b, Gemini-3.8-flash, Gemini-3.1-pro, Gemini-3.5-flash-lite)
+# 현재 주력 모델 라인업 (agy 1.5.15: Gemini 4 Hydrogen 기본, Neon, Argon, Carbon, 3.8 Flash, Claude 5.5)
 DEFAULT_TAGGER_MODEL = "Gemma4 31b"
-DEFAULT_COMPOSER_MODEL = "Gemini-3.8-flash"
-DEFAULT_PRO_MODEL = "Gemini-3.1-pro"
-DEFAULT_LITE_MODEL = "Gemini-3.5-flash-lite"
+DEFAULT_COMPOSER_MODEL = "gemini-4-hydrogen-medium"
+DEFAULT_PRO_MODEL = "gemini-4-neon-high"
+DEFAULT_LITE_MODEL = "gemini-3.5-flash-lite"
 
 
 def _optional_path(key: str) -> Path | None:
@@ -58,8 +58,8 @@ class Settings:
         self.composer_model: str = os.getenv("VIBE_COMPOSER_MODEL", DEFAULT_COMPOSER_MODEL)
         self.pro_model: str = os.getenv("VIBE_PRO_MODEL", DEFAULT_PRO_MODEL)
         self.lite_model: str = os.getenv("VIBE_LITE_MODEL", DEFAULT_LITE_MODEL)
-        # AI Composer · 인라인 AI 의 기본 agy 모델 (속도 우선). AI 설정 화면에서 바꿀 수 있다.
-        self.assistant_inline_model: str = os.getenv("VIBE_ASSISTANT_INLINE_MODEL", "gemini-3.8-flash")
+        # AI Composer · 인라인 AI 의 기본 agy 모델 (Hydrogen 기본). AI 설정 화면에서 바꿀 수 있다.
+        self.assistant_inline_model: str = os.getenv("VIBE_ASSISTANT_INLINE_MODEL", "gemini-4-hydrogen-medium")
         # agy 전송 프로토콜 ("acp" | "stream", 기본값 acp)
         self.agy_transport: str = os.getenv("VIBE_AGY_TRANSPORT", "acp").lower()
         # 기본 생각 강도 ("low" | "medium" | "high")

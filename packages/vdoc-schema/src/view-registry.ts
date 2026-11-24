@@ -44,7 +44,7 @@ export const A4_DOCUMENT_VIEW: DocumentViewProfile = {
   unitLabel: "Pages",
   showPagesSection: true,
   showSectionsSection: false,
-  allowedElementIds: ["table", "section"],
+  allowedElementIds: ["table", "section", "resource"],
   hideHeaderFooterByDefault: false,
 };
 
@@ -60,7 +60,7 @@ export const BLOG_DOCUMENT_VIEW: DocumentViewProfile = {
   unitLabel: "Sections",
   showPagesSection: false,
   showSectionsSection: true,
-  allowedElementIds: ["section", "table"],
+  allowedElementIds: ["section", "table", "resource"],
   hideHeaderFooterByDefault: true,
 };
 
@@ -76,7 +76,7 @@ export const WEB_DOCUMENT_VIEW: DocumentViewProfile = {
   unitLabel: "Sections",
   showPagesSection: false,
   showSectionsSection: true,
-  allowedElementIds: ["section", "table"],
+  allowedElementIds: ["section", "table", "resource"],
   hideHeaderFooterByDefault: true,
 };
 

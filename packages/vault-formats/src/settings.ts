@@ -1,5 +1,6 @@
 /** 볼트 설정 파일 형식 (`.vibedoc/` · `.vsyntax` · `.vstyle`) — 읽기 · 쓰기 · 기본값 · 규칙 충돌 검사. */
 import {
+  DEFAULT_RESOURCE_ELEMENT_DEF,
   DEFAULT_SECTION_ELEMENT_DEF,
   DEFAULT_TABLE_ELEMENT_DEF,
   createDefaultRegistrySnapshot,
@@ -159,6 +160,7 @@ export function detectSyntaxRuleConflicts(
 const DEFAULT_ELEMENT_BY_ID = new Map<string, ElementSyntaxDefinition>([
   [DEFAULT_TABLE_ELEMENT_DEF.id, DEFAULT_TABLE_ELEMENT_DEF],
   [DEFAULT_SECTION_ELEMENT_DEF.id, DEFAULT_SECTION_ELEMENT_DEF],
+  [DEFAULT_RESOURCE_ELEMENT_DEF.id, DEFAULT_RESOURCE_ELEMENT_DEF],
 ]);
 
 export function getDefaultRuleSymbol(elementId: string, ruleId: string): string | undefined {

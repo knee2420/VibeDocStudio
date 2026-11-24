@@ -64,6 +64,12 @@ MAX_TOOL_ROUNDS = int(packs.data("core:settings.json")["maxToolRounds"])
 #: "전체를 확인" 요청인데 덜 읽고 끝냈을 때, 이어 읽게 하는 횟수 상한
 MAX_COVERAGE_NUDGES = int(packs.data("resource:coverage.json")["maxCoverageNudges"])
 SESSION_IDLE_SECONDS = 30 * 60
+#: 기준점 세션(retain)은 사용자가 완료할 때 닫는다 — 하루 넘게 손대지 않으면 그때 정리한다
+RETAINED_IDLE_SECONDS = 24 * 60 * 60
+#: 동시에 모델 턴을 돌리는 세션 수 상한 (agy 프로세스 · 기계 부하) — 프론트 스케줄러와 같은 값 (하네스 core 팩)
+MAX_CONCURRENT_RUNS = max(1, int((packs.data("core:settings.json").get("sessions") or {}).get("maxConcurrentRuns", 3)))
+#: 실행 슬롯을 기다리며 중단 요청을 확인하는 간격 (초)
+RUN_SLOT_POLL_SECONDS = 0.5
 #: 이 시간 동안 쓰지 않은 세션은 agy 프로세스(개당 170MB 이상)만 내린다. 대화는 다음 턴에
 #: `--conversation <id>` 로 다시 잇는다 (기동 약 5초).
 PROCESS_IDLE_SECONDS = 10 * 60
@@ -113,6 +119,9 @@ class _Session:
     emitted_proposal_ids: set[str] = field(default_factory=set)
     cancel: threading.Event = field(default_factory=threading.Event)
     lock: threading.Lock = field(default_factory=threading.Lock)
+    #: 기준점 세션 — 유휴 정리에서 닫지 않는다 (엔진 프로세스만 내린다)
+    retained: bool = False
+    label: str = ""
 
 
 def _deck_marks(content: Optional[str]) -> dict[str, str]:
@@ -173,6 +182,8 @@ class AssistantService:
         self._workspace = workspace
         self._sessions: dict[str, _Session] = {}
         self._lock = threading.Lock()
+        #: 모델 턴 실행 슬롯 — 넘치면 `queued` 상태를 알리고 기다린다 (중단하면 바로 끝난다)
+        self._run_slots = threading.BoundedSemaphore(MAX_CONCURRENT_RUNS)
 
     # --- 엔진 선택 ---------------------------------------------------------------
 
@@ -184,9 +195,13 @@ class AssistantService:
         snap = self._policy.snapshot()
         return self._engines.resolve(snap.primary_provider, model or self._inline_model)
 
-    def engines_status(self) -> dict[str, Any]:
+    def engines_status(self, *, refresh: bool = False) -> dict[str, Any]:
         # 열린 Composer 가 주기적으로 부르는 곳이라, 유휴 정리를 여기에 얹는다 (별도 타이머 없이).
         self.release_idle()
+        if refresh:
+            refresh_fn = getattr(self._engines, "refresh_models", None)
+            if callable(refresh_fn):
+                refresh_fn()
         choice = self.default_choice()
         inline = self.inline_choice()
         with self._lock:
@@ -215,17 +230,43 @@ class AssistantService:
 
     # --- 세션 --------------------------------------------------------------------
 
-    def create_session(self, provider: Optional[str] = None, model: Optional[str] = None) -> dict[str, Any]:
+    def create_session(
+        self,
+        provider: Optional[str] = None,
+        model: Optional[str] = None,
+        *,
+        retain: bool = False,
+        label: Optional[str] = None,
+    ) -> dict[str, Any]:
         self.release_idle()
         snap = self._policy.snapshot()
         choice = self._engines.resolve(provider or snap.primary_provider, model or snap.primary_model)
         sid = f"asst-{uuid.uuid4().hex[:12]}"
         sys_prompt = workspace_system_prompt(has_vibefs=bool(self._workspace))
         engine = self._engines.open_conversation(choice, lane="composer", session_id=sid, system_prompt=sys_prompt)
-        session = _Session(session_id=sid, engine=engine)
+        session = _Session(session_id=sid, engine=engine, retained=bool(retain), label=(label or "")[:120])
         with self._lock:
             self._sessions[session.session_id] = session
         return {"sessionId": session.session_id, "provider": choice.provider, "model": choice.model}
+
+    def list_sessions(self) -> list[dict[str, Any]]:
+        """살아 있는 세션 (실행 중 · 프론트 도구 결과 대기 수 · 유휴 시간)."""
+        now = time.monotonic()
+        with self._lock:
+            sessions = list(self._sessions.values())
+        return [
+            {
+                "sessionId": s.session_id,
+                "label": s.label or None,
+                "retained": s.retained,
+                "running": s.lock.locked(),
+                "pendingCalls": len(s.pending_calls),
+                "idleSeconds": int(max(0.0, now - s.last_used)),
+                "provider": s.engine.choice.provider,
+                "model": s.engine.choice.model,
+            }
+            for s in sessions
+        ]
 
     def close_session(self, session_id: str) -> None:
         with self._lock:
@@ -760,7 +801,17 @@ class AssistantService:
             del session.turn_windows[:-50]
             window_idx = min(window_idx, len(session.turn_windows) - 1)
             self._bind_conversation(session)
+            holding_slot = False
             try:
+                # 실행 슬롯 — 넘치면 알리고 기다린다. 기다리는 중 중단(연결 끊김 · interrupt)이면 바로 끝낸다.
+                if not self._run_slots.acquire(blocking=False):
+                    yield {"type": "status", "state": "queued", "message": "다른 작업이 끝나면 시작합니다."}
+                    while not self._run_slots.acquire(timeout=RUN_SLOT_POLL_SECONDS):
+                        if session.cancel.is_set():
+                            yield {"type": "error", "message": "대기 중에 중단했습니다.", "code": "interrupted"}
+                            yield {"type": "turn_done", "stopReason": "interrupted", "usage": {}, "durationMs": 0}
+                            return
+                holding_slot = True
                 yield {
                     "type": "turn_start",
                     "provider": session.engine.choice.provider,
@@ -900,6 +951,8 @@ class AssistantService:
                     yield {"type": "turn_done", **meta, "stopReason": stop}
                     return
             finally:
+                if holding_slot:
+                    self._run_slots.release()
                 if window_idx < len(session.turn_windows):
                     session.turn_windows[window_idx] = (session.turn_windows[window_idx][0], time.time())
                 session.last_used = time.monotonic()
@@ -1051,7 +1104,8 @@ class AssistantService:
         now = time.monotonic()
         with self._lock:
             idle = [s for s in self._sessions.values() if not s.lock.locked()]
-            stale = [s for s in idle if now - s.last_used > SESSION_IDLE_SECONDS]
+            # 기준점 세션은 사용자가 완료할 때 닫는다 (오래 손대지 않았을 때만 정리)
+            stale = [s for s in idle if now - s.last_used > (RETAINED_IDLE_SECONDS if s.retained else SESSION_IDLE_SECONDS)]
             for session in stale:
                 self._sessions.pop(session.session_id, None)
             stale_ids = {s.session_id for s in stale}

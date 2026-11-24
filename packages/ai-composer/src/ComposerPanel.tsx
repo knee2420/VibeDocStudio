@@ -74,6 +74,8 @@ export interface ComposerPanelProps {
   onAttachFiles?(files: File[]): Promise<ContextRef[]> | ContextRef[];
   /** `+` 메뉴에서 폴더 첨부를 눌렀을 때 커스텀 동작 (생략 시 `@` 폴더 멘션 열기). */
   onOpenFolderPicker?(): void;
+  /** 채팅 답변 속 `<<resource:...>>` 배지 클릭 시 페어 탭으로 열고 하이라이트. */
+  onOpenResource?(rawTag: string): void;
 }
 
 const MODE_META: Record<PermissionMode, { label: string; icon: React.ComponentType<{ className?: string }>; hint: string }> = {
@@ -107,6 +109,7 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   onBeforeSend,
   onAttachFiles,
   onOpenFolderPicker,
+  onOpenResource,
 }) => {
   const send = (text: string, contexts: ContextRef[]) => void controller.send(text, onBeforeSend ? onBeforeSend(text, contexts) : contexts);
   const state = useComposerState(controller);
@@ -114,8 +117,8 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   const stickRef = React.useRef(true);
   const busy = state.status !== "idle";
   const surface = React.useMemo<AiSurfaceValue>(
-    () => ({ runtime, attach: (refs) => controller.attach(refs) }),
-    [runtime, controller]
+    () => ({ runtime, attach: (refs) => controller.attach(refs), openResource: onOpenResource }),
+    [runtime, controller, onOpenResource]
   );
   // 패널 전체가 놓는 곳 — 자식 요소를 오가며 생기는 dragenter/leave 짝을 세어 깜빡임을 막는다.
   const [dropping, setDropping] = React.useState(false);

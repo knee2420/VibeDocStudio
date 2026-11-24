@@ -49,7 +49,7 @@ class ModelOptionResponse(BaseModel):
     def from_option(cls, option: ModelOption) -> ModelOptionResponse:
         return cls(
             id=option.model_id,
-            name=option.model_id,
+            name=option.display_name or option.model_id,
             provider=option.provider,
             description=option.description,
             recommended=option.recommended,

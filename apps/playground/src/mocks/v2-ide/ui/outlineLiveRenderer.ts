@@ -12,8 +12,11 @@
  * - Bare `https://...` / `vault://...` -> shortened clickable link chip
  */
 
+import { parseResourceTag } from "@vibe/vdoc-schema";
+
 export type OutlineInlineToken =
   | { readonly kind: "text"; readonly value: string }
+  | { readonly kind: "resource"; readonly raw: string }
   | { readonly kind: "directive"; readonly raw: string }
   | { readonly kind: "image"; readonly label: string; readonly url?: string }
   | { readonly kind: "link"; readonly label: string; readonly url: string; readonly isCta?: boolean }
@@ -23,7 +26,7 @@ export type OutlineInlineToken =
   | { readonly kind: "tag"; readonly value: string };
 
 const INLINE_TOKEN_RE =
-  /(<<\s*(?:doc|view|asset|template|cell|row|col|document|page|section|title|list|table|callout|quote|block)(?::[^>\n]+)?(?:\s+[^>\n]+)?\s*>>)|(!\[([^\]\n]*)\]\(([^)\s]+)\))|(\[img(?::([^\]\n]*))?\])|(\[cta:([^\]\n]+)\])|(\[embed:([^\]\n]+)\])|(\[([^\]\n]+)\]\(([^)\s]+)\))|(\[\[([^[\]\n]+)\]\])|(==([^=\n]+)==)|((?:https?:\/\/|vault:\/\/)[^\s)\]]+)|((?:^|\s)#[\p{L}\p{N}_/-]*[\p{L}_/-])/giu;
+  /(<<\s*resource\s*:[^>\n]+\s*>>)|(<<\s*(?:doc|view|cite|asset|template|cell|row|col|document|page|section|title|list|table|callout|quote|block)(?::[^>\n]+)?(?:\s+[^>\n]+)?\s*>>)|(!\[([^\]\n]*)\]\(([^)\s]+)\))|(\[img(?::([^\]\n]*))?\])|(\[cta:([^\]\n]+)\])|(\[embed:([^\]\n]+)\])|(\[([^\]\n]+)\]\(([^)\s]+)\))|(\[\[([^[\]\n]+)\]\])|(==([^=\n]+)==)|((?:https?:\/\/|vault:\/\/)[^\s)\]]+)|((?:^|\s)#[\p{L}\p{N}_/-]*[\p{L}_/-])/giu;
 
 function shortenUrlLabel(url: string): string {
   if (/^vault:\/\//i.test(url)) {
@@ -83,7 +86,7 @@ export function tokenizeOutlineInline(rawText: string): OutlineInlineToken[] {
     const full = match[0];
 
     // Tag capture may include a leading whitespace character — keep whitespace as plain text
-    if (match[19] && /^\s/.test(full)) {
+    if (match[20] && /^\s/.test(full)) {
       const wsLen = full.length - full.trimStart().length;
       if (start + wsLen > cursor) {
         tokens.push({ kind: "text", value: text.slice(cursor, start + wsLen) });
@@ -98,38 +101,40 @@ export function tokenizeOutlineInline(rawText: string): OutlineInlineToken[] {
     }
 
     if (match[1]) {
-      tokens.push({ kind: "directive", raw: match[1] });
+      tokens.push({ kind: "resource", raw: match[1] });
     } else if (match[2]) {
-      tokens.push({ kind: "image", label: match[3].trim() || "이미지", url: match[4].trim() });
-    } else if (match[5]) {
-      const parsed = parseImgInner(match[6] ?? "");
+      tokens.push({ kind: "directive", raw: match[2] });
+    } else if (match[3]) {
+      tokens.push({ kind: "image", label: match[4].trim() || "이미지", url: match[5].trim() });
+    } else if (match[6]) {
+      const parsed = parseImgInner(match[7] ?? "");
       tokens.push({ kind: "image", label: parsed.label, url: parsed.url });
-    } else if (match[7]) {
-      const parsed = parseCtaInner(match[8] ?? "");
+    } else if (match[8]) {
+      const parsed = parseCtaInner(match[9] ?? "");
       tokens.push({ kind: "link", label: parsed.label, url: parsed.url, isCta: true });
-    } else if (match[9]) {
-      const inner = match[10] ?? "";
+    } else if (match[10]) {
+      const inner = match[11] ?? "";
       const pipeIdx = inner.indexOf("|");
       tokens.push({
         kind: "embed",
         embedKind: pipeIdx >= 0 ? inner.slice(0, pipeIdx).trim() : "embed",
         content: pipeIdx >= 0 ? inner.slice(pipeIdx + 1).trim() : inner.trim(),
       });
-    } else if (match[11]) {
-      tokens.push({ kind: "link", label: match[12].trim(), url: match[13].trim() });
-    } else if (match[14]) {
-      const rawWiki = match[15] ?? "";
+    } else if (match[12]) {
+      tokens.push({ kind: "link", label: match[13].trim(), url: match[14].trim() });
+    } else if (match[15]) {
+      const rawWiki = match[16] ?? "";
       const pipeIdx = rawWiki.indexOf("|");
       const target = pipeIdx >= 0 ? rawWiki.slice(0, pipeIdx).trim() : rawWiki.trim();
       const alias = pipeIdx >= 0 ? rawWiki.slice(pipeIdx + 1).trim() : target;
       tokens.push({ kind: "wikilink", target, alias });
-    } else if (match[16]) {
-      tokens.push({ kind: "highlight", value: match[17] ?? "" });
-    } else if (match[18]) {
-      const url = match[18];
-      tokens.push({ kind: "link", label: shortenUrlLabel(url), url });
+    } else if (match[17]) {
+      tokens.push({ kind: "highlight", value: match[18] ?? "" });
     } else if (match[19]) {
-      tokens.push({ kind: "tag", value: match[19].trim() });
+      const url = match[19];
+      tokens.push({ kind: "link", label: shortenUrlLabel(url), url });
+    } else if (match[20]) {
+      tokens.push({ kind: "tag", value: match[20].trim() });
     }
 
     cursor = start + full.length;
@@ -157,12 +162,79 @@ export function renderOutlineInlineMarkdown(markdown: string, containerEl: HTMLE
       continue;
     }
 
+    if (tok.kind === "resource") {
+      const parsed = parseResourceTag(tok.raw);
+      const anchor = doc.createElement("a");
+      anchor.href = "#";
+      anchor.setAttribute("data-href", `resource-tag:${tok.raw}`);
+      anchor.className = "internal-link vibe-ol-resource-chip";
+      const icon = !parsed
+        ? "📎"
+        : parsed.isWebUrl
+          ? "🌐"
+          : /\.pdf$/i.test(parsed.target)
+            ? "📕"
+            : /\.(png|jpe?g|gif|webp|svg)$/i.test(parsed.target)
+              ? "🖼"
+              : /\.csv$/i.test(parsed.target)
+                ? "📊"
+                : /\.ref$/i.test(parsed.target)
+                  ? "🗂"
+                  : /\.vdoc(\.json)?$/i.test(parsed.target)
+                    ? "📐"
+                    : /\.outline$/i.test(parsed.target)
+                      ? "🌿"
+                      : "📄";
+      const locBits: string[] = [];
+      if (parsed?.page) locBits.push(`p.${parsed.page}`);
+      if (parsed?.lines) {
+        locBits.push(
+          parsed.lines[0] === parsed.lines[1]
+            ? `L${parsed.lines[0]}`
+            : `L${parsed.lines[0]}-L${parsed.lines[1]}`
+        );
+      }
+      if (parsed?.bbox) locBits.push("영역");
+      if (parsed?.nodeId) locBits.push(`#${parsed.nodeId}`);
+      if (parsed?.slotId) locBits.push(`#${parsed.slotId}`);
+      if (parsed?.blockId) locBits.push(`#${parsed.blockId}`);
+      const headLabel = parsed
+        ? `${icon} ${parsed.label}${locBits.length ? ` · ${locBits.join(" ")}` : ""}`
+        : tok.raw;
+      const quotePreview = parsed?.quote
+        ? parsed.quote.length > 48
+          ? `${parsed.quote.slice(0, 47)}…`
+          : parsed.quote
+        : "";
+      anchor.textContent = quotePreview ? `${headLabel}  |  “${quotePreview}”` : headLabel;
+      anchor.title = `클릭 시 페어 탭으로 열고 하이라이트 · ${tok.raw}`;
+      anchor.style.cssText =
+        "display:inline-flex;align-items:center;gap:4px;padding:1px 8px;margin:0 2px;border-radius:6px;font-size:12px;line-height:1.5;color:#a5f3fc;background:rgba(6,182,212,0.16);border:1px solid rgba(34,211,238,0.42);text-decoration:none;cursor:pointer;max-width:100%;vertical-align:baseline;";
+      frag.appendChild(anchor);
+      continue;
+    }
+
     if (tok.kind === "directive") {
       const badge = doc.createElement("span");
       badge.textContent = tok.raw;
       badge.className = "vibe-ol-directive";
+      const low = tok.raw.toLowerCase();
+      let colorCss = "color:#c4b5fd;background:rgba(138,92,245,0.16);border:1px solid rgba(138,92,245,0.32);";
+      if (low.startsWith("<<cite:rationale") || low.startsWith("<<cite:산출근거")) {
+        colorCss = "color:#fde68a;background:rgba(245,158,11,0.18);border:1px solid rgba(251,191,36,0.42);";
+      } else if (low.startsWith("<<cite:sidenote") || low.startsWith("<<cite:여백")) {
+        colorCss = "color:#99f6e4;background:rgba(20,184,166,0.18);border:1px solid rgba(45,212,191,0.42);";
+      } else if (low.startsWith("<<cite:quote") || low.startsWith("<<cite:인용")) {
+        colorCss = "color:#ddd6fe;background:rgba(139,92,246,0.2);border:1px solid rgba(167,139,250,0.45);";
+      } else if (low.startsWith("<<cite:matrix") || low.startsWith("<<cite:추적")) {
+        colorCss = "color:#fecdd3;background:rgba(244,63,94,0.18);border:1px solid rgba(251,113,133,0.42);";
+      } else if (low.startsWith("<<cite:bound") || low.startsWith("<<cite:바인딩")) {
+        colorCss = "color:#a5f3fc;background:rgba(6,182,212,0.18);border:1px solid rgba(34,211,238,0.42);";
+      } else if (low.startsWith("<<cite")) {
+        colorCss = "color:#c7d2fe;background:rgba(99,102,241,0.2);border:1px solid rgba(129,140,248,0.45);";
+      }
       badge.style.cssText =
-        "display:inline-flex;align-items:center;padding:0 5px;margin:0 2px;border-radius:4px;font-family:var(--pg-font-mono,monospace);font-size:11px;line-height:1.45;color:#c4b5fd;background:rgba(138,92,245,0.16);border:1px solid rgba(138,92,245,0.32);vertical-align:baseline;";
+        `display:inline-flex;align-items:center;padding:0 5px;margin:0 2px;border-radius:4px;font-family:var(--pg-font-mono,monospace);font-size:11px;line-height:1.45;${colorCss}vertical-align:baseline;`;
       frag.appendChild(badge);
       continue;
     }

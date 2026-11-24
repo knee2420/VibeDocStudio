@@ -44,6 +44,7 @@ import {
   unlinkOutlineNodeBinding,
   unlinkVDocFromOutline,
 } from "@vibe/outline-sync";
+import { createVaultOutlineFiles } from "../model/outlineFileHost";
 import { createIdeWorkbenchRuntime } from "../model/useIdeWorkbench";
 import { createSampleProposalVDoc } from "../model/sampleProposalVDoc";
 
@@ -417,6 +418,91 @@ describe("Bidirectional .outline <-> .vdoc (WYSIWYM <-> WYSIWYG) Sync Engine", (
         (t) => t.tabGroupId === groupId
       );
       assert.equal(afterSecond.length, 3);
+    } finally {
+      runtime.dispose();
+    }
+  });
+
+  it("opens consecutive .outline attachment clicks inside ONE Pair Tab Group without spawning extra split panes", () => {
+    const vault = new MemoryVaultAdapter({ persistDebounceMs: 0 });
+    const planPath = "계획/볼트_계획.outline";
+    const f1 = "01. System/00. Proposal.outline";
+    const f2 = "01. System/00. Proposal.vdoc";
+    const f3 = "01. System/스키마.outline";
+    const f4 = "01. System/style.vstyle";
+
+    vault.createFile(
+      planPath,
+      serializeOutlineJson({ version: 1, id: "ol-plan", title: "볼트 계획", defaultView: "bullets", rootNodes: [], updatedAt: "" })
+    );
+    vault.createFile(
+      f1,
+      serializeOutlineJson({ version: 1, id: "ol-f1", title: "Proposal Outline", defaultView: "bullets", rootNodes: [], updatedAt: "" })
+    );
+    vault.createFile(f2, serializeVDocJson(createDefaultVDoc("Proposal", "a4")));
+    vault.createFile(
+      f3,
+      serializeOutlineJson({ version: 1, id: "ol-f3", title: "스키마", defaultView: "bullets", rootNodes: [], updatedAt: "" })
+    );
+    vault.createFile(f4, JSON.stringify({ id: "style", name: "Style", tokens: {}, bindings: [] }));
+
+    const runtime = createIdeWorkbenchRuntime({
+      persist: false,
+      mode: "memory",
+      vaultAdapter: vault,
+    });
+
+    try {
+      runtime.openVaultFile(planPath, "current");
+      const planTab = runtime.layout.getState().getActiveTab()!;
+      const filesHost = createVaultOutlineFiles({
+        vault,
+        getOutlinePath: () => planPath,
+        openFile: (target) =>
+          runtime.openFileInPairTabGroup(target, { sourceTabId: planTab.id, sourcePath: planPath }),
+      });
+
+      // Click 4 different attachment chips consecutively from the left .outline
+      filesHost.open(f1);
+      filesHost.open(f2);
+      filesHost.open(f3);
+      filesHost.open(f4);
+
+      const state = runtime.layout.getState();
+      // Must remain 1 physical pane (NO runaway split-right panes!)
+      assert.equal(state.getGroupCount(), 1);
+      const pane = getAllGroups(state.root)[0];
+      const groupId = pane.tabs.find((t) => t.id === planTab.id)?.tabGroupId;
+      assert.ok(groupId, "source .outline tab must belong to a Chrome Tab Group");
+
+      const groupTabs = pane.tabs.filter((t) => t.tabGroupId === groupId);
+      assert.deepEqual(
+        new Set(groupTabs.map((t) => t.resourceId)),
+        new Set([planPath, f1, f2, f3, f4])
+      );
+      assert.equal(groupTabs.length, 5);
+
+      // Pair slots: left stays fixed on planPath, right shows the latest clicked attachment (f4)
+      const pair = state.tabGroups[groupId]?.pair;
+      assert.ok(pair);
+      assert.equal(pair.leftTabId, planTab.id);
+      assert.equal(
+        pane.tabs.find((t) => t.id === pair.rightTabId)?.resourceId,
+        f4
+      );
+
+      // Re-clicking an earlier attachment (f2) reuses its tab in the same group and swaps ONLY right slot
+      filesHost.open(f2);
+      const afterReclick = runtime.layout.getState();
+      assert.equal(afterReclick.getGroupCount(), 1);
+      const afterPane = getAllGroups(afterReclick.root)[0];
+      assert.equal(afterPane.tabs.filter((t) => t.tabGroupId === groupId).length, 5);
+      const afterPair = afterReclick.tabGroups[groupId]?.pair;
+      assert.equal(afterPair?.leftTabId, planTab.id);
+      assert.equal(
+        afterPane.tabs.find((t) => t.id === afterPair?.rightTabId)?.resourceId,
+        f2
+      );
     } finally {
       runtime.dispose();
     }

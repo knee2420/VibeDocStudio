@@ -3,5 +3,10 @@
  "recap": {
   "turns": 8,
   "chars": 600
+ },
+ "sessions": {
+  "maxConcurrentRuns": 3,
+  "maxOpenTabs": 8,
+  "maxCompleted": 30
  }
 }

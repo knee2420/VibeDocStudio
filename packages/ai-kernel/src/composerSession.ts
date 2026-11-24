@@ -90,6 +90,14 @@ const RECAP = coreMessages.recap;
 export interface ComposerPersistence {
   load(key: string): ComposerSnapshot | null;
   save(key: string, snapshot: ComposerSnapshot): void;
+  /** 대화 기록을 지운다 (완료 이력 정리). 없으면 지우지 않는다. */
+  remove?(key: string): void;
+}
+
+/** 서버 세션을 만들 때 함께 보내는 값 (기준점 세션: 유휴 정리에서 닫지 않게 `retain`). */
+export interface ComposerSessionOptions {
+  retain?: boolean;
+  label?: string;
 }
 
 export interface ComposerSnapshot {
@@ -137,8 +145,24 @@ export class ComposerSessionController {
   private needsRecap = false;
   /** 실행 중에 문서가 바뀌면, 실행이 끝난 뒤 그 대화로 옮긴다 */
   private pendingKey: string | null = null;
+  private sessionOptions: ComposerSessionOptions = {};
 
   constructor(private readonly runtime: AiRuntime) {}
+
+  /** 다음에 만드는 서버 세션에 붙일 값 (이미 있는 세션에는 영향 없음). */
+  setSessionOptions(options: ComposerSessionOptions): void {
+    this.sessionOptions = { ...options };
+  }
+
+  /** 사용자가 고른 엔진 (없으면 서버 기본값) — 새 세션이 메인 세션의 엔진을 물려받을 때 쓴다. */
+  engineChoice(): { provider: string; model: string } | null {
+    return this.engineOverride ? { ...this.engineOverride } : null;
+  }
+
+  /** 지금 묶인 대화 키 */
+  currentConversationKey(): string | null {
+    return this.conversationKey;
+  }
 
   // --- 대화 보존 (문서별) --------------------------------------------------------
 
@@ -344,11 +368,62 @@ export class ComposerSessionController {
     void this.client.closeSession(id, { keepalive: true });
   }
 
+  /**
+   * 페이지를 떠날 때 — 실행만 끊고 서버 세션은 남긴다 (유지 세션: 다음에 열면 같은 대화를 잇는다).
+   * 스트림이 끊기면 서버가 진행 중인 턴을 취소한다.
+   */
+  detachOnPageExit(): void {
+    this.abort?.abort();
+    this.flushSave();
+  }
+
+  /** 미뤄 둔 저장을 지금 한다 (런타임을 내리기 전에). */
+  persistNow(): void {
+    this.flushSave();
+  }
+
+  /**
+   * 대화를 끝낸다 — 실행 · 대기열을 멈추고 서버 세션(agy)을 닫는다. 대화 기록은 남긴다 (완료 이력에서 다시 본다).
+   * 늦게 도착하는 이벤트가 끼지 않게 세대를 올린다.
+   */
+  async release(): Promise<void> {
+    this.generation++;
+    this.stop();
+    const old = this.state.sessionId;
+    this.deferred = [];
+    this.asyncRuns = [];
+    this.pendingCallItems = [];
+    this.finishStreamingItems();
+    this.set({ sessionId: null, status: "idle", queue: [], items: this.state.items.map(settleItem) });
+    this.flushSave();
+    if (old) {
+      try {
+        await this.client.closeSession(old);
+      } catch {
+        /* 이미 닫힌 세션 */
+      }
+    }
+  }
+
+  /** 대화 기록을 저장소에서 지운다 (메모리 상태도 비운다). */
+  forget(): void {
+    clearTimeout(this.saveTimer);
+    const key = this.conversationKey;
+    this.conversationKey = null;
+    if (key) {
+      try {
+        this.persistence?.remove?.(key);
+      } catch {
+        /* 무시 */
+      }
+    }
+  }
+
   // --- 루프 ---------------------------------------------------------------------
 
   private async ensureSession(): Promise<string> {
     if (this.state.sessionId) return this.state.sessionId;
-    const created = await this.client.createSession(this.engineOverride ?? undefined);
+    const created = await this.client.createSession({ ...(this.engineOverride ?? {}), ...this.sessionOptions });
     this.set({ sessionId: created.sessionId, engine: { provider: created.provider, model: created.model } });
     return created.sessionId;
   }

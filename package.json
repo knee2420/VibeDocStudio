@@ -13,7 +13,7 @@
     "lint": "pnpm -r lint",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm --filter @vibe/vdoc-schema --filter @vibe/slot-canvas --filter @vibe/selection-core --filter @vibe/ai-scope --filter @vibe/vault-formats --filter @vibe/outline-sync --filter @vibe/canvas-state --filter @vibe/ai-vault --filter @vibe/api test && pnpm test:arch",
+    "test": "pnpm --filter @vibe/vdoc-schema --filter @vibe/slot-canvas --filter @vibe/selection-core --filter @vibe/ai-scope --filter @vibe/vault-formats --filter @vibe/outline-sync --filter @vibe/canvas-state --filter @vibe/ai-vault --filter @vibe/ai-kernel --filter @vibe/api test && pnpm test:arch",
     "test:arch": "node --test tests/architecture/package-boundaries.test.mjs",
     "perf:v2": "python scripts/v2_perf.py"
   },

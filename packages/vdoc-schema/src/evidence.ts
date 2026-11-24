@@ -15,6 +15,19 @@ import type { VDocDocument, VDocSlot } from "./types";
 
 export type EvidenceKind = "backdata" | "resource" | "sector" | "ref-region" | "kcard";
 
+/** 근거의 논리적 성격 — 단순 출처 · 산출 근거 · 원문 직접 인용 · 요구사항 충족 매핑. */
+export type EvidenceRelation = "supports" | "derives" | "quotes" | "fulfills";
+
+/** 문서/아웃라인에서의 근거 표현 방식 (단일 데이터 모델 → 다중 렌더 모드). */
+export type EvidencePresentation =
+  | "footnote"
+  | "inline-rationale"
+  | "sidenote"
+  | "quote-embed"
+  | "matrix"
+  | "bound-value"
+  | "hidden";
+
 export interface EvidenceLocator {
   kind: EvidenceKind;
   /** 종류 안에서의 id — chunkId · resourceId · sectorId · regionId · `${deckId}:${cardId}` */
@@ -22,21 +35,41 @@ export interface EvidenceLocator {
   label: string;
   /** 원본 파일 경로 / URL (RM `pathOrUrl`, 덱 원본 경로). 원본 뷰어를 여는 열쇠. */
   sourcePath?: string;
+  /** 외부 웹 URL (웹페이지 리소스용) */
+  url?: string;
   /** 참조 레이어 문서 id (ref-region) */
   docId?: string;
   deckId?: string;
   cardId?: string;
   resourceId?: string;
+  /** 아웃라인 노드 앵커 (`#node:<id>`) */
+  nodeId?: string;
+  /** VDoc 슬롯 앵커 (`#slot:<id>`) */
+  slotId?: string;
+  /** `.ref` 블록 앵커 (`#block:<id>`) */
+  blockId?: string;
   /** 1부터 */
   page?: number | null;
   /** [ymin, xmin, ymax, xmax] 1000분율 (RM 섹터 · 참조 영역과 같은 좌표계) */
   bbox?: [number, number, number, number] | null;
   /** 원문 줄 범위 [시작, 끝] (1부터, 끝 포함) */
   lines?: [number, number] | null;
-  /** 근거 발췌 (AI 컨텍스트 · 툴팁) */
+  /** 근거 발췌 (AI 컨텍스트 · 툴팁 · 원문 직접 인용) */
   excerpt?: string;
   /** 근거를 붙일 때의 원문 지문 — 원문이 바뀌면 링크가 "변경됨(stale)"이 된다 */
   sourceSha?: string;
+  /** 근거 성격 (기본 supports) */
+  relation?: EvidenceRelation;
+  /** 표현 방식 (기본 footnote) */
+  presentation?: EvidencePresentation;
+  /** 산출 근거 설명 한 줄 (예: "백데이터 참석 설문지 35명 + 추가 신청 메일 3명 합산") */
+  rationale?: string;
+  /** 근거 바인딩 수치/팩트 값 (Case 6 bound-value 용, 예: "38명") */
+  boundValue?: string;
+  /** 근거 바인딩 산식/추출 규칙 (Case 6 bound-value 용, 예: "COUNT(참석_설문지.csv#L2-L36) + 3") */
+  boundFormula?: string;
+  /** 요구사항/항목 추적 ID (Case 5 1:N 매트릭스 용, 예: "REQ-SEC-01") */
+  requirementId?: string;
 }
 
 export type EvidenceTier = "direct" | "inherited" | "suggested";
@@ -53,6 +86,493 @@ export interface EvidenceLink {
   status?: EvidenceStatus;
   /** 본문 속 인용 표식 id (`<sup data-cite="…">`) — 인용 번호와 링크를 잇는다 */
   citationIds?: string[];
+  /** 근거 성격 (생략 시 locator.relation 또는 "supports") */
+  relation?: EvidenceRelation;
+  /** 표현 방식 (생략 시 locator.presentation 또는 "footnote") */
+  presentation?: EvidencePresentation;
+  /** 산출 근거 설명 한 줄 (생략 시 locator.rationale) */
+  rationale?: string;
+}
+
+/** 1:N 역추적용 원천 식별 키 (동일 원본 파일 · 페이지 · 줄 범위를 하나의 출처로 묶는다). */
+export function evidenceSourceKey(loc: Pick<EvidenceLocator, "kind" | "refId" | "sourcePath" | "page" | "lines">): string {
+  const base = loc.sourcePath ? loc.sourcePath.replace(/\\/g, "/").toLowerCase() : `${loc.kind}:${loc.refId}`;
+  const pagePart = loc.page ? `#p${loc.page}` : "";
+  const linePart = loc.lines && loc.lines.length >= 2 ? `#L${loc.lines[0]}-${loc.lines[1]}` : "";
+  return `${base}${pagePart}${linePart}`;
+}
+
+export interface EvidenceBacklinkGroup {
+  readonly sourceKey: string;
+  readonly citationNumber: number;
+  readonly locator: EvidenceLocator;
+  readonly targets: readonly { readonly id: string; readonly label: string }[];
+}
+
+/**
+ * 문서/아웃라인의 모든 근거를 출처 단위로 정규화해 각주 번호(1..N)와 1:N 역인덱스를 계산한다.
+ * 같은 원본 구간을 여러 슬롯/불릿에서 인용하면 동일한 각주 번호를 공유하고 `targets` 에 N곳이 모인다.
+ */
+export function buildEvidenceBacklinkIndex(
+  entries: readonly { readonly targetId: string; readonly targetLabel: string; readonly locator: EvidenceLocator }[]
+): {
+  readonly groups: readonly EvidenceBacklinkGroup[];
+  readonly citationNumberBySourceKey: ReadonlyMap<string, number>;
+} {
+  const byKey = new Map<
+    string,
+    { citationNumber: number; locator: EvidenceLocator; targets: { id: string; label: string }[]; seenTargets: Set<string> }
+  >();
+  const citationNumberBySourceKey = new Map<string, number>();
+  let nextNum = 1;
+
+  for (const entry of entries) {
+    const key = evidenceSourceKey(entry.locator);
+    let bucket = byKey.get(key);
+    if (!bucket) {
+      const num = nextNum++;
+      bucket = { citationNumber: num, locator: entry.locator, targets: [], seenTargets: new Set() };
+      byKey.set(key, bucket);
+      citationNumberBySourceKey.set(key, num);
+    }
+    if (!bucket.seenTargets.has(entry.targetId)) {
+      bucket.seenTargets.add(entry.targetId);
+      bucket.targets.push({ id: entry.targetId, label: entry.targetLabel });
+    }
+  }
+
+  const groups: EvidenceBacklinkGroup[] = [...byKey.entries()].map(([sourceKey, b]) => ({
+    sourceKey,
+    citationNumber: b.citationNumber,
+    locator: b.locator,
+    targets: b.targets,
+  }));
+
+  return { groups, citationNumberBySourceKey };
+}
+
+// ============================================================================
+// 편집 가능한 하위 불릿 근거 문법 (`<<cite:...>>`) 파서 · 추출기
+// ============================================================================
+
+const CITE_DIRECTIVE_RE = /^<<\s*cite(?:\s*:\s*([^>\n]+))?\s*>>(.*)$/i;
+const RESOURCE_TAG_RE = /<<\s*resource\s*:\s*([^>\n]+)\s*>>/gi;
+const RESOURCE_SINGLE_RE = /^<<\s*resource\s*:\s*([^>\n]+)\s*>>$/i;
+const WIKILINK_RE = /\[\[([^\[\]\n]+)\]\]/g;
+const PAGE_TAG_RE = /#p(\d+)\b/i;
+const LINE_TAG_RE = /#L(\d+)(?:-L?(\d+))?\b/i;
+const BBOX_TAG_RE = /[@#]bbox\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*\)/i;
+const NODE_TAG_RE = /#node:([^\s|\]>]+)/i;
+const SLOT_TAG_RE = /#slot:([^\s|\]>]+)/i;
+const BLOCK_TAG_RE = /#block:([^\s|\]>]+)/i;
+const HEADING_TAG_RE = /#heading:([^\s|\]>]+)/i;
+const REQ_TAG_RE = /@([A-Za-z0-9_-]+)/;
+const BOUND_HEADER_RE = /\{([^}]+)\}(?:\s*=\s*(.+))?$/;
+
+export interface ParsedResourceTag {
+  /** 원문 `<<resource: ...>>` 토큰 전체 */
+  readonly raw: string;
+  /** 대상 주소 (외부 `https://...` URL, `vault://...`, 또는 볼트 파일 경로/이름) */
+  readonly target: string;
+  /** 표시용 짧은 라벨 (파일명 또는 호스트명) */
+  readonly label: string;
+  /** 외부 웹 URL 여부 */
+  readonly isWebUrl: boolean;
+  /** 1-based 페이지 번호 (`#p5`) */
+  readonly page?: number;
+  /** 1-based 줄 범위 (`#L2-L12`) */
+  readonly lines?: readonly [number, number];
+  /** 0..1000 정규화 사각형 좌표 `[ymin, xmin, ymax, xmax]` (`#bbox(...)`) */
+  readonly bbox?: readonly [number, number, number, number];
+  /** 아웃라인 불릿 ID (`#node:<id>`) */
+  readonly nodeId?: string;
+  /** VDoc 슬롯 ID (`#slot:<id>`) */
+  readonly slotId?: string;
+  /** `.ref` 블록 ID (`#block:<id>`) */
+  readonly blockId?: string;
+  /** 마크다운 헤딩 앵커 (`#heading:...`) */
+  readonly heading?: string;
+  /** 직접 인용 본문 (`|` 뒤 내용) */
+  readonly quote?: string;
+  /** 선택적 컴파일 표현 방식 (`footnote`, `rationale`, `sidenote`, `quote-embed`, `matrix`, `bound-value`) */
+  readonly presentation?: EvidencePresentation;
+}
+
+function shortenTargetLabel(target: string, isWebUrl: boolean): string {
+  if (isWebUrl) {
+    try {
+      const u = new URL(target);
+      const seg = u.pathname.split("/").filter(Boolean).pop();
+      return seg && seg.length <= 24 ? `${u.hostname}/${seg}` : u.hostname;
+    } catch {
+      return target.slice(0, 32);
+    }
+  }
+  const clean = target.replace(/^vault:\/\//i, "");
+  return clean.split("/").pop() || clean;
+}
+
+/**
+ * 통합 리소스 태그 `<<resource: {url 또는 경로} [위치 주소] | {본문 인용}>>` 를 파싱한다.
+ * - 웹 URL: `<<resource: https://www.besteleven.com/... | 인용 문장>>`
+ * - PDF 5페이지: `<<resource: [[제안요청서.pdf]] #p5 | 보안 요구사항>>` 또는 `<<resource: [[제안요청서.pdf#p5]] | ...>>`
+ * - 줄/영역/노드/슬롯/블록: `#L2-L12`, `#bbox(120,80,450,920)`, `#node:id`, `#slot:id`, `#block:id`, `#heading:...`
+ */
+export function parseResourceTag(
+  rawText: string,
+  options: ParseCiteBulletOptions = {}
+): ParsedResourceTag | null {
+  const trimmed = rawText.trim();
+  const match = RESOURCE_SINGLE_RE.exec(trimmed);
+  if (!match) return null;
+  const inner = (match[1] ?? "").trim();
+  if (!inner) return null;
+
+  const pipeIdx = inner.indexOf("|");
+  const addressPart = (pipeIdx >= 0 ? inner.slice(0, pipeIdx) : inner).trim();
+  const quoteRaw = pipeIdx >= 0 ? inner.slice(pipeIdx + 1).trim() : "";
+  const quote = quoteRaw.length > 0 ? quoteRaw : undefined;
+
+  // 1. 앵커 메타 추출 (위치 주소가 `[[파일#p5]]` 내부에 있든 바깥에 있든 동일하게 인식)
+  const pageM = PAGE_TAG_RE.exec(addressPart);
+  const lineM = LINE_TAG_RE.exec(addressPart);
+  const bboxM = BBOX_TAG_RE.exec(addressPart);
+  const nodeM = NODE_TAG_RE.exec(addressPart);
+  const slotM = SLOT_TAG_RE.exec(addressPart);
+  const blockM = BLOCK_TAG_RE.exec(addressPart);
+  const headingM = HEADING_TAG_RE.exec(addressPart);
+
+  const page = pageM ? Number.parseInt(pageM[1], 10) : undefined;
+  const lines: readonly [number, number] | undefined = lineM
+    ? [Number.parseInt(lineM[1], 10), Number.parseInt(lineM[2] ?? lineM[1], 10)]
+    : undefined;
+  const bbox: readonly [number, number, number, number] | undefined = bboxM
+    ? [
+        Number.parseFloat(bboxM[1]),
+        Number.parseFloat(bboxM[2]),
+        Number.parseFloat(bboxM[3]),
+        Number.parseFloat(bboxM[4]),
+      ]
+    : undefined;
+  const nodeId = nodeM ? nodeM[1].trim() : undefined;
+  const slotId = slotM ? slotM[1].trim() : undefined;
+  const blockId = blockM ? blockM[1].trim() : undefined;
+  const heading = headingM ? headingM[1].trim() : undefined;
+
+  // 2. 대상 주소(target) 추출
+  let rawTarget = "";
+  let explicitAlias = "";
+  WIKILINK_RE.lastIndex = 0;
+  const wikiM = WIKILINK_RE.exec(addressPart);
+  if (wikiM) {
+    const wikiInner = (wikiM[1] ?? "").trim();
+    const aliasSep = wikiInner.indexOf("|");
+    const linkOnly = aliasSep >= 0 ? wikiInner.slice(0, aliasSep).trim() : wikiInner;
+    explicitAlias = aliasSep >= 0 ? wikiInner.slice(aliasSep + 1).trim() : "";
+    const hashSep = linkOnly.indexOf("#");
+    rawTarget = hashSep >= 0 ? linkOnly.slice(0, hashSep).trim() : linkOnly;
+  } else {
+    // Strip anchor tokens to isolate URL or vault path
+    const cleaned = addressPart
+      .replace(BBOX_TAG_RE, "")
+      .replace(NODE_TAG_RE, "")
+      .replace(SLOT_TAG_RE, "")
+      .replace(BLOCK_TAG_RE, "")
+      .replace(HEADING_TAG_RE, "")
+      .replace(LINE_TAG_RE, "")
+      .replace(PAGE_TAG_RE, "")
+      .trim();
+    rawTarget = cleaned.split(/\s+/)[0] ?? "";
+    // Remove trailing anchor on non-URL paths (preserve URL query/path)
+    if (rawTarget && !/^https?:\/\//i.test(rawTarget)) {
+      const hashSep = rawTarget.indexOf("#");
+      if (hashSep >= 0) rawTarget = rawTarget.slice(0, hashSep).trim();
+    }
+  }
+
+  if (!rawTarget) return null;
+
+  const isWebUrl = /^https?:\/\//i.test(rawTarget);
+  const resolved = !isWebUrl ? options.resolveSourcePath?.(rawTarget) : undefined;
+  const target = resolved ?? rawTarget;
+  const label = explicitAlias || shortenTargetLabel(rawTarget, isWebUrl);
+
+  return {
+    raw: trimmed,
+    target,
+    label,
+    isWebUrl,
+    ...(page ? { page } : {}),
+    ...(lines ? { lines } : {}),
+    ...(bbox ? { bbox } : {}),
+    ...(nodeId ? { nodeId } : {}),
+    ...(slotId ? { slotId } : {}),
+    ...(blockId ? { blockId } : {}),
+    ...(heading ? { heading } : {}),
+    ...(quote ? { quote } : {}),
+    presentation: quote ? "quote-embed" : "footnote",
+  };
+}
+
+/** 임의의 본문 문자열(마크다운·아웃라인) 안에 포함된 모든 `<<resource: ...>>` 태그를 위치와 함께 추출한다. */
+export function extractResourceTagsInText(
+  text: string,
+  options: ParseCiteBulletOptions = {}
+): Array<{ readonly from: number; readonly to: number; readonly parsed: ParsedResourceTag }> {
+  if (!text || !text.includes("<<")) return [];
+  const out: Array<{ readonly from: number; readonly to: number; readonly parsed: ParsedResourceTag }> = [];
+  RESOURCE_TAG_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = RESOURCE_TAG_RE.exec(text)) !== null) {
+    const parsed = parseResourceTag(m[0], options);
+    if (parsed) {
+      out.push({ from: m.index, to: m.index + m[0].length, parsed });
+    }
+  }
+  return out;
+}
+
+function mapCiteKind(rawKind: string): {
+  presentation: EvidencePresentation;
+  relation: EvidenceRelation;
+} {
+  const k = rawKind.trim().toLowerCase();
+  if (k === "rationale" || k === "inline-rationale" || k === "산출근거" || k === "근거") {
+    return { presentation: "inline-rationale", relation: "derives" };
+  }
+  if (k === "sidenote" || k === "여백주석" || k === "여백") {
+    return { presentation: "sidenote", relation: "supports" };
+  }
+  if (k === "quote" || k === "quote-embed" || k === "직접인용" || k === "인용") {
+    return { presentation: "quote-embed", relation: "quotes" };
+  }
+  if (k === "matrix" || k === "추적" || k === "매트릭스") {
+    return { presentation: "matrix", relation: "fulfills" };
+  }
+  if (k === "bound" || k === "bound-value" || k === "바인딩" || k === "팩트") {
+    return { presentation: "bound-value", relation: "derives" };
+  }
+  if (k === "hidden" || k === "숨김") {
+    return { presentation: "hidden", relation: "supports" };
+  }
+  return { presentation: "footnote", relation: "supports" };
+}
+
+export interface ParseCiteBulletOptions {
+  /** `[[파일명]]` 같은 짧은 출처 표기를 `vault://...` 등 정본 경로로 해석하는 선택 리졸버. */
+  readonly resolveSourcePath?: (rawTarget: string) => string | undefined;
+}
+
+/**
+ * 일반 편집 가능한 하위 불릿(`<<cite:...>> ...`)을 1개 이상의 `EvidenceLocator` 로 파싱한다.
+ * `<<cite:...>>` 로 시작하지 않으면 `null` 을 반환해 일반 본문 불릿으로 유지한다.
+ */
+export function parseCiteBullet(
+  rawText: string,
+  options: ParseCiteBulletOptions = {}
+): EvidenceLocator[] | null {
+  const trimmed = rawText.trim();
+  const parsedRes = parseResourceTag(trimmed, options);
+  if (parsedRes) {
+    const locKind: EvidenceKind = parsedRes.target.toLowerCase().endsWith(".csv")
+      ? "backdata"
+      : "resource";
+    return [
+      {
+        kind: locKind,
+        refId: `${parsedRes.target}${parsedRes.page ? `#p${parsedRes.page}` : ""}${parsedRes.lines ? `#L${parsedRes.lines[0]}-${parsedRes.lines[1]}` : ""}${parsedRes.nodeId ? `#node:${parsedRes.nodeId}` : ""}${parsedRes.slotId ? `#slot:${parsedRes.slotId}` : ""}${parsedRes.blockId ? `#block:${parsedRes.blockId}` : ""}`,
+        label: parsedRes.label,
+        sourcePath: parsedRes.target,
+        ...(parsedRes.isWebUrl ? { url: parsedRes.target } : {}),
+        ...(parsedRes.page ? { page: parsedRes.page } : {}),
+        ...(parsedRes.lines ? { lines: [parsedRes.lines[0], parsedRes.lines[1]] as [number, number] } : {}),
+        ...(parsedRes.bbox ? { bbox: [parsedRes.bbox[0], parsedRes.bbox[1], parsedRes.bbox[2], parsedRes.bbox[3]] as [number, number, number, number] } : {}),
+        ...(parsedRes.nodeId ? { nodeId: parsedRes.nodeId } : {}),
+        ...(parsedRes.slotId ? { slotId: parsedRes.slotId } : {}),
+        ...(parsedRes.blockId ? { blockId: parsedRes.blockId } : {}),
+        ...(parsedRes.quote ? { excerpt: parsedRes.quote } : {}),
+        relation: parsedRes.quote ? "quotes" : "supports",
+        presentation: parsedRes.quote ? "quote-embed" : "footnote",
+      },
+    ];
+  }
+  const match = CITE_DIRECTIVE_RE.exec(trimmed);
+  if (!match) return null;
+
+  const headerInner = (match[1] ?? "footnote").trim();
+  const body = (match[2] ?? "").trim();
+
+  // 헤더 첫 단어 = 표현 종류 (`footnote`, `rationale`, `sidenote`, `quote`, `matrix`, `bound`)
+  const firstSpace = headerInner.search(/\s/);
+  const kindToken = firstSpace >= 0 ? headerInner.slice(0, firstSpace) : headerInner;
+  const headerRest = firstSpace >= 0 ? headerInner.slice(firstSpace + 1).trim() : "";
+
+  const { presentation, relation } = mapCiteKind(kindToken || "footnote");
+  const reqMatch = REQ_TAG_RE.exec(headerRest);
+  const requirementId = reqMatch ? reqMatch[1] : undefined;
+  const boundMatch = BOUND_HEADER_RE.exec(headerRest);
+  const boundValue = boundMatch ? boundMatch[1].trim() : undefined;
+  const boundFormula = boundMatch && boundMatch[2] ? boundMatch[2].trim() : undefined;
+
+  const segments = body
+    .split("|")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  interface SourceSpec {
+    rawTarget: string;
+    label: string;
+    page?: number;
+    lines?: [number, number];
+  }
+
+  const sources: SourceSpec[] = [];
+  const textNotes: string[] = [];
+
+  for (const seg of segments) {
+    WIKILINK_RE.lastIndex = 0;
+    const wikiMatches = [...seg.matchAll(WIKILINK_RE)];
+    if (wikiMatches.length > 0) {
+      const pageM = PAGE_TAG_RE.exec(seg);
+      const lineM = LINE_TAG_RE.exec(seg);
+      const page = pageM ? Number.parseInt(pageM[1], 10) : undefined;
+      const lines: [number, number] | undefined = lineM
+        ? [
+            Number.parseInt(lineM[1], 10),
+            Number.parseInt(lineM[2] ?? lineM[1], 10),
+          ]
+        : undefined;
+      for (const wm of wikiMatches) {
+        const inner = (wm[1] ?? "").trim();
+        const pipeIdx = inner.indexOf("|");
+        const target = pipeIdx >= 0 ? inner.slice(0, pipeIdx).trim() : inner;
+        const label = pipeIdx >= 0 ? inner.slice(pipeIdx + 1).trim() : target.split("/").pop() || target;
+        if (target) {
+          sources.push({ rawTarget: target, label, page, lines });
+        }
+      }
+      // 같은 세그먼트 안에 링크/태그 외에 남은 부연 설명이 있으면 노트에도 보존
+      const leftover = seg
+        .replace(WIKILINK_RE, "")
+        .replace(PAGE_TAG_RE, "")
+        .replace(LINE_TAG_RE, "")
+        .trim();
+      if (leftover) textNotes.push(leftover);
+    } else if (/^vault:\/\//i.test(seg)) {
+      const urlToken = seg.split(/\s+/)[0];
+      const pageM = PAGE_TAG_RE.exec(seg);
+      const lineM = LINE_TAG_RE.exec(seg);
+      sources.push({
+        rawTarget: urlToken,
+        label: urlToken.replace(/^vault:\/\//i, "").split("/").pop() || urlToken,
+        page: pageM ? Number.parseInt(pageM[1], 10) : undefined,
+        lines: lineM
+          ? [Number.parseInt(lineM[1], 10), Number.parseInt(lineM[2] ?? lineM[1], 10)]
+          : undefined,
+      });
+    } else {
+      textNotes.push(seg);
+    }
+  }
+
+  const noteText = textNotes.join(" · ").trim() || undefined;
+  const rationale =
+    presentation === "inline-rationale" || presentation === "bound-value"
+      ? noteText
+      : undefined;
+  const excerpt =
+    presentation === "inline-rationale"
+      ? undefined
+      : noteText;
+
+  if (sources.length === 0) {
+    // 출처 링크 없이 산출 근거/메모만 먼저 적은 경우에도 편집 중 깨지지 않게 단일 로케이터로 유지
+    return [
+      {
+        kind: "backdata",
+        refId: `cite-note:${(noteText ?? headerInner).slice(0, 32)}`,
+        label: noteText ?? headerInner,
+        relation,
+        presentation,
+        ...(rationale ? { rationale } : {}),
+        ...(excerpt ? { excerpt } : {}),
+        ...(boundValue ? { boundValue } : {}),
+        ...(boundFormula ? { boundFormula } : {}),
+        ...(requirementId ? { requirementId } : {}),
+      },
+    ];
+  }
+
+  return sources.map((src, idx) => {
+    const resolved = options.resolveSourcePath?.(src.rawTarget);
+    const sourcePath = resolved ?? src.rawTarget;
+    const locKind: EvidenceKind = src.rawTarget.toLowerCase().endsWith(".csv") ? "backdata" : "resource";
+    return {
+      kind: locKind,
+      refId: `${src.rawTarget}${src.page ? `#p${src.page}` : ""}${src.lines ? `#L${src.lines[0]}-${src.lines[1]}` : ""}:${idx}`,
+      label: src.label,
+      sourcePath,
+      ...(src.page ? { page: src.page } : {}),
+      ...(src.lines ? { lines: src.lines } : {}),
+      relation,
+      presentation,
+      ...(rationale ? { rationale } : {}),
+      ...(excerpt ? { excerpt } : {}),
+      ...(boundValue ? { boundValue } : {}),
+      ...(boundFormula ? { boundFormula } : {}),
+      ...(requirementId ? { requirementId } : {}),
+    };
+  });
+}
+
+export interface OutlineCiteTreeNode {
+  readonly id: string;
+  readonly text: string;
+  readonly children?: readonly OutlineCiteTreeNode[];
+}
+
+/**
+ * 아웃라인 트리에서 `<<cite:...>>` 하위 불릿을 모두 찾아 부모 불릿 ID 기준 `nodeEvidence` 맵으로 추출하고,
+ * 컴파일용 본문 트리에서는 해당 근거 불릿을 제거한 `strippedRoots` 를 반환한다.
+ */
+export function extractInlineCiteBullets<T extends OutlineCiteTreeNode>(
+  roots: readonly T[],
+  options: ParseCiteBulletOptions = {}
+): {
+  readonly strippedRoots: T[];
+  readonly nodeEvidence: Record<string, EvidenceLocator[]>;
+} {
+  const nodeEvidence: Record<string, EvidenceLocator[]> = {};
+
+  const walk = (nodes: readonly T[]): T[] => {
+    const out: T[] = [];
+    for (const node of nodes) {
+      // 최상위(루트) 자체에 `<<cite:...>>` 가 놓이면 본문에서 제외하고 자기 id 에 귀속
+      if (parseCiteBullet(node.text, options)) {
+        const locs = parseCiteBullet(node.text, options)!;
+        nodeEvidence[node.id] = [...(nodeEvidence[node.id] ?? []), ...locs];
+        continue;
+      }
+      const rawChildren = (node.children ?? []) as readonly T[];
+      const keptChildren: T[] = [];
+      for (const child of rawChildren) {
+        const parsed = parseCiteBullet(child.text, options);
+        if (parsed) {
+          nodeEvidence[node.id] = [...(nodeEvidence[node.id] ?? []), ...parsed];
+        } else {
+          keptChildren.push(child);
+        }
+      }
+      const nextChildren = keptChildren.length > 0 ? walk(keptChildren) : [];
+      out.push({
+        ...node,
+        children: nextChildren,
+      });
+    }
+    return out;
+  };
+
+  return { strippedRoots: walk(roots), nodeEvidence };
 }
 
 /** 근거 하나의 정체 — 같은 자료를 두 번 붙이지 않게 비교할 때 쓴다. */

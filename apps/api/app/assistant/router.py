@@ -28,8 +28,8 @@ ServiceDep = Annotated[AssistantService, Depends(Provide["assistant_service"])]
 
 @router.get("/engines")
 @inject
-def get_engines(service: ServiceDep) -> dict[str, Any]:
-    return service.engines_status()
+def get_engines(service: ServiceDep, refresh: bool = False) -> dict[str, Any]:
+    return service.engines_status(refresh=refresh)
 
 
 @router.post("/warmup")
@@ -42,7 +42,14 @@ def warmup(service: ServiceDep) -> dict[str, Any]:
 @inject
 def create_session(service: ServiceDep, payload: CreateSessionRequest | None = None) -> CreateSessionResponse:
     req = payload or CreateSessionRequest()
-    return CreateSessionResponse(**service.create_session(req.provider, req.model))
+    return CreateSessionResponse(**service.create_session(req.provider, req.model, retain=req.retain, label=req.label))
+
+
+@router.get("/sessions")
+@inject
+def list_sessions(service: ServiceDep) -> dict[str, Any]:
+    """살아 있는 대화 세션 — 새로고침 뒤 대시보드가 실행 · 대기 상태를 맞춰 본다."""
+    return {"sessions": service.list_sessions()}
 
 
 @router.delete("/sessions/{session_id}", status_code=204)

@@ -1,0 +1,13 @@
+{
+  "catalogId": "cat-1a20bbb6362-b4e5f688",
+  "title": "DocStruct 카탈로그 양식",
+  "sourceOrigin": "docstruct-engine",
+  "sourceId": "cat-1a20bbb6362-b4e5f688",
+  "category": "표준서식",
+  "tags": [
+    "PDF자동추출",
+    "DocIR",
+    "OCR지원"
+  ],
+  "description": "docstruct-engine 파이프라인으로 추출된 양식 (표 1개 · 슬롯 8개)"
+}

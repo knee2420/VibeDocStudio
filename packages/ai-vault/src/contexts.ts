@@ -67,6 +67,19 @@ export interface V2AiEnv {
   readonly apiBaseUrl?: string;
   /** 로그 기록기. */
   readonly pushLog: (level: "info" | "ok" | "warn", message: string) => void;
+  /**
+   * 기준점 세션의 env 면 그 세션 키 (메인은 없음). 범위(`turn`) · 변경안 꼬리표가 이 값을 따른다.
+   * 기준점 세션 env 는 화면(활성 탭 · 현재 선택)이 아니라 기준점을 본다.
+   */
+  readonly sessionKey?: string;
+  /** 캔버스 "지금 선택" 대신 쓸 선택 (기준점 세션: 기준점 칸 · 블록). 없으면 화면 선택 */
+  selectionFor?(path: string): { readonly slotIds: readonly string[]; readonly blockIds: readonly string[] } | null;
+}
+
+/** 이 env 의 이번 메시지 범위 (메인 = `turn`, 기준점 세션 = `turnBySession[key]`) */
+export function envTurn(env: Pick<V2AiEnv, "store" | "sessionKey">): (ResolvedScope & { readonly path: string }) | null {
+  const s = env.store.getState();
+  return env.sessionKey ? s.turnBySession[env.sessionKey] ?? null : s.turn;
 }
 
 // --- 문서 읽기 ----------------------------------------------------------------------------
@@ -425,6 +438,16 @@ export function folderRef(env: Pick<V2AiEnv, "vault">, folderPath: string): Cont
 // --- 범위 ------------------------------------------------------------------------------------
 
 export function liveTarget(env: V2AiEnv, doc: VDocDocument, path: string): ScopeTarget | null {
+  const pinned = env.selectionFor?.(path);
+  if (pinned) {
+    // 기준점 세션: 화면 선택이 아니라 기준점 칸 · 블록
+    const slotIds = pinned.slotIds.filter((id) => doc.slots[id]);
+    const unitIds = [...slotIds, ...pinned.blockIds.filter((id) => findBlock(doc, id))];
+    if (unitIds.length > 1) return targetFromSlots(doc, slotIds, unitIds);
+    if (slotIds[0]) return targetFromSlots(doc, [slotIds[0]]);
+    if (unitIds[0]) return targetFromBlock(doc, unitIds[0]);
+    return null;
+  }
   const ui = env.vdocUiBridge.getState().getForPath(path);
   if (ui.selection.items.length > 1) {
     const { slotIds, unitIds } = canvasSelectionUnits(env, doc, path);
@@ -519,9 +542,10 @@ const joinAbs = (root: string, rel: string) => (rel ? `${root.replace(/[\\/]+$/,
 export function workbenchPayload(env: V2AiEnv): Record<string, unknown> | null {
   const path = env.activeDocPath();
   const doc = readVDoc(env, path);
-  const s = env.store.getState();
-  const scope = doc && path ? (s.turn && s.turn.path === path ? s.turn : currentScope(env, doc, path)) : null;
+  const turn = envTurn(env);
+  const scope = doc && path ? (turn && turn.path === path ? turn : currentScope(env, doc, path)) : null;
   const ui = path ? env.vdocUiBridge.getState().getForPath(path) : null;
+  const pinnedSelection = path && env.selectionFor ? env.selectionFor(path) : null;
   const references = activeReferences(env)
     .filter((r) => r.libraryRefId)
     .map((r) => ({ refId: r.libraryRefId, title: r.title, pinIds: null, layers: Object.fromEntries(r.layersOff.map((id) => [id, false])) }));
@@ -572,11 +596,16 @@ export function workbenchPayload(env: V2AiEnv): Record<string, unknown> | null {
       }
       : { mode: "off" },
     // 고른 칸 (여러 개 가능) · 고른 블록 — 서버 작업대 지도가 "지금 선택"으로 보여 준다
-    selection:
-      ui && ui.selection.items.length > 1
+    selection: pinnedSelection
+      ? [...pinnedSelection.slotIds]
+      : ui && ui.selection.items.length > 1
         ? ui.selection.items.filter((i) => i.kind === "slot").map((i) => i.id)
         : [ui?.selectedSlotId].filter((x): x is string => Boolean(x)),
-    selectionBlocks: ui ? ui.selection.items.filter((i) => i.kind === "block").map((i) => i.id) : [],
+    selectionBlocks: pinnedSelection
+      ? [...pinnedSelection.blockIds]
+      : ui
+        ? ui.selection.items.filter((i) => i.kind === "block").map((i) => i.id)
+        : [],
     references,
   };
 }

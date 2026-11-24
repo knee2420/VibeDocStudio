@@ -46,6 +46,10 @@ class ToolSpecPayload(BaseModel):
 class CreateSessionRequest(BaseModel):
     provider: Optional[str] = None
     model: Optional[str] = None
+    #: 기준점 세션 — 유휴 정리(30분)에서 닫지 않는다 (엔진 프로세스만 내린다). 사용자가 완료할 때 닫는다.
+    retain: bool = False
+    #: 대시보드 · 로그용 이름 (지시 앞부분)
+    label: Optional[str] = None
 
 
 class CreateSessionResponse(BaseModel):

@@ -41,6 +41,7 @@ class ModelOption:
     provider: str
     description: str
     recommended: bool = False
+    display_name: str = ""
 
 
 @dataclass(frozen=True)

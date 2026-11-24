@@ -64,7 +64,7 @@ import { createVDocUiBridgeStore, type VDocUiBridgeStore } from "@vibe/canvas-st
 export interface IdeLogEntry {
   readonly id: string;
   readonly timestamp: string;
-  readonly source: "vault" | "layout" | "explorer" | "composer" | "ref";
+  readonly source: "vault" | "layout" | "explorer" | "composer" | "ref" | "agent";
   readonly level: "info" | "ok" | "warn";
   readonly message: string;
 }
@@ -400,7 +400,10 @@ export function createIdeWorkbenchRuntime(
       // (or creates a new Chrome Tab Group if neither had one), preserving all other tabs in the group pool.
       tabGroupId = layout.getState().mergeTabsIntoGroup(targetTabId, sourceTabId);
     }
-    if (!tabGroupId) return;
+    if (!tabGroupId) {
+      openVaultFile(node.path, "split-right", viewType);
+      return;
+    }
 
     // 4. Replace ONLY the opposite Pair View slot inside the group (never closes existing group member tabs)
     const latest = layout.getState();

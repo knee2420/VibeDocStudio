@@ -246,7 +246,7 @@ class DocStructScaffoldAgent:
                     model = norm
             timeout = min(self._policy.agent_cli_timeout_seconds or 180, self._timeout_seconds)
             return resolved, model, timeout
-        default_model = "gemini-3.8-flash-low" if (round_num <= 1 or fidelity_mode == "balanced") else "gemini-3.8-flash-medium"
+        default_model = "gemini-4-hydrogen-low" if (round_num <= 1 or fidelity_mode == "balanced") else "gemini-4-hydrogen-medium"
         return self._executable or shutil.which("agy"), self._model or default_model, self._timeout_seconds
 
     def _apply_task_patch(

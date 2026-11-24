@@ -186,7 +186,16 @@ export const AssetTabEditor: React.FC<{
           {sourceTargetPath && vault.exists(sourceTargetPath) && (
             <button
               type="button"
-              onClick={() => host.openLink(sourceTargetPath, "split-right")}
+              onClick={() => {
+                if (host.env.openInPairTabGroup) {
+                  host.env.openInPairTabGroup(sourceTargetPath, {
+                    sourceTabId: host.tabId,
+                    sourcePath: host.path,
+                  });
+                } else {
+                  host.openLink(sourceTargetPath, "split-right");
+                }
+              }}
               className="flex items-center gap-1 rounded border border-[var(--obs-border,#3a3a3a)] bg-black/25 px-2 py-1 text-[10.5px] text-[var(--obs-text-muted,#b8b8b8)] hover:border-emerald-400/50 hover:text-white"
             >
               <ExternalLink className="h-3 w-3" />

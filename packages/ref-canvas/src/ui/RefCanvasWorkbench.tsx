@@ -29,9 +29,19 @@ import { computeWebTileCoverage } from "../core/coverage";
 import type { RefBBox, RefDocument, RefFrame, RefPin } from "../core/types";
 import { PdfPageSurface } from "./PdfPageSurface";
 
+export interface RefActiveHighlight {
+  readonly id?: string;
+  readonly frameIndex?: number;
+  readonly blockId?: string;
+  readonly bbox?: RefBBox;
+  readonly quoteText?: string;
+}
+
 export interface RefCanvasWorkbenchProps {
   readonly doc: RefDocument;
   readonly readOnly?: boolean;
+  /** 외부 `<<resource:...>>` 점프로 전달된 블록·영역·인용문 하이라이트 */
+  readonly activeHighlight?: RefActiveHighlight | null;
   /** Resolves `vault://...` URI to a fetchable binary URL when the `.ref` points to an in-vault asset. */
   readonly resolveAssetUrl?: (uri: string) => string | undefined;
   readonly onChangeDoc: (next: RefDocument) => void;
@@ -117,6 +127,7 @@ const UncapturedBand: React.FC<{ readonly heightPx: number; readonly sourcePx: n
 export const RefCanvasWorkbench: React.FC<RefCanvasWorkbenchProps> = ({
   doc,
   readOnly = false,
+  activeHighlight = null,
   resolveAssetUrl,
   onChangeDoc,
   onImportUrl,
@@ -142,7 +153,62 @@ export const RefCanvasWorkbench: React.FC<RefCanvasWorkbenchProps> = ({
   } | null>(null);
 
   const frameElMapRef = useRef<Map<number, HTMLDivElement>>(new Map());
+  const blockElMapRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const appendFileRef = useRef<HTMLInputElement>(null);
+
+  const matchedBlock = useMemo(() => {
+    if (!activeHighlight) return null;
+    if (activeHighlight.blockId) {
+      const byId = doc.blocks.find((b) => b.id === activeHighlight.blockId);
+      if (byId) return byId;
+    }
+    const needle = activeHighlight.quoteText?.trim().toLowerCase();
+    if (needle) {
+      const exact = doc.blocks.find((b) => b.text.toLowerCase().includes(needle));
+      if (exact) return exact;
+      const token = needle.split(/\s+/).find((t) => t.length >= 2);
+      if (token) {
+        return doc.blocks.find((b) => b.text.toLowerCase().includes(token)) ?? null;
+      }
+    }
+    return null;
+  }, [activeHighlight, doc.blocks]);
+
+  useEffect(() => {
+    if (!activeHighlight) return;
+    const timer = window.setTimeout(() => {
+      if (matchedBlock) {
+        const blkEl = blockElMapRef.current.get(matchedBlock.id);
+        if (blkEl) {
+          blkEl.scrollIntoView({ block: "center", behavior: "smooth" });
+          return;
+        }
+      }
+      const targetFrame = activeHighlight.frameIndex ?? matchedBlock?.frameIndex ?? 1;
+      const frameEl = frameElMapRef.current.get(targetFrame);
+      frameEl?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [activeHighlight, matchedBlock]);
+
+  const renderHighlightedText = useCallback(
+    (text: string): React.ReactNode => {
+      const needle = activeHighlight?.quoteText?.trim();
+      if (!needle) return text;
+      const idx = text.toLowerCase().indexOf(needle.toLowerCase());
+      if (idx < 0) return text;
+      return (
+        <>
+          {text.slice(0, idx)}
+          <mark className="rounded bg-amber-300/90 px-1 py-0.5 font-semibold text-slate-950 shadow-sm">
+            {text.slice(idx, idx + needle.length)}
+          </mark>
+          {text.slice(idx + needle.length)}
+        </>
+      );
+    },
+    [activeHighlight?.quoteText]
+  );
 
   // Empty-state quick URL import
   const [importUrlInput, setImportUrlInput] = useState("");
@@ -759,33 +825,51 @@ export const RefCanvasWorkbench: React.FC<RefCanvasWorkbenchProps> = ({
                 <h1 className="border-b border-slate-200 pb-3 text-[20px] font-bold text-slate-900">
                   {doc.title}
                 </h1>
-                {doc.article?.html ? (
+                {doc.blocks.length > 0 ? (
+                  doc.blocks.map((b) => {
+                    const isHitBlock = matchedBlock?.id === b.id;
+                    return (
+                      <div
+                        key={b.id}
+                        ref={(el) => {
+                          if (el) blockElMapRef.current.set(b.id, el);
+                          else blockElMapRef.current.delete(b.id);
+                        }}
+                        data-ref-block-id={b.id}
+                        data-highlighted={isHitBlock ? "true" : undefined}
+                        className={
+                          isHitBlock
+                            ? "rounded-md border-l-4 border-amber-500 bg-amber-100/75 px-3 py-2 ring-2 ring-amber-400/70 transition-all"
+                            : undefined
+                        }
+                      >
+                        {b.kind === "heading" ? (
+                          <h2 className="mt-4 text-[16px] font-bold text-slate-900">
+                            {isHitBlock ? renderHighlightedText(b.text) : b.text}
+                          </h2>
+                        ) : b.kind === "divider" ? (
+                          <hr className="my-3 border-slate-200" />
+                        ) : b.kind === "media" && b.media?.src?.[0] ? (
+                          <img
+                            src={b.media.src[0]}
+                            alt={b.text}
+                            referrerPolicy="no-referrer"
+                            className="mx-auto my-3 max-w-full rounded"
+                          />
+                        ) : b.text ? (
+                          <p className="whitespace-pre-line text-[13.5px] leading-7 text-slate-700">
+                            {isHitBlock ? renderHighlightedText(b.text) : b.text}
+                          </p>
+                        ) : null}
+                      </div>
+                    );
+                  })
+                ) : doc.article?.html ? (
                   <div
                     className="prose prose-sm max-w-none space-y-3 text-[13.5px] leading-7 text-slate-700 [&_h1]:text-lg [&_h1]:font-bold [&_h2]:mt-5 [&_h2]:text-base [&_h2]:font-bold [&_img]:mx-auto [&_img]:my-3 [&_img]:max-w-full [&_img]:rounded"
                     dangerouslySetInnerHTML={{ __html: doc.article.html }}
                   />
-                ) : (
-                  doc.blocks.map((b) => (
-                    <div key={b.id}>
-                      {b.kind === "heading" ? (
-                        <h2 className="mt-4 text-[16px] font-bold text-slate-900">{b.text}</h2>
-                      ) : b.kind === "divider" ? (
-                        <hr className="my-3 border-slate-200" />
-                      ) : b.kind === "media" && b.media?.src?.[0] ? (
-                        <img
-                          src={b.media.src[0]}
-                          alt={b.text}
-                          referrerPolicy="no-referrer"
-                          className="mx-auto my-3 max-w-full rounded"
-                        />
-                      ) : b.text ? (
-                        <p className="whitespace-pre-line text-[13.5px] leading-7 text-slate-700">
-                          {b.text}
-                        </p>
-                      ) : null}
-                    </div>
-                  ))
-                )}
+                ) : null}
               </div>
 
               {/* User-selected range boxes */}

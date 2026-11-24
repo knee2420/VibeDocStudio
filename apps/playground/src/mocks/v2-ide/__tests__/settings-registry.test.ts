@@ -86,6 +86,8 @@ describe("v2-ide — Obsidian Settings Platform & Code-as-Doc (.vsyntax / .vstyl
     assert.ok(colSplit);
 
     assert.equal(getDefaultRuleSymbol("table", "col-split"), "|");
+    assert.equal(getDefaultRuleSymbol("resource", "cite-rationale"), "<<cite:rationale>>");
+    assert.equal(getDefaultRuleSymbol("resource", "cite-matrix"), "<<cite:matrix>>");
     assert.equal(isSyntaxRuleModified("table", colSplit), false);
     assert.equal(isSyntaxRuleModified("table", { ...colSplit, symbol: "::" }), true);
     assert.equal(

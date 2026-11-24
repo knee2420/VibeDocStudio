@@ -2045,12 +2045,453 @@ if (wsDocsSection && wsRawSurveyNode) {
   wsDocsSection.children.splice(1, 0, webRoot);
 }
 
+const AGUI_PROTOCOL_DEMO_SPEC: PlaygroundDocSpec = {
+  id: "agui-protocol-demo",
+  label: "AG-UI · A2UI 인터랙션 목업",
+  badge: "AG-UI+A2UI",
+  description:
+    "하나의 기획 문서를 A4 한글서식 · 블로그 · WebForm · RFP 4종 포맷으로 구성해 A2UI 에셋 후보 추천과 AG-UI 위지윅 수정 제안을 직접 체험하는 목업",
+  title: "2026 차세대 사내 지식포털 구축 기획안",
+  surfaceKind: "paged",
+  density: "standard",
+  theme: "modern",
+  customForms: {},
+  nodes: [
+    {
+      id: "agui-sec-memo",
+      nodeType: "h2",
+      isFolded: true,
+      role: "section",
+      layoutChoice: "section-block",
+      text: "기획 메모 (Phase 1 전용 · 문서 연계 제외)",
+      note: "태그 없는 초안 메모는 아웃라이너에만 보관되고 아래 <<document>> 4종만 시트로 연계됩니다.",
+      children: [
+        {
+          id: "agui-memo-1",
+          role: "body",
+          layoutChoice: "text",
+          text: "핵심 목표:: 분산된 사내 문서(위키·공유폴더·메일)를 단일 AI 지식포털로 통합",
+          children: [],
+        },
+        {
+          id: "agui-memo-2",
+          role: "body",
+          layoutChoice: "text",
+          text: "체험 포인트:: 우측 AG-UI · A2UI 패널에서 ① Surface 위치 전환 ② 에셋 후보 라이브 교체 ③ 위지윅 A/B안 수정 제안 적용을 테스트",
+          children: [],
+        },
+      ],
+    },
+    {
+      id: "agui-sec-docs",
+      nodeType: "h2",
+      role: "section",
+      layoutChoice: "section-block",
+      text: "산출 문서 패키지 (4종 포맷 연계)",
+      note: "상단 '연계 문서' 드롭다운에서 HWP · Blog · WebForm · RFP를 전환하며 각 포맷별 A2UI 후보와 AG-UI 제안을 체험하세요.",
+      children: [
+        // ① HWP A4 기획·품의서 포맷
+        {
+          id: "agui-doc-hwp",
+          nodeType: "h3",
+          role: "section",
+          layoutChoice: "section-block",
+          text: "① A4 기획·품의서 (한글 서식) <<document:hwp>>",
+          note: "표지 헤더 4종 · 추진 일정/예산 표 4종 A2UI 후보 + 공문 톤/정량 수치 AG-UI 수정 제안",
+          children: [
+            {
+              id: "agui-hwp-p1",
+              role: "body",
+              layoutChoice: "text",
+              text: "도입 기획 품의 및 추진 일정 <<page>>",
+              children: [
+                {
+                  id: "agui-hwp-p1-title",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "2026 차세대 사내 지식포털 만들기 기획안 <<title>>",
+                  children: [],
+                },
+                {
+                  id: "agui-hwp-p1-sec1",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "1. 추진 배경 및 기대 효과 <<section>>",
+                  children: [
+                    {
+                      id: "agui-hwp-p1-sec1-list",
+                      role: "body",
+                      layoutChoice: "text",
+                      text: "<<list>>",
+                      children: [
+                        {
+                          id: "agui-hwp-p1-sec1-l1",
+                          role: "body",
+                          layoutChoice: "text",
+                          text: "사내 문서가 여러 곳에 흩어져 있어 검색이 불편하고 중복 작성이 많음",
+                          children: [],
+                        },
+                        {
+                          id: "agui-hwp-p1-sec1-l2",
+                          role: "body",
+                          layoutChoice: "text",
+                          text: "부서별 서식 파편화를 해소하고 출처 기반 AI 요약 검색 환경을 구축함",
+                          children: [],
+                        },
+                        {
+                          id: "agui-hwp-p1-sec1-l3",
+                          role: "body",
+                          layoutChoice: "text",
+                          text: "SSO 및 역할 기반 접근제어(RBAC)를 연동해 보안 감사 기준을 충족함",
+                          children: [],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  id: "agui-hwp-p1-sec2",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "2. 단계별 추진 일정 및 예산 개요 <<section>>",
+                  children: [
+                    {
+                      id: "agui-hwp-p1-sec2-tbl",
+                      role: "body",
+                      layoutChoice: "text",
+                      text: "<<table>>",
+                      children: [
+                        {
+                          id: "agui-hwp-tbl-g1",
+                          role: "body",
+                          layoutChoice: "text",
+                          text: "1단계 설계",
+                          children: [
+                            {
+                              id: "agui-hwp-tbl-r1",
+                              role: "body",
+                              layoutChoice: "text",
+                              text: "현업 요구사항 분석 및 정보구조 설계 | 플랫폼TF | 4주 | 1,200만원",
+                              children: [],
+                            },
+                            {
+                              id: "agui-hwp-tbl-r2",
+                              role: "body",
+                              layoutChoice: "text",
+                              text: "표준 문서 스키마 및 에셋 카탈로그 정의 | 디자인·개발 | 3주 | 800만원",
+                              children: [],
+                            },
+                          ],
+                        },
+                        {
+                          id: "agui-hwp-tbl-g2",
+                          role: "body",
+                          layoutChoice: "text",
+                          text: "2단계 구축",
+                          children: [
+                            {
+                              id: "agui-hwp-tbl-r3",
+                              role: "body",
+                              layoutChoice: "text",
+                              text: "통합 검색 엔진 및 AI 요약 파이프라인 연동 | AI개발팀 | 6주 | 2,800만원",
+                              children: [],
+                            },
+                            {
+                              id: "agui-hwp-tbl-r4",
+                              role: "body",
+                              layoutChoice: "text",
+                              text: "SSO·RBAC 권한 연동 및 파일럿 오픈 | 보안·운영팀 | 3주 | 1,200만원",
+                              children: [],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+
+        // ② Blog 전사 공지 아티클 포맷 (연속 스크롤 720px)
+        {
+          id: "agui-doc-blog",
+          nodeType: "h3",
+          isFolded: true,
+          role: "section",
+          layoutChoice: "section-block",
+          text: "② 전사 공지 블로그 아티클 <<document:blog>>",
+          note: "블로그 스크롤 지면 · 3단 카드/비교표/콜아웃 A2UI 전환 + 도입부 훅 AG-UI 수정 제안",
+          children: [
+            {
+              id: "agui-blog-hero",
+              role: "cover",
+              layoutChoice: "hero",
+              text: "차세대 사내 지식포털, 12월 새롭게 오픈합니다",
+              note: "플랫폼혁신팀 공지 · 읽는 시간 2분",
+              children: [],
+            },
+            {
+              id: "agui-blog-summary",
+              role: "summary",
+              layoutChoice: "callout-box",
+              text: "한 줄 안내",
+              children: [
+                {
+                  id: "agui-blog-summary-1",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "새로운 지식포털이 다음 달 오픈합니다. 앞으로 문서를 여기서 찾으시면 됩니다.",
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: "agui-blog-changes",
+              role: "group",
+              layoutChoice: "columns-grid",
+              text: "달라지는 핵심 변화 3가지",
+              note: "영역 | 주요 개선 내용",
+              children: [
+                {
+                  id: "agui-blog-c1",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "검색 개선 | 키워드랑 자연어 검색이 둘 다 잘 됩니다.",
+                  children: [],
+                },
+                {
+                  id: "agui-blog-c2",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "표준 에셋 허브 | 품의서·보고서·설문 양식을 원클릭으로 생성하고 스타일만 교체합니다.",
+                  children: [],
+                },
+                {
+                  id: "agui-blog-c3",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "AI 인라인 제안 | 문서를 직접 수정하지 않고 A/B안 수정 제안을 비교 후 부분 수락합니다.",
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: "agui-blog-roadmap",
+              role: "group",
+              layoutChoice: "structured-table",
+              text: "오픈 및 전환 일정",
+              note: "일정 | 대상 | 안내 사항",
+              children: [
+                {
+                  id: "agui-blog-r1",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "11월 3주 | 파일럿 3개 팀 | 기존 위키 주요 문서 200건 우선 이관 및 피드백 수집",
+                  children: [],
+                },
+                {
+                  id: "agui-blog-r2",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "12월 1일 | 전사 구성원 | 차세대 지식포털 정식 오픈 및 온보딩 라이브 세션 진행",
+                  children: [],
+                },
+                {
+                  id: "agui-blog-r3",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "12월 말 | 구 저장소 | 기존 공유폴더 읽기 전용 전환 및 검색 리다이렉트 적용",
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: "agui-blog-qna",
+              role: "section",
+              layoutChoice: "section-block",
+              text: "자주 묻는 질문",
+              children: [
+                {
+                  id: "agui-blog-q1",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "기존 문서는 별도 작업 없이 부서별 이관 담당자와 자동 마이그레이션 도구로 안전하게 이전됩니다.",
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+
+        // ③ WebForm 현업 사전 설문 포맷 (연속 스크롤 760px)
+        {
+          id: "agui-doc-webform",
+          nodeType: "h3",
+          isFolded: true,
+          role: "section",
+          layoutChoice: "section-block",
+          text: "③ 현업 요구사항 사전 설문 <<document:WebForm>>",
+          note: "Google Card / Pill Chips / Tally / Step Accent 4종 A2UI 테마 전환 + 응답률 개선 제목 제안",
+          children: [
+            {
+              id: "agui-wf-sec1",
+              role: "body",
+              layoutChoice: "text",
+              text: "응답자 정보 및 현재 문서 사용 현황 <<section>>",
+              children: [
+                {
+                  id: "agui-wf-sec1-tbl",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "<<table>>",
+                  children: [
+                    {
+                      id: "agui-wf-q1",
+                      role: "body",
+                      layoutChoice: "text",
+                      text: "소속 본부 | 직무 구분",
+                      children: [],
+                    },
+                    {
+                      id: "agui-wf-q2",
+                      role: "body",
+                      layoutChoice: "text",
+                      text: "주간 문서 검색 소요 시간: 1시간 미만 / 1~3시간 / 3~5시간 / 5시간 이상",
+                      children: [],
+                    },
+                    {
+                      id: "agui-wf-q3",
+                      role: "body",
+                      layoutChoice: "text",
+                      text: "가장 자주 작성하는 문서 유형(복수): 기획·품의서 / 주간·월간 보고서 / 기술 명세서 / 회의록·설문",
+                      children: [],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              id: "agui-wf-sec2",
+              role: "body",
+              layoutChoice: "text",
+              text: "우선 도입 희망 기능 및 온보딩 선호 <<section>>",
+              children: [
+                {
+                  id: "agui-wf-sec2-tbl",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "<<table>>",
+                  children: [
+                    {
+                      id: "agui-wf-q4",
+                      role: "body",
+                      layoutChoice: "text",
+                      text: "가장 기대되는 AI 기능: 자연어 통합 검색 / 에셋 후보 자동 추천 / 위지윅 인라인 수정 제안 / 다중 문서 요약",
+                      children: [],
+                    },
+                    {
+                      id: "agui-wf-q5",
+                      role: "body",
+                      layoutChoice: "text",
+                      text: "희망 온보딩 방식: 15분 퀵 가이드 영상 / 부서별 찾아가는 실습 / 온라인 Q&A 라운지",
+                      children: [],
+                    },
+                    {
+                      id: "agui-wf-q6",
+                      role: "body",
+                      layoutChoice: "text",
+                      text: "추가 건의사항 및 필수 연동 시스템",
+                      children: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+
+        // ④ RFP 요구사항 명세서 포맷 (A4 공식 명세표)
+        {
+          id: "agui-doc-rfp",
+          nodeType: "h3",
+          isFolded: true,
+          role: "section",
+          layoutChoice: "section-block",
+          text: "④ RFP 요구사항 명세서 <<document:rfp>>",
+          note: "상세 명세표 ↔ 일람 요약표 ↔ 3단 브리핑 카드 A2UI 전환 + SLA 검수 지표 AG-UI 제안",
+          children: [
+            {
+              id: "agui-rfp-cover",
+              role: "cover",
+              layoutChoice: "cover-banner",
+              text: "차세대 사내 지식포털 구축 핵심 요구사항 명세서",
+              note: "RFP 발주 검토본 · 플랫폼혁신팀",
+              children: [],
+            },
+            {
+              id: "agui-rfp-scope",
+              role: "summary",
+              layoutChoice: "callout-box",
+              text: "사업 핵심 범위",
+              children: [
+                {
+                  id: "agui-rfp-scope-1",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "사내 문서 통합 검색과 AI 요약, 권한 관리 기능을 빠르게 동작하도록 구축함",
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: "agui-rfp-reqs",
+              role: "group",
+              layoutChoice: "rfp-spec-table",
+              text: "핵심 기능 요구사항 명세",
+              note: "분류 | 고유번호 | 명칭 | 산출정보",
+              children: [
+                {
+                  id: "agui-rfp-req-1",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "검색·AI | KPR-001 | 하이브리드 통합 검색 및 출처 인용 | 검색 아키텍처 설계서",
+                  note: "키워드+벡터 하이브리드 검색, 원문 문단 하이라이트 및 출처 링크 자동 첨부",
+                  children: [],
+                },
+                {
+                  id: "agui-rfp-req-2",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "문서 편집 | KPR-002 | 에셋 후보 비교 및 인라인 수정 제안 | UI/UX 프로토콜 명세서",
+                  note: "A2UI 카탈로그 기반 에셋 미리보기 전환 및 AG-UI STATE_DELTA 인라인 Diff 승인 지원",
+                  children: [],
+                },
+                {
+                  id: "agui-rfp-req-3",
+                  role: "body",
+                  layoutChoice: "text",
+                  text: "보안·권한 | KPR-003 | SSO 연동 및 문서 단위 RBAC | 보안성 검토 결과서",
+                  note: "사내 통합인증(SSO) 연계 및 조직/부서 권한 변경 시 검색 인덱스 5분 내 동기화",
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const PRESETS: Record<PlaygroundPresetId, PlaygroundDocSpec> = {
   blank: BLANK_DOC_SPEC,
   "workshop-request": WORKSHOP_REQUEST_SPEC,
   "rfp-complex": RFP_COMPLEX_SPEC,
   "a4-report": A4_REPORT_SPEC,
   "blog-article": BLOG_ARTICLE_SPEC,
+  "agui-protocol-demo": AGUI_PROTOCOL_DEMO_SPEC,
 };
 
 export function clonePlaygroundPreset(id: PlaygroundPresetId): PlaygroundDocSpec {
@@ -2071,4 +2512,9 @@ export const PLAYGROUND_PRESET_LIST: ReadonlyArray<{
     { id: "rfp-complex", label: RFP_COMPLEX_SPEC.label, badge: RFP_COMPLEX_SPEC.badge },
     { id: "a4-report", label: A4_REPORT_SPEC.label, badge: A4_REPORT_SPEC.badge },
     { id: "blog-article", label: BLOG_ARTICLE_SPEC.label, badge: BLOG_ARTICLE_SPEC.badge },
+    {
+      id: "agui-protocol-demo",
+      label: AGUI_PROTOCOL_DEMO_SPEC.label,
+      badge: AGUI_PROTOCOL_DEMO_SPEC.badge,
+    },
   ];

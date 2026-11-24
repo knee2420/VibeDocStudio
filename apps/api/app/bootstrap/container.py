@@ -176,13 +176,7 @@ class Container(containers.DeclarativeContainer):
     credentials = providers.Singleton(OsCredentialStore)
     cancellation_registry = providers.Singleton(CancellationRegistry)
 
-    # --- 1. LLM 게이트웨이: AI 설정 화면 ---
-    get_runtime_dashboard = providers.Factory(
-        GetRuntimeDashboardUseCase,
-        policy=runtime_policy,
-        credentials=credentials,
-        model_options=providers.Object(llm_catalog.SETTINGS_OPTIONS),
-    )
+    # --- 1. LLM 게이트웨이: AI 설정 화면 (get_runtime_dashboard 는 assistant_engines 선언 직후 조립) ---
     update_runtime_policy = providers.Factory(UpdateRuntimePolicyUseCase, policy=runtime_policy)
     set_google_api_key = providers.Factory(SetGoogleApiKeyUseCase, credentials=credentials)
     delete_google_api_key = providers.Factory(DeleteGoogleApiKeyUseCase, credentials=credentials)
@@ -419,6 +413,20 @@ class Container(containers.DeclarativeContainer):
         default_thought_level=providers.Callable(lambda s: s.assistant_thought_level, settings),
         mcp_server_spec_provider=providers.Callable(lambda ws: ws.mcp_server_spec, resource_workspace),
         roots_provider=providers.Callable(lambda ws: ws.roots_for, resource_workspace),
+    )
+    get_runtime_dashboard = providers.Factory(
+        GetRuntimeDashboardUseCase,
+        policy=runtime_policy,
+        credentials=credentials,
+        model_options=providers.Object(llm_catalog.SETTINGS_OPTIONS),
+        agy_models_provider=providers.Callable(
+            lambda eng: (
+                lambda refresh=False: (
+                    eng.refresh_models() if refresh else eng.available_models(CLI_PROVIDER)
+                )
+            ),
+            assistant_engines,
+        ),
     )
     assistant_service = providers.Singleton(
         AssistantService,

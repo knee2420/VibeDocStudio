@@ -26,7 +26,10 @@ import {
   Terminal as TerminalIcon,
   Unlock,
   X,
+  ListChecks,
 } from "lucide-react";
+import { SessionDashboard } from "@vibe/ai-composer";
+import { anchorLabel } from "@vibe/ai-kernel";
 import {
   createEmptyRefDocument,
   isRefPath,
@@ -57,6 +60,7 @@ import {
 } from "@vibe/workspace-layout/core";
 
 import { createV2AiWorkspace, vaultPathContext, type V2AiWorkspace } from "@vibe/ai-vault";
+import { openResourceTagInPair } from "../model/resourceHighlightBus";
 import {
   createDefaultOutlineJson,
   createDefaultStylePackJson,
@@ -85,6 +89,7 @@ import { TabWithOutlineDrawer } from "./TabWithOutlineDrawer";
 import { VDocAssetPanel } from "./VDocAssetPanel";
 import { VDocInspectorPanel } from "./VDocInspectorPanel";
 import { V2ComposerView } from "./ai/V2ComposerView";
+import { CompletionConfirm, DirectivePromptDialog, SessionToasts, useSessionActivity } from "./ai/V2SessionOverlays";
 import { installV2PerfProbe, shouldInstallPerfProbe } from "./perfProbe";
 import { IdeSettingsModal } from "./settings";
 
@@ -146,7 +151,9 @@ const IdeTerminalDrawer = React.memo<{
                         ? "#3fb950"
                         : entry.source === "ref"
                           ? "#f59e0b"
-                          : "#d29922",
+                          : entry.source === "agent"
+                            ? "#22d3ee"
+                            : "#d29922",
               }}
             >
               [{entry.source}]
@@ -424,6 +431,10 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
 }) => {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showExplorer, setShowExplorer] = useState(true);
+  /** 왼쪽 사이드바: 탐색기 · AI 세션 대시보드 */
+  const [leftView, setLeftView] = useState<"explorer" | "sessions">("explorer");
+  /** 입력창 없는 화면(탐색기)에서 지시를 받는 창 */
+  const [directiveTarget, setDirectiveTarget] = useState<{ surface: string; label: string } | null>(null);
   const [explorerWidth, setExplorerWidth] = useState(270);
   const [showTerminal, setShowTerminal] = useState(true);
   const [terminalHeight, setTerminalHeight] = useState(145);
@@ -442,6 +453,13 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
         vdocUiBridge: runtime.vdocUiBridge,
         docs: runtime.docs,
         openVaultFile: (path, mode) => runtime.openVaultFile(path, mode ?? "current"),
+        revealResource: (rawTag, sourcePath) =>
+          openResourceTagInPair(rawTag, {
+            vault: runtime.vault,
+            sourcePath,
+            openInPair: (targetPath) =>
+              runtime.openFileInPairTabGroup(targetPath, { sourcePath }),
+          }),
         getTextSelection: () => {
           const sel = runtime.getActiveSelection();
           // 글 선택(.md · .ref) · 아웃라인 불릿 선택 → "선택한 글" 첨부 후보
@@ -449,9 +467,33 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
             ? { resourceId: sel.resourceId, text: sel.text, summary: sel.summary }
             : null;
         },
+        getEditorSelection: () => runtime.getActiveSelection(),
         pushLog: (level, message) => runtime.pushLog("composer", level, message),
+        pushAgentLog: (level, message) => runtime.pushLog("agent", level, message),
       }),
     [runtime]
+  );
+  const sessionActivity = useSessionActivity(ai);
+  const attentionCount = sessionActivity.attention;
+  const activeRuns = sessionActivity.running + sessionActivity.queued;
+  // 세션을 앞으로 가져오면(선택 옆 표시 · 알림 · 대시보드) Composer 를 보이고 AI 탭으로
+  useEffect(() => {
+    let last = ai.sessions.getTabState().foreground;
+    return ai.sessions.subscribe(() => {
+      const fg = ai.sessions.getTabState().foreground;
+      if (fg === last) return;
+      last = fg;
+      setShowComposer(true);
+      setFocusAiSeq((n) => n + 1);
+    });
+  }, [ai]);
+  /** 세션 열기 — Composer 를 보이고 그 탭으로 (미뤄 둔 화면 이동도 이때) */
+  const openSession = useCallback(
+    (key: string) => {
+      setShowComposer(true);
+      ai.openSession(key);
+    },
+    [ai]
   );
   useEffect(() => {
     // 개발 중 화면 검증 스크립트(CDP)가 대화 · 첨부 · 대기열을 직접 잰다 (studio window.__studioPerf 와 같은 자리)
@@ -760,6 +802,20 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
         },
       },
       {
+        id: "direct-ai-here",
+        label: "AI 에 지시 던지기 (뒤에서 실행)",
+        icon: <Sparkles className="h-3.5 w-3.5 text-violet-400" />,
+        targetKinds: ["file", "folder"],
+        onSelect: (path) => {
+          // 우클릭한 항목이 선택에 없으면 그것만 고른다 (선택 여러 개 위에서 누르면 그 선택 전부)
+          const ex = runtime.explorer.getState();
+          if (!ex.selectedPaths.has(path)) ex.selectSingle(path);
+          const count = runtime.explorer.getState().selectedPaths.size;
+          const name = path.split("/").pop() || path;
+          setDirectiveTarget({ surface: "explorer", label: count > 1 ? `${name} 외 ${count - 1}개` : name });
+        },
+      },
+      {
         id: "attach-folder-to-ai",
         label: "AI 입력창에 폴더 첨부 (@폴더)",
         icon: <Sparkles className="h-3.5 w-3.5 text-violet-400" />,
@@ -831,6 +887,12 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
         if (reopened) runtime.pushLog("layout", "info", "reopenClosedTab()");
         return;
       }
+      // Composer 직전 탭 (Alt+[) — Composer 가 접혀 있어도 된다 (앞 세션이 바뀌면 Composer 를 연다). 한글 입력 중에도 물리 키로
+      if (ev.altKey && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && (ev.code === "BracketLeft" || ev.key === "[")) {
+        ev.preventDefault();
+        ai.sessions.back();
+        return;
+      }
       if (ev.altKey && ev.key === "ArrowLeft" && !inInput) {
         ev.preventDefault();
         const cur = runtime.layout.getState().getActiveTab();
@@ -851,7 +913,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [runtime]);
+  }, [runtime, ai]);
 
   const startHorizontalPanelResize = (
     ev: React.MouseEvent,
@@ -1137,6 +1199,19 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           runtime.setActiveSelection(sel);
         },
         dispatchAiDirective: (directive) => {
+          // 무마찰 디렉팅: 선택이 있으면 그 선택에 세션을 붙여 뒤에서 돌린다 (화면 · 포커스는 그대로)
+          const directivePrompt = directive.prompt.trim();
+          const surface = isOutlinePath(directive.resourceId) ? "outline" : isVDocPath(directive.resourceId) ? "vdoc" : null;
+          const picked = directive.selection?.nodeIds?.length ? directive.selection.nodeIds : null;
+          const explicit =
+            surface === "outline" && picked
+              ? { surface, path: directive.resourceId, itemIds: [...picked], label: anchorLabel(directive.resourceId, picked.length, "불릿") }
+              : undefined;
+          const anchored = directivePrompt && surface ? ai.sendAnchored(surface, directivePrompt, explicit) : null;
+          if (anchored) {
+            runtime.pushLog("composer", "ok", `directive -> background session [${anchored.anchor?.label}]: "${directivePrompt}"`);
+            return;
+          }
           // 캔버스 2D 디렉팅 → 진짜 Composer: 선택을 첨부하고 그 지시를 보낸다 (키워드 목업 실행기를 쓰지 않는다)
           setShowComposer(true);
           setFocusAiSeq((n) => n + 1);
@@ -1170,17 +1245,67 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           <div className="flex flex-col items-center gap-1">
             <button
               type="button"
-              onClick={() => setShowExplorer((v) => !v)}
+              onClick={() => {
+                if (showExplorer && leftView === "explorer") setShowExplorer(false);
+                else {
+                  setShowExplorer(true);
+                  setLeftView("explorer");
+                }
+              }}
               title="Toggle File Explorer (Ctrl+B)"
               aria-label="Toggle File Explorer"
               className="flex h-8 w-8 items-center justify-center rounded-[5px] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
               style={{
-                color: showExplorer
+                color: showExplorer && leftView === "explorer"
                   ? "var(--obs-accent,#8a5cf5)"
                   : "var(--obs-text-muted,#b3b3b3)",
               }}
             >
               <FolderTree className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              data-testid="ribbon-sessions"
+              onClick={() => {
+                if (showExplorer && leftView === "sessions") setShowExplorer(false);
+                else {
+                  setShowExplorer(true);
+                  setLeftView("sessions");
+                }
+              }}
+              title={`AI 세션 현황${activeRuns ? ` · 진행 ${sessionActivity.running}${sessionActivity.queued ? ` · 대기 ${sessionActivity.queued}` : ""}` : ""}${attentionCount ? ` · 확인 필요 ${attentionCount}` : ""}`}
+              aria-label="Toggle AI Sessions Dashboard"
+              className="relative flex h-8 w-8 items-center justify-center rounded-[5px] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))]"
+              style={{
+                color: showExplorer && leftView === "sessions"
+                  ? "var(--obs-accent,#8a5cf5)"
+                  : "var(--obs-text-muted,#b3b3b3)",
+              }}
+            >
+              <ListChecks className="h-4 w-4" />
+              {activeRuns > 0 && (
+                <>
+                  {/* 세션이 도는 동안 아이콘을 도는 고리 + 진행 수 */}
+                  <span
+                    data-testid="ribbon-sessions-running"
+                    aria-hidden
+                    className="pointer-events-none absolute inset-[3px] animate-spin rounded-full border-2 border-sky-400/80 border-r-transparent border-b-transparent"
+                    style={{ animationDuration: "1.1s" }}
+                  />
+                  <span
+                    data-testid="ribbon-sessions-running-count"
+                    className="absolute -bottom-0.5 -right-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-sky-500 px-0.5 text-[9px] font-bold leading-none text-white"
+                  >
+                    {activeRuns}
+                  </span>
+                </>
+              )}
+              {attentionCount > 0 && (
+                <span data-testid="ribbon-sessions-badge" className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-500 px-0.5 text-[9px] font-bold leading-none text-white">
+                  {attentionCount}
+                </span>
+              )}
             </button>
 
             <button
@@ -1258,8 +1383,23 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
               style={{ width: `${explorerWidth}px` }}
               className="flex h-full shrink-0 flex-col overflow-hidden bg-[var(--obs-bg-secondary,#262626)]"
             >
-              {/* Obsidian File Explorer */}
-              <div className="min-h-0 flex-1 overflow-hidden">
+              {/* Obsidian File Explorer · AI 세션 대시보드 */}
+              {leftView === "sessions" && (
+                <div className="min-h-0 flex-1 overflow-hidden">
+                  <SessionDashboard
+                    registry={ai.sessions}
+                    onOpen={openSession}
+                    onReveal={ai.revealAnchor}
+                    onStop={(key) => ai.sessions.stop(key)}
+                    onComplete={ai.requestCompleteSession}
+                    onReopen={(key) => {
+                      setShowComposer(true);
+                      ai.sessions.reopen(key);
+                    }}
+                  />
+                </div>
+              )}
+              <div className={leftView === "sessions" ? "hidden" : "min-h-0 flex-1 overflow-hidden"}>
                 <FileExplorer
                   store={runtime.explorer}
                   vaultName={runtime.vault.name}
@@ -1763,6 +1903,21 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           onChangeTheme={setTheme}
           initialSectionId={settingsModal.sectionId}
           onOpenFileInTab={(filePath) => runtime.openVaultFile(filePath, "current")}
+        />
+      )}
+
+      {/* 무마찰 디렉팅 — 뒤 세션 알림 · 완료 확인 · 지시 입력 */}
+      <SessionToasts ai={ai} onOpen={openSession} />
+      <CompletionConfirm ai={ai} />
+      {directiveTarget && (
+        <DirectivePromptDialog
+          label={directiveTarget.label}
+          onClose={() => setDirectiveTarget(null)}
+          onSubmit={(prompt) => {
+            const entry = ai.sendAnchored(directiveTarget.surface, prompt);
+            if (entry) runtime.pushLog("composer", "ok", `directive -> background session [${entry.anchor?.label}]: "${prompt}"`);
+            else runtime.pushLog("composer", "warn", "선택한 항목이 없어 지시를 보내지 않았습니다.");
+          }}
         />
       )}
     </div>

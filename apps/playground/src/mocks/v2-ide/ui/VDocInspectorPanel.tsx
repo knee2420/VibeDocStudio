@@ -296,10 +296,10 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
         if (!rawPointer) return;
         const resolved = fromVaultUri(rawPointer) ?? rawPointer;
         if (vault.exists(resolved)) {
-          runtime.openVaultFile(resolved, "split-right");
+          runtime.openFileInPairTabGroup(resolved, { sourcePath: path });
         }
       },
-      [runtime, vault]
+      [runtime, vault, path]
     );
 
     const handleAddVariable = (ev: React.FormEvent) => {
@@ -399,7 +399,9 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
                     activeStyleEntry?.vaultPath && (
                       <button
                         type="button"
-                        onClick={() => runtime.openVaultFile(activeStyleEntry.vaultPath!, "split-right")}
+                        onClick={() =>
+                          runtime.openFileInPairTabGroup(activeStyleEntry.vaultPath!, { sourcePath: path })
+                        }
                         className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] text-[var(--obs-accent-hover,#a68af9)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.07))]"
                       >
                         <Palette className="h-3 w-3" />
@@ -931,7 +933,9 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
                   {activeStyleEntry?.vaultPath && (
                     <button
                       type="button"
-                      onClick={() => runtime.openVaultFile(activeStyleEntry.vaultPath!, "split-right")}
+                      onClick={() =>
+                        runtime.openFileInPairTabGroup(activeStyleEntry.vaultPath!, { sourcePath: path })
+                      }
                       className="shrink-0 rounded border border-[var(--obs-border,#363636)] px-1.5 py-0.5 text-[10px] text-[var(--obs-text-muted,#b3b3b3)] hover:text-white"
                     >
                       .vstyle 편집
@@ -1756,11 +1760,11 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
                     {vaultTarget && vault.exists(vaultTarget) && (
                       <button
                         type="button"
-                        onClick={() => runtime.openVaultFile(vaultTarget, "split-right")}
+                        onClick={() => runtime.openFileInPairTabGroup(vaultTarget, { sourcePath: path })}
                         className="flex w-full items-center justify-center gap-1 rounded border border-[var(--obs-border,#363636)] bg-[var(--obs-bg-secondary,#262626)] px-2 py-1 text-[11px] text-[var(--obs-accent-hover,#a68af9)] hover:text-white"
                       >
                         <ExternalLink className="h-3 w-3" />
-                        <span>연결 문서 분할 열기</span>
+                        <span>연결 문서 페어로 열기</span>
                       </button>
                     )}
                   </section>
@@ -2032,7 +2036,7 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
                       <button
                         type="button"
                         onClick={() =>
-                          runtime.openVaultFile(activeStyleEntry.vaultPath!, "split-right")
+                          runtime.openFileInPairTabGroup(activeStyleEntry.vaultPath!, { sourcePath: path })
                         }
                         className="text-[10.5px] text-[var(--obs-accent-hover,#a68af9)] hover:underline"
                       >

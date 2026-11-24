@@ -7,10 +7,21 @@ import type { V2AiWorkspace } from "@vibe/ai-vault";
 /**
  * AI 변경안(Staged) 검토 + 볼트 FS 트랜잭션(`vf_*`) 1클릭 되돌리기 바.
  */
-export const V2StagedChangesPanel: React.FC<{ readonly ai: V2AiWorkspace }> = ({ ai }) => {
-  const queue = useStore(ai.store, (s) => s.queue);
-  const fsBatches = useStore(ai.store, (s) => s.fsBatches);
-  const approvedOutlinePaths = useStore(ai.store, (s) => s.approvedOutlinePaths);
+export const V2StagedChangesPanel: React.FC<{
+  readonly ai: V2AiWorkspace;
+  /** 이 세션이 만든 변경안 · 파일 묶음만 (없으면 메인 — 꼬리표 없는 것) */
+  readonly sessionKey?: string;
+}> = ({ ai, sessionKey }) => {
+  const allQueue = useStore(ai.store, (s) => s.queue);
+  const allFsBatches = useStore(ai.store, (s) => s.fsBatches);
+  const allApprovedOutlinePaths = useStore(ai.store, (s) => s.approvedOutlinePaths);
+  const mainKey = ai.sessions.mainKey;
+  const forKey = sessionKey ?? mainKey;
+  const isMain = forKey === mainKey;
+  const isMine = (key: string | undefined) => (key ?? mainKey) === forKey;
+  const queue = allQueue.filter((c) => isMine(c.sessionKey));
+  const fsBatches = allFsBatches.filter((b) => isMine(b.sessionKey));
+  const approvedOutlinePaths = isMain ? allApprovedOutlinePaths : [];
   const [open, setOpen] = useState(true);
   const [fsOpen, setFsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,9 +30,9 @@ export const V2StagedChangesPanel: React.FC<{ readonly ai: V2AiWorkspace }> = ({
   const activeFsBatches = fsBatches.filter((b) => !b.undone);
   if (queue.length === 0 && activeFsBatches.length === 0 && approvedOutlinePaths.length === 0) return null;
 
-  const activeTab = ai.env.activeTabPath();
-  const active = activeTab && queue.some((c) => c.path === activeTab) ? activeTab : ai.env.activeDocPath();
-  const mine = queue.filter((c) => c.path === active);
+  const activeTab = isMain ? ai.env.activeTabPath() : null;
+  const active = !isMain ? null : activeTab && queue.some((c) => c.path === activeTab) ? activeTab : ai.env.activeDocPath();
+  const mine = isMain ? queue.filter((c) => c.path === active) : queue;
   const others = queue.length - mine.length;
   const shown = mine.length ? mine : queue;
 

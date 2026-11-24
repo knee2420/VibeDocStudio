@@ -14,30 +14,26 @@ import time
 from pathlib import Path
 from typing import Any, Callable, Iterator, Optional
 
+from ..catalog import AGY_BASE_MODELS, THOUGHT_LEVEL_SUFFIXES
 from ..models import EngineChoice
 from .acp_client import _EOF, AcpClient
 
 logger = logging.getLogger(__name__)
 
-EXACT_MODEL_NAMES = {
-    "gpt-oss-120b-medium",
-    "gemini-3.8-flash",
-    "gemini-4-argon",
+EXACT_MODEL_NAMES = set(AGY_BASE_MODELS) | {
     "gemini-3.5-flash-lite",
     "gemini-3.5-flash",
-    "claude-sonnet-5-5",
-    "claude-opus-5-5",
 }
 
 
 def _split_model_and_thought(model: str, default_thought: str = "medium") -> tuple[str, str]:
-    """'gemini-3.8-flash-high' -> ('gemini-3.8-flash', 'high').
+    """'gemini-4-hydrogen-xhigh' -> ('gemini-4-hydrogen', 'xhigh').
 
-    gpt-oss-120b-medium 과 같은 고유 모델명은 접미사를 자르지 않고 보존한다.
+    gpt-oss-120b-medium · gemini-pro-orchestrator-* 등 고유/베이스 모델명은 접미사를 자르지 않고 보존한다.
     """
     if model in EXACT_MODEL_NAMES:
         return model, default_thought
-    for level in ("-low", "-medium", "-high"):
+    for level in THOUGHT_LEVEL_SUFFIXES:
         if model.endswith(level):
             base = model[: -len(level)]
             return base, level[1:]
@@ -207,7 +203,10 @@ class AcpConversation:
 
         def do_prompt():
             try:
-                res = self._client.prompt(self._session_id, text, timeout=None, images=images)
+                if images:
+                    res = self._client.prompt(self._session_id, text, timeout=None, images=images)
+                else:
+                    res = self._client.prompt(self._session_id, text, timeout=None)
                 fut.set_result(res)
             except Exception as exc:
                 fut.set_exception(exc)

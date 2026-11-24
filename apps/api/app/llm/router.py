@@ -30,8 +30,8 @@ DeleteGoogleKeyDep = Annotated[DeleteGoogleApiKeyUseCase, Depends(Provide["delet
 
 @router.get("/runtime", response_model=RuntimeDashboardResponse)
 @inject
-def get_runtime_dashboard(use_case: GetDashboardDep) -> RuntimeDashboardResponse:
-    dashboard = use_case.execute()
+def get_runtime_dashboard(use_case: GetDashboardDep, refresh: bool = False) -> RuntimeDashboardResponse:
+    dashboard = use_case.execute(refresh=refresh)
     return RuntimeDashboardResponse(
         policy=RuntimePolicyResponse.from_view(dashboard.policy),
         googleConfigured=dashboard.google_configured,

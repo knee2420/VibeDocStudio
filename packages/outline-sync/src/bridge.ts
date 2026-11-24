@@ -1501,6 +1501,20 @@ export function compileOutlineTargetForPreview(
 
   const registry = options?.registry ?? loadVaultSyntaxRegistry(vault);
   const assetResolver = buildVaultAssetResolver(vault, outlinePath, baseDoc);
+  const resolveEvidencePath = (rawTarget: string): string | undefined => {
+    const trimmed = rawTarget.trim();
+    if (!trimmed) return undefined;
+    if (/^vault:\/\//i.test(trimmed)) return trimmed;
+    if (vault.exists(trimmed)) return toVaultUri(trimmed);
+    const needle = trimmed.toLowerCase();
+    const hit = vault.listAll().find((n) => {
+      if (n.kind !== "file") return false;
+      const base = basename(n.path).toLowerCase();
+      const noExt = base.replace(/\.[^.]+$/, "");
+      return base === needle || noExt === needle || n.path.toLowerCase().endsWith(`/${needle}`);
+    });
+    return hit ? toVaultUri(hit.path) : undefined;
+  };
   const compiled = compileDirectiveSubtreeToVDoc(roots, targetNodeId, {
     registry,
     baseDoc,
@@ -1508,6 +1522,7 @@ export function compileOutlineTargetForPreview(
     assetHint: options?.assetHint,
     assetResolver,
     nodeEvidence: payload.nodeEvidence,
+    resolveEvidencePath,
     registryPath: vault.exists(STANDARD_SYNTAX_PATH) ? toVaultUri(STANDARD_SYNTAX_PATH) : undefined,
     outlineRef: {
       outlinePath: toVaultUri(outlinePath),

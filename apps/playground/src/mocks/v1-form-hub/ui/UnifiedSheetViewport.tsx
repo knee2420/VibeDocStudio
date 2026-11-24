@@ -40,6 +40,12 @@ export interface UnifiedSheetViewportProps {
     cmd: TableCommand
   ) => void;
   onSwitchMode: (mode: PlaygroundMode, options?: { selectedSlotId?: string | null }) => void;
+  renderPageOverlay?: (ctx: {
+    pageId: string;
+    hostRef: React.RefObject<HTMLDivElement | null>;
+    renderWidth: number;
+    scale: number;
+  }) => React.ReactNode;
 }
 
 /**
@@ -62,6 +68,7 @@ export const UnifiedSheetViewport: React.FC<UnifiedSheetViewportProps> = ({
   onUpdateSlotContent,
   onTableCommand,
   onSwitchMode,
+  renderPageOverlay,
 }) => {
   const viewportRef = useRef<HTMLDivElement>(null);
   const sheetsHostRef = useRef<HTMLDivElement>(null);
@@ -378,6 +385,15 @@ export const UnifiedSheetViewport: React.FC<UnifiedSheetViewportProps> = ({
                         </div>
                       </div>
                     ) : null}
+
+                    {renderPageOverlay
+                      ? renderPageOverlay({
+                          pageId: page.pageId,
+                          hostRef: sheetsHostRef,
+                          renderWidth,
+                          scale,
+                        })
+                      : null}
                   </div>
                 </div>
               </div>

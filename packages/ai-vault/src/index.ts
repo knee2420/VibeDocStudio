@@ -10,3 +10,4 @@ export * from "./store";
 export * from "./tools";
 export * from "./workspace";
 export * from "./assetAi";
+export * from "./anchors";

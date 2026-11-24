@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import shutil
 
+from typing import Callable, Mapping, Optional, Sequence
+
 from app.core.errors import ValidationError
 
+from ..catalog import build_settings_options
 from ..models import ModelOption, RuntimeDashboard
 from ..policy import (
     RuntimeExecutionPolicy,
@@ -20,18 +23,28 @@ class GetRuntimeDashboardUseCase:
         policy: RuntimeExecutionPolicy,
         credentials: CredentialStore,
         model_options: tuple[ModelOption, ...],
+        agy_models_provider: Optional[Callable[[bool], Sequence[Mapping[str, str]]]] = None,
     ) -> None:
         self._policy = policy
         self._credentials = credentials
         self._model_options = model_options
+        self._agy_models_provider = agy_models_provider
 
-    def execute(self) -> RuntimeDashboard:
+    def execute(self, *, refresh: bool = False) -> RuntimeDashboard:
         view = self._policy.snapshot()
+        models = self._model_options
+        if self._agy_models_provider is not None:
+            try:
+                live = self._agy_models_provider(refresh)
+                if live:
+                    models = build_settings_options(live)
+            except Exception:
+                models = self._model_options
         return RuntimeDashboard(
             policy=view,
             google_configured=bool(self._credentials.get_google_api_key()),
             cli_available=bool(shutil.which(view.agent_cli_bin)),
-            models=self._model_options,
+            models=models,
         )
 
 

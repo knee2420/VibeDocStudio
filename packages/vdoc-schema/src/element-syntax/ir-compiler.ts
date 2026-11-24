@@ -18,7 +18,12 @@ import type { StructuredTableBlockDef } from "../blocks/table-block";
 import type { TextBlockDef } from "../blocks/text-block";
 import type { LayoutBlock } from "../blocks";
 import { getBlockSlotIds } from "../block-ops";
-import { evidenceKey, type EvidenceLink, type EvidenceLocator } from "../evidence";
+import {
+  evidenceKey,
+  extractInlineCiteBullets,
+  type EvidenceLink,
+  type EvidenceLocator,
+} from "../evidence";
 import { htmlToPlainText } from "../html-text";
 import type {
   GridColumnDef,
@@ -77,6 +82,8 @@ export interface CompileOutlineToVDocOptions {
   assetHint?: string;
   /** `.outline` 사이드카 근거(`nodeId -> EvidenceLocator[]`) — 컴파일된 블록 슬롯의 `evidenceLinks` 로 자동 승계한다. */
   nodeEvidence?: Record<string, EvidenceLocator[]>;
+  /** `<<cite:...>>` 하위 불릿 안의 `[[파일명]]` 을 `vault://...` 경로로 해석하는 선택 리졸버. */
+  resolveEvidencePath?: (rawTarget: string) => string | undefined;
   /** 고정 타임스탬프 (테스트/결정적 빌드용). */
   now?: string;
 }
@@ -1897,7 +1904,20 @@ export function compileOutlineToVDoc(
     pages.push(applyPageOverlay(page, prev, slots, overlay?.slots ?? {}));
   };
 
-  for (const rootNode of outline.rootNodes) {
+  // 편집 가능한 하위 불릿(`<<cite:...>>`)을 본문에서 분리해 부모 불릿 근거로 추출한다
+  const extractedInline = extractInlineCiteBullets(outline.rootNodes, {
+    resolveSourcePath: options.resolveEvidencePath,
+  });
+  const effectiveRootNodes = extractedInline.strippedRoots;
+  const effectiveNodeEvidence: Record<string, EvidenceLocator[]> = {};
+  for (const srcMap of [options.nodeEvidence, extractedInline.nodeEvidence]) {
+    if (!srcMap) continue;
+    for (const [nid, locs] of Object.entries(srcMap)) {
+      effectiveNodeEvidence[nid] = [...(effectiveNodeEvidence[nid] ?? []), ...locs];
+    }
+  }
+
+  for (const rootNode of effectiveRootNodes) {
     const raw = rootNode.text.trim();
     if (!raw && !(rootNode.children?.length)) continue;
 
@@ -2064,25 +2084,41 @@ export function compileOutlineToVDoc(
     profileId,
     registryPath: options.registryPath ?? baseDoc?.schemaRef?.registryPath,
     registryVersion: registry.getVersion(),
-    elementIds: profile?.allowedElementIds ?? ["section", "table"],
+    elementIds: profile?.allowedElementIds ?? ["section", "table", "resource"],
   };
 
-  // `.outline` 사이드카 `nodeEvidence` -> 컴파일된 블록 슬롯 `evidenceLinks` 자동 승계
-  const mergedEvidenceLinks: EvidenceLink[] = [...(baseDoc?.evidenceLinks ?? [])];
-  if (options.nodeEvidence && Object.keys(options.nodeEvidence).length > 0) {
+  // `.outline` 사이드카 `nodeEvidence` + 편집 가능 `<<cite:...>>` 하위 불릿 -> 컴파일된 슬롯 `evidenceLinks` 자동 승계
+  const mergedEvidenceLinks: EvidenceLink[] = (baseDoc?.evidenceLinks ?? []).filter(
+    (l) => !l.linkId.startsWith("ev-ol-")
+  );
+  if (Object.keys(effectiveNodeEvidence).length > 0) {
     const seenEvidence = new Set(
       mergedEvidenceLinks.map((l) => `${l.slotId}|${evidenceKey(l.locator)}`)
     );
+    const citeNumByKey = new Map<string, string>();
+    let nextCiteNum = 1;
+    for (const existing of mergedEvidenceLinks) {
+      const k = evidenceKey(existing.locator);
+      const firstId = existing.citationIds?.[0];
+      if (firstId && !citeNumByKey.has(k)) {
+        citeNumByKey.set(k, firstId);
+        const parsedNum = Number.parseInt(firstId, 10);
+        if (Number.isFinite(parsedNum) && parsedNum >= nextCiteNum) nextCiteNum = parsedNum + 1;
+      }
+    }
     let linkSeq = mergedEvidenceLinks.length + 1;
-    const attachNodeEvidenceToBlock = (sourceNodeId: string | undefined, blk: LayoutBlock) => {
-      if (!sourceNodeId) return;
-      const locs = options.nodeEvidence?.[sourceNodeId];
-      if (!locs || locs.length === 0) return;
-      for (const slotId of getBlockSlotIds(blk)) {
+    const attachLocatorsToSlots = (slotIds: readonly string[], locs: readonly EvidenceLocator[]) => {
+      for (const slotId of slotIds) {
         for (const locator of locs) {
           const dedup = `${slotId}|${evidenceKey(locator)}`;
           if (seenEvidence.has(dedup)) continue;
           seenEvidence.add(dedup);
+          const ek = evidenceKey(locator);
+          let citeId = citeNumByKey.get(ek);
+          if (!citeId) {
+            citeId = String(nextCiteNum++);
+            citeNumByKey.set(ek, citeId);
+          }
           mergedEvidenceLinks.push({
             linkId: `ev-ol-${linkSeq++}`,
             slotId,
@@ -2090,15 +2126,39 @@ export function compileOutlineToVDoc(
             origin: "ai",
             createdAt: now,
             status: "ok",
+            citationIds: [citeId],
+            ...(locator.relation ? { relation: locator.relation } : {}),
+            ...(locator.presentation ? { presentation: locator.presentation } : {}),
+            ...(locator.rationale ? { rationale: locator.rationale } : {}),
           });
+        }
+      }
+    };
+    const attachNodeEvidenceRecursive = (blk: LayoutBlock) => {
+      const ownLocs = blk.sourceNodeId ? effectiveNodeEvidence[blk.sourceNodeId] : undefined;
+      if (ownLocs && ownLocs.length > 0) {
+        attachLocatorsToSlots(getBlockSlotIds(blk), ownLocs);
+      }
+      if (blk.kind === "columns-grid") {
+        for (const col of blk.columns ?? []) {
+          for (const nested of col.blocks ?? []) attachNodeEvidenceRecursive(nested);
+        }
+      } else if (blk.kind === "structured-table") {
+        for (const row of blk.rows ?? []) {
+          for (const cell of row.cells ?? []) {
+            for (const nested of cell.blocks ?? []) attachNodeEvidenceRecursive(nested);
+          }
         }
       }
     };
     for (const page of pages) {
       for (const blk of page.blocks) {
-        attachNodeEvidenceToBlock(blk.sourceNodeId, blk);
+        attachNodeEvidenceRecursive(blk);
         if (page.sourceNodeId && page.sourceNodeId !== blk.sourceNodeId) {
-          attachNodeEvidenceToBlock(page.sourceNodeId, blk);
+          const pageLocs = effectiveNodeEvidence[page.sourceNodeId];
+          if (pageLocs && pageLocs.length > 0) {
+            attachLocatorsToSlots(getBlockSlotIds(blk), pageLocs);
+          }
         }
       }
     }

@@ -5,3 +5,5 @@ export * from "./runtime";
 export * from "./composerSession";
 export * from "./inline";
 export * from "./attach";
+export * from "./anchor";
+export * from "./sessionRegistry";

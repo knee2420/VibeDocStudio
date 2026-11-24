@@ -35,7 +35,8 @@ export type PlaygroundPresetId =
   | "workshop-request"
   | "a4-report"
   | "blog-article"
-  | "rfp-complex";
+  | "rfp-complex"
+  | "agui-protocol-demo";
 
 export interface PlaygroundNode {
   id: string;

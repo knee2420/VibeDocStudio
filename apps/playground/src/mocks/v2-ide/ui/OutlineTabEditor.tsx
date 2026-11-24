@@ -36,6 +36,7 @@ import {
   VDocStyleProvider,
 } from "@vibe/slot-canvas";
 import {
+  buildEvidenceBacklinkIndex,
   documentSurface,
   extractOutlineAssets,
   parseOutlineDirective,
@@ -56,6 +57,18 @@ import {
 } from "@vibe/vault-formats";
 import { createVaultOutlineFiles } from "../model/outlineFileHost";
 import { renderOutlineInlineMarkdown } from "./outlineLiveRenderer";
+import {
+  clearResourceHighlight,
+  openResourceTagInPair,
+  subscribeResourceHighlight,
+  type ResourceHighlightRequest,
+} from "../model/resourceHighlightBus";
+import {
+  OutlineEvidenceLegendPanel,
+  OutlineNodeEvidenceSubline,
+  collectOutlineEvidenceEntries,
+} from "./EvidenceExpressions";
+import { AnchorChips, AnchorDraft, outlineNodeSelector } from "./ai/AnchorChips";
 import {
   bindVDocToExistingOutline,
   type BridgeOpenMode,
@@ -690,8 +703,8 @@ export interface OutlineTabEditorProps {
   readonly openInPairGroup?: (path: string) => void;
   /** 고른 불릿(여러 개)을 AI Composer 에 알린다. */
   readonly reportSelection?: (sel: EditorSelectionSnapshot | null) => void;
-  /** 선택 불릿을 AI Composer 로 바로 디렉팅한다. */
-  readonly onAiDirect?: (prompt?: string) => void;
+  /** 선택 불릿을 AI Composer 로 바로 디렉팅한다 (`nodeIds` = 지시를 던진 불릿 — 입력창을 누르면 화면 선택이 풀리므로 미리 잡아 둔 것). */
+  readonly onAiDirect?: (prompt?: string, nodeIds?: readonly string[]) => void;
 }
 
 /** 고른 불릿 → 들여쓴 글 (하위 불릿 포함, 최대 글자 수). */
@@ -744,8 +757,20 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
   onAiDirect,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  /** 세션 표시 겹층이 다시 그려지게 컨테이너 요소를 상태로도 든다 */
+  const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
+  const attachContainer = useCallback((el: HTMLDivElement | null) => {
+    containerRef.current = el;
+    setContainerEl(el);
+  }, []);
   const previewScrollRef = useRef<HTMLDivElement>(null);
   const fallbackTitle = basename(path).replace(/\.outline$/i, "") || "Untitled";
+  /** 고른 불릿에 지시 던지기 (뒤에서 도는 세션) */
+  const [directOpen, setDirectOpen] = useState(false);
+  const [directText, setDirectText] = useState("");
+  /** 지시를 던질 불릿 — AI Direct 를 누르는 순간(바깥 클릭으로 선택이 풀리기 전)의 선택 */
+  const [directIds, setDirectIds] = useState<readonly string[]>([]);
+  const pressedIdsRef = useRef<readonly string[]>([]);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [compiledPreview, setCompiledPreview] = useState<CompiledPreviewSnapshot | null>(null);
@@ -849,11 +874,40 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
   }, [selectedNodeIds, path, session]);
   const activeRootId = useStore(editorStore, (s) => s.activeRootId);
 
+  const [incomingHighlight, setIncomingHighlight] = useState<ResourceHighlightRequest | null>(null);
+
   useEffect(
     () =>
       subscribeOutlineReveal(path, (nodeId, options) =>
         revealNode(editorStore, session.snapshot().rootNodes, nodeId, containerRef.current, options)
       ),
+    [path, editorStore, session]
+  );
+
+  useEffect(
+    () =>
+      subscribeResourceHighlight(path, (req) => {
+        setIncomingHighlight(req);
+        if (!req) return;
+        const roots = session.snapshot().rootNodes;
+        let hitNodeId: string | null = req.nodeId ?? null;
+        if (!hitNodeId && req.quoteText?.trim()) {
+          const needle = req.quoteText.trim().toLowerCase();
+          const findByText = (nodes: readonly OutlineNode[]): string | null => {
+            for (const n of nodes) {
+              if (n.text.toLowerCase().includes(needle)) return n.id;
+              const sub = findByText(n.children);
+              if (sub) return sub;
+            }
+            return null;
+          };
+          hitNodeId = findByText(roots);
+        }
+        if (hitNodeId) {
+          editorStore.getState().selectNodes([hitNodeId]);
+          revealNode(editorStore, roots, hitNodeId, containerRef.current);
+        }
+      }),
     [path, editorStore, session]
   );
 
@@ -886,6 +940,8 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
           }
         },
         getSnapshot: () => session.snapshot(),
+        // 기준점 세션(완료 감지 · 지워진 불릿)이 트리 변화를 본다
+        subscribe: (listener) => session.subscribe(listener),
       }),
     [path, editorStore, session]
   );
@@ -909,15 +965,46 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
   }, [previewOpen]);
 
   const getPortalRoot = useCallback(() => containerRef.current ?? document.body, []);
+  const openAttachmentTarget = useCallback(
+    (targetPath: string) => {
+      if (openInPairGroup) {
+        openInPairGroup(targetPath);
+      } else if (openFile) {
+        openFile(targetPath);
+      } else {
+        openLink?.(targetPath, "split-right");
+      }
+    },
+    [openInPairGroup, openFile, openLink]
+  );
   const files = useMemo(
     () =>
       createVaultOutlineFiles({
         vault,
         getOutlinePath: () => path,
-        openFile,
+        openFile: openAttachmentTarget,
       }),
-    [vault, path, openFile]
+    [vault, path, openAttachmentTarget]
   );
+
+  const outlineEvidenceIndex = useMemo(() => {
+    const resolveTarget = (rawTarget: string): string | undefined => {
+      const trimmed = rawTarget.trim();
+      if (!trimmed) return undefined;
+      if (vault.exists(trimmed)) return trimmed;
+      const needle = trimmed.toLowerCase();
+      const hit = vault.listAll().find((n) => {
+        if (n.kind !== "file") return false;
+        const base = basename(n.path).toLowerCase();
+        const noExt = base.replace(/\.[^.]+$/, "");
+        return base === needle || noExt === needle || n.path.toLowerCase().endsWith(`/${needle}`);
+      });
+      return hit?.path;
+    };
+    return buildEvidenceBacklinkIndex(
+      collectOutlineEvidenceEntries(doc.rootNodes, doc.nodeEvidence, resolveTarget)
+    );
+  }, [doc.rootNodes, doc.nodeEvidence, vault]);
 
   const host = useMemo<OutlineHost>(
     () => ({
@@ -946,14 +1033,26 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
       getPortalRoot,
       files,
       renderMarkdown: renderOutlineInlineMarkdown,
-      // 1티어 태그(`<<doc:...>>`) 전용 Workflowy Note 사양 서브라인 (불릿 아래 `border-l-2` 1줄 부연 바)
+      // 1티어 태그(`<<doc:...>>`) 전용 Workflowy Note 사양 서브라인 + 불릿별 근거/인용 표현(Case 1~6)
       renderNodeSubline: (node) => {
         void vaultLinkRev;
+        const evLocators = doc.nodeEvidence?.[node.id] ?? [];
+        const evidenceNode =
+          evLocators.length > 0 ? (
+            <OutlineNodeEvidenceSubline
+              nodeId={node.id}
+              locators={evLocators}
+              backlinkGroups={outlineEvidenceIndex.groups}
+              citationNumberBySourceKey={outlineEvidenceIndex.citationNumberBySourceKey}
+              onOpenSource={openAttachmentTarget}
+            />
+          ) : null;
         const parsed = parseOutlineDirective(node.text);
-        if (parsed?.kind !== "doc") return null;
+        if (parsed?.kind !== "doc") return evidenceNode;
         const status = inspectOutlineNodeVDocLink(vault, path, node.id, doc);
+        let docSubline: React.ReactNode;
         if (status.kind === "linked") {
-          return (
+          docSubline = (
             <div
               onMouseDown={(ev) => ev.stopPropagation()}
               className="group/subline flex w-fit max-w-full items-center gap-2 rounded-r border-l-2 border-emerald-500/50 bg-emerald-500/[0.06] py-0.5 pr-1.5 pl-2.5 text-[11.5px] leading-[1.45] text-emerald-200/90 select-none transition-colors hover:border-emerald-400 hover:bg-emerald-500/[0.11]"
@@ -995,9 +1094,8 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
               </button>
             </div>
           );
-        }
-        if (status.kind === "out-of-scope") {
-          return (
+        } else if (status.kind === "out-of-scope") {
+          docSubline = (
             <button
               type="button"
               onMouseDown={(ev) => ev.stopPropagation()}
@@ -1017,9 +1115,8 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
               <span className="shrink-0 text-[10px] text-amber-300/80">등록/해제</span>
             </button>
           );
-        }
-        if (status.kind === "broken") {
-          return (
+        } else if (status.kind === "broken") {
+          docSubline = (
             <button
               type="button"
               onMouseDown={(ev) => ev.stopPropagation()}
@@ -1036,39 +1133,57 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
               <span>연결 끊어짐 · 복구</span>
             </button>
           );
+        } else {
+          docSubline = (
+            <button
+              type="button"
+              onMouseDown={(ev) => ev.stopPropagation()}
+              onClick={(ev) => {
+                ev.stopPropagation();
+                setSelectedDocNodeId(node.id);
+                setVdocSearch("");
+                setLinkPopoverNodeId(node.id);
+              }}
+              title="같은 프로젝트의 .vdoc 연결 또는 새로 생성"
+              className="flex w-fit max-w-full items-center gap-1.5 rounded-r border-l-2 border-slate-500/40 bg-white/[0.02] py-0.5 pr-2 pl-2.5 text-[11.5px] leading-[1.45] text-[var(--obs-text-faint,#888)] select-none transition-colors hover:border-emerald-400/60 hover:bg-emerald-500/[0.08] hover:text-emerald-200"
+            >
+              <Link2 className="h-3 w-3 shrink-0" />
+              <span>연결된 .vdoc 없음 · 클릭해 연결</span>
+            </button>
+          );
         }
-        return (
-          <button
-            type="button"
-            onMouseDown={(ev) => ev.stopPropagation()}
-            onClick={(ev) => {
-              ev.stopPropagation();
-              setSelectedDocNodeId(node.id);
-              setVdocSearch("");
-              setLinkPopoverNodeId(node.id);
-            }}
-            title="같은 프로젝트의 .vdoc 연결 또는 새로 생성"
-            className="flex w-fit max-w-full items-center gap-1.5 rounded-r border-l-2 border-slate-500/40 bg-white/[0.02] py-0.5 pr-2 pl-2.5 text-[11.5px] leading-[1.45] text-[var(--obs-text-faint,#888)] select-none transition-colors hover:border-emerald-400/60 hover:bg-emerald-500/[0.08] hover:text-emerald-200"
-          >
-            <Link2 className="h-3 w-3 shrink-0" />
-            <span>연결된 .vdoc 없음 · 클릭해 연결</span>
-          </button>
+        return evidenceNode ? (
+          <div className="space-y-1">
+            {docSubline}
+            {evidenceNode}
+          </div>
+        ) : (
+          docSubline
         );
       },
       openLink: (rawTarget: string) => {
         const trimmed = rawTarget.trim();
         if (!trimmed) return;
+        if (trimmed.startsWith("resource-tag:")) {
+          const rawTag = trimmed.slice("resource-tag:".length).trim();
+          openResourceTagInPair(rawTag, {
+            vault,
+            sourcePath: path,
+            openInPair: openAttachmentTarget,
+          });
+          return;
+        }
         if (/^https?:\/\//i.test(trimmed)) {
           window.open(trimmed, "_blank", "noopener");
           return;
         }
         const vaultUriTarget = fromVaultUri(trimmed);
         if (vaultUriTarget && vault.exists(vaultUriTarget)) {
-          openLink?.(vaultUriTarget, "split-right");
+          openAttachmentTarget(vaultUriTarget);
           return;
         }
         if (vault.exists(trimmed)) {
-          openLink?.(trimmed, "split-right");
+          openAttachmentTarget(trimmed);
           return;
         }
         // Resolve Obsidian-style `[[NoteName]]` against vault files
@@ -1080,11 +1195,11 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
           return base === needle || noExt === needle || n.path.toLowerCase().endsWith(`/${needle}`);
         });
         if (match) {
-          openLink?.(match.path, "split-right");
+          openAttachmentTarget(match.path);
         }
       },
     }),
-    [path, vault, getPortalRoot, files, openLink, doc, vaultLinkRev, openVDocPartner]
+    [path, vault, getPortalRoot, files, openAttachmentTarget, doc, vaultLinkRev, openVDocPartner, outlineEvidenceIndex]
   );
 
   const handleUpdateTitle = (nextTitle: string) => {
@@ -1267,6 +1382,29 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--obs-bg-primary,#1e1e1e)]">
+      {incomingHighlight && (
+        <div
+          data-testid="outline-resource-highlight-banner"
+          className="flex shrink-0 items-center justify-between gap-2 border-b border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-[11.5px] text-amber-100"
+        >
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="font-semibold text-amber-200">
+              🎯 아웃라인 하이라이트{incomingHighlight.nodeId ? ` · #${incomingHighlight.nodeId}` : ""}
+            </span>
+            {incomingHighlight.quoteText && (
+              <span className="truncate text-amber-100/85">“{incomingHighlight.quoteText}”</span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => clearResourceHighlight(path)}
+            className="shrink-0 rounded p-0.5 text-amber-200/80 hover:bg-amber-500/20 hover:text-white"
+            title="하이라이트 해제"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
       {/* Top Explicit Compile & Unified 1:N Link Dropdown Strip */}
       {showDirectiveStrip && (
         <div className="flex h-8 shrink-0 select-none items-center justify-between gap-2 border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-3 text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
@@ -1653,8 +1791,8 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
             }`}
         >
           <div
-            ref={containerRef}
-            className="obs-outliner-surface min-h-0 flex-1 overflow-auto bg-[var(--obs-bg-primary,#1e1e1e)] px-8 py-6"
+            ref={attachContainer}
+            className="obs-outliner-surface relative min-h-0 flex-1 overflow-auto bg-[var(--obs-bg-primary,#1e1e1e)] px-8 py-6"
           >
             <OutlineDiffAwareCanvas
               ai={ai}
@@ -1664,6 +1802,18 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
               host={host}
               onUpdateRootTitle={handleUpdateTitle}
             />
+            {outlineEvidenceIndex.groups.length > 0 && (
+              <div className="mx-auto w-full max-w-3xl">
+                <OutlineEvidenceLegendPanel
+                  groups={outlineEvidenceIndex.groups}
+                  onOpenSource={openAttachmentTarget}
+                />
+              </div>
+            )}
+            {ai && <AnchorChips ai={ai} surface="outline" path={path} container={containerEl} selector={outlineNodeSelector} />}
+            {directOpen && directIds.length > 0 && (
+              <AnchorDraft surface="outline" path={path} itemIds={directIds} container={containerEl} selector={outlineNodeSelector} />
+            )}
           </div>
 
           {onAiDirect && (
@@ -1681,14 +1831,74 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                 <button
                   type="button"
                   data-testid="outline-ai-direct"
-                  onClick={() => onAiDirect()}
+                  onMouseDown={() => {
+                    // 아웃라이너는 트리 밖을 누르면(창 mousedown) 선택을 푼다 — 그 전에 잡아 둔다
+                    pressedIdsRef.current = editorStore.getState().selectedNodeIds;
+                  }}
+                  onClick={() => {
+                    // 불릿을 골랐으면 그 자리에서 지시를 던진다 (뒤에서 도는 세션). 안 골랐으면 예전처럼 Composer 로
+                    const ids = pressedIdsRef.current.length ? pressedIdsRef.current : selectedNodeIds;
+                    pressedIdsRef.current = [];
+                    if (directOpen) setDirectOpen(false);
+                    else if (ids.length > 0) {
+                      setDirectIds([...ids]);
+                      setDirectOpen(true);
+                    } else onAiDirect();
+                  }}
                   className="inline-flex items-center gap-1 rounded border border-violet-400/40 bg-violet-500/15 px-2 py-0.5 text-[11px] font-medium text-violet-200 hover:bg-violet-500/25"
-                  title="선택 불릿을 AI Composer 에 첨부해 지시하기"
+                  title={selectedNodeIds.length > 0 || directOpen ? "고른 불릿에 지시 던지기 — 뒤에서 실행되고 끝나면 알려 준다" : "AI Composer 에 구조 작업 요청"}
                 >
                   <span>AI Direct</span>
                 </button>
               </div>
             </div>
+          )}
+          {onAiDirect && directOpen && directIds.length > 0 && (
+            <form
+              data-testid="outline-direct-form"
+              className="flex items-center gap-1.5 border-t border-white/10 bg-[#1b1c20] px-3 py-1.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const prompt = directText.trim();
+                if (!prompt) return;
+                onAiDirect(prompt, directIds);
+                setDirectText("");
+                setDirectOpen(false);
+                setDirectIds([]);
+              }}
+            >
+              <input
+                autoFocus
+                data-testid="outline-direct-input"
+                value={directText}
+                onChange={(e) => setDirectText(e.target.value)}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                  if (e.key === "Escape") setDirectOpen(false);
+                }}
+                placeholder={`불릿 ${directIds.length}개에 지시 — 예: 근거 자료를 조사해 리스트업해줘`}
+                className="min-w-0 flex-1 rounded border border-white/10 bg-[#25262c] px-2 py-1 text-[12px] text-slate-100 outline-none placeholder:text-slate-500 focus:border-violet-400/60"
+              />
+              <button
+                type="submit"
+                data-testid="outline-direct-send"
+                disabled={!directText.trim()}
+                className="shrink-0 rounded bg-violet-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-violet-500 disabled:opacity-40"
+              >
+                던지기
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDirectOpen(false);
+                  onAiDirect();
+                }}
+                className="shrink-0 rounded px-2 py-1 text-[11px] text-slate-400 hover:bg-white/10 hover:text-slate-200"
+                title="고른 불릿을 메인 Composer 에 첨부만 한다"
+              >
+                Composer 에 첨부
+              </button>
+            </form>
           )}
 
           {vdocUiBridge && (

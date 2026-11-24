@@ -699,6 +699,8 @@ const DIRECTIVE_BADGE_CLASS: Record<OutlineDirectiveKind, string> = {
   view: "bg-sky-500/20 text-sky-300",
   asset: "bg-amber-500/20 text-amber-300",
   template: "bg-purple-500/20 text-purple-300",
+  cite: "bg-teal-500/20 text-teal-300",
+  resource: "bg-cyan-500/20 text-cyan-300",
 };
 
 /**

@@ -6,7 +6,7 @@ import { foldGutter, foldKeymap } from "@codemirror/language";
 import { searchKeymap } from "@codemirror/search";
 import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView, drawSelection, keymap } from "@codemirror/view";
-import { BookOpen, Code2, Eye, Plus } from "lucide-react";
+import { BookOpen, Code2, Crosshair, Eye, Plus, X } from "lucide-react";
 import { stem, type VaultMetadataCache, type VaultPort } from "@vibe/vault-core";
 
 import {
@@ -16,7 +16,10 @@ import {
   upsertFrontmatterProperty,
   type FrontmatterValue,
 } from "../core/frontmatter";
-import { createObsidianLivePreviewExtension } from "../core/livePreview";
+import {
+  createObsidianLivePreviewExtension,
+  type MarkdownHighlightTarget,
+} from "../core/livePreview";
 import { obsidianEditorTheme } from "../core/theme";
 import { createObsidianCompletionExtension } from "../core/wikilinkCompletion";
 import { PropertiesPanel } from "./PropertiesPanel";
@@ -35,6 +38,9 @@ export interface ObsidianMarkdownEditorProps {
   readonly metadataCache?: VaultMetadataCache;
   readonly initialMode?: MarkdownEditorMode;
   readonly onOpenLink?: (target: string, mode: "current" | "new-tab") => void;
+  readonly onOpenResource?: (rawResourceTag: string) => void;
+  readonly highlightRequest?: MarkdownHighlightTarget | null;
+  readonly onClearHighlight?: () => void;
   readonly onRenameSelf?: (newName: string) => { ok: boolean; error?: string };
   readonly onSelectionChange?: (selection: MarkdownSelectionReport | null) => void;
 }
@@ -45,6 +51,9 @@ export const ObsidianMarkdownEditor: React.FC<ObsidianMarkdownEditorProps> = ({
   metadataCache,
   initialMode = "live-preview",
   onOpenLink,
+  onOpenResource,
+  highlightRequest,
+  onClearHighlight,
   onRenameSelf,
   onSelectionChange,
 }) => {
@@ -65,12 +74,14 @@ export const ObsidianMarkdownEditor: React.FC<ObsidianMarkdownEditorProps> = ({
   const livePreviewCompartmentRef = useRef(new Compartment());
   const isLocalWriteRef = useRef(false);
   const openLinkRef = useRef(onOpenLink);
+  const openResourceRef = useRef(onOpenResource);
   const selectionCbRef = useRef(onSelectionChange);
 
   useEffect(() => {
     openLinkRef.current = onOpenLink;
+    openResourceRef.current = onOpenResource;
     selectionCbRef.current = onSelectionChange;
-  }, [onOpenLink, onSelectionChange]);
+  }, [onOpenLink, onOpenResource, onSelectionChange]);
 
   // Keep title synced when path changes (e.g. external rename)
   useEffect(() => {
@@ -153,6 +164,8 @@ export const ObsidianMarkdownEditor: React.FC<ObsidianMarkdownEditorProps> = ({
             currentPath: path,
             enabled: initialLivePreviewEnabledRef.current,
             onOpenLink: (target, openMode) => openLinkRef.current?.(target, openMode),
+            onOpenResource: (raw) => openResourceRef.current?.(raw),
+            highlight: highlightRequest,
           })
         ),
         keymap.of([
@@ -201,7 +214,7 @@ export const ObsidianMarkdownEditor: React.FC<ObsidianMarkdownEditorProps> = ({
     };
   }, [vault, path, metadataCache, isReading]);
 
-  // Live Preview <-> Source Mode instantaneous compartment switch (0ms!)
+  // Live Preview <-> Source Mode & incoming resource highlight reconfigure
   useEffect(() => {
     const view = cmViewRef.current;
     if (!view || mode === "reading") return;
@@ -212,10 +225,32 @@ export const ObsidianMarkdownEditor: React.FC<ObsidianMarkdownEditorProps> = ({
           currentPath: path,
           enabled: mode === "live-preview",
           onOpenLink: (target, openMode) => openLinkRef.current?.(target, openMode),
+          onOpenResource: (raw) => openResourceRef.current?.(raw),
+          highlight: highlightRequest,
         })
       ),
     });
-  }, [mode, vault, path]);
+
+    if (highlightRequest) {
+      let targetPos: number | null = null;
+      if (highlightRequest.quoteText?.trim()) {
+        const idx = view.state.doc
+          .toString()
+          .toLowerCase()
+          .indexOf(highlightRequest.quoteText.trim().toLowerCase());
+        if (idx >= 0) targetPos = idx;
+      }
+      if (targetPos === null && highlightRequest.lines && highlightRequest.lines[0] >= 1) {
+        const safeLine = Math.max(1, Math.min(view.state.doc.lines, highlightRequest.lines[0]));
+        targetPos = view.state.doc.line(safeLine).from;
+      }
+      if (targetPos !== null) {
+        view.dispatch({
+          effects: EditorView.scrollIntoView(targetPos, { y: "center" }),
+        });
+      }
+    }
+  }, [mode, vault, path, highlightRequest]);
 
   // Ctrl+E toggles Reading <-> Live Preview (Obsidian exact shortcut!)
   const handleContainerKeyDown = (ev: React.KeyboardEvent) => {
@@ -321,6 +356,37 @@ export const ObsidianMarkdownEditor: React.FC<ObsidianMarkdownEditorProps> = ({
           <span className="font-code opacity-75">Ctrl+E · CM6</span>
         </div>
       </div>
+
+      {highlightRequest && (
+        <div
+          data-testid="md-resource-highlight-banner"
+          className="flex shrink-0 items-center justify-between gap-2 border-b border-amber-500/40 bg-amber-500/15 px-6 py-1.5 text-[11.5px] text-amber-100"
+        >
+          <div className="flex min-w-0 items-center gap-2">
+            <Crosshair className="h-3.5 w-3.5 shrink-0 text-amber-300" />
+            <span className="font-semibold text-amber-200">
+              {highlightRequest.lines
+                ? highlightRequest.lines[0] === highlightRequest.lines[1]
+                  ? `L${highlightRequest.lines[0]} 하이라이트`
+                  : `L${highlightRequest.lines[0]}-L${highlightRequest.lines[1]} 하이라이트`
+                : "리소스 인용 하이라이트"}
+            </span>
+            {highlightRequest.quoteText && (
+              <span className="truncate text-amber-100/85">“{highlightRequest.quoteText}”</span>
+            )}
+          </div>
+          {onClearHighlight && (
+            <button
+              type="button"
+              onClick={onClearHighlight}
+              className="shrink-0 rounded p-0.5 text-amber-200/80 hover:bg-amber-500/20 hover:text-white"
+              title="하이라이트 해제"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Scrollable Obsidian Document Column */}
       <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6">
