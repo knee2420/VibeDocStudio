@@ -126,7 +126,7 @@ export function useCanvasRangeSelection(getMain: () => HTMLElement | null): void
           position: "fixed",
           zIndex: "55",
           pointerEvents: "none",
-          background: "#e3ebf9",
+          background: "var(--vds-accent-soft)",
           mixBlendMode: "multiply",
         });
         document.body.appendChild(marquee);

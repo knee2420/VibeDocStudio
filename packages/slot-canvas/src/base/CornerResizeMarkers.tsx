@@ -7,13 +7,13 @@ export interface CornerResizeMarkersProps {
 }
 
 /**
- * PandaDoc-style 4-corner resize markers (`oklch(0.5535 0.1001 167.8)` ≈ #248567)
+ * PandaDoc-style 4-corner resize markers (`oklch(0.5535 0.1001 167.8)` ≈ var(--vds-accent))
  * Dragging a corner handle updates the block frame width/height interactively.
  */
 export const CornerResizeMarkers: React.FC<CornerResizeMarkersProps> = ({
   onResize,
   onResizeEnd,
-  color = "#248567",
+  color = "var(--vds-accent)",
 }) => {
   const startDrag = (e: React.PointerEvent, corner: "nw" | "ne" | "se" | "sw") => {
     e.preventDefault();

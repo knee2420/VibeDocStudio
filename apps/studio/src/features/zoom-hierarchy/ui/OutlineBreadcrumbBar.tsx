@@ -115,7 +115,7 @@ export const OutlineBreadcrumbBar: React.FC = () => {
                   data-testid={`breadcrumb-item-${crumb.nodeId}`}
                   className={`px-1.5 py-0.5 rounded max-w-[180px] text-left cursor-pointer transition ${
                     isLast
-                      ? "font-bold text-[#248567] bg-emerald-50 border border-emerald-200"
+                      ? "font-bold text-[var(--vds-accent)] bg-emerald-50 border border-emerald-200"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   }`}
                 >

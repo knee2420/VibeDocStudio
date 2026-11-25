@@ -72,7 +72,7 @@ export const ActionUndoToast: React.FC<ActionUndoToastProps> = ({ message, canUn
         type="button"
         disabled={!canUndo}
         onClick={onUndo}
-        className="h-6 px-2 inline-flex items-center gap-1 rounded-[5px] bg-[#0d99ff] hover:bg-[#0b8ae6] disabled:opacity-40 font-medium cursor-default"
+        className="h-6 px-2 inline-flex items-center gap-1 rounded-[5px] bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] disabled:opacity-40 font-medium cursor-default"
         title="실행 취소 (Ctrl+Z)"
       >
         <RotateCcw className="w-3 h-3" />

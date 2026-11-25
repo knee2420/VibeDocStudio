@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export type RulerKind = "add" | "del" | "mod";
 
-const COLOR: Record<RulerKind, string> = { add: "#2da44e", del: "#cf222e", mod: "#d4a72c" };
+const COLOR: Record<RulerKind, string> = { add: "#2da44e", del: "#cf222e", mod: "#f97316" };
 
 interface Mark {
   top: number;
@@ -27,7 +27,7 @@ export function scrollToElement(container: HTMLElement, el: Element, block: "cen
 /** 옮긴 자리가 잠깐 빛나게 (어디로 왔는지 눈에 들어오게). */
 export function flashElement(el: Element) {
   (el as HTMLElement).animate?.(
-    [{ boxShadow: "0 0 0 3px rgba(13,153,255,0.6)" }, { boxShadow: "0 0 0 3px rgba(13,153,255,0)" }],
+    [{ boxShadow: "0 0 0 3px rgba(234,88,12,0.45)" }, { boxShadow: "0 0 0 3px rgba(234,88,12,0)" }],
     { duration: 900, easing: "ease-out" },
   );
 }
@@ -46,7 +46,9 @@ export const ChangeOverviewRuler: React.FC<{
   onJump?: (el: HTMLElement) => void;
   /** 바뀌면 다시 잰다 */
   deps: unknown[];
-}> = ({ scrollRef, selector, kindOf, labelOf, onJump, deps }) => {
+  /** 미니맵이 펼쳐져 자체 뷰포트 슬라이더를 보여줄 때는 중복 스크롤 손잡이를 숨긴다. */
+  hideThumb?: boolean;
+}> = ({ scrollRef, selector, kindOf, labelOf, onJump, deps, hideThumb = false }) => {
   const [marks, setMarks] = useState<Mark[]>([]);
   const viewRef = useRef<HTMLSpanElement>(null);
   const rulerRef = useRef<HTMLDivElement>(null);
@@ -152,11 +154,11 @@ export const ChangeOverviewRuler: React.FC<{
         if (el) el.scrollTop += e.deltaY;
       }}
     >
-      {/* 지금 보이는 범위 = 스크롤 손잡이 */}
+      {/* 지금 보이는 범위 = 스크롤 손잡이 (미니맵이 열려 있을 때는 중복 방지를 위해 숨김) */}
       <span
         ref={viewRef}
         aria-hidden
-        className="absolute left-[2px] right-[2px] rounded-[3px] bg-black/[0.09] group-hover/ruler:bg-black/[0.14] pointer-events-none"
+        className={`absolute left-[2px] right-[2px] rounded-[3px] bg-black/[0.09] group-hover/ruler:bg-black/[0.14] pointer-events-none ${hideThumb ? "!hidden" : ""}`}
       />
       {marks.map((m, i) => (
         <button

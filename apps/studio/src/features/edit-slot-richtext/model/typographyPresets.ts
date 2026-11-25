@@ -23,9 +23,9 @@ export const FONT_WEIGHT_OPTIONS = [
 ] as const;
 
 export const TEXT_COLOR_PRESETS = [
-  { label: "블랙", value: "#0f172a" },
-  { label: "다크그레이", value: "#383838" },
-  { label: "인보이스 블루", value: "#336699" },
-  { label: "뮤트", value: "#64748b" },
-  { label: "에메랄드", value: "#047857" },
+  { label: "블랙", value: "#111111" },
+  { label: "차콜", value: "#27272a" },
+  { label: "다크 그레이", value: "#52525b" },
+  { label: "미드 그레이", value: "#71717a" },
+  { label: "라이트 그레이", value: "#a1a1aa" },
 ] as const;

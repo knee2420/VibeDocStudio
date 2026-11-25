@@ -293,7 +293,7 @@ export const ElementsSection: React.FC<
               <>
                 <p className="text-black/90 font-medium">일치하는 엘리먼트가 없습니다</p>
                 <p className="mt-0.5">"{rawQuery.trim()}"</p>
-                <button type="button" onClick={() => setQuery("")} className="mt-2 text-[#0d99ff] hover:underline">
+                <button type="button" onClick={() => setQuery("")} className="mt-2 text-[var(--vds-accent)] hover:underline">
                   검색 지우기
                 </button>
               </>

@@ -132,7 +132,7 @@ export const SlotInspectorDrawer: React.FC = () => {
           >
             <Sliders className="w-3 h-3" />
             인스펙터
-            {selectedSlot && <span className="w-1.5 h-1.5 rounded-full bg-[#0d99ff]" title="선택한 슬롯이 있습니다" />}
+            {selectedSlot && <span className="w-1.5 h-1.5 rounded-full bg-[var(--vds-accent)]" title="선택한 슬롯이 있습니다" />}
           </button>
         </div>
 
@@ -177,7 +177,7 @@ export const SlotInspectorDrawer: React.FC = () => {
                 <div className="fig-dsec" data-testid="slot-fill-section">
                   <div className="fig-dsec-head">
                     <span className="flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3 text-[#9747ff]" />
+                      <Sparkles className="w-3 h-3 text-[var(--vds-accent)]" />
                       근거로 채우기
                       <span className="fig-mono font-normal text-black/40">fill.slot</span>
                     </span>

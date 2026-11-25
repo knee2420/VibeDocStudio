@@ -79,12 +79,12 @@ export const StudioActivityBar: React.FC = () => {
               title={item.label}
               className={iconButton(isActive)}
             >
-              {isActive && <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-[#0d99ff] rounded-r" />}
+              {isActive && <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-[var(--vds-accent)] rounded-r" />}
               {item.icon}
               {badge > 0 && (
                 <span
                   data-testid="source-control-badge"
-                  className="absolute bottom-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-[#0078d4] text-white font-sans font-semibold text-[9.5px] leading-none flex items-center justify-center border border-[#f6f6f6] shadow-2xs"
+                  className="absolute bottom-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-[var(--vds-ink)] text-white font-sans font-semibold text-[9.5px] leading-none flex items-center justify-center border border-[#f6f6f6] shadow-2xs"
                 >
                   {badge}
                 </span>

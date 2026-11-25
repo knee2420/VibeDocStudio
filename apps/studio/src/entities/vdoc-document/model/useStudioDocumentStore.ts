@@ -60,6 +60,9 @@ export interface StudioDocumentState {
   openNewTab: () => void;
   selectTab: (key: string) => void;
   closeTab: (key: string) => void;
+  closeOtherTabs: (keepKey: string) => void;
+  closeTabsToRight: (key: string) => void;
+  closeAllTabs: () => void;
   setMode: (mode: "Editing" | "Viewing") => void;
   toggleMode: () => void;
   updateCurrentDoc: (updater: (prev: VDocDocument) => VDocDocument, opts?: UpdateDocOptions) => void;
@@ -348,6 +351,49 @@ export const useStudioDocumentStore = create<StudioDocumentState>((set, get) => 
       } else {
         set({ openTabs: nextTabs });
       }
+    },
+    closeOtherTabs: (keepKey) => {
+      const target = get().openTabs.find((t) => t.key === keepKey);
+      if (!target) return;
+      if (target.kind === "new-tab") {
+        set({ openTabs: [target], activeTabKey: target.key });
+      } else {
+        if (target.docId !== get().activeDocId) useHistoryStore.getState().clearScope("document");
+        set({
+          openTabs: [target],
+          activeTabKey: target.key,
+          activeDocId: target.docId,
+          activePageId: target.pageId,
+        });
+      }
+    },
+    closeTabsToRight: (key) => {
+      const { openTabs, activeTabKey } = get();
+      const idx = openTabs.findIndex((t) => t.key === key);
+      if (idx === -1) return;
+      const nextTabs = openTabs.slice(0, idx + 1);
+      if (nextTabs.some((t) => t.key === activeTabKey)) {
+        set({ openTabs: nextTabs });
+      } else {
+        const last = nextTabs[nextTabs.length - 1];
+        if (!last || last.kind === "new-tab") {
+          set({ openTabs: nextTabs, activeTabKey: last?.key ?? "new-tab" });
+        } else {
+          if (last.docId !== get().activeDocId) useHistoryStore.getState().clearScope("document");
+          set({
+            openTabs: nextTabs,
+            activeTabKey: last.key,
+            activeDocId: last.docId,
+            activePageId: last.pageId,
+          });
+        }
+      }
+    },
+    closeAllTabs: () => {
+      set({
+        openTabs: [{ kind: "new-tab", key: "new-tab" }],
+        activeTabKey: "new-tab",
+      });
     },
     setMode: (mode) => set({ mode }),
     toggleMode: () => set((s) => ({ mode: s.mode === "Editing" ? "Viewing" : "Editing" })),

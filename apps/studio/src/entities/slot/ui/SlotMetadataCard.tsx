@@ -39,7 +39,7 @@ export const SlotMetadataCard: React.FC<SlotMetadataCardProps> = ({ slot, onTogg
             title="이 슬롯에 인라인 AI 열기 (Ctrl+K)"
             className="fig-btn"
           >
-            <Sparkles className="w-3 h-3 text-[#9747ff]" />
+            <Sparkles className="w-3 h-3 text-[var(--vds-accent)]" />
             프롬프트로 편집
           </button>
         </div>

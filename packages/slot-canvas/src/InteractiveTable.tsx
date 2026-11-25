@@ -484,11 +484,11 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                           }}
                           className={`relative ${vAlignClass} ${hAlignClass} ${
                             focused
-                              ? "after:pointer-events-none after:absolute after:-inset-px after:z-[3] after:border-2 after:border-[#0472e3] after:content-['']"
+                              ? "after:pointer-events-none after:absolute after:-inset-px after:z-[3] after:border-2 after:border-[var(--vds-accent)] after:content-['']"
                               : ""
                           } ${
                             inRange
-                              ? "after:pointer-events-none after:absolute after:inset-0 after:z-[3] after:bg-[#0472e3]/10 after:content-['']"
+                              ? "after:pointer-events-none after:absolute after:inset-0 after:z-[3] after:bg-[var(--vds-accent)]/10 after:content-['']"
                               : ""
                           }`}
                         >

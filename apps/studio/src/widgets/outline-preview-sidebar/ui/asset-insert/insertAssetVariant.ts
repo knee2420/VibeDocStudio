@@ -35,5 +35,5 @@ export function insertAssetVariant(
 /** 삽입 버튼 공통 모양 (첫 버튼만 파란 강조). */
 export const insertButtonClass = (primary: boolean) =>
   `w-full h-8 rounded-[6px] text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 cursor-default transition-colors disabled:opacity-40 ${
-    primary ? "bg-[#0d99ff] hover:bg-[#0b8ae6] text-white" : "bg-white border border-[#e6e6e6] hover:bg-[#f5f5f5] text-black/80"
+    primary ? "bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white" : "bg-white border border-[#e6e6e6] hover:bg-[#f5f5f5] text-black/80"
   }`;

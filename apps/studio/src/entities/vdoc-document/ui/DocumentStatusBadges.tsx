@@ -14,7 +14,7 @@ export const DocumentStatusBadges: React.FC<DocumentStatusBadgesProps> = ({ doc 
           {doc.totalValueText}
         </span>
       )}
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-emerald-50 text-[#248567] font-medium border border-emerald-200">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-emerald-50 text-[var(--vds-accent)] font-medium border border-emerald-200">
         ● {doc.status}
       </span>
     </>

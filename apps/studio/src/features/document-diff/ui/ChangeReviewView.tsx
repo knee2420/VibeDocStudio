@@ -105,7 +105,7 @@ const ChangeCard: React.FC<{
       data-testid="review-change-card"
       onClick={onFocus}
       className={`group relative rounded-[8px] bg-white border transition scroll-mt-16 ${
-        focused ? "border-[#0d99ff] shadow-[0_0_0_1px_#0d99ff]" : "border-black/10 hover:border-black/20"
+        focused ? "border-[var(--vds-accent)] shadow-[0_0_0_1px_var(--vds-accent)]" : "border-black/10 hover:border-black/20"
       }`}
     >
       <header className="h-9 pl-4 pr-2 flex items-center gap-2 text-[12px] text-black/50">
@@ -300,7 +300,7 @@ export const ChangeReviewView: React.FC<{
                 <span className="inline-flex items-center gap-1.5">
                   <span
                     className="w-5 h-5 rounded-full flex items-center justify-center text-white"
-                    style={{ background: meta.author === "ai" ? "#9747ff" : "#0d99ff" }}
+                    style={{ background: meta.author === "ai" ? "var(--vds-accent)" : "var(--vds-accent)" }}
                   >
                     {meta.author === "ai" ? <Sparkles className="w-3 h-3" /> : <User className="w-3 h-3" />}
                   </span>
@@ -343,7 +343,7 @@ export const ChangeReviewView: React.FC<{
                     <button
                       type="button"
                       onClick={() => revertItems(items, `${activeDiff.label} 모두 되돌리기`)}
-                      className="h-7 px-2.5 rounded-[6px] bg-[#cf222e] text-white text-[12px] font-medium"
+                      className="h-7 px-2.5 rounded-[6px] bg-[#9a3412] text-white text-[12px] font-medium"
                       data-testid="review-revert-all-confirm"
                     >
                       모두 되돌리기
@@ -371,7 +371,7 @@ export const ChangeReviewView: React.FC<{
             <section key={g.key} className="mt-4">
               <div className="h-8 flex items-center gap-2 text-[12px]">
                 <span className="font-semibold text-black/70">{g.location ? pageTitle(g.location) : "지금 문서에 없는 칸"}</span>
-                {g.location && !livePageIds.has(g.location.pageId) && <span className="text-[#cf222e]">지금은 지운 쪽</span>}
+                {g.location && !livePageIds.has(g.location.pageId) && <span className="text-[#9a3412]">지금은 지운 쪽</span>}
                 <span className="text-black/35">{g.items.length}곳</span>
                 <CharStatText stat={sumStats(g.items.map((i) => i.stat))} className="ml-auto" />
                 {restorePage && g.location && (

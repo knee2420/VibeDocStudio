@@ -261,49 +261,49 @@ export const RmKnowledgeDeckSection: React.FC = () => {
     });
 
   return (
-    <div className="border-t border-slate-200 bg-white flex flex-col shrink-0">
+    <div className="border-t border-[var(--vds-border)] bg-white flex flex-col shrink-0">
       <div
         onClick={handleToggleSection}
-        className="px-3 py-2 bg-gradient-to-r from-violet-50/70 to-indigo-50/50 hover:from-violet-100/70 hover:to-indigo-100/60 border-b border-violet-100/80 flex items-center justify-between cursor-pointer transition select-none"
+        className="h-9 px-3 bg-white hover:bg-[#fafafa] border-b border-[var(--vds-border)] flex items-center justify-between cursor-pointer transition select-none"
       >
         <div className="flex items-center gap-1.5">
-          {isSectionOpen ? <ChevronDown className="w-4 h-4 text-violet-700" /> : <ChevronRight className="w-4 h-4 text-violet-700" />}
-          <Sparkles className="w-3.5 h-3.5 text-violet-600 fill-violet-200" />
-          <span className="text-xs font-bold text-violet-900 tracking-tight">Knowledge Deck (구조화 지식 덱)</span>
+          {isSectionOpen ? <ChevronDown className="w-4 h-4 text-[#71717a]" /> : <ChevronRight className="w-4 h-4 text-[#71717a]" />}
+          <Sparkles className="w-3.5 h-3.5 text-[#71717a]" />
+          <span className="text-[12px] font-semibold text-[#18181b] tracking-tight">Knowledge Deck (구조화 지식 덱)</span>
         </div>
-        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-200/80 text-violet-800">
+        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#f4f4f5] text-[#71717a] tabular-nums">
           {checkedDecks.length}/{decks.length}
         </span>
       </div>
 
       {isSectionOpen && (
         <div className="flex flex-col">
-          <div className="px-3 py-1.5 border-b border-slate-200 flex items-center justify-between gap-2 bg-slate-50/50">
+          <div className="px-3 py-1.5 border-b border-[var(--vds-border)] flex items-center justify-between gap-2 bg-[#fafafa]">
             <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer" title="체크한 덱은 AI Composer 대화에 자동으로 첨부됩니다">
+              <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#3f3f46] cursor-pointer" title="체크한 덱은 AI Composer 대화에 자동으로 첨부됩니다">
                 <input
                   type="checkbox"
                   checked={allChecked}
                   onChange={(e) => void toggleAllDecksChoice(projectId, e.target.checked)}
-                  className="rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer w-3.5 h-3.5"
+                  className="rounded border-[#d4d4d8] cursor-pointer w-3.5 h-3.5"
                 />
                 <span>전체 선택</span>
               </label>
-              <div className="w-[1px] h-3 bg-slate-200 mx-0.5" />
+              <div className="w-[1px] h-3 bg-[#e4e4e7] mx-0.5" />
               <button
                 type="button"
                 onClick={() => setIsImportModalOpen(true)}
-                className="px-2 py-0.5 rounded text-[11px] font-semibold bg-white border border-slate-200 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300 text-slate-700 transition flex items-center gap-1 cursor-pointer shadow-2xs"
+                className="h-6 px-2 rounded-md text-[11px] font-medium bg-white border border-[#e4e4e7] hover:bg-[#f4f4f5] text-[#18181b] transition flex items-center gap-1 cursor-pointer"
                 title="외부에서 사전 구축된 지식 덱(.deck.json) 불러오기"
               >
-                <Download className="w-3 h-3 text-violet-600" />
+                <Download className="w-3 h-3 text-[#71717a]" />
                 <span>덱 Import</span>
               </button>
             </div>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as "latest" | "topics" | "title")}
-              className="text-[10px] font-semibold text-slate-600 bg-white border border-slate-200 rounded px-1.5 py-0.5 focus:outline-none cursor-pointer"
+              className="h-6 text-[11px] font-medium text-[#52525b] bg-white border border-[#e4e4e7] rounded-md px-1.5 focus:outline-none cursor-pointer"
             >
               <option value="latest">최근 색인순</option>
               <option value="topics">카드 많은순</option>
@@ -311,15 +311,17 @@ export const RmKnowledgeDeckSection: React.FC = () => {
             </select>
           </div>
 
-          <div className="px-3 py-1 border-b border-slate-100 flex items-center gap-1.5">
-            <Search className="w-3 h-3 text-slate-400 shrink-0" />
-            <input
-              type="text"
-              value={filterKeyword}
-              onChange={(e) => setFilterKeyword(e.target.value)}
-              placeholder="지식 덱 · 섹션 · 카드 검색..."
-              className="w-full text-[11px] placeholder:text-slate-400 focus:outline-none bg-transparent"
-            />
+          <div className="px-3 py-2 border-b border-[#f4f4f5]">
+            <div className="h-7 px-2.5 rounded-md bg-[#f4f4f5] flex items-center gap-1.5 border border-transparent focus-within:bg-white focus-within:border-[#d4d4d8] transition">
+              <Search className="w-3.5 h-3.5 text-[#a1a1aa] shrink-0" />
+              <input
+                type="text"
+                value={filterKeyword}
+                onChange={(e) => setFilterKeyword(e.target.value)}
+                placeholder="지식 덱 · 섹션 · 카드 검색..."
+                className="w-full text-[11.5px] text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none bg-transparent"
+              />
+            </div>
           </div>
 
           {storeError && (
@@ -357,7 +359,7 @@ export const RmKnowledgeDeckSection: React.FC = () => {
                     onMouseEnter={() => useEvidenceFocusStore.getState().setHighlightedSlots(slotsUsingCard(deck.id))}
                     onMouseLeave={() => useEvidenceFocusStore.getState().clearHighlightedSlots()}
                     className={`rounded-lg border transition ${
-                      deck.isChecked ? "bg-violet-50/30 border-violet-200 hover:border-violet-300" : "bg-white border-slate-200 hover:border-slate-300"
+                      deck.isChecked ? "bg-white border-[#18181b]/25 shadow-2xs" : "bg-white border-[#e4e4e7] hover:border-[#d4d4d8]"
                     }`}
                   >
                     <div className="p-2.5 flex items-start justify-between gap-2">

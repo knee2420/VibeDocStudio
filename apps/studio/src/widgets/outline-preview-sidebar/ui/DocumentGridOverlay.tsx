@@ -94,7 +94,7 @@ export const DocumentGridOverlay: React.FC = () => {
         {projectDocs.map((doc) => (
           <section key={doc.docId} data-testid={`grid-doc-section-${doc.docId}`} className="space-y-3">
             <div className="flex items-center gap-2 border-b border-slate-200/80 pb-2">
-              <FileText className="w-4 h-4 text-[#0d99ff] shrink-0" />
+              <FileText className="w-4 h-4 text-[var(--vds-accent)] shrink-0" />
               <h2 className="text-[13.5px] font-bold text-slate-800 truncate">{doc.title}</h2>
               <span className="text-[11px] font-mono text-slate-400 shrink-0">{doc.pages.length}쪽</span>
             </div>

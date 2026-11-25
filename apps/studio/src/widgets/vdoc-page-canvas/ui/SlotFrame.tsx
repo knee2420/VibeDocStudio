@@ -15,9 +15,9 @@ import { htmlToPlain } from "@/shared/lib";
 import { useSlotGutterChange, type GutterChangeKind } from "../model/WorkingChangeContext";
 
 const GUTTER_COLOR: Record<GutterChangeKind, string> = {
-  add: "bg-[#2da44e]",
-  mod: "bg-[#0d99ff]",
-  del: "bg-[#cf222e]",
+  add: "bg-[var(--vds-git-add)]",
+  mod: "bg-[var(--vds-git-mod)]",
+  del: "bg-[var(--vds-git-del)]",
 };
 const GUTTER_TITLE: Record<GutterChangeKind, string> = {
   add: "새로 추가됨",
@@ -57,15 +57,15 @@ export const SlotFrame: React.FC<SlotFrameProps> = ({ slot, children, onOpenEvid
   });
 
   const ring = highlighted
-    ? "ring-2 ring-amber-400 ring-offset-1 rounded-sm bg-amber-50/40"
+    ? "ring-2 ring-[var(--vds-accent)] ring-offset-1 rounded-sm bg-[var(--vds-accent-soft)]"
     : drafting && state === "empty"
-      ? "outline outline-1 outline-dashed outline-amber-300/80 outline-offset-2 rounded-sm"
+      ? "outline outline-1 outline-dashed outline-zinc-300 outline-offset-2 rounded-sm"
       : "";
 
   return (
     <div
       ref={frameRef}
-      className={`relative ${ring}`}
+      className={`relative group/slot ${ring}`}
       data-fill-state={state}
       data-overflow={overflow ? "1" : undefined}
       data-change-gutter={gutterChange?.kind}
@@ -175,8 +175,10 @@ export const SlotFrame: React.FC<SlotFrameProps> = ({ slot, children, onOpenEvid
             e.stopPropagation();
             toggleSlotVerified(slot.slotId);
           }}
-          className={`absolute -right-1 -top-2 z-10 inline-flex items-center gap-0.5 px-1 py-px rounded-full border text-[9px] font-bold shadow-sm cursor-pointer select-none ${
-            state === "verified" ? "bg-emerald-50 border-emerald-300 text-emerald-700" : "bg-violet-50 border-violet-300 text-violet-700"
+          className={`absolute -right-1 -top-2 z-10 inline-flex items-center gap-0.5 px-1.5 py-px rounded-full border text-[9px] font-medium shadow-2xs cursor-pointer select-none transition-opacity ${
+            state === "verified"
+              ? "bg-white/95 border-[#e6e6e8] text-[#6e6e73] opacity-0 group-hover/slot:opacity-100"
+              : "bg-white/95 border-[#e6e6e8] text-[#f97316]"
           }`}
           title={
             state === "verified"

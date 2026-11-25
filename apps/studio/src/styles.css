@@ -5,6 +5,200 @@
 @source "../../../packages/ai-inline/src";
 @source "../../../packages/ai-react/src";
 
+/* ───────────────────────────────────────────────────────────────────────────
+ * Tailwind v4 전역 팔레트 단일화 — 《디자인 구구단》 흑백 명도 + 단일 오렌지
+ * 모든 패키지에 흩어져 있던 blue / indigo / violet / purple / sky 클래스를
+ * 단일 프라이머리 오렌지 명도·채도 스케일로 통합해 파랑·보라 혼재를 원천 차단한다.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  --color-blue-50: #fff7ed;
+  --color-blue-100: #ffedd5;
+  --color-blue-200: #fed7aa;
+  --color-blue-300: #fdba74;
+  --color-blue-400: #fb923c;
+  --color-blue-500: #f97316;
+  --color-blue-600: #ea580c;
+  --color-blue-700: #c2410c;
+  --color-blue-800: #9a3412;
+  --color-blue-900: #7c2d12;
+  --color-blue-950: #431407;
+
+  --color-sky-50: #fff7ed;
+  --color-sky-100: #ffedd5;
+  --color-sky-200: #fed7aa;
+  --color-sky-300: #fdba74;
+  --color-sky-400: #fb923c;
+  --color-sky-500: #f97316;
+  --color-sky-600: #ea580c;
+  --color-sky-700: #c2410c;
+  --color-sky-800: #9a3412;
+  --color-sky-900: #7c2d12;
+  --color-sky-950: #431407;
+
+  --color-indigo-50: #fff7ed;
+  --color-indigo-100: #ffedd5;
+  --color-indigo-200: #fed7aa;
+  --color-indigo-300: #fdba74;
+  --color-indigo-400: #fb923c;
+  --color-indigo-500: #f97316;
+  --color-indigo-600: #ea580c;
+  --color-indigo-700: #c2410c;
+  --color-indigo-800: #9a3412;
+  --color-indigo-900: #7c2d12;
+  --color-indigo-950: #431407;
+
+  --color-violet-50: #fff7ed;
+  --color-violet-100: #ffedd5;
+  --color-violet-200: #fed7aa;
+  --color-violet-300: #fdba74;
+  --color-violet-400: #fb923c;
+  --color-violet-500: #f97316;
+  --color-violet-600: #ea580c;
+  --color-violet-700: #c2410c;
+  --color-violet-800: #9a3412;
+  --color-violet-900: #7c2d12;
+  --color-violet-950: #431407;
+
+  --color-purple-50: #fff7ed;
+  --color-purple-100: #ffedd5;
+  --color-purple-200: #fed7aa;
+  --color-purple-300: #fdba74;
+  --color-purple-400: #fb923c;
+  --color-purple-500: #f97316;
+  --color-purple-600: #ea580c;
+  --color-purple-700: #c2410c;
+  --color-purple-800: #9a3412;
+  --color-purple-900: #7c2d12;
+  --color-purple-950: #431407;
+
+  --color-emerald-50: #fff7ed;
+  --color-emerald-100: #ffedd5;
+  --color-emerald-200: #fed7aa;
+  --color-emerald-300: #fdba74;
+  --color-emerald-400: #fb923c;
+  --color-emerald-500: #f97316;
+  --color-emerald-600: #ea580c;
+  --color-emerald-700: #c2410c;
+  --color-emerald-800: #9a3412;
+  --color-emerald-900: #7c2d12;
+  --color-emerald-950: #431407;
+
+  --color-green-50: #fff7ed;
+  --color-green-100: #ffedd5;
+  --color-green-200: #fed7aa;
+  --color-green-300: #fdba74;
+  --color-green-400: #fb923c;
+  --color-green-500: #f97316;
+  --color-green-600: #ea580c;
+  --color-green-700: #c2410c;
+  --color-green-800: #9a3412;
+  --color-green-900: #7c2d12;
+  --color-green-950: #431407;
+
+  --color-teal-50: #fff7ed;
+  --color-teal-100: #ffedd5;
+  --color-teal-200: #fed7aa;
+  --color-teal-300: #fdba74;
+  --color-teal-400: #fb923c;
+  --color-teal-500: #f97316;
+  --color-teal-600: #ea580c;
+  --color-teal-700: #c2410c;
+  --color-teal-800: #9a3412;
+  --color-teal-900: #7c2d12;
+  --color-teal-950: #431407;
+
+  --color-cyan-50: #fff7ed;
+  --color-cyan-100: #ffedd5;
+  --color-cyan-200: #fed7aa;
+  --color-cyan-300: #fdba74;
+  --color-cyan-400: #fb923c;
+  --color-cyan-500: #f97316;
+  --color-cyan-600: #ea580c;
+  --color-cyan-700: #c2410c;
+  --color-cyan-800: #9a3412;
+  --color-cyan-900: #7c2d12;
+  --color-cyan-950: #431407;
+
+  --color-amber-50: #fff7ed;
+  --color-amber-100: #ffedd5;
+  --color-amber-200: #fed7aa;
+  --color-amber-300: #fdba74;
+  --color-amber-400: #fb923c;
+  --color-amber-500: #f97316;
+  --color-amber-600: #ea580c;
+  --color-amber-700: #c2410c;
+  --color-amber-800: #9a3412;
+  --color-amber-900: #7c2d12;
+  --color-amber-950: #431407;
+
+  --color-yellow-50: #fff7ed;
+  --color-yellow-100: #ffedd5;
+  --color-yellow-200: #fed7aa;
+  --color-yellow-300: #fdba74;
+  --color-yellow-400: #fb923c;
+  --color-yellow-500: #f97316;
+  --color-yellow-600: #ea580c;
+  --color-yellow-700: #c2410c;
+  --color-yellow-800: #9a3412;
+  --color-yellow-900: #7c2d12;
+  --color-yellow-950: #431407;
+
+  --color-rose-50: #fff7ed;
+  --color-rose-100: #ffedd5;
+  --color-rose-200: #fed7aa;
+  --color-rose-300: #fdba74;
+  --color-rose-400: #fb923c;
+  --color-rose-500: #ea580c;
+  --color-rose-600: #c2410c;
+  --color-rose-700: #9a3412;
+  --color-rose-800: #7c2d12;
+  --color-rose-900: #431407;
+  --color-rose-950: #431407;
+
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-200: #fecaca;
+  --color-red-300: #fca5a5;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+  --color-red-800: #991b1b;
+  --color-red-900: #7f1d1d;
+  --color-red-950: #450a0a;
+
+  --color-pink-50: #fff7ed;
+  --color-pink-100: #ffedd5;
+  --color-pink-200: #fed7aa;
+  --color-pink-300: #fdba74;
+  --color-pink-400: #fb923c;
+  --color-pink-500: #f97316;
+  --color-pink-600: #ea580c;
+  --color-pink-700: #c2410c;
+  --color-pink-800: #9a3412;
+  --color-pink-900: #7c2d12;
+  --color-pink-950: #431407;
+
+  --color-fuchsia-50: #fff7ed;
+  --color-fuchsia-100: #ffedd5;
+  --color-fuchsia-200: #fed7aa;
+  --color-fuchsia-300: #fdba74;
+  --color-fuchsia-400: #fb923c;
+  --color-fuchsia-500: #f97316;
+  --color-fuchsia-600: #ea580c;
+  --color-fuchsia-700: #c2410c;
+  --color-fuchsia-800: #9a3412;
+  --color-fuchsia-900: #7c2d12;
+  --color-fuchsia-950: #431407;
+}
+
+/* 브라우저 기본 파란 체크박스·라디오 차단 → 전역 오렌지 통일 */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  accent-color: var(--vds-accent);
+}
+
 @font-face {
   font-family: "GulimChe";
   src: url("/fonts/GulimChe.ttf") format("truetype");
@@ -233,17 +427,64 @@
  * 행 32px · 들여쓰기 24px · 11px 글자 · 선택 #E5F4FF · 선택된 노드의 자식 #F2F9FF.
  * 이어진 선택 행은 하나의 띠처럼 붙고(가운데 모서리 없음), 동작 아이콘은 호버 · 선택 때만 보인다.
  * ─────────────────────────────────────────────────────────────────────────── */
+/* ───────────────────────────────────────────────────────────────────────────
+ * 전역 디자인 토큰 — 《디자인 구구단》 흑백 명도 + 단일 오렌지 채도 대비 시스템
+ * - 95% 무채색 명도 스케일 (#FFFFFF ↔ #F7F7F8 ↔ #F2F2F4 ↔ #E6E6E8 ↔ #6E6E73 ↔ #18181B)
+ * - Primary 1색: Warm Orange (--vds-accent) — 명도·채도 단계로만 강조 (파랑/보라 전면 제거)
+ * ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --vds-bg: #ffffff;
+  --vds-surface: #f7f7f8;
+  --vds-canvas: #f2f2f4;
+  --vds-hover: #efeff1;
+  --vds-border: #e6e6e8;
+  --vds-border-strong: #d4d4d8;
+  --vds-ink: #18181b;
+  --vds-ink-secondary: #6e6e73;
+  --vds-ink-tertiary: #a1a1aa;
+  --vds-accent: #ea580c;
+  --vds-accent-hover: #c2410c;
+  --vds-accent-bright: #f97316;
+  --vds-accent-soft: #fff7ed;
+  --vds-accent-soft-hover: #ffedd5;
+  --vds-accent-border: #fed7aa;
+  --vds-accent-diff: rgba(249, 115, 22, 0.14);
+  /* Git / Diff 시맨틱 변경 표시 (추가=초록, 수정=주황, 삭제=빨강) */
+  --vds-git-add: #2da44e;
+  --vds-git-mod: #f97316;
+  --vds-git-del: #cf222e;
+  /* 경고 · 삭제 시맨틱 컬러 */
+  --vds-danger: #dc2626;
+  --vds-danger-soft: #fef2f2;
+  --vds-danger-border: #fecaca;
+}
+
+/* Manyfast 스타일 인라인 AI Diff 타이포그래피 */
+.vdoc-diff-del {
+  color: var(--vds-ink-tertiary);
+  text-decoration: line-through;
+  text-decoration-color: rgba(161, 161, 170, 0.75);
+  background: transparent;
+}
+.vdoc-diff-ins {
+  background: var(--vds-accent-diff);
+  color: var(--vds-ink);
+  text-decoration: none;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
 .fig-panel {
-  --fig-text: rgba(15, 23, 42, 0.9);
-  --fig-text-secondary: rgba(15, 23, 42, 0.56);
-  --fig-text-tertiary: rgba(15, 23, 42, 0.35);
-  --fig-border: #e6e6e6;
-  --fig-hover: #f1f5f9;
-  --fig-selected: #e5f4ff;
-  --fig-selected-hover: #d6eeff;
-  --fig-selected-child: #f2f9ff;
-  --fig-brand: #0d99ff;
-  --fig-component: #9747ff;
+  --fig-text: var(--vds-ink);
+  --fig-text-secondary: var(--vds-ink-secondary);
+  --fig-text-tertiary: var(--vds-ink-tertiary);
+  --fig-border: var(--vds-border);
+  --fig-hover: var(--vds-hover);
+  --fig-selected: var(--vds-accent-soft);
+  --fig-selected-hover: var(--vds-accent-soft-hover);
+  --fig-selected-child: #fffaf5;
+  --fig-brand: var(--vds-accent);
+  --fig-component: var(--vds-accent);
   font-family: "Pretendard", "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
   font-size: 12.5px;
   line-height: 18px;
@@ -359,59 +600,53 @@
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
- * 안티그래비티 (VS Code Git 트리) 스타일 데코레이터
- * - Added: 신규 요소 및 상위 컨테이너 초록색 텍스트 (#2ea043) + 우측 'U' / 도트(●)
- * - Edited: 수정 요소 및 상위 컨테이너 골드/앰버 텍스트 (#d97706) + 우측 'M' / 도트(●)
+ * 사이드바 변경 표시 — 2-Accent 절제 규칙 (알록달록한 주황/초록 글자 제거)
+ * 라벨은 깔끔한 기본 흑백을 유지하고, 우측 미세 도트/기호로만 변경 여부를 표시.
  * ─────────────────────────────────────────────────────────────────────────── */
-.fig-row[data-diff="added"] .fig-row-label {
-  color: #2ea043 !important;
-  font-weight: 500;
-}
+.fig-row[data-diff="added"] .fig-row-label,
 .fig-row[data-diff="edited"] .fig-row-label {
-  color: #d97706 !important;
+  color: var(--fig-text);
   font-weight: 500;
 }
 .fig-row[data-diff="deleted"] .fig-row-label {
-  color: #cf222e !important;
-  font-weight: 500;
+  color: var(--fig-text-tertiary) !important;
   text-decoration: line-through;
-  text-decoration-color: rgba(207, 34, 46, 0.5);
 }
 
 .fig-git-letter {
   flex-shrink: 0;
   margin-left: 6px;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 600;
   line-height: 1;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 .fig-git-letter.fig-git-added {
-  color: #2ea043;
+  color: var(--vds-git-add);
 }
 .fig-git-letter.fig-git-edited {
-  color: #d97706;
+  color: var(--vds-git-mod);
 }
 .fig-git-letter.fig-git-deleted {
-  color: #cf222e;
+  color: var(--vds-git-del);
 }
 
 .fig-git-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
   margin-left: 6px;
   display: inline-block;
 }
 .fig-git-dot.fig-git-added {
-  background-color: #2ea043;
+  background-color: var(--vds-git-add);
 }
 .fig-git-dot.fig-git-edited {
-  background-color: #d97706;
+  background-color: var(--vds-git-mod);
 }
 .fig-git-dot.fig-git-deleted {
-  background-color: #cf222e;
+  background-color: var(--vds-git-del);
 }
 
 .fig-search {
@@ -591,7 +826,7 @@
 .fig-btn:hover { background: var(--fig-hover); }
 .fig-btn:disabled { opacity: 0.4; pointer-events: none; }
 .fig-btn-primary { background: var(--fig-brand); border-color: var(--fig-brand); color: #fff; }
-.fig-btn-primary:hover { background: #0b8ae6; }
+.fig-btn-primary:hover { background: var(--vds-accent-hover); }
 .fig-link { color: var(--fig-brand); font-weight: 500; cursor: default; display: inline-flex; align-items: center; gap: 4px; }
 .fig-link:hover { text-decoration: underline; }
 
@@ -671,50 +906,15 @@
 .fig-scroll-hidden::-webkit-scrollbar { display: none; }
 
 /* ───────────────────────────────────────────────────────────────────────────
- * 실험실 모드 (플레이그라운드 초안을 열어 둔 상태)
- * 피그마 Dev Mode 처럼 배치 · 톤은 같고 강조색 · 크롬만 바꿔 "지금은 프로젝트가 아니다"를 보인다.
- * 색: 프라이머리(파랑 #0d99ff)와 세컨더리(AI 보라 #7c3aed) 사이의 아이리스(Radix Colors iris 스케일) —
- * 브랜드 팔레트 안에서 두 색 모두와 구분된다. iris3 #f0f1fe · iris4 #e6e7ff · iris6 #cbcdff · iris9 #5b5bd6 · iris12 #272962
+ * 실험실 모드 (플레이그라운드 초안) — 무채색 + 단일 오렌지(--vds-accent) 통일
  * ─────────────────────────────────────────────────────────────────────────── */
-[data-studio-mode="lab"] .fig-panel,
-[data-studio-mode="lab"] {
-  --fig-brand: #5b5bd6;
-  --fig-hover: #f4f4fe;
-  --fig-selected: #e6e7ff;
-  --fig-selected-hover: #dadcff;
-  --fig-selected-child: #f0f1fe;
-}
-
 [data-studio-mode="lab"] [data-testid="studio-top-ribbon"] {
-  background: #eeeffd;
-  border-bottom: 2px solid #5b5bd6;
-}
-
-[data-studio-mode="lab"] [data-chrome="page-tabs"] {
-  background: #f3f3fe;
-  border-bottom-color: #cbcdff;
-}
-
-[data-studio-mode="lab"] [data-testid="studio-activity-bar"] {
-  background: #ebecfc;
-  border-right-color: #cbcdff;
-}
-[data-studio-mode="lab"] [data-testid="studio-activity-bar"] .bg-\[\#0d99ff\] {
-  background: #5b5bd6;
+  background: var(--vds-surface);
+  border-bottom: 1.5px solid var(--vds-accent);
 }
 
 [data-studio-mode="lab"] [data-vdoc-canvas-main] {
-  background-color: #eff0fb;
-  background-image: radial-gradient(rgba(91, 91, 214, 0.2) 1px, transparent 1px);
-  background-size: 18px 18px;
+  background-color: var(--vds-canvas);
+  background-image: radial-gradient(rgba(24, 24, 27, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
-
-/* 좌우 패널 가장자리 */
-[data-studio-mode="lab"] aside {
-  border-color: #cbcdff;
-}
-
-/* 패널 · 목록 곳곳의 파란 선택 강조를 아이리스로 */
-[data-studio-mode="lab"] .ring-\[\#0d99ff\] { --tw-ring-color: #5b5bd6; }
-[data-studio-mode="lab"] .border-\[\#0d99ff\] { border-color: #5b5bd6; }
-[data-studio-mode="lab"] .bg-\[\#e5f4ff\] { background-color: #e6e7ff; }

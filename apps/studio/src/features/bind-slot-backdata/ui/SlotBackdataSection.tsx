@@ -81,7 +81,7 @@ export const SlotBackdataSection: React.FC<SlotBackdataSectionProps> = ({ doc, s
                 >
                   <span
                     className={`mt-px w-3.5 h-3.5 shrink-0 rounded-[3px] flex items-center justify-center ${
-                      isBound ? "bg-[#0d99ff] text-white" : "border border-black/25"
+                      isBound ? "bg-[var(--vds-accent)] text-white" : "border border-black/25"
                     }`}
                   >
                     {isBound && <Check className="w-2.5 h-2.5" strokeWidth={3} />}

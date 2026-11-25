@@ -132,9 +132,9 @@ export const DocumentSplitPane: React.FC<{ side: SplitSide }> = ({ side }) => {
       {/* 상단 미니 헤더 */}
       <header className="fig-panel h-9 px-2.5 bg-white border-b border-[var(--fig-border)] flex items-center gap-1.5 shrink-0 select-none">
         {isLab ? (
-          <FlaskConical className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+          <FlaskConical className="w-3.5 h-3.5 text-[#f97316] shrink-0" />
         ) : (
-          <FileText className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+          <FileText className="w-3.5 h-3.5 text-[#6e6e73] shrink-0" />
         )}
         <span className="text-[12px] font-semibold text-slate-800 truncate min-w-0 flex-1" title={splitDoc.title}>
           {splitDoc.title}
@@ -210,7 +210,7 @@ export const DocumentSplitPane: React.FC<{ side: SplitSide }> = ({ side }) => {
               <div
                 key={page.pageId}
                 data-split-page-id={page.pageId}
-                className={pane.pageId === page.pageId ? "ring-2 ring-indigo-400/80 rounded-sm" : undefined}
+                className={pane.pageId === page.pageId ? "ring-2 ring-[var(--vds-accent)]/80 rounded-sm" : undefined}
               >
                 <MemoVDocPageSheet
                   seamless={seamless}
@@ -238,8 +238,8 @@ export const DocumentSplitPane: React.FC<{ side: SplitSide }> = ({ side }) => {
 
         {/* 다른 문서를 이 패널 위로 끌어왔을 때 교체 안내 오버레이 */}
         {dropOver && (
-          <div className="pointer-events-none absolute inset-2 rounded-lg border-2 border-dashed border-[#0d99ff] bg-[#0d99ff]/10 flex items-center justify-center z-40">
-            <span className="px-3 py-1.5 rounded-md bg-[#0d99ff] text-white text-xs font-semibold shadow">
+          <div className="pointer-events-none absolute inset-2 rounded-lg border-2 border-dashed border-[var(--vds-accent)] bg-[var(--vds-accent)]/10 flex items-center justify-center z-40">
+            <span className="px-3 py-1.5 rounded-md bg-[var(--vds-accent)] text-white text-xs font-semibold shadow">
               여기에 놓아 이 패널 문서 바꾸기
             </span>
           </div>
@@ -252,7 +252,7 @@ export const DocumentSplitPane: React.FC<{ side: SplitSide }> = ({ side }) => {
         aria-orientation="vertical"
         aria-label="분할 보기 폭 조절"
         onMouseDown={onResizeStart}
-        className={`absolute top-0 bottom-0 w-1.5 z-30 cursor-col-resize hover:bg-[#0d99ff]/40 transition-colors ${
+        className={`absolute top-0 bottom-0 w-1.5 z-30 cursor-col-resize hover:bg-[var(--vds-accent)]/40 transition-colors ${
           side === "left" ? "right-0" : "left-0"
         }`}
       />

@@ -279,7 +279,7 @@ export const PagePickerModal: React.FC<PagePickerModalProps> = ({
               data-testid="page-picker-confirm-btn"
               disabled={selectedIds.length === 0}
               onClick={confirm}
-              className="px-4 py-1.5 rounded-lg bg-[#248567] hover:bg-[#1d6b52] disabled:opacity-40 text-white text-xs font-bold cursor-pointer transition"
+              className="px-4 py-1.5 rounded-lg bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] disabled:opacity-40 text-white text-xs font-bold cursor-pointer transition"
             >
               선택한 {selectedIds.length}개 페이지 추가
             </button>
@@ -486,7 +486,7 @@ const PdfPreviewPickerDialog: React.FC<PdfPreviewPickerDialogProps> = ({ picker,
               data-testid="pdf-picker-confirm-btn"
               disabled={selectedPdfPages.length === 0}
               onClick={confirmPdf}
-              className="px-4 py-1.5 rounded-lg bg-[#248567] hover:bg-[#1d6b52] disabled:opacity-40 text-white text-xs font-bold cursor-pointer transition"
+              className="px-4 py-1.5 rounded-lg bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] disabled:opacity-40 text-white text-xs font-bold cursor-pointer transition"
             >
               선택한 {selectedPdfPages.length}개 페이지 추가 · 변환 시작
             </button>

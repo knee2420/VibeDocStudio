@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { FilePlus2, FileText, GitCompare, Plus, X } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { FilePlus2, FileText, GitCompare, MoreHorizontal, Plus, X } from "lucide-react";
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { setSplitDragData } from "@/entities/workspace-layout";
@@ -18,8 +18,35 @@ export const PageTabBar: React.FC = () => {
   const openNewTab = useStudioDocumentStore((s) => s.openNewTab);
   const selectTab = useStudioDocumentStore((s) => s.selectTab);
   const closeTab = useStudioDocumentStore((s) => s.closeTab);
+  const closeOtherTabs = useStudioDocumentStore((s) => s.closeOtherTabs);
+  const closeTabsToRight = useStudioDocumentStore((s) => s.closeTabsToRight);
+  const closeAllTabs = useStudioDocumentStore((s) => s.closeAllTabs);
   const activeDiff = useActiveDiffStore((s) => s.activeDiff);
   const closeDiff = useActiveDiffStore((s) => s.closeDiff);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; key: string } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuPos && !ctxMenu) return;
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current?.contains(e.target as Node)) return;
+      setMenuPos(null);
+      setCtxMenu(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenuPos(null);
+        setCtxMenu(null);
+      }
+    };
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuPos, ctxMenu]);
   // 변경 기록(Changes)과 같은 기준: 마지막 버전 이후 새 쪽(U) · 고친 쪽(M)
   const tabDocIds = useMemo(() => openTabs.flatMap((t) => (t.kind === "page" && t.docId ? [t.docId] : [])), [openTabs]);
   const working = useWorkingPagesByDoc(tabDocIds);
@@ -38,7 +65,7 @@ export const PageTabBar: React.FC = () => {
     <div
       data-testid="studio-page-tab-bar"
       data-chrome="page-tabs"
-      className="h-9 bg-[#f6f6f6] border-b border-slate-200/90 px-2 flex items-end gap-0.5 shrink-0 select-none overflow-x-auto no-scrollbar"
+      className="h-10 bg-[#f6f6f6] border-b border-[var(--vds-border)] px-2 flex items-end gap-0.5 shrink-0 select-none overflow-x-auto no-scrollbar"
     >
       {openTabs.map((tab) => {
         const isActive = !activeDiff && tab.key === activeTabKey;
@@ -96,7 +123,12 @@ export const PageTabBar: React.FC = () => {
             }}
             data-diff={diffKind}
             onClick={() => handleSelectTab(tab.key)}
-            title={`${tabDoc?.title ?? ""} · ${label} (캔버스로 끌어다 놓아 나란히 보기)`}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setMenuPos(null);
+              setCtxMenu({ x: e.clientX, y: e.clientY, key: tab.key });
+            }}
+            title={`${tabDoc?.title ?? ""} · ${label} (우클릭: 탭 정리 · 캔버스로 끌어다 놓아 나란히 보기)`}
             className={`fig-row group flex items-center gap-1.5 h-8 px-3 text-xs cursor-pointer transition shrink-0 max-w-[230px] ${
               isActive
                 ? "bg-white text-slate-900 font-semibold border border-b-white border-slate-200/90 rounded-t-lg -mb-px z-10 shadow-[0_-1px_2px_rgba(0,0,0,0.03)]"
@@ -158,6 +190,129 @@ export const PageTabBar: React.FC = () => {
       >
         <Plus className="w-3.5 h-3.5" />
       </button>
+
+      {/* 우측 끝: VS Code 스타일 탭 일괄 정리 메뉴 (⋯) */}
+      <div className="ml-auto self-center pl-1 shrink-0 relative">
+        <button
+          type="button"
+          data-testid="tabbar-more-btn"
+          onClick={(e) => {
+            setCtxMenu(null);
+            if (menuPos) {
+              setMenuPos(null);
+            } else {
+              const r = e.currentTarget.getBoundingClientRect();
+              setMenuPos({ top: r.bottom + 4, right: Math.max(8, window.innerWidth - r.right) });
+            }
+          }}
+          title="탭 정리 메뉴 (모두 닫기 · 다른 탭 닫기)"
+          className="w-6 h-6 rounded-md flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 cursor-pointer transition"
+        >
+          <MoreHorizontal className="w-3.5 h-3.5" />
+        </button>
+
+        {menuPos && (
+          <div
+            ref={menuRef}
+            style={{ top: menuPos.top, right: menuPos.right }}
+            className="fixed z-50 w-44 rounded-lg border border-[#e4e4e7] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] py-1 text-[11.5px] text-[#18181b]"
+          >
+            <button
+              type="button"
+              disabled={openTabs.length <= 1}
+              onClick={() => {
+                if (activeDiff) closeDiff();
+                closeOtherTabs(activeTabKey);
+                setMenuPos(null);
+              }}
+              className="w-full px-3 py-1.5 text-left hover:bg-[#f4f4f5] disabled:opacity-40 cursor-pointer"
+            >
+              다른 탭 모두 닫기
+            </button>
+            <button
+              type="button"
+              disabled={openTabs.findIndex((t) => t.key === activeTabKey) >= openTabs.length - 1}
+              onClick={() => {
+                if (activeDiff) closeDiff();
+                closeTabsToRight(activeTabKey);
+                setMenuPos(null);
+              }}
+              className="w-full px-3 py-1.5 text-left hover:bg-[#f4f4f5] disabled:opacity-40 cursor-pointer"
+            >
+              오른쪽 탭 모두 닫기
+            </button>
+            <div className="my-1 border-t border-[#e4e4e7]" />
+            <button
+              type="button"
+              data-testid="tabbar-close-all-btn"
+              onClick={() => {
+                if (activeDiff) closeDiff();
+                closeAllTabs();
+                setMenuPos(null);
+              }}
+              className="w-full px-3 py-1.5 text-left hover:bg-[#f4f4f5] text-[#dc2626] font-medium cursor-pointer"
+            >
+              모든 탭 닫기 ({openTabs.length})
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 탭 우클릭 컨텍스트 메뉴 */}
+      {ctxMenu && (
+        <div
+          ref={menuRef}
+          style={{ left: ctxMenu.x, top: ctxMenu.y }}
+          className="fixed z-50 w-44 rounded-lg border border-[#e4e4e7] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] py-1 text-[11.5px] text-[#18181b]"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              closeTab(ctxMenu.key);
+              setCtxMenu(null);
+            }}
+            className="w-full px-3 py-1.5 text-left hover:bg-[#f4f4f5] cursor-pointer"
+          >
+            닫기
+          </button>
+          <button
+            type="button"
+            disabled={openTabs.length <= 1}
+            onClick={() => {
+              if (activeDiff) closeDiff();
+              closeOtherTabs(ctxMenu.key);
+              setCtxMenu(null);
+            }}
+            className="w-full px-3 py-1.5 text-left hover:bg-[#f4f4f5] disabled:opacity-40 cursor-pointer"
+          >
+            다른 탭 모두 닫기
+          </button>
+          <button
+            type="button"
+            disabled={openTabs.findIndex((t) => t.key === ctxMenu.key) >= openTabs.length - 1}
+            onClick={() => {
+              if (activeDiff) closeDiff();
+              closeTabsToRight(ctxMenu.key);
+              setCtxMenu(null);
+            }}
+            className="w-full px-3 py-1.5 text-left hover:bg-[#f4f4f5] disabled:opacity-40 cursor-pointer"
+          >
+            오른쪽 탭 모두 닫기
+          </button>
+          <div className="my-1 border-t border-[#e4e4e7]" />
+          <button
+            type="button"
+            onClick={() => {
+              if (activeDiff) closeDiff();
+              closeAllTabs();
+              setCtxMenu(null);
+            }}
+            className="w-full px-3 py-1.5 text-left hover:bg-[#f4f4f5] text-[#dc2626] font-medium cursor-pointer"
+          >
+            모든 탭 닫기
+          </button>
+        </div>
+      )}
     </div>
   );
 };

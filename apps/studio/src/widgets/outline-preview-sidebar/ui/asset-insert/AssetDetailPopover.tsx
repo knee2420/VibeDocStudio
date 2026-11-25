@@ -157,7 +157,7 @@ export const AssetDetailPopover: React.FC<AssetDetailPopoverProps> = ({
         <div className="px-4 pt-3 pb-4 border-t border-[var(--fig-border)]" data-testid="asset-properties">
           <div className="flex items-center justify-between mb-2">
             <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold">
-              <Diamond className="w-3 h-3 text-[var(--fig-component,#9747ff)]" />
+              <Diamond className="w-3 h-3 text-[var(--fig-component,var(--vds-accent))]" />
               속성
             </span>
             <button

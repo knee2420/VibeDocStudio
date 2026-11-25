@@ -43,7 +43,7 @@ export const EmptyStateCard: React.FC<EmptyStateCardProps> = ({
             <button
               type="button"
               onClick={onAction}
-              className="px-2.5 py-1 rounded-md bg-[#248567] hover:bg-[#1d6b52] text-white text-[11px] font-semibold shadow-2xs cursor-pointer transition"
+              className="px-2.5 py-1 rounded-md bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-[11px] font-semibold shadow-2xs cursor-pointer transition"
             >
               {actionLabel}
             </button>

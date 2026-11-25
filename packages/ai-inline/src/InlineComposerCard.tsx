@@ -112,7 +112,7 @@ export function InlineComposerCard<TTarget>({
         <div className="px-3 pt-3 pb-2 border-b border-[var(--fig-border)]">
           <div className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
             <span className="inline-flex items-center gap-1 font-semibold text-black/80">
-              {run.status === "running" ? <Loader2 className="w-3 h-3 animate-spin text-[#0d99ff]" /> : <Sparkles className="w-3 h-3 text-[#9747ff]" />}
+              {run.status === "running" ? <Loader2 className="w-3 h-3 animate-spin text-[var(--vds-accent)]" /> : <Sparkles className="w-3 h-3 text-[var(--vds-accent)]" />}
               {run.status === "running" ? "작성 중…" : "미리보기 · 반영 전"}
             </span>
             <span className="text-black/40 truncate max-w-[200px]">

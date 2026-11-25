@@ -121,7 +121,7 @@ export const LibraryManagerDialog: React.FC<{
                           data-testid={`library-toggle-${doc.docId}`}
                           onClick={() => setTemplateEnabled(doc.docId, !enabled)}
                           className={`h-7 px-2.5 rounded-[6px] text-[11.5px] font-medium inline-flex items-center gap-1 cursor-default shrink-0 ${
-                            enabled ? "border border-[#e6e6e6] text-black/70 hover:bg-[#f5f5f5]" : "bg-[#0d99ff] text-white hover:bg-[#0b8ae6]"
+                            enabled ? "border border-[#e6e6e6] text-black/70 hover:bg-[#f5f5f5]" : "bg-[var(--vds-accent)] text-white hover:bg-[var(--vds-accent-hover)]"
                           }`}
                         >
                           {enabled ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}

@@ -115,16 +115,16 @@ export const BlockPlacementLayer: React.FC<Props> = ({ getMain, pages, editable,
           data-testid="block-placement-line"
           aria-hidden
           className="fixed z-[60] pointer-events-none"
-          style={{ left: target.line.left, top: target.line.top - 1, width: target.line.width, height: 2, background: "#0d99ff" }}
+          style={{ left: target.line.left, top: target.line.top - 1, width: target.line.width, height: 2, background: "var(--vds-accent)" }}
         >
-          <span className="absolute -left-1 -top-[3px] w-2 h-2 rounded-full bg-white border-2 border-[#0d99ff]" />
-          <span className="absolute -right-1 -top-[3px] w-2 h-2 rounded-full bg-white border-2 border-[#0d99ff]" />
+          <span className="absolute -left-1 -top-[3px] w-2 h-2 rounded-full bg-white border-2 border-[var(--vds-accent)]" />
+          <span className="absolute -right-1 -top-[3px] w-2 h-2 rounded-full bg-white border-2 border-[var(--vds-accent)]" />
         </div>
       )}
       {pointer && (
         <div
           aria-hidden
-          className="fixed z-[61] pointer-events-none px-1.5 py-0.5 rounded bg-[#0d99ff] text-white text-[11px] font-medium shadow-sm whitespace-nowrap"
+          className="fixed z-[61] pointer-events-none px-1.5 py-0.5 rounded bg-[var(--vds-accent)] text-white text-[11px] font-medium shadow-sm whitespace-nowrap"
           style={{ left: pointer.x + 14, top: pointer.y + 14 }}
         >
           {target ? `${placement.label} 넣기` : `${placement.label} — 페이지 위에서 클릭`}

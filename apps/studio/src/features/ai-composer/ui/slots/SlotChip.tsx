@@ -9,6 +9,13 @@ interface SlotChipProps {
   onToggleOpen: () => void;
 }
 
+const MONO_ON = {
+  containerOn: "bg-white border-[#e4e4e7] text-[#18181b] hover:bg-[#fafafa]",
+  switchOn: "text-[#18181b] hover:bg-[#f4f4f5]",
+  dividerOn: "bg-[#e4e4e7]",
+  iconOn: "text-[#52525b]",
+};
+
 const TONE_STYLES: Record<
   SlotTone,
   {
@@ -18,24 +25,9 @@ const TONE_STYLES: Record<
     iconOn: string;
   }
 > = {
-  amber: {
-    containerOn: "bg-amber-50/80 border-amber-200 text-amber-950 hover:bg-amber-50",
-    switchOn: "text-amber-700 hover:text-amber-900 hover:bg-amber-100/60",
-    dividerOn: "bg-amber-200",
-    iconOn: "text-amber-600",
-  },
-  violet: {
-    containerOn: "bg-violet-50/80 border-violet-200 text-violet-950 hover:bg-violet-50",
-    switchOn: "text-violet-700 hover:text-violet-900 hover:bg-violet-100/60",
-    dividerOn: "bg-violet-200",
-    iconOn: "text-violet-600",
-  },
-  blue: {
-    containerOn: "bg-blue-50/80 border-blue-200 text-blue-950 hover:bg-blue-50",
-    switchOn: "text-blue-700 hover:text-blue-900 hover:bg-blue-100/60",
-    dividerOn: "bg-blue-200",
-    iconOn: "text-blue-600",
-  },
+  amber: MONO_ON,
+  violet: MONO_ON,
+  blue: MONO_ON,
 };
 
 export const SlotChip: React.FC<SlotChipProps> = ({ slot, state, open, onToggleOpen }) => {

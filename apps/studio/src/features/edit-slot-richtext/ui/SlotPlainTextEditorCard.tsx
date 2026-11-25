@@ -32,7 +32,7 @@ export const SlotPlainTextEditorCard: React.FC<{ slot: VDocSlot }> = ({ slot }) 
         <span className="flex items-center gap-1.5">
           내용
           <span className="inline-flex items-center gap-1 font-normal text-black/50" title="캔버스와 실시간 동기화">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#14ae5c]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--vds-accent)]" />
             실시간
           </span>
         </span>

@@ -38,9 +38,9 @@ const KIND_TABS: ReadonlyArray<{ id: KindTab; label: string }> = [
 ];
 
 const KIND_META: Record<ReferenceKind, { label: string; icon: React.ReactNode; tone: string }> = {
-  pdf: { label: "PDF", icon: <FileText className="w-3.5 h-3.5" />, tone: "text-[#e5484d]" },
-  web: { label: "웹", icon: <Globe className="w-3.5 h-3.5" />, tone: "text-[#0d99ff]" },
-  image: { label: "이미지", icon: <ImageIcon className="w-3.5 h-3.5" />, tone: "text-[#30a46c]" },
+  pdf: { label: "PDF", icon: <FileText className="w-3.5 h-3.5" />, tone: "text-[var(--vds-accent)]" },
+  web: { label: "웹", icon: <Globe className="w-3.5 h-3.5" />, tone: "text-[var(--vds-accent)]" },
+  image: { label: "이미지", icon: <ImageIcon className="w-3.5 h-3.5" />, tone: "text-[var(--vds-ink-secondary)]" },
 };
 
 const readView = (): ViewMode => {
@@ -110,7 +110,7 @@ export const ReferenceLibraryView: React.FC<{
           type="button"
           disabled={!canAdd}
           onClick={onAdd}
-          className="mt-1 h-7 px-3 rounded-[6px] bg-[#0d99ff] hover:bg-[#0b8ae6] text-white text-[12px] font-semibold inline-flex items-center gap-1 cursor-default disabled:opacity-40"
+          className="mt-1 h-7 px-3 rounded-[6px] bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-[12px] font-semibold inline-flex items-center gap-1 cursor-default disabled:opacity-40"
         >
           <Plus className="w-3.5 h-3.5" />
           레퍼런스 추가
@@ -219,7 +219,7 @@ export const ReferenceLibraryView: React.FC<{
                       onClick={(e) => e.stopPropagation()}
                       onChange={() => void store().setEnabled(refId, !entry.enabled)}
                       title={entry.enabled ? "AI 가 참고하는 중 (끄기)" : "AI 가 참고하지 않음 (켜기)"}
-                      className="w-3 h-3 shrink-0 accent-[#0d99ff]"
+                      className="w-3 h-3 shrink-0 accent-[var(--vds-accent)]"
                     />
                     <span className={`shrink-0 ${meta.tone}`}>{meta.icon}</span>
                     <span className="shrink-0 text-[10.5px] font-mono text-black/40">참조{numberOf(refId)}</span>
@@ -265,7 +265,7 @@ export const ReferenceLibraryView: React.FC<{
                             checked={checked}
                             onClick={(e) => e.stopPropagation()}
                             onChange={() => store().toggleChecked(pin.pinId)}
-                            className="w-3 h-3 shrink-0 accent-[#0d99ff]"
+                            className="w-3 h-3 shrink-0 accent-[var(--vds-accent)]"
                             title="체크한 핀만 AI 에 보낸다 (아무것도 체크하지 않으면 전부)"
                           />
                           {pin.kind === "text" ? <Type className="w-3 h-3 text-black/50 shrink-0" /> : <MapPin className="w-3 h-3 text-black/50 shrink-0" />}
@@ -343,7 +343,7 @@ const ReferenceTile: React.FC<{
       <div
         ref={ref}
         className={`relative aspect-[4/3] rounded-lg overflow-hidden border bg-[#f5f5f5] ${
-          selected ? "border-[#0d99ff] ring-2 ring-[#0d99ff]/25" : "border-[var(--fig-border)] group-hover:border-black/20"
+          selected ? "border-[var(--vds-accent)] ring-2 ring-[var(--vds-accent)]/25" : "border-[var(--fig-border)] group-hover:border-black/20"
         }`}
       >
         {src ? (
@@ -359,7 +359,7 @@ const ReferenceTile: React.FC<{
           onClick={(e) => e.stopPropagation()}
           onChange={() => void store().setEnabled(entry.refId, !entry.enabled)}
           title={entry.enabled ? "AI 가 참고하는 중 (끄기)" : "AI 가 참고하지 않음 (켜기)"}
-          className="absolute top-1.5 left-1.5 w-3.5 h-3.5 accent-[#0d99ff]"
+          className="absolute top-1.5 left-1.5 w-3.5 h-3.5 accent-[var(--vds-accent)]"
         />
         <button
           type="button"

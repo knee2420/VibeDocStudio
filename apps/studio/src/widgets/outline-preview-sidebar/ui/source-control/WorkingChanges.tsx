@@ -28,10 +28,10 @@ import { RedlineSegments } from "@/shared/ui";
 import { FigmaDiffBadge } from "../FigmaDiffBadge";
 import { useWorkingChanges, type WorkingKind, type WorkingPage } from "./useWorkingChanges";
 
-const ICON_COLOR: Record<WorkingKind, string> = { added: "#2ea043", edited: "#d97706", deleted: "#cf222e" };
+const ICON_COLOR: Record<WorkingKind, string> = { added: "#2da44e", edited: "#f97316", deleted: "#cf222e" };
 /** 블록 줄 앞 표시 — 쪽의 U/M/D 와 같은 색 규칙 (옮김은 회색). */
 const BLOCK_MARK: Record<BlockChangeKind, string> = { added: "+", removed: "−", edited: "✎", moved: "↕" };
-const BLOCK_COLOR: Record<BlockChangeKind, string> = { added: "#2ea043", removed: "#cf222e", edited: "#d97706", moved: "rgba(0,0,0,0.45)" };
+const BLOCK_COLOR: Record<BlockChangeKind, string> = { added: "#2da44e", removed: "#cf222e", edited: "#f97316", moved: "rgba(0,0,0,0.45)" };
 
 /** 줄에 올렸을 때만 보이는 작은 버튼 (VS Code 변경 목록의 열기 · 되돌리기 자리). */
 const RowAction: React.FC<{ title: string; onClick: () => void; testId?: string; children: React.ReactNode }> = ({ title, onClick, testId, children }) => (

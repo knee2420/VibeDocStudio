@@ -55,7 +55,7 @@ const edgeFromEvent = (e: React.DragEvent, el: HTMLElement): DropEdge => {
 
 /**
  * Block chrome modelled on PandaDoc's block selection (⋮⋮ move handle, ⚙ settings, `+` quick add)
- * with yesform's block drop line (2px #3b82f6 across the content width).
+ * with yesform's block drop line (2px var(--vds-accent) across the content width).
  */
 export const BlockFrame: React.FC<BlockFrameProps> = ({
   editable,

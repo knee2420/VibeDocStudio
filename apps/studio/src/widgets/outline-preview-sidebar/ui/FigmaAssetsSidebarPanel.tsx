@@ -307,7 +307,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
           key={item.id}
           {...common}
           className={`group flex items-center gap-2.5 p-1.5 rounded-lg cursor-grab active:cursor-grabbing transition ${
-            isSelected ? "bg-[#e5f4ff] ring-1 ring-[#0d99ff]" : "hover:bg-slate-100/90"
+            isSelected ? "bg-[var(--vds-accent-soft)] ring-1 ring-[var(--vds-accent)]" : "hover:bg-slate-100/90"
           }`}
         >
           <div className="w-9 h-9 rounded-md bg-[#f5f5f5] border border-slate-200/80 shrink-0 overflow-hidden">{renderAssetPreview(item, 34)}</div>
@@ -315,7 +315,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
             <div className="text-[12px] font-medium text-slate-800 truncate">{item.name}</div>
             <div className="text-[10.5px] text-slate-400 truncate">{item.description}</div>
           </div>
-          {quickButton("opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[#0d99ff] hover:text-white text-slate-500 transition cursor-pointer shrink-0")}
+          {quickButton("opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[var(--vds-accent)] hover:text-white text-slate-500 transition cursor-pointer shrink-0")}
         </div>
       );
     }
@@ -324,12 +324,12 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
       <div key={item.id} {...common} className="group flex flex-col cursor-grab active:cursor-grabbing">
         <div
           className={`relative h-[132px] w-full rounded-lg bg-white p-2 border overflow-hidden transition ${
-            isSelected ? "border-[#0d99ff] ring-2 ring-[#0d99ff]/25" : "border-slate-200/80 group-hover:border-slate-300"
+            isSelected ? "border-[var(--vds-accent)] ring-2 ring-[var(--vds-accent)]/25" : "border-slate-200/80 group-hover:border-slate-300"
           }`}
         >
           {renderAssetPreview(item, 114)}
           {quickButton(
-            "opacity-0 group-hover:opacity-100 absolute top-1.5 right-1.5 w-6 h-6 rounded-md bg-white/95 border border-slate-200 shadow-xs flex items-center justify-center text-slate-600 hover:bg-[#0d99ff] hover:text-white hover:border-[#0d99ff] transition cursor-pointer",
+            "opacity-0 group-hover:opacity-100 absolute top-1.5 right-1.5 w-6 h-6 rounded-md bg-white/95 border border-slate-200 shadow-xs flex items-center justify-center text-slate-600 hover:bg-[var(--vds-accent)] hover:text-white hover:border-[var(--vds-accent)] transition cursor-pointer",
           )}
         </div>
         <span className="mt-1 px-0.5 text-[11.5px] font-medium text-slate-700 truncate text-center group-hover:text-slate-950">{item.name}</span>
@@ -351,7 +351,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
         <div className="text-[12px] font-medium text-slate-800 truncate">{title}</div>
         <div className="text-[10.5px] text-slate-400 truncate">
           {sub}
-          {badge && <span className="ml-1 text-[#0d99ff]">· {badge}</span>}
+          {badge && <span className="ml-1 text-[var(--vds-accent)]">· {badge}</span>}
         </div>
       </div>
       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -407,7 +407,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
             type="button"
             onClick={() => setShowRegisterForm((v) => !v)}
             title="새 에셋 등록"
-            className={`fig-icon-btn ${showRegisterForm ? "bg-sky-50 text-[#0d99ff]" : ""}`}
+            className={`fig-icon-btn ${showRegisterForm ? "bg-sky-50 text-[var(--vds-accent)]" : ""}`}
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -416,7 +416,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
             data-testid="assets-library-btn"
             onClick={() => setLibraryOpen(true)}
             title="라이브러리"
-            className={`fig-icon-btn ${libraryOpen ? "bg-sky-50 text-[#0d99ff]" : ""}`}
+            className={`fig-icon-btn ${libraryOpen ? "bg-sky-50 text-[var(--vds-accent)]" : ""}`}
           >
             <BookOpen className="w-3.5 h-3.5" />
           </button>
@@ -432,7 +432,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={view.kind === "home" ? "모든 라이브러리 검색" : "이 라이브러리에서 검색"}
-            className="w-full pl-8 pr-6 py-1.5 text-[12px] bg-[#f3f4f6] hover:bg-slate-200/70 focus:bg-white rounded-md border border-transparent focus:border-[#0d99ff] outline-none transition-colors text-slate-800 placeholder-slate-400"
+            className="w-full pl-8 pr-6 py-1.5 text-[12px] bg-[#f3f4f6] hover:bg-slate-200/70 focus:bg-white rounded-md border border-transparent focus:border-[var(--vds-accent)] outline-none transition-colors text-slate-800 placeholder-slate-400"
           />
           {searchQuery && (
             <button type="button" onClick={() => setSearchQuery("")} className="absolute right-1.5 p-0.5 rounded text-slate-400 hover:text-slate-700 cursor-pointer">
@@ -468,7 +468,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
         <form onSubmit={handleRegisterTemplate} className="px-2.5 py-2 bg-sky-50/70 border-b border-sky-200/80 space-y-1.5 shrink-0">
           <div className="flex items-center justify-between text-[11px] font-semibold text-sky-900">
             <span className="flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#0d99ff]" />이 파일에 에셋 등록
+              <Sparkles className="w-3 h-3 text-[var(--vds-accent)]" />이 파일에 에셋 등록
             </span>
             <button type="button" onClick={() => setShowRegisterForm(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
               <X className="w-3 h-3" />
@@ -480,10 +480,10 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
               value={registerName}
               onChange={(e) => setRegisterName(e.target.value)}
               placeholder="새 에셋 이름 입력..."
-              className="flex-1 min-w-0 px-2 py-1 text-[11.5px] bg-white border border-sky-200 rounded outline-none focus:border-[#0d99ff]"
+              className="flex-1 min-w-0 px-2 py-1 text-[11.5px] bg-white border border-sky-200 rounded outline-none focus:border-[var(--vds-accent)]"
               autoFocus
             />
-            <button type="submit" className="px-2.5 py-1 rounded bg-[#0d99ff] hover:bg-[#0b87e3] text-white text-[11px] font-semibold cursor-pointer shrink-0">
+            <button type="submit" className="px-2.5 py-1 rounded bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-[11px] font-semibold cursor-pointer shrink-0">
               등록
             </button>
           </div>
@@ -558,7 +558,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
                 type="button"
                 data-testid="template-add-document-btn"
                 onClick={() => addTemplateAsDocument(currentTemplate)}
-                className="flex-1 h-8 rounded-md bg-[#0d99ff] hover:bg-[#0b8ae6] text-white text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 h-8 rounded-md bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <FilePlus2 className="w-3.5 h-3.5" />
                 문서 전체 추가
@@ -584,7 +584,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
                   <button key={p.pageId} type="button" onClick={open} className="group flex flex-col text-left cursor-pointer min-w-0">
                     <div
                       className={`w-full aspect-[1/1.25] rounded-lg bg-white border overflow-hidden transition ${
-                        selected ? "border-[#0d99ff] ring-2 ring-[#0d99ff]/25" : "border-slate-200/80 group-hover:border-slate-300"
+                        selected ? "border-[var(--vds-accent)] ring-2 ring-[var(--vds-accent)]/25" : "border-slate-200/80 group-hover:border-slate-300"
                       }`}
                     >
                       {source && <AssetPreview source={source} height={200} fit="width" contentWidth={714} />}
@@ -599,7 +599,7 @@ export const FigmaAssetsSidebarPanel: React.FC = () => {
                     type="button"
                     onClick={open}
                     className={`w-full flex items-center gap-2.5 p-1.5 rounded-lg text-left cursor-pointer ${
-                      selected ? "bg-[#e5f4ff] ring-1 ring-[#0d99ff]" : "hover:bg-slate-100/90"
+                      selected ? "bg-[var(--vds-accent-soft)] ring-1 ring-[var(--vds-accent)]" : "hover:bg-slate-100/90"
                     }`}
                   >
                     <div className="w-9 h-11 rounded border border-slate-200/80 bg-white overflow-hidden shrink-0">

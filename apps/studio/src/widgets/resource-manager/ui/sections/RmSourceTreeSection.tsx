@@ -30,14 +30,14 @@ import { useResourcePeekTrigger } from "../../model/useResourcePeek";
 import { MEDIA_DRAG_MIME, resourceMediaSrc } from "@vibe/slot-canvas";
 
 const getFileIcon = (ext: string = "", type: string = "file") => {
-  if (type === "web") return <Globe className="w-3.5 h-3.5 text-blue-500 shrink-0" />;
+  if (type === "web") return <Globe className="w-3.5 h-3.5 text-[#71717a] shrink-0" />;
   const e = ext.toLowerCase();
-  if (e === ".pdf") return <FileText className="w-3.5 h-3.5 text-rose-500 shrink-0" />;
-  if (e === ".csv" || e === ".xlsx") return <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />;
+  if (e === ".pdf") return <FileText className="w-3.5 h-3.5 text-[#71717a] shrink-0" />;
+  if (e === ".csv" || e === ".xlsx") return <FileSpreadsheet className="w-3.5 h-3.5 text-[#71717a] shrink-0" />;
   if (e === ".ts" || e === ".tsx" || e === ".js" || e === ".py" || e === ".json") {
-    return <FileCode className="w-3.5 h-3.5 text-amber-500 shrink-0" />;
+    return <FileCode className="w-3.5 h-3.5 text-[#71717a] shrink-0" />;
   }
-  return <File className="w-3.5 h-3.5 text-slate-400 shrink-0" />;
+  return <File className="w-3.5 h-3.5 text-[#a1a1aa] shrink-0" />;
 };
 
 const collectFolderIds = (items: ResourceItem[]): string[] => {
@@ -167,12 +167,12 @@ const TreeNode: React.FC<TreeNodeProps> = ({
           if (!isDirectory) useEvidenceFocusStore.getState().clearHighlightedSlots();
         }}
         style={{ paddingLeft: `${depth * 14 + 4}px` }}
-        className={`py-1 pr-2 flex items-center justify-between rounded hover:bg-slate-100 transition cursor-pointer select-none group ${
+        className={`py-1 pr-2 flex items-center justify-between rounded-md hover:bg-[#f4f4f5] transition cursor-pointer select-none group ${
           isSelected
-            ? "bg-violet-100/60 font-semibold text-violet-900"
+            ? "bg-[#f4f4f5] font-semibold text-[#18181b]"
             : isFocused
-            ? "bg-amber-50 text-amber-900 ring-1 ring-amber-300"
-            : "text-slate-700"
+            ? "bg-[#fafafa] text-[#18181b] ring-1 ring-[#d4d4d8]"
+            : "text-[#3f3f46]"
         }`}
         title={isFocused ? "지금 고른 칸의 근거 자료" : undefined}
       >
@@ -203,7 +203,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
           />
 
           {isDirectory ? (
-            <Folder className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <Folder className="w-3.5 h-3.5 text-[#71717a] shrink-0" />
           ) : (
             getFileIcon(item.extension, item.type)
           )}
@@ -212,7 +212,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
             {item.title}
           </span>
           {(isFocused || focusInside) && (
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="초점 근거" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--vds-accent)] shrink-0" title="초점 근거" />
           )}
         </div>
 
@@ -222,11 +222,11 @@ const TreeNode: React.FC<TreeNodeProps> = ({
               className={`text-[10px] font-mono px-1 rounded ${
                 isDirectory
                   ? nodeCount.checkedLeafCount > 0
-                    ? "bg-violet-100 text-violet-700 font-bold"
-                    : "bg-slate-100 text-slate-400"
+                    ? "bg-[#f4f4f5] text-[#18181b] font-semibold"
+                    : "bg-[#f4f4f5] text-[#a1a1aa]"
                   : item.isChecked
-                  ? "text-slate-400"
-                  : "text-slate-300"
+                  ? "text-[#a1a1aa]"
+                  : "text-[#d4d4d8]"
               }`}
             >
               {isDirectory ? `${nodeCount.checkedLeafCount}/${nodeCount.totalLeafCount}` : "1"}
@@ -421,14 +421,14 @@ export const RmSourceTreeSection: React.FC = () => {
           ) : (
             <ChevronRight className="w-4 h-4 text-slate-700" />
           )}
-          <Folder className="w-3.5 h-3.5 text-amber-500 fill-amber-100" />
-          <span className="text-xs font-bold text-slate-800 tracking-tight">
+          <Folder className="w-3.5 h-3.5 text-[#71717a]" />
+          <span className="text-[12px] font-semibold text-[#18181b] tracking-tight">
             Raw Resource Explorer (원본 탐색기)
           </span>
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700">
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#f4f4f5] text-[#71717a] tabular-nums">
             {checkedLeafItems.length}/{totalLeafCount}
           </span>
         </div>
@@ -438,26 +438,26 @@ export const RmSourceTreeSection: React.FC = () => {
       {isExplorerOpen && (
         <div className="flex-1 flex flex-col min-h-0">
           {/* 전용 도구 모음바 (컨텍스트 모핑 적용) */}
-          <div className="px-3 py-1.5 border-b border-slate-200 flex items-center justify-between gap-2 shrink-0 bg-slate-50/50">
+          <div className="px-3 py-1.5 border-b border-[var(--vds-border)] flex items-center justify-between gap-2 shrink-0 bg-[#fafafa]">
             {/* 좌측 영역: 선택 상태에 따른 모핑 */}
             {!hasSelection ? (
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer">
+              <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#3f3f46] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={allChecked}
                   onChange={(e) => void toggleAllChoice(projectId, e.target.checked)}
-                  className="rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer w-3.5 h-3.5"
+                  className="rounded border-[#d4d4d8] cursor-pointer w-3.5 h-3.5"
                 />
                 <span>모두 선택</span>
               </label>
             ) : (
               <div className="flex items-center gap-1.5">
-                <label className="flex items-center gap-1 text-xs font-bold text-violet-900 cursor-pointer">
+                <label className="flex items-center gap-1 text-[11.5px] font-semibold text-[#18181b] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={allChecked}
                     onChange={(e) => void toggleAllChoice(projectId, e.target.checked)}
-                    className="rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer w-3.5 h-3.5"
+                    className="rounded border-[#d4d4d8] cursor-pointer w-3.5 h-3.5"
                   />
                   <span>{checkedLeafItems.length}개</span>
                 </label>
@@ -465,23 +465,23 @@ export const RmSourceTreeSection: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => void toggleAllChoice(projectId, false)}
-                  className="p-0.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition cursor-pointer"
+                  className="p-0.5 rounded text-[#a1a1aa] hover:text-[#18181b] hover:bg-[#e4e4e7]/60 transition cursor-pointer"
                   title="선택 초기화"
                 >
                   <X className="w-3 h-3" />
                 </button>
 
-                <div className="w-[1px] h-3 bg-slate-200 mx-0.5" />
+                <div className="w-[1px] h-3 bg-[#e4e4e7] mx-0.5" />
 
                 {/* ⚡ 지식 덱으로 승격 버튼 */}
                 <button
                   type="button"
                   onClick={handlePromoteToDeck}
                   disabled={isPromoting}
-                  className="px-2 py-0.5 rounded text-[11px] font-bold bg-violet-600 hover:bg-violet-700 text-white transition flex items-center gap-1 cursor-pointer shadow-2xs disabled:opacity-50"
+                  className="h-6 px-2 rounded-md text-[11px] font-medium bg-[#18181b] hover:bg-[#27272a] text-white transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
                   title="선택한 파일마다 지식 덱을 하나씩 만들어 색인 대기열에 올립니다 (서버가 차례로 처리)"
                 >
-                  <Sparkles className="w-3 h-3 text-amber-300 fill-amber-300" />
+                  <Sparkles className="w-3 h-3 text-white/80" />
                   <span>지식 덱 승격</span>
                 </button>
 
@@ -489,31 +489,31 @@ export const RmSourceTreeSection: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleBatchDecouple}
-                  className="px-1.5 py-0.5 rounded text-[11px] font-semibold text-slate-600 hover:text-rose-700 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition flex items-center gap-1 cursor-pointer"
+                  className="h-6 px-2 rounded-md text-[11px] font-medium text-[#52525b] hover:text-[#dc2626] hover:bg-white border border-[#e4e4e7] bg-white transition flex items-center gap-1 cursor-pointer"
                   title="선택된 항목들의 세션 연결을 일괄 해제 (로컬 원본 보존)"
                 >
-                  <Link2Off className="w-3 h-3 text-rose-500" />
+                  <Link2Off className="w-3 h-3" />
                   <span>일괄 해제</span>
                 </button>
               </div>
             )}
 
             {/* 우측 공통 컨트롤: 동기화, 접기/펼치기, 필터 */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <button
                 type="button"
                 onClick={() => void rescan(projectId)}
                 disabled={isSyncing}
-                className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-200/80 transition cursor-pointer disabled:opacity-50 flex items-center justify-center"
+                className="fig-icon-btn cursor-pointer disabled:opacity-50"
                 title="로컬 원본 동기화 (최신 파일 스캔 및 사라진 파일 정리)"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-violet-600" : ""}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-[#18181b]" : ""}`} />
               </button>
 
               <button
                 type="button"
                 onClick={handleExpandAll}
-                className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-200/80 transition cursor-pointer"
+                className="fig-icon-btn cursor-pointer"
                 title="모든 폴더 펼치기"
               >
                 <ChevronsUpDown className="w-3.5 h-3.5" />
@@ -521,21 +521,21 @@ export const RmSourceTreeSection: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCollapseAll}
-                className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-200/80 transition cursor-pointer"
+                className="fig-icon-btn cursor-pointer"
                 title="모든 폴더 접기"
               >
                 <ChevronsDownUp className="w-3.5 h-3.5" />
               </button>
 
-              <div className="w-[1px] h-3.5 bg-slate-200 mx-0.5" />
+              <div className="w-[1px] h-3.5 bg-[#e4e4e7] mx-0.5" />
 
               <button
                 type="button"
                 onClick={() => setChoiceOnly(!choiceOnly)}
-                className={`px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition border ${
+                className={`h-6 px-2 rounded-md text-[11px] font-medium flex items-center gap-1 cursor-pointer transition border ${
                   choiceOnly
-                    ? "bg-violet-100 border-violet-300 text-violet-900"
-                    : "bg-white border-slate-200 text-slate-600 hover:text-slate-900"
+                    ? "bg-[#18181b] border-[#18181b] text-white"
+                    : "bg-white border-[#e4e4e7] text-[#52525b] hover:bg-[#f4f4f5] hover:text-[#18181b]"
                 }`}
                 title="Choice(체크)된 소스만 모아보기"
               >
@@ -545,25 +545,27 @@ export const RmSourceTreeSection: React.FC = () => {
             </div>
           </div>
 
-          {/* 검색 입력창 */}
-          <div className="px-3 py-1.5 border-b border-slate-100 flex items-center gap-1.5">
-            <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <input
-              type="text"
-              value={filterKeyword}
-              onChange={(e) => setFilterKeyword(e.target.value)}
-              placeholder="소스 검색..."
-              className="w-full text-xs bg-transparent focus:outline-none placeholder:text-slate-400"
-            />
-            {filterKeyword && (
-              <button
-                type="button"
-                onClick={() => setFilterKeyword("")}
-                className="text-[10px] text-slate-400 hover:text-slate-600 cursor-pointer"
-              >
-                초기화
-              </button>
-            )}
+          {/* 검색 입력창 (Figma UI3 스타일) */}
+          <div className="px-3 py-2 border-b border-[#f4f4f5]">
+            <div className="h-7 px-2.5 rounded-md bg-[#f4f4f5] flex items-center gap-1.5 border border-transparent focus-within:bg-white focus-within:border-[#d4d4d8] transition">
+              <Search className="w-3.5 h-3.5 text-[#a1a1aa] shrink-0" />
+              <input
+                type="text"
+                value={filterKeyword}
+                onChange={(e) => setFilterKeyword(e.target.value)}
+                placeholder="소스 검색..."
+                className="w-full text-[11.5px] bg-transparent text-[#18181b] focus:outline-none placeholder:text-[#a1a1aa]"
+              />
+              {filterKeyword && (
+                <button
+                  type="button"
+                  onClick={() => setFilterKeyword("")}
+                  className="text-[10px] text-[#a1a1aa] hover:text-[#18181b] cursor-pointer"
+                >
+                  초기화
+                </button>
+              )}
+            </div>
           </div>
 
           {/* 트리 목록 */}

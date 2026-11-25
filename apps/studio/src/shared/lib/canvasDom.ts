@@ -21,13 +21,23 @@ export function isInCanvasView(el: Element): boolean {
   return r.top >= view.top && r.bottom <= view.bottom && r.left >= view.left && r.right <= view.right;
 }
 
+/** 메인 편집 캔버스 영역 (좌측 미리보기 패널 · 스플릿 뷰와 중복 ID/속성 충돌 방지). */
+function canvasRoot(): ParentNode {
+  return document.querySelector("[data-vdoc-canvas-main]") ?? document;
+}
+
+function findCanvasPage(pageId: string): Element | null {
+  const escaped = CSS.escape(`vdoc-page-${pageId}`);
+  return canvasRoot().querySelector(`#${escaped}`) ?? document.getElementById(`vdoc-page-${pageId}`);
+}
+
 /** 캔버스의 페이지 시트로 스크롤 (`VDocPageSheet` 의 `id="vdoc-page-{pageId}"`). */
 export function scrollToCanvasPage(pageId: string): void {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(VDOC_REVEAL_PAGE_EVENT, { detail: { pageId } }));
   }
   afterRender(() => {
-    document.getElementById(`vdoc-page-${pageId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    findCanvasPage(pageId)?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 }
 
@@ -50,10 +60,10 @@ export function revealCanvasElement(target: {
       : null;
   if (!selector) return;
   afterRender(() => {
-    const el = document.querySelector(selector);
+    const el = canvasRoot().querySelector(selector) ?? document.querySelector(selector);
     if (!el) {
       if (target.fallbackPageId) {
-        document.getElementById(`vdoc-page-${target.fallbackPageId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        findCanvasPage(target.fallbackPageId)?.scrollIntoView({ behavior: "smooth", block: "start" });
       }
       return;
     }

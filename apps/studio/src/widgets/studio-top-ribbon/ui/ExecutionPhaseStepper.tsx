@@ -55,7 +55,7 @@ export const ExecutionPhaseStepper: React.FC = () => {
             onClick={() => switchPhase(p.id)}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition cursor-pointer ${
               active
-                ? "bg-[#248567] text-white font-bold shadow-2xs"
+                ? "bg-[var(--vds-accent)] text-white font-bold shadow-2xs"
                 : "text-slate-600 hover:text-slate-900 hover:bg-white/70 font-medium"
             }`}
           >

@@ -45,8 +45,8 @@ import { htmlToPlain } from "@/shared/lib";
 const SURFACE = "rounded-lg border border-[#eaeaea] bg-white shadow-[0px_4px_12px_0px_rgba(47,44,44,0.1)] text-[12px] text-gray-800";
 const BUTTON = "inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] text-gray-800 hover:bg-neutral-100 cursor-pointer disabled:opacity-40 disabled:cursor-default";
 const ICON_BUTTON = "inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500 hover:bg-neutral-100 hover:text-gray-800 cursor-pointer";
-const PRIMARY = "inline-flex h-7 items-center gap-1 rounded-md bg-[#0472e3] px-2 text-[12px] font-semibold text-white hover:bg-[#0363c7] cursor-pointer disabled:opacity-40 disabled:cursor-default";
-const ACCENT = "#0472e3";
+const PRIMARY = "inline-flex h-7 items-center gap-1 rounded-md bg-[var(--vds-accent)] px-2 text-[12px] font-semibold text-white hover:bg-[var(--vds-accent-hover)] cursor-pointer disabled:opacity-40 disabled:cursor-default";
+const ACCENT = "var(--vds-accent)";
 
 const ACTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   wand: Wand2,
@@ -91,7 +91,7 @@ function rangeText(slotIds: string[]): string {
   return lines.join("\n");
 }
 
-/** 범위 강조 — 캔버스 선택 색(#0472e3)으로 옅게 칠하고 칸 테두리를 그린다. */
+/** 범위 강조 — 캔버스 선택 색(var(--vds-accent))으로 옅게 칠하고 칸 테두리를 그린다. */
 const RangeHighlight: React.FC<{ unitIds: string[]; withinTable?: boolean }> = ({ unitIds, withinTable }) => {
   const css = unitIds
     .map((id) => {
@@ -367,10 +367,10 @@ export const SlotRangeAiBar: React.FC = () => {
               {...attachable(() => [ref])}
               onClick={() => setLevel("menu")}
               title={`선택 도구 · ${countLabel}\n클릭: 도구 열기 · 끌기: Composer 에 첨부`}
-              className="relative flex h-7 w-7 items-center justify-center rounded-lg text-[#0472e3] hover:bg-[#eef5fd] cursor-pointer"
+              className="relative flex h-7 w-7 items-center justify-center rounded-lg text-[var(--vds-accent)] hover:bg-[#eef5fd] cursor-pointer"
             >
               <MoreHorizontal className="w-4 h-4" />
-              <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-[#0472e3] text-white text-[9.5px] font-bold leading-4 text-center">
+              <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-[var(--vds-accent)] text-white text-[9.5px] font-bold leading-4 text-center">
                 {range.unitIds.length}
               </span>
             </button>
@@ -449,11 +449,11 @@ export const SlotRangeAiBar: React.FC = () => {
                 <span
                   {...attachable(() => [ref])}
                   title={`${ref.hint ?? ""}\n끌어서 Composer 에 놓으면 첨부`}
-                  className="inline-flex h-7 items-center gap-1 rounded-md bg-[#eef5fd] px-1.5 text-[11.5px] font-semibold text-[#0363c7] cursor-grab active:cursor-grabbing"
+                  className="inline-flex h-7 items-center gap-1 rounded-md bg-[#eef5fd] px-1.5 text-[11.5px] font-semibold text-[var(--vds-accent-hover)] cursor-grab active:cursor-grabbing"
                 >
                   <GripVertical className="w-3 h-3 opacity-60" />
                   {countLabel}
-                  {lockedCount > 0 && <span className="font-normal text-[#5a8fc9]">· 잠김 {lockedCount}</span>}
+                  {lockedCount > 0 && <span className="font-normal text-[var(--vds-accent)]">· 잠김 {lockedCount}</span>}
                 </span>
                 <button
                   type="button"
@@ -513,7 +513,7 @@ export const SlotRangeAiBar: React.FC = () => {
                     value={instruction}
                     onChange={(e) => setInstruction(e.target.value)}
                     placeholder="고른 요소들에 지시 (예: 결의사항을 항목별 한 줄로)"
-                    className="h-7 flex-1 min-w-0 rounded-md border border-[#eaeaea] bg-white px-2 text-[12px] text-gray-800 placeholder-gray-400 focus:border-[#0472e3] focus:outline-none select-text"
+                    className="h-7 flex-1 min-w-0 rounded-md border border-[#eaeaea] bg-white px-2 text-[12px] text-gray-800 placeholder-gray-400 focus:border-[var(--vds-accent)] focus:outline-none select-text"
                   />
                   <button type="submit" disabled={!instruction.trim()} className={PRIMARY} title="실행 (Enter)">
                     <ArrowUp className="w-3.5 h-3.5" />
@@ -601,10 +601,10 @@ const RangePreview: React.FC<{
             <label
               key={slotId}
               className={`flex gap-2 rounded-md border p-2 cursor-pointer transition-colors ${
-                on ? "border-[#b9d6f5] bg-[#f5f9fe]" : "border-[#eaeaea] bg-white opacity-60"
+                on ? "border-[var(--vds-accent-border)] bg-[#f5f9fe]" : "border-[#eaeaea] bg-white opacity-60"
               }`}
             >
-              <input type="checkbox" checked={on} onChange={() => onToggle(slotId)} className="mt-0.5 accent-[#0472e3]" />
+              <input type="checkbox" checked={on} onChange={() => onToggle(slotId)} className="mt-0.5 accent-[var(--vds-accent)]" />
               <div className="min-w-0 flex-1 space-y-0.5">
                 <div className="truncate text-[11.5px] font-semibold text-gray-800">{slot?.label ?? slotId}</div>
                 <div className="truncate text-[11px] text-gray-400 line-through">{htmlToPlain(slot?.content ?? "", 90) || "(비어 있음)"}</div>

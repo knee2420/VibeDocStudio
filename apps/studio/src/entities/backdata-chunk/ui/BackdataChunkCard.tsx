@@ -21,7 +21,7 @@ export const BackdataChunkCard: React.FC<BackdataChunkCardProps> = ({ chunk }) =
         {chunk.tags.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
             {chunk.tags.map((t) => (
-              <span key={t} className="text-[10px] text-[#0d99ff]">
+              <span key={t} className="text-[10px] text-[var(--vds-accent)]">
                 #{t}
               </span>
             ))}

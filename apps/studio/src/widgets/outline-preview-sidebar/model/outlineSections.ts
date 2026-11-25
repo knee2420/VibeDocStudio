@@ -171,7 +171,7 @@ export function outlineNodeTargetId(node: OutlinerNode): string {
   return node.targetSlotId || node.targetBlockId || node.targetPageId || node.nodeId;
 }
 
-/** 행의 선택 표시: `on` 선택됨 (#E5F4FF) · `child` 선택된 노드의 자손 (#F2F9FF, 피그마와 같다). */
+/** 행의 선택 표시: `on` 선택됨 (var(--vds-accent-soft)) · `child` 선택된 노드의 자손 (#F2F9FF, 피그마와 같다). */
 export type RowSelection = "on" | "child";
 
 /** 사이드바 · 캔버스 양쪽의 선택 상태. */

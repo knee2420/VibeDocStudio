@@ -91,7 +91,7 @@ export const Phase2TemplateWorkbench: React.FC = () => {
             type="button"
             data-testid="goto-phase3-btn"
             onClick={() => switchPhase("drafting")}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#248567] hover:bg-[#1d6b52] text-white text-xs font-bold shadow-sm cursor-pointer transition"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-xs font-bold shadow-sm cursor-pointer transition"
           >
             Phase 3: 슬롯 본문 집필로 이동
             <ArrowRight className="w-4 h-4" />
@@ -121,7 +121,7 @@ export const Phase2TemplateWorkbench: React.FC = () => {
                       {node.summary}
                     </p>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-[#248567] border border-emerald-200 text-xs font-bold font-mono shrink-0">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-[var(--vds-accent)] border border-emerald-200 text-xs font-bold font-mono shrink-0">
                     현재 서식: {currentTpl}
                   </span>
                 </div>
@@ -137,7 +137,7 @@ export const Phase2TemplateWorkbench: React.FC = () => {
                         onClick={() => assignTemplateToNode(node.nodeId, tpl.id)}
                         className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between gap-1 ${
                           selected
-                            ? "border-[#248567] bg-emerald-50/60 ring-1 ring-[#248567]"
+                            ? "border-[var(--vds-accent)] bg-emerald-50/60 ring-1 ring-[var(--vds-accent)]"
                             : "border-slate-200 hover:bg-slate-50"
                         }`}
                       >
@@ -146,7 +146,7 @@ export const Phase2TemplateWorkbench: React.FC = () => {
                             {tpl.label.split(" (")[0]}
                           </span>
                           {selected && (
-                            <Check className="w-3.5 h-3.5 text-[#248567] shrink-0" />
+                            <Check className="w-3.5 h-3.5 text-[var(--vds-accent)] shrink-0" />
                           )}
                         </div>
                         <span className="text-[10px] text-slate-500 line-clamp-2">

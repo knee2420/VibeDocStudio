@@ -15,7 +15,7 @@ export const BlockCountBadge: React.FC<{ counts: BlockCounts; chars?: CharStat; 
     <span data-testid="block-count" title={title} className={`inline-flex items-center gap-1.5 shrink-0 text-[11px] leading-none tabular-nums ${className}`}>
       {counts.edited > 0 && <span className="text-[#bf6c00]">✎{counts.edited}</span>}
       {counts.added > 0 && <span className="text-[#1a7f37]">+{counts.added}</span>}
-      {counts.removed > 0 && <span className="text-[#cf222e]">−{counts.removed}</span>}
+      {counts.removed > 0 && <span className="text-[#9a3412]">−{counts.removed}</span>}
       {counts.moved > 0 && <span className="text-black/45">↕{counts.moved}</span>}
     </span>
   );

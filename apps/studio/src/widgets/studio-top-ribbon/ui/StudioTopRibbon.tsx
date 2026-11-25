@@ -245,7 +245,7 @@ export const StudioTopRibbon: React.FC = () => {
                 onClick={() => switchPhase(p.id)}
                 title={`${p.step}: ${p.label} — ${p.desc}`}
                 className={`h-5 px-2 rounded-full inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer transition ${
-                  active ? "bg-white text-[#0d99ff] shadow-2xs" : "text-slate-500 hover:text-slate-800"
+                  active ? "bg-white text-[var(--vds-accent)] shadow-2xs" : "text-[var(--vds-ink-secondary)] hover:text-[var(--vds-ink)]"
                 }`}
               >
                 <Icon className="w-3 h-3" />
@@ -254,7 +254,7 @@ export const StudioTopRibbon: React.FC = () => {
             );
           })}
         </div>
-        <span className={`text-xs font-medium truncate ${lab ? "text-[#272962]" : "text-slate-500"}`}>
+        <span className={`text-xs font-medium truncate ${lab ? "text-[var(--vds-ink)]" : "text-[var(--vds-ink-secondary)]"}`}>
           {lab ? "실험실" : activeProject.title} — {doc.title}
         </span>
       </div>
@@ -325,8 +325,8 @@ export const StudioTopRibbon: React.FC = () => {
           }
           className={`w-7 h-7 rounded-md flex items-center justify-center cursor-pointer transition disabled:opacity-35 ${
             openReferenceCount > 0
-              ? "bg-violet-100 text-violet-700"
-              : "text-slate-600 hover:bg-slate-200/70 hover:text-slate-900"
+              ? "bg-[var(--vds-accent-soft)] text-[var(--vds-accent)]"
+              : "text-[var(--vds-ink-secondary)] hover:bg-[var(--vds-hover)] hover:text-[var(--vds-ink)]"
           }`}
           title={
             openReferenceCount > 0

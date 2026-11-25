@@ -34,6 +34,6 @@ export const CharStatText: React.FC<{ stat: CharStat; className?: string }> = ({
     title={`${stat.added.toLocaleString()}자 넣음 · ${stat.removed.toLocaleString()}자 지움 (공백 제외)`}
   >
     <span className={stat.added ? "text-[#1a7f37]" : "text-black/25"}>+{stat.added.toLocaleString()}</span>
-    <span className={stat.removed ? "text-[#cf222e]" : "text-black/25"}>−{stat.removed.toLocaleString()}</span>
+    <span className={stat.removed ? "text-[#9a3412]" : "text-black/25"}>−{stat.removed.toLocaleString()}</span>
   </span>
 );

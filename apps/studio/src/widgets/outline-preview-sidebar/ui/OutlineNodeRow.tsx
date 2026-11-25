@@ -83,7 +83,7 @@ function rowKind(node: OutlinerNode, blockKind?: string): RowKind {
 function nodeIcon(node: OutlinerNode, docSurface: DocumentSurfaceKind, blockKind?: string): React.ReactNode {
   if (node.zoomLevel === "project") return <FolderTree className={ICON} />;
   if (node.zoomLevel === "document") {
-    return <DocumentSurfaceIcon surface={docSurface} className={`${ICON} ${docSurface === "scroll" ? "text-emerald-500" : "text-[#0d99ff]"}`} />;
+    return <DocumentSurfaceIcon surface={docSurface} className={`${ICON} text-[#71717a]`} />;
   }
 
   // 페이지 행은 피그마 페이지 목록처럼 아이콘이 없다
@@ -232,6 +232,12 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
     return undefined;
   }, [doc, node.targetBlockId]);
 
+  const pageNumber = useMemo(() => {
+    if (node.zoomLevel !== "page" || node.targetBlockId || !node.targetPageId || !doc) return null;
+    const idx = doc.pages.findIndex((p) => p.pageId === node.targetPageId);
+    return idx >= 0 ? idx + 1 : null;
+  }, [doc, node.zoomLevel, node.targetBlockId, node.targetPageId]);
+
   const bound = useMemo(
     () => ({
       attachProps: attachable(() => withPicked("outline", outlineNodeRef(node))),
@@ -277,7 +283,7 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
 
   const statusIcon =
     pendingState?.status === "running" ? (
-      <Loader2 data-testid={`outline-page-spinner-${node.nodeId}`} className={`${ICON} text-[#0d99ff] animate-spin`} />
+      <Loader2 data-testid={`outline-page-spinner-${node.nodeId}`} className={`${ICON} text-[var(--vds-accent)] animate-spin`} />
     ) : pendingState?.status === "queued" ? (
       <Clock data-testid={`outline-page-queued-${node.nodeId}`} className={ICON} />
     ) : pendingState?.status === "failed" || pendingState?.status === "cancelled" ? (
@@ -358,8 +364,20 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
         <span className="fig-row-chevron" aria-hidden />
       )}
 
-      {/* 페이지 행은 피그마처럼 아이콘 없이, 자리만 비워 문서 제목보다 한 단계(24px) 들어가게 맞춘다. */}
-      {(icon || isPageOrDoc) && <span className="fig-row-icon">{icon}</span>}
+      {/* 페이지 행은 매니패스트 스타일 숫자 뱃지(1, 2, 3...) 표시 */}
+      {pageNumber !== null ? (
+        <span className="fig-row-icon">
+          <span
+            className={`w-[16px] h-[16px] rounded-[4px] text-[10px] font-semibold inline-flex items-center justify-center tabular-nums leading-none ${
+              isCurrent ? "bg-[#e4e4e7] text-[#18181b]" : "bg-[#f4f4f5] text-[#71717a]"
+            }`}
+          >
+            {pageNumber}
+          </span>
+        </span>
+      ) : (
+        (icon || isPageOrDoc) && <span className="fig-row-icon">{icon}</span>
+      )}
 
       {isRenaming ? (
         <input
@@ -380,7 +398,7 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
               actions.cancelRename();
             }
           }}
-          className="flex-1 min-w-0 h-5 px-1.5 -ml-1.5 rounded-[3px] bg-white border border-[#0d99ff] text-[12.5px] font-normal text-slate-900 outline-none"
+          className="flex-1 min-w-0 h-5 px-1.5 -ml-1.5 rounded-[3px] bg-white border border-[var(--vds-accent)] text-[12.5px] font-normal text-slate-900 outline-none"
         />
       ) : (
         <span

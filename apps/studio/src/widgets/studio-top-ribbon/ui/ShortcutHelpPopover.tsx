@@ -41,7 +41,7 @@ export const ShortcutHelpPopover: React.FC = () => {
         >
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div className="font-bold text-slate-900 flex items-center gap-1.5">
-              <Keyboard className="w-4 h-4 text-[#248567]" />
+              <Keyboard className="w-4 h-4 text-[var(--vds-accent)]" />
               Pro-Tool 단축키 & 줌 위계 가이드
             </div>
             <button

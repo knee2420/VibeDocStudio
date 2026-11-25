@@ -51,7 +51,7 @@ export const InsertCursorButton: React.FC<InsertCursorButtonProps> = ({
       }}
       className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border shadow-sm transition-colors ${
         menuOpen
-          ? "bg-[#0472e3] text-white border-[#0472e3]"
+          ? "bg-[var(--vds-accent)] text-white border-[var(--vds-accent)]"
           : "bg-white text-slate-500 hover:bg-neutral-100 hover:text-slate-800"
       }`}
     >

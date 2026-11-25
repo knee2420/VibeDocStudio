@@ -260,8 +260,8 @@ const ComposerHeader: React.FC<{
     <div className="px-3 py-2 border-b border-slate-200 bg-white shrink-0 space-y-1.5">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0">
-            <Sparkles className="w-3.5 h-3.5 text-white" />
+          <span className="w-6 h-6 rounded-lg bg-[#f4f4f5] border border-[#e4e4e7] flex items-center justify-center shrink-0">
+            <Sparkles className="w-3.5 h-3.5 text-[#18181b]" />
           </span>
           <span className="text-[13px] font-bold text-slate-900">AI Composer</span>
           {state.sessionId && <span className="text-[10px] font-mono text-slate-400 truncate">{state.sessionId.slice(-6)}</span>}
@@ -374,24 +374,24 @@ const UserBubble: React.FC<{ item: Extract<ComposerItem, { kind: "user" }> }> = 
 
   return (
     <div className="flex justify-end">
-      <div className="max-w-[88%] rounded-2xl rounded-br-md bg-indigo-600 text-white px-3 py-2 text-[13px] whitespace-pre-wrap break-words">
+      <div className="max-w-[88%] rounded-2xl rounded-br-md bg-[#f4f4f5] border border-[#e4e4e7] text-[#18181b] px-3 py-2 text-[13px] leading-[1.6] whitespace-pre-wrap break-words">
         {contexts.length > 0 && (
           <div className="flex flex-wrap items-center gap-1 mb-1.5">
             {visibleContexts.map((c) => (
               <span
                 key={`${c.kind}:${c.id}`}
                 title={c.hint ?? c.label}
-                className={`px-1.5 py-px rounded text-[10.5px] ${c.handle && c.role === "target" ? "bg-amber-300/30 ring-1 ring-amber-200/60" : "bg-white/15"}`}
+                className="px-1.5 py-px rounded text-[10.5px] bg-white border border-[#e4e4e7] text-[#52525b]"
               >
                 {c.handle ? `${c.handle} ${c.label}` : `@${c.label}`}
-                {c.handle && <span className="ml-1 opacity-75">{c.role === "target" ? "대상" : "참조"}</span>}
+                {c.handle && <span className="ml-1 opacity-70">{c.role === "target" ? "대상" : "참조"}</span>}
               </span>
             ))}
             {shouldCollapse && (
               <button
                 type="button"
                 onClick={() => setExpanded((prev) => !prev)}
-                className="inline-flex items-center gap-0.5 px-1.5 py-px rounded text-[10.5px] font-medium bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer select-none"
+                className="inline-flex items-center gap-0.5 px-1.5 py-px rounded text-[10.5px] font-medium bg-white border border-[#e4e4e7] hover:bg-[#e4e4e7]/60 text-[#52525b] transition-colors cursor-pointer select-none"
               >
                 {expanded ? "접기 ▴" : `+외 ${hiddenCount}개 ▾`}
               </button>
@@ -416,10 +416,10 @@ const ThreadItem: React.FC<{ item: ComposerItem; onApprove(callId: string): void
       if (!item.streaming && !item.text.trim()) return null; // 도구 호출 앞뒤의 줄바꿈 조각
       return (
         <div className="flex gap-2">
-          <Bot className="w-4 h-4 mt-0.5 text-violet-500 shrink-0" />
-          <div className="min-w-0 flex-1">
+          <Bot className="w-4 h-4 mt-0.5 text-[#71717a] shrink-0" />
+          <div className="min-w-0 flex-1 text-[#18181b] leading-[1.65]">
             <MarkdownText text={item.text} />
-            {item.streaming && <span className="inline-block w-1.5 h-3.5 bg-violet-400 animate-pulse align-middle ml-0.5" />}
+            {item.streaming && <span className="inline-block w-1.5 h-3.5 bg-[#71717a] animate-pulse align-middle ml-0.5" />}
           </div>
         </div>
       );
@@ -491,11 +491,11 @@ const ThreadItem: React.FC<{ item: ComposerItem; onApprove(callId: string): void
 };
 
 const RISK_STYLE: Record<string, string> = {
-  read: "bg-sky-50 text-sky-700 border-sky-200",
-  ui: "bg-slate-50 text-slate-600 border-slate-200",
-  stage: "bg-amber-50 text-amber-800 border-amber-200",
-  write: "bg-rose-50 text-rose-700 border-rose-200",
-  unknown: "bg-slate-50 text-slate-500 border-slate-200",
+  read: "bg-[#f4f4f5] text-[#52525b] border-[#e4e4e7]",
+  ui: "bg-[#f4f4f5] text-[#52525b] border-[#e4e4e7]",
+  stage: "bg-[#f4f4f5] text-[#18181b] border-[#d4d4d8]",
+  write: "bg-[#f4f4f5] text-[#18181b] border-[#d4d4d8]",
+  unknown: "bg-[#f4f4f5] text-[#71717a] border-[#e4e4e7]",
 };
 
 const ToolCallCard: React.FC<{
@@ -514,27 +514,27 @@ const ToolCallCard: React.FC<{
           : Loader2;
   const statusColor =
     item.status === "done"
-      ? "text-emerald-600"
+      ? "text-[#71717a]"
       : item.status === "error" || item.status === "denied"
-        ? "text-rose-500"
+        ? "text-[#dc2626]"
         : item.status === "awaiting_approval"
-          ? "text-amber-600"
-          : "text-slate-400 animate-spin";
+          ? "text-[#18181b]"
+          : "text-[#a1a1aa] animate-spin";
   return (
     <div
       data-testid="composer-tool-card"
-      className={`ml-6 rounded-xl border bg-white text-[11.5px] overflow-hidden ${
-        item.status === "awaiting_approval" ? "border-amber-300 shadow-sm" : "border-slate-200"
+      className={`ml-6 rounded-xl border bg-[#fafafa] text-[11.5px] overflow-hidden ${
+        item.status === "awaiting_approval" ? "border-[#18181b] shadow-sm" : "border-[#e4e4e7]"
       }`}
     >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-left cursor-pointer hover:bg-slate-50"
+        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-left cursor-pointer hover:bg-[#f4f4f5]"
       >
         <StatusIcon className={`w-3.5 h-3.5 shrink-0 ${statusColor}`} />
-        <span className="font-mono text-[11px] text-slate-800 shrink-0">{item.name}</span>
-        <span className="truncate text-slate-500">
+        <span className="font-mono text-[11px] text-[#18181b] shrink-0">{item.name}</span>
+        <span className="truncate text-[#71717a]">
           {item.status === "drafting"
             ? `작성 중… ${item.chars ?? 0}자`
             : item.summary !== item.name
@@ -542,50 +542,50 @@ const ToolCallCard: React.FC<{
               : ""}
         </span>
         {item.server && (
-          <span className="shrink-0 px-1 py-px rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[9.5px] font-bold" title="서버가 실행한 도구 (지식 덱 탐색) — 브라우저 왕복 없이 같은 답변 안에서 이어진다">
+          <span className="shrink-0 px-1 py-px rounded bg-[#f4f4f5] text-[#52525b] border border-[#e4e4e7] text-[9.5px] font-medium" title="서버가 실행한 도구 (지식 덱 탐색) — 브라우저 왕복 없이 같은 답변 안에서 이어진다">
             서버
           </span>
         )}
         {item.async && item.status !== "drafting" && (
-          <span className="shrink-0 px-1 py-px rounded bg-violet-50 text-violet-700 border border-violet-200 text-[9.5px] font-bold" title="결과를 기다리지 않고 답변 중에 바로 실행됨">
+          <span className="shrink-0 px-1 py-px rounded bg-[#f4f4f5] text-[#52525b] border border-[#e4e4e7] text-[9.5px] font-medium" title="결과를 기다리지 않고 답변 중에 바로 실행됨">
             즉시
           </span>
         )}
-        <span className={`ml-auto shrink-0 px-1.5 py-px rounded border text-[9.5px] font-bold uppercase ${RISK_STYLE[item.risk]}`}>{item.risk}</span>
-        {open ? <ChevronDown className="w-3 h-3 text-slate-400" /> : <ChevronRight className="w-3 h-3 text-slate-400" />}
+        <span className={`ml-auto shrink-0 px-1.5 py-px rounded border text-[9.5px] font-semibold uppercase ${RISK_STYLE[item.risk]}`}>{item.risk}</span>
+        {open ? <ChevronDown className="w-3 h-3 text-[#a1a1aa]" /> : <ChevronRight className="w-3 h-3 text-[#a1a1aa]" />}
       </button>
       <ToolTargets args={item.arguments} />
       {item.status === "awaiting_approval" && (
         <div className="flex items-center gap-1.5 px-2.5 pb-2">
-          <span className="text-amber-800 text-[11px] mr-auto">이 도구를 실행할까요?</span>
+          <span className="text-[#52525b] text-[11px] mr-auto">이 도구를 실행할까요?</span>
           <button
             type="button"
             data-testid="composer-tool-approve"
             onClick={() => onApprove(item.callId)}
-            className="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold cursor-pointer"
+            className="px-2.5 py-0.5 rounded-md bg-[#18181b] hover:bg-[#27272a] text-white text-[11px] font-medium cursor-pointer"
           >
             허용
           </button>
           <button
             type="button"
             onClick={() => onDeny(item.callId)}
-            className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] cursor-pointer"
+            className="px-2 py-0.5 rounded-md bg-[#f4f4f5] hover:bg-[#e4e4e7] text-[#52525b] text-[11px] cursor-pointer"
           >
             거부
           </button>
         </div>
       )}
       {open && (
-        <div className="border-t border-slate-100 px-2.5 py-2 space-y-1.5 bg-slate-50/60">
+        <div className="border-t border-[#e4e4e7] px-2.5 py-2 space-y-1.5 bg-white">
           {item.name === "resource.cite" && Array.isArray(item.arguments?.citations) ? (
             <div className="space-y-1.5">
               {(item.arguments.citations as Array<{ label?: string; lines?: [number, number]; snippet?: string }>).map((c, idx) => (
-                <div key={idx} className="p-1.5 rounded bg-white border border-slate-200 text-[11px]">
-                  <div className="font-semibold text-slate-800 flex items-center justify-between">
+                <div key={idx} className="p-1.5 rounded bg-[#fafafa] border border-[#e4e4e7] text-[11px]">
+                  <div className="font-semibold text-[#18181b] flex items-center justify-between">
                     <span>{c.label || "원천 근거"}</span>
-                    {c.lines && <span className="font-mono text-[10px] text-purple-700 bg-purple-50 px-1 py-0.5 rounded">L{c.lines[0]}-{c.lines[1]}</span>}
+                    {c.lines && <span className="font-mono text-[10px] text-[#52525b] bg-[#f4f4f5] px-1 py-0.5 rounded">L{c.lines[0]}-{c.lines[1]}</span>}
                   </div>
-                  {c.snippet && <div className="text-slate-600 mt-0.5 text-[10.5px] leading-relaxed italic">"{c.snippet}"</div>}
+                  {c.snippet && <div className="text-[#52525b] mt-0.5 text-[10.5px] leading-relaxed italic">"{c.snippet}"</div>}
                 </div>
               ))}
             </div>
@@ -595,7 +595,7 @@ const ToolCallCard: React.FC<{
               {item.output !== undefined && <JsonBlock label="result" value={item.output} />}
             </>
           )}
-          {item.error && <div className="text-rose-600">{item.error}</div>}
+          {item.error && <div className="text-[#dc2626]">{item.error}</div>}
         </div>
       )}
     </div>

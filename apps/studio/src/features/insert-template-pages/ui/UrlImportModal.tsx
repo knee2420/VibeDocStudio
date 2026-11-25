@@ -261,7 +261,7 @@ export const UrlImportModal: React.FC<UrlImportModalProps> = ({
             type="submit"
             disabled={loading || !url.trim()}
             data-testid="url-import-submit-btn"
-            className="px-4 py-1.5 rounded-lg bg-[#248567] hover:bg-[#1d6b52] disabled:opacity-40 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition"
+            className="px-4 py-1.5 rounded-lg bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] disabled:opacity-40 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition"
           >
             {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             <span>{loading ? "웹페이지 분석 중…" : "페이지 분석 · 선택하기"}</span>

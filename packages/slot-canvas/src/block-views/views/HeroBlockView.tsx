@@ -13,7 +13,7 @@ export const heroView = defineBlockView<HeroBlockDef>({
     const overlay = Math.max(0, Math.min(0.8, block.overlay ?? 0.35));
     const center = block.align === "center";
     return (
-      <div className="relative w-full overflow-hidden rounded-md bg-gradient-to-br from-slate-700 to-emerald-900" style={{ height: block.height ?? 280 }}>
+      <div className="relative w-full overflow-hidden rounded-md bg-[#2e2e32]" style={{ height: block.height ?? 280 }}>
         {src && (
           <div {...ctx.unitAttrs(`${block.blockId}:image`, "media")} className="absolute inset-0">
             <img src={src} alt="" draggable={false} className="h-full w-full select-none object-cover" />

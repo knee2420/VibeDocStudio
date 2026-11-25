@@ -127,7 +127,7 @@ export const ReferenceItemMenu: React.FC<{
             type="button"
             data-testid="reference-apply-all"
             onClick={applyAll}
-            className="w-full h-8 rounded-[6px] bg-[#0d99ff] hover:bg-[#0b8ae6] text-white text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 cursor-default"
+            className="w-full h-8 rounded-[6px] bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 cursor-default"
           >
             <Wand2 className="w-3.5 h-3.5" />이 쪽에 스타일 적용
           </button>

@@ -111,7 +111,7 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
       return (
         <div
           data-diff-side="before"
-          className="ring-2 ring-rose-500 bg-rose-50/45 rounded-[3px] relative"
+          className="ring-2 ring-[#cf222e] bg-[#cf222e]/[0.06] rounded-[3px] relative"
         >
           {content}
         </div>
@@ -127,7 +127,7 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
         <div
           data-diff-side="after"
           data-slot-ref={slot.slotId}
-          className="ring-2 ring-emerald-500 bg-emerald-50/45 rounded-[3px] relative min-h-[20px]"
+          className="ring-2 ring-[#2da44e] bg-[#2da44e]/[0.06] rounded-[3px] relative min-h-[20px]"
         >
           {content}
         </div>

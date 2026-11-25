@@ -142,7 +142,7 @@ const LayerStrip: React.FC<{ entry: BoundReference }> = ({ entry }) => {
                 title={`${layer.id} ${layer.name}\n${layer.question}\n${values || "(정성 판단 층위)"}\n\n클릭: ${on ? "끄기" : "켜기"}`}
                 aria-pressed={on}
                 className={`h-5 px-1.5 rounded-[4px] text-[10.5px] shrink-0 inline-flex items-center gap-1 cursor-default transition-colors ${
-                  on ? "bg-[var(--fig-selected)] text-[#0a7fd4] hover:bg-[var(--fig-selected-hover)]" : "text-black/35 line-through hover:bg-[var(--fig-hover)]"
+                  on ? "bg-[var(--fig-selected)] text-[var(--vds-accent)] hover:bg-[var(--fig-selected-hover)]" : "text-black/35 line-through hover:bg-[var(--fig-hover)]"
                 }`}
               >
                 <span className="font-mono">{layer.id}</span>
@@ -704,7 +704,7 @@ const ReferenceCard: React.FC<{
                   type="button"
                   disabled={busy}
                   onClick={() => void createRegionPin()}
-                  className="h-6 px-2 rounded-md bg-[#0d99ff] hover:bg-[#0b8ae6] text-white font-semibold inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  className="h-6 px-2 rounded-md bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white font-semibold inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
                   title="이 영역에 핀 꽂기"
                 >
                   {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <MapPin className="w-3 h-3" />}
@@ -776,7 +776,7 @@ const ReferenceCard: React.FC<{
         <div className="flex items-center justify-between gap-2 text-[11px] px-0.5 text-black/55">
           <span className="truncate min-w-0">
             {feedback ? (
-              <span className="text-[#0a7fd4] font-semibold flex items-center gap-1">
+              <span className="text-[var(--vds-accent)] font-semibold flex items-center gap-1">
                 <Check className="w-3 h-3" /> {feedback}
               </span>
             ) : segments.length > 0 ? (
@@ -801,7 +801,7 @@ const ReferenceCard: React.FC<{
                 data-testid={segments.length > 0 ? "reference-pin-create-btn" : "reference-text-pin-create-btn"}
                 disabled={busy}
                 onClick={() => void (segments.length > 0 ? createRegionPin() : createTextPin())}
-                className="h-7 px-3 rounded-[6px] bg-[#0d99ff] hover:bg-[#0b8ae6] text-white text-[12px] font-semibold inline-flex items-center gap-1 cursor-default disabled:opacity-50"
+                className="h-7 px-3 rounded-[6px] bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-[12px] font-semibold inline-flex items-center gap-1 cursor-default disabled:opacity-50"
               >
                 {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MapPin className="w-3.5 h-3.5" />}
                 핀 꽂기

@@ -100,7 +100,7 @@ const EntityHighlightStyle: React.FC = () => {
   return (
     <style>{`
       [data-slot-id="${sel}"], [data-block-id="${sel}"], #vdoc-page-${sel}, [data-ai-entity="${sel}"] {
-        outline: 2px solid #7c3aed !important;
+        outline: 2px solid var(--vds-accent) !important;
         outline-offset: 3px !important;
         box-shadow: 0 0 0 5px rgba(139, 92, 246, 0.28) !important;
         transition: outline-color 0.12s, box-shadow 0.12s !important;

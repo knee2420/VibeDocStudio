@@ -139,7 +139,7 @@ export const PlaygroundSidebarPanel: React.FC = () => {
             onChange={(e) => setRenaming({ docId: doc.docId, title: e.target.value })}
             onBlur={() => setRenaming(null)}
             onKeyDown={(e) => e.key === "Escape" && setRenaming(null)}
-            className="w-full px-2 py-1 text-[12px] border border-[#0d99ff] rounded outline-none"
+            className="w-full px-2 py-1 text-[12px] border border-[var(--vds-accent)] rounded outline-none"
           />
         </form>
       );
@@ -156,7 +156,7 @@ export const PlaygroundSidebarPanel: React.FC = () => {
         data-testid={`playground-row-${doc.docId}`}
         title="클릭해 열기 · 캔버스로 끌어다 놓아 나란히 비교"
         className={`group relative flex items-start gap-2 px-2 py-1.5 rounded-md cursor-pointer ${
-          active ? "bg-indigo-50 ring-1 ring-indigo-300" : "hover:bg-slate-100/90"
+          active ? "bg-[var(--vds-accent-soft)] ring-1 ring-[var(--vds-accent-border)]" : "hover:bg-[var(--vds-hover)]"
         }`}
         onClick={() => playgroundActions.open(doc.docId)}
         onDoubleClick={() => setRenaming({ docId: doc.docId, title: doc.title })}
@@ -214,7 +214,7 @@ export const PlaygroundSidebarPanel: React.FC = () => {
     <div data-testid="playground-panel" className="flex-1 flex flex-col min-h-0 bg-white text-slate-800 select-none">
       <div className="h-10 px-3 border-b border-slate-200/90 flex items-center justify-between shrink-0">
         <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold">
-          <FlaskConical className="w-3.5 h-3.5 text-indigo-600" />
+          <FlaskConical className="w-3.5 h-3.5 text-[var(--vds-accent)]" />
           플레이그라운드
         </span>
         <div className="flex items-center gap-0.5">
@@ -246,8 +246,8 @@ export const PlaygroundSidebarPanel: React.FC = () => {
         }
       >
         {!openDraft && (
-          <div className="rounded-lg bg-indigo-50 border border-indigo-200/80 px-3 py-2.5 text-[11.5px] leading-[17px] text-indigo-900">
-            <div className="font-semibold mb-0.5">프로젝트에 바로 하기 망설여질 때</div>
+          <div className="rounded-lg bg-[var(--vds-surface)] border border-[var(--vds-border)] px-3 py-2.5 text-[11.5px] leading-[17px] text-[var(--vds-ink-secondary)]">
+            <div className="font-semibold text-[var(--vds-ink)] mb-0.5">프로젝트에 바로 하기 망설여질 때</div>
             여기서 한 작업은 프로젝트에 영향을 주지 않아요. 마음껏 써 보고, 마음에 드는 것만 가져가세요.
           </div>
         )}
@@ -306,7 +306,7 @@ export const PlaygroundSidebarPanel: React.FC = () => {
             data-testid="playground-exclude-backdata"
             checked={exclude}
             onChange={(e) => setExclude(e.target.checked)}
-            className="mt-[3px] accent-indigo-600"
+            className="mt-[3px] accent-[var(--vds-accent)]"
           />
           <span>여기서 한 대화 · 작업을 백데이터로 쓰지 않기</span>
         </label>
@@ -331,9 +331,9 @@ const StartButton: React.FC<{ icon: React.ReactNode; label: string; sub: string;
     type="button"
     disabled={disabled}
     onClick={onClick}
-    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50 text-left cursor-pointer disabled:opacity-50"
+    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg border border-[var(--vds-border)] hover:border-[var(--vds-accent-border)] hover:bg-[var(--vds-accent-soft)] text-left cursor-pointer disabled:opacity-50"
   >
-    <span className="w-7 h-7 rounded-md bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">{icon}</span>
+    <span className="w-7 h-7 rounded-md bg-[var(--vds-accent-soft)] text-[var(--vds-accent)] flex items-center justify-center shrink-0">{icon}</span>
     <span className="min-w-0">
       <span className="block text-[12px] font-medium text-slate-800">{label}</span>
       <span className="block text-[10.5px] text-slate-400 truncate">{sub}</span>
@@ -366,8 +366,8 @@ export const PlaygroundOpenNotice: React.FC = () => {
         <span className="min-w-0 truncate text-[12.5px] font-semibold text-slate-800">{projectTitle}</span>
       </div>
       <div className="p-4 space-y-3 text-[12px] text-slate-600 leading-[18px]">
-        <div className="flex items-center gap-2 text-indigo-800 font-semibold">
-          <FlaskConical className="w-4 h-4" />
+        <div className="flex items-center gap-2 text-[var(--vds-ink)] font-semibold">
+          <FlaskConical className="w-4 h-4 text-[var(--vds-accent)]" />
           지금은 플레이그라운드 초안을 보고 있어요
         </div>
         <p>
@@ -378,7 +378,7 @@ export const PlaygroundOpenNotice: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveActivityTab("playground")}
-            className="h-8 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+            className="h-8 rounded-md bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-[12px] font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <FlaskConical className="w-3.5 h-3.5" />
             플레이그라운드에서 보기

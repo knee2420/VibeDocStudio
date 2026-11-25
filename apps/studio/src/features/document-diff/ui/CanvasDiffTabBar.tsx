@@ -25,7 +25,7 @@ export const CanvasDiffTabBar: React.FC = () => {
       </button>
 
       {/* Tab 2: Active Diff Tab (Working Tree Diff) */}
-      <div className="px-3 py-1.5 rounded-t bg-white border-t-2 border-t-[#0d99ff] border-x border-slate-200/90 text-slate-900 font-semibold flex items-center gap-2 shadow-2xs text-[11px]">
+      <div className="px-3 py-1.5 rounded-t bg-white border-t-2 border-t-[var(--vds-accent)] border-x border-slate-200/90 text-slate-900 font-semibold flex items-center gap-2 shadow-2xs text-[11px]">
         <GitCompare className="w-3.5 h-3.5 text-emerald-600" />
         <span className="truncate max-w-sm">{activeDiff.label} (Working Tree)</span>
         <button

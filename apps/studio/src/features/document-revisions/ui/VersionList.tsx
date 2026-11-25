@@ -90,7 +90,7 @@ const VersionRow: React.FC<{ docId: string; v: DocumentVersion; active: boolean 
       </div>
       {v.note && <p className="text-[11.5px] text-black/60 line-clamp-2 whitespace-pre-wrap">{v.note}</p>}
       {mode === "confirm" && (
-        <div className="mt-1.5 p-2 rounded-[6px] bg-[#fff8e6] border border-[#f0d58c] text-[11.5px] text-black/75 cursor-default" onClick={(e) => e.stopPropagation()}>
+        <div className="mt-1.5 p-2 rounded-[6px] bg-[var(--vds-accent-soft)] border border-[var(--vds-accent-border)] text-[11.5px] text-black/75 cursor-default" onClick={(e) => e.stopPropagation()}>
           문서 전체를 이 상태로 되돌릴까요? 지금 상태는 자동 보관되고, 실행 취소(Ctrl+Z)도 됩니다.
           <div className="mt-1.5 flex justify-end gap-1">
             <button type="button" className="fig-btn" onClick={() => setMode("idle")}>

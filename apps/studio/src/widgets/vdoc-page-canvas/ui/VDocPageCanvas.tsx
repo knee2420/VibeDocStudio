@@ -62,7 +62,7 @@ const OutlineHoverHighlight: React.FC = () => {
     <style>{`
       [data-slot-id="${id}"],
       [data-block-id="${id}"] {
-        outline: 1.5px solid #0d99ff !important;
+        outline: 1.5px solid var(--vds-accent) !important;
         outline-offset: 2px !important;
       }
     `}</style>
@@ -229,28 +229,28 @@ const DraftingCanvas: React.FC = () => {
           tabIndex={-1}
           data-vdoc-canvas-main=""
           onClick={() => clearSelection()}
-          className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6] focus:outline-none"
+          className="flex-1 overflow-y-auto overflow-x-auto fig-scroll-hidden px-6 py-8 select-text min-w-0 bg-[#eef1f6] focus:outline-none"
         >
       <BlockPlacementLayer getMain={getMain} pages={pagesToRender} editable={mode === "Editing"} onPlace={onPlaceBlock} />
       <div className={`w-fit min-w-[794px] ${openReferenceCount > 0 ? "ml-2.5 mr-auto" : "mx-auto"} flex flex-col items-center`}>
         {isPageZoomed && (
           <div
             data-testid="page-zoom-focus-banner"
-            className="w-[794px] max-w-[794px] mx-auto mb-3 px-3.5 py-2 bg-emerald-50/90 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-950 shadow-2xs select-none"
+            className="w-[794px] max-w-[794px] mx-auto mb-3 px-3.5 py-2 bg-white border border-[#e6e6e8] rounded-xl flex items-center justify-between text-xs text-[#18181b] shadow-2xs select-none"
           >
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-bold">{zoomedNode?.title || "단일 페이지"} 집중 편집 모드</span>
-              <span className="text-emerald-700 text-[11px]">(전체 {doc.pages.length}p 중 1페이지만 격리 표시)</span>
+              <span className="w-2 h-2 rounded-full bg-[var(--vds-accent)]" />
+              <span className="font-semibold">{zoomedNode?.title || "단일 페이지"} 집중 편집 모드</span>
+              <span className="text-[#6e6e73] text-[11px]">(전체 {doc.pages.length}p 중 1페이지만 격리 표시)</span>
             </div>
             <button
               type="button"
               data-testid="canvas-page-zoom-out-btn"
               onClick={outlineCommands.zoomOutOneLevel}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-emerald-100/70 text-emerald-800 border border-emerald-300 rounded-lg font-semibold text-xs cursor-pointer transition shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#f7f7f8] hover:bg-[#efeff1] text-[#18181b] border border-[#e6e6e8] rounded-lg font-medium text-xs cursor-pointer transition"
               title="전체 페이지 조망으로 복귀 (Alt+↑)"
             >
-              <ArrowUpLeft className="w-3.5 h-3.5 text-emerald-700" />
+              <ArrowUpLeft className="w-3.5 h-3.5 text-[#6e6e73]" />
               전체 페이지 보기 (Zoom Out)
             </button>
           </div>
@@ -410,6 +410,7 @@ export const VDocPageCanvas: React.FC = () => {
       <OutlineHoverHighlight />
       <HiddenLayersStyle />
       <ZoomFocusStyle />
+      {!activeDiff && !pageGridOpen && !isNewTab && <AiStagingDrawer />}
       <div className="flex-1 flex overflow-hidden relative">
         <ReferenceSplitViewport />
         <ReferenceViewerPane />
@@ -438,11 +439,11 @@ export const VDocPageCanvas: React.FC = () => {
           <div
             aria-hidden
             data-testid={`canvas-split-dropzone-${dropSide}`}
-            className={`pointer-events-none absolute top-2 bottom-2 w-[calc(50%-12px)] z-50 rounded-xl border-2 border-dashed border-[#0d99ff] bg-[#0d99ff]/12 backdrop-blur-[1px] flex items-center justify-center transition-all ${
+            className={`pointer-events-none absolute top-2 bottom-2 w-[calc(50%-12px)] z-50 rounded-xl border-2 border-dashed border-[var(--vds-accent)] bg-[var(--vds-accent)]/12 backdrop-blur-[1px] flex items-center justify-center transition-all ${
               dropSide === "left" ? "left-2" : "right-2"
             }`}
           >
-            <div className="px-4 py-2 rounded-lg bg-[#0d99ff] text-white text-xs font-semibold shadow-lg">
+            <div className="px-4 py-2 rounded-lg bg-[var(--vds-accent)] text-white text-xs font-semibold shadow-lg">
               {dropSide === "left" ? "여기에 놓아 왼쪽에 나란히 보기" : "여기에 놓아 오른쪽에 나란히 보기"}
             </div>
           </div>
@@ -450,7 +451,6 @@ export const VDocPageCanvas: React.FC = () => {
       </div>
       {!activeDiff && !pageGridOpen && !isNewTab && currentPhase === "drafting" && <SlotRangeAiBar />}
       {!activeDiff && !pageGridOpen && !isNewTab && <FigmaFloatingToolbar />}
-      {!activeDiff && !pageGridOpen && !isNewTab && <AiStagingDrawer />}
     </div>
   );
 };

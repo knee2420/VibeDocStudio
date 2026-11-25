@@ -37,8 +37,8 @@ const TOOL_GROUPS: ReadonlyArray<{ id: string; title: string; shortcut?: string;
 ];
 
 const toolButton = (active: boolean) =>
-  `w-8 h-8 rounded-[10px] flex items-center justify-center transition-colors cursor-default outline-none focus-visible:ring-2 focus-visible:ring-[#0d99ff]/40 ${
-    active ? "bg-[#0d99ff] text-white" : "hover:bg-black/[0.06] text-black/80"
+  `w-8 h-8 rounded-[10px] flex items-center justify-center transition-colors cursor-default outline-none focus-visible:ring-2 focus-visible:ring-[var(--vds-accent)]/40 ${
+    active ? "bg-[var(--vds-accent)] text-white" : "hover:bg-black/[0.06] text-black/80"
   }`;
 const caretButton = "w-3.5 h-8 -ml-0.5 rounded-md flex items-center justify-center hover:bg-black/[0.06] text-black/40 hover:text-black/80 cursor-default";
 
@@ -377,7 +377,7 @@ export const FigmaFloatingToolbar: React.FC = () => {
                           >
                             <div
                               className={`aspect-square w-full rounded-[5px] bg-[#f5f5f5] border overflow-hidden ${
-                                placementKind === item.kind ? "border-[#0d99ff] ring-2 ring-[#0d99ff]/25" : "border-black/10 group-hover:border-black/25"
+                                placementKind === item.kind ? "border-[var(--vds-accent)] ring-2 ring-[var(--vds-accent)]/25" : "border-black/10 group-hover:border-black/25"
                               }`}
                             >
                               <AssetWireframeThumb kind={item.kind} iconName={item.icon} />

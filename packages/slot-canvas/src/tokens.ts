@@ -2,8 +2,8 @@
  * Interaction tokens measured on editor.yesform.com (`_dissections/yesform/01.layout_tokens.json`,
  * `04.affordances.md`) and app.pandadoc.com (`_dissections/pandadoc/04.interactions.md`).
  */
-export const ACCENT = "#0472e3";
-export const DROP_LINE = "#3b82f6";
+export const ACCENT = "var(--vds-accent)";
+export const DROP_LINE = "var(--vds-accent)";
 export const GRIP_COLOR = "#929292";
 export const ADD_ICON_COLOR = "#666666";
 export const AFFORDANCE_BORDER = "#eaeaea";

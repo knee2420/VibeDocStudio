@@ -54,7 +54,7 @@ export const RmIngestionBar: React.FC = () => {
   };
 
   return (
-    <div className="p-2 border-b border-slate-200 bg-white space-y-2 shrink-0">
+    <div className="px-3 py-2 border-b border-[var(--vds-border)] bg-white space-y-2 shrink-0">
       <div className="flex items-center gap-1.5">
         <button
           type="button"
@@ -62,14 +62,14 @@ export const RmIngestionBar: React.FC = () => {
             setDirInputOpen((v) => !v);
             setUrlInputOpen(false);
           }}
-          className={`flex-1 px-2 py-1 rounded-md border text-xs font-semibold cursor-pointer transition flex items-center justify-center gap-1.5 ${
+          className={`flex-1 h-7 px-2.5 rounded-md border text-[11.5px] font-medium cursor-pointer transition flex items-center justify-center gap-1.5 ${
             dirInputOpen
-              ? "bg-violet-50 text-violet-800 border-violet-300"
-              : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300"
+              ? "bg-[#18181b] text-white border-[#18181b]"
+              : "bg-white hover:bg-[#f4f4f5] text-[#18181b] border-[#e4e4e7]"
           }`}
           title="로컬 폴더 경로를 입력하여 수십~수백 개 파일을 뭉탱이로 덤핑"
         >
-          <FolderDown className="w-3.5 h-3.5 text-violet-600" />
+          <FolderDown className={`w-3.5 h-3.5 ${dirInputOpen ? "text-white" : "text-[#71717a]"}`} />
           <span>폴더 덤핑</span>
         </button>
 
@@ -79,34 +79,34 @@ export const RmIngestionBar: React.FC = () => {
             setUrlInputOpen((v) => !v);
             setDirInputOpen(false);
           }}
-          className={`flex-1 px-2 py-1 rounded-md border text-xs font-semibold cursor-pointer transition flex items-center justify-center gap-1.5 ${
+          className={`flex-1 h-7 px-2.5 rounded-md border text-[11.5px] font-medium cursor-pointer transition flex items-center justify-center gap-1.5 ${
             urlInputOpen
-              ? "bg-blue-50 text-blue-800 border-blue-300"
-              : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300"
+              ? "bg-[#18181b] text-white border-[#18181b]"
+              : "bg-white hover:bg-[#f4f4f5] text-[#18181b] border-[#e4e4e7]"
           }`}
           title="외부 웹페이지 링크를 아티클로 등록"
         >
-          <Globe className="w-3.5 h-3.5 text-blue-600" />
+          <Globe className={`w-3.5 h-3.5 ${urlInputOpen ? "text-white" : "text-[#71717a]"}`} />
           <span>웹 URL</span>
         </button>
       </div>
 
       {dirInputOpen && (
-        <form onSubmit={handleIngestDir} className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
-          <label className="text-[11px] font-bold text-slate-700 block">로컬 폴더 절대 경로</label>
+        <form onSubmit={handleIngestDir} className="p-2.5 bg-[#fafafa] rounded-lg border border-[#e4e4e7] space-y-2">
+          <label className="text-[11px] font-semibold text-[#18181b] block">로컬 폴더 절대 경로</label>
           <div className="flex gap-1.5">
             <input
               type="text"
               value={dirPath}
               onChange={(e) => setDirPath(e.target.value)}
               placeholder="예: C:\자료\레퍼런스_문서"
-              className="flex-1 px-2 py-1 text-xs bg-white border border-slate-300 rounded focus:outline-violet-500 font-mono"
+              className="flex-1 h-7 px-2 text-xs bg-white border border-[#e4e4e7] rounded-md focus:outline-none focus:border-[#18181b] font-mono"
               autoFocus
             />
             <button
               type="submit"
               disabled={isLoading || !dirPath.trim()}
-              className="px-2.5 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded text-xs font-bold disabled:opacity-50 flex items-center gap-1 cursor-pointer"
+              className="h-7 px-2.5 bg-[#18181b] hover:bg-[#27272a] text-white rounded-md text-xs font-medium disabled:opacity-40 flex items-center gap-1 cursor-pointer"
             >
               {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               추가

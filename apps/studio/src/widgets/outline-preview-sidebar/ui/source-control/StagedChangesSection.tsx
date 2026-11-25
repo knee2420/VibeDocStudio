@@ -71,7 +71,7 @@ export const StagedChangesSection: React.FC<{ docId: string | null }> = ({ docId
                   {...attachable(() => [stagedRef(diff)])}
                   onClick={() => show(diff)}
                   className={`rounded-[6px] border px-2 py-1.5 cursor-pointer ${
-                    on ? "border-[#0d99ff] bg-[var(--fig-selected)]" : "border-[#e9d7fe] bg-[#faf5ff] hover:bg-[#f4ebff]"
+                    on ? "border-[var(--vds-accent)] bg-[var(--fig-selected)]" : "border-[var(--vds-accent-border)] bg-[#faf5ff] hover:bg-[var(--vds-accent-soft)]"
                   }`}
                 >
                   <div className="text-[12px] font-medium truncate">{diff.title || diff.afterSummary}</div>

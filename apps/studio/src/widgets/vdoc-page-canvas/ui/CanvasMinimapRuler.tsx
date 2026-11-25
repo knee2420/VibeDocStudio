@@ -18,9 +18,9 @@ const readMinimapOpen = () => {
 };
 
 const LINE_COLOR: Record<GutterChangeKind, string> = {
-  add: "bg-[#2da44e]",
-  mod: "bg-[#0d99ff]",
-  del: "bg-[#cf222e]",
+  add: "bg-[var(--vds-git-add)]",
+  mod: "bg-[var(--vds-git-mod)]",
+  del: "bg-[var(--vds-git-del)]",
 };
 
 /**
@@ -155,7 +155,7 @@ export const CanvasMinimapRuler: React.FC<{
             <div
               ref={sliderRef}
               aria-hidden
-              className="pointer-events-none absolute left-0 right-0 bg-[#0d99ff]/[0.12] border-y border-[#0d99ff]/40 z-20"
+              className="pointer-events-none absolute left-0 right-0 bg-[var(--vds-accent)]/[0.12] border-y border-[var(--vds-accent)]/40 z-20"
             />
 
             {pageSummaries.map((p) => {
@@ -169,7 +169,7 @@ export const CanvasMinimapRuler: React.FC<{
                   }}
                   title={`${p.pageNo}쪽 · ${p.label}${p.changedCount > 0 ? ` (변경 ${p.changedCount}곳)` : ""}`}
                   className={`relative w-full aspect-[1/1.38] max-h-[68px] rounded-[2px] bg-white border p-1 flex flex-col gap-[2px] overflow-hidden shrink-0 transition-colors ${
-                    isCurrent ? "border-[#0d99ff] ring-1 ring-[#0d99ff]/30" : "border-slate-300/80 hover:border-slate-400"
+                    isCurrent ? "border-[var(--vds-accent)] ring-1 ring-[var(--vds-accent)]/30" : "border-slate-300/80 hover:border-slate-400"
                   }`}
                 >
                   {p.blocks.length === 0 ? (
@@ -222,6 +222,7 @@ export const CanvasMinimapRuler: React.FC<{
             }}
             labelOf={(el) => el.dataset.changeLabel ?? "변경된 영역"}
             deps={[depsKey, changeMap.size, pages.length]}
+            hideThumb={minimapOpen}
           />
         </div>
       </div>

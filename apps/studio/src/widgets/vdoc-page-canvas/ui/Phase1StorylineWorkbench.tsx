@@ -59,7 +59,7 @@ export const Phase1StorylineWorkbench: React.FC = () => {
       <div className="rounded-2xl bg-white border border-slate-200 shadow-xs p-5 space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#248567] border border-emerald-200 text-xs font-bold">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-[var(--vds-accent)] border border-emerald-200 text-xs font-bold">
               <GitBranch className="w-3.5 h-3.5" />
               Phase 1 · 스토리라인 기획 & 레퍼런스 목차 대조
             </div>
@@ -72,7 +72,7 @@ export const Phase1StorylineWorkbench: React.FC = () => {
             type="button"
             data-testid="goto-phase2-btn"
             onClick={() => switchPhase("templating")}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#248567] hover:bg-[#1d6b52] text-white text-xs font-bold shadow-sm cursor-pointer transition"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-xs font-bold shadow-sm cursor-pointer transition"
           >
             Phase 2: 템플릿·서식 조율로 이동
             <ArrowRight className="w-4 h-4" />
@@ -211,7 +211,7 @@ export const Phase1StorylineWorkbench: React.FC = () => {
                   zoomLevel: "page",
                 })
               }
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#248567] hover:bg-[#1d6b52] text-white text-xs font-semibold cursor-pointer"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--vds-accent)] hover:bg-[var(--vds-accent-hover)] text-white text-xs font-semibold cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               섹션 추가
@@ -236,7 +236,7 @@ export const Phase1StorylineWorkbench: React.FC = () => {
                           title: e.target.value,
                         })
                       }
-                      className="text-xs font-bold text-slate-900 bg-transparent hover:bg-slate-50 focus:bg-white focus:ring-1 focus:ring-[#248567] rounded px-1.5 py-0.5 flex-1 outline-none"
+                      className="text-xs font-bold text-slate-900 bg-transparent hover:bg-slate-50 focus:bg-white focus:ring-1 focus:ring-[var(--vds-accent)] rounded px-1.5 py-0.5 flex-1 outline-none"
                     />
                     <ProvenanceBadge
                       sourceProjectId={node.provenanceSourceProjectId}

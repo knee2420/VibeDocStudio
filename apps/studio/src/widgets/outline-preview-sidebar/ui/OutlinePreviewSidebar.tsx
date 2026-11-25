@@ -56,7 +56,7 @@ export const OutlinePreviewSidebar: React.FC = () => {
         onMouseDown={onResizeStart}
         onDoubleClick={resetSidebarWidth}
         title={`드래그하여 너비 조절 · 더블클릭 시 기본 너비(${SIDEBAR_WIDTH.default}px) 복원`}
-        className="absolute right-0 top-0 bottom-0 w-1.5 hover:w-2 cursor-col-resize hover:bg-[#0d99ff]/30 active:bg-[#0d99ff]/50 transition-all z-30"
+        className="absolute right-0 top-0 bottom-0 w-1.5 hover:w-2 cursor-col-resize hover:bg-[var(--vds-accent)]/30 active:bg-[var(--vds-accent)]/50 transition-all z-30"
       />
 
       {activeActivityTab === "source-control" ? (
