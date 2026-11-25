@@ -10,6 +10,8 @@ from .schemas import (
     AssetParseFromBlockRequest,
     AssetParseFromRefRequest,
     AssetParseResponse,
+    AssetRecommendSelectRequest,
+    AssetRecommendSelectResponse,
 )
 from .use_cases import AssetAiService
 
@@ -41,3 +43,12 @@ def apply_asset_preview(
     service: AssetAiService = Depends(Provide["asset_ai_service"]),
 ) -> AssetApplyPreviewResponse:
     return service.apply_preview(req)
+
+
+@router.post("/recommend-select", response_model=AssetRecommendSelectResponse)
+@inject
+def recommend_asset_select(
+    req: AssetRecommendSelectRequest,
+    service: AssetAiService = Depends(Provide["asset_ai_service"]),
+) -> AssetRecommendSelectResponse:
+    return service.recommend_select(req)

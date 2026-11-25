@@ -81,6 +81,9 @@ export class StylePackRegistry {
           }
         : existing.styles,
       bindings: patch.bindings ? { ...existing.bindings, ...patch.bindings } : existing.bindings,
+      extensions: patch.extensions
+        ? { ...(existing.extensions ?? {}), ...patch.extensions }
+        : existing.extensions,
       updatedAt: new Date().toISOString(),
     });
     this.packs.set(id, merged);

@@ -7,6 +7,7 @@ import {
   Eye,
   FilePlus2,
   FolderInput,
+  FolderPlus,
   Heading1,
   Info,
   Link2,
@@ -68,7 +69,7 @@ import {
 import { intentFromModifiers, selectionKey } from "@vibe/selection-core";
 import { VIBE_VAULT_PATHS_MIME } from "@vibe/file-explorer/core";
 import type { EditorHostContext } from "@vibe/workspace-layout/core";
-import { basename, findOwningProjectPath, stem } from "@vibe/vault-core";
+import { basename, dirname, findOwningProjectPath, stem } from "@vibe/vault-core";
 
 import { applyAssetPreviewViaAi } from "@vibe/ai-vault";
 import {
@@ -78,6 +79,7 @@ import {
   type VDocWorkMode,
 } from "@vibe/canvas-state";
 import {
+  appendVDocBranchToExistingOutline,
   bindVDocToExistingOutline,
   collectOutlineCandidatesForVDoc,
   commitStagedAssetToOutlineAndVDoc,
@@ -103,6 +105,7 @@ import {
 import type { IdeEditorEnv } from "../model/editorAdapters";
 import { DocumentViewIcon } from "./DocumentSurfaceIcons";
 import { AnchorChips, vdocUnitSelector } from "./ai/AnchorChips";
+import { V2BlockReview, V2PageAssetInsertReview } from "./ai/V2BlockReview";
 import { V2SlotReview } from "./ai/V2SlotReview";
 import {
   VDocEvidenceBottomPanel,
@@ -309,6 +312,32 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       openEvidenceSource,
     ]
   );
+  const wrapBlockContent = useCallback(
+    (block: LayoutBlock, content: React.ReactNode) => {
+      if (!aiWorkspace) return content;
+      return (
+        <V2BlockReview ai={aiWorkspace} path={path} block={block}>
+          {content}
+        </V2BlockReview>
+      );
+    },
+    [aiWorkspace, path]
+  );
+  const renderAfterPageBlocks = useCallback(
+    (page: VDocPage) => {
+      if (!aiWorkspace) return null;
+      const isFirstPage = docRef.current.pages[0]?.pageId === page.pageId;
+      return (
+        <V2PageAssetInsertReview
+          ai={aiWorkspace}
+          path={path}
+          page={page}
+          isFirstPage={isFirstPage}
+        />
+      );
+    },
+    [aiWorkspace, path]
+  );
   const attachCanvas = useCallback((el: HTMLDivElement | null) => {
     canvasScrollRef.current = el;
     setCanvasEl(el);
@@ -367,6 +396,12 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     if (current) setDoc(current);
     return docs.subscribe(path, (next) => {
       if (localWriteRef.current || !next) return;
+      // 외부(AI style.upsertVariant / style.apply / 승인) 쓰기가 도착하면 예약돼 있던 구형 디바운스 저장을 취소해 styleRef 등이 덮어써지지 않게 보호한다.
+      if (pendingWriteTimerRef.current !== null) {
+        clearTimeout(pendingWriteTimerRef.current);
+        pendingWriteTimerRef.current = null;
+        pendingWriteDocRef.current = null;
+      }
       setDoc(next);
     });
   }, [docs, path]);
@@ -688,6 +723,8 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
 
   const [outlinePickerOpen, setOutlinePickerOpen] = useState(false);
   const [outlineSearch, setOutlineSearch] = useState("");
+  const [structureModalOpen, setStructureModalOpen] = useState(false);
+  const [newOutlineName, setNewOutlineName] = useState("");
 
   const openOutlineInPair = useCallback(
     (target: string) => {
@@ -711,9 +748,13 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
   }, [vault, path, doc, outlineRevision]);
 
   const outlineCandidates = useMemo(() => {
-    if (!outlinePickerOpen) return [];
+    if (!outlinePickerOpen && !structureModalOpen) return [];
+    // 같은 `.vproj` 프로젝트 디렉토리 안에 있는 `.outline` 만 후보로 노출한다 (단독 문서는 0건).
+    if (!owningProjectPath) return [];
     void outlineRevision;
-    const all = collectOutlineCandidatesForVDoc(vault, path, doc, { includeExternal: false });
+    const all = collectOutlineCandidatesForVDoc(vault, path, doc, { includeExternal: false }).filter(
+      (c) => c.projectPath === owningProjectPath
+    );
     const q = outlineSearch.trim().toLowerCase();
     if (!q) return all;
     return all.filter(
@@ -722,18 +763,21 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         c.title.toLowerCase().includes(q) ||
         c.docDirectives.some((d) => d.label.toLowerCase().includes(q))
     );
-  }, [outlinePickerOpen, outlineRevision, vault, path, doc, outlineSearch]);
+  }, [outlinePickerOpen, structureModalOpen, owningProjectPath, outlineRevision, vault, path, doc, outlineSearch]);
 
   const handleEnterStructureMode = () => {
-    setWorkMode("Structure");
     const opened = openOrCreateOutlineForVDoc(vault, path, openOutlineInPair, {
       allowCreate: false,
     });
     if (opened) {
+      setWorkMode("Structure");
       setOutlinePickerOpen(false);
+      setStructureModalOpen(false);
     } else {
       setOutlineSearch("");
-      setOutlinePickerOpen(true);
+      setNewOutlineName(fallbackTitle);
+      setOutlinePickerOpen(false);
+      setStructureModalOpen(true);
     }
   };
 
@@ -743,7 +787,20 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       openLink: openOutlineInPair,
     });
     setOutlinePickerOpen(false);
+    setStructureModalOpen(false);
     setWorkMode("Structure");
+  };
+
+  const handleAppendToExistingOutline = (outlinePath: string) => {
+    flushVaultWrite();
+    const res = appendVDocBranchToExistingOutline(vault, path, outlinePath, {
+      openLink: openOutlineInPair,
+    });
+    if (res) {
+      setOutlinePickerOpen(false);
+      setStructureModalOpen(false);
+      setWorkMode("Structure");
+    }
   };
 
   const handleImportExternalOutline = (externalOutlinePath: string, rootNodeId?: string) => {
@@ -752,15 +809,22 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       openLink: openOutlineInPair,
     });
     setOutlinePickerOpen(false);
+    setStructureModalOpen(false);
     setWorkMode("Structure");
   };
 
-  const handleCreateNewOutline = () => {
-    openOrCreateOutlineForVDoc(vault, path, openOutlineInPair, {
+  const handleCreateNewOutline = (customName?: string) => {
+    flushVaultWrite();
+    const res = openOrCreateOutlineForVDoc(vault, path, openOutlineInPair, {
       allowCreate: true,
+      outlineName: customName?.trim() || fallbackTitle,
+      promoteStandaloneToProject: !owningProjectPath,
     });
     setOutlinePickerOpen(false);
-    setWorkMode("Structure");
+    setStructureModalOpen(false);
+    if (res) {
+      vdocUiBridge.getState().setWorkMode(res.vdocPath ?? path, "Structure");
+    }
   };
 
   const handleExplicitSyncAction = () => {
@@ -806,10 +870,10 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
   }, [vault, styleRevision]);
 
   const activeStyleEntry = useMemo(
-    () => resolveActiveStyleEntry(doc, vault, styleCatalog),
-    // 스타일 연결 · 보기만 따른다 (본문 편집으로 다시 찾지 않는다)
+    () => resolveActiveStyleEntry(doc, vault, styleCatalog, path),
+    // 스타일 연결 · 경로 · 보기만 따른다 (본문 편집으로 다시 찾지 않는다)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [doc.styleRef, doc.viewId, doc.surface, styleCatalog, vault]
+    [doc.styleRef, doc.viewId, doc.surface, path, styleCatalog, vault]
   );
 
   // Stable MemoVDocPageSheet callbacks (100% referential stability so arePageSheetPropsEqual hits!)
@@ -1090,6 +1154,8 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
             onUpdateBlock={handleUpdateBlock}
             onTableCommand={handleTableCommand}
             wrapSlotContent={wrapSlotContent}
+            wrapBlockContent={wrapBlockContent}
+            renderAfterPageBlocks={renderAfterPageBlocks}
           />
         </div>
       );
@@ -1108,6 +1174,8 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     },
     [
       wrapSlotContent,
+      wrapBlockContent,
+      renderAfterPageBlocks,
       displayDoc.backdata,
       displayDoc.evidenceLinks,
       displayDoc.pages.length,
@@ -1470,8 +1538,8 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
                   : syncFlash === "noop"
                     ? "변경 없음"
                     : workMode === "Structure"
-                      ? "← 구조에서 컴파일"
-                      : "→ 구조로 반영"}
+                      ? ".outline → .vdoc 컴파일"
+                      : ".vdoc → .outline 반영"}
               </span>
             </button>
           )}
@@ -1688,11 +1756,15 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
 
           <div className="max-h-52 space-y-1 overflow-y-auto pr-0.5">
             <div className="mb-1 text-[10px] font-semibold tracking-wider text-[var(--obs-text-faint,#808080)] uppercase">
-              같은 경계 내 .outline ({outlineCandidates.length})
+              {owningProjectPath
+                ? `같은 프로젝트(.vproj) 내 .outline (${outlineCandidates.length})`
+                : "프로젝트(.vproj) 외부 단독 문서"}
             </div>
             {outlineCandidates.length === 0 ? (
               <div className="rounded bg-black/20 px-2 py-2.5 text-center text-[10.5px] text-[var(--obs-text-faint,#777)]">
-                같은 경계에 연결할 .outline 파일이 없습니다.
+                {owningProjectPath
+                  ? "이 프로젝트(.vproj) 안에 연결할 .outline 파일이 없습니다."
+                  : "프로젝트(.vproj) 폴더 안에 있지 않아 기존 .outline 목록을 표시하지 않습니다."}
               </div>
             ) : (
               outlineCandidates.map((cand) => (
@@ -1726,9 +1798,22 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
                         {cand.folder || "/"}
                       </div>
                     </div>
-                    <span className="shrink-0 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-medium text-emerald-200">
-                      연결
-                    </span>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          handleAppendToExistingOutline(cand.outlinePath);
+                        }}
+                        title="현재 .vdoc 내용을 이 .outline 의 새 <<doc>> 브랜치로 추가하고 바인딩"
+                        className="rounded border border-sky-500/35 bg-sky-500/15 px-1.5 py-0.5 text-[10px] font-medium text-sky-200 hover:bg-sky-500/25"
+                      >
+                        합류
+                      </button>
+                      <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-medium text-emerald-200">
+                        연결
+                      </span>
+                    </div>
                   </button>
 
                   {cand.docDirectives.length > 1 && (
@@ -1762,19 +1847,211 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
 
           <div className="mt-2.5 flex items-center justify-between border-t border-[var(--obs-border-subtle,#323232)] pt-2">
             <span className="text-[10px] text-[var(--obs-text-faint,#808080)]">
-              현재 경계 안에 새 구조 추출
+              {owningProjectPath ? "이 프로젝트 안에 새 구조 추출" : "새 .vproj 폴더로 묶어 구조 추출"}
             </span>
             <button
               type="button"
-              onClick={handleCreateNewOutline}
+              onClick={() => handleCreateNewOutline()}
               className="flex items-center gap-1 rounded border border-sky-500/35 bg-sky-500/15 px-2 py-1 text-[10.5px] font-medium text-sky-200 transition-colors hover:bg-sky-500/25"
             >
               <FilePlus2 className="h-3 w-3" />
-              <span>새 .outline 추출</span>
+              <span>{owningProjectPath ? "새 .outline 추출" : ".vproj + .outline 생성"}</span>
             </button>
           </div>
         </div>
       )}
+
+      {/* VDoc → Outline Structure Entry Confirmation Modal (.vproj-aware) */}
+      {structureModalOpen && (() => {
+        const cleanName = newOutlineName.trim().replace(/\.outline$/i, "") || fallbackTitle;
+        const parentDir = dirname(path);
+        const inProj = Boolean(owningProjectPath);
+        const projCandidates = inProj ? outlineCandidates : [];
+        const newProjRel = parentDir ? `${parentDir}/${cleanName}.vproj` : `${cleanName}.vproj`;
+        const newOutlineRel = inProj
+          ? (parentDir ? `${parentDir}/${cleanName}.outline` : `${cleanName}.outline`)
+          : `${newProjRel}/${cleanName}.outline`;
+
+        return (
+          <div
+            data-testid="vdoc-structure-setup-modal"
+            onClick={() => setStructureModalOpen(false)}
+            className="absolute inset-0 z-50 flex items-start justify-center bg-black/55 pt-14 backdrop-blur-[1px]"
+          >
+            <div
+              onClick={(ev) => ev.stopPropagation()}
+              className="w-[460px] max-w-[94%] rounded-xl border border-[var(--obs-border,#3d3d3d)] bg-[var(--obs-bg-secondary,#242424)] p-4 text-[12px] text-[var(--obs-text-normal,#ececec)] shadow-2xl"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    {inProj ? (
+                      <ListTree className="h-4 w-4 shrink-0 text-emerald-400" />
+                    ) : (
+                      <FolderPlus className="h-4 w-4 shrink-0 text-violet-400" />
+                    )}
+                    <h3 className="truncate text-[13px] font-semibold">
+                      {!inProj
+                        ? "새 프로젝트(.vproj)와 구조를 생성할까요?"
+                        : projCandidates.length > 0
+                          ? "구조(.outline) 연결 또는 새로 만들기"
+                          : `"${cleanName}.outline"을 새로 생성할까요?`}
+                    </h3>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-[10.5px] text-[var(--obs-text-muted,#a5a5a5)]">
+                    <span className="shrink-0 whitespace-nowrap rounded border border-violet-500/30 bg-violet-500/15 px-1.5 py-0 text-[9.5px] text-violet-200">
+                      {inProj ? `PROJ · ${projectScopeLabel}` : "단독 문서 → .vproj 승격"}
+                    </span>
+                    <span className="truncate">
+                      {!inProj
+                        ? "현재 문서와 새 .outline 을 하나의 프로젝트 폴더로 묶어 바인딩합니다."
+                        : projCandidates.length > 0
+                          ? "이 프로젝트에 이미 .outline 이 있습니다. 기존 파일에 연결하거나 새로 만들 수 있습니다."
+                          : "현재 .vdoc 내용을 기준으로 .outline 을 생성하고 양방향 바인딩합니다."}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setStructureModalOpen(false)}
+                  className="rounded p-1 text-[var(--obs-text-muted,#9a9a9a)] hover:bg-white/10 hover:text-white"
+                  aria-label="닫기"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Section A: Existing .outline files inside the same `.vproj` */}
+              {projCandidates.length > 0 && (
+                <div className="mt-3 rounded-lg border border-emerald-500/25 bg-black/20 p-2.5">
+                  <div className="mb-1.5 flex items-center justify-between text-[10.5px] font-semibold text-emerald-300">
+                    <span>1. 이 프로젝트의 기존 .outline에 연결 ({projCandidates.length})</span>
+                  </div>
+                  <div className="max-h-44 space-y-1.5 overflow-y-auto pr-0.5">
+                    {projCandidates.map((cand) => (
+                      <div
+                        key={cand.outlinePath}
+                        className="rounded-md border border-white/10 bg-[var(--obs-bg-primary,#1b1b1b)] p-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <ListTree className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                              <span className="truncate font-medium text-[11.5px]">
+                                {basename(cand.outlinePath)}
+                              </span>
+                            </div>
+                            <div className="truncate pl-5 font-code text-[9.5px] text-[var(--obs-text-faint,#808080)]">
+                              {cand.outlinePath}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            data-testid={`structure-modal-append-${basename(cand.outlinePath)}`}
+                            onClick={() => handleAppendToExistingOutline(cand.outlinePath)}
+                            className="shrink-0 rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-1 text-[10.5px] font-medium text-emerald-100 hover:bg-emerald-500/30"
+                            title="현재 .vdoc 내용을 이 .outline 의 새 <<doc>> 브랜치로 추가하고 바인딩"
+                          >
+                            이 문서 내용 합류
+                          </button>
+                        </div>
+                        {cand.docDirectives.length > 0 && (
+                          <div className="mt-1.5 space-y-1 border-t border-white/5 pt-1.5 pl-4">
+                            <div className="text-[9.5px] text-[var(--obs-text-faint,#888)]">
+                              또는 기존 &lt;&lt;doc&gt;&gt; 노드에 바로 연결:
+                            </div>
+                            {cand.docDirectives.map((dir) => (
+                              <button
+                                key={dir.nodeId}
+                                type="button"
+                                onClick={() => handleBindExistingOutline(cand.outlinePath, dir.nodeId)}
+                                className="flex w-full items-center justify-between gap-1.5 rounded px-1.5 py-0.5 text-left text-[10.5px] text-[var(--obs-text-muted,#c2c2c2)] hover:bg-white/10 hover:text-white"
+                              >
+                                <span className="min-w-0 flex-1 truncate">
+                                  <span className="mr-1 font-code text-emerald-300">{dir.rawToken}</span>
+                                  {dir.label}
+                                </span>
+                                <span className="shrink-0 text-[9.5px] text-emerald-400">
+                                  {dir.boundVDocPath ? `연결됨(${basename(dir.boundVDocPath)})` : "여기에 연결"}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Section B: Create new `.outline` (and `.vproj` if standalone) */}
+              <form
+                className="mt-3 rounded-lg border border-sky-500/25 bg-black/20 p-2.5"
+                onSubmit={(ev) => {
+                  ev.preventDefault();
+                  handleCreateNewOutline(cleanName);
+                }}
+              >
+                <div className="mb-1.5 text-[10.5px] font-semibold text-sky-300">
+                  {projCandidates.length > 0
+                    ? "2. 새 .outline 파일 따로 만들기"
+                    : inProj
+                      ? "생성할 .outline 이름"
+                      : "새 프로젝트(.vproj) 및 .outline 이름"}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    data-testid="structure-modal-name-input"
+                    value={newOutlineName}
+                    onChange={(ev) => setNewOutlineName(ev.target.value)}
+                    placeholder={fallbackTitle}
+                    autoFocus={projCandidates.length === 0}
+                    className="min-w-0 flex-1 rounded border border-[var(--obs-border,#3a3a3a)] bg-[var(--obs-bg-primary,#161616)] px-2.5 py-1.5 text-[11.5px] text-white outline-none focus:border-sky-400"
+                  />
+                  <span className="shrink-0 font-code text-[11px] text-[var(--obs-text-muted,#9a9a9a)]">
+                    .outline
+                  </span>
+                </div>
+
+                <div className="mt-2 space-y-0.5 rounded bg-black/25 px-2 py-1.5 font-code text-[10px] text-[var(--obs-text-muted,#a5a5a5)]">
+                  {!inProj && (
+                    <>
+                      <div className="truncate">
+                        <span className="text-violet-300">PROJ +</span> {newProjRel}/
+                      </div>
+                      <div className="truncate">
+                        <span className="text-amber-300">이동 →</span> {newProjRel}/{basename(path)}
+                      </div>
+                    </>
+                  )}
+                  <div className="truncate">
+                    <span className="text-emerald-300">생성 +</span> {newOutlineRel}
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-end gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setStructureModalOpen(false)}
+                    className="rounded border border-white/15 px-3 py-1 text-[11px] text-[var(--obs-text-muted,#b3b3b3)] hover:bg-white/10 hover:text-white"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="submit"
+                    data-testid="structure-modal-create-btn"
+                    className="flex items-center gap-1 rounded bg-[var(--obs-accent,#8a5cf5)] px-3 py-1 text-[11px] font-semibold text-white hover:brightness-110"
+                  >
+                    {inProj ? <FilePlus2 className="h-3.5 w-3.5" /> : <FolderPlus className="h-3.5 w-3.5" />}
+                    <span>{inProj ? `${cleanName}.outline 만들기` : "프로젝트 만들고 연결"}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Drop Hint Banner when dragging a Vault file onto 2D canvas center */}
       {canvasDropActive && (

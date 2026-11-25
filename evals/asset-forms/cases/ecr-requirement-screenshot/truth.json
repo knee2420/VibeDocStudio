@@ -1,0 +1,119 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "요구사항 정의 표",
+ "scope": "element",
+ "nodes": [
+  {
+   "t": "grid",
+   "component": "table",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "요구사항 분류",
+       "cs": 2
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "category",
+        "type": "text",
+        "hint": "요구사항 분류"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "요구사항 고유번호",
+       "cs": 2
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "req_id",
+        "type": "code",
+        "hint": "요구사항 고유번호"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "요구사항 명칭",
+       "cs": 2
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "name",
+        "type": "text",
+        "hint": "요구사항 명칭"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "group-label",
+       "text": "요구사항 세부내용",
+       "rs": 2
+      },
+      {
+       "role": "sub-label",
+       "text": "정의"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "definition",
+        "type": "text",
+        "hint": "정의"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "sub-label",
+       "text": "세부내용"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "details",
+        "type": "list",
+        "hint": "세부내용"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "산출정보",
+       "cs": 2
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "outputs",
+        "type": "text",
+        "hint": "산출정보"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

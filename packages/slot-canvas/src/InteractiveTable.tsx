@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import type { CellStyleDef } from "@vibe/style-core";
 import {
   expandRangeToCells,
   formatPercents,
@@ -48,6 +49,8 @@ export interface InteractiveTableProps {
   defaultVAlign?: "top" | "middle" | "bottom";
   /** Rounded outer frame (structured-table look); composite frames draw their own outer border. */
   roundedOuter?: boolean;
+  /** 활성 `.vstyle` 의 `styles.table[styleKey].cells[cellRole]` 라이브 해석 콜백. */
+  resolveCellRoleStyle?: (cellRole?: string) => CellStyleDef;
   editable: boolean;
   selectedSlotId: string | null;
   blockSelected?: boolean;
@@ -141,6 +144,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
   cellPadding,
   defaultVAlign = "top",
   roundedOuter = true,
+  resolveCellRoleStyle,
   editable,
   selectedSlotId,
   blockSelected,
@@ -381,15 +385,35 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
       >
         <div
           className="w-full overflow-hidden"
-          style={{
-            border: borderRules.outer === "none" ? undefined : borderRules.outer || "1px solid #cbd5e1",
-            borderRadius:
-              borderRules.radius !== undefined
-                ? borderRules.radius
-                : roundedOuter && borderRules.outer && borderRules.outer !== "none"
-                  ? "6px"
-                  : undefined,
-          }}
+          style={(() => {
+            const fallbackOuter =
+              borderRules.outer === "none" ? "none" : borderRules.outer || "1px solid #cbd5e1";
+            const resolveEdge = (edge?: string) => {
+              const val = edge ?? fallbackOuter;
+              return val === "none" ? "none" : val;
+            };
+            const borderTop = resolveEdge(borderRules.outerTop);
+            const borderRight = resolveEdge(borderRules.outerRight);
+            const borderBottom = resolveEdge(borderRules.outerBottom);
+            const borderLeft = resolveEdge(borderRules.outerLeft);
+            const hasAllSides =
+              borderTop !== "none" &&
+              borderRight !== "none" &&
+              borderBottom !== "none" &&
+              borderLeft !== "none";
+            return {
+              borderTop,
+              borderRight,
+              borderBottom,
+              borderLeft,
+              borderRadius:
+                borderRules.radius !== undefined
+                  ? borderRules.radius
+                  : roundedOuter && hasAllSides
+                    ? "6px"
+                    : undefined,
+            };
+          })()}
         >
           <table ref={tableRef} className="w-full border-collapse table-fixed">
             <colgroup>
@@ -404,15 +428,21 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                   <tr key={row.rowId} data-row-id={row.rowId} style={{ height: row.height }}>
                     {row.cells.map((cell) => {
                       const placement = placementByCellId.get(cell.cellId);
+                      const roleStyle = resolveCellRoleStyle ? resolveCellRoleStyle(cell.cellRole) : {};
                       const lastRow = placement
                         ? placement.row + placement.rowSpan >= table.rows.length
                         : rowIndex === table.rows.length - 1;
                       const lastCol = placement ? placement.col + placement.colSpan >= columnCount : false;
-                      const vAlign = cell.vAlign ?? defaultVAlign;
+                      const vAlign = cell.vAlign ?? roleStyle.vAlign ?? defaultVAlign;
                       const vAlignClass =
                         vAlign === "middle" ? "align-middle" : vAlign === "bottom" ? "align-bottom" : "align-top";
+                      const effectiveHAlign = cell.hAlign ?? roleStyle.align;
                       const hAlignClass =
-                        cell.hAlign === "center" ? "text-center" : cell.hAlign === "right" ? "text-right" : "text-left";
+                        effectiveHAlign === "center"
+                          ? "text-center"
+                          : effectiveHAlign === "right"
+                            ? "text-right"
+                            : "text-left";
                       const inRange =
                         rangeIsMultiCell && placement && selectedRect &&
                         placement.row >= selectedRect.r0 && placement.row <= selectedRect.r1 &&
@@ -422,10 +452,28 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                       const separator = isHeaderRow
                         ? borderRules.headerBottom || headerStyle.borderBottom || rowSep
                         : rowSep;
+                      const effectiveListIndent = cell.listIndent ?? roleStyle.listIndent;
+                      const effectiveHangingIndent = cell.hangingIndent ?? roleStyle.hangingIndent;
+                      const effectiveCell: TableCellSlotDef =
+                        effectiveHAlign !== cell.hAlign ||
+                        effectiveListIndent !== cell.listIndent ||
+                        effectiveHangingIndent !== cell.hangingIndent ||
+                        (roleStyle.whiteSpace && !cell.whiteSpace) ||
+                        (roleStyle.fontVariantNumeric && !cell.fontVariantNumeric)
+                          ? {
+                              ...cell,
+                              hAlign: effectiveHAlign,
+                              whiteSpace: cell.whiteSpace ?? roleStyle.whiteSpace,
+                              fontVariantNumeric: cell.fontVariantNumeric ?? roleStyle.fontVariantNumeric,
+                              listIndent: effectiveListIndent,
+                              hangingIndent: effectiveHangingIndent,
+                            }
+                          : cell;
                       return (
                         <td
                           key={cell.cellId}
                           data-cell-id={cell.cellId}
+                          data-cell-role={cell.cellRole}
                           data-slot-id={cell.slotId}
                           data-vdoc-unit={cell.slotId}
                           data-unit-kind="slot"
@@ -468,24 +516,33 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                           }}
                           style={{
                             padding:
-                              cell.padding || cellPadding || (isHeaderRow ? headerStyle.padding || "8px 10px" : "8px 10px"),
-                            borderTop: cell.borderTop ?? headerTop,
-                            borderBottom: cell.borderBottom ?? (lastRow ? undefined : separator),
-                            borderRight: cell.borderRight ?? (lastCol ? undefined : colSep),
-                            borderLeft: cell.borderLeft,
+                              cell.padding ||
+                              roleStyle.padding ||
+                              cellPadding ||
+                              (isHeaderRow ? headerStyle.padding || "8px 10px" : "8px 10px"),
+                            borderTop: cell.borderTop ?? roleStyle.borderTop ?? headerTop,
+                            borderBottom: cell.borderBottom ?? roleStyle.borderBottom ?? (lastRow ? undefined : separator),
+                            borderRight: cell.borderRight ?? roleStyle.borderRight ?? (lastCol ? undefined : colSep),
+                            borderLeft: cell.borderLeft ?? roleStyle.borderLeft,
                             backgroundColor:
                               cell.backgroundColor ||
+                              roleStyle.fill ||
                               (cell.isHeader
                                 ? cell.whiteHeader
                                   ? "#ffffff"
                                   : headerStyle.bg || "#f1f5f9"
                                 : "transparent"),
-                            color: cell.color || (cell.isHeader ? headerStyle.textColor : undefined),
-                            fontWeight: cell.fontWeight || (cell.isHeader ? headerStyle.fontWeight || "600" : undefined),
-                            fontSize: cell.fontSize,
-                            lineHeight: cell.lineHeight,
-                            fontFamily: cell.fontFamily,
-                            letterSpacing: cell.letterSpacing,
+                            color: cell.color || roleStyle.color || (cell.isHeader ? headerStyle.textColor : undefined),
+                            fontWeight:
+                              cell.fontWeight ||
+                              roleStyle.fontWeight ||
+                              (cell.isHeader ? headerStyle.fontWeight || "600" : undefined),
+                            fontSize: cell.fontSize || roleStyle.fontSize,
+                            lineHeight: cell.lineHeight || roleStyle.lineHeight,
+                            fontFamily: cell.fontFamily || roleStyle.fontFamily,
+                            letterSpacing: cell.letterSpacing || roleStyle.letterSpacing,
+                            whiteSpace: cell.whiteSpace || roleStyle.whiteSpace,
+                            fontVariantNumeric: cell.fontVariantNumeric || roleStyle.fontVariantNumeric,
                           }}
                           className={`relative ${vAlignClass} ${hAlignClass} ${
                             focused
@@ -497,7 +554,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
                               : ""
                           }`}
                         >
-                          {renderCell(cell, { hAlignClass, isHeaderRow })}
+                          {renderCell(effectiveCell, { hAlignClass, isHeaderRow })}
                         </td>
                       );
                     })}

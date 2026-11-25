@@ -1,234 +1,695 @@
 [
- {
-  "name": "workspace.getState",
-  "description": "현재 워크스페이스 상태: 프로젝트, 열린 문서/페이지, 작업 단계(phase), 선택한 슬롯/블록, 열린 참조 문서, Staged 대기 건수",
-  "risk": "read",
-  "inputSchema": {
-   "type": "object",
-   "properties": {}
-  }
- },
- {
-  "name": "document.getOutline",
-  "description": "열린 문서의 구조를 한 줄씩: `pageId > blockId(kind) > slotId [역할/잠금] 라벨 — 본문 앞부분`. 기본은 잠기지 않은 모든 슬롯(제목 · 본문 · 표 셀 포함). 슬롯 id 를 찾을 때 먼저 부른다",
-  "risk": "read",
-  "inputSchema": {
-   "type": "object",
-   "properties": {
-    "pageId": {
-     "type": "string",
-     "description": "특정 페이지만 (생략 시 전체)"
+    {
+        "name": "workspace.getState",
+        "description": "현재 워크스페이스 상태: 프로젝트, 열린 문서/페이지, 작업 단계(phase), 선택한 슬롯/블록, 열린 참조 문서, Staged 대기 건수",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {}
+        }
     },
-    "includeLocked": {
-     "type": "boolean",
-     "description": "잠긴 슬롯도 포함"
+    {
+        "name": "document.getOutline",
+        "description": "열린 문서의 구조를 한 줄씩: `pageId > blockId(kind) > slotId [역할/잠금] 라벨 — 본문 앞부분`. 기본은 잠기지 않은 모든 슬롯(제목 · 본문 · 표 셀 포함). 슬롯 id 를 찾을 때 먼저 부른다",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "pageId": {
+                    "type": "string",
+                    "description": "특정 페이지만 (생략 시 전체)"
+                },
+                "includeLocked": {
+                    "type": "boolean",
+                    "description": "잠긴 슬롯도 포함"
+                }
+            }
+        }
+    },
+    {
+        "name": "slot.read",
+        "description": "슬롯 하나의 전체 본문(HTML · 평문), 제약(줄 수 · 톤 · 잠금), 연결된 백데이터 원문",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "slotId": {
+                    "type": "string",
+                    "description": "슬롯 id (document.getOutline 에서 확인)"
+                }
+            },
+            "required": [
+                "slotId"
+            ]
+        }
+    },
+    {
+        "name": "slot.proposeContent",
+        "description": "슬롯의 새 본문을 변경안으로 제출한다 (바로 반영되지 않고 Staged 대기열에 올라가 사용자가 승인). html 은 <p>, <ul>, <li>, <strong>, <em> 만 사용",
+        "risk": "stage",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "slotId": {
+                    "type": "string"
+                },
+                "html": {
+                    "type": "string",
+                    "description": "새 본문 HTML 조각 (근거가 있는 문장 끝에 <sup data-cite=\"1\"></sup>)"
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "변경 이유 한 줄"
+                },
+                "evidence": {
+                    "type": "array",
+                    "description": "이 내용의 근거 [{citationId, kind: kcard|backdata|resource|sector|ref-region, deckId, cardId, chunkId, label, lines}] — 본문 인용 표식 <sup data-cite=\"citationId\"></sup> 과 짝을 맞춘다"
+                }
+            },
+            "required": [
+                "slotId",
+                "html"
+            ]
+        }
+    },
+    {
+        "name": "slots.proposeBatch",
+        "description": "여러 슬롯(표 셀 · 그리드 칸 · 섹션)의 새 본문을 한 번에 변경안으로 제출한다. 블록 하나를 채우거나 고칠 때 slot.proposeContent 를 여러 번 부르지 말고 이것을 쓴다. 잠긴 슬롯만 건너뛴다",
+        "risk": "stage",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "changes": {
+                    "type": "array",
+                    "description": "[{slotId, html, evidence?}] — html 은 <p>, <ul>, <li>, <strong>, <em>, 인용 <sup data-cite> 만"
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "변경 이유 한 줄"
+                }
+            },
+            "required": [
+                "changes"
+            ]
+        }
+    },
+    {
+        "name": "blocks.proposeProps",
+        "description": "슬롯 밖 블록 속성(이미지 대체 텍스트 · 정렬 · 너비, 담당자 등)의 변경안을 제출한다. 바꿀 수 있는 속성은 블록 종류마다 다르며 블록 첨부 내용의 '바꿀 수 있는 블록 속성' 에 나온다",
+        "risk": "stage",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "blockId": {
+                    "type": "string"
+                },
+                "props": {
+                    "type": "object",
+                    "description": "{속성: 새 값}"
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "변경 이유 한 줄"
+                }
+            },
+            "required": [
+                "blockId",
+                "props"
+            ]
+        }
+    },
+    {
+        "name": "canvas.selectSlot",
+        "description": "캔버스에서 슬롯을 선택하고 화면을 그 위치로 스크롤해 강조한다 (사용자에게 위치를 보여줄 때)",
+        "risk": "ui",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "slotId": {
+                    "type": "string",
+                    "description": "슬롯 id (document.getOutline 에서 확인)"
+                }
+            },
+            "required": [
+                "slotId"
+            ]
+        }
+    },
+    {
+        "name": "canvas.select",
+        "description": "캔버스에서 칸 · 블록 여러 개를 한꺼번에 골라 사용자에게 보여 준다 (변경안을 낸 칸들 · 질문에 해당하는 곳을 가리킬 때). 첫 항목으로 화면을 옮긴다. 문서는 바꾸지 않는다",
+        "risk": "ui",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "slotIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "고를 칸 id (document.getOutline 에서 확인)"
+                },
+                "blockIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "고를 블록 id"
+                }
+            }
+        }
+    },
+    {
+        "name": "slots.listByState",
+        "description": "범위 안 칸들의 채움 상태 목록 (빈 칸 지도). scope: slot|block|page|document, state: empty|ai-draft|staged|filled|verified (생략하면 채울 대상 전부). 일괄 채우기 · 진행 확인에 쓴다",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "scope": {
+                    "type": "string",
+                    "enum": [
+                        "block",
+                        "page",
+                        "document"
+                    ]
+                },
+                "id": {
+                    "type": "string",
+                    "description": "scope 가 block · page 일 때 그 id (생략하면 현재 선택 · 현재 페이지)"
+                },
+                "state": {
+                    "type": "string",
+                    "enum": [
+                        "empty",
+                        "ai-draft",
+                        "staged",
+                        "filled",
+                        "verified"
+                    ]
+                }
+            }
+        }
+    },
+    {
+        "name": "staging.list",
+        "description": "Staged 대기열에 쌓인 AI 변경안 목록 (아직 승인 전)",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    {
+        "name": "layout.openPanel",
+        "description": "화면 패널을 연다: explorer(아웃라이너), source-control(Staged 검토), inspector(슬롯 속성), blockbox(블록 추가)",
+        "risk": "ui",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "panel": {
+                    "type": "string",
+                    "enum": [
+                        "explorer",
+                        "source-control",
+                        "inspector",
+                        "blockbox"
+                    ]
+                }
+            },
+            "required": [
+                "panel"
+            ]
+        }
+    },
+    {
+        "name": "outline.getWorkingTree",
+        "description": "Phase 1 WorkingOutline 트리와 각 노드의 ElementKind 역할(document/page/structured-table/text 등) 및 sourceRef 를 읽는다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    {
+        "name": "assets.search",
+        "description": "현재 활성 에셋 스키마(v1/v2) 카탈로그에서 사용자의 목적·본문 내용에 맞는 구조 에셋 Top-N 후보를 검색한다. 에셋이 많아져도 전체를 덤프하지 않고 압축된 요약(구조 배지 · 필드 · 근거 힌트 · 추천 사유)만 반환한다. 추천 결과를 답변에 낼 때는 `<<agui:asset-picks: id1,id2,id3>>` 토큰을 함께 출력해 사용자가 클릭으로 바로 미리보기·적용할 수 있게 한다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "사용자 목적 또는 아웃라인 핵심 키워드 (예: '법원 제출 상고이유서', '복합 병합표', '블로그 여행 리뷰')"
+                },
+                "flowMode": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "prose-form",
+                        "grid-form",
+                        "hybrid"
+                    ],
+                    "description": "구조 형태 필터 (글·조항형 prose-form | 표·격자형 grid-form | 하이브리드 hybrid)"
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "반환할 최대 후보 수 (기본 5, 최대 10)"
+                }
+            }
+        }
+    },
+    {
+        "name": "assets.stagePreview",
+        "description": "추천하거나 사용자가 고른 에셋(assetId)을 현재 열린 .vdoc 또는 .outline 에 즉시 AI 느낌 보기(Staged Preview)로 띄워 사용자가 눈으로 확인하고 적용할 수 있게 한다.",
+        "risk": "ui",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "assetId": {
+                    "type": "string",
+                    "description": "assets.search 에서 확인한 assetId"
+                }
+            },
+            "required": [
+                "assetId"
+            ]
+        }
+    },
+    {
+        "name": "schema.inspect",
+        "description": "현재 볼트의 공식 구조 문법 정본(.vibedoc/element-registry.vsyntax), 에셋 역할·필드 어휘, 그리고 현재 문서의 스타일 팩(.vstyle) 선택자·토큰을 실시간으로 조회한다. 양식을 해체하거나 새 에셋을 등록하기 전에 호출해 최신 기호·병합·반복·스타일 규격을 확인한다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "elementId": {
+                    "type": "string",
+                    "description": "특정 요소(table | section | resource 등)만 자세히 볼 때 지정 (생략 시 전체 요약)"
+                }
+            }
+        }
+    },
+    {
+        "name": "assets.register",
+        "description": "분해한 양식(구조 스키마 + 스타일 짝)을 에셋 라이브러리에 등록한다. 권장 입력: `.vsyntax` 구조 문법 `dsl`(줄 배열 또는 문자열) + `title` + `scope` + `style` 짝 (긴 JSON AST 대신 3~15줄 DSL로 간결하게 작성). 기존 `asset`(vibe-asset/3 nodes JSON) 방식도 그대로 지원한다. 사양 검증 오류 시 위치·이유를 돌려준다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "에셋 제목 (dsl 방식일 때 필수)"
+                },
+                "scope": {
+                    "type": "string",
+                    "enum": [
+                        "element",
+                        "section",
+                        "page"
+                    ],
+                    "description": "에셋 범위 (기본 element)"
+                },
+                "dsl": {
+                    "description": ".vsyntax 정본 구조 문법 문자열 또는 줄 배열 (예: <<view:table>> 제목 / 열1 | 열2 / * {{f1}} | {{f2^}}). 반복(*), 동적 세로 병합(^), 정적 병합([^], [<])을 간결하게 표현한다."
+                },
+                "style": {
+                    "type": "object",
+                    "description": "스타일 짝 ({ selectors?: string[], tokens?: Record<string, Record<string, string>> })"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "uncertain": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "asset": {
+                    "type": "object",
+                    "description": "vibe-asset/3 에셋 JSON (dsl 또는 nodes 포함 가능)"
+                },
+                "replaceAssetId": {
+                    "type": "string",
+                    "description": "이미 등록한 에셋을 고쳐 덮어쓸 때 그 id"
+                }
+            }
+        }
+    },
+    {
+        "name": "assets.capture",
+        "description": "열린 문서의 블록들을 에셋으로 해체해 등록한다 (같은 모양의 다른 블록을 함께 보고, 모두에서 같은 글은 고정 글로). 결과에 같은 모양 블록 목록(sameShapeBlocks)이 온다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "blockIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "blockIds"
+            ]
+        }
+    },
+    {
+        "name": "assets.list",
+        "description": "에셋 라이브러리(v3) 목록 — assetId · 제목 · 자리 수 · 반복 단위.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    {
+        "name": "assets.propose",
+        "description": "에셋 블록 제안 통합 도구 (Staged Unified Diff). 데이터 출처(sourceBlockIds 기존 이관 + items/records 새 데이터 보강)와 배치 방식(mode: replace | insert)을 자유롭게 조합한다. 직전 대기열(workbench.stagedChanges)의 제안을 수정할 때는 revisionOf 에 diffId 를 넘겨 중복 카드 없이 제자리 갱신한다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "assetId": {
+                    "type": "string"
+                },
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "replace",
+                        "insert"
+                    ],
+                    "description": "replace = 기존 블록 교체, insert = 기준 블록 아래(또는 첫 쪽 끝)에 추가. 생략 시 replaceBlockIds 가 있으면 replace, 아니면 insert"
+                },
+                "replaceBlockIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "교체할 기존 블록 ID 목록 (사용자가 Unified Diff 에서 교체↔추가 전환할 때도 기준 블록으로 쓰임)"
+                },
+                "afterBlockId": {
+                    "type": "string",
+                    "description": "insert 시 이 블록 바로 뒤에 놓는다 (없으면 첫 쪽 끝)"
+                },
+                "sourceBlockIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "기존 블록에서 자동 추출해 이관할 원본 블록 ID 목록 (items/records 와 함께 주면 추출분 위에 보강)"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "label": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "required": [
+                            "label"
+                        ]
+                    }
+                },
+                "records": {
+                    "type": "object",
+                    "description": "정확한 필드 id → 값 (반복 id → 레코드 배열)"
+                },
+                "revisionOf": {
+                    "type": "string",
+                    "description": "workbench.stagedChanges 에 있는 기존 제안 diffId 를 제자리 수정할 때 지정"
+                },
+                "intentNote": {
+                    "type": "string",
+                    "description": "교체/추가 방식을 고른 짧은 근거 (캔버스 Unified Diff 헤더에 표시)"
+                }
+            },
+            "required": [
+                "assetId"
+            ]
+        }
+    },
+    {
+        "name": "assets.instantiate",
+        "description": "에셋을 열린 문서에 놓는다 (Staged). 데이터는 items 또는 records 로 준다. 기존 블록을 교체하면서 새 데이터를 채우려면 replaceBlockIds 를 함께 넘기고, 기존 제안을 고치려면 revisionOf 에 diffId 를 넘긴다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "assetId": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "label": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "required": [
+                            "label"
+                        ]
+                    }
+                },
+                "records": {
+                    "type": "object",
+                    "description": "필드 id → 값 (반복 id → 레코드 배열). items 대신 정확한 id 로 줄 때"
+                },
+                "afterBlockId": {
+                    "type": "string",
+                    "description": "이 블록 뒤에 놓는다 (없으면 첫 쪽 끝)"
+                },
+                "replaceBlockIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "새 데이터로 채운 에셋으로 기존 블록을 바로 교체할 때 지정"
+                },
+                "sourceBlockIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "revisionOf": {
+                    "type": "string",
+                    "description": "기존 Staged 제안(diffId)을 제자리 갱신할 때 지정"
+                },
+                "intentNote": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "assetId"
+            ]
+        }
+    },
+    {
+        "name": "assets.apply",
+        "description": "이미 있는 블록들을 에셋 모양으로 바꾼다 (Staged). 기존 블록 텍스트 자동 이관이 기본이며, items/records 를 함께 넘기면 문서·리소스에서 읽은 새 데이터로 보강해 교체(또는 mode='insert' 로 아래 추가)할 수 있다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "assetId": {
+                    "type": "string"
+                },
+                "blockIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "replace",
+                        "insert"
+                    ]
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "records": {
+                    "type": "object"
+                },
+                "revisionOf": {
+                    "type": "string"
+                },
+                "intentNote": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "assetId",
+                "blockIds"
+            ]
+        }
+    },
+    {
+        "name": "style.inspect",
+        "description": "현재 문서에 바인딩된 .vstyle 스타일 팩(또는 지정 packId)의 실제 primitives · modes · styles(table 변형 및 열린 cells 역할 맵, text/frame/media/pageChrome) · target · extensions 와 직교 스타일 원시 속성 목록을 실시간 조회한다. 시각적 스타일을 맞추거나 새 스타일 변형을 만들기 전에 반드시 호출한다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "packId": {
+                    "type": "string",
+                    "description": "특정 스타일 팩 ID 또는 볼트 경로 (생략 시 현재 문서 활성 팩)"
+                },
+                "category": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "frame",
+                        "table",
+                        "media",
+                        "pageChrome"
+                    ],
+                    "description": "특정 카테고리만 볼 때 지정"
+                }
+            }
+        }
+    },
+    {
+        "name": "style.upsertVariant",
+        "description": "현재 열린 문서 바로 옆의 단일 동반 .vstyle 파일(<문서경로와 동일 폴더>/<문서명>.vstyle)에 재사용 가능한 스타일 변형을 등록·갱신하고 문서의 styleRef 를 연결한다(다른 폴더의 공유 샘플 .vstyle 을 오염시키지 않음). 표의 4변 외곽선(outerTop/Right/Bottom/Left — 좌우 없음은 'none', 이중선은 '3px double #000000'), 열린 cells 역할 맵(column-header, label, group-label, value, value.score, total.subtotal, total.tech, total 등), 제목 prefix('□ ' 등), 셀 내어쓰기(listIndent/hangingIndent), 바닥글 템플릿(footerTemplate: '- {page} -') 등 직교 원시 속성을 조합해 견본 이미지와 높은 시각 유사도를 구현한다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "packId": {
+                    "type": "string",
+                    "description": "동반 .vstyle 이 아직 없을 때 시드로 복제할 기반 팩 ID (예: 'gov-rfp'). 이미 동반 .vstyle 이 있으면 그 단일 파일에 병합한다."
+                },
+                "packName": {
+                    "type": "string",
+                    "description": "신규 팩 생성 또는 이름 변경 시 표시 이름"
+                },
+                "shared": {
+                    "type": "boolean",
+                    "description": "기본 false(문서 옆 단일 동반 .vstyle 에 저장). true 일 때만 공유 볼트 팩을 직접 수정한다."
+                },
+                "category": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "frame",
+                        "table",
+                        "media",
+                        "pageChrome"
+                    ],
+                    "description": "등록할 스타일 카테고리"
+                },
+                "variantKey": {
+                    "type": "string",
+                    "description": "변형 키 이름 (예: 'open-list', 'closed-spec', 'list-heading', 'a4')"
+                },
+                "definition": {
+                    "type": "object",
+                    "description": "직교 스타일 속성 객체 (table 의 경우 borders/cells/columnWidths/cellPadding 등, text 의 경우 prefix/fontSize/fontWeight/color/align 등)"
+                },
+                "modeTokens": {
+                    "type": "object",
+                    "description": "선택: 활성 mode 의 의미 토큰 추가·갱신"
+                },
+                "target": {
+                    "type": "string",
+                    "description": "선택: 열린 매체 힌트 (예: 'a4', 'blog', 'web', 'sns')"
+                },
+                "extensions": {
+                    "type": "object",
+                    "description": "선택: 열린 확장 네임스페이스"
+                },
+                "bindToDocument": {
+                    "type": "boolean",
+                    "description": "기본 true — 활성 문서의 styleRef 를 이 볼트 .vstyle 로 연결"
+                }
+            },
+            "required": [
+                "category",
+                "variantKey",
+                "definition"
+            ]
+        }
+    },
+    {
+        "name": "style.apply",
+        "description": "문서에 스타일 팩(packId)을 연결하거나, 지정한 블록(blockIds)에 .vstyle 변형 키(styleKey) · 셀 역할(cellRoleMap) · 제목 앞장식(prefix)을 라이브 바인딩한다. 인라인 hex 를 굽지 않고 기존 인라인 오버라이드를 걷어내어 .vstyle 변경이 즉시 반영되게 한다.",
+        "risk": "read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "packId": {
+                    "type": "string",
+                    "description": "문서 전체에 적용할 스타일 팩 ID"
+                },
+                "mode": {
+                    "type": "string",
+                    "description": "활성 모드 이름"
+                },
+                "blockIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "스타일 변형(styleKey)을 바인딩할 대상 블록 ID 목록"
+                },
+                "styleKey": {
+                    "type": "string",
+                    "description": "대상 블록에 바인딩할 .vstyle 변형 키 (예: 'open-list', 'closed-spec', 'list-heading')"
+                },
+                "prefix": {
+                    "type": "string",
+                    "description": "제목 블록 등에 직접 앞장식 문자열을 지정할 때 (예: '□ ')"
+                },
+                "clearInlineCellStyles": {
+                    "type": "boolean",
+                    "description": "기본 true(styleKey 지정 시) — 셀에 굳어 있던 인라인 색/선/정렬을 제거해 .vstyle 라이브 바인딩이 즉시 적용되게 함"
+                },
+                "cellRoleMap": {
+                    "type": "object",
+                    "description": "열 인덱스('0','1','2') 또는 기존 cellRole → 새 열린 cellRole 매핑 (예: {'0':'value.seq','1':'value.category','2':'value.code'})"
+                },
+                "syncColumnWidths": {
+                    "type": "boolean",
+                    "description": "기본 true — 표 스타일 변형에 columnWidths 가 정의되어 있고 열 수가 일치하면 블록 열 너비도 맞춤"
+                },
+                "intentNote": {
+                    "type": "string"
+                }
+            }
+        }
     }
-   }
-  }
- },
- {
-  "name": "slot.read",
-  "description": "슬롯 하나의 전체 본문(HTML · 평문), 제약(줄 수 · 톤 · 잠금), 연결된 백데이터 원문",
-  "risk": "read",
-  "inputSchema": {
-   "type": "object",
-   "properties": {
-    "slotId": {
-     "type": "string",
-     "description": "슬롯 id (document.getOutline 에서 확인)"
-    }
-   },
-   "required": [
-    "slotId"
-   ]
-  }
- },
- {
-  "name": "slot.proposeContent",
-  "description": "슬롯의 새 본문을 변경안으로 제출한다 (바로 반영되지 않고 Staged 대기열에 올라가 사용자가 승인). html 은 <p>, <ul>, <li>, <strong>, <em> 만 사용",
-  "risk": "stage",
-  "inputSchema": {
-   "type": "object",
-   "properties": {
-    "slotId": {
-     "type": "string"
-    },
-    "html": {
-     "type": "string",
-     "description": "새 본문 HTML 조각 (근거가 있는 문장 끝에 <sup data-cite=\"1\"></sup>)"
-    },
-    "reason": {
-     "type": "string",
-     "description": "변경 이유 한 줄"
-    },
-    "evidence": {
-     "type": "array",
-     "description": "이 내용의 근거 [{citationId, kind: kcard|backdata|resource|sector|ref-region, deckId, cardId, chunkId, label, lines}] — 본문 인용 표식 <sup data-cite=\"citationId\"></sup> 과 짝을 맞춘다"
-    }
-   },
-   "required": [
-    "slotId",
-    "html"
-   ]
-  }
- },
- {
-  "name": "slots.proposeBatch",
-  "description": "여러 슬롯(표 셀 · 그리드 칸 · 섹션)의 새 본문을 한 번에 변경안으로 제출한다. 블록 하나를 채우거나 고칠 때 slot.proposeContent 를 여러 번 부르지 말고 이것을 쓴다. 잠긴 슬롯만 건너뛴다",
-  "risk": "stage",
-  "inputSchema": {
-   "type": "object",
-   "properties": {
-    "changes": {
-     "type": "array",
-     "description": "[{slotId, html, evidence?}] — html 은 <p>, <ul>, <li>, <strong>, <em>, 인용 <sup data-cite> 만"
-    },
-    "reason": {
-     "type": "string",
-     "description": "변경 이유 한 줄"
-    }
-   },
-   "required": [
-    "changes"
-   ]
-  }
- },
- {
-  "name": "blocks.proposeProps",
-  "description": "슬롯 밖 블록 속성(이미지 대체 텍스트 · 정렬 · 너비, 담당자 등)의 변경안을 제출한다. 바꿀 수 있는 속성은 블록 종류마다 다르며 블록 첨부 내용의 '바꿀 수 있는 블록 속성' 에 나온다",
-  "risk": "stage",
-  "inputSchema": {
-   "type": "object",
-   "properties": {
-    "blockId": {
-     "type": "string"
-    },
-    "props": {
-     "type": "object",
-     "description": "{속성: 새 값}"
-    },
-    "reason": {
-     "type": "string",
-     "description": "변경 이유 한 줄"
-    }
-   },
-   "required": [
-    "blockId",
-    "props"
-   ]
-  }
- },
- {
-  "name": "canvas.selectSlot",
-  "description": "캔버스에서 슬롯을 선택하고 화면을 그 위치로 스크롤해 강조한다 (사용자에게 위치를 보여줄 때)",
-  "risk": "ui",
-  "inputSchema": {
-   "type": "object",
-   "properties": {
-    "slotId": {
-     "type": "string",
-     "description": "슬롯 id (document.getOutline 에서 확인)"
-    }
-   },
-   "required": [
-    "slotId"
-   ]
-  }
- },
- {
-  "name": "canvas.select",
-  "description": "캔버스에서 칸 · 블록 여러 개를 한꺼번에 골라 사용자에게 보여 준다 (변경안을 낸 칸들 · 질문에 해당하는 곳을 가리킬 때). 첫 항목으로 화면을 옮긴다. 문서는 바꾸지 않는다",
-  "risk": "ui",
-  "inputSchema": {
-   "type": "object",
-   "properties": {
-    "slotIds": {
-     "type": "array",
-     "items": {
-      "type": "string"
-     },
-     "description": "고를 칸 id (document.getOutline 에서 확인)"
-    },
-    "blockIds": {
-     "type": "array",
-     "items": {
-      "type": "string"
-     },
-     "description": "고를 블록 id"
-    }
-   }
-  }
- },
- {
-  "name": "slots.listByState",
-  "description": "범위 안 칸들의 채움 상태 목록 (빈 칸 지도). scope: slot|block|page|document, state: empty|ai-draft|staged|filled|verified (생략하면 채울 대상 전부). 일괄 채우기 · 진행 확인에 쓴다",
-  "risk": "read",
-  "inputSchema": {
-   "type": "object",
-   "properties": {
-    "scope": {
-     "type": "string",
-     "enum": [
-      "block",
-      "page",
-      "document"
-     ]
-    },
-    "id": {
-     "type": "string",
-     "description": "scope 가 block · page 일 때 그 id (생략하면 현재 선택 · 현재 페이지)"
-    },
-    "state": {
-     "type": "string",
-     "enum": [
-      "empty",
-      "ai-draft",
-      "staged",
-      "filled",
-      "verified"
-     ]
-    }
-   }
-  }
- },
- {
-  "name": "staging.list",
-  "description": "Staged 대기열에 쌓인 AI 변경안 목록 (아직 승인 전)",
-  "risk": "read",
-  "inputSchema": {
-   "type": "object",
-   "properties": {}
-  }
- },
- {
-  "name": "layout.openPanel",
-  "description": "화면 패널을 연다: explorer(아웃라이너), source-control(Staged 검토), inspector(슬롯 속성), blockbox(블록 추가)",
-  "risk": "ui",
-  "inputSchema": {
-   "type": "object",
-   "properties": {
-    "panel": {
-     "type": "string",
-     "enum": [
-      "explorer",
-      "source-control",
-      "inspector",
-      "blockbox"
-     ]
-    }
-   },
-   "required": [
-    "panel"
-   ]
-  }
- },
- {
-  "name": "outline.getWorkingTree",
-  "description": "Phase 1 WorkingOutline 트리와 각 노드의 ElementKind 역할(document/page/structured-table/text 등) 및 sourceRef 를 읽는다.",
-  "risk": "read",
-  "inputSchema": {
-   "type": "object",
-   "properties": {}
-  }
- }
 ]

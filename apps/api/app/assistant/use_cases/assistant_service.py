@@ -820,14 +820,30 @@ class AssistantService:
                 current = message
                 pending_images = list(images or [])
                 turn_accumulated_text = ""
+                malformed_retries = 0
                 while True:
-                    calls, done, errored, model_text = yield from self._model_turn(session, current, images=pending_images or None)
+                    calls, done, errored, model_text, malformed_summary = yield from self._model_turn(
+                        session, current, images=pending_images or None
+                    )
                     pending_images = []
                     turn_accumulated_text += model_text
                     self._bind_conversation(session)
                     usage = _add_usage(usage, done.get("usage") or {})
                     if first_token is None and done.get("firstTokenMs") is not None:
                         first_token = int(done["firstTokenMs"])  # 첫 모델 턴 기준 (스트림 시작과 거의 같다)
+                    if malformed_summary and not calls and not errored and not session.cancel.is_set() and malformed_retries < 1:
+                        malformed_retries += 1
+                        yield {
+                            "type": "status",
+                            "state": "warning",
+                            "message": f"도구 호출 형식이 깨져 자동 재시도합니다 ({malformed_summary}).",
+                        }
+                        current = (
+                            f"[시스템 복구 안내] 직전 <tool_call> 파싱에 실패했습니다 ({malformed_summary}).\n"
+                            "너무 긴 원시 JSON AST 대신 간결한 형식(assets.register 의 경우 .vsyntax dsl 줄 배열 + style 짝)으로 "
+                            "유효한 JSON <tool_call>을 다시 호출하세요."
+                        )
+                        continue
                     server_calls = [c for c in calls if self._is_server_call(session, c.name)]
                     client_calls = [c for c in calls if not self._is_server_call(session, c.name)]
                     server_results: list[dict[str, Any]] = []
@@ -966,7 +982,7 @@ class AssistantService:
         message: str,
         *,
         images: Optional[list[dict[str, str]]] = None,
-    ) -> Generator[dict[str, Any], None, tuple[list[ToolCall], dict[str, Any], bool, str]]:
+    ) -> Generator[dict[str, Any], None, tuple[list[ToolCall], dict[str, Any], bool, str, str | None]]:
         """모델 한 턴: 텍스트 · 도구 호출 이벤트를 흘리고 (결과를 기다릴 도구 호출, 턴 메타, 오류 여부, 누적 텍스트)를 돌려준다."""
         extractor = ToolCallExtractor(id_prefix=f"c{session.tool_rounds}")
         calls: list[ToolCall] = []
@@ -1019,9 +1035,28 @@ class AssistantService:
         if tail:
             chunks.append(tail)
             yield {"type": "text_delta", "text": tail}
-        if extractor.malformed:
+        malformed_summary: str | None = None
+        if extractor.malformed_details:
+            parts: list[str] = []
+            for item in extractor.malformed_details:
+                logger.warning(
+                    "[assistant] malformed tool_call: name=%s reason=%s chars=%d detail=%s",
+                    item.name or "unknown",
+                    item.reason,
+                    item.chars,
+                    item.detail,
+                )
+                parts.append(f"{item.name or 'unknown'} · {item.reason} · {item.chars}자 ({item.detail})")
+            malformed_summary = "; ".join(parts)
+            yield {
+                "type": "status",
+                "state": "warning",
+                "message": f"도구 호출 파싱 실패: {malformed_summary}",
+            }
+        elif extractor.malformed:
+            malformed_summary = f"malformed {len(extractor.malformed)}건"
             yield {"type": "status", "state": "warning", "message": "형식이 잘못된 도구 호출을 무시했습니다."}
-        return calls, done, errored and not calls, "".join(chunks)
+        return calls, done, errored and not calls, "".join(chunks), malformed_summary
 
     # --- 인라인 액션 -------------------------------------------------------------
 

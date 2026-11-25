@@ -22,6 +22,40 @@ export interface VaultStyleCatalogEntry {
   readonly source: "vault" | "builtin";
 }
 
+/**
+ * `.vdoc` 문서 바로 옆에 1:1 로 붙는 단일 동반 `.vstyle` 파일 경로를 반환한다.
+ * 예: `"05. AI Eval/제안요청서.vdoc"` → `"05. AI Eval/제안요청서.vstyle"`.
+ */
+export function companionStylePathForVDoc(docPath: string): string {
+  const normalized = docPath.replace(/\\/g, "/").replace(/^\/+/, "");
+  if (normalized.endsWith(".vdoc.json")) {
+    return `${normalized.slice(0, -".vdoc.json".length)}.vstyle`;
+  }
+  if (normalized.endsWith(".vdoc")) {
+    return `${normalized.slice(0, -".vdoc".length)}.vstyle`;
+  }
+  return `${normalized}.vstyle`;
+}
+
+function readVaultStyleEntryAtPath(
+  vault: VaultPort,
+  targetPath: string,
+  catalog: readonly VaultStyleCatalogEntry[]
+): VaultStyleCatalogEntry | null {
+  if (!targetPath || !vault.exists(targetPath)) return null;
+  const inCatalog = catalog.find((c) => c.vaultPath === targetPath);
+  if (inCatalog) return inCatalog;
+  try {
+    const parsed = JSON.parse(vault.read(targetPath)) as unknown;
+    if (isValidStylePack(parsed)) {
+      return { id: parsed.id, pack: parsed, vaultPath: targetPath, source: "vault" };
+    }
+  } catch {
+    // Ignore malformed style files
+  }
+  return null;
+}
+
 
 
 /**
@@ -64,28 +98,28 @@ export function collectVaultStyleEntries(vault: VaultPort): VaultStyleCatalogEnt
   });
 }
 
-/** Resolves the active StylePack entry bound to a `.vdoc` document. */
+/** Resolves the active StylePack entry bound to a `.vdoc` document (with single colocated companion `.vstyle` discovery). */
 export function resolveActiveStyleEntry(
   doc: VDocDocument,
   vault: VaultPort,
-  catalog: readonly VaultStyleCatalogEntry[]
+  catalog: readonly VaultStyleCatalogEntry[],
+  docPath?: string | null
 ): VaultStyleCatalogEntry | null {
+  // 1) 문서에 명시된 packPath 포인터가 유효하면 최우선
   if (doc.styleRef?.packPath) {
     const targetPath = fromVaultUri(doc.styleRef.packPath);
-    if (targetPath && vault.exists(targetPath)) {
-      const inCatalog = catalog.find((c) => c.vaultPath === targetPath);
-      if (inCatalog) return inCatalog;
-      try {
-        const parsed = JSON.parse(vault.read(targetPath)) as unknown;
-        if (isValidStylePack(parsed)) {
-          return { id: parsed.id, pack: parsed, vaultPath: targetPath, source: "vault" };
-        }
-      } catch {
-        // Fall through
-      }
-    }
+    const hit = targetPath ? readVaultStyleEntryAtPath(vault, targetPath, catalog) : null;
+    if (hit) return hit;
   }
 
+  // 2) 문서 바로 옆에 붙은 단일 동반 `.vstyle` 파일 자동 발견 (styleRef 가 생략/유실되어도 A4 스타일 유지)
+  if (docPath) {
+    const companionPath = companionStylePathForVDoc(docPath);
+    const companionHit = readVaultStyleEntryAtPath(vault, companionPath, catalog);
+    if (companionHit) return companionHit;
+  }
+
+  // 3) 명시적 packId 폴백
   if (doc.styleRef?.packId) {
     const byId = catalog.find((c) => c.id === doc.styleRef?.packId);
     if (byId) return byId;
@@ -93,6 +127,7 @@ export function resolveActiveStyleEntry(
     if (builtin) return { id: builtin.id, pack: builtin, source: "builtin" };
   }
 
+  // 4) 뷰 기본 팩 (blog / web)
   const view = resolveDocumentView(doc);
   if (view.id === "blog" || view.id === "web") {
     const defPack = resolveDefaultStylePack(view.id);

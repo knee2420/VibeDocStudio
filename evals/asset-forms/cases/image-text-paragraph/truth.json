@@ -1,0 +1,74 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "사진 + 글 단락",
+ "scope": "section",
+ "nodes": [
+  {
+   "t": "field",
+   "role": "heading",
+   "field": {
+    "id": "title",
+    "type": "text",
+    "hint": "제목"
+   },
+   "variant": "h2"
+  },
+  {
+   "t": "grid",
+   "component": "columns",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "value",
+       "nodes": [
+        {
+         "t": "field",
+         "role": "image",
+         "field": {
+          "id": "photo",
+          "type": "image",
+          "hint": "사진"
+         }
+        },
+        {
+         "t": "field",
+         "role": "image-caption",
+         "field": {
+          "id": "caption",
+          "type": "text",
+          "hint": "사진 설명"
+         }
+        }
+       ]
+      },
+      {
+       "role": "value",
+       "nodes": [
+        {
+         "t": "field",
+         "role": "body",
+         "field": {
+          "id": "side_text",
+          "type": "rich",
+          "hint": "본문"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "field",
+   "role": "body",
+   "field": {
+    "id": "body",
+    "type": "rich",
+    "hint": "이어지는 본문"
+   }
+  }
+ ]
+}

@@ -20,6 +20,10 @@ export interface ResolvedTextRole {
   color: string;
   align: GridAlign;
   listMarker: StyleListMarker;
+  prefix?: string;
+  prefixColor?: string;
+  listIndent?: string;
+  hangingIndent?: string;
 }
 
 export function resolveTextRoleStyle(
@@ -45,5 +49,9 @@ export function resolveTextRoleStyle(
     color: cascaded.color ?? roleDef.color ?? baseBody.color ?? "#334155",
     align: cascaded.align ?? roleDef.align ?? baseBody.align ?? "left",
     listMarker: cascaded.listMarker ?? roleDef.listMarker ?? baseBody.listMarker ?? "disc",
+    prefix: cascaded.prefix ?? roleDef.prefix,
+    prefixColor: cascaded.prefixColor ?? roleDef.prefixColor,
+    listIndent: cascaded.listIndent ?? roleDef.listIndent ?? baseBody.listIndent,
+    hangingIndent: cascaded.hangingIndent ?? roleDef.hangingIndent ?? baseBody.hangingIndent,
   };
 }

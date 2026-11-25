@@ -75,6 +75,10 @@ export interface BackdataChunk {
 
 export interface TableBorderRules {
   outer?: string;        // e.g. "none" | "1px solid #e4e4e4" | "2px solid #0f172a"
+  outerTop?: string;     // 4변 외곽선 개별 제어 (생략 시 outer 폴백)
+  outerRight?: string;
+  outerBottom?: string;
+  outerLeft?: string;
   headerTop?: string;    // e.g. "2px solid #336699"
   headerBottom?: string; // e.g. "1px solid #e2e8f0"
   rowBottom?: string;    // e.g. "1px solid #e2e8f0"
@@ -134,6 +138,8 @@ export interface GridColumnDef {
 export interface TableCellSlotDef {
   cellId: string;
   slotId: string;
+  /** 활성 `.vstyle` 의 `styles.table[styleKey].cells[cellRole]` 과 라이브 바인딩되는 열린 역할 키. */
+  cellRole?: string;
   isHeader?: boolean;
   whiteHeader?: boolean;
   colSpan?: number;
@@ -155,6 +161,10 @@ export interface TableCellSlotDef {
   fontSize?: string;
   lineHeight?: string;
   fontFamily?: string;
+  whiteSpace?: "normal" | "nowrap" | "pre-wrap";
+  fontVariantNumeric?: "normal" | "tabular-nums";
+  listIndent?: string;
+  hangingIndent?: string;
   /** Recursive nested blocks inside this table cell (lists, images, callouts, nested tables/grids). */
   blocks?: LayoutBlock[];
 }

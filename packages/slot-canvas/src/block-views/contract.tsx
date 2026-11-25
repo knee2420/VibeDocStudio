@@ -31,6 +31,10 @@ export interface TableCellLike {
   fontWeight?: string;
   hAlign?: string;
   fontFamily?: string;
+  whiteSpace?: string;
+  fontVariantNumeric?: string;
+  listIndent?: string;
+  hangingIndent?: string;
   blocks?: LayoutBlock[];
 }
 

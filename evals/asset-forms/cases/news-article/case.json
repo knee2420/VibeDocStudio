@@ -1,0 +1,9 @@
+{
+ "id": "news-article",
+ "tags": [
+  "text",
+  "image",
+  "quote",
+  "news"
+ ]
+}

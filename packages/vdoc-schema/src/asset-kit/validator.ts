@@ -19,7 +19,7 @@ export function isValidVDocAsset(value: unknown): value is VDocAsset {
   if (!value || typeof value !== "object") return false;
   const v = value as Partial<VDocAsset>;
   return (
-    v.version === "1.0.0" &&
+    (v.version === "1.0.0" || v.version === "2.0.0") &&
     typeof v.assetId === "string" &&
     v.assetId.trim().length > 0 &&
     typeof v.title === "string" &&

@@ -1,0 +1,18 @@
+{
+ "id": "ecr-requirement-screenshot",
+ "tags": [
+  "table",
+  "rowspan",
+  "colspan",
+  "real"
+ ],
+ "similar": {
+  "text": "보안 요구사항(SER) SER-003 '접근 통제': 정의는 사용자 권한별 메뉴 · 데이터 접근 제한. 세부: RBAC 적용, 관리자 이중 인증, 접근 로그 1년 보관. 산출물은 보안 설계서. 담당 부서 보안팀.",
+  "expect": {
+   "filled_min": 5,
+   "unmapped_has": [
+    "담당"
+   ]
+  }
+ }
+}

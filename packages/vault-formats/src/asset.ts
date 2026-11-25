@@ -1,9 +1,13 @@
 import {
-  BUILTIN_VDOC_ASSETS,
   compileOutlineToVDoc,
   createElementSyntaxRegistry,
+  getActiveAssetDriver,
+  getAssetDriver,
   isValidVDocAsset,
+  v3ToVDocAsset,
   validateCompiledAssetBlocks,
+  type AssetSchemaVersion,
+  type AssetV3,
   type LayoutBlock,
   type OutlineSyntaxNode,
   type VDocAsset,
@@ -20,9 +24,14 @@ export function isAssetPath(path: string): boolean {
   return matchesCompoundExtension(path, "vasset") || matchesCompoundExtension(path, "vasset.json");
 }
 
-export function assetDefaultVaultPath(assetId: string): string {
+export function assetDefaultVaultPath(
+  assetId: string,
+  schemaVersion?: AssetSchemaVersion
+): string {
   const safe = assetId.replace(/[^a-zA-Z0-9._-]/g, "-");
-  return `${VAULT_ASSETS_DIR}/${safe}.vasset`;
+  const driver = schemaVersion ? getAssetDriver(schemaVersion) : getActiveAssetDriver();
+  const dir = driver.vaultSubdir ? `${VAULT_ASSETS_DIR}/${driver.vaultSubdir}` : VAULT_ASSETS_DIR;
+  return `${dir}/${safe}.vasset`;
 }
 
 export function parseVAssetJson(raw: string): VDocAsset | null {
@@ -149,28 +158,57 @@ export interface VaultAssetEntry {
 }
 
 /**
- * Vault 내 `.vasset` 파일과 내장 6종 시드 에셋을 합쳐 반환한다.
- * 같은 `assetId` 가 Vault에 존재하면 사용자가 편집한 Vault 정본을 우선한다.
+ * 활성 스키마 드라이버(`v1` 또는 `v2`)에 해당하는 Vault `.vasset` 파일과 내장 시드 에셋을 합쳐 반환한다.
+ * v1 / v2 네임스페이스가 자동 격리되어 스위칭 시 서로 충돌하지 않는다.
  */
-export function collectVaultAssets(vault: VaultPort): VaultAssetEntry[] {
+export function collectVaultAssets(
+  vault: VaultPort,
+  options?: { readonly schemaVersion?: AssetSchemaVersion }
+): VaultAssetEntry[] {
+  const driver = options?.schemaVersion ? getAssetDriver(options.schemaVersion) : getActiveAssetDriver();
   const byId = new Map<string, VaultAssetEntry>();
 
-  for (const builtin of BUILTIN_VDOC_ASSETS) {
+  for (const builtin of driver.getSeeds()) {
+    const defaultPath = assetDefaultVaultPath(builtin.assetId, driver.version);
     byId.set(builtin.assetId, {
       asset: builtin,
-      vaultPath: vault.exists(assetDefaultVaultPath(builtin.assetId))
-        ? assetDefaultVaultPath(builtin.assetId)
-        : null,
+      vaultPath: vault.exists(defaultPath) ? defaultPath : null,
       isBuiltin: true,
     });
   }
 
   for (const node of vault.listAll()) {
-    if (node.kind !== "file" || !isAssetPath(node.path)) continue;
+    if (node.kind !== "file") continue;
     if (vault.isLoaded && !vault.isLoaded(node.path)) continue;
+
+    // 통합 정본: `.vibedoc/assets/v3/*.json` (`vibe-asset/3`) 도 에셋 허브 · 문맥 랭킹 · 검색에 함께 노출한다.
+    if (node.path.startsWith(`${VAULT_ASSETS_DIR}/v3/`) && node.path.endsWith(".json")) {
+      try {
+        const raw = JSON.parse(vault.read(node.path)) as {
+          asset?: AssetV3;
+          lifecycle?: "session" | "saved";
+        };
+        if (raw?.asset?.schema === "vibe-asset/3" && raw.asset.assetId) {
+          const projected = v3ToVDocAsset(raw.asset, { lifecycle: raw.lifecycle });
+          byId.set(projected.assetId, {
+            asset: projected,
+            vaultPath: node.path,
+            isBuiltin: false,
+          });
+        }
+      } catch {
+        // Ignore transient or malformed v3 json
+      }
+      continue;
+    }
+
+    if (!isAssetPath(node.path)) continue;
     try {
       const parsed = parseVAssetJson(vault.read(node.path));
       if (!parsed) continue;
+      const fileVersion: AssetSchemaVersion =
+        parsed.schemaVersion ?? (parsed.version === "2.0.0" ? "v2" : "v1");
+      if (fileVersion !== driver.version) continue;
       const prev = byId.get(parsed.assetId);
       byId.set(parsed.assetId, {
         asset: parsed,
@@ -186,14 +224,16 @@ export function collectVaultAssets(vault: VaultPort): VaultAssetEntry[] {
 }
 
 /**
- * `.vasset` 파일을 Vault에 저장한다 (지정 경로가 없으면 `.vibedoc/assets/<assetId>.vasset`).
+ * `.vasset` 파일을 Vault에 저장한다 (지정 경로가 없으면 활성 스키마 네임스페이스 경로).
  */
 export function saveAssetToVault(
   vault: VaultPort,
   asset: VDocAsset,
   customPath?: string
 ): string {
-  const targetPath = customPath ?? assetDefaultVaultPath(asset.assetId);
+  const fileVersion: AssetSchemaVersion =
+    asset.schemaVersion ?? (asset.version === "2.0.0" ? "v2" : "v1");
+  const targetPath = customPath ?? assetDefaultVaultPath(asset.assetId, fileVersion);
   const serialized = serializeVAssetJson(asset);
   if (vault.exists(targetPath)) {
     vault.write(targetPath, serialized);
@@ -204,7 +244,7 @@ export function saveAssetToVault(
 }
 
 /**
- * 내장 에셋을 편집 탭으로 열기 위해 Vault 파일이 없으면 `.vibedoc/assets/` 에 실체화한다.
+ * 내장 에셋을 편집 탭으로 열기 위해 Vault 파일이 없으면 해당 스키마 폴더에 실체화한다.
  */
 export function ensureAssetFileInVault(
   vault: VaultPort,
@@ -214,7 +254,9 @@ export function ensureAssetFileInVault(
   if (existingPath && vault.exists(existingPath)) {
     return existingPath;
   }
-  const defaultPath = assetDefaultVaultPath(asset.assetId);
+  const fileVersion: AssetSchemaVersion =
+    asset.schemaVersion ?? (asset.version === "2.0.0" ? "v2" : "v1");
+  const defaultPath = assetDefaultVaultPath(asset.assetId, fileVersion);
   if (vault.exists(defaultPath)) {
     return defaultPath;
   }

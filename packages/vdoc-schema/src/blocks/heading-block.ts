@@ -18,6 +18,9 @@ export interface HeadingBlockDef extends BaseLayoutBlock {
   decoration?: "none" | "quote" | "bar";
   /** 장식 · 글자 강조색 (예: #00a84b). */
   accent?: string;
+  /** 데이터 기반 앞장식 문자열 (예: `"□ "`, `"❏ "`, `"※ "`). styleKey 의 TextStyleDef.prefix 보다 우선. */
+  prefix?: string;
+  prefixColor?: string;
 }
 
 export interface FormTitleBlockDef extends BaseLayoutBlock {

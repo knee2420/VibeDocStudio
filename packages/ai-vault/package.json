@@ -24,6 +24,7 @@
     "@vibe/outliner": "workspace:*",
     "@vibe/ref-canvas": "workspace:*",
     "@vibe/slot-canvas": "workspace:*",
+    "@vibe/style-core": "workspace:*",
     "@vibe/vault-core": "workspace:*",
     "@vibe/vault-formats": "workspace:*",
     "@vibe/vdoc-schema": "workspace:*",

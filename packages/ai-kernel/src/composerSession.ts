@@ -851,9 +851,25 @@ export class ComposerSessionController {
   }
 
   private finishStreamingItems(): void {
-    if (!this.state.items.some((i) => i.kind === "assistant" && i.streaming)) return;
+    const hasOpen = this.state.items.some(
+      (i) => (i.kind === "assistant" && i.streaming) || (i.kind === "tool_call" && i.status === "drafting")
+    );
+    if (!hasOpen) return;
     this.set({
-      items: this.state.items.map((i) => (i.kind === "assistant" && i.streaming ? { ...i, streaming: false } : i)),
+      items: this.state.items.map((i) => {
+        if (i.kind === "assistant" && i.streaming) return { ...i, streaming: false };
+        if (i.kind === "tool_call" && i.status === "drafting") {
+          return {
+            ...i,
+            status: "error",
+            summary: "작성 중단됨",
+            error:
+              i.error ??
+              `도구 호출(${i.name}) 작성 중 스트림이 종료되었거나 JSON 형식이 깨졌습니다${i.chars ? ` (${i.chars}자)` : ""}.`,
+          };
+        }
+        return i;
+      }),
     });
   }
 }

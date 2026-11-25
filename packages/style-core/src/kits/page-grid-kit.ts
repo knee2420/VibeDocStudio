@@ -2,7 +2,7 @@
  * @vibe/style-core/kits — Page Grid Kit (지면 그리드 · 여백 · 블록 간격 · 번호 계층).
  */
 import { resolveCascadedStyle } from "../core/cascade";
-import type { MarginBox } from "../core/grid-contract";
+import type { GridAlign, MarginBox } from "../core/grid-contract";
 import type { ResolvedStylePack, StyleOverrideDelta } from "../core/token-contract";
 
 export interface ResolvedPageGrid {
@@ -14,6 +14,19 @@ export interface ResolvedPageGrid {
   showHeaderFooter: boolean;
   outerBoxBorder?: string;
   listMarkers: string[];
+  footerTemplate?: string;
+  footerAlign?: GridAlign;
+}
+
+export function formatPageFooterTemplate(
+  template: string | undefined,
+  pageNumber: number,
+  totalPages?: number
+): string {
+  if (!template) return "";
+  return template
+    .replace(/\{page\}/g, String(pageNumber))
+    .replace(/\{total\}/g, totalPages !== undefined ? String(totalPages) : String(pageNumber));
 }
 
 export function resolvePageGridStyle(
@@ -38,5 +51,7 @@ export function resolvePageGridStyle(
     showHeaderFooter: merged.showHeaderFooter ?? false,
     outerBoxBorder: merged.outerBoxBorder,
     listMarkers: merged.listMarkers ?? ["1.", "-", "•"],
+    footerTemplate: merged.footerTemplate,
+    footerAlign: merged.footerAlign,
   };
 }

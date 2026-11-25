@@ -1,0 +1,128 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "견적서",
+ "scope": "element",
+ "nodes": [
+  {
+   "t": "label",
+   "role": "title",
+   "text": "견 적 서",
+   "variant": "h1"
+  },
+  {
+   "t": "grid",
+   "component": "table",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "견적번호"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "quote_no",
+        "type": "code",
+        "hint": "견적번호"
+       }
+      },
+      {
+       "role": "label",
+       "text": "견적일"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "date",
+        "type": "date",
+        "hint": "견적일"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "grid",
+   "component": "table",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "column-header",
+       "text": "품목"
+      },
+      {
+       "role": "column-header",
+       "text": "수량"
+      },
+      {
+       "role": "column-header",
+       "text": "단가"
+      },
+      {
+       "role": "column-header",
+       "text": "금액"
+      }
+     ]
+    },
+    {
+     "repeat": "items",
+     "cells": [
+      {
+       "role": "value",
+       "field": {
+        "id": "item",
+        "type": "text",
+        "hint": "품목"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "qty",
+        "type": "number",
+        "hint": "수량"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "unit_price",
+        "type": "currency",
+        "hint": "단가"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "amount",
+        "type": "currency",
+        "hint": "금액"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "합계",
+       "cs": 3
+      },
+      {
+       "role": "total",
+       "field": {
+        "id": "total",
+        "type": "currency",
+        "hint": "합계"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

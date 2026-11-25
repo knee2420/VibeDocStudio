@@ -368,6 +368,9 @@ importers:
       '@vibe/slot-canvas':
         specifier: workspace:*
         version: link:../slot-canvas
+      '@vibe/style-core':
+        specifier: workspace:*
+        version: link:../style-core
       '@vibe/vault-core':
         specifier: workspace:*
         version: link:../vault-core

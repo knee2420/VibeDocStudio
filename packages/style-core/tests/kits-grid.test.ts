@@ -4,14 +4,17 @@ import { describe, it } from "node:test";
 import {
   GOV_RFP_PACK,
   NAVER_TRAVEL_BLOG_PACK,
+  STANDARD_BASE_STYLE_PACK,
   YESFORM_OFFICIAL_PACK,
   YONHAP_NEWS_PACK,
   adaptLegacyBlockOverrides,
   buildStyleCssVars,
+  formatPageFooterTemplate,
   resolveFrameStyle,
   resolveMediaGridStyle,
   resolvePageGridStyle,
   resolveStylePack,
+  resolveTableCellStyle,
   resolveTableGridStyle,
   resolveTextRoleStyle,
 } from "../src/index";
@@ -76,5 +79,63 @@ describe("@vibe/style-core — All 5 Grid Style Kits & Adapters", () => {
     const merged = resolveTableGridStyle(rfp, "default", undefined, legacyDelta);
     assert.equal(merged.borders.outer, "3px solid #dc2626");
     assert.equal(merged.cellPadding, "12px");
+  });
+
+  it("resolves orthogonal 4-edge borders, dotted open cell roles, text prefix, hanging indent, footer template, and open extensions", () => {
+    const rfp = resolveStylePack(GOV_RFP_PACK);
+
+    // 1. Open-sided table variant (image 3/4 style): top/bottom thick black, left/right NONE
+    const openList = resolveTableGridStyle(rfp, "open-list");
+    assert.equal(openList.borders.outerTop, "2px solid #000000");
+    assert.equal(openList.borders.outerBottom, "1.5px solid #000000");
+    assert.equal(openList.borders.outerLeft, "none");
+    assert.equal(openList.borders.outerRight, "none");
+    assert.equal(openList.borders.headerBottom, "1.5px solid #000000");
+    assert.equal(openList.borders.rowBottom, "0.75px solid #000000");
+    assert.deepEqual(openList.columnWidths, ["8%", "17%", "15%", "60%"]);
+
+    // Dotted open cell role inheritance: value.seq inherits value's fill/fontSize and overrides align/tabular-nums
+    const seqCell = resolveTableCellStyle(openList, "value.seq");
+    assert.equal(seqCell.fill, "#ffffff");
+    assert.equal(seqCell.fontSize, "12.5px");
+    assert.equal(seqCell.align, "center");
+    assert.equal(seqCell.vAlign, "middle");
+    assert.equal(seqCell.fontVariantNumeric, "tabular-nums");
+    assert.equal(seqCell.whiteSpace, "nowrap");
+
+    const hdrCell = resolveTableCellStyle(openList, "column-header");
+    assert.equal(hdrCell.fill, "#dce6f1");
+    assert.equal(hdrCell.align, "center");
+    assert.equal(hdrCell.fontWeight, "700");
+
+    // 2. Closed spec table variant (ECR-05 style): closed black box + hanging-indent body cell
+    const closedSpec = resolveTableGridStyle(rfp, "closed-spec");
+    assert.equal(closedSpec.borders.outerLeft, "1.5px solid #000000");
+    assert.equal(closedSpec.borders.outerRight, "1.5px solid #000000");
+    const bodyCell = resolveTableCellStyle(closedSpec, "body");
+    assert.equal(bodyCell.vAlign, "top");
+    assert.equal(bodyCell.listIndent, "1.1em");
+    assert.equal(bodyCell.hangingIndent, "-0.7em");
+
+    // 3. Heading prefix & page footer template (data-driven, zero hardcoded enums)
+    const listHeading = resolveTextRoleStyle(rfp, "list-heading");
+    assert.equal(listHeading.prefix, "□ ");
+    assert.equal(listHeading.align, "left");
+    const pageGrid = resolvePageGridStyle(rfp, "a4");
+    assert.equal(pageGrid.footerTemplate, "- {page} -");
+    assert.equal(formatPageFooterTemplate(pageGrid.footerTemplate, 10, 42), "- 10 -");
+
+    // 4. Open target & extensions namespace resolves aliases cleanly for arbitrary future mediums
+    const snsPack = resolveStylePack({
+      ...STANDARD_BASE_STYLE_PACK,
+      id: "sns-card-demo",
+      target: "sns",
+      extensions: {
+        sns: { aspectRatio: "4:5", accent: "{text.accent}" },
+      },
+    });
+    assert.equal(snsPack.target, "sns");
+    assert.equal(snsPack.extensions?.sns?.aspectRatio, "4:5");
+    assert.equal(snsPack.extensions?.sns?.accent, "#2563eb");
   });
 });

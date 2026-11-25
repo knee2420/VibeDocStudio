@@ -62,6 +62,11 @@ import {
 import { createV2AiWorkspace, vaultPathContext, type V2AiWorkspace } from "@vibe/ai-vault";
 import { openResourceTagInPair } from "../model/resourceHighlightBus";
 import {
+  dispatchAssetHubCommand,
+  subscribeAguiAssetFunnel,
+  type AguiAssetFunnelRequest,
+} from "../model/assetActionBus";
+import {
   createDefaultOutlineJson,
   createDefaultStylePackJson,
   createDefaultSyntaxJson,
@@ -179,10 +184,11 @@ const IdeComposerSidebar = React.memo<{
   readonly subscribeAi: (cb: () => void) => () => void;
   /** 바뀌면 AI 탭으로 (캔버스 2D 디렉팅 · 칸 AI 버튼) */
   readonly focusAiSeq: number;
+  readonly aguiFunnelTrigger: { readonly seq: number; readonly req: AguiAssetFunnelRequest } | null;
   readonly width: number;
   readonly activeResourceId: string | null;
   readonly activeViewType: string | null;
-}>(({ runtime, ai, subscribeAi, focusAiSeq, width, activeResourceId, activeViewType }) => {
+}>(({ runtime, ai, subscribeAi, focusAiSeq, aguiFunnelTrigger, width, activeResourceId, activeViewType }) => {
   const isVDocActive = Boolean(
     activeResourceId && (activeViewType === "vibe-vdoc" || isVDocPath(activeResourceId))
   );
@@ -302,11 +308,10 @@ const IdeComposerSidebar = React.memo<{
             role="tab"
             aria-selected={rightTab === "assets"}
             onClick={() => setRightTab("assets")}
-            className={`flex items-center gap-1 rounded-[5px] px-2 py-1 font-medium transition-colors ${
-              rightTab === "assets"
-                ? "bg-emerald-500/20 text-emerald-200"
-                : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
-            }`}
+            className={`flex items-center gap-1 rounded-[5px] px-2 py-1 font-medium transition-colors ${rightTab === "assets"
+              ? "bg-emerald-500/20 text-emerald-200"
+              : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
+              }`}
           >
             <Blocks className="h-3.5 w-3.5 text-emerald-400" />
             <span>에셋</span>
@@ -316,11 +321,10 @@ const IdeComposerSidebar = React.memo<{
             role="tab"
             aria-selected={rightTab === "inspector"}
             onClick={() => setRightTab("inspector")}
-            className={`flex items-center gap-1 rounded-[5px] px-2 py-1 font-medium transition-colors ${
-              rightTab === "inspector"
-                ? "bg-[var(--obs-bg-hover,rgba(255,255,255,0.09))] text-[var(--obs-text-normal,#ececec)]"
-                : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
-            }`}
+            className={`flex items-center gap-1 rounded-[5px] px-2 py-1 font-medium transition-colors ${rightTab === "inspector"
+              ? "bg-[var(--obs-bg-hover,rgba(255,255,255,0.09))] text-[var(--obs-text-normal,#ececec)]"
+              : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
+              }`}
           >
             <SlidersHorizontal className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
             <span>Inspector</span>
@@ -330,11 +334,10 @@ const IdeComposerSidebar = React.memo<{
             role="tab"
             aria-selected={rightTab === "ai"}
             onClick={() => setRightTab("ai")}
-            className={`flex items-center gap-1 rounded-[5px] px-2 py-1 font-medium transition-colors ${
-              rightTab === "ai"
-                ? "bg-[var(--obs-bg-hover,rgba(255,255,255,0.09))] text-[var(--obs-text-normal,#ececec)]"
-                : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
-            }`}
+            className={`flex items-center gap-1 rounded-[5px] px-2 py-1 font-medium transition-colors ${rightTab === "ai"
+              ? "bg-[var(--obs-bg-hover,rgba(255,255,255,0.09))] text-[var(--obs-text-normal,#ececec)]"
+              : "text-[var(--obs-text-muted,#9a9a9a)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.05))] hover:text-[var(--obs-text-normal,#dadada)]"
+              }`}
           >
             <Sparkles className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
             <span>AI</span>
@@ -352,9 +355,11 @@ const IdeComposerSidebar = React.memo<{
         )}
       </div>
 
-      {rightTab === "assets" ? (
+      {/* VDocAssetPanel 은 AI 탭에서도 assets.stagePreview / AG-UI 카드 명령을 즉시 받도록 마운트 유지 (hoveredBlockId 미구독) */}
+      <div className={rightTab === "assets" ? "flex min-h-0 flex-1 flex-col overflow-hidden" : "hidden"}>
         <VDocAssetPanel runtime={runtime} activeResourceId={activeResourceId} />
-      ) : rightTab === "inspector" ? (
+      </div>
+      {rightTab === "inspector" ? (
         isVDocActive && activeResourceId ? (
           <VDocInspectorPanel
             runtime={runtime}
@@ -397,9 +402,15 @@ const IdeComposerSidebar = React.memo<{
             </div>
           </div>
         )
-      ) : (
-        <V2ComposerView ai={ai} subscribe={subscribeAi} />
-      )}
+      ) : rightTab === "ai" ? (
+        <V2ComposerView
+          ai={ai}
+          subscribe={subscribeAi}
+          vault={runtime.vault}
+          activeResourceId={activeResourceId}
+          aguiFunnelTrigger={aguiFunnelTrigger}
+        />
+      ) : null}
     </aside>
   );
 });
@@ -441,6 +452,18 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
   const [showComposer, setShowComposer] = useState(true);
   const [composerWidth, setComposerWidth] = useState(360);
   const [focusAiSeq, setFocusAiSeq] = useState(0);
+  const [aguiFunnelTrigger, setAguiFunnelTrigger] = useState<{
+    readonly seq: number;
+    readonly req: AguiAssetFunnelRequest;
+  } | null>(null);
+
+  useEffect(() => {
+    return subscribeAguiAssetFunnel((req) => {
+      setShowComposer(true);
+      setFocusAiSeq((n) => n + 1);
+      setAguiFunnelTrigger({ seq: Date.now(), req });
+    });
+  }, []);
 
   // AI Composer 런타임 (볼트마다 하나) — studio @/shared/ai + ai-workspace 를 볼트 모델로 옮긴 것
   const ai = useMemo(
@@ -453,6 +476,8 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
         vdocUiBridge: runtime.vdocUiBridge,
         docs: runtime.docs,
         openVaultFile: (path, mode) => runtime.openVaultFile(path, mode ?? "current"),
+        stageAssetPreview: (assetId) =>
+          dispatchAssetHubCommand({ type: "stage-preview", assetId }),
         revealResource: (rawTag, sourcePath) =>
           openResourceTagInPair(rawTag, {
             vault: runtime.vault,
@@ -487,10 +512,11 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
       setFocusAiSeq((n) => n + 1);
     });
   }, [ai]);
-  /** 세션 열기 — Composer 를 보이고 그 탭으로 (미뤄 둔 화면 이동도 이때) */
+  /** 세션 열기 — Composer 를 보이고 AI 탭으로 전환 (미뤄 둔 화면 이동도 이때) */
   const openSession = useCallback(
     (key: string) => {
       setShowComposer(true);
+      setFocusAiSeq((n) => n + 1);
       ai.openSession(key);
     },
     [ai]
@@ -1460,11 +1486,10 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
                               onSwitchVault(v.id);
                               setVaultMenuOpen(false);
                             }}
-                            className={`flex w-full items-center justify-between gap-2 rounded px-2.5 py-1.5 text-left text-[12px] transition-colors ${
-                              isCurrent
-                                ? "bg-[rgba(255,255,255,0.08)] font-medium text-[#ececec]"
-                                : "text-[#b3b3b3] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#ececec]"
-                            }`}
+                            className={`flex w-full items-center justify-between gap-2 rounded px-2.5 py-1.5 text-left text-[12px] transition-colors ${isCurrent
+                              ? "bg-[rgba(255,255,255,0.08)] font-medium text-[#ececec]"
+                              : "text-[#b3b3b3] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#ececec]"
+                              }`}
                           >
                             <span className="truncate">{v.name}</span>
                             {isCurrent && (
@@ -1583,6 +1608,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
               ai={ai}
               subscribeAi={subscribeAi}
               focusAiSeq={focusAiSeq}
+              aguiFunnelTrigger={aguiFunnelTrigger}
               width={composerWidth}
               activeResourceId={activeTab?.resourceId ?? null}
               activeViewType={activeTab?.viewType ?? null}
@@ -1907,7 +1933,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
       )}
 
       {/* 무마찰 디렉팅 — 뒤 세션 알림 · 완료 확인 · 지시 입력 */}
-      <SessionToasts ai={ai} onOpen={openSession} />
+      <SessionToasts ai={ai} composerVisible={showComposer} onOpen={openSession} />
       <CompletionConfirm ai={ai} />
       {directiveTarget && (
         <DirectivePromptDialog

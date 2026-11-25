@@ -16,6 +16,14 @@ from .schemas import (
     AssetParseFromBlockRequest,
     AssetParseFromRefRequest,
     AssetParseResponse,
+    AssetRecommendSelectRequest,
+    AssetRecommendSelectResponse,
+)
+from .strategies.v2_primitive import (
+    V2_PRIMITIVES_PRIMER,
+    apply_v2_fallback,
+    build_v2_ref_fallback,
+    recommend_select_heuristic,
 )
 
 logger = logging.getLogger(__name__)
@@ -318,6 +326,50 @@ class AssetAiService:
         )
 
     def parse_from_ref(self, req: AssetParseFromRefRequest) -> AssetParseResponse:
+        if req.schemaVersion == "v2":
+            v2_prompt = f"""
+너는 VibeDocStudio v2 레퍼런스 구조 역공학 AI다.
+아래 `.ref` 문서를 분석해 표 중심이면 `grid-form`, 글로만 된 법률·계약·공문 서면이면 `prose-form`, 이미지+속성+본문이면 `hybrid`로 분류하고 `v2Spec` JSON을 출력하라.
+
+{V2_PRIMITIVES_PRIMER}
+
+[레퍼런스 정보]
+- 제목: {req.refTitle}
+- 목표 assetKind: {req.assetKind}
+- 프레임 목록: {', '.join(req.frameLabels[:8]) or '없음'}
+- 추출 텍스트 발췌:
+{req.extractedText[:2400]}
+
+[출력 JSON 스키마 — 순수 JSON 객체만]
+{{
+  "title": "에셋 이름",
+  "category": "A4 법률 · 산문 서식 | A4 표 · 서식 | 블로그 · 웹 콘텐츠",
+  "tags": ["v2-primitive", "prose-form|grid-form|hybrid", "태그"],
+  "nuance": {{ "summary": "요약", "structureRules": ["규칙"], "adaptationHints": ["힌트"] }},
+  "outlineDsl": ["표준 .outline 요약 줄"],
+  "v2Spec": {{ "flowMode": "prose-form", "zones": {{ "header": [], "body": [], "footer": [] }}, "fields": [] }}
+}}
+""".strip()
+            parsed_v2 = self._run_llm_json(v2_prompt, timeout_seconds=75)
+            if parsed_v2 and isinstance(parsed_v2.get("v2Spec"), dict):
+                nuance_raw = parsed_v2.get("nuance") or {}
+                return AssetParseResponse(
+                    schemaVersion="v2",
+                    title=str(parsed_v2.get("title") or f"{req.refTitle} (v2)"),
+                    assetKind=req.assetKind,
+                    category=str(parsed_v2.get("category") or "A4 법률 · 산문 서식"),
+                    tags=[str(t) for t in (parsed_v2.get("tags") or ["v2-primitive"])][:6],
+                    nuance=AssetNuanceDto(
+                        summary=str(nuance_raw.get("summary") or f"{req.refTitle} v2 에셋"),
+                        structureRules=[str(r) for r in (nuance_raw.get("structureRules") or [])],
+                        adaptationHints=[str(h) for h in (nuance_raw.get("adaptationHints") or [])],
+                    ),
+                    outlineDsl=[str(ln) for ln in (parsed_v2.get("outlineDsl") or [f"<<view:section>> {req.refTitle}"])],
+                    v2Spec=parsed_v2["v2Spec"],
+                    engine="llm",
+                )
+            return build_v2_ref_fallback(req)
+
         prompt = f"""
 너는 VibeDocStudio의 레퍼런스 구조 역공학 AI다.
 아래 `.ref` 레퍼런스 문서의 텍스트와 프레임 정보를 바탕으로, 재사용 가능한 표준 `.outline` 구조 에셋 JSON을 생성하라.
@@ -465,9 +517,15 @@ class AssetAiService:
             lines = [str(ln) for ln in parsed["outlineDsl"] if str(ln).strip()]
             if lines:
                 return AssetApplyPreviewResponse(
+                    schemaVersion=req.schemaVersion,
                     outlineDsl=lines,
                     rationale=str(parsed.get("rationale") or f"'{req.assetTitle}' 뉘앙스로 재구성했습니다."),
                     engine="llm",
                 )
 
+        if req.schemaVersion == "v2":
+            return apply_v2_fallback(req)
         return _fallback_apply_dsl(req)
+
+    def recommend_select(self, req: AssetRecommendSelectRequest) -> AssetRecommendSelectResponse:
+        return recommend_select_heuristic(req)

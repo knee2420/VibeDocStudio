@@ -12,11 +12,14 @@ import {
   requestOutlineReveal,
 } from "@vibe/outline-sync";
 import type { OutlineNode, TreePatchRequest } from "@vibe/outliner/core";
+import { createAssetV3Tools } from "./assetV3";
+import { createStyleTools } from "./styleTools";
 import {
   addEvidenceLinks,
   contentHash,
   fillProgress,
   findBlock,
+  getActiveAssetDriver,
   getBlockKind,
   getBlockSlotIds,
   getSlotBackdata,
@@ -24,12 +27,15 @@ import {
   newEvidenceLinkId,
   parseResourceTag,
   patchBlockProps,
+  rankAssetsForContext,
+  resolveDocumentView,
   scanOutlineDirectives,
   setSlotContent,
   slotFillState,
   slotPlainText,
   validateBlockProps,
   withSlotFill,
+  type AssetFlowMode,
   type EvidenceLink,
   type EvidenceLocator,
   type OutlineSyntaxNode,
@@ -37,9 +43,20 @@ import {
   type StagedEvidence,
   type VDocDocument,
   type VDocSlot,
+  placeAssetBlocks,
 } from "@vibe/vdoc-schema";
 
-import { fromVaultUri, isAssetPath, parseOutlineJson, parseVAssetJson, serializeVDocJson } from "@vibe/vault-formats";
+import {
+  buildStyleRefForEntry,
+  collectVaultAssets,
+  collectVaultStyleEntries,
+  fromVaultUri,
+  isAssetPath,
+  parseOutlineJson,
+  parseVAssetJson,
+  resolveActiveStyleEntry,
+  serializeVDocJson,
+} from "@vibe/vault-formats";
 import {
   activeOutlinePath,
   activeReferences,
@@ -100,6 +117,8 @@ export interface V2ToolHost {
   openPath(path: string): void;
   /** 통일 리소스 태그(`<<resource:...>>`) 페어 탭 오픈 · 하이라이팅 (resource.reveal) */
   revealResource?(rawTag: string, sourcePath?: string): boolean;
+  /** 에셋(assetId)의 AI 느낌 보기(Staged Preview) 를 현재 열린 문서/아웃라인에 실행 (assets.stagePreview) */
+  stageAssetPreview?(assetId: string): boolean;
   /** 좌측 패널 (layout.openPanel) */
   showExplorer(): void;
 }
@@ -294,6 +313,16 @@ export function applyStagedChange(
     next = patchBlockProps(doc, change.payload.blockId, change.payload.props);
   } else if (change.targetKind === "variables") {
     next = { ...doc, variables: { ...doc.variables, ...change.payload.variables } };
+  } else if (change.targetKind === "asset-blocks") {
+    next = placeAssetBlocks(doc, change.payload);
+    // 문서 바로 옆에 단일 동반 `.vstyle` 이 있는데 styleRef 가 비어 있으면 승인 시 자동 보존/연결한다.
+    if (!next.styleRef) {
+      const styleCatalog = collectVaultStyleEntries(env.vault);
+      const companionOrActive = resolveActiveStyleEntry(next, env.vault, styleCatalog, change.path);
+      if (companionOrActive?.vaultPath) {
+        next = { ...next, styleRef: buildStyleRefForEntry(companionOrActive) };
+      }
+    }
   } else {
     throw new Error(`v2 에서 아직 적용할 수 없는 변경안입니다: ${change.targetKind}`);
   }
@@ -596,6 +625,7 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
         const profiles = args?.profileId
           ? snap.profiles.filter((p) => p.id === args.profileId)
           : snap.profiles;
+        const activeDriver = getActiveAssetDriver();
         const assets = env.vault
           .listAll()
           .filter((n): n is Extract<typeof n, { kind: "file" }> => n.kind === "file" && isAssetPath(n.path))
@@ -603,9 +633,20 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
           .map((n) => {
             try {
               const parsed = parseVAssetJson(env.vault.read(n.path));
-              return parsed
-                ? { path: n.path, assetId: parsed.assetId, title: parsed.title, category: parsed.category }
-                : { path: n.path, assetId: n.stem, title: n.stem, category: "unknown" };
+              if (!parsed) {
+                return { path: n.path, assetId: n.stem, title: n.stem, category: "unknown" };
+              }
+              const summary = activeDriver.summarizeForSelect(parsed);
+              return {
+                path: n.path,
+                assetId: parsed.assetId,
+                title: parsed.title,
+                category: parsed.category,
+                schemaVersion: summary.schemaVersion,
+                flowMode: summary.flowMode,
+                badges: summary.badges,
+                agentPromptLine: summary.agentPromptLine,
+              };
             } catch {
               return { path: n.path, assetId: n.stem, title: n.stem, category: "unknown" };
             }
@@ -807,6 +848,81 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
       },
     },
     {
+      ...clientTool("assets.search"),
+      describe: (args: { query?: string; flowMode?: string }) =>
+        `에셋 후보 검색 (${args?.query ? clip(args.query, 32) : args?.flowMode ?? "현재 문맥"})`,
+      run: (args: { query?: string; flowMode?: AssetFlowMode | "all"; limit?: number }) => {
+        const driver = getActiveAssetDriver();
+        const catalogEntries = collectVaultAssets(env.vault, { schemaVersion: driver.version });
+        const catalog = catalogEntries.map((e) => e.asset);
+        const tab = env.activeTabPath();
+        const doc = readVDoc(env, env.activeDocPath());
+        const outline = tab ? readOutline(env, tab) : null;
+        const contentSample = outline
+          ? outline.rootNodes
+            .flatMap((n) => [n.text, ...n.children.map((c) => c.text)])
+            .join("\n")
+            .slice(0, 1200)
+          : doc
+            ? Object.values(doc.slots)
+              .slice(0, 16)
+              .map((s) => slotPlainText(s.content))
+              .join("\n")
+              .slice(0, 1200)
+            : "";
+        const docView = doc ? resolveDocumentView(doc) : null;
+        const buckets = rankAssetsForContext(catalog, driver, {
+          activeSurface: outline ? "outline" : doc ? "vdoc" : "other",
+          documentView: docView?.id === "blog" ? "blog" : docView?.id === "web" ? "web" : doc ? "a4" : null,
+          contentSample,
+          searchQuery: args?.query,
+          flowModeFilter: args?.flowMode ?? "all",
+        });
+        const limit = Math.max(1, Math.min(10, Number(args?.limit ?? 5)));
+        const merged = [...buckets.recommended, ...buckets.pinnedAndRecent, ...buckets.others].slice(0, limit);
+        const items = merged.map((item) => {
+          const sum = driver.summarizeForSelect(item.asset);
+          return {
+            assetId: item.asset.assetId,
+            title: item.asset.title,
+            assetKind: item.asset.assetKind,
+            flowMode: sum.flowMode,
+            badges: sum.badges,
+            reasons: item.reasons,
+            summary: item.asset.nuance.summary,
+            fields: (item.asset.v2?.fields ?? []).map((f) => ({
+              id: f.id,
+              label: f.label,
+              required: Boolean(f.required),
+              evidenceHint: f.evidenceHint,
+            })),
+            agentPromptLine: sum.agentPromptLine,
+          };
+        });
+        return {
+          schemaVersion: driver.version,
+          totalCatalogCount: catalog.length,
+          contextSummary: buckets.contextSummary,
+          lowConfidence: buckets.lowConfidence,
+          candidates: items,
+          aguiTokenHint:
+            items.length > 0
+              ? `<<agui:asset-picks: ${items.slice(0, 3).map((i) => i.assetId).join(",")}>>`
+              : null,
+        };
+      },
+    },
+    {
+      ...clientTool("assets.stagePreview"),
+      describe: (args: { assetId?: string }) => `에셋 프리뷰 실행 (${args?.assetId ?? ""})`,
+      run: (args: { assetId: string }) => {
+        const id = String(args?.assetId ?? "").trim();
+        if (!id) throw new Error("assetId 가 필요합니다.");
+        const triggered = host.stageAssetPreview ? host.stageAssetPreview(id) : false;
+        return { ok: triggered, assetId: id };
+      },
+    },
+    {
       ...clientTool("references.list"),
       describe: () => "레퍼런스 목록",
       run: () =>
@@ -843,6 +959,8 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
         return { opened: ref.path };
       },
     },
+    ...createAssetV3Tools(env, { clientTool, stage }),
+    ...createStyleTools(env, { clientTool }),
   ];
   return withScopeGuards(env, host, tools);
 }

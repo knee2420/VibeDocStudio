@@ -1,0 +1,17 @@
+{
+ "id": "application-form",
+ "tags": [
+  "form",
+  "choice",
+  "colspan"
+ ],
+ "similar": {
+  "text": "신청자 김하나, 1995년 11월 3일생, 전화 010-9876-5432, 불참 예정, 요청: 발표 자료 메일로 받기 원함. 이메일 hana@example.com.",
+  "expect": {
+   "filled_min": 4,
+   "unmapped_has": [
+    "이메일"
+   ]
+  }
+ }
+}

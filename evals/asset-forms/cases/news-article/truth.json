@@ -1,0 +1,79 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "뉴스 기사",
+ "scope": "page",
+ "nodes": [
+  {
+   "t": "field",
+   "role": "heading",
+   "field": {
+    "id": "headline",
+    "type": "text",
+    "hint": "제목"
+   },
+   "variant": "h1"
+  },
+  {
+   "t": "field",
+   "role": "byline",
+   "field": {
+    "id": "byline",
+    "type": "text",
+    "hint": "기자 · 날짜"
+   }
+  },
+  {
+   "t": "field",
+   "role": "image",
+   "field": {
+    "id": "lead_photo",
+    "type": "image",
+    "hint": "대표 사진"
+   }
+  },
+  {
+   "t": "field",
+   "role": "image-caption",
+   "field": {
+    "id": "lead_caption",
+    "type": "text",
+    "hint": "사진 설명"
+   }
+  },
+  {
+   "t": "field",
+   "role": "body",
+   "field": {
+    "id": "lead_body",
+    "type": "rich",
+    "hint": "본문"
+   }
+  },
+  {
+   "t": "container",
+   "component": "frame",
+   "variant": "quote",
+   "children": [
+    {
+     "t": "field",
+     "role": "body",
+     "field": {
+      "id": "quote",
+      "type": "text",
+      "hint": "인용"
+     }
+    }
+   ]
+  },
+  {
+   "t": "field",
+   "role": "body",
+   "field": {
+    "id": "closing",
+    "type": "rich",
+    "hint": "이어지는 본문"
+   }
+  }
+ ]
+}

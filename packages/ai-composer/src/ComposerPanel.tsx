@@ -38,6 +38,7 @@ import {
   PromptInput,
   useComposerState,
   type AiSurfaceValue,
+  type AssetCardSummary,
 } from "@vibe/ai-react";
 
 export interface ComposerSuggestion {
@@ -76,6 +77,14 @@ export interface ComposerPanelProps {
   onOpenFolderPicker?(): void;
   /** 채팅 답변 속 `<<resource:...>>` 배지 클릭 시 페어 탭으로 열고 하이라이트. */
   onOpenResource?(rawTag: string): void;
+  /** 헤더 아래 · 대화 스레드 위에 붙는 인라인 위젯 (예: AG-UI 양식 추천 깔때기). */
+  topBanner?: React.ReactNode;
+  /** 채팅 답변 속 `<<agui:asset-picks:...>>` 카드의 [미리보기] 클릭 핸들러. */
+  onPreviewAsset?(assetId: string): void;
+  /** 채팅 답변 속 `<<agui:asset-picks:...>>` 카드의 [뼈대 꽂기] 클릭 핸들러. */
+  onInsertAssetSkeleton?(assetId: string): void;
+  /** 에셋 ID 를 AG-UI 카드 표시용 요약으로 변환. */
+  resolveAssetCard?(assetId: string): AssetCardSummary | null;
 }
 
 const MODE_META: Record<PermissionMode, { label: string; icon: React.ComponentType<{ className?: string }>; hint: string }> = {
@@ -110,6 +119,10 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   onAttachFiles,
   onOpenFolderPicker,
   onOpenResource,
+  topBanner,
+  onPreviewAsset,
+  onInsertAssetSkeleton,
+  resolveAssetCard,
 }) => {
   const send = (text: string, contexts: ContextRef[]) => void controller.send(text, onBeforeSend ? onBeforeSend(text, contexts) : contexts);
   const state = useComposerState(controller);
@@ -117,8 +130,15 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
   const stickRef = React.useRef(true);
   const busy = state.status !== "idle";
   const surface = React.useMemo<AiSurfaceValue>(
-    () => ({ runtime, attach: (refs) => controller.attach(refs), openResource: onOpenResource }),
-    [runtime, controller, onOpenResource]
+    () => ({
+      runtime,
+      attach: (refs) => controller.attach(refs),
+      openResource: onOpenResource,
+      previewAsset: onPreviewAsset,
+      insertAssetSkeleton: onInsertAssetSkeleton,
+      resolveAssetCard,
+    }),
+    [runtime, controller, onOpenResource, onPreviewAsset, onInsertAssetSkeleton, resolveAssetCard]
   );
   // 패널 전체가 놓는 곳 — 자식 요소를 오가며 생기는 dragenter/leave 짝을 세어 깜빡임을 막는다.
   const [dropping, setDropping] = React.useState(false);
@@ -192,6 +212,8 @@ export const ComposerPanel: React.FC<ComposerPanelProps> = ({
         onNew={() => void controller.newSession()}
         actions={headerActions}
       />
+
+      {topBanner}
 
       <div
         ref={scrollRef}

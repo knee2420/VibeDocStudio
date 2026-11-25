@@ -1,0 +1,18 @@
+{
+ "id": "career-history",
+ "tags": [
+  "table",
+  "rowspan",
+  "group-label"
+ ],
+ "similar": {
+  "text": "지원자 학력: 2008~2011 서울고등학교 졸업, 2011~2015 미래대학교 경영학 학사, 2016~2018 미래대학교 MBA. 경력: 2018~2021 한빛상사 마케팅 대리, 2021~현재 누리커머스 브랜드 매니저.",
+  "expect": {
+   "repeat": {
+    "education": 3,
+    "career": 2
+   },
+   "filled_min": 10
+  }
+ }
+}

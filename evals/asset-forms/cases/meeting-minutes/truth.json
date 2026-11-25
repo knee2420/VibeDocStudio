@@ -1,0 +1,162 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "회의록",
+ "scope": "element",
+ "nodes": [
+  {
+   "t": "label",
+   "role": "title",
+   "text": "회 의 록",
+   "variant": "h1"
+  },
+  {
+   "t": "grid",
+   "component": "table",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "일시"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "datetime",
+        "type": "date",
+        "hint": "일시"
+       }
+      },
+      {
+       "role": "label",
+       "text": "장소"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "place",
+        "type": "text",
+        "hint": "장소"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "참석자"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "attendees",
+        "type": "text",
+        "hint": "참석자"
+       },
+       "cs": 3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "grid",
+   "component": "table",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "column-header",
+       "text": "번호"
+      },
+      {
+       "role": "column-header",
+       "text": "안건"
+      },
+      {
+       "role": "column-header",
+       "text": "결정사항"
+      },
+      {
+       "role": "column-header",
+       "text": "담당"
+      }
+     ]
+    },
+    {
+     "repeat": "rows",
+     "cells": [
+      {
+       "role": "value",
+       "field": {
+        "id": "no",
+        "type": "number",
+        "hint": "번호"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "agenda",
+        "type": "text",
+        "hint": "안건"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "decision",
+        "type": "text",
+        "hint": "결정사항"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "owner",
+        "type": "text",
+        "hint": "담당"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "grid",
+   "component": "table",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "작성자"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "writer",
+        "type": "text",
+        "hint": "작성자"
+       }
+      },
+      {
+       "role": "label",
+       "text": "확인자"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "checker",
+        "type": "text",
+        "hint": "확인자"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

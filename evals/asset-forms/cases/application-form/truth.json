@@ -1,0 +1,117 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "참가 신청서",
+ "scope": "element",
+ "nodes": [
+  {
+   "t": "label",
+   "role": "title",
+   "text": "세미나 참가 신청서",
+   "variant": "h1"
+  },
+  {
+   "t": "grid",
+   "component": "table",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "성명"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "name",
+        "type": "text",
+        "hint": "성명"
+       }
+      },
+      {
+       "role": "label",
+       "text": "생년월일"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "birth",
+        "type": "date",
+        "hint": "생년월일"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "연락처"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "phone",
+        "type": "text",
+        "hint": "연락처"
+       },
+       "cs": 3
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "참석 여부"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "attend",
+        "type": "choice",
+        "hint": "참석 여부",
+        "options": [
+         "참석",
+         "불참"
+        ]
+       },
+       "cs": 3
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "요청사항"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "request",
+        "type": "rich",
+        "hint": "요청사항"
+       },
+       "cs": 3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "label",
+   "role": "note",
+   "text": "위와 같이 신청합니다."
+  },
+  {
+   "t": "field",
+   "role": "byline",
+   "field": {
+    "id": "signed",
+    "type": "text",
+    "hint": "신청일 · 신청인"
+   }
+  }
+ ]
+}

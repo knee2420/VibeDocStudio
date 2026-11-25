@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { AlertTriangle, Check, ChevronDown, ChevronRight, FolderSync, GitPullRequestArrow, RotateCcw, X } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, ChevronRight, FolderSync, GitPullRequestArrow, LocateFixed, RotateCcw, X } from "lucide-react";
 import { useStore } from "zustand";
 
-import type { V2AiWorkspace } from "@vibe/ai-vault";
+import type { V2AiWorkspace, V2StagedChange } from "@vibe/ai-vault";
 
 /**
  * AI 변경안(Staged) 검토 + 볼트 FS 트랜잭션(`vf_*`) 1클릭 되돌리기 바.
@@ -39,6 +39,21 @@ export const V2StagedChangesPanel: React.FC<{
   const approve = (ids: string[], options?: { readonly recompileBoundVDocs?: boolean }) => {
     const res = ai.approve(ids, options);
     setError(res.failed.length ? res.failed.map((f) => f.why).join(" · ") : null);
+  };
+
+  const revealTargetOnCanvas = (c: V2StagedChange) => {
+    if (c.targetKind === "asset-blocks") {
+      const targetBlockId = c.payload.replaceBlockIds?.[0] ?? c.payload.anchorBlockId;
+      if (targetBlockId) {
+        ai.env.vdocUiBridge.getState().requestScrollTo(c.path, targetBlockId);
+      }
+      return;
+    }
+    if (c.targetKind === "slot-html") {
+      ai.env.vdocUiBridge.getState().requestScrollTo(c.path, c.payload.slotId);
+    } else if (c.targetKind === "block-props") {
+      ai.env.vdocUiBridge.getState().requestScrollTo(c.path, c.payload.blockId);
+    }
   };
 
   const handleUndoFs = async (batchId: string) => {
@@ -148,6 +163,18 @@ export const V2StagedChangesPanel: React.FC<{
                         {c.warnings && c.warnings.length > 0 && (
                           <span className="mt-0.5 block text-[10px] text-amber-700">{c.warnings[0]}</span>
                         )}
+                        {c.targetKind === "asset-blocks" && c.payload.report && (
+                          <span data-testid="v2-staged-asset-report" className="mt-0.5 block text-[10px] text-slate-500">
+                            {c.payload.mode === "replace" ? "교체" : "추가"} · 채움 {c.payload.report.filled} · 빈 자리 {c.payload.report.empty}
+                            {c.payload.report.preserved ? ` · 옮긴 값 ${c.payload.report.preserved.kept}/${c.payload.report.preserved.total}` : ""}
+                            {c.payload.report.leftover.length > 0 && <span className="text-amber-700"> · 못 옮김: {c.payload.report.leftover.join(", ")}</span>}
+                          </span>
+                        )}
+                        {c.targetKind === "asset-blocks" && c.payload.intentNote && (
+                          <span className="mt-0.5 block truncate text-[10px] text-indigo-700" title={c.payload.intentNote}>
+                            ✦ {c.payload.intentNote}
+                          </span>
+                        )}
                       </span>
                       {c.targetKind === "outline-patch" && c.payload.compiledDocPath && (
                         <button
@@ -158,6 +185,17 @@ export const V2StagedChangesPanel: React.FC<{
                           title="승인 후 바인딩된 .vdoc 자동 재컴파일"
                         >
                           승인+컴파일
+                        </button>
+                      )}
+                      {(c.targetKind === "asset-blocks" || c.targetKind === "slot-html" || c.targetKind === "block-props") && (
+                        <button
+                          type="button"
+                          data-testid="v2-staged-reveal"
+                          onClick={() => revealTargetOnCanvas(c)}
+                          className="rounded p-0.5 text-slate-400 hover:bg-amber-50 hover:text-amber-700"
+                          title="캔버스에서 Unified Diff 위치로 이동"
+                        >
+                          <LocateFixed className="h-3.5 w-3.5" />
                         </button>
                       )}
                       <button type="button" data-testid="v2-staged-approve" onClick={() => approve([c.diffId])} className="rounded p-0.5 text-emerald-600 hover:bg-emerald-50" title="승인 (볼트 파일에 반영)">

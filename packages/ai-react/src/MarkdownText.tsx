@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, ChevronDown, ChevronUp, Database, FolderTree, GitPullRequestDraft, Layers } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronUp, Database, FolderTree, GitPullRequestDraft, Layers, Sparkles } from "lucide-react";
 
 import type { EntityInfo, EntityRegistry } from "@vibe/ai-kernel";
 
@@ -237,6 +237,86 @@ function extractEntities(text: string, entities: EntityRegistry | null): EntityI
 
 // --- 블록 및 인라인 파싱 -----------------------------------------------------------
 
+const AGUI_ASSET_PICKS_LINE = /^\s*<<\s*agui\s*:\s*asset-picks\s*:\s*([^>\n]+)>>\s*$/i;
+
+const AguiAssetPickGroup: React.FC<{ assetIds: readonly string[] }> = ({ assetIds }) => {
+  const surface = useAiSurface();
+  if (assetIds.length === 0) return null;
+  return (
+    <div
+      data-testid="agui-asset-pick-group"
+      className="my-2 space-y-1.5 rounded-xl border border-emerald-200 bg-emerald-50/60 p-2"
+    >
+      <div className="flex items-center gap-1 text-[10.5px] font-bold text-emerald-800">
+        <Sparkles className="h-3 w-3 text-emerald-600" />
+        <span>추천 문서 에셋 ({assetIds.length}) · 바로 적용하거나 미리보기</span>
+      </div>
+      <div className="space-y-1.5">
+        {assetIds.map((rawId) => {
+          const id = rawId.trim();
+          const card = surface?.resolveAssetCard?.(id) ?? {
+            id,
+            title: id,
+            badges: [],
+            summary: "볼트에 등록된 문서 에셋",
+          };
+          return (
+            <div
+              key={id}
+              data-testid={`agui-asset-pick-card-${id}`}
+              className="rounded-lg border border-emerald-200/90 bg-white p-2 shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="truncate text-[12px] font-semibold text-slate-900">{card.title}</div>
+                  {card.badges.length > 0 && (
+                    <div className="mt-0.5 flex flex-wrap gap-1">
+                      {card.badges.slice(0, 4).map((badge) => (
+                        <span
+                          key={badge}
+                          className="rounded bg-slate-100 px-1.5 py-px text-[9.5px] font-medium text-slate-600"
+                        >
+                          {badge}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {card.summary && (
+                <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-slate-500">{card.summary}</p>
+              )}
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {surface?.previewAsset && (
+                  <button
+                    type="button"
+                    data-testid={`agui-asset-pick-preview-${id}`}
+                    onClick={() => surface.previewAsset?.(id)}
+                    className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-1 text-[10.5px] font-semibold text-white transition-colors hover:bg-emerald-500 cursor-pointer"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>내 내용으로 미리보기</span>
+                  </button>
+                )}
+                {surface?.insertAssetSkeleton && (
+                  <button
+                    type="button"
+                    data-testid={`agui-asset-pick-skeleton-${id}`}
+                    onClick={() => surface.insertAssetSkeleton?.(id)}
+                    className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10.5px] font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 cursor-pointer"
+                  >
+                    <span>뼈대 꽂기</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 function parseBlocks(
   text: string,
   entities: EntityRegistry | null,
@@ -249,6 +329,16 @@ function parseBlocks(
   let key = 0;
   while (i < lines.length) {
     const line = lines[i];
+    const aguiMatch = AGUI_ASSET_PICKS_LINE.exec(line);
+    if (aguiMatch) {
+      const ids = aguiMatch[1]
+        .split(/[,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      out.push(<AguiAssetPickGroup key={`agui-${key++}`} assetIds={ids} />);
+      i++;
+      continue;
+    }
     if (line.trim().startsWith("```")) {
       const lang = line.trim().slice(3).trim();
       const body: string[] = [];
@@ -311,7 +401,12 @@ function parseBlocks(
       continue;
     }
     const para: string[] = [];
-    while (i < lines.length && lines[i].trim() && !/^(#{1,4}\s|```|\s*[-*]\s|\s*\d+[.)]\s|\s*>)/.test(lines[i])) {
+    while (
+      i < lines.length &&
+      lines[i].trim() &&
+      !/^(#{1,4}\s|```|\s*[-*]\s|\s*\d+[.)]\s|\s*>)/.test(lines[i]) &&
+      !AGUI_ASSET_PICKS_LINE.test(lines[i])
+    ) {
       para.push(lines[i++]);
     }
     out.push(

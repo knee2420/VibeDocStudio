@@ -23,6 +23,7 @@ import {
   type VDocPage,
   type VDocSlot,
 } from "@vibe/vdoc-schema";
+import { formatPageFooterTemplate } from "@vibe/style-core";
 import { SlotRichTextEditor, type SlotAiAction } from "@vibe/slot-editor";
 
 import { AlignmentGuides } from "./AlignmentGuides";
@@ -103,6 +104,16 @@ export interface VDocPageSheetProps {
    * 고정 참조여야 한다 (상태는 감싸는 컴포넌트가 스스로 구독한다).
    */
   wrapSlotContent?: (slot: VDocSlot, content: React.ReactNode) => React.ReactNode;
+  /**
+   * 블록 전체를 감싼다 — 블록 단위 에셋 교체/추가 제안(Unified Diff)을 캔버스 위에 직접 띄운다.
+   * 고정 참조여야 한다 (상태는 감싸는 컴포넌트가 스스로 구독한다).
+   */
+  wrapBlockContent?: (block: LayoutBlock, content: React.ReactNode) => React.ReactNode;
+  /**
+   * 페이지 플로우 블록 목록 맨 아래에 덧붙이는 영역 (기준 블록 없는 새 에셋 블록 삽입 제안 등).
+   * 고정 참조여야 한다.
+   */
+  renderAfterPageBlocks?: (page: VDocPage) => React.ReactNode;
   pendingState?: PagePendingState | null;
   onCancelPendingPage?: (pageId: string) => void;
   onRetryPendingPage?: (pageId: string) => void;
@@ -173,6 +184,7 @@ const PageBlock = React.memo(
  * LayoutBlock kinds, with yesform/PandaDoc editing affordances on blocks and tables.
  */
 export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
+  totalPages,
   seamless = false,
   page,
   slots,
@@ -204,6 +216,8 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   onSlotAiAction,
   renderInlineComposer,
   wrapSlotContent,
+  wrapBlockContent,
+  renderAfterPageBlocks,
   pendingState,
   onCancelPendingPage,
   onRetryPendingPage,
@@ -290,7 +304,9 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
     const isSelected = selectedSlotId === slotId;
     const isComposerOpen = composerOpenSlotId === slotId;
     const isLocked = !editable || Boolean(slot.constraints?.locked);
-    const slotChunks = slot.backDataRefs.map((cid) => backdata[cid]).filter(Boolean);
+    const slotChunks = (Array.isArray(slot.backDataRefs) ? slot.backDataRefs : [])
+      .map((cid) => backdata[cid])
+      .filter(Boolean);
 
     const alignClass =
       slot.constraints?.align === "right" ? "text-right" : slot.constraints?.align === "center" ? "text-center" : "";
@@ -434,6 +450,10 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         fontWeight: cell.fontWeight,
         fontFamily: cell.fontFamily,
         textAlign: cell.hAlign as React.CSSProperties["textAlign"],
+        whiteSpace: cell.whiteSpace as React.CSSProperties["whiteSpace"],
+        fontVariantNumeric: cell.fontVariantNumeric as React.CSSProperties["fontVariantNumeric"],
+        paddingLeft: cell.listIndent,
+        textIndent: cell.hangingIndent,
       },
     });
   };
@@ -649,7 +669,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
   const renderFramedOrFlowBlock = (block: LayoutBlock, bIdx: number) => {
     const model = getBlockKind(block.kind);
     const frame = block.frame;
-    return (
+    const inner = (
       <BaseBlockWrapper
         block={block}
         editable={editable}
@@ -682,6 +702,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
         {renderBlockBody(block)}
       </BaseBlockWrapper>
     );
+    return wrapBlockContent ? wrapBlockContent(block, inner) : inner;
   };
 
   const renderRef = useRef(renderFramedOrFlowBlock);
@@ -875,6 +896,7 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
               </div>
             );
           })}
+          {renderAfterPageBlocks?.(page)}
         </div>
 
         {/* Fixed-position blocks, placed by their frame in sheet coordinates. */}
@@ -953,7 +975,31 @@ export const VDocPageSheet: React.FC<VDocPageSheetProps> = ({
 
         {!page.hideHeaderFooter && (
           <div className="px-10 py-3 border-t border-transparent hover:border-dashed hover:border-slate-200">
-            {renderSlotBox(page.footerSlotId, { className: "text-xs text-slate-500" })}
+            {(() => {
+              const footerSlot = page.footerSlotId ? slots[page.footerSlotId] : undefined;
+              const hasFooterText = Boolean(
+                footerSlot?.content && footerSlot.content.replace(/<[^>]*>/g, "").trim().length > 0
+              );
+              if (hasFooterText || !docStyle?.pageGrid.footerTemplate) {
+                return renderSlotBox(page.footerSlotId, { className: "text-xs text-slate-500" });
+              }
+              const formatted = formatPageFooterTemplate(
+                docStyle.pageGrid.footerTemplate,
+                page.pageNumber,
+                totalPages
+              );
+              const alignClass =
+                docStyle.pageGrid.footerAlign === "left"
+                  ? "text-left"
+                  : docStyle.pageGrid.footerAlign === "right"
+                    ? "text-right"
+                    : "text-center";
+              return (
+                <div data-page-footer-template="" className={`text-xs text-slate-600 select-none ${alignClass}`}>
+                  {formatted}
+                </div>
+              );
+            })()}
           </div>
         )}
 

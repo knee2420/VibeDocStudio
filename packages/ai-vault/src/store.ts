@@ -82,6 +82,10 @@ export interface V2AiState extends V2AiSettings {
   /** 이번 메시지 범위. `sessionKey` 가 있으면 그 기준점 세션 몫 */
   setTurn(turn: V2Turn | null, sessionKey?: string): void;
   enqueue(changes: V2StagedChange[]): void;
+  /** 기존 변경안(`diffId`)을 새 변경안으로 제자리 갱신한다 (`revisionOf` 대화형 수정). 없으면 끝에 추가. */
+  revise(diffId: string, next: V2StagedChange): boolean;
+  /** `asset-blocks` 변경안의 배치 방식(`replace` ↔ `insert`)을 승인 직전 전환한다. */
+  setAssetPlacementMode(diffId: string, mode: "replace" | "insert"): boolean;
   remove(diffIds: readonly string[]): void;
   /** 세션이 만든 변경안을 모두 뺀다 (세션 완료 시). 돌려준 값 = 뺀 수 */
   removeBySession(sessionKey: string): number;
@@ -163,6 +167,9 @@ const stagedDedupeKey = (c: V2StagedChange): string | null => {
   if (c.targetKind === "slot-html") return `slot:${c.path}#${c.payload.slotId}`;
   if (c.targetKind === "outline-patch") return `outline:${c.path}`;
   if (c.targetKind === "block-props") return `block:${c.path}#${c.payload.blockId}`;
+  if (c.targetKind === "asset-blocks" && c.payload.mode === "replace" && c.payload.replaceBlockIds?.length) {
+    return `asset-replace:${c.path}#${[...c.payload.replaceBlockIds].sort().join(",")}`;
+  }
   return null;
 };
 
@@ -238,6 +245,74 @@ export function createV2AiStore(vaultId: string, storage: Storage | null = safeL
         set((s) => ({
           queue: dedupeQueue([...s.queue, ...changes]),
         })),
+      revise: (diffId, next) => {
+        let replaced = false;
+        set((s) => {
+          const idx = s.queue.findIndex((c) => c.diffId === diffId);
+          if (idx < 0) return { queue: dedupeQueue([...s.queue, next]) };
+          replaced = true;
+          const prev = s.queue[idx];
+          const updated: V2StagedChange = {
+            ...next,
+            diffId: prev.diffId,
+            ...(prev.sessionKey && !next.sessionKey ? { sessionKey: prev.sessionKey } : {}),
+          };
+          const copy = [...s.queue];
+          copy[idx] = updated;
+          return { queue: dedupeQueue(copy) };
+        });
+        return replaced;
+      },
+      setAssetPlacementMode: (diffId, mode) => {
+        let changed = false;
+        set((s) => {
+          const idx = s.queue.findIndex((c) => c.diffId === diffId && c.targetKind === "asset-blocks");
+          if (idx < 0) return s;
+          const cur = s.queue[idx];
+          if (cur.targetKind !== "asset-blocks" || cur.payload.mode === mode) return s;
+          const p = cur.payload;
+          if (mode === "replace") {
+            const targetIds = p.replaceBlockIds?.length
+              ? p.replaceBlockIds
+              : p.anchorBlockId
+                ? [p.anchorBlockId]
+                : [];
+            if (targetIds.length === 0) return s;
+            changed = true;
+            const copy = [...s.queue];
+            copy[idx] = {
+              ...cur,
+              targetId: targetIds[0],
+              beforeSummary: `블록 ${targetIds.length}개`,
+              createdAt: new Date().toISOString(),
+              payload: {
+                ...p,
+                mode: "replace",
+                replaceBlockIds: targetIds,
+                anchorBlockId: p.anchorBlockId ?? targetIds[0],
+              },
+            };
+            return { queue: dedupeQueue(copy) };
+          }
+          // replace → insert: 기존 replaceBlockIds 를 보존해 다시 교체로 되돌릴 수 있게 한다
+          const anchorId = p.anchorBlockId ?? p.replaceBlockIds?.[0];
+          changed = true;
+          const copy = [...s.queue];
+          copy[idx] = {
+            ...cur,
+            targetId: anchorId ?? cur.targetId,
+            beforeSummary: "(새로 놓기)",
+            createdAt: new Date().toISOString(),
+            payload: {
+              ...p,
+              mode: "insert",
+              ...(anchorId ? { anchorBlockId: anchorId } : {}),
+            },
+          };
+          return { queue: copy };
+        });
+        return changed;
+      },
       remove: (diffIds) => set((s) => ({ queue: s.queue.filter((c) => !diffIds.includes(c.diffId)) })),
       removeBySession: (sessionKey) => {
         const before = get().queue.length;

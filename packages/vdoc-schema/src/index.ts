@@ -22,4 +22,5 @@ export * from "./resource";
 export * from "./view-registry";
 export * from "./element-syntax";
 export * from "./asset-kit";
+export * from "./asset-core";
 export * from "./inspector-presets";

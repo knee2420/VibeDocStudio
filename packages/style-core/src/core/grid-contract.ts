@@ -17,11 +17,16 @@ export interface MarginBox {
 }
 
 /**
- * 한국형 표(예스폼 2px 외곽 + 1px 내부 격자, 공공 RFP 상단 굵은 선 + 세로선 없음 등)와
- * 모든 그리드 컨테이너의 5선 테두리 매트릭스.
+ * 2D 그리드 컨테이너의 직교 테두리 매트릭스.
+ * `outer` 는 4변 축약이며, `outerTop`/`outerRight`/`outerBottom`/`outerLeft` 로 각 외곽선을 독립 제어한다
+ * (예: 좌우 외곽선 없음 `outerLeft: "none", outerRight: "none"`).
  */
 export interface GridBorderMatrix {
   outer?: string;
+  outerTop?: string;
+  outerRight?: string;
+  outerBottom?: string;
+  outerLeft?: string;
   headerTop?: string;
   headerBottom?: string;
   rowBottom?: string;

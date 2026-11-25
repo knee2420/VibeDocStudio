@@ -11,11 +11,13 @@ import {
   FolderKanban,
   Link2,
   Loader2,
+  Paperclip,
   RefreshCw,
   RotateCcw,
   Search,
   Sparkles,
   Unlink,
+  Wand2,
   X,
 } from "lucide-react";
 import { getPath, type OutlineNode } from "@vibe/outliner";
@@ -63,6 +65,7 @@ import {
   subscribeResourceHighlight,
   type ResourceHighlightRequest,
 } from "../model/resourceHighlightBus";
+import { requestOpenAguiAssetFunnel } from "../model/assetActionBus";
 import {
   OutlineEvidenceLegendPanel,
   OutlineNodeEvidenceSubline,
@@ -1378,6 +1381,39 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
     }
   };
 
+  // Plain `.outline` (with 0 `<<doc>>` directives) -> 1-click promote to `.vdoc` in Pair Tab Group
+  const handlePromotePlainOutlineToVDoc = useCallback(
+    (profile: "a4" | "blog") => {
+      const current = session.snapshot();
+      const wrapperId = `doc_${Date.now().toString(36)}`;
+      const fallbackTitle = basename(path).replace(/\.outline$/i, "") || "새 문서";
+      const title = (current.title || fallbackTitle).trim() || fallbackTitle;
+      const nonEmptyRoots = current.rootNodes.filter(
+        (n) => n.text.trim().length > 0 || n.children.length > 0
+      );
+      const wrapperNode: OutlineNode = {
+        id: wrapperId,
+        text: `<<doc:${profile}>> ${title}`,
+        children:
+          nonEmptyRoots.length > 0
+            ? nonEmptyRoots
+            : [{ id: `${wrapperId}_c1`, text: "", children: [] }],
+      };
+      session.write({
+        ...current,
+        rootNodes: [wrapperNode],
+      });
+      const opener = openInPairGroup
+        ? (p: string) => openInPairGroup(p)
+        : openLink ?? (openFile ? (p: string) => openFile(p) : undefined);
+      materializeVDocFromOutlineDirective(vault, path, wrapperId, opener);
+      setSelectedDocNodeId(wrapperId);
+      setCompileFlash(true);
+      setTimeout(() => setCompileFlash(false), 1500);
+    },
+    [session, path, openInPairGroup, openLink, openFile, vault]
+  );
+
   const showDirectiveStrip = primaryDocTargets.length > 0 || previewOpen;
 
   return (
@@ -1403,6 +1439,64 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
           >
             <X className="h-3.5 w-3.5" />
           </button>
+        </div>
+      )}
+      {/* Plain `.outline` (태그 없는 상태) 1-click `.vdoc` 승격 & AI 양식 추천 바 */}
+      {!showDirectiveStrip && (
+        <div
+          data-testid="outline-plain-promote-strip"
+          className="flex h-8 shrink-0 select-none items-center justify-between gap-2 border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-3 text-[11px] text-[var(--obs-text-muted,#b3b3b3)]"
+        >
+          <div className="flex min-w-0 items-center gap-1.5">
+            {owningProjectPath && (
+              <span
+                title={`프로젝트 경계: ${owningProjectPath}`}
+                className="hidden shrink-0 items-center gap-1 rounded border border-violet-500/30 bg-violet-500/12 px-1.5 py-0.5 text-[10px] font-medium text-violet-200 xl:inline-flex"
+              >
+                <FolderKanban className="h-2.5 w-2.5 text-violet-400" />
+                <span className="max-w-[110px] truncate">{projectScopeLabel}</span>
+              </span>
+            )}
+            <span className="truncate text-[10.5px] text-[var(--obs-text-faint,#8a8a8a)]">
+              일반 아웃라인 · 태그 없이 바로 문서로 펼치거나 AI 양식을 추천받을 수 있습니다
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              data-testid="outline-promote-a4"
+              onClick={() => handlePromotePlainOutlineToVDoc("a4")}
+              title="현재 불릿을 <<doc:a4>> 로 감싸고 페어 탭에 A4 .vdoc 문서를 즉시 생성합니다"
+              className="inline-flex items-center gap-1 rounded border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[10.5px] font-medium text-emerald-200 transition-colors hover:bg-emerald-500/25"
+            >
+              <FilePlus2 className="h-3 w-3 text-emerald-300" />
+              <span>.vdoc 만들기 (A4)</span>
+            </button>
+            <button
+              type="button"
+              data-testid="outline-promote-blog"
+              onClick={() => handlePromotePlainOutlineToVDoc("blog")}
+              title="현재 불릿을 <<doc:blog>> 로 감싸고 페어 탭에 블로그 .vdoc 문서를 즉시 생성합니다"
+              className="inline-flex items-center gap-1 rounded border border-sky-500/35 bg-sky-500/12 px-2 py-0.5 text-[10.5px] font-medium text-sky-200 transition-colors hover:bg-sky-500/22"
+            >
+              <span>블로그 .vdoc</span>
+            </button>
+            <button
+              type="button"
+              data-testid="outline-promote-ai-funnel"
+              onClick={() =>
+                requestOpenAguiAssetFunnel({
+                  sourcePath: path,
+                  selectedNodeIds,
+                })
+              }
+              title="AI Composer 의 AG-UI 양식 추천 깔때기를 열어 현재 내용에 맞는 에셋을 고릅니다"
+              className="inline-flex items-center gap-1 rounded border border-violet-500/40 bg-violet-500/15 px-2 py-0.5 text-[10.5px] font-medium text-violet-200 transition-colors hover:bg-violet-500/25"
+            >
+              <Sparkles className="h-3 w-3 text-violet-300" />
+              <span>AI 양식 추천</span>
+            </button>
+          </div>
         </div>
       )}
       {/* Top Explicit Compile & Unified 1:N Link Dropdown Strip */}
@@ -1519,7 +1613,7 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                 {boundVDocPath ? (
                   <>
                     <RefreshCw className="h-3 w-3" />
-                    <span>{compileFlash ? "컴파일됨 ✓" : ".vdoc 컴파일 →"}</span>
+                    <span>{compileFlash ? "컴파일됨 ✓" : ".outline → .vdoc 컴파일"}</span>
                     {vdocHasPendingChanges && !compileFlash && (
                       <span
                         title="마지막 컴파일 이후 변경사항 있음"
@@ -1828,6 +1922,66 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  data-testid="outline-quick-asset-funnel"
+                  onMouseDown={() => {
+                    pressedIdsRef.current = editorStore.getState().selectedNodeIds;
+                  }}
+                  onClick={() => {
+                    const ids = pressedIdsRef.current.length ? pressedIdsRef.current : selectedNodeIds;
+                    pressedIdsRef.current = [];
+                    requestOpenAguiAssetFunnel({
+                      sourcePath: path,
+                      selectedNodeIds: ids,
+                    });
+                  }}
+                  className="inline-flex items-center gap-1 rounded border border-emerald-500/35 bg-emerald-500/12 px-2 py-0.5 text-[10.5px] font-medium text-emerald-200 hover:bg-emerald-500/22"
+                  title="현재 불릿 내용에 맞는 에셋을 AG-UI 2-클릭 깔때기로 추천받습니다"
+                >
+                  <Sparkles className="h-3 w-3 text-emerald-300" />
+                  <span>에셋 추천</span>
+                </button>
+                <button
+                  type="button"
+                  data-testid="outline-quick-structure"
+                  onMouseDown={() => {
+                    pressedIdsRef.current = editorStore.getState().selectedNodeIds;
+                  }}
+                  onClick={() => {
+                    const ids = pressedIdsRef.current.length ? pressedIdsRef.current : selectedNodeIds;
+                    pressedIdsRef.current = [];
+                    const prompt =
+                      "현재 아웃라인 내용을 분석해 가장 알맞은 <<doc>> / <<view>> 구조 태그를 입히고 문단 계층을 깔끔하게 정돈해줘.";
+                    if (ids.length > 0) onAiDirect(prompt, ids);
+                    else onAiDirect(prompt);
+                  }}
+                  className="hidden items-center gap-1 rounded border border-sky-500/35 bg-sky-500/12 px-2 py-0.5 text-[10.5px] font-medium text-sky-200 hover:bg-sky-500/22 sm:inline-flex"
+                  title="AI 에게 현재 아웃라인의 문서 구조화(<<doc>>/<<view>> 태그 부착)를 바로 요청합니다"
+                >
+                  <Wand2 className="h-3 w-3 text-sky-300" />
+                  <span>구조화</span>
+                </button>
+                <button
+                  type="button"
+                  data-testid="outline-quick-resource"
+                  onMouseDown={() => {
+                    pressedIdsRef.current = editorStore.getState().selectedNodeIds;
+                  }}
+                  onClick={() => {
+                    const ids = pressedIdsRef.current.length ? pressedIdsRef.current : selectedNodeIds;
+                    pressedIdsRef.current = [];
+                    const prompt =
+                      "선택한(또는 전체) 불릿의 주장·수치에 맞는 볼트 리소스(PDF·CSV·MD)를 찾아 <<resource: 대상 위치 | 핵심 근거 발췌>> 하위 불릿으로 붙여줘.";
+                    if (ids.length > 0) onAiDirect(prompt, ids);
+                    else onAiDirect(prompt);
+                  }}
+                  className="hidden items-center gap-1 rounded border border-cyan-500/35 bg-cyan-500/12 px-2 py-0.5 text-[10.5px] font-medium text-cyan-200 hover:bg-cyan-500/22 md:inline-flex"
+                  title="AI 에게 볼트 리소스를 검색해 <<resource:...>> 근거 링크를 붙이도록 요청합니다"
+                >
+                  <Paperclip className="h-3 w-3 text-cyan-300" />
+                  <span>근거 붙이기</span>
+                </button>
                 <button
                   type="button"
                   data-testid="outline-ai-direct"

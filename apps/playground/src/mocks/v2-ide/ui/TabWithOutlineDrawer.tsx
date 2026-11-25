@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Layers, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { AlertTriangle, Layers, PanelLeftClose, PanelLeftOpen, RotateCcw } from "lucide-react";
 import type {
   DocumentEditorAdapter,
   EditorHostContext,
@@ -8,6 +8,78 @@ import type {
 
 import type { IdeEditorEnv } from "../model/editorAdapters";
 import { LazyVaultFileGate } from "./LazyVaultFileGate";
+
+interface TabErrorBoundaryProps {
+  readonly resetKey: string;
+  readonly path: string;
+  readonly label?: string;
+  readonly children: React.ReactNode;
+}
+
+interface TabErrorBoundaryState {
+  readonly error: Error | null;
+  readonly retrySeq: number;
+}
+
+/**
+ * Per-tab render error isolator: a malformed file or view crash NEVER unmounts the
+ * entire IDE workbench into a black screen — only the affected tab renders a recovery card.
+ */
+class TabErrorBoundary extends React.Component<TabErrorBoundaryProps, TabErrorBoundaryState> {
+  state: TabErrorBoundaryState = { error: null, retrySeq: 0 };
+
+  static getDerivedStateFromError(error: Error): Partial<TabErrorBoundaryState> {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    console.error(`[TabErrorBoundary] Failed to render "${this.props.path}":`, error, info.componentStack);
+  }
+
+  componentDidUpdate(prevProps: TabErrorBoundaryProps): void {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.error) {
+      this.setState({ error: null });
+    }
+  }
+
+  private handleRetry = (): void => {
+    this.setState((prev) => ({ error: null, retrySeq: prev.retrySeq + 1 }));
+  };
+
+  render(): React.ReactNode {
+    if (this.state.error) {
+      return (
+        <div
+          role="alert"
+          data-testid="tab-error-boundary"
+          className="flex h-full w-full flex-col items-center justify-center gap-3 overflow-auto bg-[var(--obs-bg-primary,#1e1e1e)] p-6 text-center text-[var(--obs-text-normal,#dadada)]"
+        >
+          <div className="flex max-w-md flex-col items-center gap-2 rounded-lg border border-red-500/30 bg-red-950/20 px-5 py-4">
+            <AlertTriangle className="h-6 w-6 text-red-400" />
+            <div className="text-sm font-semibold text-red-200">
+              {this.props.label ? `${this.props.label} 렌더링 오류` : "문서 뷰 렌더링 오류"}
+            </div>
+            <div className="break-all font-code text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
+              {this.props.path}
+            </div>
+            <pre className="mt-1 max-h-32 w-full overflow-auto rounded bg-black/30 p-2 text-left font-code text-[11px] whitespace-pre-wrap text-red-300">
+              {this.state.error.message || String(this.state.error)}
+            </pre>
+            <button
+              type="button"
+              onClick={this.handleRetry}
+              className="mt-1 inline-flex items-center gap-1.5 rounded bg-[var(--obs-bg-hover,rgba(255,255,255,0.08))] px-3 py-1.5 text-xs font-medium text-[var(--obs-text-normal,#dadada)] hover:bg-[var(--obs-bg-hover,rgba(255,255,255,0.14))]"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              다시 시도
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return <React.Fragment key={this.state.retrySeq}>{this.props.children}</React.Fragment>;
+  }
+}
 
 const DEFAULT_DRAWER_WIDTH = 220;
 const MIN_DRAWER_WIDTH = 150;
@@ -97,8 +169,14 @@ export const TabWithOutlineDrawer: React.FC<TabWithOutlineDrawerProps> = React.m
       [drawerWidth]
     );
 
+    const boundaryKey = `${host.tabId}:${host.viewType}:${host.path}`;
+
     if (!OutlineComponent) {
-      return <AdapterComponent host={host} />;
+      return (
+        <TabErrorBoundary resetKey={boundaryKey} path={host.path}>
+          <AdapterComponent host={host} />
+        </TabErrorBoundary>
+      );
     }
 
     const title = resolveOutlineTitle(adapter.id);
@@ -134,12 +212,14 @@ export const TabWithOutlineDrawer: React.FC<TabWithOutlineDrawerProps> = React.m
                 </div>
 
                 <div className="min-h-0 flex-1 overflow-hidden">
-                  <LazyVaultFileGate vault={host.env.vault} path={host.path}>
-                    <OutlineComponent
-                      key={`${outlineHost.viewType}:${outlineHost.path}`}
-                      host={outlineHost}
-                    />
-                  </LazyVaultFileGate>
+                  <TabErrorBoundary resetKey={`outline:${boundaryKey}`} path={host.path} label="개요 패널">
+                    <LazyVaultFileGate vault={host.env.vault} path={host.path}>
+                      <OutlineComponent
+                        key={`${outlineHost.viewType}:${outlineHost.path}`}
+                        host={outlineHost}
+                      />
+                    </LazyVaultFileGate>
+                  </TabErrorBoundary>
                 </div>
               </aside>
 
@@ -175,7 +255,9 @@ export const TabWithOutlineDrawer: React.FC<TabWithOutlineDrawerProps> = React.m
 
         {/* Main Document Body — stable sibling slot so toggling drawer never remounts editor */}
         <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
-          <AdapterComponent host={host} />
+          <TabErrorBoundary resetKey={boundaryKey} path={host.path}>
+            <AdapterComponent host={host} />
+          </TabErrorBoundary>
         </div>
       </div>
     );

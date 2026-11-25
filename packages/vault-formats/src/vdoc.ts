@@ -167,55 +167,127 @@ export function createDefaultVDoc(
   };
 }
 
+function sanitizeVDocSlots(rawSlots: Record<string, unknown>): Record<string, VDocSlot> {
+  const out: Record<string, VDocSlot> = {};
+  for (const [key, value] of Object.entries(rawSlots)) {
+    if (!value || typeof value !== "object") continue;
+    const raw = value as Partial<VDocSlot> & Record<string, unknown>;
+    const hasValidRefs = Array.isArray(raw.backDataRefs);
+    const hasValidRole = typeof raw.role === "string" && raw.role.length > 0;
+    const hasValidLabel = typeof raw.label === "string";
+    const hasValidContent = typeof raw.content === "string";
+    const hasValidId = typeof raw.slotId === "string" && raw.slotId.length > 0;
+    if (hasValidRefs && hasValidRole && hasValidLabel && hasValidContent && hasValidId) {
+      out[key] = raw as VDocSlot;
+    } else {
+      out[key] = {
+        ...raw,
+        slotId: hasValidId ? raw.slotId! : key,
+        label: hasValidLabel ? raw.label! : key,
+        role: (hasValidRole ? raw.role : "editable-slot") as VDocSlot["role"],
+        content: hasValidContent ? raw.content! : "",
+        backDataRefs: hasValidRefs
+          ? raw.backDataRefs!.filter((id): id is string => typeof id === "string")
+          : [],
+      };
+    }
+  }
+  return out;
+}
+
 function sanitizeVDocPages(
   pages: VDocPage[],
   surface?: { kind: "paged" | "scroll"; width?: number }
 ): VDocPage[] {
-  return pages.map((page) => ({
-    ...page,
-    ...(surface?.kind === "scroll" && !page.pageRect
-      ? { pageRect: { width: surface.width ?? 720, height: 1123, unit: "px" as const } }
-      : {}),
-    blocks: (Array.isArray(page.blocks) ? page.blocks : []).map((rawBlock) => {
-      const block = rawBlock as LayoutBlock & Record<string, unknown>;
-      if (block.kind === "columns-grid") {
-        const colCount = Array.isArray(block.columns)
-          ? block.columns.length
-          : Array.isArray(block.slotIds)
-            ? block.slotIds.length
-            : 2;
-        if (!Array.isArray(block.widths) || block.widths.length === 0) {
+  return pages.map((rawPage, idx) => {
+    const page = rawPage as VDocPage & { title?: string };
+    const pageNumber = typeof page.pageNumber === "number" && Number.isFinite(page.pageNumber)
+      ? page.pageNumber
+      : idx + 1;
+    const pageLabel =
+      typeof page.pageLabel === "string" && page.pageLabel.length > 0
+        ? page.pageLabel
+        : typeof page.title === "string" && page.title.length > 0
+          ? page.title
+          : `Page ${pageNumber}`;
+    return {
+      ...page,
+      pageId: typeof page.pageId === "string" && page.pageId.length > 0 ? page.pageId : `page-${pageNumber}`,
+      pageNumber,
+      pageLabel,
+      headerSlotId: typeof page.headerSlotId === "string" ? page.headerSlotId : "",
+      footerSlotId: typeof page.footerSlotId === "string" ? page.footerSlotId : "",
+      ...(surface?.kind === "scroll" && !page.pageRect
+        ? { pageRect: { width: surface.width ?? 720, height: 1123, unit: "px" as const } }
+        : {}),
+      blocks: (Array.isArray(page.blocks) ? page.blocks : []).map((rawBlock) => {
+        const block = rawBlock as LayoutBlock & Record<string, unknown>;
+        if ((block.kind as string) === "paragraph") {
           return {
             ...block,
-            widths: Array.from({ length: Math.max(1, colCount) }, () => "1fr"),
+            kind: "text",
+            title: typeof block.title === "string" ? block.title : "본문",
           } as LayoutBlock;
         }
-      }
-      if (block.kind === "hero" && !block.titleSlotId && typeof block.slotId === "string") {
-        return {
-          ...block,
-          titleSlotId: block.slotId,
-        } as LayoutBlock;
-      }
-      return block;
-    }),
-  }));
+        if ((block.kind as string) === "callout") {
+          return {
+            ...block,
+            kind: "callout-box",
+            title: typeof block.title === "string" ? block.title : "안내",
+          } as LayoutBlock;
+        }
+        if (block.kind === "columns-grid") {
+          const colCount = Array.isArray(block.columns)
+            ? block.columns.length
+            : Array.isArray(block.slotIds)
+              ? block.slotIds.length
+              : 2;
+          if (!Array.isArray(block.widths) || block.widths.length === 0) {
+            return {
+              ...block,
+              widths: Array.from({ length: Math.max(1, colCount) }, () => "1fr"),
+            } as LayoutBlock;
+          }
+        }
+        if (block.kind === "hero" && !block.titleSlotId && typeof block.slotId === "string") {
+          return {
+            ...block,
+            titleSlotId: block.slotId,
+          } as LayoutBlock;
+        }
+        return block;
+      }),
+    };
+  });
 }
 
 export function parseVDocJson(raw: string, fallbackTitle: string): VDocDocument {
   try {
-    const parsed = JSON.parse(raw) as Partial<VDocDocument>;
+    const parsed = JSON.parse(raw) as Partial<VDocDocument> & {
+      view?: string;
+      stylePackId?: string;
+    };
     if (Array.isArray(parsed.pages) && parsed.slots && typeof parsed.slots === "object") {
-      const resolvedView = resolveDocumentView(parsed);
+      const legacyViewId =
+        !parsed.viewId && (parsed.view === "a4" || parsed.view === "blog")
+          ? (parsed.view as DocumentViewId)
+          : undefined;
+      const legacyStyleRef =
+        !parsed.styleRef && typeof parsed.stylePackId === "string" && parsed.stylePackId.length > 0
+          ? { packId: parsed.stylePackId }
+          : undefined;
+      const resolvedView = resolveDocumentView(
+        legacyViewId ? { ...parsed, viewId: legacyViewId } : parsed
+      );
       return {
         version: "1.0.0",
         docId: parsed.docId ?? `vdoc-${Date.now().toString(36)}`,
         title: parsed.title ?? fallbackTitle,
-        viewId: parsed.viewId ?? resolvedView.id,
+        viewId: parsed.viewId ?? legacyViewId ?? resolvedView.id,
         surface: parsed.surface ?? { ...resolvedView.surface },
         genre: parsed.genre ?? resolvedView.genre,
         schemaRef: parsed.schemaRef,
-        styleRef: parsed.styleRef,
+        styleRef: parsed.styleRef ?? legacyStyleRef,
         sourceRef: parsed.sourceRef,
         outlineRef: parsed.outlineRef,
         status: parsed.status ?? "Draft",
@@ -223,9 +295,9 @@ export function parseVDocJson(raw: string, fallbackTitle: string): VDocDocument 
         variables: parsed.variables ?? {},
         pages: sanitizeVDocPages(
           parsed.pages,
-          parsed.styleRef ? undefined : (parsed.surface ?? resolvedView.surface)
+          parsed.styleRef || legacyStyleRef ? undefined : (parsed.surface ?? resolvedView.surface)
         ),
-        slots: parsed.slots,
+        slots: sanitizeVDocSlots(parsed.slots as Record<string, unknown>),
         backdata: parsed.backdata ?? {},
         preview: parsed.preview,
         evidenceLinks: parsed.evidenceLinks,

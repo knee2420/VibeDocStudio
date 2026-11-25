@@ -1,0 +1,107 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "학력 · 경력 표",
+ "scope": "element",
+ "nodes": [
+  {
+   "t": "label",
+   "role": "caption",
+   "text": "학력 및 경력"
+  },
+  {
+   "t": "grid",
+   "component": "table",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "column-header",
+       "text": "구분"
+      },
+      {
+       "role": "column-header",
+       "text": "기간"
+      },
+      {
+       "role": "column-header",
+       "text": "기관"
+      },
+      {
+       "role": "column-header",
+       "text": "내용"
+      }
+     ]
+    },
+    {
+     "repeat": "education",
+     "cells": [
+      {
+       "role": "group-label",
+       "text": "학력",
+       "rs": "repeat"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "period",
+        "type": "text",
+        "hint": "기간"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "org",
+        "type": "text",
+        "hint": "기관"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "desc",
+        "type": "text",
+        "hint": "내용"
+       }
+      }
+     ]
+    },
+    {
+     "repeat": "career",
+     "cells": [
+      {
+       "role": "group-label",
+       "text": "경력",
+       "rs": "repeat"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "period",
+        "type": "text",
+        "hint": "기간"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "org",
+        "type": "text",
+        "hint": "기관"
+       }
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "desc",
+        "type": "text",
+        "hint": "내용"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

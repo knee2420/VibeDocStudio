@@ -40,14 +40,44 @@ function mergeDefined<T extends object>(base: T, patch?: Partial<T>): T {
   return next as T;
 }
 
+function mergeCellMap(
+  base?: Record<string, import("./token-contract").CellStyleDef>,
+  patch?: Record<string, import("./token-contract").CellStyleDef>
+): Record<string, import("./token-contract").CellStyleDef> | undefined {
+  if (!base && !patch) return undefined;
+  const out: Record<string, import("./token-contract").CellStyleDef> = {};
+  if (base) {
+    for (const [role, def] of Object.entries(base)) out[role] = { ...def };
+  }
+  if (patch) {
+    for (const [role, def] of Object.entries(patch)) {
+      out[role] = out[role] ? mergeDefined(out[role], def) : { ...def };
+    }
+  }
+  return out;
+}
+
 function mergeTableStyle(base: TableStyleDef, patch?: Partial<TableStyleDef>): TableStyleDef {
-  if (!patch) return { ...base, borders: base.borders ? { ...base.borders } : undefined };
+  if (!patch) {
+    return {
+      ...base,
+      borders: base.borders ? { ...base.borders } : undefined,
+      columnWidths: base.columnWidths ? [...base.columnWidths] : undefined,
+      cells: mergeCellMap(base.cells),
+    };
+  }
   return {
     ...mergeDefined(base, patch),
     borders:
       base.borders || patch.borders
         ? mergeDefined(base.borders ?? {}, patch.borders)
         : undefined,
+    columnWidths: patch.columnWidths
+      ? [...patch.columnWidths]
+      : base.columnWidths
+        ? [...base.columnWidths]
+        : undefined,
+    cells: mergeCellMap(base.cells, patch.cells),
   };
 }
 
@@ -113,14 +143,20 @@ export function resolveStylePack(pack: StylePack, requestedMode?: string): Resol
     primitiveMap
   );
 
+  const resolvedExtensions = pack.extensions
+    ? resolveAliasTree(pack.extensions, resolvedSemantic, primitiveMap)
+    : undefined;
+
   return {
     packId: pack.id,
     packName: pack.name,
     version: pack.version,
     mode,
+    ...(pack.target ? { target: pack.target } : {}),
     tokens: allTokens,
     styles: resolvedStyles,
     bindings: { ...pack.bindings },
+    ...(resolvedExtensions ? { extensions: resolvedExtensions } : {}),
   };
 }
 

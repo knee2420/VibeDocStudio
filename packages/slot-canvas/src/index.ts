@@ -1,5 +1,6 @@
 export * from "./VDocPageSheet";
 export * from "./MemoVDocPageSheet";
+export * from "./StaticBlocksPreview";
 export * from "./WindowedPageChunker";
 export * from "./AlignmentGuides";
 export * from "./InsertCursorButton";

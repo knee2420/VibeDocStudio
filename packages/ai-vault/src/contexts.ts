@@ -566,6 +566,32 @@ export function workbenchPayload(env: V2AiEnv): Record<string, unknown> | null {
   const sel = env.textSelection();
   const selectedOutlineNodeIds =
     outlinePath && sel?.resourceId === outlinePath && Array.isArray(sel.nodeIds) ? [...sel.nodeIds] : [];
+  const activeStagedChanges = env.store
+    .getState()
+    .queue.filter((c) => {
+      const sameTarget = (path && c.path === path) || (outlinePath && c.path === outlinePath);
+      if (!sameTarget) return false;
+      return env.sessionKey ? c.sessionKey === env.sessionKey : !c.sessionKey;
+    })
+    .slice(-12)
+    .map((c) => ({
+      diffId: c.diffId,
+      targetKind: c.targetKind,
+      title: c.title,
+      ...(c.targetKind === "asset-blocks"
+        ? {
+            assetId: c.payload.assetId,
+            mode: c.payload.mode,
+            targetBlockIds:
+              c.payload.mode === "replace"
+                ? (c.payload.replaceBlockIds ?? [])
+                : c.payload.anchorBlockId
+                  ? [c.payload.anchorBlockId]
+                  : [],
+            report: c.payload.report,
+          }
+        : { targetId: c.targetId }),
+    }));
 
   if (!doc && !outlinePayload && references.length === 0 && projectDocs.length === 0 && !env.vaultRootPath) return null;
   return {
@@ -606,6 +632,7 @@ export function workbenchPayload(env: V2AiEnv): Record<string, unknown> | null {
       : ui
         ? ui.selection.items.filter((i) => i.kind === "block").map((i) => i.id)
         : [],
+    stagedChanges: activeStagedChanges,
     references,
   };
 }

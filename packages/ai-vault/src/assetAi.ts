@@ -1,8 +1,14 @@
 import {
+  compileV2SpecToPreview,
+  getActiveAssetSchemaVersion,
+  getAssetDriver,
+  type AssetRecommendationHit,
+  type AssetSchemaVersion,
   type LayoutBlock,
   type VDocAsset,
   type VDocAssetKind,
   type VDocAssetNuance,
+  type VDocAssetV2Spec,
   type VDocSlot,
 } from "@vibe/vdoc-schema";
 
@@ -15,6 +21,7 @@ export interface ParseAssetFromBlockRequest {
   readonly sourceOutlineDsl: readonly string[];
   readonly plainTextSummary?: string;
   readonly sourceRef?: string;
+  readonly schemaVersion?: AssetSchemaVersion;
 }
 
 export interface ParseAssetFromRefRequest {
@@ -23,6 +30,7 @@ export interface ParseAssetFromRefRequest {
   readonly blockSummaries: readonly string[];
   readonly sourceRef?: string;
   readonly thumbnailUrl?: string;
+  readonly schemaVersion?: AssetSchemaVersion;
 }
 
 export interface ApplyAssetPreviewRequest {
@@ -34,6 +42,7 @@ export interface ApplyAssetPreviewRequest {
   readonly mode: "transform" | "insert";
   readonly feedback?: string;
   readonly viewId?: "a4" | "blog";
+  readonly schemaVersion?: AssetSchemaVersion;
 }
 
 export interface ApplyAssetPreviewResult {
@@ -52,6 +61,7 @@ interface RawParseApiResponse {
   readonly tags: string[];
   readonly nuance: VDocAssetNuance;
   readonly outlineDsl: string[];
+  readonly v2Spec?: VDocAssetV2Spec | null;
   readonly engine: "llm" | "fallback";
 }
 
@@ -334,6 +344,121 @@ export async function parseAssetFromBlockViaAi(
   return { asset, engine: apiResp?.engine ?? "fallback" };
 }
 
+function buildOfflineV2RefSpec(req: ParseAssetFromRefRequest, title: string): VDocAssetV2Spec {
+  const joined = `${req.refTitle} ${req.blockSummaries.join(" ")}`;
+  const isProseLegal = /상고|이유서|소장|계약서|내용증명|위임장|진술서|제\d+조|원고|피고|귀중|아\s*래/.test(joined);
+  const isContract = /계약서|제\d+조|갑|을/.test(joined);
+
+  if (isProseLegal) {
+    return {
+      flowMode: "prose-form",
+      zones: {
+        header: [
+          { id: "h-band", type: "header-band", left: `[서식 예] ${req.refTitle}`, right: "[기관 식별 배지]" },
+          { id: "h-title", type: "title-block", fixedText: req.refTitle || title, traits: { align: "center", letterSpacing: "wide" } },
+          {
+            id: "h-kv",
+            type: "kv-block",
+            traits: { border: isContract ? "underline" : "none", labelWidth: "120px" },
+            rows: isContract
+              ? [
+                  { label: "계약건명", value: "{{contract_title}}" },
+                  { label: "갑(위탁인)", value: "{{party_a}}" },
+                  { label: "을(수탁인)", value: "{{party_b}}" },
+                ]
+              : [
+                  { label: "사 건", value: "{{case_no}} {{case_title}}" },
+                  { label: "원 고", value: "{{party_a}}" },
+                  { label: "피 고", value: "{{party_b}}" },
+                ],
+          },
+          { id: "h-div", type: "divider-band", fixedText: "- 아  래 -", traits: { variant: "spread-text", align: "center" } },
+        ],
+        body: [
+          {
+            id: "b-clause",
+            type: "clause-tree",
+            repeatable: true,
+            traits: { numberingScheme: isContract ? "article-kr" : "legal-kr", hangingIndent: true, align: "justify" },
+            items: [
+              {
+                title: isContract ? "(핵심 조항)" : "핵심 사유 제1점",
+                lead: "{{main_summary}}",
+                children: (req.blockSummaries.slice(0, 2).length > 0
+                  ? req.blockSummaries.slice(0, 2).map((s) => ({ text: `{{${s.slice(0, 36)}}}` }))
+                  : [{ text: "{{세부 논거 본문}}" }]),
+              },
+            ],
+          },
+        ],
+        footer: [
+          {
+            id: "f-sign",
+            type: "signoff-block",
+            rows: [
+              { label: "", value: "{{submit_date}}" },
+              { label: "작성인", value: "{{party_a}} (인)" },
+              { label: "", value: "{{recipient}} 귀중" },
+            ],
+          },
+        ],
+      },
+      fields: [
+        { id: "case_no", label: isContract ? "계약건명" : "사건번호", type: "string", required: true, evidenceHint: "원천 문서 상단 식별정보" },
+        { id: "party_a", label: isContract ? "갑(위탁인)" : "원고(신청인)", type: "party", required: true },
+        { id: "party_b", label: isContract ? "을(수탁인)" : "피고(상대방)", type: "party", required: true },
+        { id: "main_summary", label: "핵심 요지", type: "rich-text", required: true, repeatable: true, evidenceHint: "관련 근거 문서 (<<resource:...>> 부착)" },
+      ],
+    };
+  }
+
+  if (req.assetKind === "blog-section") {
+    return {
+      flowMode: "hybrid",
+      zones: {
+        body: [
+          { id: "b-img", type: "media", fixedText: `{{${req.refTitle} 대표 이미지}}` },
+          {
+            id: "b-kv",
+            type: "kv-block",
+            traits: { border: "underline", labelWidth: "96px" },
+            rows: (req.blockSummaries.slice(0, 3).length > 0
+              ? req.blockSummaries.slice(0, 3).map((s, i) => ({ label: `핵심 ${i + 1}`, value: `{{${s.slice(0, 26)}}}` }))
+              : [{ label: "항목 1", value: "{{값 1}}" }]),
+          },
+          { id: "b-prose", type: "prose", templateText: "{{본문 설명 문단}}" },
+          { id: "b-tip", type: "callout", templateText: "{{핵심 요약 포인트}}" },
+        ],
+      },
+      fields: [
+        { id: "body_text", label: "본문 설명", type: "rich-text", required: true },
+        { id: "tip", label: "핵심 포인트", type: "string" },
+      ],
+    };
+  }
+
+  return {
+    flowMode: "grid-form",
+    zones: {
+      header: [{ id: "g-ttl", type: "title-block", fixedText: req.refTitle || title, traits: { align: "center" } }],
+      body: [
+        {
+          id: "g-tbl",
+          type: "table-grid",
+          tableDsl: [
+            `<<view:table:header>> ${title}`,
+            "  {{구분}} | {{항목}}",
+            ...(req.blockSummaries.length > 0
+              ? req.blockSummaries.slice(0, 4).map((s, i) => `  {{분류 ${i + 1}}} | {{${s.slice(0, 28)}}}`)
+              : ["  {{분류 1}} | {{세부 내용}}"]),
+          ],
+        },
+      ],
+    },
+    fields: [{ id: "rows", label: "표 항목 데이터", type: "list", required: true, repeatable: true }],
+  };
+}
+
 /**
  * `.ref` 레퍼런스 문서에서 AI 구조 추출을 실행해 `.vasset` 을 생성한다.
  */
@@ -341,12 +466,14 @@ export async function parseAssetFromRefViaAi(
   req: ParseAssetFromRefRequest,
   signal?: AbortSignal
 ): Promise<{ readonly asset: VDocAsset; readonly engine: "llm" | "fallback" }> {
+  const schemaVersion = req.schemaVersion ?? getActiveAssetSchemaVersion();
   let apiResp: RawParseApiResponse | null = null;
   try {
     const res = await fetch("/api/assets/parse-from-ref", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        schemaVersion,
         refTitle: req.refTitle,
         assetKind: req.assetKind,
         extractedText: req.blockSummaries.join("\n"),
@@ -365,6 +492,60 @@ export async function parseAssetFromRefViaAi(
 
   const now = new Date().toISOString();
   const title = apiResp?.title?.trim() || `${req.refTitle || "레퍼런스"} 구조 에셋`;
+  const profileId: "a4" | "blog" = req.assetKind === "blog-section" ? "blog" : "a4";
+  const slug =
+    title
+      .toLowerCase()
+      .replace(/[^a-z0-9가-힣]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 36) || `ref-${Date.now().toString(36)}`;
+
+  if (schemaVersion === "v2") {
+    const v2Spec = apiResp?.v2Spec ?? buildOfflineV2RefSpec(req, title);
+    const compiled = compileV2SpecToPreview(v2Spec, title, slug, profileId);
+    const asset: VDocAsset = {
+      version: "2.0.0",
+      schemaVersion: "v2",
+      assetId: `asset-v2-${req.assetKind}-${slug}-${Date.now().toString(36).slice(-4)}`,
+      title,
+      scope: v2Spec.flowMode === "prose-form" ? "document" : req.assetKind === "table" ? "element" : "section",
+      assetKind: req.assetKind,
+      targetKind: req.assetKind === "a4-page" ? "page" : req.assetKind === "blog-section" ? "section" : "structured-table",
+      category:
+        apiResp?.category ||
+        (v2Spec.flowMode === "prose-form" ? "A4 산문 · 서면 폼" : v2Spec.flowMode === "grid-form" ? "A4 표 · 서식" : "하이브리드"),
+      tags: apiResp?.tags?.length ? apiResp.tags : ["v2-primitive", v2Spec.flowMode, req.assetKind],
+      nuance: apiResp?.nuance ?? {
+        summary: `레퍼런스 '${req.refTitle}'에서 추출한 v2(${v2Spec.flowMode}) 구조 에셋입니다.`,
+        structureRules: [`flowMode=${v2Spec.flowMode} 기반 프리미티브 조합`],
+        adaptationHints: ["반복 가능한 본문 구간(clause-tree / table-grid)은 데이터량에 따라 동적 확장"],
+      },
+      structure: {
+        outlineDsl: compiled.outlineDsl,
+        blocks: compiled.blocks,
+        slots: compiled.slots,
+        ...(req.assetKind === "a4-page" || req.assetKind === "blog-section"
+          ? {
+              pageMeta: {
+                pageLabel: title,
+                unitKind: req.assetKind === "a4-page" ? "page" : "section",
+                surfaceWidth: req.assetKind === "a4-page" ? 794 : 720,
+              },
+            }
+          : {}),
+      },
+      v2: v2Spec,
+      origin: {
+        sourceType: "ref-extract",
+        sourceRef: req.sourceRef,
+        thumbnailUrl: req.thumbnailUrl,
+        createdAt: now,
+        updatedAt: now,
+      },
+    };
+    return { asset, engine: apiResp?.engine ?? "fallback" };
+  }
+
   const fallbackDsl =
     req.assetKind === "blog-section"
       ? [
@@ -398,13 +579,6 @@ export async function parseAssetFromRefViaAi(
   const outlineDsl =
     apiResp?.outlineDsl && apiResp.outlineDsl.length > 0 ? apiResp.outlineDsl : fallbackDsl;
 
-  const profileId: "a4" | "blog" = req.assetKind === "blog-section" ? "blog" : "a4";
-  const slug =
-    title
-      .toLowerCase()
-      .replace(/[^a-z0-9가-힣]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 36) || `ref-${Date.now().toString(36)}`;
   const compiled = compileOutlineDslLinesToAssetBlocks(outlineDsl, {
     profileId,
     prefix: slug,
@@ -413,6 +587,7 @@ export async function parseAssetFromRefViaAi(
 
   const asset: VDocAsset = {
     version: "1.0.0",
+    schemaVersion: "v1",
     assetId: `asset-${req.assetKind}-${slug}-${Date.now().toString(36).slice(-4)}`,
     title,
     scope: req.assetKind === "a4-page" || req.assetKind === "blog-section" ? "section" : "element",
@@ -464,12 +639,17 @@ export async function applyAssetPreviewViaAi(
   req: ApplyAssetPreviewRequest,
   signal?: AbortSignal
 ): Promise<ApplyAssetPreviewResult> {
+  const schemaVersion =
+    req.schemaVersion ??
+    req.asset.schemaVersion ??
+    (req.asset.version === "2.0.0" ? "v2" : getActiveAssetSchemaVersion());
   let apiResp: RawApplyApiResponse | null = null;
   try {
     const res = await fetch("/api/assets/apply-preview", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        schemaVersion,
         mode: req.mode,
         profileId: req.viewId ?? (req.asset.assetKind === "blog-section" ? "blog" : "a4"),
         assetId: req.asset.assetId,
@@ -477,6 +657,7 @@ export async function applyAssetPreviewViaAi(
         assetKind: req.asset.assetKind,
         assetNuance: req.asset.nuance,
         assetOutlineDsl: req.asset.structure.outlineDsl,
+        assetV2Spec: req.asset.v2 ?? null,
         userOutlineDsl: req.userOutlineDsl,
         userPlainText: req.userPlainText,
         documentTitle: req.documentTitle,
@@ -521,5 +702,64 @@ export async function applyAssetPreviewViaAi(
     blocks: compiled.blocks,
     slots: compiled.slots,
     validationErrors: compiled.errors,
+  };
+}
+
+/**
+ * 3단계(Select): 사용자의 요청 의도에 가장 적합한 에셋을 활성 스키마 드라이버(`v1` | `v2`)로 추천한다.
+ */
+export async function recommendAssetsViaAi(
+  query: string,
+  catalog: readonly VDocAsset[],
+  schemaVersion?: AssetSchemaVersion,
+  signal?: AbortSignal
+): Promise<{
+  readonly schemaVersion: AssetSchemaVersion;
+  readonly engine: "llm" | "heuristic";
+  readonly recommendations: readonly AssetRecommendationHit[];
+}> {
+  const version = schemaVersion ?? getActiveAssetSchemaVersion();
+  const driver = getAssetDriver(version);
+  try {
+    const res = await fetch("/api/assets/recommend-select", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        schemaVersion: version,
+        query,
+        catalog: catalog.map((a) => ({
+          assetId: a.assetId,
+          title: a.title,
+          category: a.category,
+          summary: driver.summarizeForSelect(a).agentPromptLine,
+        })),
+      }),
+      signal,
+    });
+    if (res.ok) {
+      const data = (await res.json()) as {
+        engine?: "llm" | "heuristic";
+        hits?: Array<{ assetId: string; score: number; reasons: string[] }>;
+      };
+      if (Array.isArray(data.hits) && data.hits.length > 0) {
+        const byId = new Map(catalog.map((a) => [a.assetId, a]));
+        const mapped: AssetRecommendationHit[] = [];
+        for (const h of data.hits) {
+          const hitAsset = byId.get(h.assetId);
+          if (hitAsset) mapped.push({ asset: hitAsset, score: h.score, reasons: h.reasons });
+        }
+        if (mapped.length > 0) {
+          return { schemaVersion: version, engine: data.engine ?? "heuristic", recommendations: mapped };
+        }
+      }
+    }
+  } catch {
+    // Fallback to deterministic local driver scoring
+  }
+
+  return {
+    schemaVersion: version,
+    engine: "heuristic",
+    recommendations: driver.recommendForQuery(query, catalog),
   };
 }

@@ -66,7 +66,9 @@ export function SessionDashboard({ registry, onOpen, onReveal, onStop, onComplet
       return true;
     }),
   }));
-  const activeCount = anchored.filter((v) => v.lifecycle !== "completed").length;
+  const activeCount =
+    anchored.filter((v) => v.lifecycle !== "completed").length +
+    (main && main.status !== "idle" ? 1 : 0);
 
   return (
     <div data-testid="session-dashboard" className="flex h-full min-h-0 flex-col text-[12px] text-[var(--obs-text-normal,#dadada)]">
@@ -81,8 +83,21 @@ export function SessionDashboard({ registry, onOpen, onReveal, onStop, onComplet
             now={now}
             active={tabs.foreground === main.key}
             onOpen={onOpen}
-            icon={<MessageSquare className="h-3 w-3 shrink-0 text-slate-400" />}
+            icon={
+              main.status === "idle" ? (
+                <MessageSquare className="h-3 w-3 shrink-0 text-slate-400" />
+              ) : (
+                <SessionStatusDot status={main.status} />
+              )
+            }
             subtitle="기준점 없는 대화"
+            actions={
+              main.status === "running" || main.status === "awaiting_approval" ? (
+                <IconButton title="멈추기" onClick={() => onStop(main.key)}>
+                  <Square className="h-3 w-3" />
+                </IconButton>
+              ) : undefined
+            }
           />
         )}
         {anchored.length === 0 && (
@@ -200,7 +215,9 @@ function Row({
         </div>
         <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--obs-text-faint,#8a8a8a)]">
           <span className="truncate">{subtitle}</span>
-          {view.kind === "anchored" && <span className="shrink-0">· {SESSION_STATUS_LABEL[view.status]}</span>}
+          {(view.kind === "anchored" || view.status !== "idle") && (
+            <span className="shrink-0">· {SESSION_STATUS_LABEL[view.status]}</span>
+          )}
           {view.reviewCount > 0 && <span className="shrink-0 rounded-full bg-violet-500/25 px-1 text-violet-200">변경안 {view.reviewCount}</span>}
           {view.kind === "anchored" && <span className="ml-auto shrink-0">{ago(view.completedAt ?? view.createdAt, now)}</span>}
         </div>

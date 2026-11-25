@@ -1,0 +1,1867 @@
+{
+ "summary": {
+  "when": "2026-11-24T16:12:29.900Z",
+  "api": "http://127.0.0.1:8090",
+  "decompose": {
+   "n": 10,
+   "registered": 9,
+   "firstTryValid": 8,
+   "avgScore": 0.86
+  },
+  "similar": {
+   "n": 8,
+   "pass": 8
+  },
+  "design": {
+   "n": 3,
+   "assetCentric": 1,
+   "pass": 1
+  },
+  "cleanedVaultFiles": []
+ },
+ "results": [
+  {
+   "id": "application-form",
+   "tags": [
+    "form",
+    "choice",
+    "colspan"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 2,
+    "firstTryValid": false,
+    "score": 0.867,
+    "metrics": {
+     "blockSeq": 0.75,
+     "gridShape": 0.5,
+     "cellKind": 1,
+     "span": 1,
+     "role": 1,
+     "labels": 0.875,
+     "repeat": 1,
+     "fieldType": 0.958
+    },
+    "notes": [
+     "정답에 없는 격자 1개"
+    ],
+    "ms": 66112,
+    "rounds": 2,
+    "agentTools": [],
+    "reply": "첨부하신 **세미나 참가 신청서** 양식을 분석해 재사용 가능한 에셋으로 등록했습니다.\n\n- **에셋 ID**: `세미나-참가-신청서-83f0e0`\n- **제목**: 세미나 참가 신청서\n\n### 에셋 구조 및 채울 자리(Fields)\n예시 값(`홍길동`, `1990. 05. 12.`, `010-1234-5678`, `주차 지원 필요`, `2026년 3월 5일`)은 비우고 입력 필드로 분리했으며, 고정 문구(`세미나 참가 신청서`, `위와 같이 신청합니다.`, `신청인:`, `(서명)`)와 라벨 셀 배경 스타일을 유지했습니다.\n\n| 필드 ID | 라벨 | 유형 | 비고 |\n| --- | --- | --- | --- |\n| `name` | 성명 | `text` | 1행 2열 |\n| `birth_date` | 생년월일 | `date` | 1행 4열 |\n| `phone` | 연락처 | `text` | 2행 (2~4열 병합) |\n| `attendance` | 참석여부 | `choice` | 3행 (2~4열 병합, 선택지: `참석` / `불참`) |\n| `requests` | 요청사항 | `rich` | 4행 (2~4열 병합) |\n| `apply_date` | 신청일 ",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "세미나 참가 신청서",
+     "scope": "section",
+     "nodes": [
+      {
+       "t": "label",
+       "role": "title",
+       "text": "세미나 참가 신청서",
+       "variant": "h1"
+      },
+      {
+       "t": "grid",
+       "component": "table",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "성명"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "name",
+            "type": "text",
+            "hint": "성명"
+           }
+          },
+          {
+           "role": "label",
+           "text": "생년월일"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "birth_date",
+            "type": "date",
+            "hint": "생년월일"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "연락처"
+          },
+          {
+           "role": "value",
+           "cs": 3,
+           "field": {
+            "id": "phone",
+            "type": "text",
+            "hint": "연락처"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "참석여부"
+          },
+          {
+           "role": "value",
+           "cs": 3,
+           "field": {
+            "id": "attendance",
+            "type": "choice",
+            "options": [
+             "참석",
+             "불참"
+            ],
+            "hint": "참석여부"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "요청사항"
+          },
+          {
+           "role": "value",
+           "cs": 3,
+           "field": {
+            "id": "requests",
+            "type": "rich",
+            "hint": "요청사항"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "t": "label",
+       "role": "note",
+       "text": "위와 같이 신청합니다."
+      },
+      {
+       "t": "grid",
+       "component": "columns",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "meta-value",
+           "field": {
+            "id": "apply_date",
+            "type": "date",
+            "hint": "신청일"
+           }
+          },
+          {
+           "role": "meta-key",
+           "text": "신청인:"
+          },
+          {
+           "role": "meta-value",
+           "field": {
+            "id": "applicant_name",
+            "type": "text",
+            "hint": "신청인"
+           }
+          },
+          {
+           "role": "note",
+           "text": "(서명)"
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "style": {
+      "selectors": [
+       "table.label",
+       "heading.h1"
+      ],
+      "tokens": {
+       "table.label": {
+        "backgroundColor": "#e8eef5"
+       }
+      }
+     }
+    }
+   },
+   "similar": {
+    "instantiated": true,
+    "filled": 6,
+    "repeats": {},
+    "unmapped": [
+     "이메일"
+    ],
+    "missing": [
+     "apply_date"
+    ],
+    "items": [
+     {
+      "label": "성명",
+      "value": "김하나"
+     },
+     {
+      "label": "생년월일",
+      "value": "1995. 11. 03."
+     },
+     {
+      "label": "연락처",
+      "value": "010-9876-5432"
+     },
+     {
+      "label": "참석여부",
+      "value": "불참"
+     },
+     {
+      "label": "요청사항",
+      "value": "발표 자료 메일로 받기 원함."
+     },
+     {
+      "label": "신청인",
+      "value": "김하나"
+     },
+     {
+      "label": "이메일",
+      "value": "hana@example.com"
+     }
+    ],
+    "checks": {
+     "repeatOk": true,
+     "filledOk": true,
+     "unmappedOk": true
+    },
+    "pass": true,
+    "ms": 25094,
+    "agentTools": [],
+    "reply": "**세미나 참가 신청서** 에셋(`세미나-참가-신청서-83f0e0`) 모양으로 데이터를 채워 검토 대기열(Staged)에 올렸습니다.\n\n### 반영 내용 (6개 필드 채움)\n- **성명 / 신청인**: 김하나\n- **생년월일**: 1995. 11. 03.\n- **연락처**: 010-9876-5432\n- **참석여부**: 불참\n- **요청사항**: 발표 자료 메일로 받기 원함.\n\n### 확인이 필요한 항목\n- **자리 없는 데이터 (`unmapped`)**: `이메일` (`hana@example.com`) — 현재 에셋에 이메일 칸이 없어 들어가지 못했습니다.\n- **비어 있는 자리 (`missing`)**: `신청일` (`apply_date`) — 전달된 데이터에 신청 날짜가 없어 비워 두었습니다.\n\n앞으로도 이메일 항목이 자주 필요하다면 기존 에셋에 **이메일** 필드를 추가해 수정 등록할까요? (신청일 값도 알려 주시면 함께 채워 넣을 수 있습니다.)"
+   }
+  },
+  {
+   "id": "blog-spot",
+   "tags": [
+    "image",
+    "kv",
+    "frame",
+    "blog"
+   ],
+   "decompose": {
+    "registered": false,
+    "attempts": 0,
+    "firstTryValid": false,
+    "score": 0,
+    "metrics": null,
+    "notes": [
+     "등록 시도 없음"
+    ],
+    "ms": 16152,
+    "rounds": 0,
+    "agentTools": [],
+    "reply": ""
+   },
+   "similar": null
+  },
+  {
+   "id": "career-history",
+   "tags": [
+    "table",
+    "rowspan",
+    "group-label"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 1,
+    "firstTryValid": true,
+    "score": 0.91,
+    "metrics": {
+     "blockSeq": 1,
+     "gridShape": 0.9,
+     "cellKind": 0.833,
+     "span": 0.75,
+     "role": 0.833,
+     "labels": 1,
+     "repeat": 1,
+     "fieldType": 1
+    },
+    "notes": [],
+    "ms": 32859,
+    "rounds": 1,
+    "agentTools": [],
+    "reply": "\n첨부하신 **학력 및 경력** 양식을 에셋 라이브러리(`vibe-asset/3`)에 등록했습니다.\n\n### 등록된 에셋 정보\n- **에셋 ID**: `학력-및-경력-371419`\n- **제목**: 학력 및 경력 (`section`)\n- **구조**:\n  - 상단 제목: `학력 및 경력`\n  - 4열 표 (`구분` | `기간` | `기관` | `내용`)\n  - **반복 단위 (`repeats`)**:\n    - `education` (`구분`: `학력` 고정) — `기간`(`edu_period`), `기관`(`edu_org`), `내용`(`edu_content`)\n    - `career` (`구분`: `경력` 고정) — `기간`(`career_period`), `기관`(`career_org`), `내용`(`career_content`)\n- **스타일 토큰**: 열 머리글(`table.column-header`) 및 구분 셀(`table.group-label`)에 연한 회청색 배경(`#eaeff5`)과 가운데 정렬 적용\n\n### 참고 사항\n- 원본 이미지에서는 **학력**(2행)과 **경력**(3행)이 각각 세로 병합되어 있으나, 데이터 건수에 따라 행이 유",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "학력 및 경력",
+     "scope": "section",
+     "nodes": [
+      {
+       "t": "label",
+       "role": "title",
+       "text": "학력 및 경력"
+      },
+      {
+       "t": "grid",
+       "component": "table",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "column-header",
+           "text": "구분"
+          },
+          {
+           "role": "column-header",
+           "text": "기간"
+          },
+          {
+           "role": "column-header",
+           "text": "기관"
+          },
+          {
+           "role": "column-header",
+           "text": "내용"
+          }
+         ]
+        },
+        {
+         "repeat": "education",
+         "cells": [
+          {
+           "role": "group-label",
+           "text": "학력"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "edu_period",
+            "type": "text",
+            "hint": "기간"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "edu_org",
+            "type": "text",
+            "hint": "기관"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "edu_content",
+            "type": "text",
+            "hint": "내용"
+           }
+          }
+         ]
+        },
+        {
+         "repeat": "career",
+         "cells": [
+          {
+           "role": "group-label",
+           "text": "경력"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "career_period",
+            "type": "text",
+            "hint": "기간"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "career_org",
+            "type": "text",
+            "hint": "기관"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "career_content",
+            "type": "text",
+            "hint": "내용"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "style": {
+      "selectors": [
+       "table.column-header",
+       "table.group-label"
+      ],
+      "tokens": {
+       "table.column-header": {
+        "backgroundColor": "#eaeff5",
+        "textAlign": "center"
+       },
+       "table.group-label": {
+        "backgroundColor": "#eaeff5",
+        "textAlign": "center"
+       }
+      }
+     },
+     "uncertain": [
+      "원본 표의 '학력'(2행 병합)과 '경력'(3행 병합) 세로 병합은 가변 행 반복(repeat)을 지원하기 위해 행별 반복 그룹(education, career)으로 분리했습니다."
+     ]
+    }
+   },
+   "similar": {
+    "instantiated": true,
+    "filled": 15,
+    "repeats": {
+     "education": 3,
+     "career": 2
+    },
+    "unmapped": [],
+    "missing": [],
+    "items": [
+     {
+      "label": "education",
+      "rows": [
+       {
+        "edu_period": "2008~2011",
+        "edu_org": "서울고등학교",
+        "edu_content": "졸업"
+       },
+       {
+        "edu_period": "2011~2015",
+        "edu_org": "미래대학교",
+        "edu_content": "경영학 학사"
+       },
+       {
+        "edu_period": "2016~2018",
+        "edu_org": "미래대학교",
+        "edu_content": "MBA"
+       }
+      ]
+     },
+     {
+      "label": "career",
+      "rows": [
+       {
+        "career_period": "2018~2021",
+        "career_org": "한빛상사",
+        "career_content": "마케팅 대리"
+       },
+       {
+        "career_period": "2021~현재",
+        "career_org": "누리커머스",
+        "career_content": "브랜드 매니저"
+       }
+      ]
+     }
+    ],
+    "checks": {
+     "repeatOk": true,
+     "filledOk": true,
+     "unmappedOk": true
+    },
+    "pass": true,
+    "ms": 60453,
+    "agentTools": [],
+    "reply": "\n\n\n\n\n등록된 **학력 및 경력** 에셋(`학력-및-경력-371419`) 모양으로 지원자 데이터를 현재 문서([새 초안](vdoc:doc/평가/새 초안.vdoc))에 반영할 수 있도록 Staged 변경안으로 올렸습니다.\n\n### 반영 내용 (`blocks: 2` — 제목 + 표)\n- **학력 (`education`, 3행)**\n  1. `2008~2011` | `서울고등학교` | `졸업`\n  2. `2011~2015` | `미래대학교` | `경영학 학사`\n  3. `2016~2018` | `미래대학교` | `MBA`\n- **경력 (`career`, 2행)**\n  1. `2018~2021` | `한빛상사` | `마케팅 대리`\n  2. `2021~현재` | `누리커머스` | `브랜드 매니저`\n\n매핑되지 않은 항목(`unmapped`)이나 비어 있는 자리(`missing`)는 없습니다. 화면의 검토 대기열(Staged)에서 확인 후 적용해 주세요.\n\n지원자 데이터를 **학력 및 경력**"
+   }
+  },
+  {
+   "id": "ecr-requirement-screenshot",
+   "tags": [
+    "table",
+    "rowspan",
+    "colspan",
+    "real"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 1,
+    "firstTryValid": true,
+    "score": 0.996,
+    "metrics": {
+     "blockSeq": 1,
+     "gridShape": 1,
+     "cellKind": 1,
+     "span": 1,
+     "role": 1,
+     "labels": 1,
+     "repeat": 1,
+     "fieldType": 0.917
+    },
+    "notes": [],
+    "ms": 32473,
+    "rounds": 1,
+    "agentTools": [],
+    "reply": "첨부하신 [양식.png](vdoc:image/img:evals\\asset-forms\\cases\\ecr-requirement-screenshot\\form.png)를 분석해 재사용 가능한 에셋으로 등록했습니다.\n\n### 등록된 에셋 정보\n- **제목**: 요구사항 정의서(ECR)\n- **에셋 ID**: `요구사항-정의서-ECR--4184b6`\n- **구조**: 3열 × 6행 표 (고정 항목명과 채울 자리 분리, `요구사항 세부내용`은 2행 세로 병합, 단일 항목 행은 왼쪽 2열 가로 병합)\n\n### 채울 자리(Fields)\n| 자리 ID | 라벨 | 유형 | 비고 |\n|---|---|---|---|\n| `category` | 요구사항 분류 | text | |\n| `reqId` | 요구사항 고유번호 | text | |\n| `reqName` | 요구사항 명칭 | text | |\n| `definition` | 정의 | text | `요구사항 세부내용` 하위 |\n| `details` | 세부내용 | list | `요구사항 세부내용` 하위 불릿 목록 |\n| `deliverables` | 산출정보 | text | |\n\n이제 문서에 새 요구사항 카드를 추가하거나 기존 표를 ",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "요구사항 정의서(ECR)",
+     "scope": "element",
+     "nodes": [
+      {
+       "t": "grid",
+       "component": "table",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "요구사항 분류",
+           "cs": 2
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "category",
+            "type": "text",
+            "hint": "요구사항 분류"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "요구사항 고유번호",
+           "cs": 2
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "reqId",
+            "type": "text",
+            "hint": "요구사항 고유번호"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "요구사항 명칭",
+           "cs": 2
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "reqName",
+            "type": "text",
+            "hint": "요구사항 명칭"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "group-label",
+           "text": "요구사항 세부내용",
+           "rs": 2
+          },
+          {
+           "role": "sub-label",
+           "text": "정의"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "definition",
+            "type": "text",
+            "hint": "정의"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "sub-label",
+           "text": "세부내용"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "details",
+            "type": "list",
+            "hint": "세부내용"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "산출정보",
+           "cs": 2
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "deliverables",
+            "type": "text",
+            "hint": "산출정보"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "style": {
+      "selectors": [
+       "table.label",
+       "table.value"
+      ],
+      "tokens": {
+       "table.label": {
+        "backgroundColor": "#dde5f0",
+        "textAlign": "center"
+       },
+       "table.value": {
+        "textAlign": "left"
+       }
+      }
+     }
+    }
+   },
+   "similar": {
+    "instantiated": true,
+    "filled": 6,
+    "repeats": {},
+    "unmapped": [
+     "담당 부서"
+    ],
+    "missing": [],
+    "items": [
+     {
+      "label": "요구사항 분류",
+      "value": "보안 요구사항(SER)"
+     },
+     {
+      "label": "요구사항 고유번호",
+      "value": "SER-003"
+     },
+     {
+      "label": "요구사항 명칭",
+      "value": "접근 통제"
+     },
+     {
+      "label": "정의",
+      "value": "사용자 권한별 메뉴 · 데이터 접근 제한"
+     },
+     {
+      "label": "세부내용",
+      "value": "<ul><li>RBAC 적용</li><li>관리자 이중 인증</li><li>접근 로그 1년 보관</li></ul>"
+     },
+     {
+      "label": "산출정보",
+      "value": "보안 설계서"
+     },
+     {
+      "label": "담당 부서",
+      "value": "보안팀"
+     }
+    ],
+    "checks": {
+     "repeatOk": true,
+     "filledOk": true,
+     "unmappedOk": true
+    },
+    "pass": true,
+    "ms": 36489,
+    "agentTools": [],
+    "reply": "\n요구사항 정의서(ECR) 에셋(`요구사항-정의서-ECR--4184b6`) 모양으로 데이터를 채워 문서([새 초안](vdoc:page/p1)) 변경안(Staged)을 올렸습니다.\n\n### 반영 결과\n- **채워진 항목 (6개)**:\n  - **요구사항 분류**: 보안 요구사항(SER)\n  - **요구사항 고유번호**: SER-003\n  - **요구사항 명칭**: 접근 통제\n  - **정의**: 사용자 권한별 메뉴 · 데이터 접근 제한\n  - **세부내용**: RBAC 적용 / 관리자 이중 인증 / 접근 로그 1년 보관 (목록)\n  - **산출정보**: 보안 설계서 *(‘산출물’을 뜻이 같은 ‘산출정보’ 자리에 연결)*\n- **자리가 없는 데이터 (`unmapped`)**: `담당 부서` (보안팀) — 현재 에셋에 해당 항목 칸이 없어 들어가지 못했습니다.\n- **비어 있는 자리 (`missing`)**: 없음\n\n앞으로 ‘담당 부서’ 항목도 계속 함께 들어가야 한다면, 기존 에셋에 *"
+   }
+  },
+  {
+   "id": "image-text-paragraph",
+   "tags": [
+    "image",
+    "text",
+    "columns"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 1,
+    "firstTryValid": true,
+    "score": 1,
+    "metrics": {
+     "blockSeq": 1,
+     "gridShape": 1,
+     "cellKind": 1,
+     "span": 1,
+     "role": 1,
+     "labels": 1,
+     "repeat": 1,
+     "fieldType": 1
+    },
+    "notes": [],
+    "ms": 23094,
+    "rounds": 1,
+    "agentTools": [],
+    "reply": "첨부하신 양식을 분석하여 문서에서 재사용할 수 있도록 에셋으로 등록했습니다.\n\n### 등록된 에셋 정보\n- **제목**: 사진-글 나란히 섹션 (`사진-글-나란히-섹션-3606f6`)\n- **범위**: 섹션(`section`)\n- **구조**:\n  1. 상단 제목 (`h2`)\n  2. **2열 나란히 배치 (`columns`)**: 좌측(사진 + 사진 설명) / 우측(본문)\n  3. 하단 전체 너비 본문\n\n### 채울 자리 (`fields`)\n| 자리 ID | 라벨 | 유형 | 설명 |\n| :--- | :--- | :--- | :--- |\n| `title` | 제목 | `text` | 상단 섹션 제목 |\n| `photo` | 사진 | `image` | 좌측 열 상단 이미지 |\n| `photo_caption` | 사진 설명 | `text` | 좌측 열 이미지 아래 설명 |\n| `side_body` | 우측 본문 | `rich` | 좌측 사진과 나란히 배치되는 본문 |\n| `bottom_body` | 하단 본문 | `rich` | 2열 아래 전체 너비로 이어지는 본문 |\n\n> **참고**: 좌측 열의 작은 회색 사각형과 세로로 줄바꿈된 문구(`외돌개에서 본 바다",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "사진-글 나란히 섹션",
+     "scope": "section",
+     "nodes": [
+      {
+       "t": "field",
+       "role": "heading",
+       "variant": "h2",
+       "field": {
+        "id": "title",
+        "type": "text",
+        "hint": "제목"
+       }
+      },
+      {
+       "t": "grid",
+       "component": "columns",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "value",
+           "nodes": [
+            {
+             "t": "field",
+             "role": "image",
+             "field": {
+              "id": "photo",
+              "type": "image",
+              "hint": "사진"
+             }
+            },
+            {
+             "t": "field",
+             "role": "body",
+             "field": {
+              "id": "photo_caption",
+              "type": "text",
+              "hint": "사진 설명"
+             }
+            }
+           ]
+          },
+          {
+           "role": "value",
+           "nodes": [
+            {
+             "t": "field",
+             "role": "body",
+             "field": {
+              "id": "side_body",
+              "type": "rich",
+              "hint": "우측 본문"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "t": "field",
+       "role": "body",
+       "field": {
+        "id": "bottom_body",
+        "type": "rich",
+        "hint": "하단 본문"
+       }
+      }
+     ],
+     "style": {
+      "selectors": [
+       "heading.h2"
+      ],
+      "tokens": {}
+     }
+    }
+   },
+   "similar": {
+    "instantiated": true,
+    "filled": 4,
+    "repeats": {},
+    "unmapped": [],
+    "missing": [
+     "photo"
+    ],
+    "items": [
+     {
+      "label": "제목",
+      "value": "부산 감천문화마을"
+     },
+     {
+      "label": "사진 설명",
+      "value": "마을 전망대에서 본 풍경"
+     },
+     {
+      "label": "우측 본문",
+      "value": "알록달록한 집들이 계단식으로 이어진 마을로 골목마다 벽화와 작은 갤러리가 있다."
+     },
+     {
+      "label": "하단 본문",
+      "value": "주차가 어려우니 대중교통을 권한다."
+     }
+    ],
+    "checks": {
+     "repeatOk": true,
+     "filledOk": true,
+     "unmappedOk": true
+    },
+    "pass": true,
+    "ms": 19273,
+    "agentTools": [],
+    "reply": "방금 만든 **사진-글 나란히 섹션**(`사진-글-나란히-섹션-3606f6`) 에셋으로 부산 감천문화마을 소개를 작성해 검토 대기열(Staged)에 올렸습니다.\n\n### 반영된 내용 (4개 자리 채움)\n- **제목 (`title`)**: 부산 감천문화마을\n- **사진 설명 (`photo_caption`)**: 마을 전망대에서 본 풍경\n- **우측 본문 (`side_body`)**: 알록달록한 집들이 계단식으로 이어진 마을로 골목마다 벽화와 작은 갤러리가 있다.\n- **하단 본문 (`bottom_body`)**: 주차가 어려우니 대중교통을 권한다.\n\n### 매핑 결과 안내\n- **자리 없는 데이터 (`unmapped`)**: 없음\n- **비어 있는 자리 (`missing`)**: `photo` (사진 데이터가 제공되지 않아 비워 두었습니다. 필요하시면 이미지를 추가해 주세요.)\n\n화면의 Staged 미리보기에서 구성을 확인하신 뒤 반영해 주세요."
+   }
+  },
+  {
+   "id": "invoice",
+   "tags": [
+    "table",
+    "repeat",
+    "total",
+    "colspan"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 1,
+    "firstTryValid": true,
+    "score": 0.899,
+    "metrics": {
+     "blockSeq": 0.667,
+     "gridShape": 1,
+     "cellKind": 1,
+     "span": 1,
+     "role": 0.7,
+     "labels": 1,
+     "repeat": 1,
+     "fieldType": 0.875
+    },
+    "notes": [],
+    "ms": 21656,
+    "rounds": 1,
+    "agentTools": [],
+    "reply": "첨부하신 견적서 양식을 분석해 재사용 가능한 에셋으로 등록했습니다.\n\n- **에셋 ID**: `견적서-4cf74f` (`견적서`)\n- **구성 구조**\n  1. **제목**: `견 적 서` (고정 글)\n  2. **기본 정보 표 (1×4)**: `견적번호` · `견적일` 고정 라벨과 입력 자리\n  3. **품목 내역 표 (4열)**: `품목` · `수량` · `단가` · `금액` 머리글, 반복 데이터 행(`rows`), `합계` 행(앞 3열 병합)\n- **입력 자리 (`fields`)**\n  - `견적번호` (`quote_no`, 텍스트)\n  - `견적일` (`quote_date`, 날짜)\n  - **반복 행 (`rows`)**: `품목` (`item_name`), `수량` (`quantity`), `단가` (`unit_price`), `금액` (`amount`)\n  - `합계 금액` (`total_amount`, 통화)\n\n필요하실 때 이 에셋을 불러와 새로운 견적 데이터로 문서에 바로 채워 넣을 수 있습니다.",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "견적서",
+     "scope": "section",
+     "nodes": [
+      {
+       "t": "label",
+       "role": "title",
+       "text": "견 적 서",
+       "variant": "h1"
+      },
+      {
+       "t": "grid",
+       "component": "kv",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "meta-key",
+           "text": "견적번호"
+          },
+          {
+           "role": "meta-value",
+           "field": {
+            "id": "quote_no",
+            "type": "text",
+            "hint": "견적번호"
+           }
+          },
+          {
+           "role": "meta-key",
+           "text": "견적일"
+          },
+          {
+           "role": "meta-value",
+           "field": {
+            "id": "quote_date",
+            "type": "date",
+            "hint": "견적일"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "t": "grid",
+       "component": "table",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "column-header",
+           "text": "품목"
+          },
+          {
+           "role": "column-header",
+           "text": "수량"
+          },
+          {
+           "role": "column-header",
+           "text": "단가"
+          },
+          {
+           "role": "column-header",
+           "text": "금액"
+          }
+         ]
+        },
+        {
+         "repeat": "rows",
+         "cells": [
+          {
+           "role": "item",
+           "field": {
+            "id": "item_name",
+            "type": "text",
+            "hint": "품목"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "quantity",
+            "type": "number",
+            "hint": "수량"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "unit_price",
+            "type": "currency",
+            "hint": "단가"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "amount",
+            "type": "currency",
+            "hint": "금액"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "합계",
+           "cs": 3
+          },
+          {
+           "role": "total",
+           "field": {
+            "id": "total_amount",
+            "type": "currency",
+            "hint": "합계 금액"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "style": {
+      "selectors": [
+       "heading.h1",
+       "table.label",
+       "table.header",
+       "table.total"
+      ],
+      "tokens": {
+       "heading.h1": {
+        "textAlign": "center"
+       },
+       "table.label": {
+        "backgroundColor": "#e8eef5",
+        "textAlign": "center"
+       },
+       "table.header": {
+        "backgroundColor": "#e8eef5",
+        "textAlign": "center"
+       },
+       "table.total": {
+        "fontWeight": "bold",
+        "textAlign": "right"
+       }
+      }
+     }
+    }
+   },
+   "similar": {
+    "instantiated": true,
+    "filled": 19,
+    "repeats": {
+     "rows": 4
+    },
+    "unmapped": [],
+    "missing": [],
+    "items": null,
+    "checks": {
+     "repeatOk": true,
+     "filledOk": true,
+     "unmappedOk": true
+    },
+    "pass": true,
+    "ms": 43054,
+    "agentTools": [],
+    "reply": "에셋(`견적서-4cf74f`) 모양으로 견적 데이터를 채워 문서 변경안(Staged)으로 올렸습니다.\n\n### 반영 내역 (`19`개 칸 모두 채움, 빈 칸 없음)\n- **견적번호**: `Q-2026-044`\n- **견적일**: `2026-03-20` *(연도는 견적번호에 맞춰 2026년으로 기입했습니다)*\n- **품목 내역 (`4`행)**\n  1. 노트북 | 3 | 1,200,000 | 3,600,000\n  2. 마우스 | 3 | 25,000 | 75,000\n  3. 가방 | 3 | 40,000 | 120,000\n  4. 배송비 | 1 | 30,000 | 30,000\n- **합계 금액**: `3,825,000`\n\n화면의 검토 대기열(Staged)에서 미리보기를 확인한 뒤 반영하실 수 있습니다."
+   }
+  },
+  {
+   "id": "meeting-minutes",
+   "tags": [
+    "table",
+    "kv",
+    "repeat",
+    "form"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 1,
+    "firstTryValid": true,
+    "score": 0.995,
+    "metrics": {
+     "blockSeq": 1,
+     "gridShape": 1,
+     "cellKind": 1,
+     "span": 1,
+     "role": 1,
+     "labels": 1,
+     "repeat": 1,
+     "fieldType": 0.903
+    },
+    "notes": [],
+    "ms": 21291,
+    "rounds": 1,
+    "agentTools": [],
+    "reply": "첨부하신 [양식.png](vdoc:image/img:evals\\asset-forms\\cases\\meeting-minutes\\form.png)의 구조를 분해하여 에셋 라이브러리에 등록했습니다.\n\n### 등록된 에셋 정보\n- **에셋 ID**: `회의록-b05182`\n- **제목**: 회의록\n\n### 추출된 구조 및 채울 자리(Fields)\n1. **상단 제목**: `회의록` (가운데 정렬 고정 제목)\n2. **기본 정보 표** (2행 4열, 2행 값 칸 3열 병합)\n   - **일시** (`date_time`)\n   - **장소** (`location`)\n   - **참석자** (`attendees`)\n3. **안건 및 결정사항 표** (`rows` 반복 단위)\n   - **번호** (`item_no`)\n   - **안건** (`agenda`)\n   - **결정사항** (`decision`)\n   - **담당** (`assignee`)\n4. **하단 확인 표** (1행 4열)\n   - **작성자** (`author`)\n   - **확인자** (`reviewer`)\n\n원하시는 회의 내용이나 표 데이터를 알려주시면 이 에셋(`회의록-b05182`)을 사용해 문서에",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "회의록",
+     "scope": "section",
+     "nodes": [
+      {
+       "t": "label",
+       "role": "title",
+       "text": "회의록",
+       "variant": "h1"
+      },
+      {
+       "t": "grid",
+       "component": "table",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "일시"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "date_time",
+            "type": "text",
+            "hint": "일시"
+           }
+          },
+          {
+           "role": "label",
+           "text": "장소"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "location",
+            "type": "text",
+            "hint": "장소"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "참석자"
+          },
+          {
+           "role": "value",
+           "cs": 3,
+           "field": {
+            "id": "attendees",
+            "type": "text",
+            "hint": "참석자"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "t": "grid",
+       "component": "table",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "column-header",
+           "text": "번호"
+          },
+          {
+           "role": "column-header",
+           "text": "안건"
+          },
+          {
+           "role": "column-header",
+           "text": "결정사항"
+          },
+          {
+           "role": "column-header",
+           "text": "담당"
+          }
+         ]
+        },
+        {
+         "repeat": "rows",
+         "cells": [
+          {
+           "role": "value",
+           "field": {
+            "id": "item_no",
+            "type": "text",
+            "hint": "번호"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "agenda",
+            "type": "text",
+            "hint": "안건"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "decision",
+            "type": "text",
+            "hint": "결정사항"
+           }
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "assignee",
+            "type": "text",
+            "hint": "담당"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "t": "grid",
+       "component": "table",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "작성자"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "author",
+            "type": "text",
+            "hint": "작성자"
+           }
+          },
+          {
+           "role": "label",
+           "text": "확인자"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "reviewer",
+            "type": "text",
+            "hint": "확인자"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "style": {
+      "selectors": [
+       "heading.h1",
+       "table.label",
+       "table.header"
+      ],
+      "tokens": {
+       "heading.h1": {
+        "textAlign": "center"
+       },
+       "table.label": {
+        "backgroundColor": "#e8eef5",
+        "textAlign": "center"
+       },
+       "table.header": {
+        "backgroundColor": "#e8eef5",
+        "textAlign": "center"
+       }
+      }
+     }
+    }
+   },
+   "similar": {
+    "instantiated": true,
+    "filled": 21,
+    "repeats": {
+     "rows": 4
+    },
+    "unmapped": [],
+    "missing": [],
+    "items": [
+     {
+      "label": "일시",
+      "value": "4월 2일 오전 10시"
+     },
+     {
+      "label": "장소",
+      "value": "본사 대회의실"
+     },
+     {
+      "label": "참석자",
+      "value": "정하늘, 오세훈, 한지민, 윤도현"
+     },
+     {
+      "label": "작성자",
+      "value": "한지민"
+     },
+     {
+      "label": "확인자",
+      "value": "정하늘"
+     },
+     {
+      "label": "rows",
+      "rows": [
+       {
+        "번호": "1",
+        "안건": "신제품 출시일",
+        "결정사항": "5월 20일 확정",
+        "담당": "오세훈"
+       },
+       {
+        "번호": "2",
+        "안건": "홍보 예산",
+        "결정사항": "10% 증액",
+        "담당": "한지민"
+       },
+       {
+        "번호": "3",
+        "안건": "고객 설문",
+        "결정사항": "다음 주 발송",
+        "담당": "윤도현"
+       },
+       {
+        "번호": "4",
+        "안건": "서버 교체",
+        "결정사항": "보류",
+        "담당": "정하늘"
+       }
+      ]
+     }
+    ],
+    "checks": {
+     "repeatOk": true,
+     "filledOk": true,
+     "unmappedOk": true
+    },
+    "pass": true,
+    "ms": 45916,
+    "agentTools": [],
+    "reply": "회의록 에셋(`회의록-b05182`)에 요청하신 데이터를 모두 채워 문서 검토 대기열(Staged)에 올렸습니다.\n\n### 반영 내역\n- **채워진 칸**: 총 21칸 (`empty: 0`, `unmapped: 0`, `missing: 0`)\n- **기본 정보**: 일시(`4월 2일 오전 10시`), 장소(`본사 대회의실`), 참석자(`정하늘, 오세훈, 한지민, 윤도현`)\n- **안건 및 결정사항** (4행 생성):\n  1. 신제품 출시일 → 5월 20일 확정 (담당: 오세훈)\n  2. 홍보 예산 → 10% 증액 (담당: 한지민)\n  3. 고객 설문 → 다음 주 발송 (담당: 윤도현)\n  4. 서버 교체 → 보류 (담당: 정하늘)\n- **확인 정보**: 작성자(`한지민`), 확인자(`정하늘`)\n\n화면의 Staged 미리보기에서 확인 후 적용하시면 됩니다."
+   }
+  },
+  {
+   "id": "news-article",
+   "tags": [
+    "text",
+    "image",
+    "quote",
+    "news"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 2,
+    "firstTryValid": true,
+    "score": 1,
+    "metrics": {
+     "blockSeq": 1,
+     "gridShape": 1,
+     "cellKind": 1,
+     "span": 1,
+     "role": 1,
+     "labels": 1,
+     "repeat": 1,
+     "fieldType": 1
+    },
+    "notes": [],
+    "ms": 29562,
+    "rounds": 2,
+    "agentTools": [],
+    "reply": "첨부한 **양식.png**를 해체하여 재사용 가능한 에셋으로 등록했습니다.\n\n- **에셋 제목**: 뉴스 기사 양식\n- **에셋 ID**: `뉴스-기사-양식-0bdc01`\n\n### 구성된 채울 자리 (`fields`)\n| 순서 | ID | 유형 | 라벨(힌트) | 역할 |\n| :--- | :--- | :--- | :--- | :--- |\n| 1 | `title` | `text` | 기사 제목 | `heading` (h1) |\n| 2 | `byline` | `text` | 작성자 · 작성일시 | `meta-value` |\n| 3 | `photo` | `image` | 대표 사진 | `image` |\n| 4 | `photo_caption` | `text` | 사진 설명 | `body` |\n| 5 | `lead_body` | `rich` | 도입 본문 | `body` |\n| 6 | `quote` | `text` | 인용문 · 발화자 | `frame` 컨테이너 내 `body` |\n| 7 | `closing_body` | `rich` | 후속 본문 | `body` |\n\n이후 이 양식으로 새 기사를 넣거나 기존 블록에 적용하고 싶으실 때 말씀해 주세요.",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "뉴스 기사 양식",
+     "scope": "section",
+     "nodes": [
+      {
+       "t": "field",
+       "role": "heading",
+       "variant": "h1",
+       "field": {
+        "id": "title",
+        "type": "text",
+        "hint": "기사 제목"
+       }
+      },
+      {
+       "t": "field",
+       "role": "meta-value",
+       "field": {
+        "id": "byline",
+        "type": "text",
+        "hint": "작성자 · 작성일시"
+       }
+      },
+      {
+       "t": "field",
+       "role": "image",
+       "field": {
+        "id": "photo",
+        "type": "image",
+        "hint": "대표 사진"
+       }
+      },
+      {
+       "t": "field",
+       "role": "body",
+       "field": {
+        "id": "photo_caption",
+        "type": "text",
+        "hint": "사진 설명"
+       }
+      },
+      {
+       "t": "field",
+       "role": "body",
+       "field": {
+        "id": "lead_body",
+        "type": "rich",
+        "hint": "도입 본문"
+       }
+      },
+      {
+       "t": "container",
+       "component": "frame",
+       "children": [
+        {
+         "t": "field",
+         "role": "body",
+         "field": {
+          "id": "quote",
+          "type": "text",
+          "hint": "인용문 · 발화자"
+         }
+        }
+       ]
+      },
+      {
+       "t": "field",
+       "role": "body",
+       "field": {
+        "id": "closing_body",
+        "type": "rich",
+        "hint": "후속 본문"
+       }
+      }
+     ],
+     "style": {
+      "selectors": [
+       "heading.h1",
+       "meta.value"
+      ],
+      "tokens": {
+       "heading.h1": {
+        "fontWeight": "bold"
+       },
+       "meta.value": {
+        "color": "#666666"
+       }
+      }
+     },
+     "uncertain": []
+    }
+   },
+   "similar": null
+  },
+  {
+   "id": "product-cards",
+   "tags": [
+    "image",
+    "repeat",
+    "cards"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 1,
+    "firstTryValid": true,
+    "score": 1,
+    "metrics": {
+     "blockSeq": 1,
+     "gridShape": 1,
+     "cellKind": 1,
+     "span": 1,
+     "role": 1,
+     "labels": 1,
+     "repeat": 1,
+     "fieldType": 1
+    },
+    "notes": [],
+    "ms": 30752,
+    "rounds": 1,
+    "agentTools": [],
+    "reply": "첨부하신 [양식.png](vdoc:image/img:evals\\asset-forms\\cases\\product-cards\\form.png)를 분석해 재사용 가능한 에셋으로 등록했습니다.\n\n### 등록된 에셋 정보\n- **이름**: 추천 상품 카드 목록 (`추천-상품-카드-목록-0014ac`)\n- **구조**: 상단 섹션 제목 + 반복되는 상품 카드 단위(`products`)\n\n### 채울 자리(Fields)\n| 구분 | 자리 이름 (라벨) | 유형 | 반복 단위 |\n| :--- | :--- | :--- | :--- |\n| 상단 | **섹션 제목** (`section_title`) | 텍스트 | - |\n| 카드 내 | **상품 사진** (`photo`) | 이미지 | `products` |\n| 카드 내 | **상품명** (`name`) | 텍스트 | `products` |\n| 카드 내 | **상품 설명** (`description`) | 텍스트 | `products` |\n| 카드 내 | **가격** (`price`) | 통화 | `products` |\n\n### 확인이 필요한 사항\n1. **상단 제목(`이번 주 추천 상품`)**: 매번 바뀌는 제목(`섹션 제목` ",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "추천 상품 카드 목록",
+     "scope": "section",
+     "nodes": [
+      {
+       "t": "field",
+       "role": "heading",
+       "field": {
+        "id": "section_title",
+        "type": "text",
+        "hint": "섹션 제목"
+       },
+       "variant": "h2"
+      },
+      {
+       "t": "repeat",
+       "id": "products",
+       "children": [
+        {
+         "t": "container",
+         "component": "card",
+         "children": [
+          {
+           "t": "field",
+           "role": "image",
+           "field": {
+            "id": "photo",
+            "type": "image",
+            "hint": "상품 사진"
+           }
+          },
+          {
+           "t": "field",
+           "role": "heading",
+           "field": {
+            "id": "name",
+            "type": "text",
+            "hint": "상품명"
+           },
+           "variant": "h3"
+          },
+          {
+           "t": "field",
+           "role": "body",
+           "field": {
+            "id": "description",
+            "type": "text",
+            "hint": "상품 설명"
+           }
+          },
+          {
+           "t": "field",
+           "role": "value",
+           "field": {
+            "id": "price",
+            "type": "currency",
+            "hint": "가격"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "style": {
+      "selectors": [
+       "heading.h2",
+       "heading.h3",
+       "card"
+      ],
+      "tokens": {
+       "heading.h2": {
+        "fontWeight": "normal"
+       },
+       "heading.h3": {
+        "fontWeight": "bold"
+       }
+      }
+     },
+     "uncertain": [
+      "상단 제목('이번 주 추천 상품')이 고정 문구인지 매번 바뀌는 섹션 제목인지 확인 필요",
+      "카드 배열이 고정 3열 격자인지 항목 수에 따라 늘어나는 반복 카드인지 확인 필요"
+     ]
+    }
+   },
+   "similar": {
+    "instantiated": true,
+    "filled": 13,
+    "repeats": {
+     "products": 4
+    },
+    "unmapped": [],
+    "missing": [],
+    "items": [
+     {
+      "label": "섹션 제목",
+      "value": "신상품 소개"
+     },
+     {
+      "label": "products",
+      "rows": [
+       {
+        "상품명": "블루투스 스피커",
+        "상품 설명": "방수, 12시간 재생",
+        "가격": "49,000원"
+       },
+       {
+        "상품명": "기계식 키보드",
+        "상품 설명": "적축, RGB",
+        "가격": "129,000원"
+       },
+       {
+        "상품명": "무선 마우스",
+        "상품 설명": "저소음",
+        "가격": "29,000원"
+       },
+       {
+        "상품명": "노트북 거치대",
+        "상품 설명": "알루미늄, 각도 조절",
+        "가격": "35,000원"
+       }
+      ]
+     }
+    ],
+    "checks": {
+     "repeatOk": true,
+     "filledOk": true,
+     "unmappedOk": true
+    },
+    "pass": true,
+    "ms": 35988,
+    "agentTools": [],
+    "reply": "\n등록한 **추천 상품 카드 목록**(`추천-상품-카드-목록-0014ac`) 에셋에 신상품 4종 데이터를 채워 [새 초안](vdoc:doc/평가/새 초안.vdoc)의 검토 대기열(Staged)에 올렸습니다.\n\n### 반영 내용\n- **섹션 제목**: 신상품 소개\n- **반복 카드 (`products` × 4)**\n  1. **블루투스 스피커** — 방수, 12시간 재생 / `49,000원`\n  2. **기계식 키보드** — 적축, RGB / `129,000원`\n  3. **무선 마우스** — 저소음 / `29,000원`\n  4. **노트북 거치대** — 알루미늄, 각도 조절 / `35,000원`\n\n### 매칭 및 빈 자리 안내\n- **매핑되지 않은 데이터(`unmapped`) / 누락된 자리(`missing`)**: 없음\n- **비어 있는 칸(`empty`)**: 이미지가 제공되지 않아 4개 카드의 **상품 사진(`photo`)** 자리는 비워 두었습니다.\n\n화면의 변경안 미리보기에"
+   }
+  },
+  {
+   "id": "spec-table-with-image",
+   "tags": [
+    "table",
+    "image",
+    "rowspan"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 1,
+    "firstTryValid": true,
+    "score": 0.928,
+    "metrics": {
+     "blockSeq": 0.667,
+     "gridShape": 1,
+     "cellKind": 1,
+     "span": 1,
+     "role": 0.889,
+     "labels": 1,
+     "repeat": 1,
+     "fieldType": 0.9
+    },
+    "notes": [],
+    "ms": 19121,
+    "rounds": 1,
+    "agentTools": [],
+    "reply": "첨부하신 **제품 사양표** 양식을 구조와 스타일로 분해해 에셋 라이브러리에 등록했습니다.\n\n- **에셋 제목**: `제품 사양표` (`assetId`: `제품-사양표-6c4cac`)\n- **구조**: 상단 캡션(`제품 사양`) + 4행 × 3열 표 (1열은 4행 세로 병합)\n- **고정 라벨**: `모델명`, `크기`, `무게`, `가격`\n- **채울 자리(Fields)**:\n  | 자리 ID | 라벨 | 유형 |\n  |---|---|---|\n  | `product_image` | 제품 사진 | `image` |\n  | `model_name` | 모델명 | `text` |\n  | `dimensions` | 크기 | `text` |\n  | `weight` | 무게 | `text` |\n  | `price` | 가격 | `currency` |\n- **분리된 스타일**: 라벨 셀 연한 배경(`#eef2f7`) 및 가운데 정렬, 값 셀 흰색 배경(`#ffffff`)\n\n원하시는 제품 정보(사진, 모델명, 크기, 무게, 가격)를 알려주시면 이 에셋으로 문서에 바로 배치해 드릴 수 있습니다.",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "제품 사양표",
+     "scope": "element",
+     "nodes": [
+      {
+       "t": "grid",
+       "component": "table",
+       "caption": "제품 사양",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "value",
+           "rs": 4,
+           "field": {
+            "id": "product_image",
+            "type": "image",
+            "hint": "제품 사진"
+           }
+          },
+          {
+           "role": "label",
+           "text": "모델명"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "model_name",
+            "type": "text",
+            "hint": "모델명"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "크기"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "dimensions",
+            "type": "text",
+            "hint": "크기"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "무게"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "weight",
+            "type": "text",
+            "hint": "무게"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "가격"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "price",
+            "type": "currency",
+            "hint": "가격"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "style": {
+      "selectors": [
+       "table.label",
+       "table.value"
+      ],
+      "tokens": {
+       "table.label": {
+        "backgroundColor": "#eef2f7",
+        "textAlign": "center"
+       },
+       "table.value": {
+        "backgroundColor": "#ffffff"
+       }
+      }
+     },
+     "uncertain": []
+    }
+   },
+   "similar": {
+    "instantiated": true,
+    "filled": 4,
+    "repeats": {},
+    "unmapped": [
+     "색상"
+    ],
+    "missing": [
+     "product_image"
+    ],
+    "items": [
+     {
+      "label": "모델명",
+      "value": "DX-9"
+     },
+     {
+      "label": "크기",
+      "value": "150x90x60mm"
+     },
+     {
+      "label": "무게",
+      "value": "0.52kg"
+     },
+     {
+      "label": "가격",
+      "value": "590,000원"
+     },
+     {
+      "label": "색상",
+      "value": "블랙/실버"
+     }
+    ],
+    "checks": {
+     "repeatOk": true,
+     "filledOk": true,
+     "unmappedOk": true
+    },
+    "pass": true,
+    "ms": 16180,
+    "agentTools": [],
+    "reply": "**제품 사양표**(`제품-사양표-6c4cac`) 에셋으로 새 제품 데이터를 채워 Staged 변경안으로 올렸습니다.\n\n### 반영된 항목\n- **모델명**: `DX-9`\n- **크기** (가로세로높이): `150x90x60mm`\n- **무게** (중량): `0.52kg`\n- **가격** (판매가): `590,000원`\n\n### 확인이 필요한 항목\n- **에셋에 자리가 없는 데이터 (`unmapped`)**: `색상` (`블랙/실버`) — 현재 양식에 색상 행이 없어 표에 들어가지 않았습니다.\n- **데이터가 비어 있는 자리 (`missing`)**: `제품 사진` (`product_image`) — 사진이 제공되지 않아 빈 칸으로 남았습니다.\n\n`색상` 행을 포함해 계속 사용하실 계획이라면, 에셋에 **색상** 행을 추가해 다시 등록(`replaceAssetId`)해 드릴까요? (또는 제품 사진이 있다면 함께 알려주세요.)"
+   }
+  }
+ ],
+ "design": [
+  {
+   "id": "weekly-report",
+   "assets": 1,
+   "registerAttempts": 1,
+   "instantiations": 4,
+   "repeatUnits": 0,
+   "usedRepeat": false,
+   "reuse": true,
+   "dcBuilds": [],
+   "assetCentric": true,
+   "pass": true,
+   "calls": [
+    "workspace.getState",
+    "assets.list",
+    "assets.register",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate"
+   ],
+   "dcOutputs": "",
+   "ms": 57706,
+   "reply": "\n\n\n\n\n팀원 4명(김하늘, 이도윤, 박서준, 최유나)의 주간 업무 보고서 양식을 에셋으로 등록하고, 현재 열린 초안(`평가/새 초안.vdoc`)에 4명분의 변경안을 **Staged**로 올려두었습니다.\n\n### 1. 등록한 에셋\n- **에셋 ID**: `팀원-주간-업무-보고서-be2b44` (`팀원 주간 업무 보고서`)\n- **구조**: 섹션 컨테이너 내 팀원 이름 제목(`h2`) + 키-값 표(`kv`)\n  - **고정 라벨**: `이번 주 한 일`, `다음 주 할 일`, `이슈`\n  - **입력 자리**: `member_name`(팀원 이름), `this_week`(이번 주 수행한 업무 내용), `next_week`(다음 주 계획된 업무 내용), `issues`(진행 중 특이사항 및 이슈)\n\n### 2. 인스턴스 생성 결과 (Staged 4건)\n- **대상**: 김하늘, 이도윤, 박서준, 최유나 (각 1섹션씩 총 4건)\n- **채워진 자리**: `member_name` (각 팀원 이름 매칭 완료)\n- **unmapped**: 없음\n- **missing(비어 있는 자리)**: `this_week`, `next_week`, `issues`\n  - 마운트된 "
+  },
+  {
+   "id": "food-blog",
+   "assets": 0,
+   "registerAttempts": 0,
+   "instantiations": 0,
+   "repeatUnits": 0,
+   "usedRepeat": false,
+   "reuse": false,
+   "dcBuilds": [],
+   "assetCentric": false,
+   "pass": false,
+   "calls": [
+    "workspace.getState"
+   ],
+   "dcOutputs": "",
+   "ms": 61021,
+   "reply": "요청하신 서울 맛집 3곳(을지로 **평양면옥**, 성수 **카페 어니언**, 연남 **툭툭누들타이**)의 블로그 초안을 작성하기 전에 마운트된 자료와 작업대 상태를 확인했으나, 다음과 같은 부족한 점이 있어 임의로 내용을 채우지 않았습니다.\n\n1. **원천 자료 및 사진 없음**\n   - `default-vault` 전체를 검색(`ws_grep`, `ws_images`, `ws_tree`)한 결과, 위 3곳의 **주소·영업시간·한줄평 근거 자료**와 **매장 사진**이 존재하지 않습니다. (현재 볼트에는 `여행/도쿄`, `여행/오사카`, `홈카페/핸드드립` 및 테스트용 리소스만 포함되어 있습니다.)\n   - 확인되지 않은 주소·영업시간을 추측으로 작성하거나, 주제와 무관한 다른 사진을 대신 넣을 수 없습니다.\n\n2. **작업대 문서 연결 상태**\n   - `workspace.getState`상 `평가/새 초안.vdoc`이 열려 있으나, 작업대(`wb_overview` · `dc_use`)에서는 열린 초안 문서가 조회되지 않았습니다.\n\n---\n\n### 다음 진행 방법\n아래 중 원하시는 방향을 알려주시면 이어서 작업하겠습니다.\n1. **자료 추가 후 작성**: "
+  },
+  {
+   "id": "risk-register",
+   "assets": 2,
+   "registerAttempts": 3,
+   "instantiations": 10,
+   "repeatUnits": 4,
+   "usedRepeat": true,
+   "reuse": true,
+   "dcBuilds": [
+    "dc_build(error)"
+   ],
+   "assetCentric": false,
+   "pass": false,
+   "calls": [
+    "workspace.getState",
+    "assets.list",
+    "document.getOutline",
+    "assets.register",
+    "assets.register",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.register",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate",
+    "assets.instantiate"
+   ],
+   "dcOutputs": "Run mcp_vibefs_0dd2216f_dc_build\n",
+   "ms": 135449,
+   "reply": "\n\n\n\n\n\n\n\n\n\n\n신규 프로젝트 3건(**모바일 앱 개편**, **데이터 센터 이전**, **ERP 교체**)에 대한 **위험 관리 대장**을 공통 에셋으로 등록한 뒤, 프로젝트별 인스턴스를 [새 초안](vdoc:doc/평가/새 초안.vdoc)의 검토 대기열(Staged)에 생성했습니다.\n\n### 적용 구조 (공통 에셋)\n- **에셋명**: `프로젝트별 위험 관리 대장` (`프로젝트별-위험-관리-대장-e72e48`)\n- **구성**: 프로젝트명(H2 소제목) + 4열 표(**위험 항목** | **발생 가능성** | **영향도** | **대응 방안**)\n- **매핑 결과**: 3개 프로젝트 모두 `unmapped: []`, `missing: []`, 각 **4개 위험 항목(총 17개 슬롯)** 채움 완료\n\n---\n\n### 생성된 프로젝트별 위험 관리 대장 요약\n\n1. **모바일 앱 개편** (4건)\n   - OS·단말기 파편화로 인한 UI 깨짐 및 호환성 오류 (가능성: 중 / 영향도: 상)\n   - 기존 API·레거시 백엔드 연동 지연 및 스펙 불일치 (가능성: 상 / 영향도: 상)\n   - 앱 스토어 심사 반려로 인한 출시 일정 지연 (가능성: 중 / 영"
+  }
+ ]
+}

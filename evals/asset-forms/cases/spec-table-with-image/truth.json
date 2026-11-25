@@ -1,0 +1,98 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "사진 있는 사양표",
+ "scope": "element",
+ "nodes": [
+  {
+   "t": "label",
+   "role": "caption",
+   "text": "제품 사양"
+  },
+  {
+   "t": "grid",
+   "component": "table",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "value",
+       "rs": 4,
+       "nodes": [
+        {
+         "t": "field",
+         "role": "image",
+         "field": {
+          "id": "photo",
+          "type": "image",
+          "hint": "제품 사진"
+         }
+        }
+       ]
+      },
+      {
+       "role": "label",
+       "text": "모델명"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "model",
+        "type": "code",
+        "hint": "모델명"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "크기"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "size",
+        "type": "text",
+        "hint": "크기"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "무게"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "weight",
+        "type": "text",
+        "hint": "무게"
+       }
+      }
+     ]
+    },
+    {
+     "cells": [
+      {
+       "role": "label",
+       "text": "가격"
+      },
+      {
+       "role": "value",
+       "field": {
+        "id": "price",
+        "type": "currency",
+        "hint": "가격"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

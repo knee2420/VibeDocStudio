@@ -1,0 +1,67 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "추천 상품 카드",
+ "scope": "section",
+ "nodes": [
+  {
+   "t": "field",
+   "role": "heading",
+   "field": {
+    "id": "section_title",
+    "type": "text",
+    "hint": "섹션 제목"
+   },
+   "variant": "h2"
+  },
+  {
+   "t": "repeat",
+   "id": "products",
+   "children": [
+    {
+     "t": "container",
+     "component": "card",
+     "children": [
+      {
+       "t": "field",
+       "role": "image",
+       "field": {
+        "id": "photo",
+        "type": "image",
+        "hint": "상품 사진"
+       }
+      },
+      {
+       "t": "field",
+       "role": "heading",
+       "field": {
+        "id": "name",
+        "type": "text",
+        "hint": "상품명"
+       },
+       "variant": "h3"
+      },
+      {
+       "t": "field",
+       "role": "body",
+       "field": {
+        "id": "desc",
+        "type": "text",
+        "hint": "설명"
+       }
+      },
+      {
+       "t": "field",
+       "role": "value",
+       "field": {
+        "id": "price",
+        "type": "currency",
+        "hint": "가격"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

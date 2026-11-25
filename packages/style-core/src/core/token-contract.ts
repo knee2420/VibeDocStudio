@@ -2,7 +2,13 @@
  * @vibe/style-core — Figma 4계층(Primitives -> Semantic Modes -> Composite Styles -> Instance Overrides)
  * 기반 문서 스타일 프로토콜 (`vibe-style/1.0`, `.vstyle.json`) 계약.
  */
-import type { GridAlign, GridAspectPolicy, GridBorderMatrix, MarginBox } from "./grid-contract";
+import type {
+  GridAlign,
+  GridAspectPolicy,
+  GridBorderMatrix,
+  GridVerticalAlign,
+  MarginBox,
+} from "./grid-contract";
 
 export const VSTYLE_PROTOCOL = "vibe-style/1.0" as const;
 
@@ -35,6 +41,13 @@ export interface TextStyleDef {
   color?: string;
   align?: GridAlign;
   listMarker?: StyleListMarker;
+  /** 데이터 기반 앞장식 문자열 (예: `"□ "`, `"❏ "`, `"※ "` 등 — 고정 enum 없이 데이터로 주입). */
+  prefix?: string;
+  prefixColor?: string;
+  /** 목록 항목 들여쓰기 (예: `"1.1em"`). */
+  listIndent?: string;
+  /** 내어쓰기 오프셋 (예: `"-0.75em"`). */
+  hangingIndent?: string;
 }
 
 export type FrameOrnamentKind =
@@ -69,6 +82,28 @@ export interface FrameStyleDef {
   accentPalettes?: Record<string, { fill: string; color: string; border?: string }>;
 }
 
+/** 표 셀 역할 단위 직교 스타일 속성 (키 이름은 `.vstyle` 데이터가 자유롭게 정의). */
+export interface CellStyleDef {
+  fill?: string;
+  color?: string;
+  fontFamily?: string;
+  fontSize?: string;
+  fontWeight?: string;
+  lineHeight?: string;
+  letterSpacing?: string;
+  align?: GridAlign;
+  vAlign?: GridVerticalAlign;
+  padding?: string;
+  whiteSpace?: "normal" | "nowrap" | "pre-wrap";
+  fontVariantNumeric?: "normal" | "tabular-nums";
+  borderTop?: string;
+  borderRight?: string;
+  borderBottom?: string;
+  borderLeft?: string;
+  listIndent?: string;
+  hangingIndent?: string;
+}
+
 /** Layer 3-3: 표 셀 그리드 합성 스타일. */
 export interface TableStyleDef {
   borders?: GridBorderMatrix;
@@ -81,6 +116,10 @@ export interface TableStyleDef {
   cellPadding?: string;
   radius?: string;
   autoFormHeader?: boolean;
+  /** 선택적 기본 열 너비 비율 (예: `["8%", "17%", "15%", "60%"]`). */
+  columnWidths?: string[];
+  /** 열린 역할 키 → 셀 직교 스타일 맵 (`column-header`, `label`, `value` 및 사용자/에셋 커스텀 역할). */
+  cells?: Record<string, CellStyleDef>;
 }
 
 /** Layer 3-4: 미디어/사진 콜라주 그리드 합성 스타일. */
@@ -106,6 +145,9 @@ export interface PageChromeStyleDef {
   showHeaderFooter?: boolean;
   listMarkers?: string[];
   outerBoxBorder?: string;
+  /** 범용 바닥글 템플릿 문자열 (예: `"- {page} -"`, `"{page} / {total}"`). */
+  footerTemplate?: string;
+  footerAlign?: GridAlign;
 }
 
 export interface StyleCompositeCatalog {
@@ -154,12 +196,16 @@ export interface StylePack {
   version: string;
   description?: string;
   genre?: string;
+  /** 열린 매체/표면 힌트 (예: `"a4"`, `"blog"`, `"web"`, `"sns"` 등 — 고정 enum 아님). */
+  target?: string;
   sourceRef?: string;
   updatedAt?: string;
   primitives: StylePrimitives;
   modes: Record<string, SemanticTokenMap>;
   styles: StyleCompositeCatalog;
   bindings: Record<string, StyleBindingDef>;
+  /** 향후 매체·요소별 특화 규칙을 코어 스키마 변경 없이 수용하는 열린 확장 네임스페이스. */
+  extensions?: Record<string, Record<string, unknown>>;
 }
 
 /** Alias 치환과 활성 Mode 선택이 완료된 런타임 해석 스냅샷. */
@@ -168,7 +214,9 @@ export interface ResolvedStylePack {
   packName: string;
   version: string;
   mode: string;
+  target?: string;
   tokens: Record<string, StyleTokenValue>;
   styles: StyleCompositeCatalog;
   bindings: Record<string, StyleBindingDef>;
+  extensions?: Record<string, Record<string, unknown>>;
 }

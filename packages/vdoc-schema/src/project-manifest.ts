@@ -1,5 +1,6 @@
 import type { ElementKind } from "./element-kit";
 import type { EvidenceLocator } from "./evidence";
+import type { LayoutBlock, VDocSlot } from "./types";
 /**
  * @vibe/vdoc-schema — Multi-Document Project Manifest (`.vproj`), 5-Level Context Hierarchy,
  * Provenance Lineage, and 3-Phase AI Staging Contracts. (References are not projects — see `/api/reference`.)
@@ -134,7 +135,25 @@ export interface StagedOutlinePatchChange extends Omit<StagedAiChangeBase, "phas
   };
 }
 
+/** 에셋 v3 인스턴스 놓기 · 형식 바꾸기 (블록 끼우기 / 블록 바꾸기). 정본은 에셋 — 블록은 그 인스턴스다. */
+export interface StagedAssetBlocksChange extends StagedAiChangeBase {
+  targetKind: "asset-blocks";
+  payload: {
+    assetId: string;
+    mode: "insert" | "replace";
+    anchorBlockId?: string;
+    replaceBlockIds?: string[];
+    blocks: LayoutBlock[];
+    slots: Record<string, VDocSlot>;
+    /** 채운 자리 · 빈 자리 · 못 옮긴 값 요약 (검토 화면용) */
+    report?: { filled: number; empty: number; leftover: string[]; preserved?: { kept: number; total: number } };
+    /** 에이전트가 교체/추가 방식을 선택한 이유 또는 보완 메모 (Unified Diff 표시용) */
+    intentNote?: string;
+  };
+}
+
 export type StagedAiChange =
+  | StagedAssetBlocksChange
   | StagedOutlineNodeChange
   | StagedOutlinePatchChange
   | StagedTemplateBlockChange

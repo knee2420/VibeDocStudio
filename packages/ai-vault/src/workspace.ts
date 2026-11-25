@@ -73,6 +73,8 @@ export interface V2AiWorkspaceDeps {
   readonly openVaultFile: (path: string, mode?: "current" | "new-tab" | "split-right") => void;
   /** 통일 `<<resource:...>>` 태그를 페어 탭으로 열고 정확히 하이라이팅한다. */
   readonly revealResource?: (rawTag: string, sourcePath?: string) => boolean;
+  /** 에셋(assetId)의 AI 느낌 보기(Staged Preview)를 실행한다. */
+  readonly stageAssetPreview?: (assetId: string) => boolean;
   readonly getTextSelection: () => { resourceId: string; text?: string; summary: string; nodeIds?: readonly string[] } | null;
   /** 에디터가 보고한 지금 선택 그대로 (아웃라인 불릿 id 포함) — 기준점 세션이 읽는다 */
   readonly getEditorSelection?: () => { readonly resourceId: string; readonly kind: string; readonly nodeIds?: readonly string[] } | null;
@@ -116,6 +118,8 @@ export interface V2AiWorkspace {
   sendFromOutline(prompt: string): Promise<void>;
   /** 채팅 답변 / 도구의 `<<resource:...>>` 태그를 페어 탭으로 열고 하이라이팅한다. */
   revealResource(rawTag: string, sourcePath?: string): boolean;
+  /** 채팅 AG-UI 카드 / 도구의 에셋(assetId) AI 느낌 보기 프리뷰를 실행한다. */
+  stageAssetPreview(assetId: string): boolean;
   conversationKey(path: string | null): string | null;
 
   // --- 기준점 세션 (무마찰 디렉팅) ---------------------------------------------------------------
@@ -626,6 +630,8 @@ export function createV2AiWorkspace(deps: V2AiWorkspaceDeps): V2AiWorkspace {
     openPath: (path) => deps.openVaultFile(path, "split-right"),
     revealResource: (rawTag, sourcePath) =>
       deps.revealResource ? deps.revealResource(rawTag, sourcePath ?? activeTabPath() ?? undefined) : false,
+    stageAssetPreview: (assetId) =>
+      deps.stageAssetPreview ? deps.stageAssetPreview(assetId) : false,
     showExplorer: () => undefined,
   });
   const toolsByKey = new Map<string, Map<string, WorkspaceTool<any>>>();
@@ -1279,6 +1285,8 @@ export function createV2AiWorkspace(deps: V2AiWorkspaceDeps): V2AiWorkspace {
     sendFromOutline,
     revealResource: (rawTag, sourcePath) =>
       deps.revealResource ? deps.revealResource(rawTag, sourcePath ?? activeTabPath() ?? undefined) : false,
+    stageAssetPreview: (assetId) =>
+      deps.stageAssetPreview ? deps.stageAssetPreview(assetId) : false,
     conversationKey,
     sessions: registry,
     surfaces,

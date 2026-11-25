@@ -10,6 +10,72 @@ import type { LayoutBlock, VDocSlot } from "../types";
 
 export type VDocAssetKind = "a4-page" | "blog-section" | "table" | "list" | "callout" | "columns";
 export type VDocAssetScope = "document" | "section" | "element";
+export type AssetSchemaVersion = "v1" | "v2";
+export type AssetFlowMode = "prose-form" | "grid-form" | "hybrid";
+export type AssetPrimitiveKind =
+  | "header-band"
+  | "title-block"
+  | "kv-block"
+  | "prose"
+  | "divider-band"
+  | "clause-tree"
+  | "table-grid"
+  | "signoff-block"
+  | "media"
+  | "callout";
+export type ClauseNumberingScheme = "legal-kr" | "article-kr" | "official-kr" | "decimal";
+
+export interface AssetFieldSpec {
+  readonly id: string;
+  readonly label: string;
+  readonly type: "string" | "date" | "currency" | "party" | "rich-text" | "image" | "list";
+  readonly required?: boolean;
+  readonly repeatable?: boolean;
+  readonly placeholder?: string;
+  /** 이 슬롯을 채울 때 에이전트가 참조해야 할 원천 리소스/RAG 힌트 */
+  readonly evidenceHint?: string;
+}
+
+export interface AssetPrimitiveTraits {
+  readonly border?: "none" | "underline" | "grid";
+  readonly align?: "left" | "center" | "right" | "justify";
+  readonly letterSpacing?: "normal" | "wide";
+  readonly hangingIndent?: boolean;
+  readonly firstLineIndent?: boolean;
+  readonly labelWidth?: string;
+  readonly variant?: string;
+  readonly numberingScheme?: ClauseNumberingScheme;
+}
+
+export interface AssetPrimitiveNode {
+  readonly id: string;
+  readonly type: AssetPrimitiveKind;
+  readonly zone?: "header" | "body" | "footer";
+  readonly repeatable?: boolean;
+  readonly traits?: AssetPrimitiveTraits;
+  readonly fixedText?: string;
+  readonly templateText?: string;
+  readonly left?: string;
+  readonly right?: string;
+  readonly rows?: readonly { readonly label: string; readonly value: string }[];
+  readonly items?: readonly {
+    readonly title?: string;
+    readonly lead?: string;
+    readonly children?: readonly { readonly text: string }[];
+  }[];
+  /** table-grid 등 기존 DSL 브리지가 필요한 경우의 원천 줄 목록 */
+  readonly tableDsl?: readonly string[];
+}
+
+export interface VDocAssetV2Spec {
+  readonly flowMode: AssetFlowMode;
+  readonly zones: {
+    readonly header?: readonly AssetPrimitiveNode[];
+    readonly body: readonly AssetPrimitiveNode[];
+    readonly footer?: readonly AssetPrimitiveNode[];
+  };
+  readonly fields: readonly AssetFieldSpec[];
+}
 
 export interface VDocAssetNuance {
   /** 1~2문장: 이 양식이 주는 구조적·시각적 인상과 적합한 용도. */
@@ -49,7 +115,9 @@ export interface VDocAssetOrigin {
 }
 
 export interface VDocAsset {
-  version: "1.0.0";
+  version: "1.0.0" | "2.0.0";
+  /** 스키마 A/B 드라이버 식별자 (생략 시 `"v1"` 로 취급) */
+  schemaVersion?: AssetSchemaVersion;
   assetId: string;
   title: string;
   scope: VDocAssetScope;
@@ -60,6 +128,8 @@ export interface VDocAsset {
   tags: string[];
   nuance: VDocAssetNuance;
   structure: VDocAssetStructure;
+  /** `v2` 확장 가능 프리미티브 · 영역 · 필드 계약 정본 (v1 에서는 생략) */
+  v2?: VDocAssetV2Spec;
   origin: VDocAssetOrigin;
 }
 

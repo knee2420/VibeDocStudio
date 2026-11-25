@@ -7,4 +7,5 @@ export * from "./AiSurface";
 export * from "./EntityChip";
 export * from "./Sessions";
 export * from "./SlotChangeReview";
+export * from "./BlockAssetDiffReview";
 export * from "./slotDiff";

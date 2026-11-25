@@ -11,3 +11,5 @@ export * from "./tools";
 export * from "./workspace";
 export * from "./assetAi";
 export * from "./anchors";
+export * from "./assetV3";
+export * from "./styleTools";

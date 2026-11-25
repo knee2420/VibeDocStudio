@@ -16,14 +16,14 @@ export function useAttentionCount(ai: V2AiWorkspace): number {
   return useSessionActivity(ai).attention;
 }
 
-/** 왼쪽 리본 — 지금 도는 세션 수(대기열 포함) · 내 손이 필요한 세션 수 */
+/** 왼쪽 리본 — 지금 도는 세션 수(대기열 포함 · 메인 포함) · 내 손이 필요한 세션 수 */
 export function useSessionActivity(ai: V2AiWorkspace): { running: number; queued: number; attention: number } {
   const views = useSessionList(ai.sessions);
   let running = 0;
   let queued = 0;
   let attention = 0;
   for (const v of views) {
-    if (v.kind !== "anchored" || v.lifecycle === "completed") continue;
+    if (v.lifecycle === "completed") continue;
     if (v.status === "running") running++;
     else if (v.status === "queued") queued++;
     if (ATTENTION.has(v.status) || v.unread) attention++;
@@ -38,19 +38,37 @@ interface Toast {
   readonly status: SessionStatus;
 }
 
-/** 뒤 세션이 내 손을 부를 때 (승인 대기 · 검토 필요 · 오류 · 끝남)만 잠깐 띄운다. 앞 세션 · 메인은 띄우지 않는다 */
-export function SessionToasts({ ai, onOpen }: { ai: V2AiWorkspace; onOpen(key: string): void }) {
+/** 세션이 끝나거나 내 손을 부를 때 (승인 대기 · 검토 필요 · 오류 · 끝남) 잠깐 띄운다 (메인 포함). */
+export function SessionToasts({
+  ai,
+  onOpen,
+  composerVisible = true,
+}: {
+  ai: V2AiWorkspace;
+  onOpen(key: string): void;
+  composerVisible?: boolean;
+}) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const seq = useRef(0);
+  const visibleRef = useRef(composerVisible);
+  useEffect(() => {
+    visibleRef.current = composerVisible;
+  }, [composerVisible]);
+
   useEffect(
     () =>
       ai.sessions.onStatus((event) => {
         const view = ai.sessions.view(event.key);
-        if (!view || view.kind !== "anchored" || event.foreground || event.to === "completed") return;
+        if (!view || event.to === "completed") return;
         const finished = event.from === "running" && event.to === "idle";
-        if (!ATTENTION.has(event.to) && !finished) return;
+        const needsAttention = ATTENTION.has(event.to);
+        if (!needsAttention && !finished) return;
+        // 기준점 세션이 이미 화면 앞에 열려 있으면 중복 토스트는 생략;
+        // 메인은 작업이 길 때 다른 문서를 보다가 완료 보고를 받을 수 있도록 항상 알린다.
+        if (view.kind === "anchored" && event.foreground && visibleRef.current) return;
         const id = ++seq.current;
-        setToasts((list) => [...list.filter((t) => t.key !== event.key), { id, key: event.key, title: view.title, status: event.to }].slice(-4));
+        const label = view.kind === "main" ? "메인 대화" : view.title;
+        setToasts((list) => [...list.filter((t) => t.key !== event.key), { id, key: event.key, title: label, status: event.to }].slice(-4));
         window.setTimeout(() => setToasts((list) => list.filter((t) => t.id !== id)), 7000);
       }),
     [ai]

@@ -98,4 +98,39 @@ describe("@vibe/vault-formats — 구조 공유", () => {
     assert.equal(docs.get("d.vdoc"), second);
     docs.dispose();
   });
+
+  it("필수 필드가 빠진 약식/구형 .vdoc 도 안전하게 정규화해 파싱한다", () => {
+    const legacyRaw = JSON.stringify({
+      docId: "vdoc-legacy-01",
+      title: "약식 샘플",
+      view: "a4",
+      stylePackId: "gov-rfp",
+      pages: [
+        {
+          pageId: "p1",
+          title: "1페이지 요약",
+          blocks: [
+            { blockId: "b1", kind: "paragraph", slotId: "s1" },
+            { blockId: "b2", kind: "callout", tone: "info", slotId: "s2" },
+          ],
+        },
+      ],
+      slots: {
+        s1: { slotId: "s1", content: "본문" },
+        s2: { content: "안내" },
+      },
+    });
+    const parsed = parseVDocJson(legacyRaw, "fallback");
+    assert.equal(parsed.viewId, "a4");
+    assert.equal(parsed.styleRef?.packId, "gov-rfp");
+    assert.equal(parsed.pages[0].pageNumber, 1);
+    assert.equal(parsed.pages[0].pageLabel, "1페이지 요약");
+    assert.equal(parsed.pages[0].headerSlotId, "");
+    assert.equal(parsed.pages[0].blocks[0].kind, "text");
+    assert.equal(parsed.pages[0].blocks[1].kind, "callout-box");
+    assert.deepEqual(parsed.slots.s1.backDataRefs, []);
+    assert.equal(parsed.slots.s1.role, "editable-slot");
+    assert.equal(parsed.slots.s2.slotId, "s2");
+    assert.deepEqual(parsed.slots.s2.backDataRefs, []);
+  });
 });

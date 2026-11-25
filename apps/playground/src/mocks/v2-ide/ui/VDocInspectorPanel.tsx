@@ -254,8 +254,8 @@ export const VDocInspectorPanel: React.FC<VDocInspectorPanelProps> = React.memo(
     }, [vault, styleRev]);
 
     const activeStyleEntry = useMemo(
-      () => resolveActiveStyleEntry(doc, vault, styleCatalog),
-      [doc, vault, styleCatalog]
+      () => resolveActiveStyleEntry(doc, vault, styleCatalog, path),
+      [doc, vault, styleCatalog, path]
     );
 
     const accentChips = useMemo(

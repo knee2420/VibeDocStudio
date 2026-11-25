@@ -1,0 +1,219 @@
+{
+ "summary": {
+  "when": "2026-11-24T15:49:31.645Z",
+  "api": "http://127.0.0.1:8090",
+  "decompose": {
+   "n": 1,
+   "registered": 1,
+   "firstTryValid": 1,
+   "avgScore": 0.996
+  },
+  "similar": {
+   "n": 1,
+   "pass": 0
+  },
+  "design": {
+   "n": 0,
+   "assetCentric": 0,
+   "pass": 0
+  },
+  "cleanedVaultFiles": []
+ },
+ "results": [
+  {
+   "id": "ecr-requirement-screenshot",
+   "tags": [
+    "table",
+    "rowspan",
+    "colspan",
+    "real"
+   ],
+   "decompose": {
+    "registered": true,
+    "attempts": 1,
+    "firstTryValid": true,
+    "score": 0.996,
+    "metrics": {
+     "blockSeq": 1,
+     "gridShape": 1,
+     "cellKind": 1,
+     "span": 1,
+     "role": 1,
+     "labels": 1,
+     "repeat": 1,
+     "fieldType": 0.917
+    },
+    "notes": [],
+    "ms": 27443,
+    "rounds": 1,
+    "agentTools": [],
+    "reply": "첨부하신 양식을 분석하여 재사용 가능한 에셋으로 등록했습니다.\n\n### 등록된 에셋 정보\n- **제목**: 요구사항 정의서 (`요구사항-정의서-4184b6`)\n- **구조**: 6행 × 3열 표\n  - 1~3행, 6행: 좌측 항목명 2열 병합(`cs: 2`) + 우측 입력 칸\n  - 4~5행: 좌측 `요구사항 세부내용` 세로 병합(`rs: 2`) + 중간 세부 항목명(`정의`, `세부내용`) + 우측 입력 칸\n- **스타일**: 항목명 칸(`label`, `group-label`, `sub-label`) 배경색(`#dce6f1`) 및 가운데 정렬 분리 저장\n\n### 채울 자리(Fields)\n| 필드 ID | 항목명 | 유형 |\n| --- | --- | --- |\n| `category` | 요구사항 분류 | `text` |\n| `req_id` | 요구사항 고유번호 | `text` |\n| `req_name` | 요구사항 명칭 | `text` |\n| `definition` | 정의 | `text` |\n| `details` | 세부내용 | `list` |\n| `deliverables` | 산출정보 | `text` |\n\n원하시는 요구사항 내용을 알려주시면 이 에셋을 ",
+    "pred": {
+     "schema": "vibe-asset/3",
+     "title": "요구사항 정의서",
+     "scope": "section",
+     "nodes": [
+      {
+       "t": "grid",
+       "component": "table",
+       "rows": [
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "요구사항 분류",
+           "cs": 2
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "category",
+            "type": "text",
+            "hint": "요구사항 분류"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "요구사항 고유번호",
+           "cs": 2
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "req_id",
+            "type": "text",
+            "hint": "요구사항 고유번호"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "요구사항 명칭",
+           "cs": 2
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "req_name",
+            "type": "text",
+            "hint": "요구사항 명칭"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "group-label",
+           "text": "요구사항 세부내용",
+           "rs": 2
+          },
+          {
+           "role": "sub-label",
+           "text": "정의"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "definition",
+            "type": "text",
+            "hint": "정의"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "sub-label",
+           "text": "세부내용"
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "details",
+            "type": "list",
+            "hint": "세부내용"
+           }
+          }
+         ]
+        },
+        {
+         "cells": [
+          {
+           "role": "label",
+           "text": "산출정보",
+           "cs": 2
+          },
+          {
+           "role": "value",
+           "field": {
+            "id": "deliverables",
+            "type": "text",
+            "hint": "산출정보"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "style": {
+      "selectors": [
+       "table.label",
+       "table.group-label",
+       "table.sub-label",
+       "table.value"
+      ],
+      "tokens": {
+       "table.label": {
+        "backgroundColor": "#dce6f1",
+        "textAlign": "center"
+       },
+       "table.group-label": {
+        "backgroundColor": "#dce6f1",
+        "textAlign": "center"
+       },
+       "table.sub-label": {
+        "backgroundColor": "#dce6f1",
+        "textAlign": "center"
+       },
+       "table.value": {
+        "textAlign": "left"
+       }
+      }
+     }
+    }
+   },
+   "similar": {
+    "instantiated": true,
+    "filled": 4,
+    "repeats": {},
+    "unmapped": [
+     "산출물",
+     "담당 부서"
+    ],
+    "missing": [
+     "deliverables"
+    ],
+    "checks": {
+     "repeatOk": true,
+     "filledOk": false,
+     "unmappedOk": true
+    },
+    "pass": false,
+    "ms": 27101,
+    "agentTools": [],
+    "reply": "[요구사항 정의서](요구사항-정의서-4184b6) 에셋을 사용해 문서 변경안을 생성하여 검토 대기열(Staged)에 올렸습니다.\n\n### 반영 결과\n- **채워진 항목 (4개)**:\n  - **요구사항 분류** (`category`): 보안 요구사항(SER)\n  - **요구사항 고유번호** (`req_id`): SER-003\n  - **요구사항 명칭** (`req_name`): 접근 통제\n  - **정의** (`definition`): 사용자 권한별 메뉴 · 데이터 접근 제한\n- **비어 있는 자리 (`missing` / `empty`)**:\n  - **세부내용** (`details`): 항목은 매칭되었으나 값이 비어 있음\n  - **산출정보** (`deliverables`): 입력 데이터 없음\n- **자리가 없는 데이터 (`unmapped`)**:\n  - `산출물` (\"보안 설계서\")\n  - `담당 부서` (\"보안팀\")\n\n기존 에셋에 `담당 부서` 항목을 위한 행을 추가해 에셋(`"
+   }
+  }
+ ],
+ "design": []
+}

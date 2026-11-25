@@ -213,8 +213,12 @@ class DocTools:
                 "changes": [{"slotIds": slot_ids[:200], "author": "ai", "label": label, "runId": self.session_id or None}]}
         return self.api.call("PUT", f"/api/documents/{doc['docId']}", body)["document"]
 
+    @staticmethod
+    def _is_inside_vproj(folder: str) -> bool:
+        return any(seg.lower().endswith(".vproj") for seg in folder.split("/") if seg)
+
     def _vault_new(self, state: dict[str, Any], title: str, surface: str, genre: str, width: Any) -> tuple[dict[str, Any], str]:
-        """볼트 모드 초안: 활성 문서 폴더(또는 작업대 draftFolder · `AI Drafts`)에 새 `.vdoc` 파일을 만든다."""
+        """볼트 모드 초안: 이미 `.vproj` 프로젝트 안이면 그 안에, 밖의 일반 폴더면 `<제목>.vproj/` 를 함께 만들어 `.vdoc` 을 생성한다."""
         vault_id = self._vault_of(state)
         self._require_writable(state)
         doc_id = f"vdoc-{int(time.time() * 1000):x}-{os.urandom(4).hex()}"
@@ -232,9 +236,16 @@ class DocTools:
             active = str(state.get("docVaultPath") or "")
             folder = active.rsplit("/", 1)[0] if "/" in active else ("AI Drafts" if not active else "")
         stem = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "", title).strip().rstrip(".")[:80] or "새 글"
+        in_vproj = self._is_inside_vproj(folder)
         for n in range(1, 50):
-            name = f"{stem}.vdoc" if n == 1 else f"{stem} ({n}).vdoc"
-            rel = f"{folder}/{name}" if folder else name
+            if in_vproj:
+                name = f"{stem}.vdoc" if n == 1 else f"{stem} ({n}).vdoc"
+                rel = f"{folder}/{name}" if folder else name
+            else:
+                # 프로젝트 밖 일반 폴더에 낱개 .vdoc 을 버리지 않고 `<제목>.vproj/<제목>.vdoc` 로 묶어 생성한다.
+                proj_name = f"{stem}.vproj" if n == 1 else f"{stem} ({n}).vproj"
+                name = f"{stem}.vdoc"
+                rel = f"{folder}/{proj_name}/{name}" if folder else f"{proj_name}/{name}"
             try:
                 self.api.call("POST", self._vault_url(vault_id), {"path": rel, "content": self._vault_json(doc)})
                 return doc, rel

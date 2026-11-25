@@ -898,6 +898,173 @@ export function bindVDocToExistingOutline(
 }
 
 /**
+ * [기존 `.outline`에 새 `<<doc>>` 브랜치로 합류 바인딩]
+ * 같은 `.vproj` 안의 기존 마스터 `.outline`에 아직 이 `.vdoc`용 `<<doc:...>>` 노드가 없을 때:
+ * 1) 현재 `.vdoc` 내용을 무손실 추출해 고유 `docNodeId`를 가진 새 `<<doc:...>>` 서브트리로 만든다.
+ * 2) 선택한 기존 `.outline`의 `rootNodes` 끝에 해당 브랜치를 추가하고 `docBindings`를 기록한다.
+ * 3) `.vdoc`에도 `sourceNodeId`와 `outlineRef`를 대칭 저장하고 페어 탭으로 열어 드러낸다.
+ */
+export function appendVDocBranchToExistingOutline(
+  vault: VaultPort,
+  vdocPath: string,
+  outlinePath: string,
+  options?: { readonly openLink?: BridgeOpenLink }
+): { readonly outlinePath: string; readonly outlineId: string; readonly rootNodeId: string } | null {
+  if (vault.isReadOnly?.() || !vault.exists(vdocPath) || !vault.exists(outlinePath)) {
+    return null;
+  }
+  if (!isInSameProjectScope(vdocPath, outlinePath)) {
+    return null;
+  }
+
+  const doc = parseVDocJson(vault.read(vdocPath), stem(vdocPath));
+  const vdocUri = toVaultUri(vdocPath);
+  const targetUri = toVaultUri(outlinePath);
+  const payload = parseOutlineJson(vault.read(outlinePath), stem(outlinePath));
+  const registry = loadVaultSyntaxRegistry(vault);
+
+  const existingIds = new Set<string>();
+  const collectIds = (nodes: readonly OutlineNode[]) => {
+    for (const n of nodes) {
+      existingIds.add(n.id);
+      if (n.children.length > 0) collectIds(n.children);
+    }
+  };
+  collectIds(payload.rootNodes);
+
+  let candidateDocNodeId = `doc_${doc.docId.slice(-8)}`;
+  let suffix = 1;
+  while (existingIds.has(candidateDocNodeId)) {
+    candidateDocNodeId = `doc_${doc.docId.slice(-8)}_${++suffix}`;
+  }
+
+  // 기존 `.outline`과 ID 충돌을 피하기 위해 임시로 sourceNodeId 충돌 노드만 비우고 추출한다
+  const cleanDocForExtract: VDocDocument = {
+    ...doc,
+    pages: doc.pages.map((p) => ({
+      ...p,
+      sourceNodeId: p.sourceNodeId && !existingIds.has(p.sourceNodeId) ? p.sourceNodeId : undefined,
+      blocks: p.blocks.map((b) => ({
+        ...b,
+        sourceNodeId: b.sourceNodeId && !existingIds.has(b.sourceNodeId) ? b.sourceNodeId : undefined,
+      })),
+    })),
+  };
+
+  const { outline, patchedDoc, docNodeId } = extractBoundOutlineFromVDoc(
+    cleanDocForExtract,
+    registry,
+    { docNodeId: candidateDocNodeId, wrapInDocDirective: true }
+  );
+  const newRootSyntax = outline.rootNodes[0];
+  if (!newRootSyntax) return null;
+
+  // 충돌 방지: 추출된 하위 노드 ID도 기존 트리와 겹치지 않도록 보장
+  let remappedSeq = 0;
+  const idRemap = new Map<string, string>();
+  const ensureUniqueNode = (node: OutlineSyntaxNode): OutlineNode => {
+    let nextId = node.id;
+    if (existingIds.has(nextId)) {
+      do {
+        nextId = `nd_${doc.docId.slice(-6)}_m${++remappedSeq}`;
+      } while (existingIds.has(nextId));
+      idRemap.set(node.id, nextId);
+    }
+    existingIds.add(nextId);
+    return {
+      id: nextId,
+      text: node.text,
+      isFolded: Boolean(node.isFolded),
+      ...(node.note ? { note: node.note } : {}),
+      ...(node.file ? { file: node.file } : {}),
+      children: (node.children ?? []).map(ensureUniqueNode),
+    };
+  };
+  const appendedRoot = ensureUniqueNode(newRootSyntax);
+  const finalRootId = appendedRoot.id || docNodeId;
+
+  const remappedDoc: VDocDocument = {
+    ...patchedDoc,
+    pages: patchedDoc.pages.map((p) => ({
+      ...p,
+      sourceNodeId: p.sourceNodeId ? (idRemap.get(p.sourceNodeId) ?? p.sourceNodeId) : p.sourceNodeId,
+      blocks: p.blocks.map((b) => ({
+        ...b,
+        sourceNodeId: b.sourceNodeId ? (idRemap.get(b.sourceNodeId) ?? b.sourceNodeId) : b.sourceNodeId,
+      })),
+    })),
+    outlineRef: {
+      outlinePath: targetUri,
+      outlineId: payload.id,
+      rootNodeId: finalRootId,
+    },
+  };
+
+  const now = new Date().toISOString();
+  const profileId = doc.viewId ?? resolveDocumentView(doc).id;
+  const dedupedBindings = deduplicateOutlineBindingsForTarget(
+    payload.docBindings,
+    finalRootId,
+    doc.docId,
+    vdocUri
+  );
+  const nextPayload: OutlineFilePayload = {
+    ...payload,
+    rootNodes: [...payload.rootNodes, appendedRoot],
+    docBindings: {
+      ...dedupedBindings,
+      [finalRootId]: {
+        docId: doc.docId,
+        vdocPath: vdocUri,
+        profileId,
+        lastSyncedAt: now,
+      },
+    },
+    updatedAt: now,
+  };
+
+  const prevResolved = resolveOutlineForVDoc(vault, vdocPath, doc, { heal: false });
+  const prevOutlinePath =
+    prevResolved && normalizeVaultPath(prevResolved.outlinePath) !== normalizeVaultPath(outlinePath)
+      ? prevResolved.outlinePath
+      : null;
+
+  const guardedPaths = prevOutlinePath ? [prevOutlinePath, outlinePath, vdocPath] : [outlinePath, vdocPath];
+  runGuardedSync(guardedPaths, () => {
+    if (prevOutlinePath && vault.exists(prevOutlinePath)) {
+      try {
+        const oldPayload = parseOutlineJson(vault.read(prevOutlinePath), stem(prevOutlinePath));
+        if (oldPayload.docBindings) {
+          const filtered: Record<string, OutlineDocBinding> = {};
+          let removed = false;
+          for (const [nid, b] of Object.entries(oldPayload.docBindings)) {
+            if (b.docId === doc.docId || b.vdocPath === vdocUri) removed = true;
+            else filtered[nid] = b;
+          }
+          if (removed) {
+            vault.write(
+              prevOutlinePath,
+              serializeOutlineJson({
+                ...oldPayload,
+                docBindings: Object.keys(filtered).length > 0 ? filtered : undefined,
+              })
+            );
+          }
+        }
+      } catch {
+        // Ignore stale old outline cleanup errors
+      }
+    }
+    vault.write(vdocPath, serializeVDocJson(remappedDoc));
+    vault.write(outlinePath, serializeOutlineJson(nextPayload));
+  });
+
+  options?.openLink?.(outlinePath, "split-right");
+  requestOutlineReveal(outlinePath, finalRootId, { zoom: false });
+  return { outlinePath, outlineId: payload.id, rootNodeId: finalRootId };
+}
+
+/**
  * [읽기 전용 상태 진단: VDoc → Outline]
  * 현재 `.vdoc` 의 `.outline` 연결 상태를 4단계(`linked` / `out-of-scope` / `broken` / `unlinked`)로 진단한다.
  */
@@ -1729,6 +1896,10 @@ export interface OpenOutlineForVDocResult {
   readonly rootNodeId: string;
   readonly created: boolean;
   readonly healed?: boolean;
+  /** 단독 `.vdoc`을 새 `.vproj` 폴더로 승격 이동한 경우 이동된 `.vdoc` 경로와 프로젝트 폴더 경로 */
+  readonly vdocPath?: string;
+  readonly projectPath?: string | null;
+  readonly promotedToProject?: boolean;
 }
 
 /**
@@ -1736,17 +1907,23 @@ export interface OpenOutlineForVDocResult {
  * 1) 연결된 `.outline` 을 직접 경로 또는 불변 ID 자가 치유(`resolveOutlineForVDoc`)로 찾아 즉시 연다.
  * 2) 연결된 `.outline` 이 없을 때:
  *    - `options.allowCreate === false` 이면 몰래 새 파일을 만들지 않고 `null` 을 반환한다 (UI에서 명시적 연결 피커 표시).
- *    - `options.allowCreate !== false` (기본값 `true`) 이면 무손실 역추출로 `<파일명>.outline` 을 생성하고 ID+경로 대칭 바인딩한다.
+ *    - `options.allowCreate !== false` (기본값 `true`) 이면 무손실 역추출로 `<이름>.outline` 을 생성하고 ID+경로 대칭 바인딩한다.
+ *    - `options.promoteStandaloneToProject === true` 이고 현재 `.vdoc`이 어떤 `.vproj/` 밖(단독 문서)에 있다면,
+ *      새 `<이름>.vproj/` 프로젝트 폴더를 만들고 현재 `.vdoc`을 그 안으로 옮긴 뒤 같은 폴더에 `.outline`을 생성·바인딩한다.
  */
 export function openOrCreateOutlineForVDoc(
   vault: VaultPort,
   vdocPath: string,
   openLink?: BridgeOpenLink,
-  options?: { readonly focusNodeId?: string; readonly allowCreate?: boolean }
+  options?: {
+    readonly focusNodeId?: string;
+    readonly allowCreate?: boolean;
+    readonly outlineName?: string;
+    readonly promoteStandaloneToProject?: boolean;
+  }
 ): OpenOutlineForVDocResult | null {
   if (!vault.exists(vdocPath)) return null;
   const doc = parseVDocJson(vault.read(vdocPath), stem(vdocPath));
-  const vdocUri = toVaultUri(vdocPath);
 
   // Case A: Bound directly OR recoverable via immutable ID / backlink self-healing
   const resolved = resolveOutlineForVDoc(vault, vdocPath, doc, { heal: true });
@@ -1761,25 +1938,51 @@ export function openOrCreateOutlineForVDoc(
       rootNodeId: resolved.rootNodeId,
       created: false,
       healed: resolved.healed,
+      vdocPath,
+      projectPath: findOwningProjectPath(vdocPath),
+      promotedToProject: false,
     };
   }
 
   // Never silently auto-create when caller asks for explicit-link confirmation
   if (options?.allowCreate === false) return null;
 
-  // Case B: Explicitly requested creation -> extract bound `.outline` losslessly & stamp IDs on both sides
+  // Case B: Explicitly requested creation -> promote standalone `.vdoc` into a new `.vproj/` when requested
   if (vault.isReadOnly?.()) return null;
+
+  const customStem = options?.outlineName?.trim()
+    ? sanitizeFileStem(options.outlineName.trim().replace(/\.outline$/i, ""), stem(vdocPath))
+    : sanitizeFileStem(stem(vdocPath), "outline");
+
+  let effectiveVDocPath = vdocPath;
+  let projectPath = findOwningProjectPath(vdocPath);
+  let promotedToProject = false;
+
+  if (options?.promoteStandaloneToProject && !projectPath) {
+    const parentDir = dirname(vdocPath);
+    const projFolderPath = vault.getUniquePath(parentDir, customStem, "vproj");
+    vault.createFolder(projFolderPath);
+    const moved = vault.move(vdocPath, projFolderPath);
+    effectiveVDocPath = moved.newPath;
+    projectPath = projFolderPath;
+    promotedToProject = true;
+  }
+
+  const effectiveDoc = vault.exists(effectiveVDocPath)
+    ? parseVDocJson(vault.read(effectiveVDocPath), stem(effectiveVDocPath))
+    : doc;
+  const vdocUri = toVaultUri(effectiveVDocPath);
   const registry = loadVaultSyntaxRegistry(vault);
-  const { outline, patchedDoc, docNodeId } = extractBoundOutlineFromVDoc(doc, registry);
-  const outlineStem = sanitizeFileStem(stem(vdocPath), "outline");
-  const outlinePath = vault.getUniquePath(dirname(vdocPath), outlineStem, "outline");
+  const { outline, patchedDoc, docNodeId } = extractBoundOutlineFromVDoc(effectiveDoc, registry);
+  const outlineDir = dirname(effectiveVDocPath);
+  const outlinePath = vault.getUniquePath(outlineDir, customStem, "outline");
   const now = new Date().toISOString();
-  const outlineId = outline.id ?? `outline-${doc.docId}`;
+  const outlineId = outline.id ?? `outline-${effectiveDoc.docId}`;
 
   const outlinePayload: OutlineFilePayload = {
     version: 1,
     id: outlineId,
-    title: outline.title || doc.title || outlineStem,
+    title: options?.outlineName?.trim() || outline.title || effectiveDoc.title || customStem,
     defaultView: "bullets",
     createdAt: now,
     updatedAt: now,
@@ -1787,7 +1990,7 @@ export function openOrCreateOutlineForVDoc(
       [docNodeId]: {
         docId: patchedDoc.docId,
         vdocPath: vdocUri,
-        profileId: doc.viewId ?? resolveDocumentView(doc).id,
+        profileId: effectiveDoc.viewId ?? resolveDocumentView(effectiveDoc).id,
         lastSyncedAt: now,
       },
     },
@@ -1803,15 +2006,22 @@ export function openOrCreateOutlineForVDoc(
     },
   };
 
-  runGuardedSync([outlinePath, vdocPath], () => {
+  runGuardedSync([outlinePath, effectiveVDocPath], () => {
     vault.createFile(outlinePath, serializeOutlineJson(outlinePayload));
-    vault.write(vdocPath, serializeVDocJson(finalDoc));
+    vault.write(effectiveVDocPath, serializeVDocJson(finalDoc));
   });
 
   openLink?.(outlinePath, "split-right");
   requestOutlineReveal(outlinePath, options?.focusNodeId ?? docNodeId, { zoom: false });
 
-  return { outlinePath, rootNodeId: docNodeId, created: true };
+  return {
+    outlinePath,
+    rootNodeId: docNodeId,
+    created: true,
+    vdocPath: effectiveVDocPath,
+    projectPath,
+    promotedToProject,
+  };
 }
 
 /**
@@ -2082,6 +2292,7 @@ export function syncVDocMeaningBackToOutline(
   // Patch sections & blocks in place while preserving any non-directive memo children inside `<<doc>>`
   const patchedChildren: OutlineNode[] = [];
   const handledSectionIds = new Set<string>();
+  const stampedBlockSourceIds = new Map<string, string>();
 
   for (const existingChild of existingDocNode.children) {
     const matchedPage = doc.pages.find((p) => p.sourceNodeId === existingChild.id);
@@ -2116,15 +2327,25 @@ export function syncVDocMeaningBackToOutline(
       nextBlockNodes.push(patchExistingBlockOutlineNode(bNode, matchedBlk, doc, registry));
     }
 
-    // 2) Append any newly inserted blocks from Design mode that didn't exist in `.outline` yet
+    // 2) Append any newly inserted blocks from Design mode / asset insert that didn't exist in `.outline` yet
+    //    `extractedFull.patchedDoc` stamps fresh `sourceNodeId`s matching `extractedSec.children`,
+    //    so we look up by `blockId` in `patchedPage` and also stamp back into `.vdoc` for 1:1 reveal sync.
     const extractedSec = extractedDocChildren.find((n) => n.id === matchedPage.sourceNodeId);
+    const extractedPatchedPage = extractedFull.patchedDoc.pages.find((p) => p.pageId === matchedPage.pageId);
     for (const blk of matchedPage.blocks) {
       if (blk.sourceNodeId && handledBlockIds.has(blk.sourceNodeId)) continue;
+      const stampedBlk = extractedPatchedPage?.blocks.find((b) => b.blockId === blk.blockId);
+      const targetNodeId = blk.sourceNodeId ?? stampedBlk?.sourceNodeId;
       const extractedBlkNode = extractedSec?.children?.find(
-        (c) => c.id === blk.sourceNodeId || c.id === existingBlockById.get(blk.sourceNodeId ?? "")?.id
+        (c) =>
+          (targetNodeId && c.id === targetNodeId) ||
+          (blk.sourceNodeId && c.id === existingBlockById.get(blk.sourceNodeId)?.id)
       );
       if (extractedBlkNode) {
         nextBlockNodes.push(toOutlinerNode(extractedBlkNode));
+        if (!blk.sourceNodeId && extractedBlkNode.id) {
+          stampedBlockSourceIds.set(blk.blockId, extractedBlkNode.id);
+        }
       }
     }
 
@@ -2169,6 +2390,19 @@ export function syncVDocMeaningBackToOutline(
 
   runGuardedSync([outlinePath, vdocPath], () => {
     vault.write(outlinePath, serializeOutlineJson(nextPayload));
+    if (stampedBlockSourceIds.size > 0 && vault.exists(vdocPath)) {
+      const updatedDoc: VDocDocument = {
+        ...doc,
+        pages: doc.pages.map((p) => ({
+          ...p,
+          blocks: p.blocks.map((b) => {
+            const stamped = stampedBlockSourceIds.get(b.blockId);
+            return stamped && !b.sourceNodeId ? { ...b, sourceNodeId: stamped } : b;
+          }),
+        })),
+      };
+      vault.write(vdocPath, serializeVDocJson(updatedDoc));
+    }
   });
   return true;
 }

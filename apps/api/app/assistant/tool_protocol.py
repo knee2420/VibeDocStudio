@@ -9,6 +9,7 @@
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 import json
 import re
 from typing import Any
@@ -19,24 +20,55 @@ OPEN_TAG = "<tool_call>"
 CLOSE_TAG = "</tool_call>"
 
 
-def _parse_call(raw: str, index: int) -> ToolCall | None:
+@dataclass(frozen=True)
+class MalformedToolCall:
+    raw: str
+    name: str | None
+    reason: str
+    detail: str
+    chars: int
+
+
+def _extract_name_hint(raw: str) -> str | None:
+    match = re.search(r'"name"\s*:\s*"([^"]+)"', raw)
+    return match.group(1) if match else None
+
+
+def _parse_call_detailed(raw: str, index: int) -> tuple[ToolCall | None, MalformedToolCall | None]:
     body = raw.strip()
     fence = re.match(r"^```(?:json)?\s*(.*?)\s*```$", body, re.S)
     if fence:
         body = fence.group(1)
     try:
         data = json.loads(body)
-    except ValueError:
-        return None
+    except ValueError as exc:
+        return None, MalformedToolCall(
+            raw=raw,
+            name=_extract_name_hint(raw),
+            reason="invalid_json",
+            detail=str(exc),
+            chars=len(raw),
+        )
     if not isinstance(data, dict) or not isinstance(data.get("name"), str):
-        return None
+        return None, MalformedToolCall(
+            raw=raw,
+            name=_extract_name_hint(raw),
+            reason="missing_name",
+            detail="JSON 객체에 문자열 'name' 필드가 없습니다.",
+            chars=len(raw),
+        )
     arguments = data.get("arguments")
     if not isinstance(arguments, dict):
         arguments = {}
     call_id = data.get("id")
     if not isinstance(call_id, str) or not call_id.strip():
         call_id = f"call_{index}"
-    return ToolCall(call_id=call_id.strip(), name=data["name"].strip(), arguments=arguments)
+    return ToolCall(call_id=call_id.strip(), name=data["name"].strip(), arguments=arguments), None
+
+
+def _parse_call(raw: str, index: int) -> ToolCall | None:
+    call, _ = _parse_call_detailed(raw, index)
+    return call
 
 
 class ToolCallExtractor:
@@ -48,6 +80,7 @@ class ToolCallExtractor:
         self._count = 0
         self._id_prefix = id_prefix
         self.malformed: list[str] = []
+        self.malformed_details: list[MalformedToolCall] = []
 
     def feed(self, chunk: str) -> tuple[str, list[ToolCall]]:
         self._buffer += chunk
@@ -72,9 +105,11 @@ class ToolCallExtractor:
             self._buffer = self._buffer[idx + len(CLOSE_TAG):]
             self._inside = False
             self._count += 1
-            call = _parse_call(raw, self._count)
+            call, err = _parse_call_detailed(raw, self._count)
             if call is None:
                 self.malformed.append(raw)
+                if err is not None:
+                    self.malformed_details.append(err)
             else:
                 if call.call_id == f"call_{self._count}":
                     call = ToolCall(f"{self._id_prefix}_{self._count}", call.name, call.arguments)
@@ -90,8 +125,7 @@ class ToolCallExtractor:
     def pending_name(self) -> str | None:
         if not self._inside:
             return None
-        match = re.search(r'"name"\s*:\s*"([^"]+)"', self._buffer)
-        return match.group(1) if match else None
+        return _extract_name_hint(self._buffer)
 
     def flush(self) -> tuple[str, list[ToolCall]]:
         """턴이 끝났을 때 남은 꼬리. 닫히지 않은 도구 블록은 호출로 인정하지 않는다."""
@@ -100,6 +134,15 @@ class ToolCallExtractor:
         if self._inside:
             self._inside = False
             self.malformed.append(tail)
+            self.malformed_details.append(
+                MalformedToolCall(
+                    raw=tail,
+                    name=_extract_name_hint(tail),
+                    reason="unclosed_tag",
+                    detail="</tool_call> 닫힘 태그 전에 출력이 종료되었습니다.",
+                    chars=len(tail),
+                )
+            )
             return "", []
         return tail, []
 

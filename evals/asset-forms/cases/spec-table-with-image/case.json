@@ -1,0 +1,17 @@
+{
+ "id": "spec-table-with-image",
+ "tags": [
+  "table",
+  "image",
+  "rowspan"
+ ],
+ "similar": {
+  "text": "새 제품: 모델 DX-9, 가로세로높이 150x90x60mm, 중량 0.52kg, 판매가 590,000원, 색상 블랙/실버.",
+  "expect": {
+   "filled_min": 4,
+   "unmapped_has": [
+    "색상"
+   ]
+  }
+ }
+}

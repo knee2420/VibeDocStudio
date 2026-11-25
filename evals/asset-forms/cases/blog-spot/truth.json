@@ -1,0 +1,141 @@
+{
+ "schema": "vibe-asset/3",
+ "assetId": "truth",
+ "title": "블로그 장소 소개",
+ "scope": "section",
+ "nodes": [
+  {
+   "t": "field",
+   "role": "heading",
+   "field": {
+    "id": "place_name",
+    "type": "text",
+    "hint": "장소 이름"
+   },
+   "variant": "h2"
+  },
+  {
+   "t": "grid",
+   "component": "columns",
+   "rows": [
+    {
+     "cells": [
+      {
+       "role": "value",
+       "nodes": [
+        {
+         "t": "field",
+         "role": "image",
+         "field": {
+          "id": "photo1",
+          "type": "image",
+          "hint": "사진 1"
+         }
+        }
+       ]
+      },
+      {
+       "role": "value",
+       "nodes": [
+        {
+         "t": "field",
+         "role": "image",
+         "field": {
+          "id": "photo2",
+          "type": "image",
+          "hint": "사진 2"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "container",
+   "component": "frame",
+   "children": [
+    {
+     "t": "grid",
+     "component": "kv",
+     "rows": [
+      {
+       "cells": [
+        {
+         "role": "meta-key",
+         "text": "주소"
+        },
+        {
+         "role": "meta-value",
+         "field": {
+          "id": "address",
+          "type": "text",
+          "hint": "주소"
+         }
+        }
+       ]
+      },
+      {
+       "cells": [
+        {
+         "role": "meta-key",
+         "text": "영업시간"
+        },
+        {
+         "role": "meta-value",
+         "field": {
+          "id": "hours",
+          "type": "text",
+          "hint": "영업시간"
+         }
+        }
+       ]
+      },
+      {
+       "cells": [
+        {
+         "role": "meta-key",
+         "text": "대표 메뉴"
+        },
+        {
+         "role": "meta-value",
+         "field": {
+          "id": "menu",
+          "type": "text",
+          "hint": "대표 메뉴"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "container",
+   "component": "frame",
+   "variant": "tip",
+   "children": [
+    {
+     "t": "field",
+     "role": "body",
+     "field": {
+      "id": "tip",
+      "type": "text",
+      "hint": "팁"
+     }
+    }
+   ]
+  },
+  {
+   "t": "field",
+   "role": "body",
+   "field": {
+    "id": "body",
+    "type": "rich",
+    "hint": "본문"
+   }
+  }
+ ]
+}
