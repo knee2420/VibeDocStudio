@@ -15,6 +15,7 @@ import {
   ChevronRight,
   ChevronUp,
   Copy,
+  Eye,
   FileUp,
   Globe,
   Library,
@@ -697,6 +698,53 @@ const ReferenceCard: React.FC<{
               setSegments((prev) => prev.filter((s) => s.id !== id));
               if (selectedSegmentId === id) setSelectedSegmentId(null);
             }}
+            renderSegmentActions={() => (
+              <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-lg text-[11px] select-none">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void createRegionPin()}
+                  className="h-6 px-2 rounded-md bg-[#0d99ff] hover:bg-[#0b8ae6] text-white font-semibold inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  title="이 영역에 핀 꽂기"
+                >
+                  {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <MapPin className="w-3 h-3" />}
+                  핀 꽂기
+                </button>
+                <button
+                  type="button"
+                  disabled={!regionRef}
+                  onClick={() => {
+                    if (!regionRef) return;
+                    attachToComposer([regionRef]);
+                    showFeedback("✦ AI Composer 에 첨부했습니다");
+                  }}
+                  className="h-6 px-2 rounded-md bg-violet-50 hover:bg-violet-100 text-violet-800 border border-violet-200/80 font-semibold inline-flex items-center gap-1 cursor-pointer disabled:opacity-40"
+                  title="이 영역을 AI Composer 컨텍스트에 첨부 (Ctrl+L)"
+                >
+                  <Sparkles className="w-3 h-3 text-violet-600" />
+                  AI 첨부
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void copyText(regionText?.text || "")}
+                  className="h-6 w-6 rounded-md hover:bg-slate-100 text-slate-600 inline-flex items-center justify-center cursor-pointer"
+                  title="영역 텍스트 복사"
+                >
+                  <Copy className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSegments([]);
+                    setSelectedSegmentId(null);
+                  }}
+                  className="h-6 w-6 rounded-md hover:bg-rose-50 hover:text-rose-600 text-slate-400 inline-flex items-center justify-center cursor-pointer"
+                  title="선택 취소"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
           />
         )}
 
@@ -981,12 +1029,28 @@ const AddReferencePopover: React.FC<{ onClose: () => void }> = ({ onClose }) => 
  */
 const LIST_HEIGHT = { default: 260, min: 120, max: 900 } as const;
 const LIST_HEIGHT_KEY = "vdoc:reference-list-height";
+const LIST_EXPANDED_KEY = "vdoc:reference-list-expanded";
 const readListHeight = (): number => {
   try {
     const v = Number(window.localStorage.getItem(LIST_HEIGHT_KEY));
     return Number.isFinite(v) && v >= LIST_HEIGHT.min ? v : LIST_HEIGHT.default;
   } catch {
     return LIST_HEIGHT.default;
+  }
+};
+const readListExpanded = (): boolean => {
+  try {
+    const v = window.localStorage.getItem(LIST_EXPANDED_KEY);
+    return v === null ? true : v === "1";
+  } catch {
+    return true;
+  }
+};
+const writeListExpanded = (expanded: boolean) => {
+  try {
+    window.localStorage.setItem(LIST_EXPANDED_KEY, expanded ? "1" : "0");
+  } catch {
+    /* ignore */
   }
 };
 
@@ -1007,7 +1071,7 @@ const ViewerClosedHint: React.FC = () => {
 };
 
 /** 레퍼런스 뷰어 본문: 열린 레퍼런스 탭 줄 + 원본 · 핀 카드 (분할 작업창 · 사이드바 옆 창 공용). */
-const ReferenceViewerBody: React.FC<{ headerExtra?: React.ReactNode }> = ({ headerExtra }) => {
+const ReferenceViewerBody: React.FC<{ headerExtra?: React.ReactNode; onClose?: () => void }> = ({ headerExtra, onClose }) => {
   const bound = useReferenceStore((s) => s.bound);
   const activeRefId = useReferenceStore((s) => s.activeRefId);
   const setViewerOpen = useWorkspaceLayoutStore((s) => s.setRefViewerOpen);
@@ -1021,7 +1085,7 @@ const ReferenceViewerBody: React.FC<{ headerExtra?: React.ReactNode }> = ({ head
           key={current.refId}
           entry={current}
           number={currentNumber}
-          onClose={() => setViewerOpen(false)}
+          onClose={onClose ?? (() => setViewerOpen(false))}
           references={references}
           onSelectReference={(refId) => {
             useReferenceStore.getState().setActiveRefId(refId);
@@ -1051,6 +1115,7 @@ export const ReferenceViewerPane: React.FC = () => {
   const viewerOpen = useWorkspaceLayoutStore((s) => s.refViewerOpen);
   const setViewerOpen = useWorkspaceLayoutStore((s) => s.setRefViewerOpen);
   const setRefPlacement = useWorkspaceLayoutStore((s) => s.setRefPlacement);
+  const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
   const width = useWorkspaceLayoutStore((s) => s.referenceSplitWidth);
   const setWidth = useWorkspaceLayoutStore((s) => s.setReferenceSplitWidth);
   const resetWidth = useWorkspaceLayoutStore((s) => s.resetReferenceSplitWidth);
@@ -1069,9 +1134,13 @@ export const ReferenceViewerPane: React.FC = () => {
         headerExtra={
           <button
             type="button"
-            onClick={() => setRefPlacement("split")}
+            onClick={() => {
+              writeListExpanded(false);
+              setRefPlacement("split");
+              setLeftSidebarOpen(false);
+            }}
             className="fig-icon-btn shrink-0"
-            title="목록과 뷰어를 에디터 옆 한 창으로 (분할 작업창)"
+            title="목록 접고 뷰어만 남기기 (분할 작업창)"
           >
             <SquareSplitHorizontal className="w-3.5 h-3.5" />
           </button>
@@ -1104,7 +1173,13 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
   const setViewerOpen = useWorkspaceLayoutStore((s) => s.setRefViewerOpen);
   const closeAllReferences = useWorkspaceSessionStore((s) => s.closeAllReferences);
 
-  const [listExpanded, setListExpanded] = useState(true);
+  const [listExpanded, setListExpandedState] = useState(() => (isSplit ? readListExpanded() : true));
+  const setListExpanded = (next: boolean) => {
+    setListExpandedState(next);
+    if (isSplit) writeListExpanded(next);
+  };
+  // 규칙 2: 좌측 탭 모드에서 [미리보기] 버튼을 누르면 목록 아래에 미리보기를 띄운다.
+  const [inlinePreviewOpen, setInlinePreviewOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [listHeight, setListHeightState] = useState(readListHeight);
   const setListHeight = (h: number) => {
@@ -1133,8 +1208,13 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
   const currentNumber = current ? bound.indexOf(current) + 1 : 0;
   const totalPins = useMemo(() => bound.reduce((acc, b) => acc + (pins[b.refId]?.length ?? 0), 0), [bound, pins]);
 
+  // 규칙 3: 목록 항목 제목 클릭 → 오른쪽 슬라이딩 큰 뷰어로 띄운다 (좌측 인라인 미리보기는 닫음).
   const openViewer = (refId: string) => {
     store().setActiveRefId(refId);
+    if (!isSplit) {
+      setInlinePreviewOpen(false);
+      setRefPlacement("left-tab");
+    }
     setViewerOpen(true);
   };
 
@@ -1209,29 +1289,57 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
-          <button
-            type="button"
-            onClick={() => setListExpanded(!listExpanded)}
-            className="p-1 rounded hover:bg-slate-200 text-slate-500 cursor-pointer"
-            title={listExpanded ? "목록 접기" : "목록 펼치기"}
-          >
-            {listExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (isSplit) {
+          {!isSplit && (
+            <button
+              type="button"
+              data-testid="reference-inline-preview-btn"
+              aria-pressed={inlinePreviewOpen}
+              disabled={bound.length === 0}
+              onClick={() => {
+                const next = !inlinePreviewOpen;
+                setInlinePreviewOpen(next);
+                if (next) {
+                  // 목록 아래 미리보기를 열면 오른쪽 슬라이딩 뷰어는 닫아 중복을 막는다
+                  setViewerOpen(false);
+                  if (!activeRefId && bound[0]) store().setActiveRefId(bound[0].refId);
+                }
+              }}
+              className={`h-6 px-1.5 rounded text-[11px] inline-flex items-center gap-1 cursor-pointer transition disabled:opacity-40 ${
+                inlinePreviewOpen
+                  ? "bg-sky-100 text-sky-900 font-semibold"
+                  : "hover:bg-slate-200/80 text-slate-600"
+              }`}
+              title={inlinePreviewOpen ? "목록 아래 미리보기 닫기" : "목록 아래에 미리보기 열기"}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>미리보기</span>
+            </button>
+          )}
+          {isSplit && (
+            <button
+              type="button"
+              data-testid="reference-list-toggle-btn"
+              onClick={() => setListExpanded(!listExpanded)}
+              className="h-6 px-1.5 rounded hover:bg-slate-200/80 text-[11px] text-slate-600 inline-flex items-center gap-0.5 cursor-pointer"
+              title={listExpanded ? "목록 접기 (미리보기만 크게 보기)" : "목록 펼치기"}
+            >
+              {listExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              <span>{listExpanded ? "접기" : "목록"}</span>
+            </button>
+          )}
+          {isSplit && (
+            <button
+              type="button"
+              onClick={() => {
                 setRefPlacement("closed");
                 closeAllReferences();
-              } else {
-                setLeftSidebarOpen(false);
-              }
-            }}
-            className="p-1 rounded hover:bg-rose-100 hover:text-rose-600 text-slate-500 cursor-pointer"
-            title={isSplit ? "스플릿 작업창 닫기" : "좌측 패널 닫기"}
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
+              }}
+              className="p-1 rounded hover:bg-rose-100 hover:text-rose-600 text-slate-500 cursor-pointer"
+              title="스플릿 작업창 닫기"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </header>
 
@@ -1261,15 +1369,15 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
         <ReferenceLibraryView
           bound={bound}
           currentRefId={current?.refId ?? null}
-          viewerOpen={viewerOpen}
-          height={isSplit && viewerOpen ? listHeight : undefined}
+          viewerOpen={isSplit ? viewerOpen : inlinePreviewOpen || viewerOpen}
+          height={(isSplit && viewerOpen) || (!isSplit && inlinePreviewOpen) ? listHeight : undefined}
           canAdd={Boolean(activeProject)}
           onAdd={() => setAddOpen(true)}
           onOpen={openViewer}
         />
       )}
 
-      {isSplit && viewerOpen && listExpanded && bound.length > 0 && (
+      {((isSplit && viewerOpen) || (!isSplit && inlinePreviewOpen)) && listExpanded && bound.length > 0 && (
         <div
           role="separator"
           aria-orientation="horizontal"
@@ -1280,15 +1388,17 @@ export const ReferenceManagerWidget: React.FC<{ isSplit?: boolean }> = ({ isSpli
         />
       )}
 
-      {/* 분할 작업창: 목록 아래에 뷰어. 좌측 탭: 뷰어는 사이드바 오른쪽 창(ReferenceViewerPane)에 열린다. */}
+      {/* 분할 작업창: 목록 아래에 뷰어. 좌측 탭: [미리보기] 켰을 때만 목록 아래에 인라인 뷰어. */}
       {isSplit && (viewerOpen ? <ReferenceViewerBody /> : <ViewerClosedHint />)}
+      {!isSplit && inlinePreviewOpen && <ReferenceViewerBody onClose={() => setInlinePreviewOpen(false)} />}
     </div>
   );
 };
 
 export const ReferenceSplitViewport: React.FC = () => {
   const refPlacement = useWorkspaceLayoutStore((s) => s.refPlacement);
-  const openReferenceIds = useWorkspaceSessionStore((s) => s.openReferenceIds);
+  const leftSidebarOpen = useWorkspaceLayoutStore((s) => s.leftSidebarOpen);
+  const activeTab = useWorkspaceLayoutStore((s) => s.activeActivityTab);
   const splitWidth = useWorkspaceLayoutStore((s) => s.referenceSplitWidth);
   const setSplitWidth = useWorkspaceLayoutStore((s) => s.setReferenceSplitWidth);
   const resetSplitWidth = useWorkspaceLayoutStore((s) => s.resetReferenceSplitWidth);
@@ -1298,7 +1408,8 @@ export const ReferenceSplitViewport: React.FC = () => {
 
   const { onResizeStart } = useDragResize({ axis: "x", size: splitWidth, onResize: setSplitWidth });
 
-  const isOpen = refPlacement === "split" || (refPlacement !== "left-tab" && openReferenceIds.length > 0);
+  // 좌측 Reference 탭이 열려 있을 때는 중복(3칸) 방지 — 오직 split 모드이고 다른 탭/접힌 상태일 때만 표시
+  const isOpen = refPlacement === "split" && !(leftSidebarOpen && activeTab === "reference");
   if (!isOpen) return null;
 
   if (refSplitCollapsed) {

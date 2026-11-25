@@ -16,7 +16,7 @@ import type { VDocDocument } from "@vibe/vdoc-schema";
 
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
 import { selectActiveProject, useProjectStore } from "@/entities/vdoc-project";
-import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { setSplitDragData, useWorkspaceLayoutStore } from "@/entities/workspace-layout";
 import { playgroundActions, usePlaygroundDocIds, usePlaygroundDocs, usePlaygroundSettings } from "@/features/playground";
 import { errorMessage } from "@/shared/lib";
 
@@ -148,7 +148,13 @@ export const PlaygroundSidebarPanel: React.FC = () => {
     return (
       <div
         key={doc.docId}
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.effectAllowed = "copyMove";
+          setSplitDragData(e, { docId: doc.docId });
+        }}
         data-testid={`playground-row-${doc.docId}`}
+        title="클릭해 열기 · 캔버스로 끌어다 놓아 나란히 비교"
         className={`group relative flex items-start gap-2 px-2 py-1.5 rounded-md cursor-pointer ${
           active ? "bg-indigo-50 ring-1 ring-indigo-300" : "hover:bg-slate-100/90"
         }`}

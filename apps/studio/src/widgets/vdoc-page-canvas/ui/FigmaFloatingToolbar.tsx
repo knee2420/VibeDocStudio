@@ -2,12 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
   Eye,
-  FileEdit,
-  GitBranch,
   GripVertical,
   Hand,
   LayoutGrid,
-  LayoutTemplate,
   List,
   MousePointer2,
   PenLine,
@@ -20,25 +17,14 @@ import {
 } from "lucide-react";
 
 import { blockIcon, NEW_BLOCK_DRAG_MIME } from "@vibe/slot-canvas";
-import { listInsertableBlocks, type InsertableBlockMenuItem, type WorkbenchPhase } from "@vibe/vdoc-schema";
+import { listInsertableBlocks, type InsertableBlockMenuItem } from "@vibe/vdoc-schema";
 
 import { useAssetLibraryStore } from "@/entities/asset-library";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { LabModeToggle } from "@/features/playground";
 import { useSwitchWorkbenchPhase } from "@/features/switch-workbench-phase";
 import { AssetWireframeThumb } from "@/shared/ui";
-
-const PHASE_MODES: ReadonlyArray<{
-  id: WorkbenchPhase;
-  step: string;
-  label: string;
-  desc: string;
-  icon: React.FC<{ className?: string }>;
-}> = [
-  { id: "storylining", step: "Phase 1", label: "스토리라인 기획", desc: "참조 프로젝트 대조 & 목차 트리 구성", icon: GitBranch },
-  { id: "templating", step: "Phase 2", label: "템플릿·서식 조율", desc: "목차 노드별 서식 블록·테이블 매핑", icon: LayoutTemplate },
-  { id: "drafting", step: "Phase 3", label: "슬롯 본문 집필", desc: "A4 조판 캔버스 & 슬롯 정밀 편집", icon: FileEdit },
-];
 
 /**
  * 피그마 툴바의 도형 · 텍스트 칸처럼 묶은 블록 도구. 버튼 아이콘은 블록 레지스트리의 아이콘 그대로다
@@ -78,7 +64,7 @@ export const FigmaFloatingToolbar: React.FC = () => {
   const openRightPanel = useWorkspaceLayoutStore((s) => s.openRightPanel);
   const mode = useStudioDocumentStore((s) => s.mode);
   const toggleMode = useStudioDocumentStore((s) => s.toggleMode);
-  const { currentPhase, switchPhase } = useSwitchWorkbenchPhase();
+  const { currentPhase } = useSwitchWorkbenchPhase();
 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [blockViewMode, setBlockViewMode] = useState<"grid" | "list">("grid");
@@ -476,25 +462,8 @@ export const FigmaFloatingToolbar: React.FC = () => {
               {mode === "Editing" ? <PenLine className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
 
-            <div data-testid="execution-phase-stepper" className="flex items-center gap-0.5 bg-black/[0.05] p-0.5 rounded-[10px] ml-0.5">
-              {PHASE_MODES.map((p) => {
-                const Icon = p.icon;
-                const active = currentPhase === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    data-testid={`phase-step-${p.id}`}
-                    onClick={() => switchPhase(p.id)}
-                    title={`${p.step}: ${p.label} — ${p.desc}`}
-                    className={`w-8 h-7 rounded-[8px] flex items-center justify-center transition-colors cursor-default ${
-                      active ? "bg-white text-[#0d99ff] shadow-[0_1px_3px_rgba(0,0,0,0.12)]" : "text-black/50 hover:text-black/80"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                  </button>
-                );
-              })}
+            <div className="ml-0.5">
+              <LabModeToggle />
             </div>
           </>
         )}

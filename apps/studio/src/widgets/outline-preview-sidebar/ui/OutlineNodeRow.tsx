@@ -33,6 +33,7 @@ import { documentSurface, type OutlinerNode, type WorkbenchPhase } from "@vibe/v
 
 import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { setSplitDragData } from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachable, outlineNodeRef, withPicked } from "@/features/ai-workspace";
 import { areSlotsLocked } from "@/features/layer-visibility";
@@ -301,6 +302,20 @@ export const OutlineNodeRow = React.memo<OutlineNodeRowProps>(function OutlineNo
       data-hidden={hidden}
       data-locked={isLocked || undefined}
       {...(isRenaming ? {} : bound.attachProps)}
+      draggable={!isRenaming && (Boolean(bound.attachProps.draggable) || isDocRow || isPageRow)}
+      onDragStart={
+        isRenaming
+          ? undefined
+          : (e) => {
+              bound.attachProps.onDragStart?.(e);
+              if (isDocRow || isPageRow) {
+                const targetDocId = node.targetDocId || fallbackDocId;
+                if (targetDocId) {
+                  setSplitDragData(e, { docId: targetDocId, pageId: isPageRow ? (node.targetPageId ?? undefined) : undefined });
+                }
+              }
+            }
+      }
       style={{ paddingLeft: 4 + level * INDENT_PX }}
       className="fig-row"
       onClick={(e) => actions.select(e, node)}

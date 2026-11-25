@@ -274,17 +274,20 @@ _ANCHOR = re.compile(r"^ref:(?P<ref>[^#\s]+)(?P<rest>(?:#[^#\s]+)*)$")
 
 @dataclass(frozen=True)
 class ReferenceAnchor:
-    """`ref:<refId>[#p<쪽>][#pin:<pinId>][#blk:<blockId>]` 를 풀어 놓은 값."""
+    """`ref:<refId>[#p<쪽>][#sec:<번호>][#pin:<pinId>][#blk:<blockId>]` 를 풀어 놓은 값."""
 
     ref_id: str
     page: Optional[int] = None
     pin_id: str = ""
     block_id: str = ""
+    section: Optional[int] = None
 
     def render(self) -> str:
         out = f"ref:{self.ref_id}"
         if self.page:
             out += f"#p{self.page}"
+        if self.section is not None:
+            out += f"#sec:{self.section}"
         if self.pin_id:
             out += f"#pin:{self.pin_id}"
         if self.block_id:
@@ -295,15 +298,17 @@ class ReferenceAnchor:
     def parse(cls, raw: str) -> "ReferenceAnchor":
         match = _ANCHOR.match((raw or "").strip())
         if not match:
-            raise ValueError(f"레퍼런스 앵커 형식이 아닙니다: {raw!r} (ref:<refId>[#p<쪽>][#pin:<id>][#blk:<id>])")
-        page, pin_id, block_id = None, "", ""
+            raise ValueError(f"레퍼런스 앵커 형식이 아닙니다: {raw!r} (ref:<refId>[#p<쪽>][#sec:<번호>][#pin:<id>][#blk:<id>])")
+        page, pin_id, block_id, section = None, "", "", None
         for part in filter(None, match.group("rest").split("#")):
             if part.startswith("pin:"):
                 pin_id = part[4:]
             elif part.startswith("blk:"):
                 block_id = part[4:]
+            elif part.startswith("sec:") and part[4:].isdigit():
+                section = int(part[4:])
             elif re.fullmatch(r"p\d+", part):
                 page = int(part[1:])
             else:
                 raise ValueError(f"알 수 없는 앵커 조각 '#{part}'")
-        return cls(match.group("ref"), page, pin_id, block_id)
+        return cls(match.group("ref"), page, pin_id, block_id, section)

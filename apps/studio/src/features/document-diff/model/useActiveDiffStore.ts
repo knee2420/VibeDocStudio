@@ -26,6 +26,13 @@ export interface ActiveDiffTarget {
   beforeDoc?: VDocDocument;
   /** 버전과 비교 중이면 그 버전 (검토 화면 위에 "이 버전으로 되돌리기"). */
   version?: { id: string; name: string; at: string; kind: "named" | "auto" };
+  /** 실험실 버전 비교 중이면 그 버전 정보 (비교 화면에서 바로 "이 버전 채택"). */
+  variant?: { docId: string; label: string; targetName: string };
+  /** 좌우 · 겹쳐 비교 시 왼쪽(이전/원본) · 오른쪽(현재/실험본) 머리말 라벨. */
+  beforeLabel?: string;
+  afterLabel?: string;
+  /** 처음 열릴 때 기본 보기 모드 (Figma Compare Changes 처럼 실험실 비교는 바로 시각 비교로). */
+  initialView?: "review" | "side-by-side" | "overlay";
 }
 
 export interface ActiveDiffState {

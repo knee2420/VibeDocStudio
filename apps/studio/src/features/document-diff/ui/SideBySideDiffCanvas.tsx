@@ -169,7 +169,8 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
     : effectivePages;
   const leftEmpty = isAddedPage || (Boolean(beforeDoc) && leftPages.length === 0);
   const rightEmpty = Boolean(beforeDoc) && effectivePages.length === 0;
-  const leftTitle = activeDiff.version ? `'${activeDiff.version.name}' 버전` : "Base version (이전 서식)";
+  const leftTitle = activeDiff.beforeLabel ?? (activeDiff.version ? `'${activeDiff.version.name}' 버전` : "Base version (이전 서식)");
+  const rightTitle = activeDiff.afterLabel ?? "Current version (현재 서식)";
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#eef0f3] overflow-hidden select-text">
@@ -235,7 +236,7 @@ export const SideBySideDiffCanvas: React.FC<{ activeDiff: ActiveDiffTarget }> = 
         {/* Right: Current Version (After) */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#e9ecef]">
           <div className="px-4 py-1.5 bg-emerald-50/90 border-b border-emerald-200/80 flex items-center justify-between shrink-0 select-none">
-            <span className="text-[11px] font-bold text-emerald-900">Current version (현재 서식)</span>
+            <span className="text-[11px] font-bold text-emerald-900 truncate">{rightTitle}</span>
             <span className="px-1.5 py-0.2 rounded bg-emerald-200/80 text-emerald-800 text-[10px] font-mono font-bold">
               AFTER
             </span>

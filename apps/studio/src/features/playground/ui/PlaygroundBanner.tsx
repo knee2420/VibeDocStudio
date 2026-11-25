@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { ArrowUpRight, Check, EyeOff, FlaskConical, List } from "lucide-react";
+import { ArrowUpRight, Check, Columns2, EyeOff, FlaskConical, List } from "lucide-react";
 
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
+import { useActiveDiffStore } from "@/features/document-diff";
 
 import { playgroundActions } from "../model/playgroundActions";
 import { usePlaygroundDocIds, usePlaygroundVariants } from "../model/playgroundDocs";
@@ -17,6 +18,8 @@ export const PlaygroundBanner: React.FC = () => {
   const ids = usePlaygroundDocIds();
   const exclude = usePlaygroundSettings((s) => s.excludeFromBackdata);
   const variants = usePlaygroundVariants();
+  const activeDiff = useActiveDiffStore((s) => s.activeDiff);
+  const closeDiff = useActiveDiffStore((s) => s.closeDiff);
   const [busy, setBusy] = useState(false);
   if (!doc || !ids.has(doc.docId)) return null;
 
@@ -27,6 +30,7 @@ export const PlaygroundBanner: React.FC = () => {
   const targetName = variant?.sourcePageId
     ? (source?.pages.find((p) => p.pageId === variant.sourcePageId)?.pageLabel ?? from?.title ?? "")
     : (from?.title ?? "");
+  const isComparing = activeDiff?.diffId === `playground-compare-${doc.docId}`;
 
   const adopt = async () => {
     if (!variant) return;
@@ -63,6 +67,25 @@ export const PlaygroundBanner: React.FC = () => {
             {from.pageIds?.length ? ` · ${from.pageIds.length}쪽` : ""}
           </span>
           <ArrowUpRight className="w-3 h-3 shrink-0" />
+        </button>
+      )}
+      {from && sourceAlive && (
+        <button
+          type="button"
+          data-testid="playground-compare-btn"
+          onClick={() => {
+            if (isComparing) closeDiff();
+            else playgroundActions.compareWithSource(doc.docId, { label: variant?.label ?? doc.title, targetName });
+          }}
+          title="원본과 이 실험 버전을 좌우 · 겹쳐 비교 (Figma Compare)"
+          className={`inline-flex items-center gap-1 h-5 px-2 rounded border font-semibold cursor-pointer shrink-0 transition ${
+            isComparing
+              ? "border-indigo-600 bg-indigo-600 text-white"
+              : "border-indigo-300 bg-white hover:bg-indigo-100/70 text-indigo-900"
+          }`}
+        >
+          <Columns2 className="w-3 h-3" />
+          {isComparing ? "비교 닫기" : "원본과 비교"}
         </button>
       )}
       <div className="ml-auto flex items-center gap-2 shrink-0">

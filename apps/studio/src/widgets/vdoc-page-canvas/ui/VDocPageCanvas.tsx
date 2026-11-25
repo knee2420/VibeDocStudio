@@ -8,7 +8,13 @@ import { documentSurface, type BackdataChunk, type VDocSlot } from "@vibe/vdoc-s
 import { usePdfScaffoldJobStore } from "@/entities/scaffold-job";
 import { useSlotSelectionStore } from "@/entities/slot";
 import { selectActiveDocument, useStudioDocumentStore } from "@/entities/vdoc-document";
-import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import {
+  hasSplitDragData,
+  readSplitDragData,
+  useDocumentSplitStore,
+  useWorkspaceLayoutStore,
+  type SplitSide,
+} from "@/entities/workspace-layout";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { attachToComposer, referenceTextRef } from "@/features/ai-workspace";
 import { studioKeyLayers } from "@/features/command-bus";
@@ -20,19 +26,25 @@ import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes
 import { getOutlineProjection, outlineCommands, useOutlineSelector, ZoomFocusStyle } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
 import { DocumentDiffView, useActiveDiffStore, type ActiveDiffTarget } from "@/features/document-diff";
-import { restorePageFromVersion, restoreSlots, restoreVersion } from "@/features/document-revisions";
+import { playgroundActions } from "@/features/playground";
+import { restorePageFromVersion, restoreSlots, restoreVersion, useWorkingPagesByDoc } from "@/features/document-revisions";
+import { scrollToCanvasPage } from "@/shared/lib";
 
 import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
+import { WorkingSlotChangesContext, type GutterChangeKind, type SlotGutterChange } from "../model/WorkingChangeContext";
 import { AiStagingDrawer } from "./AiStagingDrawer";
+import { CanvasMinimapRuler } from "./CanvasMinimapRuler";
 import { SlotFrame } from "./SlotFrame";
 import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
 import { ReferenceSplitViewport, ReferenceViewerPane } from "./ReferenceSplitViewport";
+import { DocumentSplitPane } from "./DocumentSplitPane";
 import { SlotRangeAiBar } from "./SlotRangeAiBar";
 import { BlockPlacementLayer } from "./BlockPlacementLayer";
 import { FigmaFloatingToolbar } from "./FigmaFloatingToolbar";
 import { NewTabPagePicker } from "./NewTabPagePicker";
 import { HiddenLayersStyle } from "@/features/layer-visibility";
+import { DocumentGridOverlay } from "@/widgets/outline-preview-sidebar";
 
 /** 한 번에 DOM 에 올리는 페이지 수 (슬라이딩 윈도우). */
 const WINDOW_CHUNK_PAGES = 15;
@@ -170,6 +182,32 @@ const DraftingCanvas: React.FC = () => {
     />
   ));
 
+  const docIdList = React.useMemo(() => (doc ? [doc.docId] : []), [doc?.docId]);
+  const workingByDoc = useWorkingPagesByDoc(docIdList);
+  const slotChangeMap = React.useMemo(() => {
+    const map = new Map<string, SlotGutterChange>();
+    if (!doc) return map;
+    const pages = workingByDoc[doc.docId] ?? [];
+    for (const wp of pages) {
+      for (const item of wp.items) {
+        const kind: GutterChangeKind =
+          wp.kind === "added" || (item.stat.added > 0 && item.stat.removed === 0 && !item.before.trim())
+            ? "add"
+            : item.stat.removed > 0 && item.stat.added === 0 && !item.after.trim()
+              ? "del"
+              : "mod";
+        map.set(item.slotId, {
+          slotId: item.slotId,
+          kind,
+          before: item.before,
+          label: item.label,
+          statText: `+${item.stat.added} −${item.stat.removed}`,
+        });
+      }
+    }
+    return map;
+  }, [doc, workingByDoc]);
+
   if (!doc) return null;
 
   // 페이지 단위로 줌인했으면 그 페이지만 격리해 보여준다.
@@ -184,13 +222,15 @@ const DraftingCanvas: React.FC = () => {
   const seamless = documentSurface(doc).kind === "scroll";
 
   return (
-    <main
-      ref={mainRef}
-      tabIndex={-1}
-      data-vdoc-canvas-main=""
-      onClick={() => clearSelection()}
-      className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6] focus:outline-none"
-    >
+    <WorkingSlotChangesContext.Provider value={slotChangeMap}>
+      <div className="flex-1 flex min-w-0 h-full overflow-hidden">
+        <main
+          ref={mainRef}
+          tabIndex={-1}
+          data-vdoc-canvas-main=""
+          onClick={() => clearSelection()}
+          className="flex-1 overflow-y-auto overflow-x-auto px-6 py-8 select-text min-w-0 bg-[#eef1f6] focus:outline-none"
+        >
       <BlockPlacementLayer getMain={getMain} pages={pagesToRender} editable={mode === "Editing"} onPlace={onPlaceBlock} />
       <div className={`w-fit min-w-[794px] ${openReferenceCount > 0 ? "ml-2.5 mr-auto" : "mx-auto"} flex flex-col items-center`}>
         {isPageZoomed && (
@@ -270,6 +310,19 @@ const DraftingCanvas: React.FC = () => {
         </div>
       </div>
     </main>
+        <CanvasMinimapRuler
+          scrollRef={mainRef as React.RefObject<HTMLDivElement | null>}
+          pages={pagesToRender}
+          changeMap={slotChangeMap}
+          activePageId={activePageId}
+          onJumpPage={(pageId) => {
+            setActivePageId(pageId);
+            scrollToCanvasPage(pageId);
+          }}
+          depsKey={`${doc.docId}:${doc.revision}:${slotChangeMap.size}`}
+        />
+      </div>
+    </WorkingSlotChangesContext.Provider>
   );
 };
 
@@ -278,11 +331,20 @@ const DraftingCanvas: React.FC = () => {
 const VersionAwareDiffView: React.FC<{ activeDiff: ActiveDiffTarget }> = ({ activeDiff }) => {
   const docId = useStudioDocumentStore((s) => s.activeDocId);
   const version = activeDiff.version;
+  const variant = activeDiff.variant;
   const beforeDoc = activeDiff.beforeDoc;
   return (
     <DocumentDiffView
       activeDiff={activeDiff}
       revert={restoreSlots}
+      adoptVariant={
+        variant
+          ? async () => {
+              await playgroundActions.adoptVariant(variant.docId, `${variant.targetName} ${variant.label}`);
+              useActiveDiffStore.getState().closeDiff();
+            }
+          : undefined
+      }
       restoreVersion={
         version && docId
           ? async () => {
@@ -307,20 +369,55 @@ export const VDocPageCanvas: React.FC = () => {
   const activeTabKey = useStudioDocumentStore((s) => s.activeTabKey);
   const currentPhase = useWorkspaceSessionStore((s) => s.currentPhase);
   const activeDiff = useActiveDiffStore((s) => s.activeDiff);
+  const pageGridOpen = useWorkspaceLayoutStore((s) => s.pageGridOpen);
+  const openSplit = useDocumentSplitStore((s) => s.openSplit);
+  const [dropSide, setDropSide] = React.useState<SplitSide | null>(null);
   if (!hasDocument) return null;
 
-  const isNewTab = !activeDiff && activeTabKey === "new-tab";
+  const isNewTab = !activeDiff && !pageGridOpen && activeTabKey === "new-tab";
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (activeDiff || !hasSplitDragData(e)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    const rect = e.currentTarget.getBoundingClientRect();
+    const nextSide: SplitSide = e.clientX - rect.left < rect.width / 2 ? "left" : "right";
+    if (dropSide !== nextSide) setDropSide(nextSide);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+      setDropSide(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    const payload = readSplitDragData(e);
+    const side = dropSide;
+    setDropSide(null);
+    if (!payload || !side || activeDiff) return;
+    e.preventDefault();
+    openSplit(payload, side);
+  };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden relative">
+    <div
+      className="flex-1 flex flex-col overflow-hidden relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <OutlineHoverHighlight />
       <HiddenLayersStyle />
       <ZoomFocusStyle />
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         <ReferenceSplitViewport />
         <ReferenceViewerPane />
+        {!activeDiff && !pageGridOpen && <DocumentSplitPane side="left" />}
         {activeDiff ? (
           <VersionAwareDiffView activeDiff={activeDiff} />
+        ) : pageGridOpen ? (
+          <DocumentGridOverlay />
         ) : isNewTab ? (
           <NewTabPagePicker />
         ) : currentPhase === "storylining" ? (
@@ -334,10 +431,26 @@ export const VDocPageCanvas: React.FC = () => {
         ) : (
           <DraftingCanvas />
         )}
+        {!activeDiff && !pageGridOpen && <DocumentSplitPane side="right" />}
+
+        {/* Antigravity / VS Code 스타일 좌·우 화면 분할 드롭 존 */}
+        {dropSide && !activeDiff && (
+          <div
+            aria-hidden
+            data-testid={`canvas-split-dropzone-${dropSide}`}
+            className={`pointer-events-none absolute top-2 bottom-2 w-[calc(50%-12px)] z-50 rounded-xl border-2 border-dashed border-[#0d99ff] bg-[#0d99ff]/12 backdrop-blur-[1px] flex items-center justify-center transition-all ${
+              dropSide === "left" ? "left-2" : "right-2"
+            }`}
+          >
+            <div className="px-4 py-2 rounded-lg bg-[#0d99ff] text-white text-xs font-semibold shadow-lg">
+              {dropSide === "left" ? "여기에 놓아 왼쪽에 나란히 보기" : "여기에 놓아 오른쪽에 나란히 보기"}
+            </div>
+          </div>
+        )}
       </div>
-      {!activeDiff && !isNewTab && currentPhase === "drafting" && <SlotRangeAiBar />}
-      {!activeDiff && !isNewTab && <FigmaFloatingToolbar />}
-      {!activeDiff && !isNewTab && <AiStagingDrawer />}
+      {!activeDiff && !pageGridOpen && !isNewTab && currentPhase === "drafting" && <SlotRangeAiBar />}
+      {!activeDiff && !pageGridOpen && !isNewTab && <FigmaFloatingToolbar />}
+      {!activeDiff && !pageGridOpen && !isNewTab && <AiStagingDrawer />}
     </div>
   );
 };

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Check, FlaskConical, Trash2 } from "lucide-react";
+import { Check, Columns2, FlaskConical, Trash2 } from "lucide-react";
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { setSplitDragData } from "@/entities/workspace-layout";
 import { playgroundActions, type PlaygroundVariant } from "@/features/playground";
 import { errorMessage } from "@/shared/lib";
 
@@ -48,11 +49,16 @@ export const VariantRows: React.FC<{ variants: PlaygroundVariant[]; level: numbe
           <div
             key={v.doc.docId}
             role="treeitem"
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.effectAllowed = "copyMove";
+              setSplitDragData(e, { docId: v.doc.docId });
+            }}
             data-testid={`variant-row-${v.doc.docId}`}
             style={{ paddingLeft: padding }}
             className={`fig-row group ${active ? "!bg-indigo-50 ring-1 ring-indigo-300" : ""}`}
             onClick={() => playgroundActions.open(v.doc.docId)}
-            title={`${v.label} · ${v.doc.title} — 누르면 이 버전을 열어요`}
+            title={`${v.label} · ${v.doc.title} — 클릭해 열기 · 캔버스로 끌어다 놓아 나란히 비교`}
           >
             <span className="fig-row-chevron" />
             <FlaskConical className="w-3.5 h-3.5 mr-1.5 shrink-0 text-indigo-600" />
@@ -60,6 +66,20 @@ export const VariantRows: React.FC<{ variants: PlaygroundVariant[]; level: numbe
             <span className="fig-row-label text-black/60">{v.doc.title}</span>
             <span className="ml-1 shrink-0 text-[10px] text-black/35 group-hover:hidden">{ago(v.doc.updatedAt)}</span>
             <div className="hidden group-hover:flex items-center shrink-0 ml-1">
+              <button
+                type="button"
+                data-testid={`compare-variant-btn-${v.doc.docId}`}
+                disabled={busy !== null}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playgroundActions.compareWithSource(v.doc.docId, { label: v.label, targetName });
+                }}
+                title="원본과 좌우 · 겹쳐 비교"
+                className="h-5 px-1.5 rounded text-[10.5px] font-medium text-black/70 hover:bg-indigo-100 hover:text-indigo-900 inline-flex items-center gap-0.5 cursor-pointer"
+              >
+                <Columns2 className="w-3 h-3" />
+                비교
+              </button>
               <button
                 type="button"
                 data-testid={`adopt-variant-btn-${v.doc.docId}`}

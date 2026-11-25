@@ -109,6 +109,28 @@ export const useReferenceStore = create<ReferenceState>((set, get) => {
     return id;
   };
 
+  // 서버 바인딩은 단일 JSON 파일이라 동시 PATCH 시 서로 덮어쓰는(Lost Update) 문제가 생긴다.
+  // UI 는 즉시 낙관적으로 반영하고, 서버 요청만 직렬 큐로 순차 처리한다.
+  let bindingQueue: Promise<void> = Promise.resolve();
+  let pendingBindingOps = 0;
+
+  const enqueueBindingOp = (work: () => Promise<BoundReference[] | null>) => {
+    pendingBindingOps += 1;
+    const run = bindingQueue.then(async () => {
+      try {
+        const entries = await guard(work);
+        // 뒤에 대기 중인 후속 클릭이 없을 때만 서버 스냅샷으로 최종 동기화
+        if (entries && pendingBindingOps === 1) {
+          await applyBinding(entries);
+        }
+      } finally {
+        pendingBindingOps -= 1;
+      }
+    });
+    bindingQueue = run.catch(() => {});
+    return run;
+  };
+
   return {
     projectId: null,
     library: [],
@@ -235,16 +257,33 @@ export const useReferenceStore = create<ReferenceState>((set, get) => {
         }));
       }),
 
-    setEnabled: async (refId, enabled) =>
-      guard(async () => {
+    setEnabled: async (refId, enabled) => {
+      // 낙관적 업데이트: 클릭 즉시 왼쪽 Reference Manager 와 오른쪽 Composer 메뉴에 동시 반영
+      set((s) => ({
+        bound: s.bound.map((b) => (b.refId === refId ? { ...b, enabled } : b)),
+      }));
+      await enqueueBindingOp(async () => {
         const binding = await referenceApi.updateBinding(currentProject(), refId, { enabled });
-        await applyBinding(binding.entries);
-      }),
+        return binding.entries;
+      });
+    },
 
     setAllEnabled: async (enabled) => {
-      for (const b of get().bound) {
-        if (b.enabled !== enabled) await get().setEnabled(b.refId, enabled);
-      }
+      const targets = get().bound.filter((b) => b.enabled !== enabled);
+      if (targets.length === 0) return;
+      // 낙관적 업데이트: 전체를 즉시 반영하고, 서버 JSON 파일 충돌 방지를 위해 순차 저장
+      set((s) => ({
+        bound: s.bound.map((b) => ({ ...b, enabled })),
+      }));
+      await enqueueBindingOp(async () => {
+        const projectId = currentProject();
+        let lastEntries: BoundReference[] | null = null;
+        for (const b of targets) {
+          const binding = await referenceApi.updateBinding(projectId, b.refId, { enabled });
+          lastEntries = binding.entries;
+        }
+        return lastEntries;
+      });
     },
 
     toggleLayer: async (refId, layerId) =>

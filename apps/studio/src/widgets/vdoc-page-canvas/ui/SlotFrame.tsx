@@ -1,14 +1,29 @@
 import React, { useEffect, useRef, useState } from "react";
-import { BadgeCheck, Sparkles } from "lucide-react";
+import { BadgeCheck, RotateCcw, Sparkles, X } from "lucide-react";
 
 import { slotFillState, type StagedSlotHtmlChange, type VDocSlot } from "@vibe/vdoc-schema";
 
 import { stagedSlotIds, useAiStagingStore } from "@/entities/ai-staging";
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
 import { useWorkspaceSessionStore } from "@/entities/workspace-session";
+import { restoreSlots } from "@/features/document-revisions";
 import { useSlotContentActions } from "@/features/edit-slot-richtext";
 import { openEvidence, useEvidenceFocusStore } from "@/features/evidence-focus";
 import { SlotChangeReview } from "@/features/stage-ai-changes";
+import { htmlToPlain } from "@/shared/lib";
+
+import { useSlotGutterChange, type GutterChangeKind } from "../model/WorkingChangeContext";
+
+const GUTTER_COLOR: Record<GutterChangeKind, string> = {
+  add: "bg-[#2da44e]",
+  mod: "bg-[#0d99ff]",
+  del: "bg-[#cf222e]",
+};
+const GUTTER_TITLE: Record<GutterChangeKind, string> = {
+  add: "새로 추가됨",
+  mod: "수정됨",
+  del: "삭제됨",
+};
 
 export interface SlotFrameProps {
   slot: VDocSlot;
@@ -28,6 +43,8 @@ export const SlotFrame: React.FC<SlotFrameProps> = ({ slot, children, onOpenEvid
   const staged = useAiStagingStore((s) => stagedSlotIds(s.queue, docId).has(slot.slotId));
   const highlighted = useEvidenceFocusStore((s) => s.highlightedSlotIds.has(slot.slotId));
   const { toggleSlotVerified } = useSlotContentActions();
+  const gutterChange = useSlotGutterChange(slot.slotId);
+  const [gutterOpen, setGutterOpen] = useState(false);
   const state = slotFillState(slot, staged ? new Set([slot.slotId]) : undefined);
   const [frameRef, lines] = useRenderedLines(slot.constraints?.maxLines ? slot : null);
   const maxLines = slot.constraints?.maxLines;
@@ -46,7 +63,75 @@ export const SlotFrame: React.FC<SlotFrameProps> = ({ slot, children, onOpenEvid
       : "";
 
   return (
-    <div ref={frameRef} className={`relative ${ring}`} data-fill-state={state} data-overflow={overflow ? "1" : undefined}>
+    <div
+      ref={frameRef}
+      className={`relative ${ring}`}
+      data-fill-state={state}
+      data-overflow={overflow ? "1" : undefined}
+      data-change-gutter={gutterChange?.kind}
+      data-change-label={gutterChange ? `${gutterChange.label} ${gutterChange.statText}` : undefined}
+    >
+      {/* Antigravity / VS Code 스타일 왼쪽 3px 변경 거터 막대 */}
+      {gutterChange && !staged && (
+        <button
+          type="button"
+          data-testid={`slot-change-gutter-${slot.slotId}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setGutterOpen((v) => !v);
+          }}
+          title={`${GUTTER_TITLE[gutterChange.kind]} (${gutterChange.statText}) · 클릭해 이전 글 보기`}
+          className={`absolute -left-2.5 top-0.5 bottom-0.5 w-[3px] hover:w-[5px] rounded-full transition-all cursor-pointer z-20 ${GUTTER_COLOR[gutterChange.kind]}`}
+        />
+      )}
+
+      {/* 거터 클릭 시 이전 글 인라인 미니 팝오버 + 1클릭 되돌리기 */}
+      {gutterChange && gutterOpen && !staged && (
+        <div
+          data-testid={`slot-gutter-popover-${slot.slotId}`}
+          onClick={(e) => e.stopPropagation()}
+          className="absolute left-0 top-full mt-1.5 z-40 w-[min(360px,90vw)] rounded-lg border border-slate-200 bg-white shadow-xl p-2.5 text-[11.5px] text-slate-700 select-text"
+        >
+          <div className="flex items-center justify-between gap-2 pb-1.5 mb-1.5 border-b border-slate-100">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-slate-800">
+              <span className={`w-2 h-2 rounded-full ${GUTTER_COLOR[gutterChange.kind]}`} />
+              {GUTTER_TITLE[gutterChange.kind]}
+              <span className="font-mono text-[10.5px] font-normal text-slate-400">{gutterChange.statText}</span>
+            </span>
+            <div className="flex items-center gap-1">
+              {gutterChange.kind !== "add" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    restoreSlots(docId, [{ slotId: slot.slotId, before: gutterChange.before }], `${gutterChange.label} 되돌리기`);
+                    setGutterOpen(false);
+                  }}
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10.5px] font-medium cursor-pointer"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  되돌리기
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setGutterOpen(false)}
+                className="p-0.5 rounded hover:bg-slate-100 text-slate-400 cursor-pointer"
+                title="닫기"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+          {gutterChange.kind === "add" ? (
+            <p className="text-[11px] text-emerald-700">마지막 버전 이후 새로 추가된 내용입니다.</p>
+          ) : (
+            <div className="max-h-32 overflow-y-auto rounded bg-rose-50/70 border border-rose-200/70 px-2 py-1.5 text-[11px] text-rose-900/90 whitespace-pre-wrap leading-relaxed">
+              {htmlToPlain(gutterChange.before) || "(비어 있음)"}
+            </div>
+          )}
+        </div>
+      )}
+
       <SlotChangeReview
         slot={slot}
         docId={docId}

@@ -49,27 +49,20 @@ export const referencesSlot: ContextSlot = {
     const activeProject = useProjectStore(selectActiveProject);
     const projectId = activeProject?.projectId ?? "default_project";
 
-    // Composer 전용 독립 제외 플래그 (Reference Manager 원장은 절대 수정하지 않음)
-    // getSnapshot 무한 루프 방지를 위해 스토어 맵 자체를 구독하고 useMemo + EMPTY_LIST 로 참조를 캐시합니다.
-    const excludedRefMap = useAiScopeStore((s) => s.excludedReferenceIds);
+    // 핀 제외 플래그 (Composer 전용)
     const excludedPinMap = useAiScopeStore((s) => s.excludedReferencePinIds);
-    const excludedRefIds = React.useMemo(
-      () => excludedRefMap[projectId] ?? EMPTY_LIST,
-      [excludedRefMap, projectId]
-    );
     const excludedPinIds = React.useMemo(
       () => excludedPinMap[projectId] ?? EMPTY_LIST,
       [excludedPinMap, projectId]
     );
-    const toggleReferenceExcluded = useAiScopeStore((s) => s.toggleReferenceExcluded);
-    const setReferencesExcluded = useAiScopeStore((s) => s.setReferencesExcluded);
-    const clearExcludedReferences = useAiScopeStore((s) => s.clearExcludedReferences);
     const toggleReferencePinExcluded = useAiScopeStore((s) => s.toggleReferencePinExcluded);
     const clearExcludedReferencePins = useAiScopeStore((s) => s.clearExcludedReferencePins);
 
-    // Reference Manager 가 관리하는 원천 데이터
+    // Reference Manager 와 동일한 단일 원장 (`useReferenceStore.bound[].enabled`)
     const bound = useReferenceStore((s) => s.bound);
     const pins = useReferenceStore((s) => s.pins);
+    const setEnabled = useReferenceStore((s) => s.setEnabled);
+    const setAllEnabled = useReferenceStore((s) => s.setAllEnabled);
 
     const setLeftPanelTab = useWorkspaceLayoutStore((s) => s.setLeftPanelTab);
     const setLeftSidebarOpen = useWorkspaceLayoutStore((s) => s.setLeftSidebarOpen);
@@ -77,10 +70,10 @@ export const referencesSlot: ContextSlot = {
     // 각 레퍼런스별 핀 목록 수동 접기/펼치기 로컬 상태 (기본값: 펼쳐짐)
     const [collapsedRefIds, setCollapsedRefIds] = React.useState<Record<string, boolean>>({});
 
-    // 작업 패널 상 활성 레퍼런스 (RM 에서 바인딩된 자원 중 Composer 에서 제외되지 않은 것)
+    // 활성 레퍼런스 (Reference Manager 원장과 1:1 동일)
     const active = React.useMemo(() => {
-      return bound.filter((b) => b.enabled && !excludedRefIds.includes(b.refId));
-    }, [bound, excludedRefIds]);
+      return bound.filter((b) => b.enabled);
+    }, [bound]);
 
     // 작업 패널 상 활성 핀 수
     const activePinCount = React.useMemo(() => {
@@ -122,8 +115,8 @@ export const referencesSlot: ContextSlot = {
       const hasPins = pinCount > 0;
       const layersOff = Object.values(b.layers).filter((on) => !on).length;
 
-      // 작업 패널 기준 활성화 여부 (RM 원장과 분리된 독립 플래그)
-      const isRefChecked = b.enabled && !excludedRefIds.includes(b.refId);
+      // Reference Manager 원장과 1:1 동일
+      const isRefChecked = b.enabled;
 
       // 메타 표시 포맷팅
       const metaParts: string[] = [];
@@ -145,13 +138,13 @@ export const referencesSlot: ContextSlot = {
       // 선택된(체크된) 항목만 핀 펼침이 가능함 (미선택 시 하위 핀 완전 숨김)
       const isExpanded = isRefChecked && hasPins && !collapsedRefIds[b.refId];
 
-      // 1) 레퍼런스 부모 행 (클릭 시 Composer 전용 제외 플래그만 토글, RM 원장 보존)
+      // 1) 레퍼런스 부모 행 — Reference Manager 원장(`setEnabled`)과 즉시 1:1 동기화
       items.push({
         id: b.refId,
         title: `참조${idx + 1}: ${b.item.title}`,
         detail: metaParts.join(" · "),
         checked: isRefChecked,
-        onClick: () => toggleReferenceExcluded(projectId, b.refId),
+        onClick: () => void setEnabled(b.refId, !isRefChecked),
         expand:
           isRefChecked && hasPins
             ? {
@@ -240,18 +233,14 @@ export const referencesSlot: ContextSlot = {
         allOn:
           bound.length > 0
             ? () => {
-                clearExcludedReferences(projectId);
                 clearExcludedReferencePins(projectId);
+                void setAllEnabled(true);
               }
             : undefined,
         allOff:
           bound.length > 0
             ? () => {
-                setReferencesExcluded(
-                  projectId,
-                  bound.map((b) => b.refId),
-                  true
-                );
+                void setAllEnabled(false);
               }
             : undefined,
       },

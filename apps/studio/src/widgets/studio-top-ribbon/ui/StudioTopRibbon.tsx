@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
   Columns,
+  FileEdit,
+  GitBranch,
+  LayoutTemplate,
   PanelLeft,
   PanelRight,
   Redo2,
@@ -10,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useActiveSlotEditorStore } from "@vibe/slot-editor";
+import type { WorkbenchPhase } from "@vibe/vdoc-schema";
 
 import { useAiStagingStore } from "@/entities/ai-staging";
 import {
@@ -24,10 +28,23 @@ import { useWorkspaceSessionStore } from "@/entities/workspace-session";
 import { VDocFileActionButtons } from "@/features/export-import-vdoc";
 import { DocumentLifecycleMenuItems } from "@/features/manage-documents";
 import { ImportPdfButton } from "@/features/import-pdf-form";
-import { LabModeToggle, useLabMode } from "@/features/playground";
+import { useLabMode } from "@/features/playground";
+import { useSwitchWorkbenchPhase } from "@/features/switch-workbench-phase";
 import { useHistoryStore } from "@/shared/lib";
 
 import { ScaffoldJobStatusPill } from "./ScaffoldJobStatusPill";
+
+const PHASE_STEPS: ReadonlyArray<{
+  id: WorkbenchPhase;
+  step: string;
+  label: string;
+  desc: string;
+  icon: React.FC<{ className?: string }>;
+}> = [
+  { id: "storylining", step: "Phase 1", label: "기획", desc: "참조 프로젝트 대조 & 목차 트리 구성", icon: GitBranch },
+  { id: "templating", step: "Phase 2", label: "서식", desc: "목차 노드별 서식 블록·테이블 매핑", icon: LayoutTemplate },
+  { id: "drafting", step: "Phase 3", label: "집필", desc: "A4 조판 캔버스 & 슬롯 정밀 편집", icon: FileEdit },
+];
 
 const selectRibbonDocFields = (s: Parameters<typeof selectActiveDocument>[0]) => {
   const d = selectActiveDocument(s);
@@ -61,6 +78,7 @@ export const StudioTopRibbon: React.FC = () => {
 
   const activeProject = useProjectStore(selectActiveProject);
   const lab = useLabMode();
+  const { currentPhase, switchPhase } = useSwitchWorkbenchPhase();
   const referenceId = useReferenceStore(selectCurrentReferenceId);
 
   const isAiRunning = useAiStagingStore((s) => s.isRunning);
@@ -207,9 +225,35 @@ export const StudioTopRibbon: React.FC = () => {
         </div>
       </div>
 
-      {/* Center: 모드 전환 (프로젝트 ↔ 실험실, 피그마 Design ↔ Dev Mode 자리) + 창 제목 */}
+      {/* Center: Phase 1/2/3 단계 전환 + 창 제목 */}
       <div className="flex-1 flex items-center justify-center gap-3 min-w-0 px-4">
-        <LabModeToggle />
+        <div
+          data-testid="execution-phase-stepper"
+          role="group"
+          aria-label="작업 단계"
+          className="h-6 p-0.5 rounded-full bg-slate-200/75 flex items-center gap-0.5 shrink-0"
+        >
+          {PHASE_STEPS.map((p) => {
+            const Icon = p.icon;
+            const active = currentPhase === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                data-testid={`phase-step-${p.id}`}
+                aria-pressed={active}
+                onClick={() => switchPhase(p.id)}
+                title={`${p.step}: ${p.label} — ${p.desc}`}
+                className={`h-5 px-2 rounded-full inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer transition ${
+                  active ? "bg-white text-[#0d99ff] shadow-2xs" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <Icon className="w-3 h-3" />
+                <span>{p.label}</span>
+              </button>
+            );
+          })}
+        </div>
         <span className={`text-xs font-medium truncate ${lab ? "text-[#272962]" : "text-slate-500"}`}>
           {lab ? "실험실" : activeProject.title} — {doc.title}
         </span>

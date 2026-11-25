@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import { LayoutGrid, RefreshCw } from "lucide-react";
+import { GalleryVerticalEnd, LayoutGrid, RefreshCw } from "lucide-react";
 
 import type { OutlinerNode } from "@vibe/vdoc-schema";
 
@@ -92,6 +92,8 @@ const ExplorerHeader: React.FC<{
   const projectTitle = useProjectStore((s) => selectActiveProject(s)?.title) || "프로젝트";
   const pagePreviewOpen = useWorkspaceLayoutStore((s) => s.pagePreviewOpen);
   const togglePagePreview = useWorkspaceLayoutStore((s) => s.togglePagePreview);
+  const pageGridOpen = useWorkspaceLayoutStore((s) => s.pageGridOpen);
+  const togglePageGrid = useWorkspaceLayoutStore((s) => s.togglePageGrid);
 
   return (
     <div className="h-10 pl-3 pr-2 border-b border-[var(--fig-border)] flex items-center justify-between gap-2 shrink-0">
@@ -121,10 +123,20 @@ const ExplorerHeader: React.FC<{
         </button>
         <button
           type="button"
-          data-testid="pageview-toggle-btn"
+          data-testid="page-strip-toggle-btn"
           aria-pressed={pagePreviewOpen}
           onClick={togglePagePreview}
-          title={pagePreviewOpen ? "페이지 프리뷰 패널 닫기" : "페이지 프리뷰 패널(Document preview) 열기"}
+          title={pagePreviewOpen ? "좌측 세로 미리보기 닫기" : "좌측 세로 페이지 미리보기 열기"}
+          className="fig-icon-btn"
+        >
+          <GalleryVerticalEnd className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          data-testid="pageview-toggle-btn"
+          aria-pressed={pageGridOpen}
+          onClick={togglePageGrid}
+          title={pageGridOpen ? "페이지 그리드 보기 닫기" : "도큐먼트별 페이지 그리드 보기 (Canva 스타일)"}
           className="fig-icon-btn"
         >
           <LayoutGrid className="w-3.5 h-3.5" />

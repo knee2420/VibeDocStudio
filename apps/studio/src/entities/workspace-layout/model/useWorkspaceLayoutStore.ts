@@ -75,8 +75,10 @@ export interface WorkspaceLayoutState {
   refViewerOpen: boolean;
   /** 참조 스플릿 패널 접힘 여부 (CollapsedPanelRail 로 접힘) */
   refSplitCollapsed: boolean;
-  /** 아웃라이너 왼쪽의 페이지 미리보기 패널. */
+  /** 아웃라이너 왼쪽의 세로 페이지 미리보기 패널. */
   pagePreviewOpen: boolean;
+  /** Canva 스타일 도큐먼트별 전체 페이지 그리드 뷰 열림 여부. */
+  pageGridOpen: boolean;
   shortcutHelpOpen: boolean;
   /** 우측 인스펙터의 "새 백데이터 등록" 양식 (파일 메뉴에서도 연다). */
   backdataFormOpen: boolean;
@@ -107,6 +109,8 @@ export interface WorkspaceLayoutState {
   resetReferenceSplitWidth: () => void;
   setPagePreviewOpen: (open: boolean) => void;
   togglePagePreview: () => void;
+  setPageGridOpen: (open: boolean) => void;
+  togglePageGrid: () => void;
   setShortcutHelpOpen: (open: boolean) => void;
   setBackdataFormOpen: (open: boolean) => void;
   /** 인스펙터를 펼치고 백데이터 등록 양식을 연다. */
@@ -122,7 +126,7 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
   rmSplitWidth: clamp(readStoredNumber(RM_SPLIT_WIDTH_KEY, RM_SPLIT_WIDTH.default), RM_SPLIT_WIDTH.min, RM_SPLIT_WIDTH.max),
   leftPanelTab: "outliner",
   refPlacement: "closed",
-  refViewerOpen: loadRefViewerOpenFromSession(),
+  refViewerOpen: false,
   refSplitCollapsed: false,
   sidebarWidth: clamp(readStoredNumber(SIDEBAR_WIDTH_KEY, SIDEBAR_WIDTH.default), SIDEBAR_WIDTH.min, SIDEBAR_WIDTH.max),
   pagesPaneHeight: clamp(readStoredNumber(PAGES_PANE_HEIGHT_KEY, PAGES_PANE_HEIGHT.default), PAGES_PANE_HEIGHT.min, PAGES_PANE_HEIGHT.max),
@@ -137,13 +141,29 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
     REFERENCE_SPLIT_WIDTH.max
   ),
   pagePreviewOpen: false,
+  pageGridOpen: false,
   shortcutHelpOpen: false,
   backdataFormOpen: false,
 
-  setActiveActivityTab: (tab) => set({ activeActivityTab: tab, leftSidebarOpen: true }),
+  setActiveActivityTab: (tab) =>
+    set((s) => {
+      // 규칙 4: 오른쪽 슬라이딩 미리보기가 떠 있는 상태에서 다른 카테고리 탭으로 옮기면 독립 분할 창(목록+미리보기)으로 유지
+      if (s.activeActivityTab === "reference" && tab !== "reference" && s.refViewerOpen && s.refPlacement !== "split") {
+        return { activeActivityTab: tab, leftSidebarOpen: true, refPlacement: "split", refSplitCollapsed: false };
+      }
+      // 규칙 1: 최좌측 레퍼런스 탭을 누르면 중복 분할 창을 닫고 좌측 탭(목록만)으로 정리
+      if (tab === "reference" && s.activeActivityTab !== "reference") {
+        return { activeActivityTab: tab, leftSidebarOpen: true, refPlacement: "left-tab", refViewerOpen: false };
+      }
+      return { activeActivityTab: tab, leftSidebarOpen: true };
+    }),
   toggleActivityTab: (tab) => {
-    const { activeActivityTab, leftSidebarOpen } = get();
-    set(activeActivityTab === tab && leftSidebarOpen ? { leftSidebarOpen: false } : { activeActivityTab: tab, leftSidebarOpen: true });
+    const s = get();
+    if (s.activeActivityTab === tab && s.leftSidebarOpen) {
+      set({ leftSidebarOpen: false });
+      return;
+    }
+    s.setActiveActivityTab(tab);
   },
   setLeftSidebarOpen: (open) => set({ leftSidebarOpen: open }),
   setRightSidebarOpen: (open) => set({ rightSidebarOpen: open }),
@@ -244,6 +264,8 @@ export const useWorkspaceLayoutStore = create<WorkspaceLayoutState>((set, get) =
 
   setPagePreviewOpen: (open) => set({ pagePreviewOpen: open }),
   togglePagePreview: () => set((s) => ({ pagePreviewOpen: !s.pagePreviewOpen })),
+  setPageGridOpen: (open) => set({ pageGridOpen: open }),
+  togglePageGrid: () => set((s) => ({ pageGridOpen: !s.pageGridOpen })),
   setShortcutHelpOpen: (open) => set({ shortcutHelpOpen: open }),
   setBackdataFormOpen: (open) => set({ backdataFormOpen: open }),
   openBackdataForm: () => set({ rightSidebarOpen: true, rightPanelTab: "inspector", backdataFormOpen: true }),

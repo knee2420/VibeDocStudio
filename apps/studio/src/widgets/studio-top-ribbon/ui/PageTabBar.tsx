@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { FilePlus2, FileText, GitCompare, Plus, X } from "lucide-react";
 
 import { useStudioDocumentStore } from "@/entities/vdoc-document";
+import { setSplitDragData } from "@/entities/workspace-layout";
 import { useActiveDiffStore } from "@/features/document-diff";
 import { useWorkingPagesByDoc } from "@/features/document-revisions";
 import { FigmaDiffBadge } from "@/widgets/outline-preview-sidebar/ui/FigmaDiffBadge";
@@ -87,9 +88,15 @@ export const PageTabBar: React.FC = () => {
             key={tab.key}
             role="tab"
             aria-selected={isActive}
+            draggable={Boolean(tab.docId)}
+            onDragStart={(e) => {
+              if (!tab.docId) return;
+              e.dataTransfer.effectAllowed = "copyMove";
+              setSplitDragData(e, { docId: tab.docId, pageId: tab.pageId });
+            }}
             data-diff={diffKind}
             onClick={() => handleSelectTab(tab.key)}
-            title={`${tabDoc?.title ?? ""} · ${label}`}
+            title={`${tabDoc?.title ?? ""} · ${label} (캔버스로 끌어다 놓아 나란히 보기)`}
             className={`fig-row group flex items-center gap-1.5 h-8 px-3 text-xs cursor-pointer transition shrink-0 max-w-[230px] ${
               isActive
                 ? "bg-white text-slate-900 font-semibold border border-b-white border-slate-200/90 rounded-t-lg -mb-px z-10 shadow-[0_-1px_2px_rgba(0,0,0,0.03)]"

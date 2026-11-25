@@ -17,6 +17,7 @@ import {
   useProjectStore,
 } from "@/entities/vdoc-project";
 import { useWorkspaceLayoutStore } from "@/entities/workspace-layout";
+import { useActiveDiffStore } from "@/features/document-diff";
 
 const idSuffix = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
@@ -203,4 +204,64 @@ export const playgroundActions = {
 
   /** 플레이그라운드 목록 열기. */
   showList: () => useWorkspaceLayoutStore.getState().setActiveActivityTab("playground"),
+
+  /**
+   * 실험실 버전 ↔ 원본 비교 열기 (Figma Dev Mode Compare changes 방식).
+   * 사본 문서를 연 상태에서 왼쪽(원본) · 오른쪽(실험본)을 좌우 비교 또는 겹쳐 비교로 띄운다.
+   */
+  compareWithSource: (
+    variantDocId: string,
+    opts: { label?: string; targetName?: string; initialView?: "review" | "side-by-side" | "overlay" } = {},
+  ): boolean => {
+    const store = useStudioDocumentStore.getState();
+    const variant = store.docs.find((d) => d.docId === variantDocId);
+    const from = variant?.origin?.copiedFrom;
+    if (!variant || !from) return false;
+    const source = store.docs.find((d) => d.docId === from.docId);
+    if (!source) return false;
+
+    // 오른쪽(AFTER)이 이 실험 버전이 되도록 먼저 활성화
+    if (store.activeDocId !== variant.docId) {
+      store.setActiveDocId(variant.docId);
+      showLeftTab("playground");
+    }
+
+    // 쪽 버전이면 원본 문서에서 해당 쪽만 추린 뷰를 beforeDoc 로 만들어 1:1 매칭한다
+    const beforeDoc: VDocDocument = from.pageIds?.length
+      ? { ...source, pages: source.pages.filter((p) => from.pageIds!.includes(p.pageId)) }
+      : source;
+
+    const beforeLive = new Set(beforeDoc.pages.flatMap((p) => [...iterPageSlotIds(p)]));
+    const afterLive = new Set(variant.pages.flatMap((p) => [...iterPageSlotIds(p)]));
+    const allSlotIds = new Set([...beforeLive, ...afterLive]);
+
+    const visible = (d: VDocDocument, live: Set<string>, id: string) => (live.has(id) ? (d.slots[id]?.content ?? "") : "");
+    const changedSlotIds = [...allSlotIds].filter((id) => visible(beforeDoc, beforeLive, id) !== visible(variant, afterLive, id));
+
+    const targetName =
+      opts.targetName ??
+      (from.pageIds?.[0]
+        ? (source.pages.find((p) => p.pageId === from.pageIds![0])?.pageLabel ?? source.title)
+        : source.title);
+    const versionLabel = opts.label ?? variant.title;
+
+    useActiveDiffStore.getState().openDiff({
+      type: "version",
+      diffId: `playground-compare-${variant.docId}`,
+      label: `원본 vs ${versionLabel}`,
+      beforeDoc,
+      beforeLabel: `원본 · ${targetName}`,
+      afterLabel: `${versionLabel} (실험실)`,
+      beforeSlots: Object.fromEntries(changedSlotIds.map((id) => [id, visible(beforeDoc, beforeLive, id)])),
+      afterSlots: Object.fromEntries(changedSlotIds.map((id) => [id, visible(variant, afterLive, id)])),
+      changedSlotIds,
+      slotLabels: Object.fromEntries(
+        changedSlotIds.map((id) => [id, variant.slots[id]?.label ?? beforeDoc.slots[id]?.label ?? "칸"]),
+      ),
+      revertible: false,
+      variant: { docId: variant.docId, label: versionLabel, targetName },
+      initialView: opts.initialView ?? "side-by-side",
+    });
+    return true;
+  },
 };
