@@ -202,6 +202,42 @@ export const playgroundActions = {
     return true;
   },
 
+  /**
+   * 부분 채택 — 실험실 버전(문서 버전이든 쪽 버전이든)에서 **특정 1페이지만** 골라 원본 문서의 같은 자리에 적용한다.
+   * 나머지 페이지는 전혀 건드리지 않고, 직전 원본은 자동 버전으로 보관하며 Ctrl+Z 로도 되돌릴 수 있다.
+   */
+  adoptPageFromVariant: async (variantDocId: string, targetPageId: string, label: string): Promise<boolean> => {
+    const store = useStudioDocumentStore.getState();
+    const variant = store.docs.find((d) => d.docId === variantDocId);
+    const from = variant?.origin?.copiedFrom;
+    if (!variant || !from) return false;
+    const target = store.docs.find((d) => d.docId === from.docId);
+    if (!target) throw new Error("원본 문서를 찾을 수 없어요.");
+    if (!target.pages.some((p) => p.pageId === targetPageId)) return false;
+
+    const variantPage =
+      variant.pages.find((p) => p.pageId === targetPageId) ??
+      (from.pageIds?.length === 1 && from.pageIds[0] === targetPageId ? variant.pages[0] : undefined);
+    if (!variantPage) return false;
+
+    await store.flushSave(variantDocId);
+    await store.flushSave(target.docId);
+    await documentApi.createVersion(target.docId, {
+      kind: "auto",
+      reason: "특정 페이지 부분 채택 전",
+      name: `${label} 적용 전`,
+    });
+
+    const ok = store.updateDoc(
+      target.docId,
+      (prev) => replacePageContent(prev, targetPageId, variantPage, variant.slots, { sourceVariables: variant.variables }),
+      { history: true, label: `${label} 적용` },
+    );
+    if (!ok) return false;
+    await store.flushSave(target.docId);
+    return true;
+  },
+
   /** 플레이그라운드 목록 열기. */
   showList: () => useWorkspaceLayoutStore.getState().setActiveActivityTab("playground"),
 

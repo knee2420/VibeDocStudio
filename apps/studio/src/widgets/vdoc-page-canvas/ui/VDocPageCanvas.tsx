@@ -26,7 +26,7 @@ import { applyAiSlotResult, markSlotAiEdited } from "@/features/stage-ai-changes
 import { getOutlineProjection, outlineCommands, useOutlineSelector, ZoomFocusStyle } from "@/features/zoom-hierarchy";
 import { useStableCallback } from "@/shared/lib";
 import { DocumentDiffView, useActiveDiffStore, type ActiveDiffTarget } from "@/features/document-diff";
-import { playgroundActions } from "@/features/playground";
+import { playgroundActions, useLabMode, usePlaygroundVariants, variantKey } from "@/features/playground";
 import { restorePageFromVersion, restoreSlots, restoreVersion, useWorkingPagesByDoc } from "@/features/document-revisions";
 import { scrollToCanvasPage } from "@/shared/lib";
 
@@ -34,6 +34,7 @@ import { useCanvasRangeSelection } from "../model/useCanvasRangeSelection";
 import { WorkingSlotChangesContext, type GutterChangeKind, type SlotGutterChange } from "../model/WorkingChangeContext";
 import { AiStagingDrawer } from "./AiStagingDrawer";
 import { CanvasMinimapRuler } from "./CanvasMinimapRuler";
+import { PageVersionCarouselBar, type PageVariantOption } from "./PageVersionCarouselBar";
 import { SlotFrame } from "./SlotFrame";
 import { Phase1StorylineWorkbench } from "./Phase1StorylineWorkbench";
 import { Phase2TemplateWorkbench } from "./Phase2TemplateWorkbench";
@@ -74,6 +75,13 @@ const DraftingCanvas: React.FC = () => {
   const doc = useStudioDocumentStore(selectActiveDocument);
   const activePageId = useStudioDocumentStore((s) => s.activePageId);
   const setActivePageId = useStudioDocumentStore((s) => s.setActivePageId);
+  const isLab = useLabMode();
+  const playgroundVariants = usePlaygroundVariants();
+  const [previewIdxByPage, setPreviewIdxByPage] = React.useState<Record<string, number>>({});
+
+  React.useEffect(() => {
+    setPreviewIdxByPage({});
+  }, [doc?.docId]);
   const mode = useStudioDocumentStore((s) => s.mode);
 
   const selectedBlockId = useSlotSelectionStore((s) => s.selectedBlockId);
@@ -262,50 +270,135 @@ const DraftingCanvas: React.FC = () => {
             activePageId={activePageId}
             chunkSize={WINDOW_CHUNK_PAGES}
             pageGapPx={seamless ? 0 : undefined}
-            renderPage={(page) => (
-              <MemoVDocPageSheet
-                key={page.pageId}
-                seamless={seamless}
-                docTitle={doc.title}
-                totalPages={doc.pages.length}
-                page={page}
-                slots={doc.slots}
-                backdata={doc.backdata}
-                mode={mode}
-                selectedBlockId={selectedBlockId}
-                selectedSlotId={selectedSlotId}
-                composerOpenSlotId={composerOpenSlotId}
-                onSelectPage={setActivePageId}
-                onSelectBlock={onSelectBlock}
-                onSelectSlot={onSelectSlot}
-                registerKeyLayer={studioKeyLayers.register}
-                isExternalRangeActive={isExternalRangeActive}
-                onToggleComposerForSlot={toggleComposerForSlot}
-                onOpenBackdataDrawer={onOpenBackdataDrawer}
-                onUpdateSlotContent={onUpdateSlotContent}
-                onMoveBlock={onMoveBlock}
-                onDeleteBlock={onDeleteBlock}
-                onMoveBlockTo={onMoveBlockTo}
-                onInsertBlock={onInsertBlock}
-                onInsertMedia={onInsertMedia}
-                onInsertBlockAtY={onInsertBlockAtY}
-                onCopyBlock={onCopyBlock}
-                onDuplicateBlock={onDuplicateBlock}
-                onToggleBlockLock={onToggleBlockLock}
-                onMoveBlockFrame={onMoveBlockFrame}
-                onResizeBlockFrame={onResizeBlockFrame}
-                onUpdateBlock={onUpdateBlock}
-                onTableCommand={onTableCommand}
-                onTableSelectionChange={setTableSelection}
-                onSlotAiAction={onSlotAiAction}
-                renderInlineComposer={renderInlineComposer}
-                wrapSlotContent={wrapSlotContent}
-                pendingState={pageStatesByPageId[page.pageId] ?? null}
-                onCancelPendingPage={onCancelPendingPage}
-                onRetryPendingPage={onRetryPendingPage}
-                onRemovePendingPage={onRemovePendingPage}
-              />
-            )}
+            renderPage={(page) => {
+              // 원본 문서일 때만 이 페이지에 대응하는 실험실 버전들(쪽 버전 + 문서 버전 내 동일 페이지)을 모아 캐러셀 구성
+              const options: PageVariantOption[] = [];
+              if (!isLab) {
+                options.push({
+                  variant: null,
+                  label: "원본",
+                  title: doc.title,
+                  page,
+                  slots: doc.slots,
+                });
+                const seenDocIds = new Set<string>();
+                const pageVars = playgroundVariants.get(variantKey(doc.docId, page.pageId)) ?? [];
+                for (const v of pageVars) {
+                  const vp = v.doc.pages[0];
+                  if (!vp || seenDocIds.has(v.doc.docId)) continue;
+                  seenDocIds.add(v.doc.docId);
+                  options.push({
+                    variant: v,
+                    label: v.label,
+                    title: v.doc.title,
+                    page: { ...vp, pageId: page.pageId, pageNumber: page.pageNumber },
+                    slots: v.doc.slots,
+                  });
+                }
+                const docVars = playgroundVariants.get(variantKey(doc.docId)) ?? [];
+                for (const v of docVars) {
+                  if (seenDocIds.has(v.doc.docId)) continue;
+                  const vp = v.doc.pages.find((p) => p.pageId === page.pageId);
+                  if (!vp) continue;
+                  seenDocIds.add(v.doc.docId);
+                  options.push({
+                    variant: v,
+                    label: v.label,
+                    title: v.doc.title,
+                    page: { ...vp, pageNumber: page.pageNumber },
+                    slots: v.doc.slots,
+                  });
+                }
+              }
+
+              const selIdx = Math.min(previewIdxByPage[page.pageId] ?? 0, Math.max(0, options.length - 1));
+              const previewOpt = selIdx > 0 ? options[selIdx] : null;
+
+              const sheet = previewOpt ? (
+                <div className="ring-2 ring-[var(--vds-accent)]/60 rounded-sm transition-shadow">
+                  <MemoVDocPageSheet
+                    key={`${page.pageId}:preview:${previewOpt.variant?.doc.docId}`}
+                    seamless={seamless}
+                    docTitle={`${doc.title} (${previewOpt.label} 미리보기)`}
+                    totalPages={doc.pages.length}
+                    page={previewOpt.page}
+                    slots={previewOpt.slots}
+                    backdata={doc.backdata}
+                    mode="Viewing"
+                    selectedBlockId={null}
+                    selectedSlotId={null}
+                    composerOpenSlotId={null}
+                    onSelectPage={setActivePageId}
+                    onSelectBlock={() => {}}
+                    onSelectSlot={() => {}}
+                    onToggleComposerForSlot={() => {}}
+                    onOpenBackdataDrawer={() => {}}
+                    onUpdateSlotContent={() => {}}
+                    onMoveBlock={() => {}}
+                    onDeleteBlock={() => {}}
+                  />
+                </div>
+              ) : (
+                <MemoVDocPageSheet
+                  key={page.pageId}
+                  seamless={seamless}
+                  docTitle={doc.title}
+                  totalPages={doc.pages.length}
+                  page={page}
+                  slots={doc.slots}
+                  backdata={doc.backdata}
+                  mode={mode}
+                  selectedBlockId={selectedBlockId}
+                  selectedSlotId={selectedSlotId}
+                  composerOpenSlotId={composerOpenSlotId}
+                  onSelectPage={setActivePageId}
+                  onSelectBlock={onSelectBlock}
+                  onSelectSlot={onSelectSlot}
+                  registerKeyLayer={studioKeyLayers.register}
+                  isExternalRangeActive={isExternalRangeActive}
+                  onToggleComposerForSlot={toggleComposerForSlot}
+                  onOpenBackdataDrawer={onOpenBackdataDrawer}
+                  onUpdateSlotContent={onUpdateSlotContent}
+                  onMoveBlock={onMoveBlock}
+                  onDeleteBlock={onDeleteBlock}
+                  onMoveBlockTo={onMoveBlockTo}
+                  onInsertBlock={onInsertBlock}
+                  onInsertMedia={onInsertMedia}
+                  onInsertBlockAtY={onInsertBlockAtY}
+                  onCopyBlock={onCopyBlock}
+                  onDuplicateBlock={onDuplicateBlock}
+                  onToggleBlockLock={onToggleBlockLock}
+                  onMoveBlockFrame={onMoveBlockFrame}
+                  onResizeBlockFrame={onResizeBlockFrame}
+                  onUpdateBlock={onUpdateBlock}
+                  onTableCommand={onTableCommand}
+                  onTableSelectionChange={setTableSelection}
+                  onSlotAiAction={onSlotAiAction}
+                  renderInlineComposer={renderInlineComposer}
+                  wrapSlotContent={wrapSlotContent}
+                  pendingState={pageStatesByPageId[page.pageId] ?? null}
+                  onCancelPendingPage={onCancelPendingPage}
+                  onRetryPendingPage={onRetryPendingPage}
+                  onRemovePendingPage={onRemovePendingPage}
+                />
+              );
+
+              if (options.length <= 1) return sheet;
+
+              return (
+                <div key={page.pageId} className="flex flex-col items-center">
+                  <PageVersionCarouselBar
+                    sourcePage={page}
+                    options={options}
+                    selectedIndex={selIdx}
+                    onSelectIndex={(idx) =>
+                      setPreviewIdxByPage((prev) => ({ ...prev, [page.pageId]: idx }))
+                    }
+                  />
+                  {sheet}
+                </div>
+              );
+            }}
           />
         </div>
       </div>
@@ -354,11 +447,24 @@ const VersionAwareDiffView: React.FC<{ activeDiff: ActiveDiffTarget }> = ({ acti
           : undefined
       }
       restorePage={
-        version && beforeDoc && docId
+        variant
           ? (pageId) => {
-              if (restorePageFromVersion(docId, beforeDoc, pageId, version.name)) useActiveDiffStore.getState().closeDiff();
+              const targetDoc = useStudioDocumentStore.getState().docs.find((d) => d.docId === variant.docId);
+              const pageLabel = targetDoc?.pages.find((p) => p.pageId === pageId)?.pageLabel || "이 페이지";
+              if (
+                !window.confirm(
+                  `'${pageLabel}' 페이지만 ${variant.label} 내용으로 원본에 적용할까요?\n다른 페이지는 그대로 유지됩니다.`,
+                )
+              ) {
+                return;
+              }
+              void playgroundActions.adoptPageFromVariant(variant.docId, pageId, `${pageLabel} (${variant.label})`);
             }
-          : undefined
+          : version && beforeDoc && docId
+            ? (pageId) => {
+                if (restorePageFromVersion(docId, beforeDoc, pageId, version.name)) useActiveDiffStore.getState().closeDiff();
+              }
+            : undefined
       }
     />
   );
