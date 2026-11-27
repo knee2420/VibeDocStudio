@@ -184,6 +184,13 @@ def _vault_base(item: "MountItem", path: str) -> Optional[str]:
 def _walk_files(path: str) -> Iterable[str]:
     for dirpath, dirnames, filenames in os.walk(path):
         dirnames[:] = sorted(d for d in dirnames if not d.startswith(".") and d not in IGNORED_DIRS)
+        # `.vclip/` 웹 스크랩 폴더 번들 안에서는 정본(`content.md`)과 `assets/` 이미지만 리소스로 색인한다
+        # (`clip.json` · `snapshot.html` · `captures/` 타일 노이즈가 ws_overview · ws_grep · RAG 를 오염시키지 않도록 — `captures/` 는 `rs_clip_images` 로 조회).
+        if os.path.basename(dirpath).lower().endswith(".vclip"):
+            dirnames[:] = [d for d in dirnames if d.lower() == "assets"]
+            if "content.md" in filenames:
+                yield os.path.join(dirpath, "content.md")
+            continue
         for name in sorted(filenames):
             # 볼트 폴더를 리소스로 걸어도 앱 문서(작업 문서 · 레퍼런스)는 사실 근거로 섞지 않는다
             if not name.startswith(".") and not is_document_file(name):

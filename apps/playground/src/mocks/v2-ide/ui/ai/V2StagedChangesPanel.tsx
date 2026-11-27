@@ -49,6 +49,13 @@ export const V2StagedChangesPanel: React.FC<{
       }
       return;
     }
+    if (c.targetKind === "style-change") {
+      const targetBlockId = c.payload.blockPatches[0]?.blockId;
+      if (targetBlockId) {
+        ai.env.vdocUiBridge.getState().requestScrollTo(c.path, targetBlockId);
+      }
+      return;
+    }
     if (c.targetKind === "slot-html") {
       ai.env.vdocUiBridge.getState().requestScrollTo(c.path, c.payload.slotId);
     } else if (c.targetKind === "block-props") {
@@ -170,7 +177,7 @@ export const V2StagedChangesPanel: React.FC<{
                             {c.payload.report.leftover.length > 0 && <span className="text-amber-700"> · 못 옮김: {c.payload.report.leftover.join(", ")}</span>}
                           </span>
                         )}
-                        {c.targetKind === "asset-blocks" && c.payload.intentNote && (
+                        {(c.targetKind === "asset-blocks" || c.targetKind === "style-change") && c.payload.intentNote && (
                           <span className="mt-0.5 block truncate text-[10px] text-indigo-700" title={c.payload.intentNote}>
                             ✦ {c.payload.intentNote}
                           </span>
@@ -187,7 +194,7 @@ export const V2StagedChangesPanel: React.FC<{
                           승인+컴파일
                         </button>
                       )}
-                      {(c.targetKind === "asset-blocks" || c.targetKind === "slot-html" || c.targetKind === "block-props") && (
+                      {(c.targetKind === "asset-blocks" || (c.targetKind === "style-change" && c.payload.blockPatches.length > 0) || c.targetKind === "slot-html" || c.targetKind === "block-props") && (
                         <button
                           type="button"
                           data-testid="v2-staged-reveal"

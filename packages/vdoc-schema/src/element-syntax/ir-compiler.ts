@@ -44,7 +44,7 @@ import {
   type ParsedOutlineAsset,
   type TableAssetVisualPreset,
 } from "./directive-scanner";
-import { ElementSyntaxRegistry, createElementSyntaxRegistry } from "./registry";
+import { COLUMN_SECTION_RULE, ElementSyntaxRegistry, createElementSyntaxRegistry } from "./registry";
 
 export interface OutlineAssetResolveRequest {
   readonly label: string;
@@ -135,13 +135,25 @@ function splitOutsideBrackets(text: string, delimiter: string): string[] {
   if (!delimiter) return [text];
   const parts: string[] = [];
   let depth = 0;
+  let inSingle = false;
+  let inDouble = false;
   let buf = "";
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
-    if (ch === "[") depth += 1;
-    else if (ch === "]" && depth > 0) depth -= 1;
+    if (ch === "[" && !inSingle && !inDouble) depth += 1;
+    else if (ch === "]" && !inSingle && !inDouble && depth > 0) depth -= 1;
+    else if (ch === "'" && !inDouble && depth === 0) {
+      // 영문 축약형(don't, Arteta's)은 따옴표 토글에서 제외
+      const prev = i > 0 ? text[i - 1] : "";
+      const next = i + 1 < text.length ? text[i + 1] : "";
+      if (!(/[A-Za-z]/.test(prev) && /[A-Za-z]/.test(next))) {
+        inSingle = !inSingle;
+      }
+    } else if (ch === '"' && !inSingle && depth === 0) {
+      inDouble = !inDouble;
+    }
 
-    if (depth === 0 && text.startsWith(delimiter, i)) {
+    if (depth === 0 && !inSingle && !inDouble && text.startsWith(delimiter, i)) {
       parts.push(buf.trim());
       buf = "";
       i += delimiter.length - 1;
@@ -343,8 +355,13 @@ export function compileTableOutlineNode(
 
   const parsedDir = parseOutlineDirective(tableNode.text.trim());
   const role = parsedDir?.role?.toLowerCase();
-  const effectiveHeaderMode: "form" | "top-row" =
-    options.headerMode ?? (role === "header" || role === "top-row" ? "top-row" : "form");
+  const explicitHeaderMode: "form" | "top-row" | undefined =
+    options.headerMode ??
+    (role === "header" || role === "top-row"
+      ? "top-row"
+      : role === "form"
+        ? "form"
+        : undefined);
 
   interface RawGridRow {
     prefixes: Array<{ text: string; rowSpan: number; isFirstRow: boolean }>;
@@ -439,6 +456,8 @@ export function compileTableOutlineNode(
 
   for (const child of tableNode.children ?? []) {
     if (!child.text.trim() && !(child.children?.length)) continue;
+    const childDir = parseOutlineDirective(child.text.trim());
+    if (childDir && (childDir.kind === "resource" || childDir.kind === "cite")) continue;
     unfold(child, []);
   }
 
@@ -446,6 +465,21 @@ export function compileTableOutlineNode(
     (max, r) => Math.max(max, r.prefixes.length + r.leafTokens.length),
     1
   );
+
+  // 역할 미지정 <<view:table>> 의 자동 헤더 판정:
+  // - `[-]` 입력칸 · `[<]`/`[^]` 병합 · 트리 rowspan 접두어가 있으면 공공서식 폼("form")
+  // - 3열 이상 · 2행 이상의 순수 데이터 표는 1행 컬럼 헤더("top-row")로 자연스럽게 컴파일
+  const looksLikeFormTable =
+    rawRows.some((r) => r.prefixes.length > 0) ||
+    rawRows.some((r) =>
+      r.leafTokens.some((tok) => {
+        const t = tok.trim();
+        return t === emptySym || t === mergeLeftSym || t === mergeUpSym;
+      })
+    );
+  const effectiveHeaderMode: "form" | "top-row" =
+    explicitHeaderMode ??
+    (!looksLikeFormTable && maxCols >= 3 && rawRows.length >= 2 ? "top-row" : "form");
 
   const preset = options.assetPreset ?? null;
   const headerBg = preset?.headerStyle?.bg ?? "#e6ecf5";
@@ -587,9 +621,38 @@ export function compileTableOutlineNode(
     compiledRows.push({ rowId, cells });
   });
 
-  // Equal initial column widths (visual ratio overrides live in .vdoc / Inspector and survive recompile)
-  const colWidthPct = `${Math.floor((100 / Math.max(1, maxCols)) * 10) / 10}%`;
-  const columnWidths = Array.from({ length: maxCols }, () => colWidthPct);
+  // 2열 이하 또는 폼 표는 균등 폭 유지(기존 서식 테스트 호환), 3열 이상 데이터 표는 내용 길이 비례로 합리적 초기 폭 산출
+  let columnWidths: string[];
+  if (effectiveHeaderMode === "top-row" && maxCols >= 3 && rawRows.length >= 2) {
+    const colWeights = Array.from({ length: maxCols }, (_, cIdx) => {
+      let totalLen = 0;
+      let count = 0;
+      for (const r of rawRows) {
+        const offset = r.prefixes.length;
+        const rawText =
+          cIdx < offset
+            ? r.prefixes[cIdx]?.text ?? ""
+            : r.leafTokens[cIdx - offset] ?? "";
+        const len = Math.min(80, Math.max(4, rawText.trim().length));
+        totalLen += len;
+        count += 1;
+      }
+      // 제곱근 완화: 긴 설명 열이 지나치게 90% 를 독점하지 않으면서도 짧은 국면/시점 열과 균형을 맞춘다
+      return Math.sqrt(count > 0 ? totalLen / count : 8);
+    });
+    const weightSum = colWeights.reduce((a, b) => a + b, 0) || 1;
+    const clamped = colWeights.map((w) => Math.min(48, Math.max(12, (w / weightSum) * 100)));
+    const clampedSum = clamped.reduce((a, b) => a + b, 0) || 100;
+    const rounded = clamped.map((v) => Math.round((v / clampedSum) * 1000) / 10);
+    const diff = Math.round((100 - rounded.reduce((a, b) => a + b, 0)) * 10) / 10;
+    if (rounded.length > 0) {
+      rounded[rounded.length - 1] = Math.round((rounded[rounded.length - 1] + diff) * 10) / 10;
+    }
+    columnWidths = rounded.map((v) => `${v}%`);
+  } else {
+    const colWidthPct = `${Math.floor((100 / Math.max(1, maxCols)) * 10) / 10}%`;
+    columnWidths = Array.from({ length: maxCols }, () => colWidthPct);
+  }
 
   const tableTitle = parsedDir?.label || "표";
 
@@ -790,8 +853,9 @@ function extractSingleBlockOutlineSpec(
 
   if (blk.kind === "image") {
     const label = blk.alt || blk.title || "이미지";
+    const srcPart = blk.src?.trim() ? ` -> ${blk.src.trim()}` : "";
     return {
-      text: `[${imgTag}:${label}]`,
+      text: `[${imgTag}:${label}${srcPart}]`,
       children: blk.caption ? [{ text: blk.caption }] : [],
     };
   }
@@ -799,7 +863,9 @@ function extractSingleBlockOutlineSpec(
     const cols = blk.columns ?? [];
     const parts = cols.map((col) => {
       if (col.image) {
-        return `[${imgTag}:${col.image.alt || "이미지"}]`;
+        const label = col.image.alt || "이미지";
+        const srcPart = col.image.src?.trim() ? ` -> ${col.image.src.trim()}` : "";
+        return `[${imgTag}:${label}${srcPart}]`;
       }
       if (col.slotId && slots[col.slotId]) {
         return htmlToPlainText(slots[col.slotId].content).trim();
@@ -1288,10 +1354,16 @@ export function compileOutlineToVDoc(
   const embedSym = registry.resolveSymbol("section", "embed-slot", "[embed]");
   const highlightSym = registry.resolveSymbol("section", "inline-highlight", "==");
   const colContainerSym = registry.resolveSymbol("section", "col-container", "<<col>>");
+  // 다단 섹션(`<<view:section:column>>`)의 역할 이름 — 자식 불릿 하나가 한 단.
+  const columnSectionRole = (() => {
+    const d = parseOutlineDirective(registry.resolveSymbol("section", COLUMN_SECTION_RULE.id, COLUMN_SECTION_RULE.symbol));
+    return d?.kind === "view" && d.target === "section" && d.role ? d.role : null;
+  })();
 
   const defaultSkin = sectionDef?.skins?.[sectionDef.defaultSkin];
   const usesExternalStyleEngine = Boolean(effectiveStyleRef);
-  const defaultAlign = profileId === "a4" ? "left" : (defaultSkin?.align ?? "center");
+  const isPagedA4 = surface.kind === "paged" || profileId === "a4";
+  const defaultAlign: "left" | "center" | "right" = "left";
   const defaultImageGap = defaultSkin?.imageGap ?? 4;
 
   const variables: Record<string, string> = {};
@@ -1431,9 +1503,10 @@ export function compileOutlineToVDoc(
         title: label,
         src,
         alt: label,
-        width: "100%",
+        width: isPagedA4 ? "82%" : "100%",
+        ...(isPagedA4 ? { maxHeight: "340px" } : {}),
         align: "center",
-        objectFit: "cover",
+        objectFit: isPagedA4 ? "contain" : "cover",
         caption: caption || undefined,
         sourceNodeId: node.id,
       };
@@ -1452,12 +1525,14 @@ export function compileOutlineToVDoc(
         const explicitHeaderRole =
           nestedDir.role === "header" || nestedDir.role === "top-row"
             ? ("top-row" as const)
-            : undefined;
+            : nestedDir.role === "form"
+              ? ("form" as const)
+              : undefined;
         const tbl = compileTableOutlineNode(node, slots, registry, nextId("tbl"), {
           assetPreset,
           sourceNodeId: node.id,
           headerMode:
-            explicitHeaderRole ?? (prevTable && isTopRowHeaderTable(prevTable) ? "top-row" : "form"),
+            explicitHeaderRole ?? (prevTable && isTopRowHeaderTable(prevTable) ? "top-row" : undefined),
           compileNestedChildren: (childNodes) => {
             const nested: LayoutBlock[] = [];
             for (const c of childNodes) {
@@ -1480,7 +1555,32 @@ export function compileOutlineToVDoc(
         blocks.push(finishBlock(listBlk));
         return;
       }
-      if (nestedTag === "title") {
+      if (nestedTag === "heading" || nestedTag === "title") {
+        const headingRoleMatch = nestedDir.role?.match(/^h([1-4])$/i);
+        if (nestedTag === "heading" || headingRoleMatch) {
+          const level = (headingRoleMatch ? Number(headingRoleMatch[1]) : 2) as 1 | 2 | 3 | 4;
+          const blockId = nextId("blk_heading");
+          const slotId = `slot_${blockId}`;
+          const headingLabel = nestedDir.label || "제목";
+          slots[slotId] = {
+            slotId,
+            label: headingLabel,
+            role: "editable-slot",
+            content: `<h${level}>${escapeHtml(headingLabel)}</h${level}>`,
+            backDataRefs: [],
+          };
+          const headingBlk: HeadingBlockDef = {
+            blockId,
+            kind: "heading",
+            title: headingLabel,
+            slotId,
+            level,
+            align: "left",
+            sourceNodeId: node.id,
+          };
+          blocks.push(finishBlock(headingBlk, { sourceNode: node }));
+          return;
+        }
         const blockId = nextId("blk_title");
         const slotId = `slot_${blockId}`;
         const titleLabel = nestedDir.label || "문서 제목";
@@ -1527,7 +1627,7 @@ export function compileOutlineToVDoc(
           for (const inner of innerNodes) {
             compileSectionChild(inner, nestedBlocks);
           }
-          columns.push({ blocks: nestedBlocks });
+          columns.push({ blocks: nestedBlocks, ...(parsedCol.matched ? { sourceNodeId: colNode.id } : {}) });
         });
 
         const gridBlk: ColumnsGridBlockDef = {
@@ -1656,9 +1756,10 @@ export function compileOutlineToVDoc(
           slotId,
           label: "인용구",
           role: "editable-slot",
-          content: usesExternalStyleEngine
-            ? `<p>${renderInlineMarkup(titleText, highlightSym)}</p>`
-            : `<p style="text-align: center"><em>${renderInlineMarkup(titleText, highlightSym)}</em></p>`,
+          content:
+            usesExternalStyleEngine || isPagedA4
+              ? `<p>${renderInlineMarkup(titleText, highlightSym)}</p>`
+              : `<p style="text-align: center"><em>${renderInlineMarkup(titleText, highlightSym)}</em></p>`,
           backDataRefs: [],
         };
         const quoteBlk: CalloutBoxBlockDef = {
@@ -1668,7 +1769,7 @@ export function compileOutlineToVDoc(
           slotId,
           variant: "quote",
           sourceNodeId: node.id,
-          ...(usesExternalStyleEngine ? {} : { align: "center" as const }),
+          ...(usesExternalStyleEngine ? {} : { align: isPagedA4 ? ("left" as const) : ("center" as const) }),
         };
         blocks.push(finishBlock(quoteBlk, { sourceNode: node }));
       } else {
@@ -1721,9 +1822,10 @@ export function compileOutlineToVDoc(
         slotId,
         label: bodyText.slice(0, 28) || "포인트 강조",
         role: "editable-slot",
-        content: usesExternalStyleEngine
-          ? `<p><strong>${renderInlineMarkup(bodyText, highlightSym)}</strong></p>`
-          : `<p style="text-align: center"><strong>${renderInlineMarkup(bodyText, highlightSym)}</strong></p>`,
+        content:
+          usesExternalStyleEngine || isPagedA4
+            ? `<p><strong>${renderInlineMarkup(bodyText, highlightSym)}</strong></p>`
+            : `<p style="text-align: center"><strong>${renderInlineMarkup(bodyText, highlightSym)}</strong></p>`,
         backDataRefs: [],
       };
       const accentBlk: CalloutBoxBlockDef = {
@@ -1732,7 +1834,7 @@ export function compileOutlineToVDoc(
         title: bodyText.slice(0, 28) || "포인트 강조",
         slotId,
         variant: "accent-bar",
-        ...(usesExternalStyleEngine ? {} : { align: "center" as const }),
+        ...(usesExternalStyleEngine ? {} : { align: isPagedA4 ? ("left" as const) : ("center" as const) }),
         accentColor,
         sourceNodeId: node.id,
       };
@@ -1962,9 +2064,110 @@ export function compileOutlineToVDoc(
         };
 
         const blocks: LayoutBlock[] = [];
-        if (sectionDef) {
-          for (const child of rootNode.children ?? []) {
-            compileSectionChild(child, blocks);
+        if (sectionDef && columnSectionRole && role === columnSectionRole) {
+          // 다단 섹션: 자식 불릿 하나 = 한 단 (단 안은 일반 섹션 자식과 같은 규칙으로 컴파일).
+          const colNodes = (rootNode.children ?? []).filter(
+            (c) => c.text.trim().length > 0 || Boolean(c.file?.target) || (c.children?.length ?? 0) > 0
+          );
+          const columns: GridColumnDef[] = colNodes.map((colNode) => {
+            const colBlocks: LayoutBlock[] = [];
+            compileSectionChild(colNode, colBlocks);
+            return { blocks: colBlocks, sourceNodeId: colNode.id };
+          });
+          const gridBlk: ColumnsGridBlockDef = {
+            blockId: nextId("blk_cols"),
+            kind: "columns-grid",
+            title: `다단 (${columns.length}단)`,
+            widths: columns.length > 0 ? columns.map(() => "1fr") : ["1fr"],
+            gap: 16,
+            columns,
+            sourceNodeId: `${rootNode.id}:columns`,
+          };
+          blocks.push(finishBlock(gridBlk));
+        } else if (sectionDef) {
+          const secChildren = rootNode.children ?? [];
+          const isStandaloneKvLeaf = (c: OutlineSyntaxNode): boolean => {
+            if (!kvSym) return false;
+            const t = c.text.trim();
+            if (!t || Boolean(c.file?.target) || (c.children?.length ?? 0) > 0) return false;
+            if (parseOutlineDirective(t)) return false;
+            if (frameSym && t.startsWith(frameSym)) return false;
+            if (accentSym && t.startsWith(accentSym)) return false;
+            const idx = t.indexOf(kvSym);
+            return idx > 0 && idx < t.length - kvSym.length;
+          };
+
+          let ci = 0;
+          while (ci < secChildren.length) {
+            // A4 보고서 등에서 연속된 `키 :: 값` 메타 2줄 이상은 하나의 깔끔한 정보 프레임으로 묶는다
+            if (isPagedA4 && isStandaloneKvLeaf(secChildren[ci])) {
+              let cj = ci;
+              while (cj < secChildren.length && isStandaloneKvLeaf(secChildren[cj])) {
+                cj += 1;
+              }
+              if (cj - ci >= 2) {
+                const kvNodes = secChildren.slice(ci, cj);
+                const kvItems: CalloutKvItem[] = kvNodes.map((kn) => {
+                  const t = kn.text.trim();
+                  const idx = t.indexOf(kvSym);
+                  return {
+                    key: t.slice(0, idx).trim(),
+                    value: t.slice(idx + kvSym.length).trim(),
+                  };
+                });
+                const blockId = nextId("blk_meta");
+                const slotId = `slot_${blockId}`;
+                slots[slotId] = {
+                  slotId,
+                  label: "문서 개요",
+                  role: "editable-slot",
+                  content: `<p><strong>문서 개요</strong></p>`,
+                  backDataRefs: [],
+                };
+                const infoBlk: CalloutBoxBlockDef = {
+                  blockId,
+                  kind: "callout-box",
+                  title: "문서 개요",
+                  slotId,
+                  variant: "info-frame",
+                  kvItems,
+                  align: "left",
+                  sourceNodeId: kvNodes[0].id,
+                };
+                blocks.push(finishBlock(infoBlk, { sourceNode: kvNodes[0] }));
+                ci = cj;
+                continue;
+              }
+            }
+            compileSectionChild(secChildren[ci], blocks);
+            ci += 1;
+          }
+
+          // A4 도입 섹션(`opening`)에 명시적 제목 블록이 없으면 섹션 라벨로 공식 문서 제목을 자동 보충
+          if (
+            isPagedA4 &&
+            role === "opening" &&
+            label &&
+            !blocks.some((b) => b.kind === "form-title" || b.kind === "heading")
+          ) {
+            const titleBlkId = nextId("blk_title");
+            const titleSlotId = `slot_${titleBlkId}`;
+            slots[titleSlotId] = {
+              slotId: titleSlotId,
+              label,
+              role: "editable-slot",
+              content: `<p style="text-align: center"><strong>${escapeHtml(label)}</strong></p>`,
+              backDataRefs: [],
+            };
+            const autoTitle: FormTitleBlockDef = {
+              blockId: titleBlkId,
+              kind: "form-title",
+              title: label,
+              slotId: titleSlotId,
+              align: "center",
+              sourceNodeId: `${rootNode.id}:title`,
+            };
+            blocks.unshift(finishBlock(autoTitle));
           }
         } else {
           for (const line of flattenNodeTextLines(rootNode)) {
@@ -1976,7 +2179,8 @@ export function compileOutlineToVDoc(
           pageId,
           pageNumber: sectionIndex,
           pageLabel: label,
-          unitKind: profile?.unitKind ?? "section",
+          // D1: 섹션 = 구조 단위 (모든 프로필). A4 의 쪽은 출력 결과라 섹션이 쪽을 넘어 흐른다.
+          unitKind: "section",
           sectionRole: role || "body",
           outlineDsl: flattenNodeTextLines(rootNode),
           sourceNodeId: rootNode.id,
@@ -1987,13 +2191,21 @@ export function compileOutlineToVDoc(
             ? {}
             : {
               pageRect: sectionPageRect,
-              layout: {
-                margin: { top: 20, right: 32, bottom: 20, left: 32 },
-                blockGap: 10,
-                fontSize: "14px",
-                lineHeight: "1.8",
-                color: "#334155",
-              },
+              layout: isPagedA4
+                ? {
+                  margin: { top: 40, right: 48, bottom: 40, left: 48 },
+                  blockGap: 8,
+                  fontSize: "13px",
+                  lineHeight: "1.6",
+                  color: "#1e293b",
+                }
+                : {
+                  margin: { top: 20, right: 32, bottom: 20, left: 32 },
+                  blockGap: 10,
+                  fontSize: "14px",
+                  lineHeight: "1.8",
+                  color: "#334155",
+                },
             }),
           blocks,
         });
@@ -2025,7 +2237,7 @@ export function compileOutlineToVDoc(
         pageId,
         pageNumber: sectionIndex,
         pageLabel: label,
-        unitKind: profile?.unitKind ?? viewProfile.unitKind,
+        unitKind: "section",
         sectionRole: tag,
         outlineDsl: flattenNodeTextLines(rootNode),
         sourceNodeId: rootNode.id,
@@ -2071,7 +2283,7 @@ export function compileOutlineToVDoc(
       pageId,
       pageNumber: sectionIndex,
       pageLabel: raw.slice(0, 32),
-      unitKind: profile?.unitKind ?? viewProfile.unitKind,
+      unitKind: "section",
       sourceNodeId: rootNode.id,
       headerSlotId,
       footerSlotId,
@@ -2134,10 +2346,13 @@ export function compileOutlineToVDoc(
         }
       }
     };
+    // 블록 · 섹션 단위 인용은 그 블록(섹션)의 대표 칸 하나에만 단다 — 표 칸 38개 · 섹션의 모든 블록에 같은 인용을
+    // 복제하면 각주가 칸마다 찍히고 근거 검토 목록이 수십 배로 부푼다 (한 인용 = 한 자리).
+    const representativeSlots = (blk: LayoutBlock): string[] => getBlockSlotIds(blk).slice(0, 1);
     const attachNodeEvidenceRecursive = (blk: LayoutBlock) => {
       const ownLocs = blk.sourceNodeId ? effectiveNodeEvidence[blk.sourceNodeId] : undefined;
       if (ownLocs && ownLocs.length > 0) {
-        attachLocatorsToSlots(getBlockSlotIds(blk), ownLocs);
+        attachLocatorsToSlots(representativeSlots(blk), ownLocs);
       }
       if (blk.kind === "columns-grid") {
         for (const col of blk.columns ?? []) {
@@ -2152,12 +2367,15 @@ export function compileOutlineToVDoc(
       }
     };
     for (const page of pages) {
+      let sectionEvidencePlaced = false;
       for (const blk of page.blocks) {
         attachNodeEvidenceRecursive(blk);
-        if (page.sourceNodeId && page.sourceNodeId !== blk.sourceNodeId) {
+        if (!sectionEvidencePlaced && page.sourceNodeId && page.sourceNodeId !== blk.sourceNodeId) {
           const pageLocs = effectiveNodeEvidence[page.sourceNodeId];
-          if (pageLocs && pageLocs.length > 0) {
-            attachLocatorsToSlots(getBlockSlotIds(blk), pageLocs);
+          const slots = representativeSlots(blk);
+          if (pageLocs && pageLocs.length > 0 && slots.length > 0) {
+            attachLocatorsToSlots(slots, pageLocs);
+            sectionEvidencePlaced = true;
           }
         }
       }

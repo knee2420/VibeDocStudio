@@ -728,11 +728,21 @@ export class ComposerSessionController {
           );
           const maxCandidates = Math.max(...event.proposals.map((p) => p.candidates.length));
           const altText = maxCandidates > 1 ? ` · 후보 ${maxCandidates}안` : "";
+          // 칸 변경안이 아닌 제안(아웃라인 패치 등)은 칸 수로 세면 '0개'로 보인다 — 무엇이 몇 건 올라갔는지 그대로 쓴다.
+          const kinds = new Map<string, number>();
+          for (const p of event.proposals) {
+            const key = p.mode === "outline-patch" || p.outlinePatch ? "아웃라인 패치" : "칸 변경안";
+            kinds.set(key, (kinds.get(key) ?? 0) + 1);
+          }
+          const parts: string[] = [];
+          if (slotCount > 0) parts.push(`슬롯 ${slotCount}개`);
+          for (const [label, n] of kinds) if (label !== "칸 변경안") parts.push(`${label} ${n}건`);
+          if (parts.length === 0) parts.push(`변경안 ${event.proposals.length}건`);
           this.push({
             kind: "notice",
             id: nid("n"),
             level: "info",
-            text: `개편안 대기열(Staged)에 ${slotCount}개 슬롯 변경안${altText}을 올렸습니다 — 본문 diff 또는 검토 서랍에서 확인하고 승인하세요.`,
+            text: `개편안 대기열(Staged)에 ${parts.join(" · ")}${altText}을 올렸습니다 — 본문 diff 또는 검토 서랍에서 확인하고 승인하세요.`,
           });
           break;
         }

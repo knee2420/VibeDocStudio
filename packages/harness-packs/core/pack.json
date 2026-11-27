@@ -21,6 +21,7 @@
    "authoring:rules/workspace.md",
    "core:rules/workspace-tail.md",
    "reference:rules/procedure.md",
+   "research:rules/procedure.md",
    "editor:rules/compose.md",
    "editor:rules/assets.md"
   ]

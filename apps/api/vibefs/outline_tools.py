@@ -46,6 +46,280 @@ ALLOWED_PATCH_OPS = frozenset({
     "set_view_mode",
 })
 TAG_RE = re.compile(r"<<([^>\n]+)>>")
+RESOURCE_TAG_RE = re.compile(r"<<\s*resource\s*:\s*([^>\n]*)\s*>>", re.I)
+CITE_TAG_RE = re.compile(r"<<\s*cite(?:\s*:\s*[^>\n]+)?\s*>>", re.I)
+WIKILINK_RE = re.compile(r"\[\[([^\[\]\n]+)\]\]")
+# 여는 근거 태그 — 닫는 `>>` 가 없으면 태그로 인식되지 않아 근거가 통째로 사라진다
+OPEN_EVIDENCE_TAG_RE = re.compile(r"<<\s*(?:resource|cite)\b", re.I)
+VCLIP_WIKILINK_RE = re.compile(r"\[\[[^\[\]\n]*\.vclip(?:#[^\[\]\n]*)?(?:\|[^\[\]\n]*)?\]\]", re.I)
+_IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif")
+_BBOX_ANCHOR_RE = re.compile(
+    r"[@#]bbox\(\s*\d+(?:\.\d+)?\s*,\s*\d+(?:\.\d+)?\s*,\s*\d+(?:\.\d+)?\s*,\s*\d+(?:\.\d+)?\s*\)",
+    re.I,
+)
+_ANCHOR_PATTERNS = (
+    _BBOX_ANCHOR_RE,
+    re.compile(r"#node:[^\s|\]>]+", re.I),
+    re.compile(r"#slot:[^\s|\]>]+", re.I),
+    re.compile(r"#block:[^\s|\]>]+", re.I),
+    re.compile(r"#heading:[^\s|\]>]+", re.I),
+    re.compile(r"#L\d+(?:-L?\d+)?\b", re.I),
+    re.compile(r"#p\d+\b", re.I),
+)
+
+
+def _is_image_path(path: str) -> bool:
+    clean = (path or "").split("?", 1)[0].split("#", 1)[0].strip().lower()
+    return clean.endswith(_IMAGE_EXTS)
+
+
+def _parse_resource_inner(inner: str) -> tuple[str, str, bool]:
+    """`<<resource: inner>>` 에서 (target, quote, has_anchor) 를 파싱한다 (공백 포함 로컬 경로 보존)."""
+    cleaned_inner = (inner or "").strip()
+    if not cleaned_inner:
+        return "", "", False
+    if "|" in cleaned_inner:
+        address_part, quote_raw = cleaned_inner.split("|", 1)
+    else:
+        address_part, quote_raw = cleaned_inner, ""
+    address_part = address_part.strip()
+    quote = quote_raw.strip()
+    has_anchor = any(rx.search(address_part) for rx in _ANCHOR_PATTERNS)
+
+    wiki = WIKILINK_RE.search(address_part)
+    if wiki:
+        wiki_inner = (wiki.group(1) or "").strip()
+        link_only = wiki_inner.split("|", 1)[0].strip()
+        target = link_only.split("#", 1)[0].strip()
+        return target, quote, has_anchor
+
+    stripped = address_part
+    for rx in _ANCHOR_PATTERNS:
+        stripped = rx.sub("", stripped)
+    stripped = stripped.strip()
+    if re.match(r"^https?://", stripped, re.I):
+        target = stripped.split()[0] if stripped else ""
+    else:
+        target = stripped.split("#", 1)[0].strip()
+    return target, quote, has_anchor
+
+
+def _resolve_vault_resource(vault_root: Path, rel_outline: str, raw_target: str) -> Optional[Path]:
+    """로컬 볼트 리소스(파일 또는 `.vclip/` 폴더 번들)의 실재 여부를 확인해 경로를 반환한다."""
+    trimmed = raw_target.strip()
+    if not trimmed:
+        return None
+    if trimmed.lower().startswith("vault://"):
+        trimmed = trimmed[len("vault://"):]
+    elif trimmed.lower().startswith("vault:"):
+        trimmed = trimmed[len("vault:"):]
+    trimmed = trimmed.replace("\\", "/").strip("/")
+    if not trimmed:
+        return None
+
+    outline_dir = Path(rel_outline).parent.as_posix()
+    if outline_dir == ".":
+        outline_dir = ""
+
+    candidates = [trimmed]
+    if outline_dir:
+        candidates.extend([
+            f"{outline_dir}/{trimmed}",
+            f"{outline_dir}/sources/{trimmed}",
+            f"{outline_dir}/resources/{trimmed}",
+        ])
+    for cand in candidates:
+        try:
+            abs_p = resolve_inside(vault_root, cand)
+            if abs_p.exists():
+                return abs_p
+        except ValueError:
+            continue
+
+    # 옵시디언식 볼트 내 파일명/번들명 일치 탐색 (예: [[facts.md]], 기사.vclip)
+    needle = trimmed.lower()
+    base_needle = os.path.basename(needle)
+    for dirpath, dirnames, filenames in os.walk(vault_root):
+        dirnames[:] = [d for d in dirnames if not d.startswith(".")]
+        for d in list(dirnames):
+            if d.lower().endswith(".vclip"):
+                full = Path(dirpath) / d
+                rel_p = full.relative_to(vault_root).as_posix().lower()
+                if rel_p == needle or rel_p.endswith(f"/{needle}") or d.lower() == base_needle:
+                    return full
+                dirnames.remove(d)
+        for f in filenames:
+            full = Path(dirpath) / f
+            rel_p = full.relative_to(vault_root).as_posix().lower()
+            stem = os.path.splitext(f)[0].lower()
+            if rel_p == needle or rel_p.endswith(f"/{needle}") or f.lower() == base_needle or stem == base_needle:
+                return full
+    return None
+
+
+def _collect_item_texts_and_files(items: list[dict[str, Any]]) -> tuple[list[str], list[str]]:
+    texts: list[str] = []
+    files: list[str] = []
+
+    def walk(arr: list[dict[str, Any]]) -> None:
+        for item in arr:
+            if not isinstance(item, dict):
+                continue
+            t = item.get("text")
+            if isinstance(t, str):
+                texts.append(t)
+            fobj = item.get("file")
+            if isinstance(fobj, dict) and isinstance(fobj.get("target"), str) and fobj["target"].strip():
+                files.append(fobj["target"].strip())
+            children = item.get("children")
+            if isinstance(children, list) and children:
+                walk(children)
+
+    walk(items)
+    return texts, files
+
+
+_READ_FILE_TEXT_EXTS = (".md", ".markdown", ".csv", ".tsv", ".txt", ".json")
+
+
+def _lint_texts_and_files(
+    *,
+    vault_root: Path,
+    rel_outline: str,
+    texts: list[str],
+    file_targets: list[str],
+    read_paths: set[str],
+    enforce_reads: bool = False,
+) -> list[str]:
+    """공통 `.outline` 근거 린트 — 하드 위반은 ValueError 차단, 소프트 경고는 목록 반환."""
+    warnings: list[str] = []
+
+    for ftarget in file_targets:
+        if ftarget.lower().endswith(".vclip"):
+            raise ValueError(_msg("lintVclipSetFileBlocked", target=ftarget))
+
+    for text in texts:
+        # 0-a) 한 불릿 = 한 줄 — 표의 행 · 목록 항목을 줄바꿈(\n 또는 글자 그대로의 '\\n')으로 한 불릿에 몰면 구조가 사라진다
+        if "\n" in text or "\\n" in text:
+            raise ValueError(_msg("lintMultilineBullet", text=text.replace("\n", " ⏎ ").strip()[:80]))
+        # 0) 닫히지 않은 근거 태그 (`<<resource: 경로 | 발췌` 에서 `>>` 누락) — 컴파일에서 인용이 사라진다
+        opened = len(OPEN_EVIDENCE_TAG_RE.findall(text))
+        closed = len(RESOURCE_TAG_RE.findall(text)) + len(CITE_TAG_RE.findall(text))
+        if opened > closed:
+            raise ValueError(_msg("lintUnterminatedTag", text=text.strip()[:80]))
+
+        # 1) <<resource:...>> · <<cite:...>> 바깥에 일반 [[...vclip]] 위키링크 금지
+        outside_tags = RESOURCE_TAG_RE.sub("", text)
+        if not CITE_TAG_RE.search(text):
+            vclip_wiki = VCLIP_WIKILINK_RE.search(outside_tags)
+            if vclip_wiki:
+                raise ValueError(_msg("lintVclipPlainWikilinkBlocked", link=vclip_wiki.group(0)))
+
+        # 2) <<resource: ...>> 대상 검증 · 이미지 네이티브 첨부 강제 · 발췌문 경고 · 열람 대조 경고
+        for m in RESOURCE_TAG_RE.finditer(text):
+            raw_inner = m.group(1) or ""
+            target, quote, has_anchor = _parse_resource_inner(raw_inner)
+            if not target:
+                raise ValueError(_msg("lintMalformedResourceTag"))
+            is_web_url = bool(re.match(r"^https?://", target, re.I))
+            if not is_web_url and _is_image_path(target) and not _BBOX_ANCHOR_RE.search(raw_inner):
+                raise ValueError(_msg("lintImageUseOutlineFile", target=target))
+            if not is_web_url:
+                resolved = _resolve_vault_resource(vault_root, rel_outline, target)
+                if resolved is None:
+                    raise ValueError(_msg("lintMissingResourceTarget", target=target))
+                rel_res_l = resolved.relative_to(vault_root).as_posix().lower()
+                text_source = resolved.is_dir() and rel_res_l.endswith(".vclip") or rel_res_l.endswith(_READ_FILE_TEXT_EXTS)
+                if enforce_reads and text_source:
+                    cands = {rel_res_l, f"{rel_res_l}/content.md"} if rel_res_l.endswith(".vclip") else {rel_res_l}
+                    if not any(rp.endswith(c) or c.endswith(rp) for rp in read_paths for c in cands):
+                        raise ValueError(_msg("lintUnreadResourceBlocked", target=target))
+                if read_paths and text_source:
+                    rel_res = resolved.relative_to(vault_root).as_posix().lower()
+                    cand_rels = {rel_res}
+                    if resolved.is_dir() and rel_res.endswith(".vclip"):
+                        cand_rels.add(f"{rel_res}/content.md")
+                    if not any(
+                        rp.endswith(c) or c.endswith(rp)
+                        for rp in read_paths
+                        for c in cand_rels
+                    ):
+                        warnings.append(
+                            f"[LINT:LINT_UNREAD_RESOURCE_SOURCE] 리소스 '{target}' 는 이 세션에서 read_file 로 읽은 기록이 없습니다."
+                        )
+            if not quote and not has_anchor:
+                warnings.append(
+                    f"[LINT:LINT_RESOURCE_WITHOUT_QUOTE] <<resource: {target}>> 에 '| 원문 발췌' 또는 위치 앵커(#p/#L)가 없어 페어 탭 자동 하이라이트가 제한됩니다."
+                )
+
+    return warnings
+
+
+def lint_outline_patch(
+    *,
+    vault_root: Path,
+    rel_outline: str,
+    roots: list[dict[str, Any]],
+    requests: list[dict[str, Any]],
+    node_evidence: Optional[dict[str, Any]] = None,
+    reads: Optional[list[dict[str, Any]]] = None,
+    enforce_reads: bool = False,
+) -> list[str]:
+    """`ol_propose_patch` 하드/소프트 근거 린트 게이트.
+
+    `enforce_reads` (실제 MCP 서버): 이 세션에서 read_file 로 읽지 않은 글 원천(.md · .csv · .txt · .vclip …)을
+    <<resource:…>> 로 인용하면 차단한다 — 읽은 것만 인용한다. PDF(ws_read_pdf) · .ref(rf_read) · 앱 문서는 다른 도구로 읽으므로 제외.
+    """
+    if isinstance(node_evidence, dict) and any(
+        isinstance(v, list) and len(v) > 0 for v in node_evidence.values()
+    ):
+        raise ValueError(_msg("lintSidecarEvidenceBlocked"))
+
+    set_file_ids: set[str] = set()
+    file_targets: list[str] = []
+    texts: list[str] = []
+
+    for req in requests:
+        op = str(req.get("op") or "")
+        if op == "set_file":
+            nid = str(req.get("id") or "").strip()
+            if nid:
+                set_file_ids.add(nid)
+            fobj = req.get("file")
+            if isinstance(fobj, dict) and isinstance(fobj.get("target"), str) and fobj["target"].strip():
+                file_targets.append(fobj["target"].strip())
+
+    for req in requests:
+        op = str(req.get("op") or "")
+        if op == "replace":
+            nid = str(req.get("id") or "").strip()
+            new_text = str(req.get("text") or "")
+            texts.append(new_text)
+            old_node = _find_node(roots, nid) if nid else None
+            old_text = str((old_node or {}).get("text") or "")
+            had_evidence_tag = bool(RESOURCE_TAG_RE.search(old_text) or CITE_TAG_RE.search(old_text))
+            has_evidence_tag = bool(RESOURCE_TAG_RE.search(new_text) or CITE_TAG_RE.search(new_text))
+            if had_evidence_tag and not has_evidence_tag:
+                if WIKILINK_RE.search(new_text) or nid in set_file_ids:
+                    raise ValueError(_msg("lintResourceStripBlocked", nodeId=nid))
+        elif op in ("insert_after", "insert_before"):
+            item_texts, item_files = _collect_item_texts_and_files(req.get("items") or [])
+            texts.extend(item_texts)
+            file_targets.extend(item_files)
+
+    read_paths = {
+        str(r.get("path") or "").replace("\\", "/").lower()
+        for r in (reads or [])
+        if isinstance(r, dict) and r.get("path")
+    }
+    return _lint_texts_and_files(
+        vault_root=vault_root,
+        rel_outline=rel_outline,
+        texts=texts,
+        file_targets=file_targets,
+        read_paths=read_paths,
+        enforce_reads=enforce_reads,
+    )
 
 
 def _msg(key: str, **kwargs: Any) -> str:
@@ -201,12 +475,14 @@ class OutlineTools:
         reads: Callable[[], list[dict[str, Any]]] = lambda: [],
         conversation_id: str = "",
         vault_root_override: Optional[str] = None,
+        enforce_reads: bool = False,
     ) -> None:
         self.store = store
         self.session_id = session_id
         self.proposals = proposals or ProposalStore(store.dir)
         self.journal = FsJournal(store.dir)
         self._reads = reads
+        self._enforce_reads = enforce_reads
         self.conversation_id = conversation_id
         self._vault_root_override = vault_root_override
 
@@ -393,6 +669,49 @@ class OutlineTools:
             raw_path = f"{raw_path}.outline"
         rel = normalize_vault_rel(raw_path)
         assert_not_protected(rel)
+
+        # 사용자가 활성 .outline 에서 블록(들)을 선택해 요청한 경우, 별도 .outline 파일 생성을 차단하고
+        # 기존 .outline 의 최상단 선택 블록 바로 하위(insert_after + inside=True)에 1:N <<doc:...>> 가지를 붙이도록 강제한다.
+        active_rel_raw = str(state.get("activeOutlinePath") or "").strip()
+        active_rel = normalize_vault_rel(active_rel_raw) if active_rel_raw else ""
+        raw_scope = state.get("outlineScope") if isinstance(state.get("outlineScope"), dict) else None
+        if (
+            raw_scope
+            and active_rel
+            and raw_scope.get("mode") not in (None, "", "document")
+            and isinstance(raw_scope.get("allowedNodeIds"), list)
+            and raw_scope.get("allowedNodeIds")
+        ):
+            allowed_ids = [str(x) for x in raw_scope["allowedNodeIds"] if str(x).strip()]
+            allowed_set = set(allowed_ids)
+            topmost_id = allowed_ids[0]
+            try:
+                active_abs = resolve_inside(Path(raw_root).resolve(), active_rel)
+                if active_abs.exists():
+                    active_payload = json.loads(active_abs.read_text(encoding="utf-8"))
+                    def _find_topmost(nodes: list[dict[str, Any]]) -> Optional[str]:
+                        for n in nodes:
+                            nid = str(n.get("id") or "")
+                            if nid in allowed_set:
+                                return nid
+                            hit = _find_topmost(n.get("children") or [])
+                            if hit:
+                                return hit
+                        return None
+                    found_top = _find_topmost(active_payload.get("rootNodes") or [])
+                    if found_top:
+                        topmost_id = found_top
+            except Exception:
+                pass
+            raise ValueError(
+                _msg(
+                    "olCreateBlockedByOutlineScope",
+                    path=rel,
+                    activePath=active_rel,
+                    scopeLabel=str(raw_scope.get("label") or "선택 블록"),
+                    topmostId=topmost_id,
+                )
+            )
         targets = [normalize_vault_rel(t, allow_empty=True) for t in (state.get("targetFolders") or []) if isinstance(t, str)]
         if targets and not any(t == "" or rel == t or rel.startswith(f"{t}/") for t in targets):
             raise ValueError(f"작업 대상 폴더({', '.join(targets)}) 밖에는 .outline 파일을 생성할 수 없습니다: {rel}")
@@ -413,6 +732,20 @@ class OutlineTools:
             rollback.append({"kind": "rmdir_if_empty", "path": d.relative_to(root).as_posix()})
 
         nodes, node_count = _materialize_outline_nodes(rootNodes)
+        create_texts, create_files = _collect_item_texts_and_files(nodes)
+        read_paths = {
+            str(r.get("path") or "").replace("\\", "/").lower()
+            for r in (self._reads() or [])
+            if isinstance(r, dict) and r.get("path")
+        }
+        lint_warnings = _lint_texts_and_files(
+            vault_root=root,
+            rel_outline=rel,
+            texts=create_texts,
+            file_targets=create_files,
+            read_paths=read_paths,
+            enforce_reads=self._enforce_reads,
+        )
         now_iso = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())
         doc_title = (title or "").strip() or target.stem
         payload = {
@@ -440,7 +773,8 @@ class OutlineTools:
             "createdAt": time.time(),
             "undone": False,
         })
-        return _msg("createdOutline", batchId=batch_id, path=rel, title=doc_title, nodeCount=node_count)
+        warn_note = f"\n경고: {'; '.join(lint_warnings)}" if lint_warnings else ""
+        return _msg("createdOutline", batchId=batch_id, path=rel, title=doc_title, nodeCount=node_count) + warn_note
 
     # --- Staged 패치 제안 & 리소스 연결 -------------------------------------------------------
 
@@ -458,11 +792,20 @@ class OutlineTools:
         active_rel_raw = str(state.get("activeOutlinePath") or "").strip()
         active_rel = normalize_vault_rel(active_rel_raw) if active_rel_raw else ""
         # outlineScope 는 해당 활성 아웃라인 탭의 노드 ID 범위이므로, 같은 파일일 때만 적용한다
-        scope = (
-            state.get("outlineScope")
-            if isinstance(state.get("outlineScope"), dict) and (not active_rel or active_rel == rel)
-            else None
-        )
+        raw_scope = state.get("outlineScope") if isinstance(state.get("outlineScope"), dict) else None
+        if (
+            raw_scope
+            and active_rel
+            and active_rel != rel
+            and raw_scope.get("mode") not in (None, "", "document")
+            and isinstance(raw_scope.get("allowedNodeIds"), list)
+            and raw_scope.get("allowedNodeIds")
+        ):
+            # 선택 범위가 다른 아웃라인에 걸려 있는데 이 파일을 고치려 하면 범위를 우회하는 것이다.
+            raise ValueError(
+                _msg("outOfScopeFile", scopeLabel=str(raw_scope.get("label") or "선택 범위"), activePath=active_rel, path=rel)
+            )
+        scope = raw_scope if raw_scope and (not active_rel or active_rel == rel) else None
         allowed_list = scope.get("allowedNodeIds") if scope else None
         allowed_set = set(str(x) for x in allowed_list) if isinstance(allowed_list, list) else None
         scope_label = str((scope or {}).get("label") or "선택 범위")
@@ -559,7 +902,7 @@ class OutlineTools:
         nodeEvidence: Optional[dict[str, Any]] = None,
         **_: Any,
     ) -> str:
-        _, rel, _, payload, state = self._resolve_outline(path, write=True)
+        root, rel, _, payload, state = self._resolve_outline(path, write=True)
         roots: list[dict[str, Any]] = payload["rootNodes"]
         bindings: dict[str, Any] = payload.get("docBindings") or {}
         req_list, target_ids = self._validate_requests(rel, roots, bindings, state, list(requests or []))
@@ -570,7 +913,15 @@ class OutlineTools:
             raise ValueError(f"대상 서브트리가 그사이 변경되었습니다 (baseHash 불일치: 기대={baseHash}, 현재={computed_hash}). ol_read 로 다시 확인하세요.")
 
         ev_map = nodeEvidence if isinstance(nodeEvidence, dict) else {}
-        warnings = self._verify_evidence(ev_map)
+        warnings = lint_outline_patch(
+            vault_root=root,
+            rel_outline=rel,
+            roots=roots,
+            requests=req_list,
+            node_evidence=ev_map,
+            reads=self._reads(),
+            enforce_reads=self._enforce_reads,
+        )
         proposal_id = f"olp-{int(time.time())}-{uuid.uuid4().hex[:6]}"
         proposal = {
             "id": proposal_id,
@@ -589,7 +940,7 @@ class OutlineTools:
                 "baseHash": effective_hash,
                 "targetNodeIds": target_ids,
                 "requests": req_list,
-                "nodeEvidence": ev_map,
+                "nodeEvidence": {},
             },
         }
         self.proposals.save(self.session_id, proposal)
@@ -602,7 +953,9 @@ class OutlineTools:
         path: str = "",
         nodeId: str = "",
         target: str = "",
-        mode: str = "file",
+        mode: str = "resource",
+        quote: str = "",
+        anchor: str = "",
         caption: str = "",
         insertInside: bool = True,
         **_: Any,
@@ -613,9 +966,21 @@ class OutlineTools:
         if not res_abs.exists():
             raise ValueError(f"볼트 리소스가 존재하지 않습니다: {res_rel}")
 
-        clean_mode = (mode or "file").strip().lower()
+        clean_mode = (mode or "resource").strip().lower()
         name = os.path.basename(res_rel)
-        if clean_mode == "file":
+        if res_rel.lower().endswith(".vclip") and clean_mode in ("file", "wikilink"):
+            raise ValueError(_msg("lintVclipAttachModeBlocked", target=res_rel, mode=clean_mode, nodeId=nodeId))
+        if _is_image_path(res_rel) and clean_mode == "resource" and not _BBOX_ANCHOR_RE.search(anchor or ""):
+            raise ValueError(_msg("lintImageAttachModeBlocked", target=res_rel, nodeId=nodeId))
+
+        if clean_mode == "resource":
+            clean_anchor = (anchor or "").strip()
+            clean_quote = " ".join((quote or "").split()).strip()
+            addr = f"{res_rel} {clean_anchor}".strip() if clean_anchor else res_rel
+            tag_text = f"<<resource: {addr} | {clean_quote}>>" if clean_quote else f"<<resource: {addr}>>"
+            reqs = [{"op": "insert_after", "targetId": nodeId, "inside": bool(insertInside), "items": [{"text": tag_text}]}]
+            summary = f"근거 리소스 태그 연결: {name}"
+        elif clean_mode == "file":
             reqs = [{"op": "set_file", "id": nodeId, "file": {"target": res_rel}}]
             summary = f"리소스 첨부: {name}"
         elif clean_mode == "img-token":
@@ -629,14 +994,4 @@ class OutlineTools:
         else:
             raise ValueError(f"지원하지 않는 연결 mode: {mode}")
 
-        ev = {
-            nodeId: [
-                {
-                    "kind": "resource",
-                    "refId": f"vault:{res_rel}",
-                    "label": name,
-                    "sourcePath": res_rel,
-                }
-            ]
-        }
-        return self._ol_propose_patch(path=rel, summary=summary, requests=reqs, nodeEvidence=ev)
+        return self._ol_propose_patch(path=rel, summary=summary, requests=reqs)

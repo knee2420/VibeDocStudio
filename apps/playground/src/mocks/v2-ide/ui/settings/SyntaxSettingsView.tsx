@@ -617,10 +617,25 @@ export const SyntaxSettingsView: React.FC<SyntaxSettingsViewProps> = ({
                         <span className="shrink-0 rounded bg-[#2f2f2f] px-1.5 py-0.5 font-code text-[10px] text-[var(--obs-text-faint,#8c8c8c)]">
                           {PRIMITIVE_LABELS[row.rule.primitive] ?? row.rule.primitive}
                         </span>
+                        {row.rule.layer && (
+                          <span
+                            className="shrink-0 rounded border border-[#3a3a3a] px-1.5 py-0.5 font-code text-[10px] text-[var(--obs-text-muted,#a0a0a0)]"
+                            title="구조 층 — document › section › container › block › slot · inline"
+                            data-testid="syntax-rule-layer"
+                          >
+                            층 {row.rule.layer}
+                          </span>
+                        )}
                       </div>
                       <div className="mt-0.5 truncate text-[11.5px] text-[var(--obs-text-faint,#868686)]">
                         {row.rule.description}
                       </div>
+                      {Boolean(row.rule.parents?.length || row.rule.children?.length) && (
+                        <div className="mt-0.5 truncate font-code text-[10.5px] text-[var(--obs-text-faint,#767676)]">
+                          {row.rule.parents?.length ? `담길 곳: ${row.rule.parents.join(" · ")}` : ""}
+                          {row.rule.children?.length ? `  ·  담는 것: ${row.rule.children.join(" · ")}` : ""}
+                        </div>
+                      )}
                     </div>
 
                     {/* Right: Obsidian Keycap Pill + Reset + PlusCircle */}

@@ -208,6 +208,37 @@ class WorkspaceStore:
         except (OSError, ValueError):
             return None
 
+    def session_for_conversation(self, conversation_id: Optional[str], *, allow_fallback: bool = True) -> str:
+        """agy 대화 id 가 명시적으로 묶인 세션 id 를 찾는다 (mounts.json → workbench.json 순).
+
+        단일 공유 vibefs MCP 서버가 여러 동시 ACP 세션(메인 채팅 · AI Direct 등)의 도구 호출을
+        세션 섞임 없이 라우팅하는 데 쓴다.
+        """
+        mounts = self.mounts()
+        try:
+            with open(self.path(WORKBENCH_FILE), encoding="utf-8") as fh:
+                wb_data = json.load(fh) or {}
+        except (OSError, ValueError):
+            wb_data = {}
+        if not isinstance(wb_data, dict):
+            wb_data = {}
+
+        if conversation_id:
+            for mount in mounts:
+                if conversation_id in mount.conversation_ids:
+                    return mount.session_id
+            for sid, wb in wb_data.items():
+                if isinstance(wb, dict) and conversation_id in (wb.get("conversationIds") or []):
+                    return str(sid)
+        if not allow_fallback:
+            return ""
+        if mounts:
+            return max(mounts, key=lambda m: m.updated_at).session_id
+        wb_entries = [(str(sid), wb) for sid, wb in wb_data.items() if isinstance(wb, dict)]
+        if wb_entries:
+            return max(wb_entries, key=lambda kv: float(kv[1].get("updatedAt") or 0))[0]
+        return ""
+
     def workbench_for_conversation(self, conversation_id: Optional[str], session_id: Optional[str] = None) -> Optional[dict[str, Any]]:
         if session_id:
             wb = self.workbench_for(session_id)

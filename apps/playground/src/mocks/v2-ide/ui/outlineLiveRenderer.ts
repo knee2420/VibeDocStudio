@@ -12,7 +12,7 @@
  * - Bare `https://...` / `vault://...` -> shortened clickable link chip
  */
 
-import { parseResourceTag } from "@vibe/vdoc-schema";
+import { parseCiteBullet, parseResourceTag } from "@vibe/vdoc-schema";
 
 export type OutlineInlineToken =
   | { readonly kind: "text"; readonly value: string }
@@ -26,7 +26,7 @@ export type OutlineInlineToken =
   | { readonly kind: "tag"; readonly value: string };
 
 const INLINE_TOKEN_RE =
-  /(<<\s*resource\s*:[^>\n]+\s*>>)|(<<\s*(?:doc|view|cite|asset|template|cell|row|col|document|page|section|title|list|table|callout|quote|block)(?::[^>\n]+)?(?:\s+[^>\n]+)?\s*>>)|(!\[([^\]\n]*)\]\(([^)\s]+)\))|(\[img(?::([^\]\n]*))?\])|(\[cta:([^\]\n]+)\])|(\[embed:([^\]\n]+)\])|(\[([^\]\n]+)\]\(([^)\s]+)\))|(\[\[([^[\]\n]+)\]\])|(==([^=\n]+)==)|((?:https?:\/\/|vault:\/\/)[^\s)\]]+)|((?:^|\s)#[\p{L}\p{N}_/-]*[\p{L}_/-])/giu;
+  /(<<\s*resource\s*:[^>\n]+\s*>>)|(<<\s*(?:doc|view|cite|asset|template|cell|row|col|document|page|section|title|list|table|callout|quote|block)(?::[^>\n]+)?(?:\s+[^>\n]+)?\s*>>)|(!\[([^\]\n]*)\]\(([^)\s]+)\))|(\[img(?::([^\]\n]*))?\])|(\[cta:([^\]\n]+)\])|(\[embed:([^\]\n]+)\])|(\[([^\]\n]+)\]\(([^)\s]+)\))|(\[\[([^[\]\n]+)\]\])|(==([^=\n]+)==)|((?:https?:\/\/|vault:\/\/)[^\s)\]]+)|((?:^|\s)(?:#(?:p\d+|L\d+(?:-L?\d+)?)\b|#[\p{L}\p{N}_/-]*[\p{L}_/-]))/giu;
 
 function shortenUrlLabel(url: string): string {
   if (/^vault:\/\//i.test(url)) {
@@ -154,6 +154,7 @@ export function tokenizeOutlineInline(rawText: string): OutlineInlineToken[] {
 export function renderOutlineInlineMarkdown(markdown: string, containerEl: HTMLElement): void {
   const doc = containerEl.ownerDocument;
   const tokens = tokenizeOutlineInline(markdown);
+  const citeLocators = markdown.trim().startsWith("<<cite") ? parseCiteBullet(markdown) : null;
   const frag = doc.createDocumentFragment();
 
   for (const tok of tokens) {
@@ -170,7 +171,7 @@ export function renderOutlineInlineMarkdown(markdown: string, containerEl: HTMLE
       anchor.className = "internal-link vibe-ol-resource-chip";
       const icon = !parsed
         ? "📎"
-        : parsed.isWebUrl
+        : parsed.isWebUrl || /\.vclip$/i.test(parsed.target)
           ? "🌐"
           : /\.pdf$/i.test(parsed.target)
             ? "📕"
@@ -198,13 +199,15 @@ export function renderOutlineInlineMarkdown(markdown: string, containerEl: HTMLE
       if (parsed?.nodeId) locBits.push(`#${parsed.nodeId}`);
       if (parsed?.slotId) locBits.push(`#${parsed.slotId}`);
       if (parsed?.blockId) locBits.push(`#${parsed.blockId}`);
+      const displayLabel = parsed ? parsed.label.replace(/\.vclip$/i, "") : "";
       const headLabel = parsed
-        ? `${icon} ${parsed.label}${locBits.length ? ` · ${locBits.join(" ")}` : ""}`
+        ? `${icon} ${displayLabel}${locBits.length ? ` · ${locBits.join(" ")}` : ""}`
         : tok.raw;
-      const quotePreview = parsed?.quote
-        ? parsed.quote.length > 48
-          ? `${parsed.quote.slice(0, 47)}…`
-          : parsed.quote
+      const cleanQuote = parsed?.quote ? parsed.quote.replace(/\\([[\]()*_`<>])/g, "$1") : "";
+      const quotePreview = cleanQuote
+        ? cleanQuote.length > 48
+          ? `${cleanQuote.slice(0, 47)}…`
+          : cleanQuote
         : "";
       anchor.textContent = quotePreview ? `${headLabel}  |  “${quotePreview}”` : headLabel;
       anchor.title = `클릭 시 페어 탭으로 열고 하이라이트 · ${tok.raw}`;
@@ -308,11 +311,38 @@ export function renderOutlineInlineMarkdown(markdown: string, containerEl: HTMLE
 
     if (tok.kind === "wikilink") {
       const anchor = doc.createElement("a");
+      const matchedCite = citeLocators?.find(
+        (loc) =>
+          loc.sourcePath === tok.target ||
+          loc.label === tok.target ||
+          loc.label === tok.alias ||
+          (loc.sourcePath && loc.sourcePath.endsWith(`/${tok.target}`))
+      );
       anchor.href = tok.target;
-      anchor.setAttribute("data-href", tok.target);
+      if (matchedCite && (matchedCite.lines || matchedCite.page || matchedCite.excerpt)) {
+        anchor.setAttribute(
+          "data-href",
+          `cite-open:${JSON.stringify({
+            target: tok.target,
+            page: matchedCite.page,
+            lines: matchedCite.lines,
+            excerpt: matchedCite.excerpt,
+            label: matchedCite.label,
+          })}`
+        );
+        const locHint = [
+          matchedCite.page ? `p.${matchedCite.page}` : "",
+          matchedCite.lines ? `L${matchedCite.lines[0]}-L${matchedCite.lines[1]}` : "",
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        anchor.title = `클릭 시 페어 탭으로 열고 하이라이트 · ${tok.target}${locHint ? ` (${locHint})` : ""}`;
+      } else {
+        anchor.setAttribute("data-href", tok.target);
+        anchor.title = `[[${tok.target}]]`;
+      }
       anchor.className = "internal-link";
       anchor.textContent = tok.alias;
-      anchor.title = `[[${tok.target}]]`;
       anchor.style.cssText =
         "color:#c4b5fd;text-decoration:underline;text-decoration-color:rgba(196,181,253,0.45);text-underline-offset:2px;cursor:pointer;";
       frag.appendChild(anchor);

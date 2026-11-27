@@ -108,7 +108,16 @@ describe("v2 AI Composer — 변경된 스펙(볼트 모델) 계약", () => {
 
   it("UF2 리소스: 볼트 폴더 → 절대 경로 루트, 외부 폴더 그대로, 끄면 첨부 없음", () => {
     const { ai } = setup();
-    assert.deepEqual(provider(ai, "resources").current!(), []);
+    // 고른 폴더가 없으면 작업 중인 문서의 프로젝트 폴더(.vproj 또는 그 문서의 폴더)가 기본 마운트 — 없으면(볼트 루트) 첨부 없음
+    const active = ai.env.activeTabPath() ?? ai.env.activeDocPath();
+    const defaults = provider(ai, "resources").current!();
+    if (active && active.includes("/")) {
+      assert.equal(defaults.length, 1);
+      const home = JSON.parse(defaults[0].content!).roots[0].path as string;
+      assert.ok(`${active}`.startsWith(home.replace("C:/vaults/demo/", "")), `${home} ⊃ ${active}`);
+    } else {
+      assert.deepEqual(defaults, []);
+    }
     ai.store.getState().toggleResourceFolder("01. Architecture", true);
     ai.store.getState().addExternalFolder("C:\\자료\\프로젝트\\");
     const [mount] = provider(ai, "resources").current!();

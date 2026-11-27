@@ -39,7 +39,9 @@
       "longParas": "320자 넘는 문단 {count}개 (훑어보기 어려움): {ids}",
       "none": "없음",
       "label": "문제: ",
-      "unstyledMarkers": "글머리 기호로 시작하는데 문단 스타일이 없는 블록 {count}개: {ids}"
+      "unstyledMarkers": "글머리 기호로 시작하는데 문단 스타일이 없는 블록 {count}개: {ids}",
+      "unitNotSection": "섹션이 아닌 단위 {count}개 (섹션 = 구조 단위, 쪽은 출력 결과 — dc_build page 작업이 섹션을 연다): {ids}",
+      "sectionCollapsed": "단위 {page} 안에 최상위 소제목(h{level})이 {count}개 — 섹션을 소제목으로 흉내 냈다. 소제목마다 섹션(page 작업)으로 나눈다"
     },
     "labels": {
       "heading": "소제목",

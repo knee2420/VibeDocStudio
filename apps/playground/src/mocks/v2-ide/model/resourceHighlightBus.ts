@@ -6,12 +6,27 @@
  * 2) 열린 뷰어(`.pdf`, `.md`, `.outline`, `.vdoc`, `.ref`, `.png`, `.csv`, 코드)에
  *    정확한 위치·인용문 하이라이트 요청을 전달한다 (마운트 전이면 TTL 큐에 보관).
  */
-import { parseRefJson, serializeRefJson, type RefDocument } from "@vibe/ref-canvas/core";
-import { basename, normalizeVaultPath, type VaultPort } from "@vibe/vault-core";
-import { fromVaultUri } from "@vibe/vault-formats";
+import { parseRefJson } from "@vibe/ref-canvas/core";
+import {
+  basename,
+  isClipBundlePath,
+  normalizeVaultPath,
+  resolveSourcesFolderForPath,
+  type VaultPort,
+} from "@vibe/vault-core";
+import {
+  allocateUniqueClipBundlePath,
+  findCachedWebClipInVault,
+  fromVaultUri,
+  writeWebClipBundle,
+} from "@vibe/vault-formats";
 import { parseResourceTag, type ParsedResourceTag } from "@vibe/vdoc-schema";
 
-import { importWebUrlAsRefStream } from "./refClient";
+import {
+  createOfflineFallbackClipBundle,
+  saveScrapedWebClipToVault,
+  scrapeWebClipFromApi,
+} from "./clipClient";
 
 export interface ResourceHighlightRequest {
   readonly id: string;
@@ -154,79 +169,7 @@ function slugifyUrlForCache(url: string): string {
   }
 }
 
-function createWebFallbackRefDoc(url: string, quoteText?: string, reason?: string): RefDocument {
-  const now = Date.now();
-  let hostLabel = url;
-  try {
-    hostLabel = new URL(url).hostname;
-  } catch {
-    // keep raw url
-  }
-  const summaryText = quoteText
-    ? quoteText
-    : `${url} 웹페이지 리소스입니다. 서버 자동 캡처가 차단되었거나 오프라인 상태입니다.`;
-  return {
-    version: 1,
-    refId: `web-fallback-${now}`,
-    title: `${hostLabel} — 웹 리소스 스냅샷`,
-    status: "structured",
-    source: {
-      originType: "web",
-      uri: url,
-      sourceName: hostLabel,
-      sourceUrl: url,
-      capturedAt: now,
-    },
-    layerSet: "web",
-    enabledLayers: {},
-    frames: [
-      {
-        frameId: "frame-1",
-        index: 1,
-        surfaceKind: "semantic-canvas",
-        width: 960,
-        height: 680,
-        label: hostLabel,
-        title: `${hostLabel} (웹 리소스 폴백)`,
-      },
-    ],
-    blocks: [
-      {
-        id: "blk-web-quote",
-        frameIndex: 1,
-        kind: "callout",
-        text: summaryText,
-        bbox: [120, 60, 420, 940],
-      },
-      {
-        id: "blk-web-notice",
-        frameIndex: 1,
-        kind: "text",
-        text:
-          reason ??
-          "안티봇/네트워크 제약으로 자동 캡처가 완료되지 않았습니다. 상단 '원본에서 하이라이트 열기'로 브라우저 Text Fragment 점프를 사용하거나 본문을 붙여넣어 스냅샷을 갱신할 수 있습니다.",
-        bbox: [450, 60, 650, 940],
-      },
-    ],
-    outline: [{ blockId: "blk-web-quote", title: hostLabel, level: 1, frameIndex: 1 }],
-    layers: [],
-    metrics: {},
-    pins: [],
-    consensus: [],
-    article: {
-      title: `${hostLabel} — 웹 리소스`,
-      siteName: hostLabel,
-      url,
-      html: `<p>${summaryText}</p>`,
-      text: `${summaryText}\n\n${reason ?? ""}`.trim(),
-    },
-    nameSource: "auto",
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
-/** 볼트 파일 경로 해석 (`vault://`, 정확 경로, 같은 폴더, 파일명/stem 일치). */
+/** 볼트 파일 및 `.vclip/` 번들 경로 해석 (`vault://`, 정확 경로, 같은 폴더, `sources/`·`resources/`, 파일명/stem 일치). */
 export function resolveResourceVaultPath(
   vault: VaultPort,
   rawTarget: string,
@@ -243,6 +186,8 @@ export function resolveResourceVaultPath(
     if (dir) {
       const sibling = normalizeVaultPath(`${dir}/${candidate}`);
       if (vault.exists(sibling)) return sibling;
+      const inSources = normalizeVaultPath(`${dir}/sources/${candidate}`);
+      if (vault.exists(inSources)) return inSources;
       const inResources = normalizeVaultPath(`${dir}/resources/${candidate}`);
       if (vault.exists(inResources)) return inResources;
     }
@@ -253,7 +198,7 @@ export function resolveResourceVaultPath(
   const matches = vault
     .listAll()
     .filter((n) => {
-      if (n.kind !== "file") return false;
+      if (n.kind !== "file" && !isClipBundlePath(n.path)) return false;
       const p = n.path.toLowerCase();
       const b = basename(n.path).toLowerCase();
       const noExt = b.replace(/\.[^.]+$/, "");
@@ -289,6 +234,23 @@ export function openResourceTagInPair(
   const { vault, sourcePath, openInPair } = options;
 
   if (parsed.isWebUrl) {
+    // 1순위: `.vclip/` 웹 스크랩 번들 (사실 근거 1급 리소스)
+    const existingClip = findCachedWebClipInVault(vault, parsed.target);
+    if (existingClip) {
+      requestResourceHighlight({
+        targetPath: existingClip,
+        sourceUrl: parsed.target,
+        page: parsed.page,
+        bbox: parsed.bbox,
+        blockId: parsed.blockId,
+        quoteText: parsed.quote,
+        label: parsed.label,
+      });
+      openInPair(existingClip);
+      return true;
+    }
+
+    // 2순위(하위 호환): 기존 볼트에 저장된 레거시 웹 `.ref` 스냅샷
     const existingRef = findCachedWebRefInVault(vault, parsed.target);
     if (existingRef) {
       requestResourceHighlight({
@@ -304,19 +266,29 @@ export function openResourceTagInPair(
       return true;
     }
 
-    // 캐시된 `.ref` 가 없으면 `.vibedoc/web-cache/<slug>.ref` 에 폴백/진행 카드를 즉시 열어 두고 비동기 캡처 시도
-    const cacheDir = ".vibedoc/web-cache";
-    const cachePath = `${cacheDir}/${slugifyUrlForCache(parsed.target)}.ref`;
-    if (!vault.exists(cachePath)) {
-      const placeholder = createWebFallbackRefDoc(
-        parsed.target,
-        parsed.quote,
-        "웹페이지 스냅샷을 백엔드 API(:8090)로 수집 시도 중입니다..."
-      );
-      vault.write(cachePath, serializeRefJson(placeholder));
+    // 신규 웹 URL 리소스: `.ref` 를 오염시키지 않고 옵시디언 방식 동레이어 `sources/<slug>.vclip/` 번들 생성
+    const sourcesFolder = sourcePath
+      ? resolveSourcesFolderForPath(sourcePath)
+      : ".vibedoc/web-cache";
+    if (sourcesFolder && !vault.exists(sourcesFolder)) {
+      vault.createFolder(sourcesFolder);
     }
+    const bundlePath = allocateUniqueClipBundlePath(
+      vault,
+      sourcesFolder,
+      parsed.label || slugifyUrlForCache(parsed.target)
+    );
+    const placeholder = createOfflineFallbackClipBundle(parsed.target, {
+      title: parsed.label || undefined,
+      snippet: parsed.quote,
+      reason: "웹 스크랩 본문(content.md)을 백엔드 API(:8090)로 수집 중입니다...",
+      mode: "content",
+      sourceMethod: "user-url",
+    });
+    writeWebClipBundle(vault, bundlePath, placeholder);
+
     requestResourceHighlight({
-      targetPath: cachePath,
+      targetPath: bundlePath,
       sourceUrl: parsed.target,
       page: parsed.page,
       bbox: parsed.bbox,
@@ -324,15 +296,20 @@ export function openResourceTagInPair(
       quoteText: parsed.quote,
       label: parsed.label,
     });
-    openInPair(cachePath);
+    openInPair(bundlePath);
 
-    void importWebUrlAsRefStream(parsed.target, parsed.label, () => {
-      // silent progress stream
+    void scrapeWebClipFromApi({
+      url: parsed.target,
+      mode: "content",
+      title: parsed.label,
+      sourceMethod: "user-url",
+      snippet: parsed.quote,
+      clipId: placeholder.meta.clipId,
     })
-      .then((captured) => {
-        vault.write(cachePath, serializeRefJson(captured));
+      .then((scraped) => saveScrapedWebClipToVault(vault, bundlePath, scraped))
+      .then(() => {
         requestResourceHighlight({
-          targetPath: cachePath,
+          targetPath: bundlePath,
           sourceUrl: parsed.target,
           page: parsed.page,
           bbox: parsed.bbox,
@@ -343,14 +320,17 @@ export function openResourceTagInPair(
       })
       .catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err ?? "");
-        const fallback = createWebFallbackRefDoc(
-          parsed.target,
-          parsed.quote,
-          `자동 캡처 불가 (${msg || "안티봇/오프라인"}). 아래 '원본에서 하이라이트 열기' 버튼을 이용하세요.`
-        );
-        vault.write(cachePath, serializeRefJson(fallback));
+        const fallback = createOfflineFallbackClipBundle(parsed.target, {
+          title: parsed.label || undefined,
+          snippet: parsed.quote,
+          reason: `자동 수집 불가 (${msg || "안티봇/오프라인"}). '편집 · 붙여넣기'로 본문을 보강하거나 '원본 하이라이트'를 이용하세요.`,
+          mode: "content",
+          sourceMethod: "user-url",
+          clipId: placeholder.meta.clipId,
+        });
+        writeWebClipBundle(vault, bundlePath, fallback);
         requestResourceHighlight({
-          targetPath: cachePath,
+          targetPath: bundlePath,
           sourceUrl: parsed.target,
           page: parsed.page,
           bbox: parsed.bbox,

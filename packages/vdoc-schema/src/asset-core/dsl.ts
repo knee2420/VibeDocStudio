@@ -569,6 +569,84 @@ export function compileVsyntaxDslToAssetV3(
         continue;
       }
 
+      // 2b) <<view:columns[:variant]>> — 다단 이미지 스트립 · 가로 분할 레이아웃
+      const parseImgNode = (rawText: string): Extract<SkelNode, { t: "field" }> | null => {
+        const m = /^\[img\s*:\s*([^\]]+)\]$/i.exec(rawText.trim());
+        if (!m) return null;
+        const inner = m[1].trim();
+        const f = parseFieldToken(inner, takeTopId);
+        return {
+          t: "field",
+          role: "image",
+          field: f
+            ? { ...f.field, type: "image" }
+            : { id: takeTopId(sanitizeFieldId(inner, "image")), type: "image", hint: inner },
+        };
+      };
+
+      const compileColumnCell = (cellText: string, cellChildren: readonly RawDslLine[]): GridCell => {
+        const trimmed = cellText.trim();
+        const imgNode = parseImgNode(trimmed);
+        if (imgNode && cellChildren.length === 0) {
+          return { role: "value", nodes: [imgNode] };
+        }
+        const cellNodes: SkelNode[] = [];
+        if (imgNode) {
+          cellNodes.push(imgNode);
+        } else if (trimmed) {
+          const f = parseFieldToken(trimmed, takeTopId);
+          if (f) {
+            cellNodes.push({ t: "field", role: "body", field: f.field });
+          } else {
+            const roleM = /^\{([a-z][a-z0-9-]*)\}\s*([\s\S]+)$/i.exec(trimmed);
+            const role = roleM ? roleM[1].toLowerCase() : "note";
+            const body = roleM ? roleM[2].trim() : trimmed;
+            cellNodes.push({ t: "label", role: isFixedRole(role) ? role : "note", text: body });
+          }
+        }
+        if (cellChildren.length > 0) {
+          cellNodes.push(...compileNodes(cellChildren));
+        }
+        if (cellNodes.length === 0) {
+          cellNodes.push({
+            t: "field",
+            role: "body",
+            field: { id: takeTopId("col"), type: "text" },
+          });
+        }
+        return { role: "value", nodes: cellNodes };
+      };
+
+      const colsM = /^<<\s*view\s*:\s*columns(?::([a-z0-9-]+))?\s*>>(.*)$/i.exec(txt);
+      if (colsM) {
+        const variant = colsM[1]?.trim() || undefined;
+        const headerRest = colsM[2]?.trim() || "";
+        const cells: GridCell[] = [];
+        if (node.children.length === 1 && splitTableCells(node.children[0].text, sym.colSplit).length > 1) {
+          for (const part of splitTableCells(node.children[0].text, sym.colSplit)) {
+            cells.push(compileColumnCell(part, []));
+          }
+        } else if (node.children.length > 0) {
+          for (const ch of node.children) {
+            cells.push(compileColumnCell(ch.text, ch.children));
+          }
+        } else if (headerRest && splitTableCells(headerRest, sym.colSplit).length > 1) {
+          for (const part of splitTableCells(headerRest, sym.colSplit)) {
+            cells.push(compileColumnCell(part, []));
+          }
+        }
+        if (cells.length > 0) {
+          out.push({
+            t: "grid",
+            component: "columns",
+            ...(variant ? { variant } : {}),
+            rows: [{ cells }],
+          });
+        }
+        i++;
+        continue;
+      }
+
       // 3) <<view:section|frame|cover|card[:variant]>>
       const contM = /^<<\s*view\s*:\s*(section|frame|cover|card)(?::([a-z0-9-]+))?\s*>>(.*)$/i.exec(txt);
       if (contM) {
@@ -646,18 +724,23 @@ export function compileVsyntaxDslToAssetV3(
         continue;
       }
 
-      // 7) 이미지 슬롯 `[img:{{photo|대표 이미지}}]` 또는 `[img:라벨]`
-      const imgM = /^\[img\s*:\s*([\s\S]+?)\]$/i.exec(txt);
-      if (imgM) {
-        const inner = imgM[1].trim();
-        const f = parseFieldToken(inner, takeTopId);
+      // 6b) 인라인 가로 분할 이미지/다단 행 (`[img:{{a}}] | [img:{{b}}]` 또는 `[img:{{a}}] | {{desc}}`)
+      // 단독 `[img:...]` 나 표(`compileTableBlock`)보다 먼저 가로 다단(`grid(component="columns")`)으로 잡는다.
+      const splitParts = splitTableCells(txt, sym.colSplit);
+      if (splitParts.length > 1 && splitParts.some((part) => /^\[img\s*:/i.test(part.trim()))) {
         out.push({
-          t: "field",
-          role: "image",
-          field: f
-            ? { ...f.field, type: "image" }
-            : { id: takeTopId(sanitizeFieldId(inner, "image")), type: "image", hint: inner },
+          t: "grid",
+          component: "columns",
+          rows: [{ cells: splitParts.map((part) => compileColumnCell(part, [])) }],
         });
+        i++;
+        continue;
+      }
+
+      // 7) 단독 이미지 슬롯 `[img:{{photo|대표 이미지}}]` 또는 `[img:라벨]`
+      const singleImgNode = parseImgNode(txt);
+      if (singleImgNode) {
+        out.push(singleImgNode);
         i++;
         continue;
       }
@@ -708,7 +791,7 @@ export function compileVsyntaxDslToAssetV3(
       }
 
       // 10) 연속된 파이프(`|`) 표 행들 (별도 `<<view:table>>` 래퍼 없이 바로 표만 적은 경우)
-      if (splitTableCells(txt, sym.colSplit).length > 1) {
+      if (splitParts.length > 1) {
         const tableLines: RawDslLine[] = [];
         while (
           i < list.length &&
@@ -808,6 +891,44 @@ export function renderAssetV3ToVsyntaxDsl(asset: AssetV3): string[] {
         lines.push(`${pad}<<view:${n.component}${n.variant ? `:${n.variant}` : ""}>>`);
         emitNodes(n.children, `${pad}  `);
       } else if (n.t === "grid") {
+        if (n.component === "columns") {
+          const cells = n.rows[0]?.cells ?? [];
+          const renderSimpleCell = (cell: GridCell): string | null => {
+            if (cell.field) {
+              return cell.field.type === "image"
+                ? `[img:${formatFieldToken(cell.field)}]`
+                : formatFieldToken(cell.field);
+            }
+            if (cell.text !== undefined) return cell.text;
+            if (cell.nodes && cell.nodes.length === 1) {
+              const single = cell.nodes[0];
+              if (single.t === "field") {
+                return single.field.type === "image"
+                  ? `[img:${formatFieldToken(single.field)}]`
+                  : formatFieldToken(single.field);
+              }
+              if (single.t === "label") return single.text;
+            }
+            return null;
+          };
+          const simpleParts = cells.map(renderSimpleCell);
+          const allSimple = simpleParts.length > 0 && simpleParts.every((p): p is string => p !== null);
+          const hasImage = simpleParts.some((p) => Boolean(p && p.startsWith("[img:")));
+          if (!n.variant && allSimple && hasImage) {
+            lines.push(`${pad}${simpleParts.join(" | ")}`);
+          } else {
+            lines.push(`${pad}<<view:columns${n.variant ? `:${n.variant}` : ""}>>`);
+            for (let idx = 0; idx < cells.length; idx++) {
+              const simple = simpleParts[idx];
+              if (simple !== null) {
+                lines.push(`${pad}  ${simple}`);
+              } else if (cells[idx].nodes) {
+                emitNodes(cells[idx].nodes!, `${pad}  `);
+              }
+            }
+          }
+          continue;
+        }
         if (n.component === "kv") {
           lines.push(`${pad}<<view:kv${n.variant ? `:${n.variant}` : ""}>>`);
           for (const row of n.rows) {

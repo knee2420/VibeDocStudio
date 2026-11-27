@@ -1,7 +1,7 @@
 {
  "name": "outline",
- "version": "1.0.0",
- "description": ".outline 불릿 트리 AI 인지·조작·리소스 연결(ol_* · outline.*) — TreePatchRequest 기반 Staged 제안과 사이드카 근거 관리",
+ "version": "1.1.0",
+ "description": ".outline 불릿 트리 AI 인지·조작·통일 근거 린트(ol_* · outline.*) — TreePatchRequest 기반 Staged 제안과 .vsyntax <<resource:...>>/<<cite:...>> 단일 정본 검증",
  "dependsOn": [
   "core",
   "resource",

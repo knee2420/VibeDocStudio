@@ -141,8 +141,82 @@ export function findOwningProjectPath(path: string): string | null {
 }
 
 /**
+ * 폴더 확장자: `<제목>.vclip/` 폴더를 웹 스크랩(사실 근거 리소스) 단일 번들로 인식한다.
+ * - 내부 구조: `clip.json` · `content.md` · 선택 `snapshot.html` · `capture.png` · `assets/`
+ * - 탐색기에서는 단일 항목(`CLIP` 배지)처럼 접어 표시한다.
+ */
+export const CLIP_BUNDLE_EXT = "vclip";
+
+export function isClipBundleName(name: string): boolean {
+  const suffix = `.${CLIP_BUNDLE_EXT}`;
+  return name.length > suffix.length && name.toLowerCase().endsWith(suffix);
+}
+
+export function isClipBundlePath(path: string): boolean {
+  return isClipBundleName(basename(path));
+}
+
+export function stripClipBundleExt(name: string): string {
+  if (!isClipBundleName(name)) return name;
+  return name.slice(0, -(CLIP_BUNDLE_EXT.length + 1));
+}
+
+export function ensureClipBundleName(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return trimmed;
+  return isClipBundleName(trimmed) ? trimmed : `${trimmed}.${CLIP_BUNDLE_EXT}`;
+}
+
+/** 임의 경로가 `*.vclip/` 번들 자신이거나 그 내부 파일이면 해당 번들 폴더 경로를 반환한다. */
+export function findOwningClipBundlePath(path: string): string | null {
+  const segments = splitPathSegments(path);
+  for (let i = segments.length - 1; i >= 0; i--) {
+    if (isClipBundleName(segments[i])) {
+      return segments.slice(0, i + 1).join("/");
+    }
+  }
+  return null;
+}
+
+export interface SourcesFolderPolicy {
+  /** 기본 `"same-folder-subfolder"` (옵시디언 첨부파일 방식: 현재 파일과 동레이어에 `sources/` 생성). */
+  readonly mode?: "same-folder-subfolder" | "fixed-folder";
+  /** 동레이어 하위 폴더명 (기본 `"sources"`). */
+  readonly folderName?: string;
+  /** `mode === "fixed-folder"` 일 때 사용할 볼트 상대 폴더 경로. */
+  readonly fixedFolder?: string;
+}
+
+/**
+ * 옵시디언 첨부파일 관리 규칙과 동일한 `sources/` 폴더 경로 결정기:
+ * - 기본값: 현재 편집 중인 파일과 동일 레이어에 `sources` 폴더 (`<dir>/sources`, 루트면 `sources`)
+ * - 고정 폴더 설정 시: 지정한 볼트 경로 반환
+ */
+export function resolveSourcesFolderForPath(
+  activePath?: string | null,
+  policy?: SourcesFolderPolicy
+): string {
+  if (policy?.mode === "fixed-folder" && policy.fixedFolder?.trim()) {
+    return normalizeVaultPath(policy.fixedFolder);
+  }
+  const subName = normalizeVaultPath(policy?.folderName || "sources") || "sources";
+  const norm = normalizeVaultPath(activePath ?? "");
+  if (!norm) return subName;
+
+  // 이미 .vclip 번들 안을 보고 있다면 번들의 부모 폴더를 기준으로 삼는다.
+  const clipOwner = findOwningClipBundlePath(norm);
+  const basePath = clipOwner ?? norm;
+  const parent = dirname(basePath);
+  if (!parent) return subName;
+  if (basename(parent).toLowerCase() === subName.toLowerCase()) {
+    return parent;
+  }
+  return joinPath(parent, subName);
+}
+
+/**
  * Obsidian 표시명 규칙: `.md` 파일은 확장자를 숨기고, 그 외 확장자는 배지로 표시한다.
- * `.vproj` 프로젝트 폴더는 확장자를 숨기고 `PROJ` 배지를 붙이며,
+ * `.vproj` 프로젝트 폴더는 `PROJ`, `.vclip` 웹 스크랩 번들은 `CLIP` 배지를 붙이며,
  * 복합 확장자 `.vdoc.json`도 깔끔하게 `VDOC` 배지로 축약한다.
  */
 export function getObsidianDisplayName(name: string, kind: "file" | "folder"): {
@@ -152,6 +226,9 @@ export function getObsidianDisplayName(name: string, kind: "file" | "folder"): {
   if (kind === "folder") {
     if (isProjectFolderName(name)) {
       return { label: stripProjectFolderExt(name), extensionBadge: "PROJ" };
+    }
+    if (isClipBundleName(name)) {
+      return { label: stripClipBundleExt(name), extensionBadge: "CLIP" };
     }
     return { label: name, extensionBadge: null };
   }

@@ -63,7 +63,7 @@
                 },
                 "evidence": {
                     "type": "array",
-                    "description": "이 내용의 근거 [{citationId, kind: kcard|backdata|resource|sector|ref-region, deckId, cardId, chunkId, label, lines}] — 본문 인용 표식 <sup data-cite=\"citationId\"></sup> 과 짝을 맞춘다"
+                    "description": "이 내용의 근거 [{citationId?, kind?: resource|backdata|sector|ref-region|kcard, sourcePath, url?, label, page?, lines?: [start, end], excerpt?, presentation?: footnote|inline-rationale|sidenote|quote-embed|matrix|bound-value, rationale?}] — 본문 인용 표식 <sup data-cite=\"citationId\"></sup> 과 짝을 맞춘다"
                 }
             },
             "required": [
@@ -74,14 +74,14 @@
     },
     {
         "name": "slots.proposeBatch",
-        "description": "여러 슬롯(표 셀 · 그리드 칸 · 섹션)의 새 본문을 한 번에 변경안으로 제출한다. 블록 하나를 채우거나 고칠 때 slot.proposeContent 를 여러 번 부르지 말고 이것을 쓴다. 잠긴 슬롯만 건너뛴다",
+        "description": "여러 슬롯(표 셀 · 그리드 칸 · 섹션)의 새 본문과 근거를 한 번에 변경안으로 제출한다. 블록 하나를 채우거나 고칠 때 slot.proposeContent 를 여러 번 부르지 말고 이것을 쓴다. 잠긴 슬롯만 건너뛴다",
         "risk": "stage",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "changes": {
                     "type": "array",
-                    "description": "[{slotId, html, evidence?}] — html 은 <p>, <ul>, <li>, <strong>, <em>, 인용 <sup data-cite> 만"
+                    "description": "[{slotId, html, evidence?: [{citationId?, kind?, sourcePath, url?, label, page?, lines?, excerpt?, presentation?, rationale?}]}] — html 은 <p>, <ul>, <li>, <strong>, <em>, 인용 <sup data-cite> 만"
                 },
                 "reason": {
                     "type": "string",
@@ -90,6 +90,51 @@
             },
             "required": [
                 "changes"
+            ]
+        }
+    },
+    {
+        "name": "slots.attachEvidence",
+        "description": "열린 .vdoc 의 기존 슬롯 본문을 훼손하지 않고 리소스 근거(evidenceLinks)와 선택적 인용 표식(<sup data-cite>)만 한 번에 Staged 변경안으로 첨부한다. 사용자가 '문서에 맞는 리소스를 찾아 첨부해줘' 같이 근거 연결을 요청할 때 사용한다. 외부 마운트 폴더의 파일은 먼저 rs_resource_import 로 볼트 sources 에 들여온 뒤 반환된 볼트 상대 경로를 sourcePath 에 넣는다.",
+        "risk": "stage",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "description": "슬롯별 근거 첨부 목록",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "slotId": {
+                                "type": "string",
+                                "description": "대상 슬롯 ID (document.getOutline 에서 확인)"
+                            },
+                            "appendCiteMarker": {
+                                "type": "boolean",
+                                "description": "기본 true — 슬롯 끝부분에 <sup data-cite=\"N\"></sup> 인용 표식을 자동 부착한다"
+                            },
+                            "evidence": {
+                                "type": "array",
+                                "description": "첨부할 근거 목록 [{kind?: 'resource', sourcePath: '<볼트 상대 경로>', url?, label, page?, lines?: [start, end], excerpt: '<실제 원문 발췌>', presentation?: 'footnote'|'inline-rationale'|'sidenote'|'quote-embed'|'matrix'|'bound-value', rationale?, requirementId?, boundValue?, boundFormula?}]",
+                                "items": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "required": [
+                            "slotId",
+                            "evidence"
+                        ]
+                    }
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "첨부 이유 한 줄"
+                }
+            },
+            "required": [
+                "attachments"
             ]
         }
     },
@@ -370,13 +415,48 @@
     },
     {
         "name": "assets.propose",
-        "description": "에셋 블록 제안 통합 도구 (Staged Unified Diff). 데이터 출처(sourceBlockIds 기존 이관 + items/records 새 데이터 보강)와 배치 방식(mode: replace | insert)을 자유롭게 조합한다. 직전 대기열(workbench.stagedChanges)의 제안을 수정할 때는 revisionOf 에 diffId 를 넘겨 중복 카드 없이 제자리 갱신한다.",
+        "description": "에셋·DSL 구조 변경 제안 통합 도구 (Staged Unified Diff). 등록된 에셋(assetId)뿐 아니라 일회성 구조 재편은 영구 에셋 파일을 만들지 않고 인라인 `.vsyntax` `dsl`(예: `[img:{{a}}] | [img:{{b}}]`, `<<view:columns:strip>>`, `<<view:table>>`)로 바로 규칙 검증·제안할 수 있다. 반복 재사용 틀만 `saveAsset: true` 또는 `assets.register` 로 저장한다. 직전 대기열(workbench.stagedChanges) 수정 시 `revisionOf` 에 diffId 를 넘긴다.",
         "risk": "read",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "assetId": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "등록된 에셋 ID (assetId 또는 dsl 중 하나 필수)"
+                },
+                "dsl": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "인라인 `.vsyntax` 구조 DSL 줄 배열(또는 멀티라인 문자열). 영구 에셋 파일을 만들지 않고 AssetV3 규칙 검증을 거쳐 Staged 블록을 생성한다. 예: `[\"[img:{{left_img|좌측 사진}}] | [img:{{right_img|우측 사진}}]\"]`"
+                },
+                "title": {
+                    "type": "string",
+                    "description": "인라인 DSL 제안 또는 Unified Diff 카드 제목"
+                },
+                "scope": {
+                    "type": "string",
+                    "enum": [
+                        "element",
+                        "section",
+                        "page"
+                    ]
+                },
+                "style": {
+                    "type": "object",
+                    "description": "인라인 DSL 에 함께 적용할 선택적 스타일 짝(selectors, tokens)"
+                },
+                "saveAsset": {
+                    "type": "boolean",
+                    "description": "true 이면 인라인 DSL 을 `.vibedoc/assets/v3/` 에 재사용 에셋으로 영구 등록한다 (기본 false — 일회성 구조 변경은 에셋 라이브러리를 오염시키지 않음)"
                 },
                 "mode": {
                     "type": "string",
@@ -431,6 +511,22 @@
                     "type": "object",
                     "description": "정확한 필드 id → 값 (반복 id → 레코드 배열)"
                 },
+                "styleKey": {
+                    "type": "string",
+                    "description": "선택: 생성·교체되는 Staged 블록에 즉시 바인딩할 동반 .vstyle 변형 키 (예: 'open-list', 'closed-spec')"
+                },
+                "cellRoleMap": {
+                    "type": "object",
+                    "description": "선택: 표 셀 역할 매핑 ({'0':'value.seq','1':'value.category'} 등)"
+                },
+                "clearInlineCellStyles": {
+                    "type": "boolean",
+                    "description": "styleKey 지정 시 기본 true — 인라인 색/선/정렬 오버라이드를 정리해 .vstyle 라이브 바인딩이 바로 적용되게 함"
+                },
+                "syncColumnWidths": {
+                    "type": "boolean",
+                    "description": "기본 true — .vstyle 변형의 columnWidths 를 표 열 너비에 동기화"
+                },
                 "revisionOf": {
                     "type": "string",
                     "description": "workbench.stagedChanges 에 있는 기존 제안 diffId 를 제자리 수정할 때 지정"
@@ -439,10 +535,7 @@
                     "type": "string",
                     "description": "교체/추가 방식을 고른 짧은 근거 (캔버스 Unified Diff 헤더에 표시)"
                 }
-            },
-            "required": [
-                "assetId"
-            ]
+            }
         }
     },
     {
@@ -499,6 +592,20 @@
                         "type": "string"
                     }
                 },
+                "styleKey": {
+                    "type": "string",
+                    "description": "선택: 생성·교체되는 Staged 블록에 즉시 바인딩할 .vstyle 변형 키"
+                },
+                "cellRoleMap": {
+                    "type": "object",
+                    "description": "선택: 표 셀 역할 매핑"
+                },
+                "clearInlineCellStyles": {
+                    "type": "boolean"
+                },
+                "syncColumnWidths": {
+                    "type": "boolean"
+                },
                 "revisionOf": {
                     "type": "string",
                     "description": "기존 Staged 제안(diffId)을 제자리 갱신할 때 지정"
@@ -544,6 +651,19 @@
                 "records": {
                     "type": "object"
                 },
+                "styleKey": {
+                    "type": "string",
+                    "description": "선택: 변환되는 Staged 블록에 즉시 바인딩할 .vstyle 변형 키"
+                },
+                "cellRoleMap": {
+                    "type": "object"
+                },
+                "clearInlineCellStyles": {
+                    "type": "boolean"
+                },
+                "syncColumnWidths": {
+                    "type": "boolean"
+                },
                 "revisionOf": {
                     "type": "string"
                 },
@@ -559,7 +679,7 @@
     },
     {
         "name": "style.inspect",
-        "description": "현재 문서에 바인딩된 .vstyle 스타일 팩(또는 지정 packId)의 실제 primitives · modes · styles(table 변형 및 열린 cells 역할 맵, text/frame/media/pageChrome) · target · extensions 와 직교 스타일 원시 속성 목록을 실시간 조회한다. 시각적 스타일을 맞추거나 새 스타일 변형을 만들기 전에 반드시 호출한다.",
+        "description": "현재 문서에 바인딩된 .vstyle 스타일 팩(또는 지정 packId)의 primitives · modes · styles(text/frame/table/media/pageChrome) · target · extensions, 직교 스타일 원시 속성 목록(orthogonalPrimitives), 그리고 속성 생략 시 자동으로 상속되는 문서 기준선(inheritedBaseline: 본문 크기·행간·기본 패딩·지면 여백·블록 간격)을 실시간 조회한다. 시각적 스타일을 맞추거나 새 변형을 만들기 전에 반드시 호출한다.",
         "risk": "read",
         "inputSchema": {
             "type": "object",
@@ -584,7 +704,7 @@
     },
     {
         "name": "style.upsertVariant",
-        "description": "현재 열린 문서 바로 옆의 단일 동반 .vstyle 파일(<문서경로와 동일 폴더>/<문서명>.vstyle)에 재사용 가능한 스타일 변형을 등록·갱신하고 문서의 styleRef 를 연결한다(다른 폴더의 공유 샘플 .vstyle 을 오염시키지 않음). 표의 4변 외곽선(outerTop/Right/Bottom/Left — 좌우 없음은 'none', 이중선은 '3px double #000000'), 열린 cells 역할 맵(column-header, label, group-label, value, value.score, total.subtotal, total.tech, total 등), 제목 prefix('□ ' 등), 셀 내어쓰기(listIndent/hangingIndent), 바닥글 템플릿(footerTemplate: '- {page} -') 등 직교 원시 속성을 조합해 견본 이미지와 높은 시각 유사도를 구현한다.",
+        "description": "현재 열린 문서 바로 옆의 단일 동반 .vstyle 파일(<문서경로와 동일 폴더>/<문서명>.vstyle) 대상 스타일 변형을 제안·병합한다(디스크를 즉시 덮지 않고 2D Unified Diff Staged 변경안으로 적재해 사용자가 승인·거절할 수 있게 함). 모든 카테고리(text/frame/table/media/pageChrome)에서 색·선만 채우지 말고 4대 직교 축(① 면·선 ② 타이포·행간 ③ 공간·밀도: padding/margin/gap ④ 비례·위계)을 견본에 맞춰 함께 설계한다. 반환값의 axisCoverage 와 diagnostics(경고)를 확인해 누락된 여백·행간·중복 선 등이 있으면 보고 전 즉시 보정한다.",
         "risk": "read",
         "inputSchema": {
             "type": "object",
@@ -618,7 +738,7 @@
                 },
                 "definition": {
                     "type": "object",
-                    "description": "직교 스타일 속성 객체 (table 의 경우 borders/cells/columnWidths/cellPadding 등, text 의 경우 prefix/fontSize/fontWeight/color/align 등)"
+                    "description": "4대 직교 축(면·선 / 타이포·행간 / 공간·밀도 / 비례·위계)을 담은 스타일 속성 객체. style.inspect 의 orthogonalPrimitives 와 inheritedBaseline 을 참고해 생략 시 의도치 않게 상속될 fontSize·lineHeight·padding·margin·gap 을 명시한다."
                 },
                 "modeTokens": {
                     "type": "object",
@@ -646,7 +766,7 @@
     },
     {
         "name": "style.apply",
-        "description": "문서에 스타일 팩(packId)을 연결하거나, 지정한 블록(blockIds)에 .vstyle 변형 키(styleKey) · 셀 역할(cellRoleMap) · 제목 앞장식(prefix)을 라이브 바인딩한다. 인라인 hex 를 굽지 않고 기존 인라인 오버라이드를 걷어내어 .vstyle 변경이 즉시 반영되게 한다.",
+        "description": "문서에 스타일 팩(packId)을 연결하거나, 지정한 블록(blockIds)에 .vstyle 변형 키(styleKey) · 셀 역할(cellRoleMap) · 제목 앞장식(prefix)을 바인딩하는 2D Unified Diff 변경안을 Staged 큐에 제안한다. 커밋된 문서 블록뿐 아니라 같은 턴에 assets.propose / assets.apply 로 대기열에 올린 Staged 블록(stagedBlockIds 또는 교체 원본 replaceBlockIds 모두 인식)도 제자리에서 함께 스타일 바인딩하므로, 구조 변환 후 곧바로 style.apply 를 연달아 호출해도 끊기지 않는다.",
         "risk": "read",
         "inputSchema": {
             "type": "object",

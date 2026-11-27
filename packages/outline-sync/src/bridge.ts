@@ -17,14 +17,19 @@ import type { OutlineNode } from "@vibe/outliner/core";
 import {
   compileDirectiveSubtreeToVDoc,
   createElementSyntaxRegistry,
+  evidenceSourceKey,
   extractBoundOutlineFromVDoc,
   extractOutlineAssets,
   findOutlineNodeChain,
+  formatEvidenceLocatorToCiteBullet,
+  getBlockSlotIds,
   htmlToPlainText,
+  parseCiteBullet,
   parseOutlineDirective,
   resolveDocumentView,
   scanOutlineDirectives,
   type ElementSyntaxRegistry,
+  type EvidenceLink,
   type LayoutBlock,
   type OutlineAssetResolver,
   type OutlineSyntaxNode,
@@ -2083,13 +2088,15 @@ function patchExistingBlockOutlineNode(
 
   const existingDir = parseOutlineDirective(existing.text);
 
-  // 1. `structured-table`: preserve exact `<<view:table @assetId>>` header & tree-indented rowspan / merge syntax!
+  // 1. `structured-table`: preserve exact `<<view:table @assetId>>` header, tree-indented rowspan/merge syntax, and `<<cite:...>>` child bullets!
   if (blk.kind === "structured-table") {
     const token = existingDir?.rawToken ?? "<<view:table>>";
     const nextHeader = `${token} ${blk.title || existingDir?.label || ""}`.trim();
+    const rowChildren = existing.children.filter((c) => !parseCiteBullet(c.text));
+    const citeChildren = existing.children.filter((c) => Boolean(parseCiteBullet(c.text)));
     const hasTreeOrMergeSyntax =
-      hasNestedChildren(existing.children) ||
-      existing.children.some((r) => r.text.includes("[<]") || r.text.includes("[^]"));
+      hasNestedChildren(rowChildren) ||
+      rowChildren.some((r) => r.text.includes("[<]") || r.text.includes("[^]"));
 
     if (hasTreeOrMergeSyntax) {
       // Never flatten a tree-indented or merge-symbol table — preserve its structure verbatim!
@@ -2100,22 +2107,24 @@ function patchExistingBlockOutlineNode(
       const rowText = r.cells
         .map((c) => htmlToPlainText(doc.slots[c.slotId]?.content ?? "").trim() || "[-]")
         .join(" | ");
-      const prevRow = existing.children[idx];
+      const prevRow = rowChildren[idx];
       return prevRow
         ? { ...prevRow, text: rowText }
         : { id: `row_${blk.blockId}_${idx + 1}`, text: rowText, isFolded: false, children: [] };
     });
-    return { ...existing, text: nextHeader, children: nextRows };
+    return { ...existing, text: nextHeader, children: [...nextRows, ...citeChildren] };
   }
 
-  // 2. `<<view:list>>` compiled into a `text` block -> keep `<<view:list>>` directive intact!
+  // 2. `<<view:list>>` compiled into a `text` block -> keep `<<view:list>>` directive & `<<cite:...>>` children intact!
   if (existingDir?.kind === "view" && existingDir.target === "list" && blk.kind === "text") {
     const rawHtml = doc.slots[blk.slotId]?.content ?? "";
     const liMatches = Array.from(rawHtml.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)).map((m) =>
       htmlToPlainText(m[1]).trim()
     );
     if (liMatches.length === 0) return existing;
-    const prevFlat = existing.children.map((c) => stripHighlightMarks(c.text.trim(), highlightSym));
+    const itemChildren = existing.children.filter((c) => !parseCiteBullet(c.text));
+    const citeChildren = existing.children.filter((c) => Boolean(parseCiteBullet(c.text)));
+    const prevFlat = itemChildren.map((c) => stripHighlightMarks(c.text.trim(), highlightSym));
     if (
       prevFlat.length === liMatches.length &&
       prevFlat.every((t, i) => t === liMatches[i])
@@ -2123,12 +2132,12 @@ function patchExistingBlockOutlineNode(
       return existing;
     }
     const nextItems: OutlineNode[] = liMatches.map((txt, idx) => {
-      const prevChild = existing.children[idx];
+      const prevChild = itemChildren[idx];
       return prevChild
         ? { ...prevChild, text: txt }
         : { id: `li_${blk.blockId}_${idx + 1}`, text: txt, isFolded: false, children: [] };
     });
-    return { ...existing, children: nextItems };
+    return { ...existing, children: [...nextItems, ...citeChildren] };
   }
 
   // 3. `hero`: preserve `> ` prefix and subtitle child metadata
@@ -2257,10 +2266,16 @@ function patchExistingBlockOutlineNode(
  *   트리 들여쓰기 표(`[ < ]`, `[^]`) / 작업 메모 / `note` / `file` / `isFolded` 를 100% 보존한다.
  * - 디자인 모드에서 새로 추가된 블록/섹션만 안전하게 끝에 추가한다.
  */
+export interface SyncVDocMeaningOptions {
+  /** `asset-blocks` 교체로 삭제된 블록의 `sourceNodeId` 목록 — 해당 불릿만 정밀 제거하고 작업 메모는 보존한다. */
+  readonly removedSourceNodeIds?: ReadonlySet<string>;
+}
+
 export function syncVDocMeaningBackToOutline(
   vault: VaultPort,
   vdocPath: string,
-  doc: VDocDocument
+  doc: VDocDocument,
+  options?: SyncVDocMeaningOptions
 ): boolean {
   if (vault.isReadOnly?.()) return false;
   if (isPathInBidirectionalSync(vdocPath)) return false;
@@ -2316,8 +2331,11 @@ export function syncVDocMeaningBackToOutline(
     const handledBlockIds = new Set<string>();
     const nextBlockNodes: OutlineNode[] = [];
 
-    // 1) Patch existing children in place (and keep non-block memo bullets untouched)
+    // 1) Patch existing children in place (and keep non-block memo bullets untouched, dropping explicitly replaced nodes)
     for (const bNode of existingChild.children) {
+      if (options?.removedSourceNodeIds?.has(bNode.id)) {
+        continue;
+      }
       const matchedBlk = matchedPage.blocks.find((b) => b.sourceNodeId === bNode.id);
       if (!matchedBlk) {
         nextBlockNodes.push(bNode);
@@ -2367,14 +2385,123 @@ export function syncVDocMeaningBackToOutline(
     }
   }
 
-  const nextDocNode: OutlineNode = {
-    ...existingDocNode,
-    children: patchedChildren,
+  // `.vdoc` 의 `evidenceLinks` 를 `.vsyntax` 표준 편집 가능 하위 불릿(`<<cite:...>>`)으로 역동기화한다.
+  // (숨겨진 JSON 사이드카 `nodeEvidence` 를 만들지 않고, `.outline` 텍스트 태그 자체를 단일 정본으로 유지한다.)
+  const slotToNodeId = new Map<string, string>();
+  const syncedBlockNodeIds = new Set<string>();
+  const registerBlockSlots = (blk: LayoutBlock, fallbackNodeId: string) => {
+    const resolvedId = blk.sourceNodeId ?? stampedBlockSourceIds.get(blk.blockId) ?? fallbackNodeId;
+    if (resolvedId) syncedBlockNodeIds.add(resolvedId);
+    for (const sid of getBlockSlotIds(blk)) {
+      if (resolvedId) slotToNodeId.set(sid, resolvedId);
+    }
+    if (blk.kind === "columns-grid") {
+      for (const col of blk.columns ?? []) {
+        for (const nested of col.blocks ?? []) {
+          registerBlockSlots(nested, resolvedId);
+        }
+      }
+    } else if (blk.kind === "structured-table") {
+      for (const row of blk.rows ?? []) {
+        for (const cell of row.cells ?? []) {
+          for (const nested of cell.blocks ?? []) {
+            registerBlockSlots(nested, resolvedId);
+          }
+        }
+      }
+    }
+  };
+  for (const page of doc.pages) {
+    const pageNodeId = page.sourceNodeId ?? rootNodeId;
+    if (pageNodeId) syncedBlockNodeIds.add(pageNodeId);
+    for (const blk of page.blocks) {
+      registerBlockSlots(blk, pageNodeId);
+    }
+  }
+
+  const linksByNodeId = new Map<string, EvidenceLink[]>();
+  const seenKeysByNode = new Map<string, Set<string>>();
+  for (const link of doc.evidenceLinks ?? []) {
+    const targetNodeId = slotToNodeId.get(link.slotId) ?? rootNodeId;
+    if (!targetNodeId) continue;
+    const key = evidenceSourceKey(link.locator);
+    let seen = seenKeysByNode.get(targetNodeId);
+    if (!seen) {
+      seen = new Set<string>();
+      seenKeysByNode.set(targetNodeId, seen);
+    }
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const list = linksByNodeId.get(targetNodeId) ?? [];
+    list.push(link);
+    linksByNodeId.set(targetNodeId, list);
+  }
+
+  const resolveCiteTagSymbol = (ruleId: string, fallback: string) =>
+    registry.resolveSymbol("resource", ruleId, fallback);
+
+  const syncCiteChildrenOnTree = (node: OutlineNode): OutlineNode => {
+    const nextNonCiteChildren = node.children
+      .filter((c) => !parseCiteBullet(c.text))
+      .map(syncCiteChildrenOnTree);
+    const prevCiteChildren = node.children.filter((c) => Boolean(parseCiteBullet(c.text)));
+
+    // 동기화 대상 블록/섹션(또는 evidenceLinks 가 귀속된 노드)이 아니면 기존 `<<cite:...>>` 불릿을 그대로 보존
+    const mappedLinks = linksByNodeId.get(node.id);
+    if (!syncedBlockNodeIds.has(node.id) && !mappedLinks) {
+      return {
+        ...node,
+        children: [...nextNonCiteChildren, ...prevCiteChildren],
+      };
+    }
+
+    const nextCiteChildren: OutlineNode[] = (mappedLinks ?? []).map((link, idx) => {
+      const text = formatEvidenceLocatorToCiteBullet(link.locator, {
+        presentation: link.presentation,
+        rationale: link.rationale,
+        resolveTagSymbol: resolveCiteTagSymbol,
+      });
+      const existingSame = prevCiteChildren.find((c) => c.text.trim() === text.trim()) ?? prevCiteChildren[idx];
+      return {
+        id: existingSame?.id ?? `cite_${node.id}_${idx + 1}`,
+        text,
+        isFolded: existingSame?.isFolded ?? false,
+        children: [],
+      };
+    });
+
+    return {
+      ...node,
+      children: [...nextNonCiteChildren, ...nextCiteChildren],
+    };
   };
 
+  const nextDocNode: OutlineNode = syncCiteChildrenOnTree({
+    ...existingDocNode,
+    children: patchedChildren,
+  });
+
+  // 동기화된 노드에 남아 있던 구형 사이드카 `payload.nodeEvidence` 가비지는 정리해 중복 표시를 방지한다
+  let nextNodeEvidence = payload.nodeEvidence;
+  let prunedLegacySidecar = false;
+  if (payload.nodeEvidence && Object.keys(payload.nodeEvidence).length > 0) {
+    const remaining: Record<string, typeof payload.nodeEvidence[string]> = {};
+    for (const [nid, locs] of Object.entries(payload.nodeEvidence)) {
+      if (syncedBlockNodeIds.has(nid) || linksByNodeId.has(nid)) {
+        prunedLegacySidecar = true;
+      } else {
+        remaining[nid] = locs;
+      }
+    }
+    if (prunedLegacySidecar) {
+      nextNodeEvidence = Object.keys(remaining).length > 0 ? remaining : undefined;
+    }
+  }
+
   if (
+    !prunedLegacySidecar &&
     canonicalOutlineNodeSignature(existingDocNode as OutlineSyntaxNode) ===
-    canonicalOutlineNodeSignature(nextDocNode as OutlineSyntaxNode)
+      canonicalOutlineNodeSignature(nextDocNode as OutlineSyntaxNode)
   ) {
     return false;
   }
@@ -2385,6 +2512,7 @@ export function syncVDocMeaningBackToOutline(
   const nextPayload: OutlineFilePayload = {
     ...payload,
     rootNodes: replaced.next,
+    nodeEvidence: nextNodeEvidence,
     updatedAt: new Date().toISOString(),
   };
 

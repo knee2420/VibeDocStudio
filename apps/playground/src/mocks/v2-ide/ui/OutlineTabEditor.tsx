@@ -45,16 +45,19 @@ import {
   resolveActiveDirectiveContext,
   resolveDocumentView,
   scanOutlineDirectives,
+  type EvidenceLocator,
   type OutlineSyntaxNode,
   type VDocDocument,
 } from "@vibe/vdoc-schema";
 import { basename, dirname, findOwningProjectPath, type VaultPort } from "@vibe/vault-core";
 
 import {
+  EVIDENCE_SETTINGS_PATH,
   collectVaultStyleEntries,
   fromVaultUri,
   type OutlineFilePayload,
   parseOutlineJson,
+  readVaultEvidenceSettings,
   resolveActiveStyleEntry,
 } from "@vibe/vault-formats";
 import { createVaultOutlineFiles } from "../model/outlineFileHost";
@@ -62,6 +65,7 @@ import { renderOutlineInlineMarkdown } from "./outlineLiveRenderer";
 import {
   clearResourceHighlight,
   openResourceTagInPair,
+  requestResourceHighlight,
   subscribeResourceHighlight,
   type ResourceHighlightRequest,
 } from "../model/resourceHighlightBus";
@@ -79,6 +83,7 @@ import {
   collectVDocCandidatesForOutline,
   commitStagedAssetToOutlineAndVDoc,
   compileOutlineTargetForPreview,
+  deriveCompileSubtreeInOutline,
   formatProjectScopeLabel,
   importPartnerIntoProjectAndBind,
   inspectOutlineNodeVDocLink,
@@ -392,9 +397,8 @@ const OutlineDiffRow: React.FC<{ readonly line: OutlineUnifiedDiffLine }> = Reac
         style={{ paddingLeft: `${Math.min(line.depth, 10) * 18}px` }}
       >
         <span
-          className={`mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full ${
-            isRemoved ? "bg-rose-400/80" : isAdded ? "bg-emerald-400" : "bg-slate-500/70"
-          }`}
+          className={`mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full ${isRemoved ? "bg-rose-400/80" : isAdded ? "bg-emerald-400" : "bg-slate-500/70"
+            }`}
         />
         <div className="min-w-0 flex-1">
           <span className={`break-words ${isRemoved ? "line-through decoration-rose-400/70" : ""}`}>
@@ -425,7 +429,7 @@ const OutlineDiffAwareCanvas: React.FC<{
   readonly onUpdateRootTitle: (next: string) => void;
 }> = React.memo(({ ai, path, doc, editorStore, host, onUpdateRootTitle }) => {
   const subscribeQueue = useCallback(
-    (onStoreChange: () => void) => (ai ? ai.store.subscribe(onStoreChange) : () => {}),
+    (onStoreChange: () => void) => (ai ? ai.store.subscribe(onStoreChange) : () => { }),
     [ai]
   );
   const getQueueSnapshot = useCallback(
@@ -480,7 +484,7 @@ const OutlineDiffAwareCanvas: React.FC<{
 
   const hasBoundVDoc = Boolean(
     pendingChange?.payload.compiledDocPath ||
-      (doc.docBindings && Object.keys(doc.docBindings).length > 0)
+    (doc.docBindings && Object.keys(doc.docBindings).length > 0)
   );
   const canApprove = Boolean(ai && pendingChange && diff && diff.failedOps.length === 0);
 
@@ -579,11 +583,10 @@ const OutlineDiffAwareCanvas: React.FC<{
                   type="button"
                   data-testid="outline-diff-filter-toggle"
                   onClick={() => setChangesOnly((v) => !v)}
-                  className={`rounded border px-2 py-0.5 text-[10.5px] ${
-                    changesOnly
-                      ? "border-sky-400/50 bg-sky-500/20 text-sky-200"
-                      : "border-white/15 bg-white/5 text-slate-300 hover:bg-white/10"
-                  }`}
+                  className={`rounded border px-2 py-0.5 text-[10.5px] ${changesOnly
+                    ? "border-sky-400/50 bg-sky-500/20 text-sky-200"
+                    : "border-white/15 bg-white/5 text-slate-300 hover:bg-white/10"
+                    }`}
                 >
                   {changesOnly ? "변경만" : "전체 트리"}
                 </button>
@@ -698,6 +701,7 @@ export interface OutlineTabEditorProps {
   readonly vdocUiBridge?: VDocUiBridgeStore;
   /** AI Composer 워크스페이스 — 대기 중인 `outline-patch` 를 인라인 Unified Diff 로 검토 · 승인한다. */
   readonly ai?: V2AiWorkspace;
+  readonly onOpenSession?: (key: string) => void;
   /** 붙인 파일(그림·PDF 등)을 워크벤치 탭으로 연다. */
   readonly openFile?: (path: string) => void;
   /** 일반 연결 문서를 워크벤치 탭으로 연다. */
@@ -753,6 +757,7 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
   path,
   vdocUiBridge,
   ai,
+  onOpenSession,
   openFile,
   openLink,
   openInPairGroup,
@@ -783,13 +788,31 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
   const [assetOverrideByNodeId, setAssetOverrideByNodeId] = useState<Record<string, string>>({});
   const [previewZoom, setPreviewZoom] = useState(82);
   const [vaultLinkRev, setVaultLinkRev] = useState(0);
+  const [evidenceSettingsRev, setEvidenceSettingsRev] = useState(0);
   const [linkPopoverNodeId, setLinkPopoverNodeId] = useState<string | null>(null);
   const [vdocSearch, setVdocSearch] = useState("");
 
+  const evidenceSettings = useMemo(() => {
+    void evidenceSettingsRev;
+    return readVaultEvidenceSettings(vault);
+  }, [vault, evidenceSettingsRev]);
+
   useEffect(() => {
+    if (vault.exists(EVIDENCE_SETTINGS_PATH) && vault.isLoaded && !vault.isLoaded(EVIDENCE_SETTINGS_PATH)) {
+      void vault.ensureLoaded?.(EVIDENCE_SETTINGS_PATH).then(() => setEvidenceSettingsRev((r) => r + 1));
+    }
     return vault.subscribe((ev) => {
+      if (ev.type === "vault-reset") {
+        setVaultLinkRev((r) => r + 1);
+        setEvidenceSettingsRev((r) => r + 1);
+        return;
+      }
+      const changed =
+        ev.type === "create" ? ev.node.path : ev.type === "rename" ? ev.newPath : ev.path;
+      if (changed === EVIDENCE_SETTINGS_PATH) {
+        setEvidenceSettingsRev((r) => r + 1);
+      }
       if (
-        ev.type === "vault-reset" ||
         ev.type === "rename" ||
         ev.type === "create" ||
         ev.type === "delete" ||
@@ -980,6 +1003,26 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
     },
     [openInPairGroup, openFile, openLink]
   );
+  const openEvidenceSource = useCallback(
+    (targetPath: string, locator?: EvidenceLocator) => {
+      openAttachmentTarget(targetPath);
+      if (locator) {
+        requestResourceHighlight({
+          targetPath,
+          sourceUrl: locator.url,
+          page: locator.page ?? undefined,
+          lines: locator.lines ?? undefined,
+          bbox: locator.bbox ?? undefined,
+          nodeId: locator.nodeId,
+          slotId: locator.slotId,
+          blockId: locator.blockId,
+          quoteText: locator.excerpt,
+          label: locator.label,
+        });
+      }
+    },
+    [openAttachmentTarget]
+  );
   const files = useMemo(
     () =>
       createVaultOutlineFiles({
@@ -1009,6 +1052,45 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
     );
   }, [doc.rootNodes, doc.nodeEvidence, vault]);
 
+  // 컴파일 분리 사양: 원본 불릿을 덮어쓰거나 감싸지 않고, 선택 구간(또는 줌/전체) 하위에
+  // 기본 구조 태그가 입혀진 새 `<<doc:a4|blog>>` 컴파일 가지를 파생한 뒤 `.vdoc` 를 생성한다.
+  const handleDeriveVDocSubtree = useCallback(
+    (profile: "a4" | "blog", explicitTargetIds?: readonly string[]) => {
+      const current = session.snapshot();
+      const capturedIds =
+        explicitTargetIds && explicitTargetIds.length > 0
+          ? [...explicitTargetIds]
+          : pressedIdsRef.current.length > 0
+            ? [...pressedIdsRef.current]
+            : editorStore.getState().selectedNodeIds.length > 0
+              ? [...editorStore.getState().selectedNodeIds]
+              : activeRootId
+                ? [activeRootId]
+                : [];
+      pressedIdsRef.current = [];
+
+      const fallbackTitle = basename(path).replace(/\.outline$/i, "") || "새 문서";
+      const derived = deriveCompileSubtreeInOutline(current, {
+        profile,
+        targetIds: capturedIds,
+        title: (current.title || fallbackTitle).trim() || fallbackTitle,
+      });
+
+      session.write(derived.payload);
+      editorStore.getState().selectNodes([]);
+
+      const opener = openInPairGroup
+        ? (p: string) => openInPairGroup(p)
+        : openLink ?? (openFile ? (p: string) => openFile(p) : undefined);
+      materializeVDocFromOutlineDirective(vault, path, derived.docNodeId, opener);
+      setSelectedDocNodeId(derived.docNodeId);
+      setCompileFlash(true);
+      setTimeout(() => setCompileFlash(false), 1500);
+      revealNode(editorStore, derived.payload.rootNodes, derived.docNodeId, containerRef.current);
+    },
+    [session, editorStore, activeRootId, path, openInPairGroup, openLink, openFile, vault]
+  );
+
   const host = useMemo<OutlineHost>(
     () => ({
       confirm: async (message) => window.confirm(message),
@@ -1033,6 +1115,57 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
           void navigator.clipboard?.writeText(text);
         }
       },
+      // Trigger ②: 행 `...` 메뉴 (단일 불릿 & 다중 선택 모두 지원) — 원본 불릿 하위에 컴파일 가지 파생
+      nodeMenuItems: (nodeId, targetIds) => {
+        const ids = targetIds && targetIds.length > 0 ? targetIds : [nodeId];
+        if (ids.length === 1) {
+          const findNode = (nodes: readonly OutlineNode[]): OutlineNode | null => {
+            for (const n of nodes) {
+              if (n.id === nodeId) return n;
+              const hit = findNode(n.children);
+              if (hit) return hit;
+            }
+            return null;
+          };
+          const targetNode = findNode(doc.rootNodes);
+          if (targetNode && parseOutlineDirective(targetNode.text)?.kind === "doc") {
+            return [];
+          }
+        }
+        const scopeText = ids.length > 1 ? `선택 ${ids.length}개` : "이 불릿";
+        return [
+          {
+            label: "하위에 A4 .vdoc 만들기",
+            hint: `원본 유지 · ${scopeText}만 A4 컴파일 가지로 생성`,
+            tone: "emerald",
+            run: () => handleDeriveVDocSubtree("a4", ids),
+          },
+          {
+            label: "하위에 블로그 .vdoc 만들기",
+            hint: `원본 유지 · ${scopeText}만 블로그 컴파일 가지로 생성`,
+            tone: "sky",
+            run: () => handleDeriveVDocSubtree("blog", ids),
+          },
+        ];
+      },
+      // Trigger ③: 다중 선택 플로팅 바 — 선택한 불릿 하위에 컴파일 가지 파생
+      selectionActions: (selectedIds) => {
+        if (selectedIds.length === 0) return [];
+        return [
+          {
+            label: "A4 .vdoc",
+            hint: `원본 유지 · 선택 ${selectedIds.length}개 불릿 하위에 A4 컴파일 가지 생성`,
+            tone: "emerald",
+            run: () => handleDeriveVDocSubtree("a4", selectedIds),
+          },
+          {
+            label: "블로그 .vdoc",
+            hint: `원본 유지 · 선택 ${selectedIds.length}개 불릿 하위에 블로그 컴파일 가지 생성`,
+            tone: "sky",
+            run: () => handleDeriveVDocSubtree("blog", selectedIds),
+          },
+        ];
+      },
       getPortalRoot,
       files,
       renderMarkdown: renderOutlineInlineMarkdown,
@@ -1047,7 +1180,8 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
               locators={evLocators}
               backlinkGroups={outlineEvidenceIndex.groups}
               citationNumberBySourceKey={outlineEvidenceIndex.citationNumberBySourceKey}
-              onOpenSource={openAttachmentTarget}
+              settings={evidenceSettings}
+              onOpenSource={openEvidenceSource}
             />
           ) : null;
         const parsed = parseOutlineDirective(node.text);
@@ -1167,6 +1301,44 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
       openLink: (rawTarget: string) => {
         const trimmed = rawTarget.trim();
         if (!trimmed) return;
+        if (trimmed.startsWith("cite-open:")) {
+          try {
+            const payload = JSON.parse(trimmed.slice("cite-open:".length)) as {
+              target?: string;
+              page?: number;
+              lines?: [number, number];
+              excerpt?: string;
+              label?: string;
+            };
+            const targetName = (payload.target ?? "").trim();
+            if (targetName) {
+              const direct = fromVaultUri(targetName) ?? targetName;
+              const resolved = vault.exists(direct)
+                ? direct
+                : vault.listAll().find((n) => {
+                  if (n.kind !== "file") return false;
+                  const needle = targetName.toLowerCase();
+                  const base = basename(n.path).toLowerCase();
+                  const noExt = base.replace(/\.[^.]+$/, "");
+                  return base === needle || noExt === needle || n.path.toLowerCase().endsWith(`/${needle}`);
+                })?.path;
+              if (resolved) {
+                openEvidenceSource(resolved, {
+                  kind: "resource",
+                  refId: resolved,
+                  label: payload.label || basename(resolved),
+                  sourcePath: resolved,
+                  ...(payload.page ? { page: payload.page } : {}),
+                  ...(payload.lines ? { lines: payload.lines } : {}),
+                  ...(payload.excerpt ? { excerpt: payload.excerpt } : {}),
+                });
+                return;
+              }
+            }
+          } catch {
+            // Fall through to standard target resolution
+          }
+        }
         if (trimmed.startsWith("resource-tag:")) {
           const rawTag = trimmed.slice("resource-tag:".length).trim();
           openResourceTagInPair(rawTag, {
@@ -1202,7 +1374,7 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
         }
       },
     }),
-    [path, vault, getPortalRoot, files, openAttachmentTarget, doc, vaultLinkRev, openVDocPartner, outlineEvidenceIndex]
+    [path, vault, getPortalRoot, files, openAttachmentTarget, openEvidenceSource, evidenceSettings, doc, vaultLinkRev, openVDocPartner, outlineEvidenceIndex, handleDeriveVDocSubtree]
   );
 
   const handleUpdateTitle = (nextTitle: string) => {
@@ -1381,40 +1553,13 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
     }
   };
 
-  // Plain `.outline` (with 0 `<<doc>>` directives) -> 1-click promote to `.vdoc` in Pair Tab Group
-  const handlePromotePlainOutlineToVDoc = useCallback(
-    (profile: "a4" | "blog") => {
-      const current = session.snapshot();
-      const wrapperId = `doc_${Date.now().toString(36)}`;
-      const fallbackTitle = basename(path).replace(/\.outline$/i, "") || "새 문서";
-      const title = (current.title || fallbackTitle).trim() || fallbackTitle;
-      const nonEmptyRoots = current.rootNodes.filter(
-        (n) => n.text.trim().length > 0 || n.children.length > 0
-      );
-      const wrapperNode: OutlineNode = {
-        id: wrapperId,
-        text: `<<doc:${profile}>> ${title}`,
-        children:
-          nonEmptyRoots.length > 0
-            ? nonEmptyRoots
-            : [{ id: `${wrapperId}_c1`, text: "", children: [] }],
-      };
-      session.write({
-        ...current,
-        rootNodes: [wrapperNode],
-      });
-      const opener = openInPairGroup
-        ? (p: string) => openInPairGroup(p)
-        : openLink ?? (openFile ? (p: string) => openFile(p) : undefined);
-      materializeVDocFromOutlineDirective(vault, path, wrapperId, opener);
-      setSelectedDocNodeId(wrapperId);
-      setCompileFlash(true);
-      setTimeout(() => setCompileFlash(false), 1500);
-    },
-    [session, path, openInPairGroup, openLink, openFile, vault]
-  );
-
   const showDirectiveStrip = primaryDocTargets.length > 0 || previewOpen;
+  const hasSelection = selectedNodeIds.length > 0;
+  const deriveScopeLabel = hasSelection
+    ? `선택 ${selectedNodeIds.length}개`
+    : activeRootId
+      ? "현재 줌"
+      : "전체";
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--obs-bg-primary,#1e1e1e)]">
@@ -1441,7 +1586,7 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
           </button>
         </div>
       )}
-      {/* Plain `.outline` (태그 없는 상태) 1-click `.vdoc` 승격 & AI 양식 추천 바 */}
+      {/* Trigger ①: Plain `.outline` (태그 없는 상태) 비파괴 컴파일 가지 파생 & AI 양식 추천 바 */}
       {!showDirectiveStrip && (
         <div
           data-testid="outline-plain-promote-strip"
@@ -1458,38 +1603,51 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
               </span>
             )}
             <span className="truncate text-[10.5px] text-[var(--obs-text-faint,#8a8a8a)]">
-              일반 아웃라인 · 태그 없이 바로 문서로 펼치거나 AI 양식을 추천받을 수 있습니다
+              {hasSelection
+                ? `선택한 ${selectedNodeIds.length}개 불릿 하위에 원본을 유지한 채 .vdoc 컴파일 가지를 새로 만듭니다`
+                : "일반 아웃라인 · 원본을 유지한 채 하위에 새 .vdoc 컴파일 가지를 만들거나 AI 양식을 추천받을 수 있습니다"}
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
               data-testid="outline-promote-a4"
-              onClick={() => handlePromotePlainOutlineToVDoc("a4")}
-              title="현재 불릿을 <<doc:a4>> 로 감싸고 페어 탭에 A4 .vdoc 문서를 즉시 생성합니다"
+              onMouseDown={() => {
+                pressedIdsRef.current = editorStore.getState().selectedNodeIds;
+              }}
+              onClick={() => handleDeriveVDocSubtree("a4")}
+              title={`원본 불릿은 유지하고 ${deriveScopeLabel} 내용으로 하위에 새 <<doc:a4>> 컴파일 가지를 생성해 A4 .vdoc 를 엽니다`}
               className="inline-flex items-center gap-1 rounded border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[10.5px] font-medium text-emerald-200 transition-colors hover:bg-emerald-500/25"
             >
               <FilePlus2 className="h-3 w-3 text-emerald-300" />
-              <span>.vdoc 만들기 (A4)</span>
+              <span>{hasSelection ? `선택 ${selectedNodeIds.length}개 → A4` : ".vdoc 만들기 (A4)"}</span>
             </button>
             <button
               type="button"
               data-testid="outline-promote-blog"
-              onClick={() => handlePromotePlainOutlineToVDoc("blog")}
-              title="현재 불릿을 <<doc:blog>> 로 감싸고 페어 탭에 블로그 .vdoc 문서를 즉시 생성합니다"
+              onMouseDown={() => {
+                pressedIdsRef.current = editorStore.getState().selectedNodeIds;
+              }}
+              onClick={() => handleDeriveVDocSubtree("blog")}
+              title={`원본 불릿은 유지하고 ${deriveScopeLabel} 내용으로 하위에 새 <<doc:blog>> 컴파일 가지를 생성해 블로그 .vdoc 를 엽니다`}
               className="inline-flex items-center gap-1 rounded border border-sky-500/35 bg-sky-500/12 px-2 py-0.5 text-[10.5px] font-medium text-sky-200 transition-colors hover:bg-sky-500/22"
             >
-              <span>블로그 .vdoc</span>
+              <span>{hasSelection ? `선택 ${selectedNodeIds.length}개 → 블로그` : "블로그 .vdoc"}</span>
             </button>
             <button
               type="button"
               data-testid="outline-promote-ai-funnel"
-              onClick={() =>
+              onMouseDown={() => {
+                pressedIdsRef.current = editorStore.getState().selectedNodeIds;
+              }}
+              onClick={() => {
+                const ids = pressedIdsRef.current.length ? pressedIdsRef.current : selectedNodeIds;
+                pressedIdsRef.current = [];
                 requestOpenAguiAssetFunnel({
                   sourcePath: path,
-                  selectedNodeIds,
-                })
-              }
+                  selectedNodeIds: ids,
+                });
+              }}
               title="AI Composer 의 AG-UI 양식 추천 깔때기를 열어 현재 내용에 맞는 에셋을 고릅니다"
               className="inline-flex items-center gap-1 rounded border border-violet-500/40 bg-violet-500/15 px-2 py-0.5 text-[10.5px] font-medium text-violet-200 transition-colors hover:bg-violet-500/25"
             >
@@ -1596,6 +1754,31 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              data-testid="outline-derive-new-a4"
+              onMouseDown={() => {
+                pressedIdsRef.current = editorStore.getState().selectedNodeIds;
+              }}
+              onClick={() => handleDeriveVDocSubtree("a4")}
+              title={`원본 불릿은 유지하고 ${deriveScopeLabel} 내용으로 새 <<doc:a4>> 컴파일 가지를 추가 생성합니다 (1:N)`}
+              className="hidden items-center gap-1 rounded border border-emerald-500/35 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-200 transition-colors hover:bg-emerald-500/22 lg:inline-flex"
+            >
+              <FilePlus2 className="h-3 w-3 text-emerald-300" />
+              <span>{hasSelection ? `+ A4 (${selectedNodeIds.length})` : "+ A4"}</span>
+            </button>
+            <button
+              type="button"
+              data-testid="outline-derive-new-blog"
+              onMouseDown={() => {
+                pressedIdsRef.current = editorStore.getState().selectedNodeIds;
+              }}
+              onClick={() => handleDeriveVDocSubtree("blog")}
+              title={`원본 불릿은 유지하고 ${deriveScopeLabel} 내용으로 새 <<doc:blog>> 컴파일 가지를 추가 생성합니다 (1:N)`}
+              className="hidden items-center gap-1 rounded border border-sky-500/35 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-medium text-sky-200 transition-colors hover:bg-sky-500/22 lg:inline-flex"
+            >
+              <span>{hasSelection ? `+ 블로그 (${selectedNodeIds.length})` : "+ 블로그"}</span>
+            </button>
             {effectiveTarget && (
               <button
                 type="button"
@@ -1900,11 +2083,11 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
               <div className="mx-auto w-full max-w-3xl">
                 <OutlineEvidenceLegendPanel
                   groups={outlineEvidenceIndex.groups}
-                  onOpenSource={openAttachmentTarget}
+                  onOpenSource={openEvidenceSource}
                 />
               </div>
             )}
-            {ai && <AnchorChips ai={ai} surface="outline" path={path} container={containerEl} selector={outlineNodeSelector} />}
+            {ai && <AnchorChips ai={ai} surface="outline" path={path} container={containerEl} selector={outlineNodeSelector} onOpen={onOpenSession} />}
             {directOpen && directIds.length > 0 && (
               <AnchorDraft surface="outline" path={path} itemIds={directIds} container={containerEl} selector={outlineNodeSelector} />
             )}
@@ -1952,12 +2135,12 @@ export const OutlineTabEditor: React.FC<OutlineTabEditorProps> = ({
                     const ids = pressedIdsRef.current.length ? pressedIdsRef.current : selectedNodeIds;
                     pressedIdsRef.current = [];
                     const prompt =
-                      "현재 아웃라인 내용을 분석해 가장 알맞은 <<doc>> / <<view>> 구조 태그를 입히고 문단 계층을 깔끔하게 정돈해줘.";
+                      "원본 리서치·팩트 불릿은 덮어쓰지 말고 그대로 유지한 채, 대상 불릿 하위에 새 <<doc>> / <<view>> 컴파일 가지를 파생해 문단 계층을 깔끔하게 정돈해줘.";
                     if (ids.length > 0) onAiDirect(prompt, ids);
                     else onAiDirect(prompt);
                   }}
                   className="hidden items-center gap-1 rounded border border-sky-500/35 bg-sky-500/12 px-2 py-0.5 text-[10.5px] font-medium text-sky-200 hover:bg-sky-500/22 sm:inline-flex"
-                  title="AI 에게 현재 아웃라인의 문서 구조화(<<doc>>/<<view>> 태그 부착)를 바로 요청합니다"
+                  title="AI 에게 원본 불릿을 유지한 채 하위에 <<doc>>/<<view>> 컴파일 가지를 파생해달라고 요청합니다"
                 >
                   <Wand2 className="h-3 w-3 text-sky-300" />
                   <span>구조화</span>

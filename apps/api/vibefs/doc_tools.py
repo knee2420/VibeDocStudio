@@ -225,6 +225,7 @@ class DocTools:
         now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         page, slots = blank_page(f"{doc_id}_p1", 1, surface=surface, surface_width=int(width) if width else None,
                                  label="본문" if surface == "scroll" else "")
+        page["unitKind"] = "section"  # 섹션 = 구조 단위 (A4 의 쪽은 출력 결과)
         doc: dict[str, Any] = {
             "version": "1.0.0", "docId": doc_id, "title": title, "status": "Draft", "updatedAt": now,
             "variables": {}, "pages": [page], "slots": slots, "backdata": {}, "revision": 1,
@@ -522,6 +523,10 @@ class DocTools:
                     pid = f"{data['docId']}_p{uid()}"
                     pg, pslots = blank_page(pid, len(pages) + 1, surface=surface, surface_width=width,
                                             label=str(op.get("label") or "")[:40])
+                    # 에이전트가 짓는 문서의 단위는 섹션 — 소제목 블록으로 섹션을 흉내 내지 않고 섹션마다 page 를 연다.
+                    pg["unitKind"] = "section"
+                    if op.get("role"):
+                        pg["sectionRole"] = str(op["role"])[:40]
                     if op.get("after"):
                         at = pages.index(find_page(op["after"])) + 1
                         pages.insert(at, pg)
@@ -818,6 +823,28 @@ class DocTools:
                                  placeholder=packs.data(patterns.GENRES).get("placeholder") or "")
         return [row]
 
+    @staticmethod
+    def _structure_problems(data: dict[str, Any]) -> list[str]:
+        """섹션 = 구조 단위 검사 (vdoc-schema `validateVDocHierarchy` 와 같은 기준).
+
+        서식 원문 가져오기(origin.imports)는 원문 쪽을 지키므로 쪽 단위를 허용한다."""
+        origin = data.get("origin") or {}
+        if isinstance(origin, dict) and origin.get("imports"):
+            return []
+        out: list[str] = []
+        not_section = [str(p.get("pageId")) for p in data.get("pages") or [] if p.get("unitKind") != "section"]
+        if not_section:
+            out.append(packs.message(MSG, "compose.problems.unitNotSection", count=len(not_section), ids=", ".join(not_section[:6])))
+        for p in data.get("pages") or []:
+            levels = [max(1, int(b.get("level") or 2)) for b in p.get("blocks") or [] if b.get("kind") == "heading"]
+            levels = [lv for lv in levels if lv <= 2]
+            if levels:
+                top = min(levels)
+                same = levels.count(top)
+                if same >= 2:
+                    out.append(packs.message(MSG, "compose.problems.sectionCollapsed", page=str(p.get("pageId")), level=top, count=same))
+        return out
+
     def _dc_check(self, doc: str = "", ref: str = "", pages: str = "", doctype: str = "", **_: Any) -> str:
         data = self._load(doc)
         slots = data.get("slots") or {}
@@ -857,6 +884,7 @@ class DocTools:
         unstyled = [b["blockId"] for b in blocks if b.get("kind") == "text" and unstyled_marker_paragraphs(b["html"])]
         if unstyled:
             problems.append(packs.message(MSG, pm + "unstyledMarkers", count=len(unstyled), ids=", ".join(unstyled[:6])))
+        problems.extend(self._structure_problems(data))
         rows.append(packs.message(MSG, pm + "label") + ("; ".join(problems) if problems else packs.message(MSG, pm + "none")))
         rows.extend(self._genre_rows(str(data.get("title") or ""), doctype, "\n".join(b["text"] for b in blocks)))
         rows.extend(self._provenance_rows("\n".join(b["text"] for b in blocks), ref, blocks))

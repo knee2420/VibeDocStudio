@@ -151,3 +151,16 @@ def test_slot_map_inline_format_is_accepted() -> None:
     assert request.outputFormat == "slot-map"
     message = inline_message("다듬어줘", [], "slot-map")
     assert "JSON 객체 하나만" in message and "slotId" in message
+
+
+def test_workspace_tool_called_natively_is_recognized_for_reroute() -> None:
+    """모델이 워크스페이스 도구(outline.compileDoc 등)를 엔진 내장 도구로 부르면 정식 도구 호출로 옮길 대상이다."""
+    from types import SimpleNamespace
+
+    from app.assistant.use_cases.assistant_service import AssistantService
+
+    session = SimpleNamespace(tool_risks={"outline.compileDoc": "read", "slots.proposeBatch": "stage"})
+    check = AssistantService._misrouted_workspace_call
+    assert check(session, {"type": "agent_tool", "name": "outline.compileDoc", "state": "running", "params": {"docNodeId": "d1"}})
+    assert not check(session, {"type": "agent_tool", "name": "read_file", "state": "running"})
+    assert not check(session, {"type": "agent_tool", "name": "outline.unknownTool", "state": "running"})

@@ -6,7 +6,142 @@ import type {
   ElementRegistrySnapshot,
   ElementSyntaxDefinition,
   ElementSyntaxRule,
+  StructureLayer,
+  StructureParentRef,
 } from "./contract";
+import { STRUCTURE_LAYERS } from "./contract";
+
+function knownLayer(layer: string | undefined): StructureLayer | undefined {
+  return layer && (STRUCTURE_LAYERS as readonly string[]).includes(layer) ? (layer as StructureLayer) : undefined;
+}
+
+/** 블록 층 기본 담기 규칙 — 섹션 안, 또는 다른 블록의 하위(캡션 · 메타)로만. 문서 바로 아래는 안 된다. */
+export const BLOCK_DEFAULT_PARENTS: readonly StructureParentRef[] = ["layer:section", "layer:block"];
+
+/** 인용 · 근거 담기 규칙 — 섹션이나 블록 아래 하위 불릿. */
+const INLINE_EVIDENCE_PARENTS: readonly StructureParentRef[] = ["layer:section", "layer:block"];
+
+/**
+ * 다단 섹션 — 섹션의 한 종류. 자식 불릿 하나가 한 단이다.
+ * 블로그 · 문서에서 웬만해서는 쓰지 않고, 사용자가 요청하거나 레퍼런스에 다단이 있을 때만 쓴다.
+ */
+export const COLUMN_SECTION_RULE: ElementSyntaxRule = {
+  id: "column-section",
+  symbol: "<<view:section:column>>",
+  primitive: "split",
+  position: "prefix",
+  description:
+    "다단 섹션 — 자식 불릿 하나가 한 단(둘 이상). 사용자가 요청하거나 레퍼런스에 다단이 있을 때만 쓴다 (기본은 한 단 흐름)",
+  layer: "section",
+  parents: ["layer:document"],
+};
+
+interface GrammarEntry {
+  readonly layer: StructureLayer;
+  readonly parents?: readonly StructureParentRef[];
+  readonly children?: readonly StructureParentRef[];
+}
+
+/**
+ * 기본 계층 문법 — 요소(`<<view:…>>`)와 기호 규칙마다 층 · 담기 규칙.
+ * 볼트 `.vsyntax` 에 이 필드가 없으면 요소 id + 규칙 id 로 여기서 보충한다 (사용자가 바꾼 값이 있으면 그대로 둔다).
+ */
+export const DEFAULT_STRUCTURE_GRAMMAR: Readonly<
+  Record<string, { readonly element: GrammarEntry; readonly rules: Readonly<Record<string, GrammarEntry>> }>
+> = {
+  // 표 안의 행 · 칸 · 병합 기호는 표 블록 내부 문법 — 칸(slot) 층.
+  table: {
+    element: { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+    rules: {
+      "tree-rowspan": { layer: "slot", parents: ["table"] },
+      "col-split": { layer: "slot", parents: ["table", "row-container"] },
+      "empty-slot": { layer: "slot", parents: ["table", "row-container", "cell-container"] },
+      "merge-left": { layer: "slot", parents: ["table", "row-container", "cell-container"] },
+      "merge-up": { layer: "slot", parents: ["table", "row-container", "cell-container"] },
+      "cell-container": { layer: "slot", parents: ["row-container", "table"] },
+      "row-container": { layer: "slot", parents: ["table"] },
+    },
+  },
+  section: {
+    element: { layer: "section", parents: ["layer:document"] },
+    rules: {
+      "column-section": { layer: "section", parents: ["layer:document"] },
+      // 들여쓰기 묶음(이미지 아래 캡션 · 프레임 아래 메타)과 한 줄 사진 띠(`[img] | [img]`)는 블록 하나다.
+      "tree-group": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "horizontal-split": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "frame-box": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "accent-bar": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "kv-meta": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "divider-line": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "image-slot": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "cta-slot": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "embed-slot": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "inline-highlight": { layer: "inline", parents: ["layer:block", "layer:section"] },
+      "form-title": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      "list-view": { layer: "block", parents: BLOCK_DEFAULT_PARENTS },
+      // 폐기 — 다단은 `<<view:section:column>>`. 이미 있는 문서는 계속 컴파일되지만 새로 쓰면 검사기가 막는다.
+      "columns-container": { layer: "block", parents: BLOCK_DEFAULT_PARENTS, children: ["col-container"] },
+      "col-container": { layer: "slot", parents: ["columns-container"] },
+    },
+  },
+  resource: {
+    element: { layer: "inline", parents: INLINE_EVIDENCE_PARENTS },
+    rules: {
+      "resource-unified": { layer: "inline", parents: INLINE_EVIDENCE_PARENTS },
+      "cite-footnote": { layer: "inline", parents: INLINE_EVIDENCE_PARENTS },
+      "cite-rationale": { layer: "inline", parents: INLINE_EVIDENCE_PARENTS },
+      "cite-sidenote": { layer: "inline", parents: INLINE_EVIDENCE_PARENTS },
+      "cite-quote": { layer: "inline", parents: INLINE_EVIDENCE_PARENTS },
+      "cite-matrix": { layer: "inline", parents: INLINE_EVIDENCE_PARENTS },
+      "cite-bound": { layer: "inline", parents: INLINE_EVIDENCE_PARENTS },
+      "cite-source-link": { layer: "inline" },
+      "cite-page-anchor": { layer: "inline" },
+      "cite-line-range": { layer: "inline" },
+      "cite-segment-split": { layer: "inline" },
+    },
+  },
+};
+
+/** `<<doc:…>>` 은 레지스트리 요소가 아니라 프로필이 정하는 문서 루트 — 커널 고정 문법. */
+export const DOCUMENT_ROOT_GRAMMAR: GrammarEntry = { layer: "document", parents: ["$outside"] };
+
+/** 볼트 스냅샷에 빠진 층 · 담기 규칙 · 프로필 단위를 기본 문법으로 보충한다 (있는 값은 건드리지 않는다). */
+export function withStructureGrammarDefaults(snapshot: ElementRegistrySnapshot): ElementRegistrySnapshot {
+  const profiles = (snapshot.profiles ?? []).map((p) => {
+    const fallback = DEFAULT_DOCUMENT_PROFILES.find((d) => d.id === p.id);
+    return {
+      ...p,
+      structureUnit: p.structureUnit ?? "section",
+      outputUnit: p.outputUnit ?? fallback?.outputUnit ?? (p.surface?.kind === "paged" ? "page" : "scroll"),
+    } satisfies DocumentProfileSchema;
+  });
+  const elements = (snapshot.elements ?? []).map((el) => {
+    const grammar = DEFAULT_STRUCTURE_GRAMMAR[el.id];
+    // 커널 구조 규칙(다단 섹션)은 볼트 스냅샷에 없으면 덧붙인다 — 기호는 볼트에서 바꿀 수 있다.
+    const baseRules =
+      el.id === "section" && !el.rules.some((r) => r.id === COLUMN_SECTION_RULE.id)
+        ? [...el.rules, { ...COLUMN_SECTION_RULE, parents: [...(COLUMN_SECTION_RULE.parents ?? [])] }]
+        : el.rules;
+    // 층 목록에 없는 옛 값(예: 'container')은 기본 문법으로 되돌린다 — 그 층에 딸린 담기 규칙도 함께.
+    const elStale = el.layer !== undefined && !knownLayer(el.layer);
+    return {
+      ...el,
+      layer: (!elStale && el.layer) || grammar?.element.layer,
+      parents: !elStale && el.parents ? el.parents : grammar?.element.parents ? [...grammar.element.parents] : undefined,
+      rules: baseRules.map((r) => {
+        const g = grammar?.rules[r.id];
+        const stale = r.layer !== undefined && !knownLayer(r.layer);
+        return {
+          ...r,
+          layer: (!stale && r.layer) || g?.layer,
+          parents: !stale && r.parents ? r.parents : g?.parents ? [...g.parents] : undefined,
+          children: !stale && r.children ? r.children : g?.children ? [...g.children] : undefined,
+        };
+      }),
+    } satisfies ElementSyntaxDefinition;
+  });
+  return { ...snapshot, profiles, elements };
+}
 
 export const DEFAULT_DOCUMENT_PROFILES: readonly DocumentProfileSchema[] = [
   {
@@ -14,6 +149,8 @@ export const DEFAULT_DOCUMENT_PROFILES: readonly DocumentProfileSchema[] = [
     label: "블로그 (Blog)",
     description: "이음매 없는 720px 스크롤 지면, SECTION 최상위 단위 기반 블로그 문서",
     unitKind: "section",
+    structureUnit: "section",
+    outputUnit: "scroll",
     surface: { kind: "scroll", width: 720 },
     allowedElementIds: ["section", "table", "resource"],
     defaultSkin: "korean-editorial-blog",
@@ -21,8 +158,10 @@ export const DEFAULT_DOCUMENT_PROFILES: readonly DocumentProfileSchema[] = [
   {
     id: "a4",
     label: "A4 문서 (Paged)",
-    description: "794px 인쇄 페이지 단위 일반·공공 서식 문서",
+    description: "794px 인쇄 페이지로 출력되는 일반·공공 서식 문서 (구조 단위는 섹션, 섹션이 쪽을 넘어 흐른다)",
     unitKind: "page",
+    structureUnit: "section",
+    outputUnit: "page",
     surface: { kind: "paged", width: 794 },
     allowedElementIds: ["table", "section", "resource"],
     defaultSkin: "korean-form-sheet",
@@ -32,6 +171,8 @@ export const DEFAULT_DOCUMENT_PROFILES: readonly DocumentProfileSchema[] = [
     label: "웹 아티클 (Web)",
     description: "960px 와이드 SECTION 기반 웹 문서 및 랜딩",
     unitKind: "section",
+    structureUnit: "section",
+    outputUnit: "scroll",
     surface: { kind: "scroll", width: 960 },
     allowedElementIds: ["section", "table", "resource"],
     defaultSkin: "korean-editorial-blog",
@@ -223,19 +364,20 @@ export const DEFAULT_SECTION_ELEMENT_DEF: ElementSyntaxDefinition = {
       position: "prefix",
       description: "항목 목록 컨테이너 (글머리 기호 모양은 .vstyle · 인스펙터에서 지정)",
     },
+    COLUMN_SECTION_RULE,
     {
       id: "columns-container",
       symbol: "<<view:columns>>",
       primitive: "split",
       position: "prefix",
-      description: "다단 컨테이너 (하위 <<col>> 블록들을 가로 다단 배치, 열 비율은 인스펙터에서 지정)",
+      description: "(폐기 — <<view:section:column>> 사용) 옛 다단 블록. 이미 있는 문서만 컴파일한다",
     },
     {
       id: "col-container",
       symbol: "<<col>>",
       primitive: "frame",
       position: "prefix",
-      description: "다단 컬럼 컨테이너 (하위 트리 전체를 해당 열 내부 블록으로 재귀 배치)",
+      description: "(폐기 — <<view:section:column>> 의 자식 불릿이 한 단) 옛 다단의 한 열",
     },
   ],
 };
@@ -349,7 +491,7 @@ export const DEFAULT_RESOURCE_ELEMENT_DEF: ElementSyntaxDefinition = {
 };
 
 export function createDefaultRegistrySnapshot(updatedAt = new Date().toISOString()): ElementRegistrySnapshot {
-  return {
+  return withStructureGrammarDefaults({
     version: "1.0.0",
     updatedAt,
     description: "VibeDoc 문서 스키마 표준 Element · Syntax · Document Profile CRUD 레지스트리",
@@ -363,17 +505,23 @@ export function createDefaultRegistrySnapshot(updatedAt = new Date().toISOString
       cloneElementDef(DEFAULT_SECTION_ELEMENT_DEF),
       cloneElementDef(DEFAULT_RESOURCE_ELEMENT_DEF),
     ],
-  };
+  });
 }
 
 function cloneRule(rule: ElementSyntaxRule): ElementSyntaxRule {
-  return { ...rule, options: rule.options ? { ...rule.options } : undefined };
+  return {
+    ...rule,
+    options: rule.options ? { ...rule.options } : undefined,
+    parents: rule.parents ? [...rule.parents] : undefined,
+    children: rule.children ? [...rule.children] : undefined,
+  };
 }
 
 function cloneElementDef(def: ElementSyntaxDefinition): ElementSyntaxDefinition {
   return {
     ...def,
     allowedInViews: [...def.allowedInViews],
+    parents: def.parents ? [...def.parents] : undefined,
     rules: def.rules.map(cloneRule),
     skins: def.skins
       ? Object.fromEntries(Object.entries(def.skins).map(([k, v]) => [k, { ...v }]))
@@ -401,7 +549,7 @@ export class ElementSyntaxRegistry {
   private readonly elements = new Map<string, ElementSyntaxDefinition>();
 
   constructor(snapshot?: ElementRegistrySnapshot) {
-    const seed = snapshot ?? createDefaultRegistrySnapshot();
+    const seed = snapshot ? withStructureGrammarDefaults(snapshot) : createDefaultRegistrySnapshot();
     this.version = seed.version || "1.0.0";
     this.updatedAt = seed.updatedAt || new Date().toISOString();
     this.description = seed.description;
@@ -524,11 +672,15 @@ export class ElementSyntaxRegistry {
   }
 
   importSnapshot(raw: ElementRegistrySnapshot | string): void {
-    const parsed: ElementRegistrySnapshot =
+    const rawParsed: ElementRegistrySnapshot =
       typeof raw === "string" ? (JSON.parse(raw) as ElementRegistrySnapshot) : raw;
-    if (!parsed || !Array.isArray(parsed.elements)) {
+    if (!rawParsed || !Array.isArray(rawParsed.elements)) {
       throw new Error("Invalid ElementRegistrySnapshot payload.");
     }
+    const parsed = withStructureGrammarDefaults({
+      ...rawParsed,
+      profiles: rawParsed.profiles ?? DEFAULT_DOCUMENT_PROFILES.map((p) => ({ ...p })),
+    });
     this.version = parsed.version || this.version;
     this.updatedAt = parsed.updatedAt || new Date().toISOString();
     this.description = parsed.description;

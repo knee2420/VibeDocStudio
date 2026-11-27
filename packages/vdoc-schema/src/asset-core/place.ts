@@ -51,7 +51,15 @@ export function placeAssetBlocks(doc: VDocDocument, input: PlaceAssetBlocksInput
       if (loc) loc.page.blocks.splice(loc.index, 1);
     }
     const at = Math.min(first.index, anchorPage.blocks.length);
-    anchorPage.blocks.splice(at, 0, ...input.blocks.map((b, i) => (i === 0 && anchorBlock.sourceNodeId ? { ...b, sourceNodeId: anchorBlock.sourceNodeId } : b)));
+    anchorPage.blocks.splice(
+      at,
+      0,
+      ...input.blocks.map((b, i) =>
+        i === 0 && anchorBlock.sourceNodeId && b.kind === anchorBlock.kind
+          ? { ...b, sourceNodeId: anchorBlock.sourceNodeId }
+          : b
+      )
+    );
     const kept = new Set(Object.keys(input.slots));
     for (const s of removedSlots) if (!kept.has(s)) delete slots[s];
   } else {

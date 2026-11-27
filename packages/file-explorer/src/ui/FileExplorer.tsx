@@ -15,6 +15,7 @@ import {
   FolderKanban,
   FolderOpen,
   FolderPlus,
+  Globe,
   LayoutTemplate,
   ListTree,
   LocateFixed,
@@ -27,6 +28,7 @@ import {
   VAULT_SORT_LABELS,
   dirname,
   getObsidianDisplayName,
+  isClipBundlePath,
   isProjectFolderPath,
   stem,
   type VaultFileNode,
@@ -360,7 +362,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     if (row.recentBadge) {
       state.clearRecentBadge(row.path);
     }
-    if (row.node.kind === "folder") {
+    if (row.node.kind === "folder" && !row.isClipBundle) {
       state.toggleExpand(row.path);
     } else {
       onOpenFile?.(row.path, ev.altKey ? "new-tab" : "current");
@@ -369,7 +371,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
   /** 가운데 클릭 = 새 탭에서 열기 (브라우저 · VS Code 와 같다). */
   const handleRowAuxClick = (ev: React.MouseEvent, row: ExplorerFlatRow) => {
-    if (ev.button !== 1 || row.node.kind !== "file") return;
+    if (ev.button !== 1 || (row.node.kind !== "file" && !row.isClipBundle)) return;
     ev.preventDefault();
     ev.stopPropagation();
     onOpenFile?.(row.path, "new-tab");
@@ -383,7 +385,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
       state.selectSingle(row.path);
     }
     setContextMenu({
-      kind: row.node.kind,
+      kind: row.isClipBundle ? "file" : row.node.kind,
       path: row.path,
       x: ev.clientX,
       y: ev.clientY,
@@ -420,7 +422,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
       ev.preventDefault();
       const node = state.vault.getNode(focusedPath);
       if (!node) return;
-      if (node.kind === "folder") {
+      if (node.kind === "folder" && !isClipBundlePath(node.path)) {
         state.toggleExpand(node.path);
       } else {
         onOpenFile?.(node.path, ev.ctrlKey || ev.metaKey || ev.altKey ? "new-tab" : "current");
@@ -847,6 +849,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         ) : (
           rows.map((row) => {
             const isFolder = row.node.kind === "folder";
+            const isExpandableFolder = isFolder && !row.isClipBundle;
             const display = getObsidianDisplayName(row.node.name, row.node.kind);
             const filePres =
               !isFolder && resolveFilePresentation
@@ -854,22 +857,22 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                 : null;
             const effectiveBadge =
               filePres && filePres.badge !== undefined ? filePres.badge : display.extensionBadge;
-            const targetFolder = isFolder ? row.path : dirname(row.path);
+            const targetFolder = isExpandableFolder ? row.path : dirname(row.path);
             const isDropHighlight =
-              isFolder && dropTargetFolder !== null && dropTargetFolder === row.path;
+              isExpandableFolder && dropTargetFolder !== null && dropTargetFolder === row.path;
             const isHovered = hoveredPath === row.path;
 
             return (
               <div
                 key={row.path}
                 role="treeitem"
-                aria-expanded={isFolder ? row.isExpanded : undefined}
+                aria-expanded={isExpandableFolder ? row.isExpanded : undefined}
                 aria-selected={row.isSelected || row.isActiveFile}
                 data-vault-path={row.path}
                 draggable={!row.isRenaming}
                 onDragStart={(ev) => handleDragStart(ev, row)}
                 onDragOver={(ev) =>
-                  handleDragOverFolder(ev, targetFolder, isFolder && !row.isExpanded)
+                  handleDragOverFolder(ev, targetFolder, isExpandableFolder && !row.isExpanded)
                 }
                 onDrop={(ev) => handleDropOnFolder(ev, targetFolder)}
                 onDragEnd={handleDragEnd}
@@ -920,8 +923,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                   />
                 ))}
 
-                {/* Folder Chevron (+ Project Folder icon) or File Icon */}
-                {isFolder ? (
+                {/* Folder Chevron (+ Project Folder icon), Clip Bundle icon, or File Icon */}
+                {isExpandableFolder ? (
                   <>
                     <span className="mr-1 flex h-4 w-4 shrink-0 items-center justify-center text-[var(--obs-text-faint,#666666)] group-hover:text-[var(--obs-text-muted,#b3b3b3)]">
                       <ChevronRight
@@ -935,14 +938,19 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                       <FolderKanban className="mr-1.5 h-3.5 w-3.5 shrink-0 text-[#a68af9]" />
                     )}
                   </>
+                ) : row.isClipBundle ? (
+                  <span className="mr-1.5 flex h-4 w-3.5 shrink-0 items-center justify-center text-emerald-400">
+                    <Globe className="h-3.5 w-3.5" />
+                  </span>
                 ) : (
                   <span className="mr-1.5 flex h-4 w-3.5 shrink-0 items-center justify-center text-[var(--obs-text-faint,#666666)]">
                     {filePres?.icon ? (
                       filePres.icon
-                    ) : row.node.extension === "outline" ? (
+                    ) : row.node.kind === "file" && row.node.extension === "outline" ? (
                       <ListTree className="h-3.5 w-3.5 text-[var(--obs-accent,#8a5cf5)]" />
-                    ) : row.node.extension === "vdoc" ||
-                      row.node.name.toLowerCase().endsWith(".vdoc.json") ? (
+                    ) : row.node.kind === "file" &&
+                      (row.node.extension === "vdoc" ||
+                        row.node.name.toLowerCase().endsWith(".vdoc.json")) ? (
                       <LayoutTemplate className="h-3.5 w-3.5 text-sky-400" />
                     ) : (
                       <FileText className="h-3.5 w-3.5 opacity-70" />
@@ -991,9 +999,11 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                         className={
                           row.isProjectFolder
                             ? "ml-1.5 shrink-0 rounded-[3px] bg-[rgba(138,92,245,0.20)] px-1 py-0 text-[9px] font-semibold tracking-wider text-[#c4b5fd]"
-                            : filePres?.badgeToneClass
-                              ? `ml-1.5 shrink-0 rounded-[3px] px-1 py-0 text-[9px] font-semibold tracking-wider ${filePres.badgeToneClass}`
-                              : "ml-1.5 shrink-0 rounded-[3px] bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] px-1 py-0 text-[9px] font-semibold tracking-wider text-[var(--obs-text-faint,#666666)]"
+                            : row.isClipBundle
+                              ? "ml-1.5 shrink-0 rounded-[3px] bg-[rgba(16,185,129,0.18)] px-1 py-0 text-[9px] font-semibold tracking-wider text-emerald-300"
+                              : filePres?.badgeToneClass
+                                ? `ml-1.5 shrink-0 rounded-[3px] px-1 py-0 text-[9px] font-semibold tracking-wider ${filePres.badgeToneClass}`
+                                : "ml-1.5 shrink-0 rounded-[3px] bg-[var(--obs-bg-hover,rgba(255,255,255,0.067))] px-1 py-0 text-[9px] font-semibold tracking-wider text-[var(--obs-text-faint,#666666)]"
                         }
                       >
                         {effectiveBadge}

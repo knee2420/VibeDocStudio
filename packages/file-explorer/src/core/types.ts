@@ -9,6 +9,8 @@ export interface ExplorerFlatRow {
   readonly node: VaultNode;
   readonly depth: number;
   readonly isProjectFolder: boolean;
+  /** `*.vclip/` 웹 스크랩 폴더 번들 — 탐색기에서는 단일 파일처럼 접어 표시한다. */
+  readonly isClipBundle: boolean;
   readonly isExpanded: boolean;
   readonly hasChildren: boolean;
   readonly isSelected: boolean;

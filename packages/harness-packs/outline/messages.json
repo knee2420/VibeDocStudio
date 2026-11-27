@@ -5,5 +5,19 @@
   "proposalQueued": "[Staged 제출 · proposalId={proposalId}] {summary} (요청 {count}건 · 대상 {targets} · 사용자 승인 전까지 원본 파일은 변경되지 않음)",
   "createdOutline": "[.outline 생성 · batchId={batchId}] {path} (제목={title} · 노드 {nodeCount}개 · 되돌리기: vf_undo(batchId=\"{batchId}\"))",
   "replaceNestedNotAllowed": "replace 는 단일 노드의 text 만 변경하며 items/children 을 무시합니다. 하위 트리를 추가하려면 insert_after(targetId=\"{nodeId}\", inside=true, items=[{{\"text\": \"...\", \"children\": [...]}}]) 를 사용하세요.",
-  "deleteChildrenNeedsRecursive": "하위 자식이 있는 노드({nodeId})는 recursively=true 를 명시해야 삭제할 수 있습니다."
+  "deleteChildrenNeedsRecursive": "하위 자식이 있는 노드({nodeId})는 recursively=true 를 명시해야 삭제할 수 있습니다.",
+  "lintResourceStripBlocked": "[LINT:LINT_RESOURCE_TAG_STRIPPED] 노드({nodeId})의 기존 <<resource:...>>/<<cite:...>> 근거 태그를 지우고 일반 위키링크([[...]])나 파일 첨부로 덮어쓸 수 없습니다. 페어 탭 하이라이트가 유지되도록 <<resource: 대상 위치 | 실제 발췌문>> 태그를 유지하세요.",
+  "lintVclipSetFileBlocked": "[LINT:LINT_VCLIP_SET_FILE_ABUSE] .vclip 웹 리소스({target})는 set_file 첨부 카드가 아니라 <<resource: {target} | 실제 발췌문>> 하위 불릿으로 연결해야 클릭 시 페어 탭과 문장 하이라이트가 작동합니다.",
+  "lintVclipPlainWikilinkBlocked": "[LINT:LINT_VCLIP_PLAIN_WIKILINK] .vclip 리소스를 일반 위키링크({link})로 쓰면 파일만 열리고 문장 하이라이트가 작동하지 않습니다. <<resource: 대상.vclip | 실제 발췌문>> 태그를 사용하세요.",
+  "lintSidecarEvidenceBlocked": "[LINT:LINT_SIDECAR_ONLY_EVIDENCE] .outline 에서는 숨겨진 nodeEvidence 사이드카를 사용할 수 없습니다. 편집 가능한 <<resource: 대상 위치 | 실제 발췌문>> 또는 <<cite:...>> 하위 불릿으로 근거를 직접 작성하세요.",
+  "lintMissingResourceTarget": "[LINT:LINT_MISSING_RESOURCE_TARGET] <<resource:...>> 가 가리키는 볼트 리소스({target})가 존재하지 않습니다. 실제 볼트 경로(예: sources/파일.vclip)를 확인하세요.",
+  "lintMalformedResourceTag": "[LINT:LINT_MALFORMED_RESOURCE_TAG] <<resource:...>> 태그의 대상 경로가 비어 있습니다. <<resource: 대상 위치 | 실제 발췌문>> 형식으로 작성하세요.",
+  "lintVclipAttachModeBlocked": "[LINT:LINT_VCLIP_SET_FILE_ABUSE] .vclip 웹 리소스({target})에는 mode=\"{mode}\" 를 사용할 수 없습니다. ol_attach_resource(nodeId=\"{nodeId}\", target=\"{target}\", mode=\"resource\", quote=\"실제 발췌문\") 을 사용하세요.",
+  "lintImageUseOutlineFile": "[LINT:LINT_IMAGE_USE_OUTLINE_FILE] 이미지 리소스({target})는 <<resource:...>> 텍스트 링크가 아니라 .outline 네이티브 이미지 첨부(set_file / file: {{\"target\": \"{target}\"}} 또는 ol_attach_resource(mode=\"file\"))로 꽂아야 아웃라인에 사진이 바로 보입니다. (이미지 내 특정 영역 인용일 때만 #bbox(y1,x1,y2,x2) 를 포함한 <<resource:...>> 허용)",
+  "lintImageAttachModeBlocked": "[LINT:LINT_IMAGE_USE_OUTLINE_FILE] 이미지 리소스({target})는 mode=\"resource\" 대신 아웃라인에 사진이 바로 꽂히는 ol_attach_resource(nodeId=\"{nodeId}\", target=\"{target}\", mode=\"file\") 을 사용하세요. (특정 영역 인용 시에만 anchor=\"#bbox(y1,x1,y2,x2)\" 함께 지정)",
+  "lintUnreadResourceBlocked": "[LINT:LINT_UNREAD_RESOURCE_SOURCE] 리소스 '{target}' 는 이 세션에서 read_file 로 읽지 않았습니다. 읽은 것만 인용합니다 — read_file 로 실제 줄을 읽고 그 줄의 문장을 '| 발췌'로 다세요.",
+  "lintUnterminatedTag": "[LINT:LINT_UNTERMINATED_TAG] 닫는 >> 가 없는 근거 태그가 있습니다: \"{text}…\" — <<resource: 경로 #L시작-L끝 | 실제 발췌>> 처럼 반드시 >> 로 닫습니다 (발췌 안에는 > 기호를 쓰지 않습니다).",
+  "lintMultilineBullet": "[LINT:LINT_MULTILINE_BULLET] 불릿 하나에 여러 줄(줄바꿈)이 들어 있습니다: \"{text}…\" — 한 불릿은 한 줄입니다. 표의 머리행 · 각 행, 목록의 항목은 하위 불릿(items 의 children)으로 나눕니다.",
+  "outOfScopeFile": "범위 밖입니다: 지금 범위 \"{scopeLabel}\" 는 {activePath} 의 선택 불릿입니다 — {path} 는 고칠 수 없습니다. 범위를 넓히려면 사용자가 Composer 설정바에서 바꿔야 합니다.",
+  "olCreateBlockedByOutlineScope": "별도 .outline 파일({path})을 따로 생성할 수 없습니다: 지금 사용자가 {activePath} 에서 블록 범위(\"{scopeLabel}\")를 선택해 요청했습니다. 반드시 기존 {activePath} 의 최상단 선택 블록(targetId=\"{topmostId}\") 바로 하위에 ol_propose_patch(path=\"{activePath}\", requests=[{{\"op\": \"insert_after\", \"targetId\": \"{topmostId}\", \"inside\": true, \"items\": [{{\"text\": \"<<doc:...>> 제목\", \"children\": [...]}}]}}]) 로 새 <<doc:...>> 컴파일 가지를 추가하세요."
 }

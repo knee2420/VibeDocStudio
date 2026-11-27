@@ -169,7 +169,7 @@ export function vaultPathContext(ai: Pick<V2AiWorkspace, "env">, path: string): 
 
 const SELECTION_KINDS = new Set(["slot", "block", "slot-range"]);
 const DC_TOOL = /(^|_)dc_(new|use|build|import)$/;
-const RS_TOOL = /(^|_)rs_(ref_import|image_save|folder)$/;
+const RS_TOOL = /(^|_)rs_(ref_import|image_save|image_edit|image_compose|folder)$/;
 const VAULT_RESOURCE = "resource:vault:";
 const VAULT_URI = /vault:\/\/([^\n\r]+?\.vdoc)(?=\s|$)/;
 const CONV_PREFIX = "vibe.playground.v2ide.composer.";
@@ -280,10 +280,15 @@ export function createV2AiWorkspace(deps: V2AiWorkspaceDeps): V2AiWorkspace {
     }
     return null;
   };
+  /** 어느 창에든 탭으로 열려 있는지 — 닫은 문서를 '마지막으로 본 문서'로 붙잡고 있지 않게 */
+  const isOpenInAnyTab = (p: string): boolean => {
+    const state = deps.layout.getState();
+    return getAllGroups(state.root).some((g) => g.tabs.some((t) => t.resourceId === p));
+  };
   const activeDocPath = () => {
     const tab = activeTabPath();
     if (tab && isVDocPath(tab) && deps.vault.exists(tab)) lastDocPath = tab;
-    else if (lastDocPath && !deps.vault.exists(lastDocPath)) lastDocPath = null;
+    else if (lastDocPath && (!deps.vault.exists(lastDocPath) || !isOpenInAnyTab(lastDocPath))) lastDocPath = null;
     if (!lastDocPath) lastDocPath = visibleDocPath();
     return lastDocPath;
   };
@@ -328,11 +333,19 @@ export function createV2AiWorkspace(deps: V2AiWorkspaceDeps): V2AiWorkspace {
    *   rs_image_save → 그 사진 폴더를 리소스로 켠다 (서버는 이미 세션 마운트에 넣었다)
    *   rs_ref_import → 그 폴더의 새 .ref 를 레퍼런스로 켠다
    */
-  const syncResearch = (tool: string, params: Record<string, unknown>) => {
-    const folder = String(params.folder ?? params.path ?? "").split("\\").join("/").replace(/^\/+|\/+$/g, "");
+  const syncResearch = (tool: string, params: Record<string, unknown>, output?: string) => {
+    let folder = String(params.folder ?? params.path ?? "").split("\\").join("/").replace(/^\/+|\/+$/g, "");
+    if (!folder && output) {
+      const m = /resource:vault:([^\s\n\r]+)/.exec(output);
+      if (m?.[1]) {
+        const rel = m[1].replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+        const slash = rel.lastIndexOf("/");
+        if (slash > 0) folder = rel.slice(0, slash);
+      }
+    }
     if (!folder) return;
     const s = store.getState();
-    if (tool === "image_save") {
+    if (tool === "image_save" || tool === "image_edit" || tool === "image_compose") {
       const covered = s.resourceFolders.some((f) => f === "" || folder === f || folder.startsWith(`${f}/`));
       if (!covered) s.toggleResourceFolder(folder, true);
       if (!s.sourcesOn) s.setSourcesOn(true);
@@ -378,7 +391,9 @@ export function createV2AiWorkspace(deps: V2AiWorkspaceDeps): V2AiWorkspace {
       activeDocPath: () => (docOverride && deps.vault.exists(docOverride) ? docOverride : anchorDoc()),
       activeTabPath: () => {
         const a = anchorOf();
-        return a && a.surface !== EXPLORER_SURFACE ? a.path : null;
+        if (!a) return null;
+        if (a.surface !== EXPLORER_SURFACE) return a.path;
+        return a.itemIds.find((p) => isOutlinePath(p) && deps.vault.exists(p)) ?? null;
       },
       textSelection: () => {
         const a = anchorOf();
@@ -545,7 +560,8 @@ export function createV2AiWorkspace(deps: V2AiWorkspaceDeps): V2AiWorkspace {
         const research = RS_TOOL.exec(String(item.name || ""));
         if (research) {
           seen.add(item.id);
-          syncResearch(research[2], (item as Extract<ComposerItem, { kind: "agent_tool" }>).params ?? {});
+          const toolItem = item as Extract<ComposerItem, { kind: "agent_tool" }>;
+          syncResearch(research[2], toolItem.params ?? {}, typeof toolItem.output === "string" ? toolItem.output : undefined);
           continue;
         }
         const match = DC_TOOL.exec(String(item.name || ""));

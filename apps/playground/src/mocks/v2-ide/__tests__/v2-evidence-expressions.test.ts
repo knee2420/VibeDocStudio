@@ -9,11 +9,27 @@ import {
   extractInlineCiteBullets,
   parseCiteBullet,
   type OutlineSyntaxNode,
+  type VDocDocument,
 } from "@vibe/vdoc-schema";
-import { parseOutlineJson, parseVDocJson, toVaultUri } from "@vibe/vault-formats";
+import { MemoryVaultAdapter } from "@vibe/vault-core";
+import {
+  EVIDENCE_SETTINGS_PATH,
+  createDefaultVDoc,
+  parseOutlineJson,
+  parseVDocJson,
+  readVaultEvidenceSettings,
+  serializeOutlineJson,
+  serializeVDocJson,
+  toVaultUri,
+  writeVaultEvidenceSettings,
+} from "@vibe/vault-formats";
+import { syncVDocMeaningBackToOutline } from "@vibe/outline-sync";
 import {
   collectOutlineEvidenceEntries,
   collectVDocEvidenceEntries,
+  effectivePresentation,
+  formatEvidenceLocation,
+  openEvidenceLocator,
   resolveEvidenceVaultPath,
 } from "../ui/EvidenceExpressions";
 import { tokenizeOutlineInline } from "../ui/outlineLiveRenderer";
@@ -133,5 +149,190 @@ describe("v2 근거·인용 6대 표현 통합 쇼케이스 (편집 가능한 <<
       vdocPres,
       new Set(["footnote", "inline-rationale", "sidenote", "quote-embed", "matrix", "bound-value"])
     );
+  });
+
+  it("볼트 리소스 표현 설정(defaultPresentation · force-default · clickAction)이 영속화되고 effectivePresentation 에 반영된다", () => {
+    const vault = new MemoryVaultAdapter({ name: "test-vault" });
+    const initial = readVaultEvidenceSettings(vault);
+    assert.equal(initial.defaultPresentation, "footnote");
+    assert.equal(initial.displayPolicy, "link-first");
+    assert.equal(initial.clickAction, "open-pair");
+
+    writeVaultEvidenceSettings(vault, {
+      version: "1.0.0",
+      defaultPresentation: "sidenote",
+      displayPolicy: "force-default",
+      clickAction: "open-pair",
+    });
+    assert.ok(vault.exists(EVIDENCE_SETTINGS_PATH));
+    const reloaded = readVaultEvidenceSettings(vault);
+    assert.equal(reloaded.defaultPresentation, "sidenote");
+    assert.equal(reloaded.displayPolicy, "force-default");
+
+    const footnoteLoc = { kind: "resource" as const, refId: "a.md", label: "a.md", presentation: "footnote" as const };
+    // force-default 이면 기존 footnote 링크도 설정한 sidenote 로 일괄 변환된다
+    assert.equal(effectivePresentation(footnoteLoc, { presentation: "footnote" }, reloaded), "sidenote");
+    // hidden 은 강제 덮어쓰기하지 않는다
+    assert.equal(effectivePresentation({ ...footnoteLoc, presentation: "hidden" }, undefined, reloaded), "hidden");
+    // link-first 이면 링크별 설정을 우선하되 미지정 링크만 기본 표현형을 따른다
+    const linkFirst = { ...reloaded, displayPolicy: "link-first" as const };
+    assert.equal(effectivePresentation(footnoteLoc, { presentation: "footnote" }, linkFirst), "footnote");
+    assert.equal(effectivePresentation({ kind: "resource", refId: "b.md", label: "b.md" }, undefined, linkFirst), "sidenote");
+  });
+
+  it("디자인 모드 .vdoc → .outline 반영(syncVDocMeaningBackToOutline) 시 evidenceLinks 가 숨겨진 사이드카가 아니라 .vsyntax <<cite:...>> 편집 가능 하위 불릿으로 역동기화된다", () => {
+    const vault = new MemoryVaultAdapter({ name: "sync-evidence-vault" });
+    const outlinePath = "proj.vproj/doc.outline";
+    const vdocPath = "proj.vproj/doc.vdoc";
+    vault.createFolder("proj.vproj");
+    const outlinePayload = {
+      version: 1 as const,
+      id: "ol-ev-1",
+      title: "테스트 문서",
+      defaultView: "bullets" as const,
+      createdAt: "2026-11-25T00:00:00.000Z",
+      updatedAt: "2026-11-25T00:00:00.000Z",
+      docBindings: {
+        doc_root: {
+          docId: "vdoc-ev-1",
+          vdocPath: toVaultUri(vdocPath),
+          profileId: "a4",
+          lastSyncedAt: "2026-11-25T00:00:00.000Z",
+        },
+      },
+      rootNodes: [
+        {
+          id: "doc_root",
+          text: "<<doc:a4>> 테스트 문서",
+          isFolded: false,
+          children: [
+            {
+              id: "memo_1",
+              text: "작업 메모 :: 유지되어야 함",
+              isFolded: false,
+              children: [
+                {
+                  id: "memo_cite",
+                  text: "<<cite:footnote>> [[memo.md]] #L1-L2 | 메모 근거",
+                  isFolded: false,
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: "sec_1",
+              text: "<<view:section>> 1쪽",
+              isFolded: false,
+              children: [
+                { id: "blk_1", text: "핵심 추진 배경 요약", isFolded: false, children: [] },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    vault.createFile(outlinePath, serializeOutlineJson(outlinePayload));
+
+    const baseVdoc = createDefaultVDoc("테스트 문서", "a4");
+    const vdoc: VDocDocument = {
+      ...baseVdoc,
+      docId: "vdoc-ev-1",
+      outlineRef: {
+        outlinePath: toVaultUri(outlinePath),
+        outlineId: "ol-ev-1",
+        rootNodeId: "doc_root",
+      },
+      pages: [
+        {
+          ...baseVdoc.pages[0],
+          pageId: "p1",
+          pageLabel: "1쪽",
+          sourceNodeId: "sec_1",
+          blocks: [
+            {
+              blockId: "b1",
+              kind: "text",
+              title: "본문",
+              slotId: "s1",
+              sourceNodeId: "blk_1",
+            },
+          ],
+        },
+      ],
+      slots: {
+        s1: {
+          slotId: "s1",
+          label: "본문",
+          role: "editable-slot",
+          content: "<p>핵심 추진 배경 요약<sup data-cite=\"1\"></sup></p>",
+          backDataRefs: [],
+        },
+      },
+      evidenceLinks: [
+        {
+          linkId: "ev-1",
+          slotId: "s1",
+          locator: {
+            kind: "resource",
+            refId: "proj.vproj/sources/src.md",
+            label: "src.md",
+            sourcePath: "proj.vproj/sources/src.md",
+            lines: [10, 14],
+            excerpt: "원문 핵심 근거",
+            presentation: "sidenote",
+          },
+          origin: "ai",
+          createdAt: "2026-11-25T00:00:00.000Z",
+          citationIds: ["1"],
+          presentation: "sidenote",
+        },
+      ],
+    };
+    vault.createFile(vdocPath, serializeVDocJson(vdoc));
+
+    // 본문 텍스트 변화가 없어도 evidenceLinks 가 <<cite:...>> 하위 불릿으로 역동기화되어야 한다
+    const changed = syncVDocMeaningBackToOutline(vault, vdocPath, vdoc);
+    assert.equal(changed, true);
+
+    const afterOutline = parseOutlineJson(vault.read(outlinePath), "doc.outline");
+    // 숨겨진 사이드카가 아니라 100% 편집 가능한 <<cite:...>> 하위 불릿으로 표현되어야 한다
+    assert.equal(afterOutline.nodeEvidence, undefined);
+
+    const blkNode = afterOutline.rootNodes[0]?.children[1]?.children[0];
+    assert.equal(blkNode?.id, "blk_1");
+    assert.equal(blkNode?.children.length, 1);
+    assert.equal(blkNode?.children[0]?.text, "<<cite:sidenote>> [[src.md]] #L10-L14 | 원문 핵심 근거");
+
+    // 무손실 왕복 검증: extractInlineCiteBullets 로 다시 파싱하면 원래 locator 가 복원된다
+    const extracted = extractInlineCiteBullets(afterOutline.rootNodes);
+    assert.equal(extracted.nodeEvidence["blk_1"]?.length, 1);
+    assert.deepEqual(extracted.nodeEvidence["blk_1"]?.[0]?.lines, [10, 14]);
+    assert.equal(extracted.nodeEvidence["blk_1"]?.[0]?.presentation, "sidenote");
+    assert.equal(extracted.nodeEvidence["blk_1"]?.[0]?.excerpt, "원문 핵심 근거");
+    // 일반 메모 불릿의 기존 <<cite:...>> 하위 불릿도 훼손되지 않고 보존된다
+    assert.equal(extracted.nodeEvidence["memo_1"]?.length, 1);
+
+    // 변경 없이 재호출 시 no-op (false)
+    assert.equal(syncVDocMeaningBackToOutline(vault, vdocPath, vdoc), false);
+  });
+
+  it("formatEvidenceLocation 과 openEvidenceLocator 는 .vclip/content.md 경로를 기사명과 .vclip 번들 경로로 정규화한다", () => {
+    const locator = {
+      kind: "resource" as const,
+      refId: "content.md",
+      label: "content.md",
+      sourcePath: "프로젝트.vproj/sources/인터풋볼_현장_리포트.vclip/content.md",
+      lines: [7, 7] as [number, number],
+      excerpt: "현장 리포트 발췌 문장",
+    };
+
+    assert.equal(formatEvidenceLocation(locator), "인터풋볼_현장_리포트 · L7-L7");
+
+    let openedPath = "";
+    const opened = openEvidenceLocator(locator, (vaultPath) => {
+      openedPath = vaultPath;
+    });
+    assert.equal(opened, true);
+    assert.equal(openedPath, "프로젝트.vproj/sources/인터풋볼_현장_리포트.vclip");
   });
 });

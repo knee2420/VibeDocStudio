@@ -10,6 +10,7 @@ import {
   FolderKanban,
   FolderOpen,
   FolderTree,
+  Globe,
   HelpCircle,
   Keyboard,
   ListTree,
@@ -60,6 +61,7 @@ import {
 } from "@vibe/workspace-layout/core";
 
 import { createV2AiWorkspace, vaultPathContext, type V2AiWorkspace } from "@vibe/ai-vault";
+import { scrapeAndSaveWebClipBundle } from "../model/clipClient";
 import { openResourceTagInPair } from "../model/resourceHighlightBus";
 import {
   dispatchAssetHubCommand,
@@ -212,7 +214,7 @@ const IdeComposerSidebar = React.memo<{
   const [tabState, setTabState] = useState<{
     readonly tab: RightDockTab;
     readonly anchorKey: string;
-  }>({ tab: autoDefaultTab, anchorKey: tabAnchorKey });
+  }>({ tab: focusAiSeq > 0 ? "ai" : autoDefaultTab, anchorKey: tabAnchorKey });
 
   // Keep `AI` tab sticky across document tab switches (L8), while still auto-switching
   // `에셋` <-> `Inspector` when toggling `.vdoc` [구조] <-> [디자인] modes.
@@ -669,6 +671,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
       metadataCache: runtime.metadataCache,
       vdocUiBridge: runtime.vdocUiBridge,
       ai,
+      openAiSession: openSession,
       docs: runtime.docs,
       openInPairTabGroup: runtime.openFileInPairTabGroup,
       openImportReferenceModal: (replaceRefPath) => openImportReferenceModal(replaceRefPath),
@@ -681,6 +684,7 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
       runtime.metadataCache,
       runtime.vdocUiBridge,
       ai,
+      openSession,
       runtime.docs,
       runtime.openFileInPairTabGroup,
       openImportReferenceModal,
@@ -816,6 +820,26 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
         when: (filePath) => !isRefPath(filePath),
         onSelect: (filePath) => {
           void runtime.promoteFileToRef(filePath, "split-right");
+        },
+      },
+      {
+        id: "scrape-webclip-here",
+        label: "웹 스크랩 추가 (.vclip)...",
+        icon: <Globe className="h-3.5 w-3.5 text-emerald-400" />,
+        targetKinds: ["folder", "root"],
+        onSelect: (folderPath) => {
+          const url = window.prompt("스크랩할 웹 URL 을 입력하세요 (https://...):", "https://");
+          if (!url || !/^https?:\/\//i.test(url.trim())) return;
+          const targetFolder = folderPath ? `${folderPath}/sources` : "sources";
+          void scrapeAndSaveWebClipBundle(runtime.vault, {
+            url: url.trim(),
+            targetFolder,
+            mode: "content",
+            sourceMethod: "user-url",
+          }).then(({ bundlePath }) => {
+            runtime.openVaultFile(bundlePath, "new-tab");
+            runtime.pushLog("vault", "ok", `웹 스크랩 생성: ${bundlePath}`);
+          });
         },
       },
       {
@@ -1228,11 +1252,23 @@ const IdeWorkbenchView: React.FC<IdeWorkbenchViewProps> = ({
           // 무마찰 디렉팅: 선택이 있으면 그 선택에 세션을 붙여 뒤에서 돌린다 (화면 · 포커스는 그대로)
           const directivePrompt = directive.prompt.trim();
           const surface = isOutlinePath(directive.resourceId) ? "outline" : isVDocPath(directive.resourceId) ? "vdoc" : null;
-          const picked = directive.selection?.nodeIds?.length ? directive.selection.nodeIds : null;
+          const pickedOutline = surface === "outline" && directive.selection?.nodeIds?.length ? directive.selection.nodeIds : null;
+          const pickedVdoc =
+            surface === "vdoc"
+              ? directive.selection?.nodeIds?.length
+                ? directive.selection.nodeIds
+                : directive.selection?.blockIds?.length
+                  ? directive.selection.blockIds
+                  : directive.selection?.slotIds?.length
+                    ? directive.selection.slotIds
+                    : null
+              : null;
           const explicit =
-            surface === "outline" && picked
-              ? { surface, path: directive.resourceId, itemIds: [...picked], label: anchorLabel(directive.resourceId, picked.length, "불릿") }
-              : undefined;
+            surface === "outline" && pickedOutline
+              ? { surface, path: directive.resourceId, itemIds: [...pickedOutline], label: anchorLabel(directive.resourceId, pickedOutline.length, "불릿") }
+              : surface === "vdoc" && pickedVdoc
+                ? { surface, path: directive.resourceId, itemIds: [...pickedVdoc], label: anchorLabel(directive.resourceId, pickedVdoc.length, "칸") }
+                : undefined;
           const anchored = directivePrompt && surface ? ai.sendAnchored(surface, directivePrompt, explicit) : null;
           if (anchored) {
             runtime.pushLog("composer", "ok", `directive -> background session [${anchored.anchor?.label}]: "${directivePrompt}"`);

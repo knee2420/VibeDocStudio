@@ -5,6 +5,7 @@ import {
   FileCode2,
   FileImage,
   FileText,
+  Globe,
   Keyboard,
   LayoutTemplate,
   ListTree,
@@ -40,6 +41,7 @@ import {
 const OutlineTabEditor = React.lazy(() => import("../ui/OutlineTabEditor").then((m) => ({ default: m.OutlineTabEditor })));
 const RefTabEditor = React.lazy(() => import("../ui/RefTabEditor").then((m) => ({ default: m.RefTabEditor })));
 const LazyRefStructurePanel = React.lazy(() => import("../ui/RefTabEditor").then((m) => ({ default: m.RefStructurePanel })));
+const WebClipTabEditor = React.lazy(() => import("../ui/WebClipTabEditor").then((m) => ({ default: m.WebClipTabEditor })));
 const StyleTabEditor = React.lazy(() => import("../ui/StyleTabEditor").then((m) => ({ default: m.StyleTabEditor })));
 const LazyStyleStructurePanel = React.lazy(() => import("../ui/StyleTabEditor").then((m) => ({ default: m.StyleStructurePanel })));
 const SyntaxTabEditor = React.lazy(() => import("../ui/SyntaxTabEditor").then((m) => ({ default: m.SyntaxTabEditor })));
@@ -70,6 +72,8 @@ export interface IdeEditorEnv {
   readonly vdocUiBridge: VDocUiBridgeStore;
   /** AI Composer 워크스페이스 (아웃라인 인라인 Unified Diff 검토 · 승인 연동용). */
   readonly ai?: V2AiWorkspace;
+  /** 기준점 세션 칩 클릭 시 우측 AI Composer 패널을 열고 해당 세션 탭으로 전환한다. */
+  readonly openAiSession?: (key: string) => void;
   /** 경로별 `.vdoc` 캐시 — 읽기는 `docs.get`, 쓰기는 `docs.write` (다시 파싱하지 않고 다른 화면에 전한다). */
   readonly docs: VDocStore;
   /** 같은 Chrome 스타일 그룹 탭에 추가하고 페어 뷰 슬롯을 치환해 연다. */
@@ -183,6 +187,7 @@ const OutlinerAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }
         path={host.path}
         vdocUiBridge={host.env.vdocUiBridge}
         ai={host.env.ai}
+        onOpenSession={host.env.openAiSession}
         reportSelection={host.reportSelection}
         onAiDirect={(prompt, nodeIds) =>
           host.dispatchAiDirective?.({
@@ -225,6 +230,15 @@ const RefCanvasAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> 
     <LazyVaultFileGate vault={host.env.vault} path={host.path}>
       <RefTabEditor host={host} />
     </LazyVaultFileGate>
+  ),
+  areHostPropsStable
+);
+
+const WebClipAdapterView = React.memo<{ host: EditorHostContext<IdeEditorEnv> }>(
+  ({ host }) => (
+    <React.Suspense fallback={null}>
+      <WebClipTabEditor host={host} />
+    </React.Suspense>
   ),
   areHostPropsStable
 );
@@ -342,6 +356,19 @@ export const BUILTIN_IDE_EDITOR_ADAPTERS: readonly DocumentEditorAdapter<IdeEdit
     },
     Component: RefCanvasAdapterView,
     OutlineComponent: RefStructurePanel,
+  },
+  {
+    id: "vibe-clip",
+    label: "Web Clip (.vclip)",
+    description: "사실·근거·인용용 웹 스크랩 폴더 번들 (정본 content.md + 원형 snapshot.html/assets)",
+    extensions: ["vclip"],
+    priority: 100,
+    icon: Globe,
+    capabilities: {
+      canEdit: true,
+      supportsAiSelection: true,
+    },
+    Component: WebClipAdapterView,
   },
   {
     id: "vibe-syntax",

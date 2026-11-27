@@ -167,6 +167,7 @@ const stagedDedupeKey = (c: V2StagedChange): string | null => {
   if (c.targetKind === "slot-html") return `slot:${c.path}#${c.payload.slotId}`;
   if (c.targetKind === "outline-patch") return `outline:${c.path}`;
   if (c.targetKind === "block-props") return `block:${c.path}#${c.payload.blockId}`;
+  if (c.targetKind === "style-change") return `style:${c.path}`;
   if (c.targetKind === "asset-blocks" && c.payload.mode === "replace" && c.payload.replaceBlockIds?.length) {
     return `asset-replace:${c.path}#${[...c.payload.replaceBlockIds].sort().join(",")}`;
   }

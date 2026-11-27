@@ -93,7 +93,11 @@ class WorkspaceTools:
     def ws_glob(self, pattern: str) -> str:
         hits = self.index.glob(pattern)
         if not hits:
-            return f"'{pattern}' 에 맞는 파일이 없다."
+            if not self.index.roots:
+                # 마운트가 비어 있으면 어떤 패턴도 맞지 않는다 — 말을 바꿔 가며 다시 찾지 않게 분명히 알린다.
+                return (f"'{pattern}' 에 맞는 파일이 없다 — 마운트된 리소스 폴더가 없다. 다른 말로 다시 찾지 말고, "
+                        "볼트 안 자료는 사용자가 리소스 폴더를 고르거나 @폴더 로 붙여야 읽을 수 있다고 알린다.")
+            return f"'{pattern}' 에 맞는 파일이 없다 (루트: {_root_line(self.index)}). ws_overview 로 실제 파일 목록을 보고 고른다."
         return "\n".join([f"루트: {_root_line(self.index)}", f"{len(hits)}개"] + [_file_row(e) for e in hits[:120]]
                          + ([f"… 외 {len(hits) - 120}개"] if len(hits) > 120 else []))
 
@@ -270,12 +274,23 @@ class WorkspaceTools:
             if not contexts:
                 rows.append("    ↳ (이 사진을 붙여 쓴 노트가 마운트 안에 없다 — 이름 · 폴더로만 짐작)")
         if not rows:
+            has_vclips = any(e.rel.lower().endswith(".vclip/content.md") for e in ix.files)
+            if has_vclips:
+                return (
+                    "로컬 이미지 파일은 없지만 마운트된 `.vclip` 스크랩 번들이 있다 — "
+                    "`rs_clip_images` 로 스크랩 기사 안의 사진·캡처를 조회하고 `rs_image_edit` 로 볼트에 추출·크롭·리사이즈·하이라이트할 수 있다."
+                )
             return "사진이 없다 (조건을 넓히거나 RM 에서 사진 폴더를 체크해 달라고 한다)."
         start = max(0, int(offset or 0))
         page = rows[start:start + 120]
         tail = f"\n… {len(rows) - start - 120}줄 더 — ws_images(offset={start + 120})" if start + 120 < len(rows) else ""
+        vclip_hint = (
+            "\n💡 `.vclip` 웹 스크랩 안의 원격/로컬 사진 조회는 `rs_clip_images`, 추출·크롭·리사이즈·하이라이트·합성은 `rs_image_edit` / `rs_image_compose` 를 사용한다."
+            if any(e.rel.lower().endswith(".vclip/content.md") for e in ix.files)
+            else ""
+        )
         count = sum(1 for r in rows if r.startswith("- "))
-        return f"[사진 {count}장 — 문서에는 resource:<id> 로 넣는다 · 맥락 줄은 그 사진이 무엇인지의 근거]\n" + "\n".join(page) + tail
+        return f"[사진 {count}장 — 문서에는 resource:<id> 로 넣는다 · 맥락 줄은 그 사진이 무엇인지의 근거]\n" + "\n".join(page) + tail + vclip_hint
 
     def ws_find(self, field: str, value: str = "") -> str:
         field_l = field.strip().lower()

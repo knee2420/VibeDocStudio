@@ -14,6 +14,8 @@ export function AnchorChips({
   path,
   container,
   selector,
+  onOpen,
+  right,
 }: {
   ai: V2AiWorkspace;
   surface: string;
@@ -22,6 +24,9 @@ export function AnchorChips({
   container: HTMLElement | null;
   /** 항목 id → CSS 선택자 (예: `[data-node-id="…"]`) */
   selector(id: string): string;
+  /** 세션 칩 클릭 시 열기 핸들러 (우측 AI Composer 탭 전환 포함). 생략 시 ai.openSession */
+  onOpen?: (key: string) => void;
+  right?: number;
 }) {
   const views = useSessionList(ai.sessions);
   const sessions = useMemo(
@@ -41,7 +46,7 @@ export function AnchorChips({
     [container, selector]
   );
   if (!sessions.length) return null;
-  return <AnchorChipLayer sessions={sessions} container={container} locate={locate} onOpen={ai.openSession} />;
+  return <AnchorChipLayer sessions={sessions} container={container} locate={locate} onOpen={onOpen ?? ai.openSession} right={right} />;
 }
 
 /** 항목 id → 화면 요소 (보이는 것만) */

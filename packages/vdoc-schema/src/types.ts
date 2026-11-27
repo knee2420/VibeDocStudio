@@ -129,6 +129,8 @@ export interface GridColumnDef {
   };
   /** Recursive nested blocks inside this column container (page-scale fractal layout). */
   blocks?: LayoutBlock[];
+  /** 이 열을 만든 원본 `<<col>>` 불릿 id (outline ↔ vdoc 컨테이너 동형 · 역동기화용). */
+  sourceNodeId?: string;
 }
 
 /**

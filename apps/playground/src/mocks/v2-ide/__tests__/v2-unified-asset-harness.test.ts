@@ -389,17 +389,22 @@ describe("Option A Unified Asset Schema & Harness (vsyntax -> AssetV3 -> Unified
         extensions: { customPrint: { bleedMm: 3 } },
       },
       CTX
-    )) as { saved: boolean; vaultPath: string; documentBound: boolean };
+    )) as { staged: boolean; saved: boolean; diffId: string; vaultPath: string; documentBound: boolean };
 
-    assert.equal(upsertedTable.saved, true);
+    assert.equal(upsertedTable.staged, true);
+    assert.equal(upsertedTable.saved, false);
     assert.equal(upsertedTable.documentBound, true);
     const expectedCompanionPath = companionStylePathForVDoc(docPath);
     assert.equal(
       upsertedTable.vaultPath,
       expectedCompanionPath,
-      "must colocate a single companion .vstyle right beside the .vdoc instead of mutating shared packs"
+      "must target a single companion .vstyle right beside the .vdoc instead of mutating shared packs"
     );
-    assert.ok(rt.vault.exists(expectedCompanionPath));
+    assert.equal(
+      rt.vault.exists(expectedCompanionPath),
+      false,
+      "companion .vstyle must NOT be written to disk until user approves the staged diff"
+    );
 
     const upsertedText = (await styleUpsert.run(
       {
@@ -409,14 +414,16 @@ describe("Option A Unified Asset Schema & Harness (vsyntax -> AssetV3 -> Unified
         definition: { prefix: "□ ", fontWeight: "700", align: "left", color: "#000000" },
       },
       CTX
-    )) as { vaultPath: string };
+    )) as { staged: boolean; diffId: string; vaultPath: string };
+    assert.equal(upsertedText.staged, true);
+    assert.equal(upsertedText.diffId, upsertedTable.diffId, "subsequent style upserts consolidate into ONE staged diff");
     assert.equal(
       upsertedText.vaultPath,
       expectedCompanionPath,
-      "subsequent style upserts must merge into the SAME single companion .vstyle file"
+      "subsequent style upserts must target the SAME single companion .vstyle file"
     );
 
-    // 3. Apply variant + open cellRoleMap onto existing table block, clearing inline overrides
+    // 3. Apply variant + open cellRoleMap onto existing table block -> merges into the SAME staged style-change diff
     const applied = (await styleApply.run(
       {
         blockIds: ["tbl_summary_orig"],
@@ -426,11 +433,34 @@ describe("Option A Unified Asset Schema & Harness (vsyntax -> AssetV3 -> Unified
         syncColumnWidths: true,
       },
       CTX
-    )) as { applied: boolean; updatedBlockIds: string[]; clearedInlineOverrides: boolean };
+    )) as { staged: boolean; applied: boolean; diffId: string; updatedBlockIds: string[]; clearedInlineOverrides: boolean };
 
-    assert.equal(applied.applied, true);
+    assert.equal(applied.staged, true);
+    assert.equal(applied.applied, false);
+    assert.equal(applied.diffId, upsertedTable.diffId, "style.apply merges into the pending staged style-change");
     assert.deepEqual(applied.updatedBlockIds, ["tbl_summary_orig"]);
     assert.equal(applied.clearedInlineOverrides, true);
+
+    // Before approval: disk .vdoc and .vstyle remain untouched!
+    const beforeApproveDoc = parseVDocJson(rt.vault.read(docPath), "before-approve");
+    const beforeApproveTbl = beforeApproveDoc.pages[0].blocks.find(
+      (b) => b.blockId === "tbl_summary_orig"
+    ) as StructuredTableBlockDef;
+    assert.notEqual(beforeApproveTbl.styleKey, "rfp-custom-list");
+
+    // 3b. Rejecting leaves disk completely untouched; re-staging + approving commits BOTH .vstyle and .vdoc atomically
+    const stagedBeforeReject = ai.store.getState().queue.find((q) => q.diffId === applied.diffId);
+    assert.ok(stagedBeforeReject && stagedBeforeReject.targetKind === "style-change");
+    ai.reject([applied.diffId]);
+    assert.equal(rt.vault.exists(expectedCompanionPath), false, "rejected style diff must leave no .vstyle on disk");
+    assert.equal(ai.store.getState().queue.some((q) => q.targetKind === "style-change"), false);
+
+    // Re-enqueue the identical staged change and approve it
+    ai.store.getState().enqueue([stagedBeforeReject]);
+    const approveRes = ai.approve([stagedBeforeReject.diffId]);
+    assert.equal(approveRes.applied, 1);
+    assert.equal(approveRes.failed.length, 0);
+    assert.ok(rt.vault.exists(expectedCompanionPath));
 
     // 4. Verify live document + single companion .vstyle resolution (even if doc.styleRef were stripped)
     const afterDoc = parseVDocJson(rt.vault.read(docPath), "after");
@@ -494,6 +524,362 @@ describe("Option A Unified Asset Schema & Harness (vsyntax -> AssetV3 -> Unified
       ["8%", "17%", "15%", "60%"],
       "assets.propose must inherit columnWidths from the active companion .vstyle variant"
     );
+
+    ai.dispose();
+    rt.dispose();
+  });
+
+  it("exposes inheritedBaseline in style.inspect and universal 4-axis diagnostics across text/frame/table in style.upsertVariant", async () => {
+    const { rt, ai } = setupWorkspace();
+    const styleInspect = getTool(ai, "style.inspect");
+    const styleUpsert = getTool(ai, "style.upsertVariant");
+
+    // 1. style.inspect exposes inheritedBaseline so the agent knows what omitting fontSize/lineHeight/padding inherits
+    const inspected = (await styleInspect.run({ packId: "gov-rfp" }, CTX)) as {
+      inheritedBaseline: {
+        bodyFontSize: string | null;
+        bodyLineHeight: string | null;
+        defaultCellPadding: string | null;
+        pageBlockGap: number | null;
+        note: string;
+      };
+    };
+    assert.ok(inspected.inheritedBaseline.bodyFontSize);
+    assert.ok(inspected.inheritedBaseline.bodyLineHeight);
+    assert.ok(inspected.inheritedBaseline.note.includes("4축"));
+
+    // 2. text variant without lineHeight -> warns about implicit body lineHeight inheritance
+    const textMissingLh = (await styleUpsert.run(
+      {
+        packId: "gov-rfp",
+        category: "text",
+        variantKey: "dense-caption",
+        definition: { fontSize: "11px", color: "#334155" },
+      },
+      CTX
+    )) as {
+      diagnostics: Array<{ code: string; severity: string }>;
+      selfCheckHint?: string;
+    };
+    assert.ok(textMissingLh.diagnostics.some((d) => d.code === "inherited-line-height" && d.severity === "warn"));
+    assert.ok(textMissingLh.selfCheckHint);
+
+    const textFixed = (await styleUpsert.run(
+      {
+        category: "text",
+        variantKey: "dense-caption",
+        definition: { fontSize: "11px", lineHeight: "1.25", color: "#334155", align: "left" },
+      },
+      CTX
+    )) as {
+      diagnostics: Array<{ code: string; severity: string }>;
+      selfCheckHint?: string;
+      axisCoverage: { surface: boolean; typography: boolean; spacing: boolean; proportion: boolean };
+    };
+    assert.equal(textFixed.diagnostics.filter((d) => d.severity === "warn").length, 0);
+    assert.equal(textFixed.selfCheckHint, undefined);
+    assert.deepEqual(textFixed.axisCoverage, { surface: true, typography: true, spacing: true, proportion: true });
+
+    // 3. frame variant with surface only (missing padding) -> warns
+    const frameMissingPad = (await styleUpsert.run(
+      {
+        category: "frame",
+        variantKey: "compact-note",
+        definition: { fill: "#f8fafc", border: "1px solid #cbd5e1" },
+      },
+      CTX
+    )) as { diagnostics: Array<{ code: string; severity: string }>; selfCheckHint?: string };
+    assert.ok(frameMissingPad.diagnostics.some((d) => d.code === "missing-frame-padding" && d.severity === "warn"));
+    assert.ok(frameMissingPad.selfCheckHint);
+
+    // 4. table variant with duplicate outerTop/headerTop and missing cell fontSize/lineHeight -> warns, then clears on self-correction
+    const tableIncomplete = (await styleUpsert.run(
+      {
+        category: "table",
+        variantKey: "dense-rubric",
+        definition: {
+          borders: {
+            outerTop: "2px solid #000000",
+            headerTop: "2px solid #000000",
+            outerBottom: "2px solid #000000",
+            outerLeft: "none",
+            outerRight: "none",
+          },
+          cells: {
+            "column-header": { fill: "#e8eef7", align: "center" },
+            value: { fill: "#ffffff", align: "left" },
+          },
+        },
+      },
+      CTX
+    )) as { diagnostics: Array<{ code: string; severity: string }>; selfCheckHint?: string };
+    const warnCodes = new Set(tableIncomplete.diagnostics.filter((d) => d.severity === "warn").map((d) => d.code));
+    assert.ok(warnCodes.has("duplicate-top-border"));
+    assert.ok(warnCodes.has("missing-cell-padding"));
+    assert.ok(warnCodes.has("inherited-cell-line-height"));
+    assert.ok(warnCodes.has("inherited-cell-font-size"));
+    assert.ok(tableIncomplete.selfCheckHint);
+
+    const tableCorrected = (await styleUpsert.run(
+      {
+        category: "table",
+        variantKey: "dense-rubric",
+        definition: {
+          borders: {
+            outerTop: "2px solid #000000",
+            headerTop: "none",
+            outerBottom: "2px solid #000000",
+            outerLeft: "none",
+            outerRight: "none",
+          },
+          cellPadding: "3px 6px",
+          columnWidths: ["20%", "65%", "15%"],
+          cells: {
+            "column-header": { fill: "#e8eef7", fontSize: "11.5px", lineHeight: "1.2", align: "center" },
+            value: { fill: "#ffffff", fontSize: "11px", lineHeight: "1.25", align: "left" },
+          },
+        },
+      },
+      CTX
+    )) as {
+      diagnostics: Array<{ code: string; severity: string }>;
+      selfCheckHint?: string;
+      axisCoverage: { surface: boolean; typography: boolean; spacing: boolean; proportion: boolean };
+    };
+    assert.equal(tableCorrected.diagnostics.filter((d) => d.severity === "warn").length, 0);
+    assert.equal(tableCorrected.selfCheckHint, undefined);
+    assert.deepEqual(tableCorrected.axisCoverage, { surface: true, typography: true, spacing: true, proportion: true });
+
+    ai.dispose();
+    rt.dispose();
+  });
+
+  it("attaches rich resource evidence to .vdoc slots via slots.attachEvidence and preserves excerpt/presentation/sourcePath on approval", async () => {
+    const { rt, ai, docPath } = setupWorkspace();
+    const attachEvidence = getTool(ai, "slots.attachEvidence");
+    const beforeDoc = parseVDocJson(rt.vault.read(docPath), "before-evidence");
+    const targetSlotId = Object.keys(beforeDoc.slots)[0];
+    assert.ok(targetSlotId);
+    const originalHtml = beforeDoc.slots[targetSlotId].content;
+
+    const res = (await attachEvidence.run(
+      {
+        reason: "외부 기획 문서 근거 연결",
+        attachments: [
+          {
+            slotId: targetSlotId,
+            evidence: [
+              {
+                kind: "resource",
+                sourcePath: "vault://01. Architecture/sources/사업_핵심_기획서.md",
+                label: "사업 핵심 기획서",
+                lines: [12, 18],
+                excerpt: "5단계 라이프사이클 워크스페이스 도입으로 리드타임 90% 단축",
+                presentation: "quote-embed",
+                rationale: "핵심 성과 지표 원천 근거",
+              },
+            ],
+          },
+        ],
+      },
+      CTX
+    )) as { staged: number; diffIds: string[]; skipped: unknown[] };
+
+    assert.equal(res.staged, 1);
+    assert.equal(res.skipped.length, 0);
+    assert.equal(res.diffIds.length, 1);
+
+    // Approve and verify doc.slots + doc.evidenceLinks
+    const approved = ai.approve(res.diffIds);
+    assert.equal(approved.applied, 1);
+    const afterDoc = parseVDocJson(rt.vault.read(docPath), "after-evidence");
+    assert.ok(afterDoc.slots[targetSlotId].content.includes(`data-cite="1"`));
+    assert.ok(afterDoc.slots[targetSlotId].content.includes(originalHtml.replace(/<\/p>\s*$/i, "")));
+
+    const links = (afterDoc.evidenceLinks ?? []).filter((l) => l.slotId === targetSlotId);
+    assert.equal(links.length, 1);
+    assert.equal(links[0].locator.sourcePath, "01. Architecture/sources/사업_핵심_기획서.md");
+    assert.deepEqual(links[0].locator.lines, [12, 18]);
+    assert.equal(links[0].locator.excerpt, "5단계 라이프사이클 워크스페이스 도입으로 리드타임 90% 단축");
+    assert.equal(links[0].presentation, "quote-embed");
+    assert.equal(links[0].rationale, "핵심 성과 지표 원천 근거");
+    assert.deepEqual(links[0].citationIds, ["1"]);
+
+    ai.dispose();
+    rt.dispose();
+  });
+
+  it("bridges assets.propose -> style.upsertVariant -> style.apply across pending Staged blocks in one Complete-First turn", async () => {
+    const { rt, ai, docPath } = setupWorkspace();
+    const register = getTool(ai, "assets.register");
+    const propose = getTool(ai, "assets.propose");
+    const upsertVariant = getTool(ai, "style.upsertVariant");
+    const styleApply = getTool(ai, "style.apply");
+
+    const reg = (await register.run(
+      {
+        title: "레퍼런스 표준 요구사항 표",
+        scope: "element",
+        dsl: [
+          "<<view:table>> 요구사항 목록표",
+          "  순번 | 구분 | 고유번호 | 내용",
+          "  * {{seq:number|순번}} | {{category:text^|구분}} | {{code:text|고유번호}} | {{desc:text|내용}}",
+        ],
+      },
+      CTX
+    )) as { assetId: string };
+
+    // 1) 구조 + 데이터 이관 Staged 제안
+    const propRes = (await propose.run(
+      {
+        assetId: reg.assetId,
+        mode: "replace",
+        replaceBlockIds: ["tbl_summary_orig"],
+        records: {
+          rows: [
+            { seq: "1", category: "시스템 구성", code: "ECR-001", desc: "도메인 중립 스캐폴딩 엔진" },
+            { seq: "2", category: "시스템 구성", code: "ECR-002", desc: "2D Unified Diff 승인 파이프라인" },
+          ],
+        },
+        intentNote: "레퍼런스 표 구조로 다음 element 교체",
+      },
+      CTX
+    )) as { staged: boolean; diffId: string; stagedBlockIds: string[] };
+    assert.equal(propRes.staged, true);
+    assert.equal(propRes.stagedBlockIds.length, 1);
+
+    // 2) 동반 .vstyle 에 4축 변형 등록 (경고 0건)
+    await upsertVariant.run(
+      {
+        category: "table",
+        variantKey: "ref-open-table",
+        definition: {
+          borders: {
+            outerTop: "2px solid #1e3a5f",
+            outerBottom: "2px solid #1e3a5f",
+            outerLeft: "none",
+            outerRight: "none",
+            headerBottom: "1px solid #94a3b8",
+            rowBottom: "1px solid #e2e8f0",
+            vertical: "1px solid #e2e8f0",
+          },
+          cellPadding: "4px 8px",
+          columnWidths: ["10%", "20%", "20%", "50%"],
+          cells: {
+            "column-header": { fill: "#eef4fb", fontSize: "11px", lineHeight: "1.25", fontWeight: "bold", align: "center" },
+            value: { fill: "#ffffff", fontSize: "11px", lineHeight: "1.35", align: "left" },
+            "value.seq": { fill: "#ffffff", fontSize: "11px", lineHeight: "1.35", align: "center" },
+          },
+        },
+      },
+      CTX
+    );
+
+    // 3) 같은 턴에 원본 replaceBlockId('tbl_summary_orig') 를 넘겨 style.apply 호출 → Staged 교체 블록에 자동 브릿지!
+    const applyRes = (await styleApply.run(
+      {
+        blockIds: ["tbl_summary_orig"],
+        styleKey: "ref-open-table",
+        cellRoleMap: { "0": "value.seq" },
+        clearInlineCellStyles: true,
+      },
+      CTX
+    )) as {
+      staged: boolean;
+      diffId: string;
+      updatedBlockIds: string[];
+      updatedStagedBlockIds?: string[];
+      updatedAssetDiffIds?: string[];
+    };
+
+    assert.equal(applyRes.staged, true);
+    assert.deepEqual(applyRes.updatedStagedBlockIds, propRes.stagedBlockIds);
+    assert.deepEqual(applyRes.updatedAssetDiffIds, [propRes.diffId]);
+    assert.ok(applyRes.updatedBlockIds.includes(propRes.stagedBlockIds[0]));
+
+    // 두 변경안을 모두 승인해도 구조+데이터+스타일이 완벽히 결합되어 반영된다
+    const approved = ai.approve([applyRes.diffId, propRes.diffId]);
+    assert.equal(approved.applied, 2);
+
+    const afterDoc = parseVDocJson(rt.vault.read(docPath), "after-complete-first");
+    const placed = afterDoc.pages[0].blocks.find((b) => b.blockId === propRes.stagedBlockIds[0]) as StructuredTableBlockDef | undefined;
+    assert.ok(placed, "staged replacement block must be committed");
+    assert.equal(placed.styleKey, "ref-open-table");
+    assert.deepEqual(placed.columnWidths, ["10%", "20%", "20%", "50%"]);
+    assert.equal(placed.rows[1].cells[0].cellRole, "value.seq");
+    assert.ok(afterDoc.styleRef?.packId, "document styleRef must be bound");
+
+    ai.dispose();
+    rt.dispose();
+  });
+
+  it("supports direct styleKey + cellRoleMap in assets.propose and exposes fieldIds/styleKeys in assets.list for Reuse-First", async () => {
+    const { rt, ai, docPath } = setupWorkspace();
+    const register = getTool(ai, "assets.register");
+    const list = getTool(ai, "assets.list");
+    const upsertVariant = getTool(ai, "style.upsertVariant");
+    const propose = getTool(ai, "assets.propose");
+
+    const reg = (await register.run(
+      {
+        title: "재사용 표 에셋",
+        scope: "element",
+        dsl: [
+          "<<view:table:reuse-grid>> 재사용 표",
+          "  항목 | 값",
+          "  * {{k:text|항목}} | {{v:text|값}}",
+        ],
+      },
+      CTX
+    )) as { assetId: string };
+
+    const listed = (await list.run({}, CTX)) as {
+      assets: Array<{ assetId: string; fieldIds?: string[]; styleKeys?: string[] }>;
+    };
+    const found = listed.assets.find((a) => a.assetId === reg.assetId);
+    assert.ok(found, "registered asset must appear in assets.list");
+    assert.deepEqual(found.fieldIds, ["k", "v"]);
+    assert.ok(found.styleKeys?.includes("reuse-grid"));
+
+    await upsertVariant.run(
+      {
+        category: "table",
+        variantKey: "reuse-grid",
+        definition: {
+          borders: { outerTop: "1.5px solid #111827", outerBottom: "1.5px solid #111827", rowBottom: "1px solid #e5e7eb" },
+          cellPadding: "4px 8px",
+          columnWidths: ["30%", "70%"],
+          cells: {
+            "column-header": { fill: "#f3f4f6", fontSize: "11px", lineHeight: "1.3", align: "center" },
+            value: { fill: "#ffffff", fontSize: "11px", lineHeight: "1.3", align: "left" },
+            "value.key": { fill: "#f9fafb", fontSize: "11px", lineHeight: "1.3", align: "center" },
+          },
+        },
+      },
+      CTX
+    );
+
+    const propRes = (await propose.run(
+      {
+        assetId: reg.assetId,
+        mode: "insert",
+        afterBlockId: "tbl_summary_orig",
+        styleKey: "reuse-grid",
+        cellRoleMap: { "0": "value.key" },
+        records: { rows: [{ k: "버전", v: "v2.0" }] },
+      },
+      CTX
+    )) as { staged: boolean; diffId: string; stagedBlockIds: string[]; appliedStyleKeys: Array<string | null> };
+
+    assert.equal(propRes.staged, true);
+    assert.deepEqual(propRes.appliedStyleKeys, ["reuse-grid"]);
+    const queued = ai.store.getState().queue.find((c) => c.diffId === propRes.diffId);
+    assert.ok(queued && queued.targetKind === "asset-blocks");
+    const stagedTbl = queued.payload.blocks[0] as StructuredTableBlockDef;
+    assert.equal(stagedTbl.styleKey, "reuse-grid");
+    assert.deepEqual(stagedTbl.columnWidths, ["30%", "70%"]);
+    assert.equal(stagedTbl.rows[1].cells[0].cellRole, "value.key");
+    assert.ok(docPath);
 
     ai.dispose();
     rt.dispose();

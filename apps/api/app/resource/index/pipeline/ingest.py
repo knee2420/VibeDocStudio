@@ -74,9 +74,16 @@ def ingest_sources(source_paths: Iterable[str], profile: ScopeProfile) -> Ingest
         for path in sorted(root.rglob("*"), key=lambda p: natural_key(str(p.relative_to(root)))):
             if not path.is_file():
                 continue
+            rel_parts = path.relative_to(root).parts
             rel_inner = path.relative_to(root).as_posix()
-            if any(part in DEFAULT_SKIP_DIRS for part in path.relative_to(root).parts[:-1]) and not profile.include:
+            if any(part in DEFAULT_SKIP_DIRS for part in rel_parts[:-1]) and not profile.include:
                 continue
+            # `.vclip/` 웹 스크랩 번들 내부는 정본(`content.md`)과 `assets/` 이미지만 색인하고 `clip.json`/`snapshot.html` 노이즈는 제외
+            vclip_idx = next((i for i, p in enumerate(rel_parts[:-1]) if p.lower().endswith(".vclip")), None)
+            if vclip_idx is not None:
+                inner_tail = rel_parts[vclip_idx + 1 :]
+                if inner_tail != ("content.md",) and not (len(inner_tail) >= 2 and inner_tail[0].lower() == "assets"):
+                    continue
             files.append((f"{prefix}/{rel_inner}", path))
 
     files.sort(key=lambda item: natural_key(item[0]))

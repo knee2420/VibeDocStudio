@@ -33,7 +33,7 @@ import {
   type ResolvedScope,
   type ScopeTarget,
 } from "@vibe/ai-scope";
-import { collectOutlineResources, getLiveOutlineSession } from "@vibe/outline-sync";
+import { getLiveOutlineSession } from "@vibe/outline-sync";
 import type { OutlineNode } from "@vibe/outliner/core";
 import type { V2AiStore } from "./store";
 import { imageVaultRef, isImageFilePath } from "./media";
@@ -188,6 +188,11 @@ export function projectDocPaths(vault: VaultPort, activePath: string | null): st
     .map((n) => n.path)
     .filter((p) => (project ? p.startsWith(`${project}/`) : dirname(p) === folder))
     .sort((a, b) => a.localeCompare(b));
+}
+
+/** 문서의 프로젝트 폴더 — 가장 가까운 `.vproj`, 없으면 문서가 든 폴더 (볼트 루트에 있으면 ""). */
+export function projectFolderOf(activePath: string): string {
+  return findOwningProjectPath(activePath) ?? dirname(activePath) ?? "";
 }
 
 export function projectLabel(activePath: string | null): string {
@@ -382,6 +387,17 @@ export function docRef(doc: VDocDocument, path: string): ContextRef {
 const TEXT_EXT = /\.(md|markdown|txt|outline|json|vsyntax|vstyle|csv|ya?ml|html?)$/i;
 
 export function fileRef(path: string): ContextRef {
+  if (isOutlinePath(path)) {
+    return {
+      kind: "file",
+      id: path,
+      label: basename(path),
+      hint: `${dirname(path) || "볼트"} · 아웃라인`,
+      access: "write",
+      role: "target",
+      meta: { path, entityKind: "outline" },
+    };
+  }
   return {
     kind: "file",
     id: path,
@@ -590,7 +606,13 @@ export function workbenchPayload(env: V2AiEnv): Record<string, unknown> | null {
                   : [],
             report: c.payload.report,
           }
-        : { targetId: c.targetId }),
+        : c.targetKind === "style-change"
+          ? {
+              styleKey: c.payload.styleKey ?? null,
+              changedVariants: c.payload.changedVariants ?? [],
+              targetBlockIds: c.payload.blockPatches.map((p) => p.blockId),
+            }
+          : { targetId: c.targetId }),
     }));
 
   if (!doc && !outlinePayload && references.length === 0 && projectDocs.length === 0 && !env.vaultRootPath) return null;
@@ -664,6 +686,13 @@ export function resourceMountPayload(
     }
   }
   for (const rel of extraVaultFolders) addVaultFolder(rel);
+  // 고른 폴더가 없으면 지금 작업 중인 문서의 프로젝트 폴더(가장 가까운 `.vproj`, 없으면 그 문서의 폴더)를 기본으로 건다 —
+  // "이 자료로 · 필요한 리소스는 알아서" 에서 자기 문서 옆 자료도 못 읽는 일이 없게. 리소스를 끈(sourcesOn=false) 경우는 제외.
+  if (roots.length === 0 && s.sourcesOn) {
+    const activePath = env.activeTabPath() ?? env.activeDocPath();
+    const home = activePath ? projectFolderOf(activePath) : "";
+    if (home) addVaultFolder(home);
+  }
   if (roots.length === 0) return null;
   const names = roots.map((r) => r.title);
   return { roots, label: `${names.slice(0, 2).join(" · ")}${names.length > 2 ? ` 외 ${names.length - 2}곳` : ""}` };
@@ -856,24 +885,6 @@ export function createV2ContextProviders(env: V2AiEnv): ContextProvider[] {
       },
     },
     {
-      // `.outline` 에 첨부·링크된 순수 리소스(문서 파일 제외)를 자동 강제 마운트하지 않고 제안 칩으로만 노출 (`sourcesOn` 준수)
-      id: "outline-linked-resources",
-      label: "아웃라인 연결 리소스",
-      suggest: true,
-      current: () => {
-        if (!env.store.getState().sourcesOn) return [];
-        const olPath = activeOutlinePath(env);
-        const ol = readOutline(env, olPath);
-        if (!olPath || !ol) return [];
-        const collected = collectOutlineResources(env.vault, olPath, ol.rootNodes, ol.nodeEvidence);
-        return collected.items.slice(0, 6).map((item) => {
-          if (item.kind === "folder") return folderRef(env, item.path);
-          if (isImageFilePath(item.path)) return imageVaultRef(env, item.path);
-          return fileRef(item.path);
-        });
-      },
-    },
-    {
       // 탐색기에서 여러 개 고르면 그 파일 · 폴더들을 첨부 후보로 (자동으로 붙이지는 않는다)
       id: "explorer-selection",
       label: "탐색기에서 고른 항목",
@@ -973,7 +984,13 @@ export function createV2ContextProviders(env: V2AiEnv): ContextProvider[] {
         const p = ref.meta.path;
         if (isOutlinePath(p)) {
           const ol = readOutline(env, p);
-          if (ol) return { ...ref, content: renderCompactOutlineMap(p, ol, 5) };
+          if (ol) {
+            const roleNote =
+              ref.role === "reference"
+                ? "\n[역할: 참조 .outline — ol_map · ol_read 로 내용 참고용]"
+                : "\n[역할: 편집 대상 .outline — ol_read · ol_propose_patch(replace/insert_after/insert_before/move/delete/set_file) 로 Staged 수정 제안을 바로 올릴 수 있음]";
+            return { ...ref, content: `${renderCompactOutlineMap(p, ol, 5)}${roleNote}` };
+          }
         }
         let body = "";
         try {

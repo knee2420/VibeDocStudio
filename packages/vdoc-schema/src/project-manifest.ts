@@ -1,3 +1,4 @@
+import type { StylePack, VDocStyleRef } from "@vibe/style-core";
 import type { ElementKind } from "./element-kit";
 import type { EvidenceLocator } from "./evidence";
 import type { LayoutBlock, VDocSlot } from "./types";
@@ -152,8 +153,35 @@ export interface StagedAssetBlocksChange extends StagedAiChangeBase {
   };
 }
 
+/** `.vstyle` 변형 등록·갱신 및 블록 스타일 바인딩 제안 (2D Unified Diff 검토 후 승인 시 `.vstyle` + `.vdoc` 반영). */
+export interface StagedStyleChange extends StagedAiChangeBase {
+  targetKind: "style-change";
+  payload: {
+    /** 제안된 전체 스타일 팩 (미리보기 `VDocStyleProvider` 및 승인 시 `.vstyle` 저장용) */
+    stylePack?: StylePack;
+    /** 승인 시 저장할 `.vstyle` 볼트 경로 (예: 문서 옆 동반 `<문서명>.vstyle`) */
+    stylePackPath?: string;
+    /** true 일 때 승인 시 `stylePack` 을 `stylePackPath` 에 기록 */
+    writeStylePack?: boolean;
+    /** 승인 시 문서 최상단에 연결할 `styleRef` */
+    styleRef?: VDocStyleRef;
+    /** 대상 블록별 제안 스냅샷 (2D Unified Diff 미리보기 및 승인 시 반영) */
+    blockPatches: Array<{
+      blockId: string;
+      block: LayoutBlock;
+    }>;
+    /** 변경된 변형 목록 (예: `["table.eval-rubric", "text.dense-caption"]`) */
+    changedVariants?: string[];
+    /** 적용할 대표 변형 키 (있는 경우) */
+    styleKey?: string;
+    /** 에이전트가 스타일 변경 의도를 설명한 메모 */
+    intentNote?: string;
+  };
+}
+
 export type StagedAiChange =
   | StagedAssetBlocksChange
+  | StagedStyleChange
   | StagedOutlineNodeChange
   | StagedOutlinePatchChange
   | StagedTemplateBlockChange

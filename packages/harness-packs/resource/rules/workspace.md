@@ -1,7 +1,13 @@
    - 리소스: ws_overview · ws_collect(묶음) · ws_grep(특정 사실 · 없는지 확인) → read_file. PDF 파일 본문·페이지 조회는 `ws_read_pdf(path, page, query)` 로 정확한 페이지 번호와 원문 문장을 직접 확인한다. 여러 값이 나오면 날짜 · 상태로 최종값을 가리고 [[링크]]가 근거면 ws_links 로 따라간다. 사실의 시점 · 대상(언제 · 무엇에 대한 수치인가)이 요청과 맞는지 확인하고, 다른 기간 · 다른 대상의 수치를 섞지 않는다. 묶음 요청은 ws_collect 머리의 '본 대상'을 모두 읽고, 다 못 읽으면 "읽은 N/전체 M" 을 밝힌다.
-   - 통일 리소스 표기 (`<<resource: ...>>`): 사용자가 근거 표기·인용·리소스 연결 문서(`.md`, `.outline`, 채팅 답변)를 요청하면 모든 포맷에서 단일 문법 **`<<resource: 대상 위치 | 인용 본문>>`** 을 직접 작성한다.
-     · 웹 URL: `<<resource: https://... | 실제 인용 본문>>` (가능하면 `rs_ref_import` → `rf_read` 로 실제 본문을 확인해 적고, 안티봇 차단 사이트면 로컬 스냅샷 `.ref` 또는 URL+요약을 남긴다)
+   - 외부 마운트 리소스 들여오기 (`rs_resource_import`): 찾은 근거 파일이 볼트 밖 외부 마운트 폴더에 있을 때는, `.vdoc` 나 `.outline` 에 근거로 첨부하기 전에 먼저 `rs_resource_import(sourcePath)` 로 볼트 `sources` 폴더에 들여온 뒤 반환된 볼트 상대 경로를 `sourcePath` 로 쓴다 (그래야 사용자가 근거 배지를 클릭했을 때 페어 탭에서 즉시 열리고 원문 줄/문구가 하이라이트된다).
+   - 스크랩·리소스 이미지 조회 및 비파괴 조작 (`rs_clip_images` · `rs_image_edit` · `rs_image_compose`): 마운트 원본과 `.vclip` 원본은 읽기 전용으로 보존되지만, `.vclip` 번들 안의 로컬/원격 사진이나 마운트된 이미지를 에이전트가 직접 조회(`rs_clip_images`)하고 비파괴 추출·크롭·비율 맞춤(`16:9` 등)·리사이즈·회전·보정·하이라이트 박스/스포트라이트/블러(`rs_image_edit`)·다중 비교판 합성(`rs_image_compose`)하여 프로젝트 `사진/` 폴더에 새 이미지와 `resource:vault:...` ID 를 즉시 발급할 수 있다. "이미지를 조작할 수 없다"고 단정하지 말고 이 도구를 활용한다.
+   - 통일 리소스 표기 (`<<resource: ...>>` — `.md` · `.outline` · 채팅 답변 전용): 사용자가 `.md`, `.outline`, 채팅 답변에서 근거 표기·인용을 요청하면 단일 문법 **`<<resource: 대상 위치 | 인용 본문>>`** 을 직접 작성한다.
+     · 웹 스크랩/URL: 볼트에 저장된 `.vclip` 번들은 `<<resource: <번들.vclip 경로> | 실제 인용 본문>>`, 미저장 URL 은 `<<resource: https://... | 실제 인용 본문>>`
      · PDF: `ws_read_pdf` 로 확인한 정확한 페이지와 원문 문장으로 `<<resource: [[파일.pdf]] #p5 | 실제 5페이지 본문>>` 또는 영역 지정 시 `#p3 #bbox(y1,x1,y2,x2)`
      · 텍스트/MD/CSV: `read_file` 로 확인한 줄 범위로 `<<resource: [[파일.csv]] #L5-L5 | 핵심 문구>>`
-     · 아웃라인/VDoc/Ref/이미지: `#node:<nodeId>`, `#slot:<slotId>`, `#block:<blockId>`, `#bbox(y1,x1,y2,x2)`
+     · 아웃라인/VDoc/Ref/이미지: `#node:<nodeId>`, `#slot:<slotId>`, `#block:<blockId>`, `#bbox(y1,x1,y2,x2)` (단, `.outline` 에 일반 이미지 `.png/.jpg/.webp` 등을 첨부할 때는 텍스트 `<<resource:...>>` 링크 대신 사진이 바로 꽂혀 보이는 `.outline` 네이티브 이미지 첨부 `set_file` / `ol_attach_resource(mode="file")` 를 사용하고, `#bbox(...)` 좌표 영역 인용일 때만 `<<resource:...>>` 를 쓴다)
+   - **`.vdoc` 근거(리소스) 첨부 규약 (`slots.attachEvidence` / `evidence` 배열 — `<<resource:...>>` 본문 직기입 금지)**:
+     · `.vdoc` 슬롯 HTML 본문 안에는 `<<resource: ...>>` 꺾쇠 문자열을 절대 직접 쓰지 않는다(그대로 일반 글자로 노출된다).
+     · 기존 `.vdoc` 본문은 그대로 유지하면서 리소스(근거)만 찾아 첨부할 때는 **`slots.attachEvidence`** 를 사용한다 (`attachments: [{ slotId, evidence: [{ kind: "resource", sourcePath: "<볼트 상대 경로>", label, lines: [시작, 끝], page?, excerpt: "<실제 원문 발췌>", presentation?: "footnote"|"inline-rationale"|"sidenote"|"quote-embed"|"matrix"|"bound-value", rationale? }] }]`).
+     · 본문 수정과 근거 첨부를 동시에 할 때는 `slot.proposeContent` / `slots.proposeBatch` 의 `evidence` 배열에 같은 필드를 채우고 문장 끝에 `<sup data-cite="1"></sup>` 을 맞춘다.
    - 페어 하이라이팅: 방금 인용한 원천 위치를 사용자 화면의 페어 탭으로 바로 열어 하이라이트해 보여 줄 때는 `resource.reveal(rawTag)` 를 호출한다.

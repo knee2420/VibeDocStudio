@@ -34,6 +34,7 @@ import {
   createInsertableBlock,
   documentSurface,
   duplicateBlock,
+  evidenceSourceKey,
   findBlock,
   findBlockBySlotId,
   getBlockSlotIds,
@@ -94,29 +95,35 @@ import {
   unlinkVDocFromOutline,
 } from "@vibe/outline-sync";
 import {
+  EVIDENCE_SETTINGS_PATH,
   collectVaultAssets,
   collectVaultStyleEntries,
   createVaultLinkCardDraft,
   fromVaultUri,
   parseVDocJson,
+  readVaultEvidenceSettings,
   resolveActiveStyleEntry,
 } from "@vibe/vault-formats";
 
 import type { IdeEditorEnv } from "../model/editorAdapters";
 import { DocumentViewIcon } from "./DocumentSurfaceIcons";
-import { AnchorChips, vdocUnitSelector } from "./ai/AnchorChips";
+import { AnchorChips, AnchorDraft, vdocUnitSelector } from "./ai/AnchorChips";
 import { V2BlockReview, V2PageAssetInsertReview } from "./ai/V2BlockReview";
 import { V2SlotReview } from "./ai/V2SlotReview";
+import { A4SectionFlow } from "./A4SectionFlow";
+import { VDocSelectionAiBar, type VDocSelectionTarget } from "./VDocSelectionAiBar";
 import {
   VDocEvidenceBottomPanel,
   VDocSidenoteRail,
   VDocSlotEvidenceInline,
   collectVDocEvidenceEntries,
-  resolveEvidenceVaultPath,
+  effectivePresentation,
+  openEvidenceLocator,
   type EvidenceLayerMode,
 } from "./EvidenceExpressions";
 import {
   clearResourceHighlight,
+  requestResourceHighlight,
   subscribeResourceHighlight,
   type ResourceHighlightRequest,
 } from "../model/resourceHighlightBus";
@@ -240,17 +247,38 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
   const [canvasDropActive, setCanvasDropActive] = useState(false);
   const [aiBarOpen, setAiBarOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
+  const [draftAiIds, setDraftAiIds] = useState<readonly string[]>([]);
   const [styleRevision, setStyleRevision] = useState(0);
   const [outlineRevision, setOutlineRevision] = useState(0);
+  const [evidenceSettingsRev, setEvidenceSettingsRev] = useState(0);
   const [evidenceMode, setEvidenceMode] = useState<EvidenceLayerMode>("review");
 
+  const evidenceSettings = useMemo(() => {
+    void evidenceSettingsRev;
+    return readVaultEvidenceSettings(vault);
+  }, [vault, evidenceSettingsRev]);
+
   const openEvidenceSource = useCallback(
-    (targetPath: string) => {
+    (targetPath: string, locator?: Parameters<typeof openEvidenceLocator>[0]) => {
       const openPair = hostRef.current.env.openInPairTabGroup;
       if (openPair) {
         openPair(targetPath, { sourceTabId: hostRef.current.tabId, sourcePath: path });
       } else {
         hostRef.current.openLink(targetPath, "split-right");
+      }
+      if (locator) {
+        requestResourceHighlight({
+          targetPath,
+          sourceUrl: locator.url,
+          page: locator.page ?? undefined,
+          lines: locator.lines ?? undefined,
+          bbox: locator.bbox ?? undefined,
+          nodeId: locator.nodeId,
+          slotId: locator.slotId,
+          blockId: locator.blockId,
+          quoteText: locator.excerpt,
+          label: locator.label,
+        });
       }
     },
     [path]
@@ -271,6 +299,49 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     return map;
   }, [doc.evidenceLinks]);
 
+  /**
+   * 본문 `<sup data-cite="...">` 표시 동기화 CSS:
+   * - 제출본(`clean`) 또는 비-각주 표현형(`sidenote` / `matrix` 등)에서는 위첨자 `[1]` 을 숨긴다.
+   * - 각주 표현형에서는 슬롯 로컬 번호 대신 문서 전역 각주 번호(`[18]` 등)로 통일해 중복·어긋남을 제거한다.
+   */
+  const evidenceCiteCss = useMemo(() => {
+    const scopeSel = `[data-vdoc-evidence-scope="${CSS.escape(host.tabId)}"]`;
+    if (evidenceMode === "clean") {
+      return `${scopeSel} sup[data-cite] { display: none !important; }`;
+    }
+    const rules: string[] = [];
+    for (const [slotId, slotLinks] of evidenceLinksBySlotId.entries()) {
+      const visible = slotLinks.filter(
+        (l) => effectivePresentation(l.locator, l, evidenceSettings) !== "hidden"
+      );
+      const escSlot = CSS.escape(slotId);
+      if (visible.length === 0) {
+        rules.push(`${scopeSel} [data-slot-id="${escSlot}"] sup[data-cite] { display: none !important; }`);
+        continue;
+      }
+      const primaryPres =
+        evidenceMode === "footnote-only"
+          ? "footnote"
+          : effectivePresentation(visible[0].locator, visible[0], evidenceSettings);
+      if (primaryPres !== "footnote") {
+        rules.push(`${scopeSel} [data-slot-id="${escSlot}"] sup[data-cite] { display: none !important; }`);
+        continue;
+      }
+      for (const link of visible) {
+        const sk = evidenceSourceKey(link.locator);
+        const globalNum = vdocEvidenceIndex.citationNumberBySourceKey.get(sk);
+        if (!globalNum) continue;
+        for (const cid of link.citationIds ?? []) {
+          const escCite = CSS.escape(cid);
+          rules.push(
+            `${scopeSel} [data-slot-id="${escSlot}"] sup[data-cite="${escCite}"]::before { content: "[${globalNum}]"; }`
+          );
+        }
+      }
+    }
+    return rules.join("\n");
+  }, [host.tabId, evidenceMode, evidenceLinksBySlotId, evidenceSettings, vdocEvidenceIndex.citationNumberBySourceKey]);
+
   const canvasScrollRef = useRef<HTMLDivElement>(null);
   /** 세션 표시 겹층용 — 캔버스 스크롤 컨테이너 요소 */
   const [canvasEl, setCanvasEl] = useState<HTMLDivElement | null>(null);
@@ -288,6 +359,8 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
               mode={evidenceMode}
               citationNumberBySourceKey={vdocEvidenceIndex.citationNumberBySourceKey}
               backlinkGroups={vdocEvidenceIndex.groups}
+              settings={evidenceSettings}
+              slotHtml={slot.content}
               onOpenSource={openEvidenceSource}
             />
           </>
@@ -307,6 +380,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       path,
       evidenceLinksBySlotId,
       evidenceMode,
+      evidenceSettings,
       vdocEvidenceIndex.citationNumberBySourceKey,
       vdocEvidenceIndex.groups,
       openEvidenceSource,
@@ -316,7 +390,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     (block: LayoutBlock, content: React.ReactNode) => {
       if (!aiWorkspace) return content;
       return (
-        <V2BlockReview ai={aiWorkspace} path={path} block={block}>
+        <V2BlockReview ai={aiWorkspace} path={path} block={block} slots={docRef.current.slots}>
           {content}
         </V2BlockReview>
       );
@@ -332,6 +406,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           ai={aiWorkspace}
           path={path}
           page={page}
+          slots={docRef.current.slots}
           isFirstPage={isFirstPage}
         />
       );
@@ -406,22 +481,25 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     });
   }, [docs, path]);
 
-  // `.vstyle` 이 바뀌면 스타일 목록만, `.outline` 이 바뀌면 연결 상태만 다시 본다
-  useEffect(
-    () =>
-      vault.subscribe((ev) => {
-        if (ev.type === "vault-reset") {
-          setStyleRevision((r) => r + 1);
-          setOutlineRevision((r) => r + 1);
-          return;
-        }
-        const changed =
-          ev.type === "create" ? ev.node.path : ev.type === "rename" ? ev.newPath : ev.path;
-        if (changed.endsWith(".vstyle") || changed.endsWith(".vstyle.json")) setStyleRevision((r) => r + 1);
-        else if (changed.endsWith(".outline")) setOutlineRevision((r) => r + 1);
-      }),
-    [vault]
-  );
+  // `.vstyle` 이 바뀌면 스타일 목록만, `.outline` 이 바뀌면 연결 상태만, 근거 설정이 바뀌면 표현형만 갱신한다
+  useEffect(() => {
+    if (vault.exists(EVIDENCE_SETTINGS_PATH) && vault.isLoaded && !vault.isLoaded(EVIDENCE_SETTINGS_PATH)) {
+      void vault.ensureLoaded?.(EVIDENCE_SETTINGS_PATH).then(() => setEvidenceSettingsRev((r) => r + 1));
+    }
+    return vault.subscribe((ev) => {
+      if (ev.type === "vault-reset") {
+        setStyleRevision((r) => r + 1);
+        setOutlineRevision((r) => r + 1);
+        setEvidenceSettingsRev((r) => r + 1);
+        return;
+      }
+      const changed =
+        ev.type === "create" ? ev.node.path : ev.type === "rename" ? ev.newPath : ev.path;
+      if (changed === EVIDENCE_SETTINGS_PATH) setEvidenceSettingsRev((r) => r + 1);
+      else if (changed.endsWith(".vstyle") || changed.endsWith(".vstyle.json")) setStyleRevision((r) => r + 1);
+      else if (changed.endsWith(".outline")) setOutlineRevision((r) => r + 1);
+    });
+  }, [vault]);
 
   // Ensure an activePageId & initial workMode are published to the bridge for Right Dock sync
   useEffect(() => {
@@ -651,11 +729,9 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       const hit =
         links.find((l) => (!sid || l.slotId === sid) && l.citationIds?.includes(citeId)) ??
         links.find((l) => l.citationIds?.includes(citeId));
-      const vp = hit ? resolveEvidenceVaultPath(hit.locator) : null;
-      if (vp) {
+      if (hit && openEvidenceLocator(hit.locator, openEvidenceSource)) {
         ev.preventDefault();
         ev.stopPropagation();
-        openEvidenceSource(vp);
         return;
       }
     }
@@ -680,6 +756,11 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         }
         return;
       }
+    }
+
+    // 구조 모드에서도 근거·각주·여백주석 배지 및 팝오버 클릭은 가로채지 않고 그대로 통과시킨다
+    if (targetEl?.closest("[data-vdoc-evidence-interactive='true']")) {
+      return;
     }
 
     if (workMode === "Structure") {
@@ -843,6 +924,16 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     if (!promptText) return;
     const snap = selection ? describeCanvasSelection(doc, selection, activePageId) : null;
     const page = doc.pages.find((p) => p.pageId === (snap?.pageId ?? activePageId)) ?? doc.pages[0];
+    const unitIds =
+      selection && selection.items.length > 0
+        ? selection.items
+            .map((it) => (it.kind === "slot" ? it.id : it.kind === "block" ? it.id : it.blockId))
+            .filter((id): id is string => Boolean(id))
+        : selectedSlotId
+          ? [selectedSlotId]
+          : selectedBlockId
+            ? [selectedBlockId]
+            : [];
     hostRef.current.dispatchAiDirective?.({
       resourceId: path,
       prompt: promptText,
@@ -852,6 +943,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         summary: snap?.summary ?? `${page?.pageLabel ?? "Page"} › ${doc.title}`,
         text: snap?.text ?? doc.title,
         pageId: page?.pageId,
+        nodeIds: unitIds,
         blockIds: snap?.blockIds ?? [],
         slotIds: snap?.slotIds ?? [],
       },
@@ -860,8 +952,73 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
     setAiBarOpen(false);
   };
 
+  const handleSelectionAiDirect = useCallback(
+    (promptText: string, target: VDocSelectionTarget) => {
+      hostRef.current.dispatchAiDirective?.({
+        resourceId: path,
+        prompt: promptText,
+        selection: {
+          resourceId: path,
+          kind: "canvas-nodes",
+          summary: target.summary,
+          text: target.plainText,
+          pageId: target.pageId,
+          nodeIds: [...target.unitIds],
+          blockIds: [...target.blockIds],
+          slotIds: [...target.slotIds],
+        },
+      });
+    },
+    [path]
+  );
+
+  const handleSelectionAttachToComposer = useCallback(
+    (target: VDocSelectionTarget) => {
+      hostRef.current.reportSelection?.({
+        resourceId: path,
+        kind: "canvas-nodes",
+        summary: target.summary,
+        text: target.plainText,
+        pageId: target.pageId,
+        nodeIds: [...target.unitIds],
+        blockIds: [...target.blockIds],
+        slotIds: [...target.slotIds],
+      });
+      hostRef.current.dispatchAiDirective?.({
+        resourceId: path,
+        prompt: "",
+        selection: {
+          resourceId: path,
+          kind: "canvas-nodes",
+          summary: target.summary,
+          text: target.plainText,
+          pageId: target.pageId,
+          nodeIds: [...target.unitIds],
+          blockIds: [...target.blockIds],
+          slotIds: [...target.slotIds],
+        },
+      });
+    },
+    [path]
+  );
+
+  const handleDeleteSelectedBlocks = useCallback(
+    (blockIds: readonly string[]) => {
+      if (!blockIds.length) return;
+      commitDoc((prev) => removeBlocks(prev, blockIds).doc, { immediate: true });
+      vdocUiBridge.getState().clearSelection(path);
+    },
+    [commitDoc, vdocUiBridge, path]
+  );
+
+  const handleClearCanvasSelection = useCallback(() => {
+    vdocUiBridge.getState().clearSelection(path);
+  }, [vdocUiBridge, path]);
+
   const activeView = resolveDocumentView(doc);
   const surface = documentSurface(doc);
+  // 섹션 = 구조 단위, A4 의 쪽 = 출력 결과 — paged 지면의 섹션들은 빈 장 없이 이어 흐르고 쪽 나눔은 표시만 한다.
+  const flowSections = surface.kind === "paged" && doc.pages.length > 0 && doc.pages.every((p) => p.unitKind === "section");
 
   // 볼트 `.vstyle` + 기본 팩 목록 (`.vstyle` 이 바뀔 때만 다시 모은다) — 형식 해석은 @vibe/vault-formats
   const styleCatalog = useMemo(() => {
@@ -1113,7 +1270,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           ? (displayDoc.evidenceLinks ?? []).filter((l) => pageSlotIds.has(l.slotId))
           : [];
       const hasSidenotes = pageLinks.some(
-        (l) => (l.presentation ?? l.locator.presentation) === "sidenote"
+        (l) => effectivePresentation(l.locator, l, evidenceSettings) === "sidenote"
       );
 
       const sheetEl = (
@@ -1129,7 +1286,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
           <MemoVDocPageSheet
             docTitle={displayDoc.title}
             totalPages={displayDoc.pages.length}
-            seamless={surface.kind === "scroll"}
+            seamless={surface.kind === "scroll" || flowSections}
             page={page}
             slots={displayDoc.slots}
             backdata={displayDoc.backdata}
@@ -1160,13 +1317,16 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         </div>
       );
 
-      if (!hasSidenotes) return sheetEl;
+      // 블로그(scroll) · flowSections 연속 시트에서는 섹션별로 여백 주석을 쪼개지 않고
+      // 바깥에서 전체 시트 옆에 단일 여백 주석 레일로 배치해 흰 시트 사이 시커먼 공백/좌우 어긋남을 막는다.
+      if (!hasSidenotes || surface.kind === "scroll" || flowSections) return sheetEl;
       return (
         <div key={page.pageId} className="flex items-start gap-4">
           {sheetEl}
           <VDocSidenoteRail
             links={pageLinks}
             citationNumberBySourceKey={vdocEvidenceIndex.citationNumberBySourceKey}
+            settings={evidenceSettings}
             onOpenSource={openEvidenceSource}
           />
         </div>
@@ -1182,6 +1342,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       displayDoc.slots,
       displayDoc.title,
       evidenceMode,
+      evidenceSettings,
       handleDeleteBlock,
       handleDuplicateBlock,
       handleInsertBlock,
@@ -1204,6 +1365,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       sheetMode,
       stagedPreview,
       surface.kind,
+      flowSections,
       vdocEvidenceIndex.citationNumberBySourceKey,
       vdocUiBridge,
       workMode,
@@ -1363,6 +1525,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       onClickCapture={handleCanvasClickCapture}
       onDoubleClickCapture={handleCanvasDoubleClickCapture}
       data-vdoc-structure-mode={workMode === "Structure" ? "true" : undefined}
+      data-vdoc-evidence-scope={host.tabId}
       className="relative flex h-full w-full flex-col overflow-hidden bg-[#2b2d31] outline-none"
       style={{
         boxShadow: canvasDropActive
@@ -1375,6 +1538,7 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         path={path}
         structureMode={workMode === "Structure"}
       />
+      {evidenceCiteCss ? <style>{evidenceCiteCss}</style> : null}
 
       {incomingHighlight && (
         <div
@@ -1401,8 +1565,8 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
       )}
 
       {/* 2D Canvas Top Control Strip */}
-      <div className="relative flex h-8 shrink-0 select-none items-center justify-between border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-3 text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
-        <div className="flex items-center gap-1.5">
+      <div className="relative flex h-8 shrink-0 select-none items-center justify-between gap-2 border-b border-[var(--obs-border-subtle,#2d2d2d)] bg-[var(--obs-bg-secondary,#262626)] px-3 text-[11px] text-[var(--obs-text-muted,#b3b3b3)]">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* 3-Mode Workflow Toggle: [ 구조(틀) ] [ 디자인(Filling) ] [ 미리보기 ] */}
           <div
             role="group"
@@ -2068,7 +2232,25 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
         className="relative min-h-0 flex-1 overflow-auto px-4 py-6 pb-28"
       >
         <MarqueeOverlay rect={marquee.rect} />
-        {host.env.ai && <AnchorChips ai={host.env.ai} surface="vdoc" path={path} container={canvasEl} selector={vdocUnitSelector} />}
+        {draftAiIds.length > 0 && (
+          <AnchorDraft surface="vdoc" path={path} itemIds={draftAiIds} container={canvasEl} selector={vdocUnitSelector} />
+        )}
+        <VDocSelectionAiBar
+          doc={displayDoc}
+          selection={selection}
+          selectedBlockId={selectedBlockId}
+          selectedSlotId={selectedSlotId}
+          activePageId={activePageId}
+          canvasEl={canvasEl}
+          zoom={zoom}
+          enabled={workMode !== "Preview" && !stagedPreview}
+          dragging={marquee.rect !== null}
+          onAiDirect={handleSelectionAiDirect}
+          onAttachToComposer={handleSelectionAttachToComposer}
+          onDeleteBlocks={handleDeleteSelectedBlocks}
+          onClearSelection={handleClearCanvasSelection}
+          onDraftTargetChange={setDraftAiIds}
+        />
         <div
           className="mx-auto flex flex-col items-center gap-6 transition-transform"
           style={{
@@ -2081,22 +2263,102 @@ const VDocTabEditorImpl: React.FC<VDocTabEditorProps> = ({ host }) => {
             mode={doc.styleRef?.mode}
             viewKey={activeView.id}
           >
-            <WindowedPageChunker
-              pages={displayDoc.pages}
-              chunkSize={6}
-              activePageId={activePageId}
-              pageGapPx={surface.kind === "scroll" ? 0 : 24}
-              renderPage={renderPage}
-            />
+            {(() => {
+              const isContinuousSurface = flowSections || surface.kind === "scroll";
+              const continuousSidenoteLinks =
+                isContinuousSurface && evidenceMode === "review"
+                  ? (displayDoc.evidenceLinks ?? []).filter(
+                      (l) => effectivePresentation(l.locator, l, evidenceSettings) === "sidenote"
+                    )
+                  : [];
+              const docSidenoteRail =
+                continuousSidenoteLinks.length > 0 ? (
+                  <VDocSidenoteRail
+                    links={continuousSidenoteLinks}
+                    citationNumberBySourceKey={vdocEvidenceIndex.citationNumberBySourceKey}
+                    settings={evidenceSettings}
+                    onOpenSource={openEvidenceSource}
+                  />
+                ) : null;
+
+              if (flowSections) {
+                const flowEl = (
+                  <A4SectionFlow width={surface.width}>
+                    <WindowedPageChunker
+                      pages={displayDoc.pages}
+                      chunkSize={6}
+                      activePageId={activePageId}
+                      pageGapPx={0}
+                      renderPage={renderPage}
+                    />
+                  </A4SectionFlow>
+                );
+                return docSidenoteRail ? (
+                  <div className="flex items-start gap-4">
+                    {flowEl}
+                    {docSidenoteRail}
+                  </div>
+                ) : (
+                  flowEl
+                );
+              }
+
+              if (surface.kind === "scroll") {
+                const scrollSheetEl = (
+                  <div
+                    className="overflow-hidden rounded-sm bg-white shadow-xl"
+                    style={{ width: surface.width }}
+                  >
+                    <WindowedPageChunker
+                      pages={displayDoc.pages}
+                      chunkSize={6}
+                      activePageId={activePageId}
+                      pageGapPx={0}
+                      renderPage={renderPage}
+                    />
+                  </div>
+                );
+                return docSidenoteRail ? (
+                  <div className="flex items-start gap-4">
+                    {scrollSheetEl}
+                    {docSidenoteRail}
+                  </div>
+                ) : (
+                  scrollSheetEl
+                );
+              }
+
+              return (
+                <WindowedPageChunker
+                  pages={displayDoc.pages}
+                  chunkSize={6}
+                  activePageId={activePageId}
+                  pageGapPx={24}
+                  renderPage={renderPage}
+                />
+              );
+            })()}
             <VDocEvidenceBottomPanel
               doc={displayDoc}
               mode={evidenceMode}
               groups={vdocEvidenceIndex.groups}
+              settings={evidenceSettings}
               onOpenSource={openEvidenceSource}
               onSelectSlot={handleSelectSlot}
             />
           </VDocStyleProvider>
         </div>
+        {host.env.ai && (
+          <AnchorChips
+            ai={host.env.ai}
+            surface="vdoc"
+            path={path}
+            container={canvasEl}
+            selector={vdocUnitSelector}
+            onOpen={host.env.openAiSession}
+            right={44}
+          />
+        )}
       </div>
 
       {/* Inline 2D AI Directing Popover */}

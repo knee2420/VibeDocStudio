@@ -155,8 +155,15 @@ class ResourceWorkspace:
                 "mounts": [{"session": m.session_id, "items": len(m.items), "conversations": m.conversation_ids}
                            for m in self.store.mounts()]}
 
-    def mcp_server_spec(self, session_id: str) -> list[dict[str, Any]]:
-        """ACP session/new 시 전달할 vibefs MCP 서버 사양."""
+    def mcp_server_spec(self, session_id: str = "") -> list[dict[str, Any]]:
+        """ACP session/new 시 전달할 단일 공유 vibefs MCP 서버 사양.
+
+        agy 는 command/args/env 가 다르면 매 세션마다 별도 vibefs_<hash> 프로세스를 비동기로 띄워
+        도구 수를 N배로 늘리고 새 세션 첫 턴에 도구가 누락된다.
+        따라서 --session 없이 단일 서버를 공유하고, 호출마다 _meta 의 agy conversation_id 로
+        세션(mounts.json · workbench.json)을 격리 라우팅한다(engine_session 시점에 prompt 전 선바인딩).
+        """
+        _ = session_id
         return [
             {
                 "name": "vibefs",
@@ -167,13 +174,11 @@ class ResourceWorkspace:
                     "mcp",
                     "--state",
                     str(self.state_dir.resolve()).replace("\\", "/"),
-                    # 이 MCP 서버를 이 세션의 마운트에 고정한다 (다른 세션 자료가 섞이지 않게). env 보다 확실한 인자로 넘긴다.
-                    "--session",
-                    session_id,
                 ],
-                "env": [{"name": "VIBE_WORKSPACE_SESSION", "value": session_id},
-                        # 문서 짓기 도구(dc_*)가 문서 API 로 읽고 쓴다 (저장 버전 · 이력 · 프로젝트 연결이 사람 편집과 같은 길)
-                        {"name": "VIBE_API_BASE", "value": os.environ.get("VIBE_API_BASE", "http://127.0.0.1:8090")}],
+                "env": [
+                    # 문서 짓기 도구(dc_*)가 문서 API 로 읽고 쓴다 (저장 버전 · 이력 · 프로젝트 연결이 사람 편집과 같은 길)
+                    {"name": "VIBE_API_BASE", "value": os.environ.get("VIBE_API_BASE", "http://127.0.0.1:8090")},
+                ],
             }
         ]
 

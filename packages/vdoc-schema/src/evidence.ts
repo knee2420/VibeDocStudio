@@ -272,7 +272,7 @@ export function parseResourceTag(
     const hashSep = linkOnly.indexOf("#");
     rawTarget = hashSep >= 0 ? linkOnly.slice(0, hashSep).trim() : linkOnly;
   } else {
-    // Strip anchor tokens to isolate URL or vault path
+    // Strip anchor tokens to isolate URL or vault path (preserve spaces in Korean folder/file names)
     const cleaned = addressPart
       .replace(BBOX_TAG_RE, "")
       .replace(NODE_TAG_RE, "")
@@ -282,11 +282,12 @@ export function parseResourceTag(
       .replace(LINE_TAG_RE, "")
       .replace(PAGE_TAG_RE, "")
       .trim();
-    rawTarget = cleaned.split(/\s+/)[0] ?? "";
-    // Remove trailing anchor on non-URL paths (preserve URL query/path)
-    if (rawTarget && !/^https?:\/\//i.test(rawTarget)) {
-      const hashSep = rawTarget.indexOf("#");
-      if (hashSep >= 0) rawTarget = rawTarget.slice(0, hashSep).trim();
+    if (/^https?:\/\//i.test(cleaned)) {
+      rawTarget = cleaned.split(/\s+/)[0] ?? "";
+    } else {
+      // Remove trailing anchor on non-URL paths while preserving internal spaces in paths
+      const hashSep = cleaned.indexOf("#");
+      rawTarget = (hashSep >= 0 ? cleaned.slice(0, hashSep) : cleaned).trim();
     }
   }
 
@@ -573,6 +574,89 @@ export function extractInlineCiteBullets<T extends OutlineCiteTreeNode>(
   };
 
   return { strippedRoots: walk(roots), nodeEvidence };
+}
+
+export interface FormatCiteBulletOptions {
+  /** 표현 방식 재정의 (생략 시 `locator.presentation ?? "footnote"`) */
+  readonly presentation?: EvidencePresentation;
+  /** 산출 근거 설명 재정의 (생략 시 `locator.rationale`) */
+  readonly rationale?: string;
+  /** `.vsyntax` 레지스트리에서 커스터마이즈된 태그 심볼 조회 (선택) */
+  readonly resolveTagSymbol?: (ruleId: string, fallback: string) => string;
+}
+
+function sanitizeCiteText(raw: string): string {
+  return raw.replace(/\r?\n+/g, " ").replace(/\|/g, "/").replace(/\s+/g, " ").trim();
+}
+
+function citeTargetToken(locator: EvidenceLocator): string | null {
+  if (locator.url && /^https?:\/\//i.test(locator.url.trim())) {
+    return locator.url.trim();
+  }
+  const raw = (locator.sourcePath ?? locator.resourceId ?? locator.refId ?? "").trim();
+  if (!raw) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const cleaned = raw.replace(/^vault:\/\//i, "").replace(/^vault:/i, "").replace(/\\/g, "/");
+  const base = cleaned.split("/").pop()?.trim() || cleaned;
+  return base ? `[[${base}]]` : null;
+}
+
+/**
+ * `EvidenceLocator` 를 `.vsyntax` 표준 규격의 편집 가능한 `<<cite:...>>` 하위 불릿 문자열로 직렬화한다.
+ * (`parseCiteBullet` 과 무손실 왕복 호환 — 숨겨진 JSON 사이드카 대신 아웃라인 텍스트 자체가 정본이 된다.)
+ */
+export function formatEvidenceLocatorToCiteBullet(
+  locator: EvidenceLocator,
+  options: FormatCiteBulletOptions = {}
+): string {
+  const pres: EvidencePresentation = options.presentation ?? locator.presentation ?? "footnote";
+  const resolveTag = options.resolveTagSymbol ?? ((_ruleId: string, fb: string) => fb);
+
+  let header: string;
+  if (pres === "inline-rationale") {
+    header = resolveTag("cite-rationale", "<<cite:rationale>>");
+  } else if (pres === "sidenote") {
+    header = resolveTag("cite-sidenote", "<<cite:sidenote>>");
+  } else if (pres === "quote-embed") {
+    header = resolveTag("cite-quote", "<<cite:quote>>");
+  } else if (pres === "matrix") {
+    const baseTag = resolveTag("cite-matrix", "<<cite:matrix>>");
+    header =
+      locator.requirementId && baseTag.endsWith(">>")
+        ? `${baseTag.slice(0, -2)} @${locator.requirementId}>>`
+        : baseTag;
+  } else if (pres === "bound-value") {
+    const baseTag = resolveTag("cite-bound", "<<cite:bound>>");
+    if (locator.boundValue && baseTag.endsWith(">>")) {
+      const formula = locator.boundFormula ? ` = ${locator.boundFormula}` : "";
+      header = `${baseTag.slice(0, -2)} {${locator.boundValue}}${formula}>>`;
+    } else {
+      header = baseTag;
+    }
+  } else if (pres === "hidden") {
+    header = "<<cite:hidden>>";
+  } else {
+    header = resolveTag("cite-footnote", "<<cite:footnote>>");
+  }
+
+  const targetTok = citeTargetToken(locator);
+  const anchors: string[] = [];
+  if (locator.page && Number.isFinite(locator.page)) anchors.push(`#p${locator.page}`);
+  if (locator.lines && locator.lines.length >= 2) {
+    anchors.push(`#L${locator.lines[0]}-L${locator.lines[1]}`);
+  }
+  const sourceSeg = [targetTok, ...anchors].filter(Boolean).join(" ");
+  const rationale = sanitizeCiteText(options.rationale ?? locator.rationale ?? "");
+  const excerpt = sanitizeCiteText(locator.excerpt ?? "");
+
+  if (pres === "inline-rationale") {
+    const parts = [rationale || excerpt, sourceSeg].filter(Boolean);
+    return parts.length > 0 ? `${header} ${parts.join(" | ")}` : header;
+  }
+
+  const note = excerpt || rationale;
+  const parts = [sourceSeg, note].filter(Boolean);
+  return parts.length > 0 ? `${header} ${parts.join(" | ")}` : header;
 }
 
 /** 근거 하나의 정체 — 같은 자료를 두 번 붙이지 않게 비교할 때 쓴다. */

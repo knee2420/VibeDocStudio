@@ -16,6 +16,7 @@ import {
   createOrMountLocalVault,
   basename,
   dirname,
+  isClipBundlePath,
   listLocalVaults,
   rewriteWikilinksOnRename,
   runVaultRenameRewriters,
@@ -290,7 +291,7 @@ export function createIdeWorkbenchRuntime(
     explicitViewType
   ) => {
     const node = vault.getNode(path);
-    if (!node || node.kind !== "file") return;
+    if (!node || (node.kind !== "file" && !isClipBundlePath(node.path))) return;
     const viewType = explicitViewType ?? resolveViewTypeForPath(node.path);
     layout.getState().openResource({
       resourceId: node.path,
@@ -307,7 +308,7 @@ export function createIdeWorkbenchRuntime(
     options
   ) => {
     const node = vault.getNode(targetPath);
-    if (!node || node.kind !== "file") return;
+    if (!node || (node.kind !== "file" && !isClipBundlePath(node.path))) return;
     const viewType = resolveViewTypeForPath(node.path);
 
     const initialState = layout.getState();

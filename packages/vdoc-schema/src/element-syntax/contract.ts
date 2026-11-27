@@ -23,6 +23,24 @@ export type SchemaIrPrimitive = (typeof SCHEMA_IR_PRIMITIVES)[number];
 
 export type SyntaxRulePosition = "prefix" | "infix" | "bracket" | "line" | "inline" | "tree";
 
+/**
+ * 구조 층위 — 불변 코어 (프리미티브처럼 고정). 사용자는 층을 늘리지 않고, 각 층에 올라가는 요소 · 기호를 늘린다.
+ *   document(`<<doc:…>>`) → section(`<<view:section:역할>>`) → block(글 · 그림 · 표 …) → slot(표 칸 · 행) · inline(인용 · 강조)
+ * 중간 컨테이너 층은 없다 — 섹션을 먼저 세우고 블록은 그 안에 놓는다. 나란히 놓는 다단도 섹션의 한 종류
+ * (`<<view:section:column>>`, 자식 불릿 하나 = 한 단)라 섹션 층에 산다. 담기 규칙(`parents`)은 이 층 위에서 정의된다.
+ */
+export const STRUCTURE_LAYERS = ["document", "section", "block", "slot", "inline"] as const;
+
+export type StructureLayer = (typeof STRUCTURE_LAYERS)[number];
+
+/**
+ * 담기 규칙의 부모 지정자.
+ * - `"layer:<층>"` — 그 층의 어떤 요소 안이든 허용 (예: `"layer:section"`)
+ * - `"<요소 id>"` 또는 `"<규칙 id>"` — 그 요소/규칙 바로 안만 허용 (예: `"row-container"`)
+ * - `"$outside"` — 어떤 컴파일 구조 안도 아닌 곳(일반 아웃라인 불릿 아래)만 허용 (예: `<<doc>>`)
+ */
+export type StructureParentRef = string;
+
 export interface ElementSyntaxRule {
   /** 규칙 식별자 (예: `"col-split"`, `"kv-pair"`, `"cta-slot"`). */
   id: string;
@@ -36,6 +54,12 @@ export interface ElementSyntaxRule {
   description: string;
   /** 선택적 역할·세부 옵션 (예: `slotKind: "img" | "cta" | "empty"`, `mergeDir: "left" | "up"`). */
   options?: Record<string, string | number | boolean>;
+  /** 이 기호로 만들어지는 노드의 구조 층 (생략 시 기본 레지스트리 값으로 보충). */
+  layer?: StructureLayer;
+  /** 담기 규칙: 이 기호의 노드가 놓일 수 있는 부모 (생략 시 층 기본값). */
+  parents?: StructureParentRef[];
+  /** 담기 규칙: 이 기호의 노드가 바로 아래 담을 수 있는 자식 (생략 시 제한 없음 — 자식 쪽 `parents` 만 본다). */
+  children?: StructureParentRef[];
 }
 
 export interface ElementSkinPreset {
@@ -73,6 +97,10 @@ export interface ElementSyntaxDefinition {
   skins?: Record<string, ElementSkinPreset>;
   /** 파싱 실패 또는 정의 삭제 시 안전 폴백 정책. */
   fallbackPolicy: ElementFallbackPolicy;
+  /** `<<view:viewTag>>` 노드 자체의 구조 층 (예: section → `"section"`, table → `"block"`). */
+  layer?: StructureLayer;
+  /** 담기 규칙: `<<view:viewTag>>` 노드가 놓일 수 있는 부모. */
+  parents?: StructureParentRef[];
 }
 
 /**
@@ -83,6 +111,10 @@ export interface DocumentProfileSchema {
   label: string;
   description: string;
   unitKind: "page" | "section";
+  /** 구조 단위 — 모든 프로필에서 섹션 (D1: 섹션 = 구조). 생략 시 `"section"`. */
+  structureUnit?: "section";
+  /** 출력 단위 — 스크롤 한 줄기(`scroll`) 또는 인쇄 쪽(`page`, 섹션이 쪽을 넘어 흐른다). 생략 시 surface 로 추론. */
+  outputUnit?: "scroll" | "page";
   surface: {
     kind: "paged" | "scroll";
     width: number;

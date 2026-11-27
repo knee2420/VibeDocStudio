@@ -268,15 +268,21 @@ export function instantiateAssetV3(asset: AssetV3, records: AssetRecords = {}, o
   const buildGrid = (n: Extract<SkelNode, { t: "grid" }>, rec: AssetRecords, scope: string): LayoutBlock => {
     if (n.component === "columns") {
       const cells = n.rows[0]?.cells ?? [];
-      const t = tok("columns");
+      const t = tok(n.variant ? `columns.${n.variant}` : "columns");
       const widths = typeof t.widths === "string" ? String(t.widths).split(",") : Array.isArray(t.widths) ? (t.widths as string[]) : [];
+      const columns = cells.map((c) => columnOf(c, rec, scope));
+      const allImages =
+        columns.length > 0 &&
+        columns.every((col) => Boolean((col as { image?: unknown }).image) && !("slotId" in col && col.slotId));
       return {
         blockId: nid("b"),
         kind: "columns-grid",
-        title: "다단",
+        title: allImages ? `사진 스트립 (${columns.length}장)` : "다단",
+        ...(allImages ? { cardStyle: "plain", gap: 10 } : {}),
+        ...(n.variant ? { styleKey: n.variant } : {}),
         ...t,
         widths: widths.length === cells.length ? widths : cells.map(() => `${Math.round(100 / Math.max(1, cells.length))}%`),
-        columns: cells.map((c) => columnOf(c, rec, scope)),
+        columns,
       } as LayoutBlock;
     }
     // table · kv → structured-table (반복 펼치기 + mergeSame 동적 세로 병합)
@@ -485,9 +491,22 @@ export function instantiateAssetV3(asset: AssetV3, records: AssetRecords = {}, o
   const columnOf = (cell: GridCell, rec: AssetRecords, scope: string) => {
     const nodes = cell.nodes ?? (cell.field ? [{ t: "field", role: cell.role, field: cell.field } as SkelNode] : []);
     const simpleBody = nodes.length === 1 && nodes[0].t === "field" && nodes[0].field.type !== "image" ? nodes[0] : null;
+    const singleImg = nodes.length === 1 && nodes[0].t === "field" && nodes[0].field.type === "image" ? nodes[0] : null;
     const imgBody =
       nodes.length === 2 && nodes[0].t === "field" && nodes[0].field.type === "image" && nodes[1].t === "field" && nodes[1].field.type !== "image" ? nodes : null;
     if (simpleBody && simpleBody.t === "field") return { slotId: fieldSlot(simpleBody.field.id, simpleBody.field.hint, rec, key(scope, simpleBody.field.id)) };
+    if (singleImg && singleImg.t === "field") {
+      const src = recordValue(singleImg.field.id, rec, key(scope, singleImg.field.id));
+      return {
+        image: {
+          src,
+          alt: singleImg.field.hint ?? "",
+          width: "100%",
+          align: "center",
+          objectFit: "cover",
+        },
+      };
+    }
     if (imgBody && imgBody[0].t === "field" && imgBody[1].t === "field") {
       const src = recordValue(imgBody[0].field.id, rec, key(scope, imgBody[0].field.id));
       return { image: { src, alt: imgBody[0].field.hint ?? "" }, slotId: fieldSlot(imgBody[1].field.id, imgBody[1].field.hint, rec, key(scope, imgBody[1].field.id)) };
@@ -495,7 +514,12 @@ export function instantiateAssetV3(asset: AssetV3, records: AssetRecords = {}, o
     return { blocks: build(nodes, rec, scope) };
   };
 
-  const blocks = build(asset.nodes, records, "").map((b) => ({ ...b, assetRef: { assetId: asset.assetId, appliedAt: new Date().toISOString() } }) as LayoutBlock);
+  const hasPersistedAssetId = Boolean(asset.assetId && !asset.assetId.startsWith("inline-dsl-"));
+  const blocks = build(asset.nodes, records, "").map((b) =>
+    hasPersistedAssetId
+      ? ({ ...b, assetRef: { assetId: asset.assetId, appliedAt: new Date().toISOString() } } as LayoutBlock)
+      : b
+  );
 
   const leftover: { key: string; value: string }[] = [];
   const scan = (rec: AssetRecords, scope: string) => {

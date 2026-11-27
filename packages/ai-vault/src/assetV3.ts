@@ -43,6 +43,7 @@ import {
 } from "@vibe/vault-formats";
 
 import { readVDoc, requireDoc, type V2AiEnv } from "./contexts";
+import { applyStyleOptionsToBlock, findPendingStyleChange, type BlockStyleApplyOptions } from "./styleTools";
 import type { V2StagedChange } from "./store";
 
 export const ASSET_V3_DIR = ".vibedoc/assets/v3";
@@ -199,13 +200,24 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
     return hit.asset;
   };
 
-  const syncBlocksWithActiveStyle = (blocks: LayoutBlock[], doc: VDocDocument, docPath: string): LayoutBlock[] => {
+  const syncBlocksWithActiveStyle = (
+    blocks: LayoutBlock[],
+    doc: VDocDocument,
+    docPath: string,
+    styleOpts?: BlockStyleApplyOptions
+  ): LayoutBlock[] => {
+    const pendingStyle = findPendingStyleChange(env, docPath);
     const catalog = collectVaultStyleEntries(env.vault);
-    const activeStyle = resolveActiveStyleEntry(doc, env.vault, catalog, docPath);
-    if (!activeStyle) return blocks;
-    const resolvedPack = resolveStylePack(activeStyle.pack, doc.styleRef?.mode);
+    const activePack = pendingStyle?.payload.stylePack ?? resolveActiveStyleEntry(doc, env.vault, catalog, docPath)?.pack ?? null;
+    const resolvedPack = activePack ? resolveStylePack(activePack, pendingStyle?.payload.styleRef?.mode ?? doc.styleRef?.mode) : null;
+    const hasExplicitOpts = Boolean(
+      styleOpts?.styleKey || styleOpts?.cellRoleMap || styleOpts?.clearInlineCellStyles !== undefined || styleOpts?.prefix !== undefined
+    );
     return blocks.map((block): LayoutBlock => {
-      if ((block.kind === "structured-table" || block.kind === "table") && block.styleKey) {
+      if (hasExplicitOpts) {
+        return applyStyleOptionsToBlock(block, resolvedPack, styleOpts ?? {});
+      }
+      if (resolvedPack && (block.kind === "structured-table" || block.kind === "table") && block.styleKey) {
         const tbl = block as StructuredTableBlockDef;
         const tableGrid = resolveTableGridStyle(resolvedPack, tbl.styleKey);
         if (tableGrid.columnWidths && tableGrid.columnWidths.length === tbl.columnWidths.length) {
@@ -228,20 +240,73 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
   };
 
   interface ProposeArgs {
-    readonly assetId: string;
+    readonly assetId?: string;
+    readonly dsl?: string | string[];
+    readonly scope?: "element" | "section" | "page";
+    readonly style?: AssetStyleCompanion;
+    readonly saveAsset?: boolean;
     readonly mode?: "replace" | "insert";
     readonly replaceBlockIds?: string[];
     readonly afterBlockId?: string;
     readonly sourceBlockIds?: string[];
     readonly items?: SourceItem[];
     readonly records?: AssetRecords;
+    readonly styleKey?: string;
+    readonly cellRoleMap?: Record<string, string>;
+    readonly clearInlineCellStyles?: boolean;
+    readonly syncColumnWidths?: boolean;
     readonly revisionOf?: string;
     readonly intentNote?: string;
     readonly title?: string;
   }
 
   const runUnifiedProposal = (args: ProposeArgs, ctx?: ToolRunContext) => {
-    const asset = need(args?.assetId);
+    let asset: AssetV3;
+    let inlineDsl = false;
+    let assetSaved = false;
+
+    const explicitAssetId = args?.assetId?.trim();
+    const rawDsl = args?.dsl;
+    const hasInlineDsl =
+      (typeof rawDsl === "string" && rawDsl.trim().length > 0) ||
+      (Array.isArray(rawDsl) && rawDsl.some((l) => typeof l === "string" && l.trim().length > 0));
+
+    if (explicitAssetId) {
+      asset = need(explicitAssetId);
+    } else if (rawDsl !== undefined) {
+      if (!hasInlineDsl) {
+        throw new Error("인라인 DSL 이 비어 있습니다. 유효한 .vsyntax 구조 문법을 전달하세요.");
+      }
+      const liveSnapshot = loadLiveVsyntaxSnapshot(env.vault);
+      const compiled = compileVsyntaxDslToAssetV3(rawDsl, {
+        title: args?.title?.trim() || "인라인 구조 재편",
+        scope: args?.scope ?? "element",
+        style: args?.style,
+        origin: { sourceType: "attachment" },
+        registry: liveSnapshot,
+      });
+      if (!compiled.validation.ok) {
+        throw new Error(
+          `인라인 에셋 DSL 이 사양에 맞지 않습니다. 고쳐서 다시 제안하세요.\n${formatAssetIssues(compiled.validation)}`
+        );
+      }
+      inlineDsl = true;
+      if (args?.saveAsset === true) {
+        const reg = registerAssetV3(env.vault, compiled.asset, { sessionKey: env.sessionKey });
+        asset = reg.entry.asset;
+        assetSaved = true;
+      } else {
+        const fp = skeletonFingerprint(compiled.asset.nodes);
+        asset = {
+          ...compiled.asset,
+          assetId: `inline-dsl-${fp.slice(0, 8)}`,
+          dsl: renderAssetV3ToVsyntaxDsl(compiled.asset),
+        };
+      }
+    } else {
+      throw new Error("assetId(등록된 에셋) 또는 dsl(.vsyntax 인라인 구조 문법) 중 하나가 필요합니다.");
+    }
+
     const { path, doc } = requireDoc(env);
     const replaceIds = Array.isArray(args?.replaceBlockIds) ? args.replaceBlockIds.filter(Boolean) : [];
     const mode: "replace" | "insert" = args?.mode ?? (replaceIds.length > 0 ? "replace" : "insert");
@@ -295,15 +360,20 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
     const mapped = explicitItems ? mapItemsToAsset(explicitItems, asset) : null;
     const mergedRecords: AssetRecords = {
       ...baseRecords,
-      ...(mapped ? (mapped.records as Record<string, string | AssetRecords[]>) : {}),
-      ...(explicitRecords ?? {}),
+      ...(mapped ? (mapped.records as Record<string, string | AssetRecords[]>) : undefined),
+      ...explicitRecords,
     };
 
     const inst = instantiateAssetV3(asset, mergedRecords, {
       idPrefix: `as${Date.now().toString(36).slice(-4)}`,
       ...(Object.keys(keepSlotIds).length > 0 ? { keepSlotIds } : {}),
     });
-    const styledBlocks = syncBlocksWithActiveStyle(inst.blocks, doc, path);
+    const styledBlocks = syncBlocksWithActiveStyle(inst.blocks, doc, path, {
+      styleKey: args?.styleKey,
+      cellRoleMap: args?.cellRoleMap,
+      clearInlineCellStyles: args?.clearInlineCellStyles,
+      syncColumnWidths: args?.syncColumnWidths,
+    });
 
     const leftoverList = [
       ...(mapped ? mapped.unmapped : inst.report.leftover.map((l) => l.key)),
@@ -325,11 +395,12 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
     }
 
     const firstReplaceBlock = replaceIds[0] ? findBlock(doc, replaceIds[0]) : null;
+    const badge = inlineDsl && !assetSaved ? "[DSL]" : "[에셋]";
     const defaultTitle =
       args?.title?.trim() ||
       (mode === "replace"
-        ? `[에셋] ${firstReplaceBlock?.title || replaceIds[0]} → ${asset.title}`
-        : `[에셋] ${asset.title} 놓기`);
+        ? `${badge} ${firstReplaceBlock?.title || replaceIds[0]} → ${asset.title}`
+        : `${badge} ${asset.title} 놓기`);
     const intentNote = args?.intentNote?.trim() || undefined;
 
     const change = assetChange(
@@ -356,7 +427,7 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
     );
     const committed = commitProposal(change, args?.revisionOf);
     const outline = readVDoc(env, path)?.outlineRef
-      ? "이 문서는 .outline 과 연결돼 있습니다 — 다음 구조 컴파일 전에 outline 쪽에도 같은 모양을 반영해야 합니다."
+      ? "이 문서는 .outline 과 연결돼 있습니다 — 승인 시 연결된 .outline 의 해당 섹션에도 DSL 구조가 자동 동기화됩니다."
       : undefined;
 
     return {
@@ -364,6 +435,10 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
       revised: committed.revised,
       diffId: committed.diffId,
       mode,
+      inlineDsl,
+      assetSaved,
+      stagedBlockIds: styledBlocks.map((b) => b.blockId),
+      appliedStyleKeys: styledBlocks.map((b) => b.styleKey ?? null),
       filled: inst.report.filled,
       empty: inst.report.empty,
       repeats: inst.report.repeats,
@@ -430,6 +505,9 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
               dynamicVerticalMerge: "{{category:text^|구분}} — 연속 행의 같은 값을 자동 rowSpan 병합(mergeSame)",
               staticMerges: "[<] 왼쪽 가로 병합(colSpan), [^] 위쪽 세로 병합(rowSpan), 트리 들여쓰기(group-label rowspan)",
               rolePrefix: "{group-label}제목, {sub-label}하위항목, {total}{{합계:currency}}",
+              multiColumnMedia: "[img:{{left_img|좌측 사진}}] | [img:{{right_img|우측 사진}}] — 가로 나란히 다단 사진 스트립(columns-grid, cardStyle='plain')",
+              columnsContainer: "<<view:columns:strip>> 아래에 [img:...] 또는 텍스트 항목을 들여쓰기해 스타일 변형이 결합된 다단 구성",
+              inlineDslPropose: "assets.propose({ dsl, records, mode, replaceBlockIds, styleKey }) — 일회성 구조 재편은 영구 에셋 파일을 만들지 않고 DSL 규칙 검증을 거쳐 바로 Staged 제안 (재사용 템플릿일 때만 saveAsset: true 또는 assets.register 사용)",
               exampleTable: [
                 "<<view:table>> 요구사항 목록표",
                 "  순번 | 구분 | 요구사항 고유번호 | 요구사항 명",
@@ -569,13 +647,24 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
           });
         return {
           assets: [
-            ...v3Entries.map((e) => ({
-              ...describeAssetV3(e.asset),
-              lifecycle: e.lifecycle,
-              origin: e.asset.origin?.sourceType ?? null,
-              fields: undefined,
-              fieldCount: collectFields(e.asset.nodes).length,
-            })),
+            ...v3Entries.map((e) => {
+              const fields = collectFields(e.asset.nodes);
+              return {
+                ...describeAssetV3(e.asset),
+                lifecycle: e.lifecycle,
+                origin: e.asset.origin?.sourceType ?? null,
+                fields: undefined,
+                fieldIds: fields.map((f) => f.field.id),
+                fieldCount: fields.length,
+                styleKeys: [
+                  ...new Set(
+                    e.asset.nodes
+                      .map((n) => (n as { variant?: string; styleKey?: string }).variant ?? (n as { styleKey?: string }).styleKey)
+                      .filter((v): v is string => Boolean(v))
+                  ),
+                ],
+              };
+            }),
             ...unifiedVault,
           ],
         };
@@ -583,10 +672,12 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
     },
     {
       ...clientTool("assets.propose"),
-      describe: (args: { assetId?: string; mode?: string; revisionOf?: string }) =>
+      describe: (args: { assetId?: string; title?: string; dsl?: unknown; mode?: string; revisionOf?: string }) =>
         args?.revisionOf
           ? `에셋 제안 수정 (${args.revisionOf})`
-          : `에셋 ${args?.assetId ?? ""} ${args?.mode === "replace" ? "교체" : "제안"}`,
+          : args?.assetId
+            ? `에셋 ${args.assetId} ${args?.mode === "replace" ? "교체" : "제안"}`
+            : `DSL 구조 ${args?.mode === "replace" ? "교체" : "제안"} (${args?.title ?? "인라인"})`,
       run: (args: ProposeArgs, ctx?: ToolRunContext) => runUnifiedProposal(args, ctx),
     },
     {
@@ -601,6 +692,10 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
           afterBlockId?: string;
           replaceBlockIds?: string[];
           sourceBlockIds?: string[];
+          styleKey?: string;
+          cellRoleMap?: Record<string, string>;
+          clearInlineCellStyles?: boolean;
+          syncColumnWidths?: boolean;
           revisionOf?: string;
           intentNote?: string;
         },
@@ -624,6 +719,10 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
           mode?: "replace" | "insert";
           items?: SourceItem[];
           records?: AssetRecords;
+          styleKey?: string;
+          cellRoleMap?: Record<string, string>;
+          clearInlineCellStyles?: boolean;
+          syncColumnWidths?: boolean;
           revisionOf?: string;
           intentNote?: string;
         },
@@ -650,6 +749,10 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
               sourceBlockIds: ids,
               items: args.items,
               records: args.records,
+              styleKey: args.styleKey,
+              cellRoleMap: args.cellRoleMap,
+              clearInlineCellStyles: args.clearInlineCellStyles,
+              syncColumnWidths: args.syncColumnWidths,
               revisionOf: args.revisionOf,
               intentNote: args.intentNote,
             },
@@ -657,8 +760,18 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
           );
         }
 
+        const styleOpts: BlockStyleApplyOptions | undefined =
+          args?.styleKey || args?.cellRoleMap || args?.clearInlineCellStyles !== undefined
+            ? {
+                styleKey: args.styleKey,
+                cellRoleMap: args.cellRoleMap,
+                clearInlineCellStyles: args.clearInlineCellStyles,
+                syncColumnWidths: args.syncColumnWidths,
+              }
+            : undefined;
         const results: unknown[] = [];
         const changes: V2StagedChange[] = [];
+        const stagedBlockIds: string[] = [];
         const intentNote = args?.intentNote?.trim() || undefined;
         for (const id of ids) {
           const block = findBlock(doc, id);
@@ -686,6 +799,8 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
             });
             continue;
           }
+          const styledBlocks = syncBlocksWithActiveStyle(res.blocks, doc, path, styleOpts);
+          stagedBlockIds.push(...styledBlocks.map((b) => b.blockId));
           changes.push(
             assetChange(
               path,
@@ -696,7 +811,7 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
                 mode: "replace",
                 anchorBlockId: id,
                 replaceBlockIds: [id],
-                blocks: syncBlocksWithActiveStyle(res.blocks, doc, path),
+                blocks: styledBlocks,
                 slots: res.slots,
                 report: { filled: res.report.filled, empty: res.report.empty.length, leftover: res.map.unmapped, preserved: res.preserved },
                 ...(intentNote ? { intentNote } : {}),
@@ -709,7 +824,7 @@ export function createAssetV3Tools(env: V2AiEnv, deps: AssetToolDeps): Workspace
         }
         if (changes.length) stage(env, changes);
         const outline = readVDoc(env, path)?.outlineRef ? "이 문서는 .outline 과 연결돼 있습니다 — 다음 구조 컴파일 전에 outline 쪽에도 같은 모양을 반영해야 합니다." : undefined;
-        return { staged: changes.length, diffIds: changes.map((c) => c.diffId), results, ...(outline ? { note: outline } : {}) };
+        return { staged: changes.length, diffIds: changes.map((c) => c.diffId), stagedBlockIds, results, ...(outline ? { note: outline } : {}) };
       },
     },
   ];

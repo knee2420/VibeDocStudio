@@ -39,6 +39,7 @@ from app.reference import router as reference_router_module
 from app.resource.backdata import router as backdata_router_module
 from app.resource.index import router as knowledge_router_module
 from app.resource.ledger import router as resource_ledger_router_module
+from app.resource.webclip import router as webclip_router_module
 from app.vault import router as vault_router_module
 
 #: (라우터 모듈, URL 접두사, 태그). 도메인을 추가하면 여기 한 줄만 늘린다.
@@ -53,6 +54,7 @@ _DOMAIN_ROUTERS = (
     (staging_router_module, "/api/projects", "authoring.staging"),
     (resource_ledger_router_module, "/api/resources", "resource.ledger"),
     (knowledge_router_module, "/api/knowledge", "resource.index"),
+    (webclip_router_module, "/api/webclips", "resource.webclip"),
     (llm_router_module, "/api", "llm"),
     (assistant_router_module, "/api/assistant", "assistant"),
     (harness_router_module, "/api/assistant", "authoring.harness"),

@@ -1,12 +1,18 @@
 [에셋 — 구조 스키마(.vsyntax) + 스타일 스키마(.vstyle) 통합 정본]
-양식 · 형식 · 구조에 관한 모든 일(이 양식대로 · 이 서식 가져와 · 이 모양으로 바꿔 · 같은 틀로 여러 개 · 새 문서 설계)은 블록을 직접 짓지 말고 에셋을 거친다.
+양식 · 형식 · 구조에 관한 모든 일(이 양식대로 · 이 서식 가져와 · 이 모양으로 바꿔 · 레이아웃 재편 · 다단 사진 배치)은 원시 HTML 만 땜질하지 말고 **에셋 규칙(`.vsyntax` DSL 선행 변경 → `.vstyle` 스타일 재편)** 을 따른다. 그래야 `.outline` ↔ `.vdoc` ↔ `.vstyle` 전체 데이터 싱크가 깨지지 않는다.
   조회 → schema.inspect (볼트의 최신 .vsyntax 구조 기호 · 역할 · .vstyle 스타일 선택자 실시간 확인)
-  해체 → assets.register (그림 · 글로 받은 양식, `.vsyntax` DSL 권장) 또는 assets.capture (문서에 이미 있는 블록)
-  적용 → assets.propose (통합 제안: 교체/추가 + 기존 이관/새 데이터 보강 + revisionOf 제자리 수정) / assets.instantiate / assets.apply
+  일회성 구조 재편 → **assets.propose({ dsl, records, mode, replaceBlockIds, styleKey })** (규칙 검증은 동일하게 통과하되 영구 에셋 파일을 만들지 않음 — "규칙 준수 ≠ 영구 에셋 생성")
+  재사용 틀 등록 → assets.register (여러 곳에서 반복 재사용할 틀만 `.vibedoc/assets/v3/` 에 등록, 또는 `assets.propose` 에서 `saveAsset: true`) / assets.capture
+  적용 → assets.propose (통합 제안: 인라인 DSL 또는 assetId + 교체/추가 + 기존 이관/새 데이터 보강 + revisionOf 제자리 수정) / assets.instantiate / assets.apply
 에셋 = 구조 스키마(고정 글 + 채울 자리 + 병합/반복 규칙) + 스타일 짝(역할 선택자 토큰). 사용자 글(내용)은 절대 에셋 안에 넣지 않는다.
 
-A0 라이브 스키마 우선 조회 (하드코딩 금지):
-   처음 보는 양식을 분해하거나 새 에셋을 등록하기 전에 반드시 `schema.inspect` 를 호출해 볼트에 등록된 최신 `.vsyntax` 기호 규칙, 역할 어휘, 활성 `.vstyle` 선택자를 확인한다. 사용자가 설정에서 새 기호나 요소를 추가하면 `schema.inspect` 결과에 즉시 반영된다.
+A0 라이브 스키마 · 작업 모드 우선 조회 & 재사용 우선 (하드코딩 · 중복 등록 금지):
+   1) 처음 보는 양식을 분해하거나 구조를 바꾸기 전에 `workspace.getState` (`workMode`, `outlineLink`, `modeGuidance`) 와 `schema.inspect` 를 먼저 확인한다.
+   2) **Structure(구조) vs Design(디자인) 모드 분기**:
+      - **Structure 모드**: `.outline` 에 연결된 문서의 다중 섹션/전체 개편은 `.outline` 의 `<<doc:...>>` DSL 을 먼저 패치(`ol_propose_patch`)→컴파일하고, 국소 블록/이미지 레이아웃 재편은 `assets.propose({ dsl, records, replaceBlockIds, styleKey })` 로 DSL 선행 변경 후 `.vstyle` 을 맞춘다(승인 시 연결된 `.outline` 에도 자동 동기화).
+      - **Design 모드**: 기존 구조 골격을 유지하면서 `style.inspect` → `style.upsertVariant` / `style.apply` (`.vstyle` 4축), `blocks.proposeProps`, `slots.proposeBatch` 로 시각·문구 완성도를 높인다.
+   3) **불필요한 메타 제목 금지 & 다단 사진 스트립 문법**: 사진·블록 묶음을 넣기 위해 `"오프닝 시각 자료"` 같은 어색한 메타 소제목을 임의로 끼워 넣지 않는다. 사진 2~3장을 가로 나란히 놓을 때는 세로 `[img:...]` 를 쌓지 말고 `[img:{{action_photo|경기 사진}}] | [img:{{news_grid|뉴스 썸네일}}]` 또는 `<<view:columns:strip>>` 아래에 `[img:...]` 를 들여쓰기한다.
+   4) **연속 작업 재사용 우선 (Reuse-First)**: 앞선 element에 이미 적용한 양식·스타일을 다음 element에 이어서 적용할 때("레퍼런스 형식처럼 다음 element도 작업해줘" 등)는 레퍼런스를 처음부터 다시 해체해 중복 에셋·중복 변형을 만들지 않는다. 먼저 `workspace.getState` · `document.getOutline` · `assets.list` · `style.inspect` 로 직전 element가 쓴 `assetId` 와 동반 `.vstyle` 변형(`styleKey`)을 확인해 그대로 재사용한다(직전 블록이 에셋으로 아직 등록되지 않았다면 `assets.capture` 로 추출).
 
 A1 처음 보는 양식을 해체할 때 (절차):
    1) 격자: 선 · 정렬 · 반복 간격으로 행 × 열과 병합(`[<]` 가로 · `[^]` 세로 · `^` 동적 동일값 세로 병합)을 잡는다.
@@ -50,15 +56,23 @@ A4 데이터가 다른 구조일 때 (빈 표 덮어쓰기 방지):
    - 직전 Staged 제안을 고칠 때는 새 카드를 쌓지 말고 `revisionOf: "<diffId>"` 로 제자리 갱신한다.
    - 결과의 `unmapped`(자리 없는 데이터) · `missing`(데이터 없는 자리)을 답변에서 짧게 알린다.
 
-A5 스타일 유사도 극대화 (문서 옆 단일 동반 `.vstyle` 정본 · 인라인 hex 하드코딩 금지):
-   1) **1문서 = 1단일 동반 `.vstyle` 원칙**: A4 등 개별 `.vdoc`의 스타일은 문서 바로 옆의 `<문서명>.vstyle` 단일 파일로 관리한다. `style.upsertVariant`를 호출하면 자동으로 현재 문서 옆의 단일 동반 `.vstyle`에 변형을 등록·병합하고 `doc.styleRef`를 연결한다(다른 폴더의 공유 샘플 `.vstyle`을 오염시키지 않음).
-   2) 견본 이미지나 문서의 **시각적 스타일(4변 외곽선 유무 · 이중실선 `3px double #000000` · 헤더/소계/합계 다단계 음영 · 열별 정렬/줄바꿈 · 열 너비 비율 · 제목 앞 기호 · 셀 내어쓰기 목록 · 바닥글 쪽번호)**까지 맞춰야 할 때는 `style.inspect` → `style.upsertVariant` 순서로 직교 원시 속성을 등록한다:
-      - 좌우 외곽선이 없는 오픈형 표: `borders: { outerTop: "2px solid #000000", outerBottom: "1.5px solid #000000", outerLeft: "none", outerRight: "none", headerBottom: "3px double #000000", rowBottom: "0.75px solid #000000", vertical: "0.75px solid #000000" }`
-      - 열·역할별 정렬/음영/줄바꿈/내어쓰기: `cells: { "column-header": {...}, "group-label": { align: "center" }, "value.score": { align: "center", fontVariantNumeric: "tabular-nums" }, "total.sub": { fill: "#fff8cc", fontWeight: "700", align: "center" }, "total.subtotal": { fill: "#ffeb9c", fontWeight: "700", align: "center" }, "total.tech": { fill: "#ffd966", fontWeight: "700", align: "center" }, "total": { fill: "#ffc000", fontWeight: "700", align: "center" } }`
-      - 제목 앞장식 기호(본문 데이터와 분리): `category: "text"`, `definition: { prefix: "□ ", fontWeight: "700", align: "left" }`
-      - 바닥글 쪽번호 포맷: `category: "pageChrome"`, `definition: { footerTemplate: "- {page} -", footerAlign: "center" }`
-   3) `.vsyntax` DSL 에서 변형과 열린 역할을 바로 선언할 수 있으며, 고정 텍스트의 `{total.subtotal}소계` / `{total}합계`와 채움 슬롯의 `{group-label}{{major}}` 역할 모두 그대로 보존된다:
+A5 스타일 유사도 극대화 (4축 범용 시각 분해 · 동반 `.vstyle` 정본 · 자가 점검 루프):
+   1) **1문서 = 1단일 동반 `.vstyle` 원칙**: 개별 `.vdoc`의 스타일은 문서 바로 옆의 `<문서명>.vstyle` 단일 파일로 관리한다. `style.upsertVariant`를 호출하면 자동으로 현재 문서 옆의 단일 동반 `.vstyle`에 변형을 등록·병합하고 `doc.styleRef`를 연결한다(다른 폴더의 공유 샘플 `.vstyle`을 오염시키지 않음).
+   2) **4축 범용 시각 분해 (본문·제목·프레임·표·미디어·지면 공통)**: 견본 이미지나 문서의 스타일을 맞출 때는 색·선만 흉내 내고 멈추지 말고, `style.inspect`의 `orthogonalPrimitives`와 `inheritedBaseline`(생략 시 상속되는 문서 기본값)을 확인한 뒤 아래 **4대 직교 축을 빠짐없이 분해·매핑**한다:
+      - **① 면·선 (Surface & Stroke)**: 배경·4변/내부 선·라운드·장식·제목 앞장식(`prefix`). 같은 경계에 선을 중복 선언하지 않는다(예: `outerTop`이 있으면 `headerTop` 생략, `border`와 동일한 개별 변 선 중복 금지).
+      - **② 타이포·행간 (Typography)**: 크기(`fontSize`)·굵기(`fontWeight`)·자간(`letterSpacing`)·**행간(`lineHeight`)**·줄바꿈(`whiteSpace`). 변형이나 역할에서 `fontSize`/`lineHeight`를 비워두면 문서 본문 기본값(`inheritedBaseline.bodyFontSize` / `bodyLineHeight`)이 그대로 상속되므로, 견본의 글자 크기·줄 간격 밀도가 본문과 다르면 반드시 명시한다.
+      - **③ 공간·밀도 (Spacing & Density)**: 안쪽 여백(`padding`/`cellPadding`), 바깥 여백(`marginY`/`margins`/`imagePaddingY`), 요소 간격(`blockGap`/`stripGap`). 견본이 촘촘한 고밀도인지 여유로운 편집형인지 먼저 판별하고, 색·선과 동일한 비중으로 여백·행간 수치를 맞춘다.
+      - **④ 비례·위계 (Proportion & Hierarchy)**: 폭 비율(`columnWidths`/`maxWidth`), 정렬(`align`/`vAlign`), 역할 간 강약 대비(제목/본문/캡션, 헤더/소계/합계 등 열린 역할 키 활용).
+   3) **도구 자가 점검 루프**: `style.upsertVariant`가 반환하는 `axisCoverage`와 `diagnostics`를 반드시 확인한다. `diagnostics`에 경고(`warn`, 예: 행간·폰트 크기 암묵 상속, 안쪽 여백 누락, 중복 테두리, 열 폭 합계 오차)가 있으면 **사용자에게 보고하기 전에 견본과 대조해 `style.upsertVariant`로 즉시 보정**한다.
+   4) `.vsyntax` DSL 에서 변형과 열린 역할을 바로 선언할 수 있으며, 고정 텍스트의 `{total.subtotal}소계` / `{total}합계`와 채움 슬롯의 `{group-label}{{major}}` 역할 모두 그대로 보존된다:
       - `<<view:title:list-heading>> 요구사항 목록표`
       - `<<view:table:eval-rubric>> 평가항목 및 배점 기준표`
       - `[^] | [^] | {total.sub}소계 | [<] | {total.sub}{{sub_total:number|소계}}`
-   4) 이미 배치된 블록의 스타일만 갈아끼울 때는 인라인 hex 를 덮어쓰지 말고 `style.apply({ blockIds, styleKey, cellRoleMap, clearInlineCellStyles: true })` 로 라이브 바인딩한다.
+   5) 이미 배치된 블록이나 방금 `assets.propose` 로 Staged 대기열에 올린 블록에 스타일을 바인딩할 때는 인라인 hex 를 덮어쓰지 말고 `style.apply({ blockIds, styleKey, cellRoleMap, clearInlineCellStyles: true })` (또는 `assets.propose` 의 `styleKey`/`cellRoleMap` 옵션)로 제안한다. `style.upsertVariant` 와 `style.apply` 는 디스크를 즉시 덮지 않고 캔버스 2D Unified Diff(`staged: true`)로 적재되어 사용자가 직접 `승인` · `거절`할 수 있다.
+
+A6 복합 · 모호 요청의 다중 도구 완결 루프 (Complete-First Multi-Tool Chain):
+   "레퍼런스 표/형식처럼 다음 element도 작업해줘", "앞 블록처럼 여기도 맞춰줘" 같은 요청은 요구 범위가 모호하므로 **단일 도구 1회(구조만 또는 스타일만)로 끝내지 말고** 아래 세 축을 한 턴에 모두 완결한다:
+   1) **대상 특정**: `workspace.getState` · `document.getOutline` 으로 직전 작업/선택 블록의 다음 element가 이미 캔버스에 있는 교체 대상(`mode: "replace"`)인지, 아래에 새로 배치할 다음 항목(`mode: "insert"`)인지 판별한다.
+   2) **구조 + 데이터 완결**: 기존 또는 신규 에셋으로 `assets.propose` 를 호출해 격자·병합·역할을 맞추고, 대상 element의 기존 내용(필요 시 리소스/아웃라인)을 `items`/`records` 로 빠짐없이 이관한다. `styleKey` · `cellRoleMap` 을 함께 넘기면 생성되는 Staged 블록에 즉시 바인딩된다.
+   3) **시각 스타일 완결**: 동반 `.vstyle` 에 해당 변형이 없거나 `diagnostics` 경고가 있으면 `style.upsertVariant` 로 4축(면·선 / 타이포·행간 / 공간·밀도 / 비례·위계)을 보정한 뒤, `style.apply` 로 대상 블록(`stagedBlockIds` 또는 `replaceBlockIds` 모두 자동 연결)에 바인딩해 구조+데이터+스타일이 한 번에 일치하도록 마감한다.
+   4) **깎아내기 쉬운 축별 보고 (Subtractive Directing)**: 답변 끝에 이번 Staged 제안에 포함한 축(① 대상 블록 및 교체/추가 방식 ② 적용한 에셋·구조 ③ 이관/매핑한 데이터 ④ 바인딩한 `.vstyle` 변형)을 짧게 항목별로 밝혀, 사용자가 화면을 보며 "스타일은 유지하고 구조만 원래대로"처럼 원하지 않는 축만 바로 디렉팅할 수 있게 한다.

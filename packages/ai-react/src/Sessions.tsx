@@ -74,12 +74,13 @@ export function SessionChip({
       data-session-key={session.key}
       data-session-status={session.status}
       title={tip}
+      onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => {
         e.stopPropagation();
         onOpen(session.key);
       }}
-      className="pointer-events-auto relative inline-flex max-w-[180px] items-center gap-1.5 rounded-full border border-white/15 bg-[#1e1f24]/95 px-2 py-[3px] text-[10.5px] font-medium leading-none text-slate-200 shadow-md shadow-black/40 backdrop-blur-sm transition-colors hover:border-violet-400/60 hover:bg-[#2a2b33]"
+      className="pointer-events-auto relative inline-flex max-w-[180px] cursor-pointer items-center gap-1.5 rounded-full border border-white/15 bg-[#1e1f24]/95 px-2 py-[3px] text-[10.5px] font-medium leading-none text-slate-200 shadow-md shadow-black/40 backdrop-blur-sm transition-colors hover:border-violet-400/60 hover:bg-[#2a2b33]"
     >
       <SessionStatusDot status={session.status} />
       <span className="truncate">{clip(session.title, 22)}</span>
@@ -216,7 +217,7 @@ export function AnchorChipLayer({
     if (first) byTop.set(first.top, [...(byTop.get(first.top) ?? []), session]);
   }
   return (
-    <div data-testid="anchor-chip-layer" className="pointer-events-none absolute left-0 top-0 z-30 w-full" style={{ height: 0 }}>
+    <div data-testid="anchor-chip-layer" className="pointer-events-none absolute left-0 top-0 z-40 w-full" style={{ height: 0 }}>
       {sessions.map((session) => {
         const tone = BAND_TONE[session.status];
         if (!tone) return null;

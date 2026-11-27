@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  BookOpen,
   Bot,
   Cpu,
   FileCode2,
@@ -33,6 +34,7 @@ import {
   type SettingsSectionDefinition,
 } from "../../model/settingsSectionRegistry";
 import {
+  EVIDENCE_SETTINGS_PATH,
   STANDARD_STYLE_PATH,
   STANDARD_SYNTAX_PATH,
   createDefaultStylePackJson,
@@ -44,13 +46,18 @@ import {
   isSystemSettingsPath,
   parseStylePackJson,
   parseSyntaxSnapshot,
+  readVaultEvidenceSettings,
   serializeSyntaxSnapshot,
+  writeVaultEvidenceSettings,
+  type VaultEvidenceSettings,
+  type VisibleEvidencePresentation,
 } from "@vibe/vault-formats";
 import {
   SegmentedControl,
   SettingRow,
   SettingSectionHeading,
 } from "./ObsidianSettingsPrimitives";
+import { EvidencePresentationPreview } from "./EvidencePresentationPreview";
 import { StylePackSettingsView } from "./StylePackSettingsView";
 import { SyntaxSettingsView } from "./SyntaxSettingsView";
 
@@ -153,13 +160,14 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
     return collectVaultPaths(vault);
   }, [vault, vaultTick]);
 
-  // Ensure lazy-loaded .vsyntax and .vstyle files are hydrated when modal opens
+  // Ensure lazy-loaded .vsyntax, .vstyle, and evidence settings files are hydrated when modal opens
   useEffect(() => {
     if (!open || !vault.ensureLoaded) return;
     const targets = [
       ...syntaxPaths,
       ...(standardStylePath ? [standardStylePath] : []),
       ...individualStylePaths,
+      ...(vault.exists(EVIDENCE_SETTINGS_PATH) ? [EVIDENCE_SETTINGS_PATH] : []),
     ];
     let cancelled = false;
     const unloaded = targets.filter((p) => vault.isLoaded && !vault.isLoaded(p));
@@ -171,6 +179,20 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
       cancelled = true;
     };
   }, [open, vault, syntaxPaths, standardStylePath, individualStylePaths]);
+
+  const evidenceSettings = useMemo<VaultEvidenceSettings>(() => {
+    void vaultTick;
+    return readVaultEvidenceSettings(vault);
+  }, [vault, vaultTick]);
+
+  const updateEvidenceSettings = useCallback(
+    (patch: Partial<VaultEvidenceSettings>) => {
+      const cur = readVaultEvidenceSettings(vault);
+      writeVaultEvidenceSettings(vault, { ...cur, ...patch });
+      setVaultTick((t) => t + 1);
+    },
+    [vault]
+  );
 
   const primarySyntaxPath = standardSyntaxPath;
 
@@ -447,6 +469,184 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
           ),
       },
       {
+        id: "options:evidence",
+        group: "options",
+        label: "리소스 · 근거 표현",
+        subtitle: "주력 리소스 표현형 · 일괄 보기 · 페어 탭 점프 설정",
+        icon: <BookOpen className="h-4 w-4" />,
+        keywords: [
+          "리소스",
+          "근거",
+          "레퍼런스",
+          "인용",
+          "각주",
+          "여백",
+          "주석",
+          "evidence",
+          "footnote",
+          "sidenote",
+          "matrix",
+          "quote",
+          "rationale",
+          "하이라이트",
+          "페어",
+        ],
+        badge:
+          evidenceSettings.displayPolicy === "force-default"
+            ? `일괄 · ${evidenceSettings.defaultPresentation}`
+            : evidenceSettings.defaultPresentation,
+        render: () => {
+          const presentationCards: readonly {
+            readonly id: VisibleEvidencePresentation;
+            readonly title: string;
+            readonly subtitle: string;
+            readonly preview: string;
+            readonly accentClass: string;
+          }[] = [
+            {
+              id: "footnote",
+              title: "각주 (Footnote)",
+              subtitle: "본문 위첨자 [1] + 하단 출처 목록 · 지면 깔끔함 유지",
+              preview: "[1] [2]",
+              accentClass: "border-indigo-400/50 bg-indigo-500/15 text-indigo-200",
+            },
+            {
+              id: "sidenote",
+              title: "여백 주석 (Sidenote)",
+              subtitle: "본문 §1 마커 + 페이지 우측 여백 카드 · 클릭 즉시 페어 탭",
+              preview: "§1 원문 요약 →",
+              accentClass: "border-teal-400/50 bg-teal-500/15 text-teal-200",
+            },
+            {
+              id: "inline-rationale",
+              title: "인라인 산출 근거",
+              subtitle: "문단 아래 ← 산출 근거 한 줄 + 출처 칩 즉시 점프",
+              preview: "← 산출 근거: 출처.md · L34",
+              accentClass: "border-amber-400/50 bg-amber-500/15 text-amber-200",
+            },
+            {
+              id: "quote-embed",
+              title: "원문 직접 인용 카드",
+              subtitle: "발췌 원문을 인용구 카드로 바로 노출 + 원본 열기",
+              preview: "“원문 발췌 인용…” — 원본",
+              accentClass: "border-violet-400/50 bg-violet-500/15 text-violet-200",
+            },
+            {
+              id: "matrix",
+              title: "1:N 추적 매트릭스",
+              subtitle: "출처별 인용 횟수(1:N) 배지 + 하단 요구사항 추적 표",
+              preview: "REQ-01 · 출처 · 1:3",
+              accentClass: "border-rose-400/50 bg-rose-500/15 text-rose-200",
+            },
+            {
+              id: "bound-value",
+              title: "근거 바인딩 수치",
+              subtitle: "{ 수치 } = 산식 (출처) 형태로 팩트·수치 근거 강조",
+              preview: "{ 90% } (Decision 05)",
+              accentClass: "border-cyan-400/50 bg-cyan-500/15 text-cyan-200",
+            },
+          ];
+
+          return (
+            <div className="h-full overflow-y-auto px-8 py-6">
+              <div className="mx-auto max-w-[920px] space-y-5">
+                <div>
+                  <h2 className="text-[18px] font-semibold text-[var(--obs-text-normal,#ececec)]">
+                    리소스 · 근거 표현
+                  </h2>
+                  <p className="mt-0.5 text-[12.5px] text-[var(--obs-text-muted,#9a9a9a)]">
+                    문서(.vdoc)와 아웃라인(.outline)에 붙는 리소스 근거의 주력 표현형과 클릭 시 페어 탭 이동 방식을 설정합니다.
+                    설정은 <code className="font-code">{EVIDENCE_SETTINGS_PATH}</code>에 저장되며 AI Composer 기본값에도 즉시 반영됩니다.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-[var(--obs-border-subtle,#2b2b2b)] bg-[var(--obs-bg-secondary,#242424)] px-5 py-4">
+                  <SettingSectionHeading
+                    title="주력 리소스 표현형"
+                    description="AI가 새로 근거를 첨부하거나, 일괄 보기 모드가 켜져 있을 때 사용할 대표 표현형을 선택합니다."
+                  />
+                  <div
+                    data-testid="evidence-presentation-picker"
+                    className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2"
+                  >
+                    {presentationCards.map((card) => {
+                      const active = evidenceSettings.defaultPresentation === card.id;
+                      return (
+                        <button
+                          key={card.id}
+                          type="button"
+                          data-testid={`evidence-presentation-option-${card.id}`}
+                          onClick={() => updateEvidenceSettings({ defaultPresentation: card.id })}
+                          className={`flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-all ${
+                            active
+                              ? "border-[var(--obs-accent,#8a5cf5)] bg-[var(--obs-accent,#8a5cf5)]/14 shadow-[0_0_0_1px_rgba(138,92,245,0.35)]"
+                              : "border-[var(--obs-border-subtle,#323232)] bg-[var(--obs-bg-primary,#1c1c1c)] hover:border-white/20 hover:bg-white/[0.03]"
+                          }`}
+                        >
+                          <div className="flex w-full items-center justify-between gap-2">
+                            <span className="text-[12.5px] font-semibold text-[var(--obs-text-normal,#ececec)]">
+                              {card.title}
+                            </span>
+                            {active && (
+                              <span className="rounded bg-[var(--obs-accent,#8a5cf5)]/30 px-1.5 py-0.5 text-[9.5px] font-semibold text-[#e9d5ff]">
+                                사용 중
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] leading-relaxed text-[var(--obs-text-muted,#a0a0a0)]">
+                            {card.subtitle}
+                          </span>
+                          <span
+                            className={`mt-0.5 inline-flex items-center rounded border px-2 py-0.5 font-mono text-[10.5px] ${card.accentClass}`}
+                          >
+                            {card.preview}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <EvidencePresentationPreview settings={evidenceSettings} />
+
+                <div className="rounded-xl border border-[var(--obs-border-subtle,#2b2b2b)] bg-[var(--obs-bg-secondary,#242424)] px-5 py-3">
+                  <SettingSectionHeading
+                    title="표시 정책 및 클릭 동작"
+                    description="이미 저장된 문서의 표현형을 어떻게 보여줄지와 각주 클릭 시 동작을 결정합니다."
+                  />
+                  <SettingRow
+                    title="기존 문서 표현형 적용 방식"
+                    description="‘일괄 보기’를 선택하면 이미 각주로 저장된 기존 문서도 원본 데이터를 손대지 않고 위에서 고른 표현형으로 즉시 전환해 표시합니다."
+                  >
+                    <SegmentedControl
+                      value={evidenceSettings.displayPolicy}
+                      options={[
+                        { value: "link-first", label: "링크별 설정 우선" },
+                        { value: "force-default", label: "선택 표현형으로 일괄 보기" },
+                      ]}
+                      onChange={(displayPolicy) => updateEvidenceSettings({ displayPolicy })}
+                    />
+                  </SettingRow>
+                  <SettingRow
+                    title="각주([1]) 클릭 시 동작"
+                    description="각주 표현형에서 번호를 눌렀을 때 바로 페어 탭에 원문과 하이라이트를 띄울지, 발췌 팝오버를 먼저 띄울지 선택합니다."
+                  >
+                    <SegmentedControl
+                      value={evidenceSettings.clickAction}
+                      options={[
+                        { value: "open-pair", label: "즉시 페어 탭 + 하이라이트" },
+                        { value: "popover", label: "발췌 팝오버 먼저" },
+                      ]}
+                      onChange={(clickAction) => updateEvidenceSettings({ clickAction })}
+                    />
+                  </SettingRow>
+                </div>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
         id: "options:files",
         group: "options",
         label: "파일 및 링크",
@@ -716,6 +916,8 @@ export const IdeSettingsModal: React.FC<IdeSettingsModalProps> = ({
     ensurePrimarySyntaxFile,
     ensureStandardStyleFile,
     handleUpdateProfileWidth,
+    evidenceSettings,
+    updateEvidenceSettings,
     extraSections,
   ]);
 

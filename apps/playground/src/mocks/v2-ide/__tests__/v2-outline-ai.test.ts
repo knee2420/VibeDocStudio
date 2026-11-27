@@ -13,7 +13,7 @@ import { applyPatch, flatToTree, importTree, type OutlineNode } from "@vibe/outl
 import { computeOutlineSubtreeHash, outlineScopeAllowsNode, resolveOutlineScope } from "@vibe/ai-scope";
 import type { ToolRunContext, WorkspaceTool } from "@vibe/ai-kernel";
 import { collectOutlineResources, registerLiveOutlineSession, mergeOutlineNodeEvidence } from "@vibe/outline-sync";
-import { createV2AiWorkspace } from "@vibe/ai-vault";
+import { createV2AiWorkspace, fileRef, pathContext, vaultPathContext } from "@vibe/ai-vault";
 import { parseOutlineJson, parseVDocJson, serializeOutlineJson, type OutlineFilePayload } from "@vibe/vault-formats";
 import { createIdeWorkbenchRuntime } from "../model/useIdeWorkbench";
 
@@ -146,15 +146,13 @@ describe(".outline ↔ ai-composer ↔ resource 통합 (E2~E5)", () => {
     assert.ok(paths.includes("02. Resources/cover.png"), "이미지 첨부 포함");
     assert.ok(!paths.some((p) => p.endsWith(".vdoc")), "문서 파일 .vdoc 은 제외되어야 함");
 
-    // 제안 칩으로만 노출되며 settings.resourceFolders 를 몰래 바꾸지 않음
+    // 리소스 팝오버(V2ComposerSettingsBar) 에서만 노출되며, settings.resourceFolders 나 입력창 기본 제안 칩에 강제 노출하지 않음
     assert.equal(ai.store.getState().resourceFolders.length, 0);
-    const suggestedOn = ai.runtime.contexts.suggestedContexts();
-    assert.ok(suggestedOn.some((c) => c.meta?.path === "02. Resources/notes.md"));
-
-    // sourcesOn=false 면 제안 칩도 비워야 함
-    ai.store.getState().setSourcesOn(false);
-    const suggestedOff = ai.runtime.contexts.suggestedContexts();
-    assert.ok(!suggestedOff.some((c) => c.meta?.path === "02. Resources/notes.md"));
+    const suggested = ai.runtime.contexts.suggestedContexts();
+    assert.ok(
+      !suggested.some((c) => c.meta?.path === "02. Resources/notes.md"),
+      "아웃라인 연결 리소스는 입력창 위에 기본 제안 칩으로 자동 노출되지 않아야 함"
+    );
     ai.dispose();
   });
 
@@ -306,6 +304,110 @@ describe(".outline ↔ ai-composer ↔ resource 통합 (E2~E5)", () => {
 
     const recompiledVDoc = parseVDocJson(rt.vault.read("01. Architecture/00. System-Proposal.vdoc"), "proposal");
     assert.ok((recompiledVDoc.evidenceLinks?.length ?? 0) > 0, "재컴파일된 .vdoc 파일에 EvidenceLink 가 영속 저장되어야 함");
+    ai.dispose();
+  });
+
+  it("E6: outline.compileCheck 가 .vclip file 첨부 · 일반 [[...vclip]] 위키링크 · 숨겨진 nodeEvidence 사이드카를 lintIssues 에러로 검출하고 정식 <<resource:...>> 는 통과시킨다", async () => {
+    const { rt, ai } = setup();
+    rt.vault.createFolder("01. Architecture/sources");
+    rt.vault.createFolder("01. Architecture/sources/기사.vclip");
+    rt.vault.createFile("01. Architecture/sources/기사.vclip/content.md", "# 기사\n\n예산 5000만원 확정\n");
+
+    const compileCheck = ai.runtime.tools.get("outline.compileCheck") as WorkspaceTool<any>;
+
+    const badOl = makeSampleOutline();
+    badOl.nodeEvidence = {
+      "n-p2": [{ kind: "resource", refId: "vault:02. Resources/notes.md", label: "notes.md", sourcePath: "02. Resources/notes.md" }],
+    };
+    badOl.rootNodes[0].children[0].children.push({
+      id: "n-bad-wiki",
+      text: "요약 [[기사.vclip]]",
+      file: { target: "01. Architecture/sources/기사.vclip" },
+      isFolded: false,
+      children: [],
+    } as OutlineNode);
+    badOl.rootNodes[0].children[0].children.push({
+      id: "n-bad-img-res",
+      text: "<<resource: 02. Resources/cover.png | 커버 이미지>>",
+      isFolded: false,
+      children: [],
+    } as OutlineNode);
+    rt.vault.write("01. Architecture/master.outline", serializeOutlineJson(badOl));
+
+    const badReport = (await compileCheck.run({ path: "01. Architecture/master.outline" }, CTX)) as {
+      lintPassed: boolean;
+      lintIssues: Array<{ code: string; severity: string }>;
+    };
+    assert.equal(badReport.lintPassed, false);
+    const codes = new Set(badReport.lintIssues.map((i) => i.code));
+    assert.ok(codes.has("LINT_LEGACY_NODE_EVIDENCE_SIDECAR"));
+    assert.ok(codes.has("LINT_VCLIP_SET_FILE_ABUSE"));
+    assert.ok(codes.has("LINT_VCLIP_PLAIN_WIKILINK"));
+    assert.ok(codes.has("LINT_IMAGE_USE_OUTLINE_FILE"));
+
+    const goodOl = makeSampleOutline();
+    goodOl.rootNodes[0].children[1].children[0].children.push({
+      id: "n-good-res",
+      text: "<<resource: 01. Architecture/sources/기사.vclip | 예산 5000만원 확정>>",
+      isFolded: false,
+      children: [],
+    } as OutlineNode);
+    goodOl.rootNodes[0].children[0].children.push({
+      id: "n-good-img-file",
+      text: "대표 커버 사진",
+      file: { target: "02. Resources/cover.png" },
+      isFolded: false,
+      children: [],
+    } as OutlineNode);
+    goodOl.rootNodes[0].children[0].children.push({
+      id: "n-good-img-bbox",
+      text: "<<resource: 02. Resources/cover.png #bbox(10,20,300,400) | 영역 근거>>",
+      isFolded: false,
+      children: [],
+    } as OutlineNode);
+    rt.vault.write("01. Architecture/master.outline", serializeOutlineJson(goodOl));
+
+    const goodReport = (await compileCheck.run({ path: "01. Architecture/master.outline" }, CTX)) as {
+      lintPassed: boolean;
+      lintIssues: Array<{ code: string; severity: string }>;
+      measurements: { resourceTagCount: number; ungroundedNumericNodes: number; lintErrorCount: number };
+    };
+    assert.equal(goodReport.lintPassed, true);
+    assert.equal(goodReport.measurements.lintErrorCount, 0);
+    assert.equal(goodReport.measurements.resourceTagCount, 2);
+    assert.equal(goodReport.measurements.ungroundedNumericNodes, 0);
+    ai.dispose();
+  });
+
+  it("E7: .outline 파일 첨부(fileRef · pathContext · vaultPathContext)는 읽기 전용 reference 가 아니라 편집 대상 target(write) 으로 전달된다", () => {
+    const { ai } = setup();
+    const outlinePath = "01. Architecture/master.outline";
+    const notePath = "02. Resources/notes.md";
+
+    const olRef = fileRef(outlinePath);
+    assert.equal(olRef.role, "target");
+    assert.equal(olRef.access, "write");
+    assert.equal(olRef.meta?.entityKind, "outline");
+
+    const mdRef = fileRef(notePath);
+    assert.equal(mdRef.role, "reference");
+    assert.equal(mdRef.access, "read");
+
+    const viaPathCtx = pathContext(ai.env, outlinePath);
+    assert.ok(viaPathCtx);
+    assert.equal(viaPathCtx.role, "target");
+    assert.equal(viaPathCtx.access, "write");
+
+    const viaVaultCtx = vaultPathContext(ai, outlinePath);
+    assert.ok(viaVaultCtx);
+    assert.equal(viaVaultCtx.role, "target");
+    assert.equal(viaVaultCtx.access, "write");
+
+    const filesProvider = ai.runtime.contexts.list().find((p) => p.id === "files");
+    assert.ok(filesProvider?.resolve);
+    const resolved = filesProvider.resolve(olRef) as typeof olRef;
+    assert.ok(resolved.content?.includes("편집 대상 .outline"));
+    assert.ok(resolved.content?.includes("ol_propose_patch"));
     ai.dispose();
   });
 });

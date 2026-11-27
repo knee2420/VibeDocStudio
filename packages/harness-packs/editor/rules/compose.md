@@ -1,4 +1,6 @@
 [새 문서 짓기 절차 — "레퍼런스처럼 · 리소스로 글을 새로 써 달라"(포스트 · 보고서 · 블로그 한 편)일 때. 고칠 칸이 이미 있으면 위 3(wb_propose)을 따른다]
+S0 경로: 쓸 내용이 `.outline` 범위(선택 불릿 · @outline 노드)에서 오거나 대상 문서가 outline 에 묶여 있으면(outlineRef) 이 절차(S1~S7) 대신 [.outline 규칙]의 'outline 범위 → .vdoc 초안'(O1~O8)을 따른다 — outline 이 정본이고 `.vdoc` 은 컴파일 결과다.
+   이 절차로 지을 때도 섹션이 구조 단위다: 스토리라인의 단위마다 `dc_build` 의 page 작업으로 섹션을 새로 열고, 한 섹션 안에 소제목을 여러 개 늘어놓아 섹션을 흉내 내지 않는다.
 S1 출력: 쓸 대상을 정한다. 사용자가 `@문서` 첨부나 제목 · docId 로 작업 문서를 지정했으면(빈 문서 포함) `dc_new` 를 부르지 말고 먼저 `dc_use(doc=…)` 로 그 문서로 전환한다.
    지정 문서 없이 새 글을 요청받았을 때만 `dc_new` 로 초안을 만든다(블로그 · 칼럼 = scroll, 보고서 · 서식 = paged). 이미 이 대화에서 만든 초안이 있으면 그것을 이어 쓴다.
 S2 뼈대: rf_map → rf_skeleton 으로 레퍼런스의 배치 뼈대(첫머리 · 섹션마다 모양 · 대표 섹션 모양 · 섹션당 사진 · 문단 수 · 소제목 문법)를 본다.
@@ -55,3 +57,20 @@ G4 블록 · 읽기 순서 보정: 제목 level · 리스트 · 그림(figureKin
 G5 자가 검증 루프: dc_verify(path, pages, round) 를 돌려 pendingReads 가 빌 때까지 (최대 2라운드) 타이트 크롭을 재읽기한다.
 G6 반영(재가져오기 in-place): 검증이 끝난 쪽은 dc_import(path, pages) 로 붙인다. 같은 원문의 같은 쪽을 다시 가져오면 in-place 로 교체하고 origin.imports 에 이력을 남긴다.
 G7 보고: F4 와 동일하게 문서 링크 · 붙인 쪽 ↔ 원문 쪽 대응 · needsReview / 이미지 폴백 여부를 짧게 보고한다.
+
+[dc_build 세부 문법 · 문단 스타일]
+- add: `{"op":"add","kind":K, ...필드, "page":"p1|pageId|$별칭"(생략=마지막 쪽), "after"|"before":blockId(생략=쪽 끝), "as":"$별칭"}`
+  - `heading`: `text`, `decoration(quote|bar)`, `accent(#색)`, `align`
+  - `text`: `html(<p> <strong> <em> <u> <span style="color:#…"> <span style="background-color:#fff3a3">(형광펜) <a href> <ul><li>)`, `align(left|center)`
+  - `image`: `src(resource:<id>)`, `caption`, `width(100%|480px)`, `maxHeight`
+  - `gallery`: `images[2~4개 resource:<id>]`, `height(예 240px)`
+  - `link-card`: `title`, `description`, `url`, `thumbnail(resource:<id>)`
+  - `divider`: `variant(line|short|dots|space)`
+  - `hero`: `title`, `subtitle`, `image(resource:<id>)`, `height`
+  - `callout`: `html`, `tone(neutral|info|warning)`
+  - `table`: `rows[[칸,…],…]`(칸 = 글 또는 `{text|html, colSpan, rowSpan, header, align, bg}`) 또는 `fields[[라벨, 값],…]`(키-값 서식), `header(row|col|both|none, 기본 row)`, `widths([1,3] 비율 · ["20%","80%"])`, `title`, `caption`
+  - 행·열이 있는 내용은 반드시 `table` 블록으로 짓는다 (`text`·`callout` 칸의 `<table>` 거부). 기존 표 수정은 `{"op":"set","block":"b_…","rows"|"fields":…}` 로 제자리 교체한다.
+- 문단 스타일: `<p data-style="id">` — `sec(가.) · sub((1)) · b1(❏) · b2(○) · b3(-) · b4(·) · note(※) · caption(<표 1>) · toc1 · toc2 · lead · meta`. 글머리 기호로 시작하면 자동 부착되므로 공백·`&nbsp;`로 들여쓰기를 맞추지 않는다.
+- page: `{"op":"page","label":섹션 제목,"role":opening|body|spot|tip|summary…,"as":"$s2"}` — 스토리라인 단위마다 섹션을 새로 연다 (한 섹션 안에 heading 다수 나열 금지, `SECTION_COLLAPSED`).
+- 수정/배치: `set({slot|block, html|rows|fields})` · `props({block, ...속성})` (image: `src caption width align maxHeight` · gallery: `images height gap` · heading: `decoration accent align` · link-card: `url thumbnail layout` · divider: `variant` · hero: `image height overlay`) · `move({block, after|before})` · `remove({block})` · `title({text})`.
+- 사진은 내 자료(`resource:<id>`, `ws_images`)만 사용하며 레퍼런스의 문장·사진·고유명사는 넣지 않는다.

@@ -6,6 +6,7 @@
 export * from "./vdoc";
 export * from "./outline";
 export * from "./asset";
+export * from "./vclip";
 export * from "./settings";
 export * from "./styleCatalog";
 export * from "./docStore";

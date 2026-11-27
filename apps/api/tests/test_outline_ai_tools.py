@@ -176,56 +176,138 @@ def test_e1c_ol_propose_patch_guards_scope_docbindings_stale_and_modes(tmp_path:
         plan.call("ol_propose_patch", {"requests": [{"op": "replace", "id": "n-p1", "text": "x"}]})
 
 
-def test_e1d_node_evidence_cross_check_against_reads(tmp_path: Path) -> None:
+def test_e1d_resource_tag_lint_and_sidecar_blocking(tmp_path: Path) -> None:
     vault_root, store, _, _ = _setup_outline(tmp_path)
-    reads = [{"path": str(vault_root / "notes" / "facts.md"), "start": 1, "end": 5}]
+    (vault_root / "notes" / "unread.md").write_text("미열람 원문\n", encoding="utf-8")
+    clip_dir = vault_root / "라야 부상.vproj" / "sources" / "베스트일레븐_기사.vclip"
+    clip_dir.mkdir(parents=True)
+    (clip_dir / "content.md").write_text("# 베스트일레븐 기사\n\n수술은 필요하지 않다.\n", encoding="utf-8")
+    reads = [
+        {"path": str(vault_root / "notes" / "facts.md"), "start": 1, "end": 5},
+        {"path": str(clip_dir / "content.md"), "start": 1, "end": 5},
+    ]
     ol_tools = OutlineTools(store, "ol-s1", proposals=ProposalStore(store.dir), reads=lambda: reads)
 
-    # 읽은 파일 근거 -> 경고 없음
+    # 1) 숨겨진 nodeEvidence 사이드카 단독 주입은 서버 린트가 즉시 차단
+    with pytest.raises(ValueError, match="LINT_SIDECAR_ONLY_EVIDENCE"):
+        ol_tools.call(
+            "ol_propose_patch",
+            {
+                "summary": "사이드카 우회",
+                "requests": [{"op": "replace", "id": "n-p1", "text": "예산 5000만원"}],
+                "nodeEvidence": {
+                    "n-p1": [{"kind": "resource", "refId": "vault:notes/facts.md", "label": "facts.md", "sourcePath": "notes/facts.md"}]
+                },
+            },
+        )
+
+    # 2) 읽은 .vclip(공백 경로) + 발췌문 <<resource:...>> 하위 불릿 -> 경고 없음
     msg_ok = ol_tools.call(
         "ol_propose_patch",
         {
-            "summary": "근거 있는 수정",
-            "requests": [{"op": "replace", "id": "n-p1", "text": "예산 5000만원"}],
-            "nodeEvidence": {
-                "n-p1": [{"kind": "resource", "refId": "vault:notes/facts.md", "label": "facts.md", "sourcePath": "notes/facts.md"}]
-            },
+            "summary": "근거 태그 삽입",
+            "requests": [
+                {
+                    "op": "insert_after",
+                    "targetId": "n-p1",
+                    "inside": True,
+                    "items": [{"text": "<<resource: 라야 부상.vproj/sources/베스트일레븐_기사.vclip | 수술은 필요하지 않다.>>"}],
+                }
+            ],
         },
     )
-    assert "경고:" not in msg_ok
+    assert "[Staged 제출" in msg_ok and "경고:" not in msg_ok
 
-    # 읽지 않은 파일 근거 -> 경고 표시
+    # 3) 읽지 않은 볼트 파일 + 발췌 누락 -> 린트 경고 표시 (테스트 기본: 열람 강제 꺼짐)
     msg_warn = ol_tools.call(
         "ol_propose_patch",
         {
             "summary": "미열람 근거",
-            "requests": [{"op": "replace", "id": "n-p1", "text": "추정치"}],
-            "nodeEvidence": {
-                "n-p1": [{"kind": "resource", "refId": "vault:notes/unread.md", "label": "unread.md", "sourcePath": "notes/unread.md"}]
-            },
+            "requests": [
+                {
+                    "op": "insert_after",
+                    "targetId": "n-p1",
+                    "inside": True,
+                    "items": [{"text": "<<resource: notes/unread.md>>"}],
+                }
+            ],
         },
     )
-    assert "경고:" in msg_warn and "unread.md" in msg_warn
+    assert "LINT_UNREAD_RESOURCE_SOURCE" in msg_warn and "LINT_RESOURCE_WITHOUT_QUOTE" in msg_warn
+
+    # 3-b) 실제 서버(열람 강제 켜짐): 읽지 않은 글 원천 인용은 차단, 읽은 것은 통과
+    strict = OutlineTools(store, "ol-s1", proposals=ProposalStore(store.dir), reads=lambda: reads, enforce_reads=True)
+    with pytest.raises(ValueError, match="LINT_UNREAD_RESOURCE_SOURCE"):
+        strict.call(
+            "ol_propose_patch",
+            {"requests": [{"op": "insert_after", "targetId": "n-p1", "inside": True,
+                           "items": [{"text": "<<resource: notes/unread.md | 미열람 원문>>"}]}]},
+        )
+    ok_strict = strict.call(
+        "ol_propose_patch",
+        {"requests": [{"op": "insert_after", "targetId": "n-p1", "inside": True,
+                       "items": [{"text": "<<resource: 라야 부상.vproj/sources/베스트일레븐_기사.vclip | 수술은 필요하지 않다.>>"}]}]},
+    )
+    assert "[Staged 제출" in ok_strict
+
+    # 3-c) 닫는 >> 가 빠진 근거 태그는 차단 (컴파일에서 인용이 통째로 사라진다)
+    with pytest.raises(ValueError, match="LINT_UNTERMINATED_TAG"):
+        ol_tools.call(
+            "ol_propose_patch",
+            {"requests": [{"op": "insert_after", "targetId": "n-p1", "inside": True,
+                           "items": [{"text": "<<resource: 라야 부상.vproj/sources/베스트일레븐_기사.vclip | 수술은 필요하지 않다."}]}]},
+        )
+
+    # 4) .vclip 을 set_file 또는 일반 [[...vclip]] 위키링크로 넣으면 서버 린트가 차단
+    with pytest.raises(ValueError, match="LINT_VCLIP_SET_FILE_ABUSE"):
+        ol_tools.call(
+            "ol_propose_patch",
+            {"requests": [{"op": "set_file", "id": "n-p1", "file": {"target": "라야 부상.vproj/sources/베스트일레븐_기사.vclip"}}]},
+        )
+    with pytest.raises(ValueError, match="LINT_VCLIP_PLAIN_WIKILINK"):
+        ol_tools.call(
+            "ol_propose_patch",
+            {"requests": [{"op": "replace", "id": "n-p1", "text": "수술 불필요 [[베스트일레븐_기사.vclip]]"}]},
+        )
 
 
 def test_e1e_ol_attach_resource_all_modes(tmp_path: Path) -> None:
-    _, store, ol_tools, _ = _setup_outline(tmp_path)
+    vault_root, store, ol_tools, _ = _setup_outline(tmp_path)
+    clip_dir = vault_root / "sources" / "기사.vclip"
+    clip_dir.mkdir(parents=True)
+    (clip_dir / "content.md").write_text("# 기사\n\n핵심 원문 발췌.\n", encoding="utf-8")
 
     # 없는 리소스 거부
     with pytest.raises(ValueError, match="존재하지 않습니다"):
         ol_tools.call("ol_attach_resource", {"nodeId": "n-sec1", "target": "photos/missing.png", "mode": "file"})
 
+    # .vclip 은 file / wikilink 모드 금지, mode="resource" 만 허용
+    with pytest.raises(ValueError, match="LINT_VCLIP_SET_FILE_ABUSE"):
+        ol_tools.call("ol_attach_resource", {"nodeId": "n-sec1", "target": "sources/기사.vclip", "mode": "file"})
+    with pytest.raises(ValueError, match="LINT_VCLIP_SET_FILE_ABUSE"):
+        ol_tools.call("ol_attach_resource", {"nodeId": "n-sec1", "target": "sources/기사.vclip", "mode": "wikilink"})
+
+    # 일반 이미지는 #bbox 없이 mode="resource" 금지 -> mode="file" 로 바로 꽂기 강제
+    with pytest.raises(ValueError, match="LINT_IMAGE_USE_OUTLINE_FILE"):
+        ol_tools.call("ol_attach_resource", {"nodeId": "n-sec1", "target": "photos/hero.png", "mode": "resource", "quote": "대표컷"})
+
+    r0 = ol_tools.call(
+        "ol_attach_resource",
+        {"nodeId": "n-sec1", "target": "sources/기사.vclip", "mode": "resource", "quote": "핵심 원문 발췌."},
+    )
     r1 = ol_tools.call("ol_attach_resource", {"nodeId": "n-sec1", "target": "photos/hero.png", "mode": "file"})
     r2 = ol_tools.call("ol_attach_resource", {"nodeId": "n-sec1", "target": "photos/hero.png", "mode": "img-token", "caption": "대표컷"})
     r3 = ol_tools.call("ol_attach_resource", {"nodeId": "n-sec1", "target": "notes/facts.md", "mode": "wikilink"})
-    assert "[Staged 제출" in r1 and "[Staged 제출" in r2 and "[Staged 제출" in r3
+    assert "[Staged 제출" in r0 and "[Staged 제출" in r1 and "[Staged 제출" in r2 and "[Staged 제출" in r3
 
     saved = ProposalStore(store.dir).list("ol-s1")
-    assert len(saved) == 3
+    assert len(saved) == 4
     ops = [p["outlinePatch"]["requests"][0] for p in saved]
-    assert ops[0]["op"] == "set_file" and ops[0]["file"]["target"] == "photos/hero.png"
-    assert ops[1]["op"] == "insert_after" and "[img:대표컷 -> resource:vault:photos/hero.png]" in ops[1]["items"][0]["text"]
-    assert ops[2]["op"] == "insert_after" and "[[facts]]" in ops[2]["items"][0]["text"]
+    assert ops[0]["op"] == "insert_after" and "<<resource: sources/기사.vclip | 핵심 원문 발췌.>>" in ops[0]["items"][0]["text"]
+    assert all(p["outlinePatch"]["nodeEvidence"] == {} for p in saved)
+    assert ops[1]["op"] == "set_file" and ops[1]["file"]["target"] == "photos/hero.png"
+    assert ops[2]["op"] == "insert_after" and "[img:대표컷 -> resource:vault:photos/hero.png]" in ops[2]["items"][0]["text"]
+    assert ops[3]["op"] == "insert_after" and "[[facts]]" in ops[3]["items"][0]["text"]
 
 
 def test_e4_server_vibefs_and_workbench_proposals_sse_channel(tmp_path: Path) -> None:
@@ -423,3 +505,103 @@ def test_e1h_vault_hook_auto_allows_vault_reads_and_redirects_document_files(tmp
     empty_store = WorkspaceStore(str(tmp_path / "empty_state"))
     deny_v1 = decide({"conversationId": "conv-v1", "toolCall": {"name": "read_file", "args": {"Path": "notes/facts.md"}}}, empty_store)
     assert deny_v1["decision"] == "deny" and "마운트된 자료가 없다" in deny_v1["reason"]
+
+
+def test_e1i_ol_create_blocked_when_outline_scope_selected_and_guides_topmost_child(tmp_path: Path) -> None:
+    _, _, ol_tools, _ = _setup_outline(
+        tmp_path,
+        outline_scope={
+            "mode": "nodes",
+            "label": "선택 블록 2개",
+            "allowedNodeIds": ["n-sec2", "n-sec1"],
+        },
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        ol_tools.call(
+            "ol_create",
+            {
+                "path": "docs/separate_a4_report.outline",
+                "title": "따로 만든 A4 보고서",
+                "rootNodes": [{"text": "<<doc:a4>> 따로 만든 A4 보고서"}],
+            },
+        )
+    msg = str(exc_info.value)
+    assert "docs/master.outline" in msg
+    assert "ol_propose_patch" in msg
+    assert 'targetId="n-sec1"' in msg, f"문서 순서상 최상단 선택 블록(n-sec1)을 안내해야 함: {msg}"
+
+
+def test_e1j_shared_vibefs_server_isolates_concurrent_sessions_and_workbench_only(tmp_path: Path) -> None:
+    """단일 공유 vibefs 서버(session_id='')가 동시 세션(마운트 보유 세션 vs workbench 전용 세션)을 격리한다."""
+    from vibefs.index import MountItem
+
+    vault_root = tmp_path / "vault"
+    state_dir = tmp_path / "state"
+    vault_root.mkdir()
+    state_dir.mkdir()
+    (vault_root / "s1.outline").write_text(json.dumps(_sample_outline(), ensure_ascii=False), encoding="utf-8")
+    (vault_root / "s2.outline").write_text(json.dumps(_sample_outline(), ensure_ascii=False), encoding="utf-8")
+    (vault_root / "s1_only.md").write_text("세션1 전용 자료", encoding="utf-8")
+
+    ws = ResourceWorkspace(
+        state_dir=state_dir,
+        sandbox_dir=tmp_path / "sandbox",
+        vault_roots=lambda vid: str(vault_root) if vid == "v1" else None,
+    )
+    # 1) mcp_server_spec 은 세션이 달라도 완전히 동일한 단일 공유 사양을 반환해야 한다(--session 금지)
+    spec1 = ws.mcp_server_spec("sess-1")
+    spec2 = ws.mcp_server_spec("sess-2")
+    assert spec1 == spec2
+    assert "--session" not in spec1[0]["args"]
+
+    # 2) sess-1 은 마운트 + workbench, sess-2 는 마운트 없는 workbench 전용 세션
+    ws.mount("sess-1", [MountItem(str(vault_root / "s1_only.md"), "vault:s1_only.md", "s1_only.md", kind="file")])
+    ws.store.set_workbench("sess-1", {"vaultId": "v1", "vaultRoot": str(vault_root), "activeOutlinePath": "s1.outline"})
+    ws.store.set_workbench("sess-2", {"vaultId": "v1", "vaultRoot": str(vault_root), "activeOutlinePath": "s2.outline"})
+    ws.bind("sess-1", "conv-1")
+    ws.bind("sess-2", "conv-2")
+
+    assert ws.store.session_for_conversation("conv-1") == "sess-1"
+    assert ws.store.session_for_conversation("conv-2") == "sess-2"
+
+    # 3) 단일 공유 VibefsServer 인스턴스로 두 세션이 번갈아 ol_propose_patch 호출 → 서로 섞이지 않아야 함
+    shared_srv = VibefsServer(ws.store.dir, session_id="")
+    shared_srv.call(
+        "ol_propose_patch",
+        {"summary": "S1 수정", "requests": [{"op": "replace", "id": "n-p1", "text": "세션1 텍스트"}]},
+        {"antigravity.google/conversation_id": "conv-1"},
+    )
+    shared_srv.call(
+        "ol_propose_patch",
+        {"summary": "S2 수정", "requests": [{"op": "replace", "id": "n-p1", "text": "세션2 텍스트"}]},
+        {"antigravity.google/conversation_id": "conv-2"},
+    )
+    pstore = ProposalStore(ws.store.dir)
+    p1 = pstore.list("sess-1")
+    p2 = pstore.list("sess-2")
+    assert len(p1) == 1 and p1[0]["outlinePatch"]["path"] == "s1.outline"
+    assert len(p2) == 1 and p2[0]["outlinePatch"]["path"] == "s2.outline"
+
+
+def test_e1k_all_vibefs_tool_specs_stay_within_agy_safe_budget() -> None:
+    """agy 1.5+ 는 단일 MCP 도구 선언이 ~1,600B / ~1,400ch 초과 시 글로벌 MCP 로딩 후 선언을 누락한다.
+
+    모든 vibefs 도구 스펙이 실측 안전 한도(1,600 UTF-8 bytes / 1,350 chars) 안쪽임을 회귀 가드한다.
+    """
+    from vibefs.doc_tools import DC_TOOL_SPECS
+    from vibefs.fs_tools import VF_TOOL_SPECS
+    from vibefs.ref_tools import RF_TOOL_SPECS
+    from vibefs.research_tools import RS_TOOL_SPECS
+    from vibefs.tools import TOOL_SPECS
+    from vibefs.wb_tools import WB_TOOL_SPECS
+
+    all_specs = [*TOOL_SPECS, *WB_TOOL_SPECS, *DC_TOOL_SPECS, *RF_TOOL_SPECS, *RS_TOOL_SPECS, *VF_TOOL_SPECS, *OL_TOOL_SPECS]
+    oversized = []
+    for spec in all_specs:
+        raw = json.dumps(spec, ensure_ascii=False)
+        n_bytes = len(raw.encode("utf-8"))
+        n_chars = len(raw)
+        if n_bytes > 1600 or n_chars > 1350:
+            oversized.append((spec["name"], n_bytes, n_chars))
+    assert not oversized, f"agy MCP 도구 누락 안전 한도(1600B / 1350ch) 초과 도구: {oversized}"

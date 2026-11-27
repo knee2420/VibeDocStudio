@@ -1,18 +1,18 @@
 [
  {
   "name": "rs_folder",
-  "description": "볼트에 폴더를 만든다 (중간 폴더까지 한 번에, 이미 있으면 그대로). 리서치로 들여올 레퍼런스 · 사진 · 글을 둘 자리를 먼저 정하고 만든다. 볼트 모드 · 쓰기 가능한 볼트에서만.",
+  "description": "볼트에 폴더를 만든다 (중간 폴더까지 한 번에, 이미 있으면 그대로). 활성 .vproj 안에서 역할별 하위 폴더(사진 · references 등)를 나눌 때 쓴다. 볼트 모드 · 쓰기 가능한 볼트에서만.",
   "inputSchema": {
    "type": "object",
    "properties": {
-    "path": {"type": "string", "description": "볼트 상대 경로 (예: 여행/도쿄/사진)"}
+    "path": {"type": "string", "description": "볼트 상대 경로 (활성 .vproj 가 있으면 그 하위 경로, 예: 04_아사쿠사_자료.vproj/사진)"}
    },
    "required": ["path"]
   }
  },
  {
   "name": "rs_page",
-  "description": "웹 페이지 하나를 가볍게 열어 본다: 제목 · 언어(한글 비율) · 작성자/날짜 · 형식 신호(BlogPosting/article · 문단 평균 길이 · 링크 비율) · 소제목 목록 · 본문 글자 수 · 사진 수 · 열림 여부. search_web 후보가 쓸 글과 언어·형식이 맞는지 고를 때. 글을 옮기는 도구가 아니다.",
+  "description": "웹 페이지 하나를 가볍게 열어 본다: 제목 · 언어(한글 비율) · 작성자/날짜 · 형식 신호(BlogPosting/article · 문단 평균 길이 · 링크 비율) · 소제목 목록 · 본문 글자 수 · 사진 수 · 열림 여부. 주로 시간이 오래 걸리는 레퍼런스 등록(rs_ref_import) 전 후보를 선별할 때 쓴다. 사실 스크랩(rs_clip)은 빠르고 자체 진단을 반환하므로 search_web 의 딥 URL 은 rs_page 없이 바로 rs_clip 을 호출해도 된다.",
   "inputSchema": {
    "type": "object",
    "properties": {
@@ -22,8 +22,37 @@
   }
  },
  {
+  "name": "rs_clip",
+  "description": "사실·근거·인용용 웹 자료를 볼트에 폴더 번들(`<제목>.vclip/` — clip.json + content.md + 선택 snapshot.html/assets/)로 스크랩하고 세션 리소스로 자동 마운트한다. .ref(형식 참고용)와 철저히 분리된다. folder 생략 시 현재 편집 문서와 동레이어의 `sources` 폴더에 자동 저장한다(활성 .vproj 작업 중에는 folder 생략 권장). 루트 홈페이지 URL 대신 실제 기사·공식 문서 상세 페이지(딥 URL)를 넣는다. 같은 URL 이 이미 있으면 중복 생성하지 않고 더 깊은 모드로 제자리 업그레이드한다. mode: bookmark(목록화) · content(본문 스크랩, 기본) · archive(원형 HTML + 로컬 이미지 딥 보관).",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "url": {"type": "string", "description": "수집할 공개 http(s) 상세 페이지(딥 URL)"},
+    "folder": {"type": "string", "description": "저장할 볼트 폴더 (생략 시 현재 문서 동레이어 `sources` 자동 배치)"},
+    "mode": {
+     "type": "string",
+     "enum": ["bookmark", "content", "archive"],
+     "description": "수집 깊이: bookmark(목록화) | content(본문 정본, 기본) | archive(원형 HTML + 로컬 이미지)"
+    },
+    "title": {"type": "string", "description": "번들 이름으로 쓸 제목 (생략 시 원문 제목)"},
+    "snippet": {"type": "string", "description": "목록화 또는 차단 폴백 시 함께 남길 검색 요약 스니펫"}
+   },
+   "required": ["url"]
+  }
+ },
+ {
+  "name": "rs_audit",
+  "description": "현재 활성 프로젝트(또는 지정 폴더)에 수집된 리서치 산출물(.vclip 번들 · 사진 · .ref 혼입)의 품질과 완결성을 한 번에 점검한다. 상태별 건수 · 도메인 다양성 · 루트 홈페이지 경고 · 얇은 본문 경고 · 원형 HTML 누락 · 차단 건수 · 사진 라이선스 기록 수를 요약한다. 보고서 작성 전 자가 점검에 쓴다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "folder": {"type": "string", "description": "점검할 볼트 폴더 (생략 시 현재 편집 문서가 속한 프로젝트 폴더 전체)"}
+   }
+  }
+ },
+ {
   "name": "rs_ref_import",
-  "description": "웹 URL 을 레퍼런스 라이브러리에 등록하고(실측 캡처 · 구조 추출 · 층위 측정) 볼트 폴더에 .ref 파일로 저장한다. 1~2분 걸린다. 등록한 레퍼런스는 바로 작업대에 켜져 rf_map · rf_skeleton · wb_read(ref:…) 로 읽을 수 있다. 결과의 상태 · 블록 수로 제대로 들어왔는지 확인한다.",
+  "description": "웹 URL 을 레퍼런스 라이브러리에 등록하고(실측 캡처 · 구조 추출 · 층위 측정) 볼트 폴더에 .ref 파일로 저장한다. 오직 사용자가 형식·레이아웃·문체 참고용 레퍼런스를 명시 요청할 때만 쓴다(사실·근거 자료에는 rs_clip 사용). 1~2분 걸린다.",
   "inputSchema": {
    "type": "object",
    "properties": {
@@ -49,11 +78,11 @@
  },
  {
   "name": "rs_image_save",
-  "description": "rs_image_search 로 고른 사진을 볼트 폴더에 내려받아 저장하고, 같은 폴더의 출처 노트(_사진 출처.md)에 캡션 · 라이선스 · 작가 · 원본 주소를 남긴다. 저장한 폴더는 곧바로 리소스로 마운트되어 ws_images 가 resource:<id> 를 돌려준다. 한 번에 최대 25장.",
+  "description": "rs_image_search 로 고른 사진을 볼트 폴더에 내려받아 저장하고, 같은 폴더의 출처 노트(_사진 출처.md)에 캡션 · 라이선스 · 작가 · 원본 주소를 남긴다. folder 생략 시 현재 활성 프로젝트 아래 `사진` 폴더에 저장한다. 저장한 폴더는 곧바로 리소스로 마운트된다. 한 번에 최대 25장.",
   "inputSchema": {
    "type": "object",
    "properties": {
-    "folder": {"type": "string", "description": "사진을 둘 볼트 폴더 (상대 경로)"},
+    "folder": {"type": "string", "description": "사진을 둘 볼트 폴더 (생략 시 현재 프로젝트 동레이어 `사진`)"},
     "items": {
      "type": "array",
      "description": "[{id: rs_image_search 의 id, caption: 무엇 · 어디 (한 줄)}]",
@@ -64,7 +93,89 @@
      }
     }
    },
-   "required": ["folder", "items"]
+   "required": ["items"]
+  }
+ },
+ {
+  "name": "rs_resource_import",
+  "description": "세션에 마운트된 외부 폴더의 리소스 파일(.md · .pdf · .csv · 이미지 등)을 현재 프로젝트의 볼트 `sources` 폴더로 복제해 들여온다. 이미 볼트 내부 파일이면 복제 없이 볼트 상대 경로만 돌려준다. 반환된 볼트 경로를 `slots.attachEvidence` 의 `sourcePath` 나 `<<resource: ...>>` 에 넣으면 클릭 시 페어 탭에서 바로 열리고 하이라이트된다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "sourcePath": {"type": "string", "description": "ws_overview · ws_grep · read_file 로 확인한 마운트 파일의 절대 경로"},
+    "folder": {"type": "string", "description": "들여올 볼트 폴더 (생략 시 현재 문서 동레이어 `sources`)"},
+    "filename": {"type": "string", "description": "선택: 볼트에 저장할 파일명 (생략 시 원본 파일명 유지)"}
+   },
+   "required": ["sourcePath"]
+  }
+ },
+ {
+  "name": "rs_clip_images",
+  "description": "볼트에 스크랩된 `.vclip` 웹 번들 안의 모든 이미지(로컬 `assets/` · 브라우저 원형 `captures/` · `content.md` 본문 원격 이미지 URL)를 번호(`#1`, `#2`, …)와 문맥·해상도·`resource:vault:...` 경로와 함께 목록화한다. `ws_images` 에 로컬 이미지가 안 보일 때도 스크랩 기사 속 사진을 즉시 찾아 `rs_image_edit` / `rs_image_compose` 로 추출·조작할 수 있다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "path": {"type": "string", "description": "특정 `.vclip` 번들 볼트 상대 경로 (생략 시 folder 하위 전체 `.vclip` 조회)"},
+    "folder": {"type": "string", "description": "탐색할 볼트 폴더 (생략 시 활성 프로젝트의 `sources` 폴더)"},
+    "includeCaptures": {"type": "boolean", "description": "딥 아카이브 브라우저 캡처(`captures/`) 포함 여부 (기본 true)"}
+   }
+  }
+ },
+ {
+  "name": "rs_image_edit",
+  "description": "스크랩(.vclip)·볼트·마운트 이미지를 비파괴 추출·가공해 `사진` 폴더에 저장·마운트(ops 생략 시 추출). 세부 ops 는 research 규칙 참조.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "source": {"type": "string", "description": "이미지 경로 또는 .vclip 원격 URL"},
+    "clipPath": {"type": "string", "description": ".vclip 경로 (imageIndex 함께 사용)"},
+    "imageIndex": {"type": "integer", "description": "1-based 이미지 번호 (기본 1)"},
+    "ops": {
+     "type": "object",
+     "description": "가공 옵션 (crop, aspect, anchor, rotate, flip, resize, adjust, annotate, format, quality)",
+     "properties": {
+      "crop": {},
+      "aspect": {"type": "string"},
+      "anchor": {"type": "string"},
+      "rotate": {"type": "number"},
+      "flip": {"type": "string", "enum": ["horizontal", "vertical"]},
+      "resize": {"type": "object"},
+      "adjust": {"type": "object"},
+      "annotate": {"type": "array", "items": {"type": "object"}},
+      "format": {"type": "string", "enum": ["jpg", "png", "webp"]},
+      "quality": {"type": "integer"}
+     }
+    },
+    "folder": {"type": "string", "description": "저장 폴더 (생략 시 사진)"},
+    "filename": {"type": "string", "description": "저장 파일명"},
+    "caption": {"type": "string", "description": "출처 노트 설명"}
+   }
+  }
+ },
+ {
+  "name": "rs_image_compose",
+  "description": "2~6장의 스크랩(`.vclip`) · 볼트 · 마운트 리소스 이미지를 가로 비교(`horizontal`) · 세로 연결(`vertical`) · 그리드(`grid`)로 비파괴 합성해 활성 프로젝트 `사진` 폴더에 저장하고 리소스로 마운트한다. 비포/애프터 비교, 타임라인 연속 캡처 합치기, 다중 컷 비교판 제작에 사용한다.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "sources": {
+     "type": "array",
+     "description": "2~6개 원천 배열 (문자열 경로 또는 {source?, clipPath?, imageIndex?, label?})",
+     "items": {"type": ["string", "object"]}
+    },
+    "layout": {"type": "string", "enum": ["horizontal", "vertical", "grid"], "description": "배치 방식 (기본 horizontal)"},
+    "gap": {"type": "integer", "description": "이미지 간격 px (기본 12)"},
+    "padding": {"type": "integer", "description": "외곽 여백 px (기본 12)"},
+    "background": {"type": "string", "description": "배경색 (기본 #ffffff)"},
+    "maxWidth": {"type": "integer", "description": "최대 가로 폭 px (기본 1920)"},
+    "labels": {"type": "array", "items": {"type": "string"}, "description": "각 패널 아래 캡션 목록"},
+    "folder": {"type": "string", "description": "저장할 볼트 폴더 (생략 시 활성 프로젝트 `사진` 폴더)"},
+    "filename": {"type": "string", "description": "저장할 파일명"},
+    "caption": {"type": "string", "description": "출처 노트 설명"},
+    "format": {"type": "string", "enum": ["jpg", "png", "webp"]},
+    "quality": {"type": "integer"}
+   },
+   "required": ["sources"]
   }
  }
 ]

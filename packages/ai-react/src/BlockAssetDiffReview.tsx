@@ -30,9 +30,15 @@ export interface BlockAssetDiffReviewProps {
    * 첫 블록에서 Unified Diff 본체와 승인/거절 바를 띄우고, 나머지 블록은 삭제 예정 표시만 한다.
    */
   readonly secondaryRemoved?: boolean;
+  /** 배지 문구 커스터마이즈 (기본: replace="에셋 교체 제안", insert="에셋 블록 추가") */
+  readonly badgeLabel?: string;
+  /** `- 기존` 헤더 문구 커스터마이즈 (기본: "기존 블록") */
+  readonly beforeLabel?: string;
+  /** `+ 제안` 헤더 문구 커스터마이즈 (기본: "제안 에셋 미리보기") */
+  readonly afterLabel?: string;
   /** 기존 캔버스 블록 (`replace` 모드일 때 `- 기존` 영역으로 표시; `insert` 모드에서는 그대로 위에 둠) */
   readonly children?: React.ReactNode;
-  /** 새 에셋 블록의 실제 2D 라이브 렌더 (`+ 제안` 영역) */
+  /** 새 에셋/스타일 블록의 실제 2D 라이브 렌더 (`+ 제안` 영역) */
   readonly proposedPreview: React.ReactNode;
 }
 
@@ -60,6 +66,9 @@ export const BlockAssetDiffReview: React.FC<BlockAssetDiffReviewProps> = ({
   onAccept,
   onReject,
   secondaryRemoved = false,
+  badgeLabel,
+  beforeLabel,
+  afterLabel,
   children,
   proposedPreview,
 }) => {
@@ -90,8 +99,11 @@ export const BlockAssetDiffReview: React.FC<BlockAssetDiffReviewProps> = ({
     );
   }
 
-  const cleanTitle = title.replace(/^\[에셋\]\s*/, "");
+  const cleanTitle = title.replace(/^\[(에셋|스타일)\]\s*/, "");
   const isReplace = mode === "replace";
+  const effectiveBadge = badgeLabel ?? (isReplace ? "에셋 교체 제안" : "에셋 블록 추가");
+  const effectiveBeforeLabel = beforeLabel ?? "기존 블록";
+  const effectiveAfterLabel = afterLabel ?? "제안 에셋 미리보기";
 
   const diffCard = (
     <div
@@ -119,7 +131,7 @@ export const BlockAssetDiffReview: React.FC<BlockAssetDiffReviewProps> = ({
           }`}
         >
           {isReplace ? <GitCompareArrows className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-          <span>{isReplace ? "에셋 교체 제안" : "에셋 블록 추가"}</span>
+          <span>{effectiveBadge}</span>
         </span>
 
         <span className="min-w-0 flex-1 truncate font-semibold text-slate-800" title={cleanTitle}>
@@ -301,7 +313,7 @@ export const BlockAssetDiffReview: React.FC<BlockAssetDiffReviewProps> = ({
             <span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500 font-mono text-[11px] font-bold text-white">
               -
             </span>
-            <span>기존 블록</span>
+            <span>{effectiveBeforeLabel}</span>
           </div>
           <div className={viewMode === "unified" ? "opacity-75 transition-opacity hover:opacity-100" : ""}>
             {children}
@@ -328,7 +340,7 @@ export const BlockAssetDiffReview: React.FC<BlockAssetDiffReviewProps> = ({
                 +
               </span>
               <Sparkles className="h-3 w-3 text-emerald-600" />
-              <span>제안 에셋 미리보기</span>
+              <span>{effectiveAfterLabel}</span>
               {afterSummary && (
                 <span className="font-normal normal-case text-emerald-700/80">
                   ({afterSummary})

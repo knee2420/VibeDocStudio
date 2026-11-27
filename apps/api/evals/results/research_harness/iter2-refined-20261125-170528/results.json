@@ -1,0 +1,568 @@
+[
+  {
+    "id": "RS1_bookmark",
+    "title": "목록화 전용 리서치 (bookmark 모드 · 딥 URL 규율 · 동레이어 sources/ · .ref 무오염)",
+    "score": 100,
+    "maxScore": 100,
+    "pct": 100.0,
+    "elapsedS": 237.1,
+    "toolCount": 25,
+    "searchCount": 21,
+    "rsPageCount": 0,
+    "toolsUsed": [
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "rs_clip",
+      "rs_clip",
+      "rs_clip",
+      "rs_audit"
+    ],
+    "clipCount": 3,
+    "refCount": 0,
+    "imageCount": 0,
+    "errors": [],
+    "clips": [
+      {
+        "rel": "01_AI_가이드라인.vproj/sources/과기정통부 관계부처 초거대 AI 경쟁력 강화 및 공공 도입 가이드 정책뉴스.vclip",
+        "mode": "bookmark",
+        "status": "partial",
+        "domain": "korea.kr",
+        "chars": 167,
+        "snapshot": false,
+        "assets": 0
+      },
+      {
+        "rel": "01_AI_가이드라인.vproj/sources/디플정위 공공부문 초거대AI 활용 가이드라인 2.0 개정판 배포 상세 보도.vclip",
+        "mode": "bookmark",
+        "status": "partial",
+        "domain": "zdnet.co.kr",
+        "chars": 240,
+        "snapshot": false,
+        "assets": 0
+      },
+      {
+        "rel": "01_AI_가이드라인.vproj/sources/디플정위 과기정통부 2025년도 초거대 인공지능 서비스 개발지원 사업 공모 공식 보도자료.vclip",
+        "mode": "bookmark",
+        "status": "partial",
+        "domain": "korea.kr",
+        "chars": 198,
+        "snapshot": false,
+        "assets": 0
+      }
+    ],
+    "checks": [
+      {
+        "ok": true,
+        "points": 15,
+        "maxPoints": 15,
+        "axis": "A_role",
+        "note": ".ref 생성 수 0개 (사실 리서치 중 .ref 미생성 필요)"
+      },
+      {
+        "ok": true,
+        "points": 15,
+        "maxPoints": 15,
+        "axis": "B_routing",
+        "note": "captureMode=['bookmark', 'bookmark', 'bookmark'] (기대 'bookmark' >= 3건)"
+      },
+      {
+        "ok": true,
+        "points": 15,
+        "maxPoints": 15,
+        "axis": "C_storage",
+        "note": "저장 폴더 ['01_AI_가이드라인.vproj/sources'] (기대: *01_AI_가이드라인.vproj/sources)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "D_quality",
+        "note": ".vclip 번들 3개 (목표 >= 3)"
+      },
+      {
+        "ok": true,
+        "points": 15,
+        "maxPoints": 15,
+        "axis": "D_quality",
+        "note": "딥 URL 3/3건 (목표 >= 3, 루트홈피=0건)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "D_quality",
+        "note": "서로 다른 도메인 2개: ['korea.kr', 'zdnet.co.kr']"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "E_search",
+        "note": "search_web 21회 · ['대한민국 공공기관 생성형 AI 도입 가이드라인 행정안전부 과기정통부 보도자료', 'site:korea.kr \"공공부문\" \"생성형 AI\" OR \"초거대 AI\" 가이드라인 보도자료', '\"policyNewsView.do\" OR \"pressReleaseView.do\" site:korea.kr \"초거대 AI\" OR \"생성형 AI\" 가이드라인', 'site:nia.or.kr \"초거대 AI 도입\" OR \"생성형 AI\" 가이드라인 상세', '\"공공부문 초거대 AI 도입·활용 가이드라인\" site:boannews.com OR site:etnews.com OR site:zdnet.co.kr', 'site:zdnet.co.kr/view/?no= \"공공부문 초거대 AI 도입·활용 가이드라인\"']"
+      },
+      {
+        "ok": true,
+        "points": 5,
+        "maxPoints": 5,
+        "axis": "B_routing",
+        "note": "도구 실패 0건"
+      },
+      {
+        "ok": true,
+        "points": 5,
+        "maxPoints": 5,
+        "axis": "F_output",
+        "note": "답변에 후보 URL 명시: 충족"
+      }
+    ],
+    "answerPreview": "대한민국 공공부문 생성형·초거대 AI 도입 가이드라인 및 관계 부처(행정안전부·과학기술정보통신부·디지털플랫폼정부위원회) 지침과 관련된 공식 보도자료·기사 상세 페이지(딥 URL) 후보 3건을 웹에서 조사하여 볼트에 **목록화(bookmark 모드)** 수집을 완료했습니다.\n\n---\n\n### 📋 공공기관 AI 가이드라인 후보 상세 URL 목록\n\n| 번호 | 구분 | 문서·기사명 | 출처 도메인 (상세 URL) | 선정 및 추천 이유 | 볼트 저장 번들 |\n| :---: | :---: | :--- | :--- | :--- | :--- |\n| **1** | **전문 보도** | 디플정위, 공공부문 초거대AI 활용 가이드라인 2.0 개정판 배포 상세 보도 | **지디넷코리아**<br>[`zdnet.co.kr/view/?no=20250416122851`](https://zdnet.co.kr/view/?no=20250416122851) | 디지털플랫폼정부위원회와 NIA가 배포한 **「공공부문 초거대 AI 도입·활용 가이드라인 2.0」**의 3대 전략 목표(사회문제 해결, 서비스 혁신, 일하는 방식 효율화), RAG(검색증강생성) 및 벡터DB 구축 지침, 국가망 연계 데이터 보안 등급 분류, 110개 실증 사례집 등 핵심 개정 기준을 상세히 정리함. | `<<resource: 01_AI_가이드라인.vproj/sources/디플정위 공공부문 초거대AI 활용 가이드라인 2.0 개정판 배포 상세 보도.vclip | 공공부문 초거대 AI 도입·활용 가이드라인 2.0>>` |\n| **2** | **공식 보도자료** | 2025년도 초거대 인공지능 서비스 개발지원 사업 공모 추진 | **대한민국 정책브리핑 (korea.kr)**<br>[`korea.kr/briefing/pressReleaseView.do?newsId=156673523`](https://www.korea.kr/briefing/pressReleaseView.do?newsId=156673523) | 디지털플랫폼정부위원회·과기정통부·NIA가 발표한 공식 1차 출처 보도자료로, 중앙행정기관·공공기관이 생성형 AI 서비스를 실제로 발주·도입할 때 기준이 되는 공모 요강과 도입 가이드라인 연계 기준을 담고 있음. | `<<resource: 01_AI_가이드라인.vproj/sources/디플정위 과기정통부 2025년도 초거대 인공지능 서비스 개발지원 사업 공모 공식 보도자료.vcl",
+    "usage": {
+      "input_tokens": 96959,
+      "output_tokens": 6960,
+      "thought_tokens": 4187,
+      "cached_read_tokens": 971787,
+      "total_tokens": 1075706
+    }
+  },
+  {
+    "id": "RS2_timeline_fact",
+    "title": "다각도 사실 조사 + 타임라인 교차 검증 (content · 한/영 검색 · 본문 열람 · 자가 감사 · 근거 태그)",
+    "score": 100,
+    "maxScore": 100,
+    "pct": 100.0,
+    "elapsedS": 159.9,
+    "toolCount": 17,
+    "searchCount": 8,
+    "rsPageCount": 0,
+    "toolsUsed": [
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "rs_clip",
+      "rs_clip",
+      "rs_clip",
+      "rs_clip",
+      "read_file",
+      "read_file",
+      "read_file",
+      "read_file",
+      "rs_audit"
+    ],
+    "clipCount": 4,
+    "refCount": 0,
+    "imageCount": 0,
+    "errors": [],
+    "clips": [
+      {
+        "rel": "02_라야_부상_보고서.vproj/sources/국내기사_베스트일레븐_라야_안도.vclip",
+        "mode": "content",
+        "status": "full",
+        "domain": "besteleven.com",
+        "chars": 1835,
+        "snapshot": false,
+        "assets": 0
+      },
+      {
+        "rel": "02_라야_부상_보고서.vproj/sources/국내기사_풋볼리스트_라야_어깨부상.vclip",
+        "mode": "content",
+        "status": "full",
+        "domain": "footballist.co.kr",
+        "chars": 1834,
+        "snapshot": false,
+        "assets": 0
+      },
+      {
+        "rel": "02_라야_부상_보고서.vproj/sources/아스널공식_라야_부상_업데이트.vclip",
+        "mode": "content",
+        "status": "full",
+        "domain": "arsenal.com",
+        "chars": 3208,
+        "snapshot": false,
+        "assets": 0
+      },
+      {
+        "rel": "02_라야_부상_보고서.vproj/sources/해외언론_Goal_라야_부상_수술면제.vclip",
+        "mode": "content",
+        "status": "full",
+        "domain": "goal.com",
+        "chars": 3094,
+        "snapshot": false,
+        "assets": 0
+      }
+    ],
+    "checks": [
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "A_role",
+        "note": ".ref 생성 수 0개 (사실 리서치 중 .ref 미생성 필요)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "B_routing",
+        "note": "captureMode=['content', 'content', 'content', 'content'] (기대 'content' >= 2건)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "C_storage",
+        "note": "저장 폴더 ['02_라야_부상_보고서.vproj/sources'] (기대: *02_라야_부상_보고서.vproj/sources)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "D_quality",
+        "note": ".vclip 번들 4개 (목표 >= 3)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "D_quality",
+        "note": "서로 다른 도메인 4개: ['arsenal.com', 'besteleven.com', 'footballist.co.kr', 'goal.com']"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "D_quality",
+        "note": "충실한 full 본문(>=250자) 4건 (목표 >= 2) · [('국내기사_베스트일레븐_라야_안도.vclip', 'full', 1835), ('국내기사_풋볼리스트_라야_어깨부상.vclip', 'full', 1834), ('아스널공식_라야_부상_업데이트.vclip', 'full', 3208), ('해외언론_Goal_라야_부상_수술면제.vclip', 'full', 3094)]"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "E_search",
+        "note": "search_web 8회 · 한/영 다각도=O · ['David Raya injury Arsenal timeline 2024 OR 2025 OR 2026', '아스널 다비드 라야 골키퍼 부상 2024', 'site:arsenal.com David Raya injury Newcastle OR \"Arteta\"', '\"David Raya\" \"shoulder\" \"Newcastle\" \"Arteta\" Arsenal injury 2026', '\"다비드 라야\" \"뉴캐슬\" \"어깨\" 아스널 부상', '\"David Raya\" \"Arteta\" \"Newcastle\" site:arsenal.com/news']"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "E_search",
+        "note": "저장된 .vclip/content.md 직접 열람 8건 · ws_grep 0회 (목표 >= 2)"
+      },
+      {
+        "ok": true,
+        "points": 5,
+        "maxPoints": 5,
+        "axis": "E_search",
+        "note": "rs_audit 자가 점검 1회 호출 (목표 >= 1)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "F_output",
+        "note": "답변 내 <<resource: ... | ...>> 근거 태그 8개 (목표 >= 2)"
+      },
+      {
+        "ok": true,
+        "points": 5,
+        "maxPoints": 5,
+        "axis": "F_output",
+        "note": "타임라인/출처 구분 서술: 충족"
+      }
+    ],
+    "answerPreview": "에디터=작업대 대기(사용자 요청에 따라 .vdoc 미생성) · 레퍼런스=없음(미사용) · 리소스=사실 근거(아스널 공식·해외 언론·국내 언론 스크랩 4건) · 관련 없음=없음\n\n---\n\n# 다비드 라야(David Raya) 부상 경위 및 최근 출전/회복 현황 타임라인\n\n아스널 구단 공식 발표(Arsenal.com), 해외 주요 축구 매체(Goal.com), 국내 전문 스포츠 매체(풋볼리스트, 베스트일레븐)를 교차 조사하여 수집한 본문 정본(`.vclip`)을 바탕으로 시간순 타임라인을 정리했습니다.\n\n---\n\n### ⏱️ 시간순 부상 및 회복 타임라인\n\n```mermaid\ntimeline\n    title 다비드 라야 부상 경위 및 회복 타임라인 (2026년 11월)\n    2026-11-22 (경기 도중) : 뉴캐슬전 70분 충돌 : 공중볼 캐칭 후 오술라와 충돌 : 왼쪽 어깨 부상 발생 및 케파 교체\n    2026-11-22 (경기 직후) : 극심한 통증 호소 : 장기 결장 우려 : 아르테타 MRI 예고 / 자가운전 퇴근 확인\n    2026-11-24 (공식 발표) : 공식 기자회견 : 1차 검진 결과 '수술 불필요' 확인 : UCL 도르트문트전 결장 확정\n    2026-11-25 (현재 현황) : 추가 정밀 검진 진행 : 맨시티전 등 향후 복귀 시점 데일리 모니터링\n```\n\n#### 1. 2026년 11월 22일(한국시간) — 경기 중 충돌 및 부상 발생\n* **상황:** 프리미어리그 11라운드 뉴캐슬 유나이티드 원정(세인트 제임스 파크, 2-2 무승부)에 선발 출전한 다비드 라야는 후반 25분(70분경) 크로스를 캐칭한 후 볼을 방출하는 동작에서 상대 공격수 윌리엄 오술라(William Osula)와 충돌했습니다.\n* **부상 경위:** 공을 품에 안고 떨어지는 과정에서 왼쪽 어깨가 지면에 강하게 먼저 닿았으며, 직후 어깨를 부여잡고 극심한 고통을 호소하여 케파 아리사발라가와 교체 아웃되었습니다.\n  * <<resource: 02_라야_부상_보고서.vproj/sources/국내기사_풋볼리스트_라야_어깨부상.vclip | 후반 25분경 크로스를 처리하는 과정에서 골키퍼 라야가 윌리엄 오술라와 충돌했다. 몸을 부대끼며 공중볼 캐칭에 성공했는데 이후 방출하는 과정에서 오술라와 부딪혀 넘어졌다. 이때 공을 가슴에 품는 동작 중 왼쪽 어깨가 바닥에 먼저 떨어지면서 충격을 입었다.>>\n  * <<resourc",
+    "usage": {
+      "input_tokens": 71735,
+      "output_tokens": 8156,
+      "thought_tokens": 4397,
+      "cached_read_tokens": 350583,
+      "total_tokens": 430474
+    }
+  },
+  {
+    "id": "RS3_archive_blocked",
+    "title": "원형 딥 아카이브(archive · 클린 이미지) + 차단 사이트 정직 폴백 + 활성 .vproj 배치",
+    "score": 100,
+    "maxScore": 100,
+    "pct": 100.0,
+    "elapsedS": 48.8,
+    "toolCount": 4,
+    "searchCount": 0,
+    "rsPageCount": 0,
+    "toolsUsed": [
+      "rs_clip",
+      "rs_clip",
+      "read_file",
+      "rs_audit"
+    ],
+    "clipCount": 2,
+    "refCount": 0,
+    "imageCount": 3,
+    "errors": [],
+    "clips": [
+      {
+        "rel": "03_아카이브_검증.vproj/sources/httpbin.org.vclip",
+        "mode": "content",
+        "status": "blocked-fallback",
+        "domain": "httpbin.org",
+        "chars": 169,
+        "snapshot": false,
+        "assets": 0
+      },
+      {
+        "rel": "03_아카이브_검증.vproj/sources/“수술 안 해도 된다”… ‘철벽 GK’ 라야 어깨 부상에 가슴 철렁했던 아스널, 아르테타 감독 한숨 돌렸다.vclip",
+        "mode": "archive",
+        "status": "full",
+        "domain": "besteleven.com",
+        "chars": 1704,
+        "snapshot": true,
+        "assets": 3
+      }
+    ],
+    "checks": [
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "A_role",
+        "note": ".ref 생성 수 0개 (사실 리서치 중 .ref 미생성 필요)"
+      },
+      {
+        "ok": true,
+        "points": 20,
+        "maxPoints": 20,
+        "axis": "C_storage",
+        "note": "저장 폴더 ['03_아카이브_검증.vproj/sources'] (기대: *03_아카이브_검증.vproj/sources)"
+      },
+      {
+        "ok": true,
+        "points": 25,
+        "maxPoints": 25,
+        "axis": "D_quality",
+        "note": "besteleven mode=archive status=full chars=1704 snapshot=True assets=3 noise=0"
+      },
+      {
+        "ok": true,
+        "points": 20,
+        "maxPoints": 20,
+        "axis": "D_quality",
+        "note": "httpbin.org status=blocked-fallback note=접근 제한 또는 안티봇 차단 (HTTP 403)"
+      },
+      {
+        "ok": true,
+        "points": 5,
+        "maxPoints": 5,
+        "axis": "E_search",
+        "note": "rs_audit 자가 점검 1회 호출 (목표 >= 1)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "B_routing",
+        "note": "도구 실패 0건"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "F_output",
+        "note": "차단 사유 및 수동 보강 안내: 충족"
+      }
+    ],
+    "answerPreview": "요청하신 두 URL에 대해 리서치 수집 규율(R1~R6)에 따라 수집 및 자가 감사를 완료했습니다.\n\n---\n\n### 1. 리소스 수집 결과\n\n#### ① 베스트일레븐 기사 (딥 아카이브 수집)\n- **URL**: `https://www.besteleven.com/news/articleView.html?idxno=314277`\n- **저장 번들**: `03_아카이브_검증.vproj/sources/“수술 안 해도 된다”… ‘철벽 GK’ 라야 어깨 부상에 가슴 철렁했던 아스널, 아르테타 감독 한숨 돌렸다.vclip`\n- **수집 모드/상태**: `archive` / `full` (331단어, 33행)\n- **보관 상태**: 정본 마크다운(`content.md`), 원형 원문 HTML(`snapshot.html`), 본문 로컬 이미지 3장(`assets/img_01.jpg`~`img_03.jpg`) 영구 보관 완료\n- **원문 인용 확인**:\n  > <<resource: 03_아카이브_검증.vproj/sources/“수술 안 해도 된다”… ‘철벽 GK’ 라야 어깨 부상에 가슴 철렁했던 아스널, 아르테타 감독 한숨 돌렸다.vclip | 미켈 아르테타 아스널 감독이 부상으로 쓰러졌던 골키퍼 다비드 라야의 부상 정도가 예상보다 가벼워 겨우 한숨을 돌렸다.>>\n\n#### ② httpbin 403 응답 (차단 폴백 수집)\n- **URL**: `https://httpbin.org/status/403`\n- **저장 번들**: `03_아카이브_검증.vproj/sources/httpbin.org.vclip`\n- **수집 모드/상태**: `content` / `blocked-fallback`\n- **차단 사유**: `HTTP 403 Forbidden` (접근 제한 / 안티봇 차단)\n- **처리 정책**: 우회 시도를 하지 않고 차단 상태와 사유를 기록한 폴백 번들로 마운트했습니다.\n\n---\n\n### 2. 자가 점검 (`rs_audit`) 결과\n\n- **대상 프로젝트**: `03_아카이브_검증.vproj`\n- **총 수집 번들**: 2건\n  - `full` (정상 수집): 1건 (besteleven.com, mode: `archive`, 원형 HTML 및 로컬 이미지 3장 포함)\n  - `blocked-fallback` (차단 폴백): 1건 (httpbin.org, mode: `content`)\n  - `partial` / `manua",
+    "usage": {
+      "input_tokens": 53900,
+      "output_tokens": 2340,
+      "thought_tokens": 1103,
+      "cached_read_tokens": 94062,
+      "total_tokens": 150302
+    }
+  },
+  {
+    "id": "RS4_role_separation",
+    "title": "역할 분리 종합: 활성 .vproj 내부 sources/(.vclip) + 사진/(자유 라이선스) + .ref 미생성",
+    "score": 85,
+    "maxScore": 100,
+    "pct": 85.0,
+    "elapsedS": 269.8,
+    "toolCount": 35,
+    "searchCount": 13,
+    "rsPageCount": 0,
+    "toolsUsed": [
+      "vf_stat",
+      "search_web",
+      "search_web",
+      "rs_image_search",
+      "search_web",
+      "search_web",
+      "vf_stat",
+      "vf_stat",
+      "wb_overview",
+      "search_web",
+      "search_web",
+      "search_web",
+      "search_web",
+      "dc_use",
+      "read_file",
+      "dc_use",
+      "rs_audit",
+      "rs_clip",
+      "rs_clip",
+      "rs_image_save",
+      "read_file",
+      "read_file",
+      "read_file",
+      "rs_audit",
+      "search_web",
+      "search_web",
+      "search_web",
+      "rs_clip",
+      "search_web",
+      "search_web",
+      "rs_clip",
+      "read_file",
+      "rs_audit",
+      "vf_trash",
+      "rs_audit"
+    ],
+    "clipCount": 4,
+    "refCount": 0,
+    "imageCount": 3,
+    "errors": [],
+    "clips": [
+      {
+        "rel": ".vibe-trash/fsb-1795593903-caaca1/04_아사쿠사_자료.vproj/sources/도쿄관광재단_센소지_관람가이드.vclip",
+        "mode": "content",
+        "status": "full",
+        "domain": "gotokyo.org",
+        "chars": 1862,
+        "snapshot": false,
+        "assets": 0
+      },
+      {
+        "rel": ".vibe-trash/fsb-1795593903-caaca1/04_아사쿠사_자료.vproj/sources/센소지_경내_및_관람_공식안내.vclip",
+        "mode": "content",
+        "status": "full",
+        "domain": "senso-ji.jp",
+        "chars": 2608,
+        "snapshot": false,
+        "assets": 0
+      },
+      {
+        "rel": "04_아사쿠사_자료.vproj/sources/센소지_역사_및_개요_공식_안내.vclip",
+        "mode": "content",
+        "status": "full",
+        "domain": "senso-ji.jp",
+        "chars": 7835,
+        "snapshot": false,
+        "assets": 0
+      },
+      {
+        "rel": "04_아사쿠사_자료.vproj/sources/일본정부관광국_센소지_공식가이드.vclip",
+        "mode": "content",
+        "status": "full",
+        "domain": "japan.travel",
+        "chars": 2898,
+        "snapshot": false,
+        "assets": 0
+      }
+    ],
+    "checks": [
+      {
+        "ok": true,
+        "points": 15,
+        "maxPoints": 15,
+        "axis": "A_role",
+        "note": ".ref 생성 수 0개 (사실 리서치 중 .ref 미생성 필요)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "B_routing",
+        "note": "captureMode=['content', 'content', 'content', 'content'] (기대 'content' >= 2건)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "D_quality",
+        "note": ".vclip 번들 4개 (목표 >= 2)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "D_quality",
+        "note": "딥 URL 4/4건 (목표 >= 2, 루트홈피=0건)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "D_quality",
+        "note": "충실한 full 본문(>=200자) 4건 (목표 >= 1) · [('도쿄관광재단_센소지_관람가이드.vclip', 'full', 1862), ('센소지_경내_및_관람_공식안내.vclip', 'full', 2608), ('센소지_역사_및_개요_공식_안내.vclip', 'full', 7835), ('일본정부관광국_센소지_공식가이드.vclip', 'full', 2898)]"
+      },
+      {
+        "ok": true,
+        "points": 15,
+        "maxPoints": 15,
+        "axis": "D_quality",
+        "note": "자유 라이선스 사진 3장 · 출처노트 라이선스 기록 3건 (목표 >= 3)"
+      },
+      {
+        "ok": false,
+        "points": 0,
+        "maxPoints": 15,
+        "axis": "C_storage",
+        "note": "클립 폴더=['.vibe-trash/fsb-1795593903-caaca1/04_아사쿠사_자료.vproj/sources', '04_아사쿠사_자료.vproj/sources'] vs 사진 폴더=['04_아사쿠사_자료.vproj/사진'] (모두 04_아사쿠사_자료.vproj/ 하위 분리 필요)"
+      },
+      {
+        "ok": true,
+        "points": 5,
+        "maxPoints": 5,
+        "axis": "E_search",
+        "note": "rs_audit 자가 점검 4회 호출 (목표 >= 1)"
+      },
+      {
+        "ok": true,
+        "points": 10,
+        "maxPoints": 10,
+        "axis": "F_output",
+        "note": "답변에 사진 라이선스 보고: 충족"
+      }
+    ],
+    "answerPreview": "도쿄 아사쿠사 센소지(Sensō-ji)를 주제로 사실 근거 리소스 2건과 자유 라이선스 사진 3장을 프로젝트 내에 정상 수집·배치했습니다. 레이아웃 참고용 레퍼런스(`.ref`)는 요청에 따라 일절 생성하지 않았습니다.\n\n---\n\n### 1. 사실 근거 리소스 수집 내역 (웹 상세 페이지 2건)\n\n모든 자료는 1차 공식 출처의 상세 페이지(딥 URL)를 대상으로 본문 스크랩(`mode=\"content\"`)을 완료하였으며, `read_file`로 정본 내용을 직접 검증했습니다.\n\n1. **센소지 공식 역사 및 개요 안내**\n   - **위치**: `04_아사쿠사_자료.vproj/sources/센소지_역사_및_개요_공식_안내.vclip`\n   - **출처**: [센소지 공식 홈페이지 (senso-ji.jp/about/)](https://www.senso-ji.jp/about/)\n   - **핵심 사실 및 원문 인용**:\n     - 창건 설화 (서기 628년): <<resource: 04_아사쿠사_자료.vproj/sources/센소지_역사_및_개요_공식_안내.vclip | 寺伝によると、ご本尊がお姿を現されたのは、飛鳥時代、推古天皇36年（628）3月18日の早朝であった。宮戸川（今の隅田川）のほとりに住む檜前浜成・竹成兄弟が漁をしている最中、投網の中に一躰の像を発見した。>>\n     - 비불 봉안 및 산호(금룡산) 유래: <<resource: 04_아사쿠사_자료.vproj/sources/센소지_역사_및_개요_공식_안내.vclip | 大化元年（645）、勝海上人という僧が当山に立ち寄り、観音堂を修造した。…ご本尊を厨子（御宮殿）深く秘仏として奉安している。…3日を過ぎると天から金の鱗をもつ龍が松林の中にくだったと記されている。この瑞祥が、後につけられた山号「金龍山」の由来となった。>>\n     - 도쿠가와 이에야스 비호 및 전후 재건: <<resource: 04_아사쿠사_자료.vproj/sources/센소지_역사_및_개요_공식_안내.vclip | 天正18年（1590）、徳川家康は江戸に入府した。…浅草寺は祈願所に定められ、篤い庇護を受けた。…昭和20年（1945）3月10日未明の東京大空襲では、諸堂伽藍もろとも本堂が烏有に帰した。新本당は…昭和33年（1958）、無事に落成を見た。>>\n\n2. **일본정부관광국(JNTO) 센소지 공식 관람 가이드**\n   - **위치**: `04_아사쿠사_자료.vproj/sources/일본정부관광국_센소지_공식가이드.vclip`\n   - **출처**",
+    "usage": {
+      "input_tokens": 116603,
+      "output_tokens": 10377,
+      "thought_tokens": 7019,
+      "cached_read_tokens": 1438184,
+      "total_tokens": 1565164
+    }
+  }
+]

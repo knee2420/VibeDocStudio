@@ -87,6 +87,8 @@ class _Session:
     last_used: float = field(default_factory=time.monotonic)
     tools_hash: Optional[str] = None
     tool_risks: dict[str, str] = field(default_factory=dict)
+    # 내장 도구로 잘못 불린 워크스페이스 도구를 정식 호출로 옮긴 엔진 호출 id (한 번만 옮긴다)
+    rerouted_calls: set[str] = field(default_factory=set)
     pending_calls: dict[str, ToolCall] = field(default_factory=dict)
     tool_rounds: int = 0
     mode: str = "agent"
@@ -412,6 +414,12 @@ class AssistantService:
             for s in self._server.specs()
         ]
         return out, list(dict.fromkeys(scope)), specs
+
+    @staticmethod
+    def _misrouted_workspace_call(session: _Session, event: dict[str, Any]) -> bool:
+        """엔진 내장 도구 이벤트인데 이름이 이 세션의 워크스페이스(클라이언트) 도구 이름과 같다 — <tool_call> 로 불렀어야 한다."""
+        name = str(event.get("name") or "")
+        return bool(name) and "." in name and name in session.tool_risks
 
     def _is_server_call(self, session: _Session, name: str) -> bool:
         return bool(self._server and session.server_scope and self._server.handles(name))
@@ -984,7 +992,8 @@ class AssistantService:
         images: Optional[list[dict[str, str]]] = None,
     ) -> Generator[dict[str, Any], None, tuple[list[ToolCall], dict[str, Any], bool, str, str | None]]:
         """모델 한 턴: 텍스트 · 도구 호출 이벤트를 흘리고 (결과를 기다릴 도구 호출, 턴 메타, 오류 여부, 누적 텍스트)를 돌려준다."""
-        extractor = ToolCallExtractor(id_prefix=f"c{session.tool_rounds}")
+        extractor_prefix = f"c{session.tool_rounds}"
+        extractor = ToolCallExtractor(id_prefix=extractor_prefix)
         calls: list[ToolCall] = []
         done: dict[str, Any] = {}
         errored = False
@@ -1025,6 +1034,20 @@ class AssistantService:
                 # 엔진이 대화를 방금 만들었다 — 도구 호출이 오기 전에 작업 공간 마운트에 대화 id 를 묶는다
                 # (안 묶으면 첫 턴의 훅 · MCP 가 어느 세션인지 몰라 다른 세션 마운트를 볼 수 있었다)
                 self._bind_conversation(session)
+            elif kind == "agent_tool" and self._misrouted_workspace_call(session, event):
+                # 모델이 워크스페이스 도구(outline.* · slots.* …)를 <tool_call> 텍스트가 아니라 내장 도구로 불렀다.
+                # 엔진은 'unknown tool' 로 끝내 버리므로, 처음 보이는 순간 한 번만 정식 도구 호출로 옮겨 실행되게 한다.
+                key = str(event.get("callId") or event.get("stepIndex") or "")
+                params_ready = bool(event.get("params")) or event.get("state") != "running"
+                if key and params_ready and key not in session.rerouted_calls:
+                    session.rerouted_calls.add(key)
+                    params = event.get("params") if isinstance(event.get("params"), dict) else {}
+                    call = ToolCall(call_id=f"{extractor_prefix}-n{len(session.rerouted_calls)}", name=str(event.get("name")),
+                                    arguments=dict(params))
+                    is_async = session.tool_risks.get(call.name) in ASYNC_RISKS
+                    if not is_async:
+                        calls.append(call)
+                    yield _call_event(call, is_async)
             else:
                 if kind == "error":
                     errored = True

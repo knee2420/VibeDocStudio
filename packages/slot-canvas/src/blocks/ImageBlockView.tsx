@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ImageIcon } from "lucide-react";
-import { resolveMediaGridStyle } from "@vibe/style-core";
+import { resolveImageBlockRenderStyle } from "@vibe/style-core";
 import type { ImageBlockDef } from "@vibe/vdoc-schema";
 
 import { resolveMediaSrc } from "../mediaSrc";
 import { useVDocStyle } from "../styleContext";
+
+export { resolveImageBlockRenderStyle, type ImageBlockRenderStyle } from "@vibe/style-core";
 
 export interface ImageBlockViewProps {
   block: ImageBlockDef;
@@ -15,9 +17,10 @@ export interface ImageBlockViewProps {
  */
 export const ImageBlockView: React.FC<ImageBlockViewProps> = ({ block }) => {
   const docStyle = useVDocStyle();
-  const media = docStyle
-    ? resolveMediaGridStyle(docStyle.resolvedPack, "strip", undefined, block.styleOverrides)
-    : null;
+  const { media, imgStyle, wrapperPaddingY } = resolveImageBlockRenderStyle(
+    block,
+    docStyle?.resolvedPack ?? null
+  );
 
   const justifyClass =
     block.align === "right" ? "justify-end" : block.align === "center" ? "justify-center" : "justify-start";
@@ -37,7 +40,7 @@ export const ImageBlockView: React.FC<ImageBlockViewProps> = ({ block }) => {
         className={`flex ${block.frame ? "h-full" : isFullWidth ? "" : "py-2"} ${justifyClass} w-full`}
         style={
           !block.frame && isFullWidth
-            ? { paddingTop: media?.imagePaddingY ?? "2px", paddingBottom: media?.imagePaddingY ?? "2px" }
+            ? { paddingTop: wrapperPaddingY ?? "2px", paddingBottom: wrapperPaddingY ?? "2px" }
             : undefined
         }
       >
@@ -51,13 +54,7 @@ export const ImageBlockView: React.FC<ImageBlockViewProps> = ({ block }) => {
             draggable={false}
             onError={() => setFailed(true)}
             className="block select-none max-w-full"
-            style={{
-              width: block.width || "auto",
-              height: block.height || "auto",
-              maxHeight: block.maxHeight,
-              objectFit: block.objectFit || "contain",
-              borderRadius: media?.radius ?? "0px",
-            }}
+            style={imgStyle}
           />
         ) : (
           <div

@@ -26,14 +26,14 @@
   },
   {
     "name": "outline.compileCheck",
-    "description": "TS directive-scanner + ir-compiler + applyPatch 드라이런으로 .outline (또는 Staged 패치 적용 결과)의 컴파일 측정 리포트(파싱 경고 · 미해석 이미지 · 블록 수 · 깊이 · 최장 불릿 · 근거 미연결 수치 노드 수)를 반환한다.",
+    "description": "TS directive-scanner + ir-compiler + applyPatch 드라이런 및 근거 태그 린트로 .outline (또는 Staged 패치 적용 결과)의 측정 리포트(파싱 경고 · 미해석 이미지 · 블록 수 · 깊이 · 최장 불릿 · 근거 미연결 수치 노드 수 · lintIssues)를 반환한다.",
     "risk": "read",
     "inputSchema": {
       "type": "object",
       "properties": {
         "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
         "rootNodeId": { "type": "string", "description": "컴파일 대상 지시어 노드 id (생략 시 첫 <<doc:...>> 또는 루트)" },
-        "diffId": { "type": "string", "description": "특정 Staged 패치(diffId)를 가상 적용해 검사할 때 지정" }
+        "diffId": { "type": "string", "description": "특정 Staged 패치(diffId)만 가상 적용해 검사할 때 지정 (생략하면 이 파일에 승인 대기 중인 아웃라인 패치 전부를 가상 적용해 잰다)" }
       }
     }
   },
@@ -47,6 +47,20 @@
         "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
         "rootNodeId": { "type": "string", "description": "대상 지시어 노드 id" }
       }
+    }
+  },
+  {
+    "name": "outline.compileDoc",
+    "description": "승인돼 .outline 에 저장된 <<doc:프로필>> 컴파일 가지를 .vdoc 으로 컴파일하고 양방향 바인딩(outlineRef ↔ docBindings)을 기록한다. 이미 묶인 .vdoc 이 있으면 그 파일만 다시 컴파일한다. 계층 문법 오류(섹션 밖 내용 · 컨테이너 담기 위반 등)가 있으면 컴파일하지 않고 오류 목록을 돌려준다 — ol_propose_patch 로 고친 뒤 다시 부른다. 결과: vdoc 경로 · 섹션/컨테이너 수 · outline↔vdoc 동형 · 인용(evidenceLinks) 수.",
+    "risk": "read",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "볼트 상대 .outline 경로 (생략 시 활성 .outline)" },
+        "docNodeId": { "type": "string", "description": "컴파일할 <<doc:…>> 노드 id (ol_map · ol_read 결과의 id 그대로)" },
+        "open": { "type": "boolean", "description": "컴파일 뒤 .vdoc 을 옆 탭에 열지 (기본 true)" }
+      },
+      "required": ["docNodeId"]
     }
   }
 ]

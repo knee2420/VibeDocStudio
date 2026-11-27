@@ -8,12 +8,14 @@ import {
   compileOutlineTargetForPreview,
   getLiveOutlineSession,
   loadVaultSyntaxRegistry,
+  materializeVDocFromOutlineDirective,
   previewOutlinePatch,
   requestOutlineReveal,
+  syncVDocMeaningBackToOutline,
 } from "@vibe/outline-sync";
 import type { OutlineNode, TreePatchRequest } from "@vibe/outliner/core";
 import { createAssetV3Tools } from "./assetV3";
-import { createStyleTools } from "./styleTools";
+import { createStyleTools, applyStagedStyleChange } from "./styleTools";
 import {
   addEvidenceLinks,
   contentHash,
@@ -29,8 +31,11 @@ import {
   patchBlockProps,
   rankAssetsForContext,
   resolveDocumentView,
+  measureOutlineVDocIsomorphism,
   scanOutlineDirectives,
   setSlotContent,
+  validateOutlineHierarchy,
+  validateVDocHierarchy,
   slotFillState,
   slotPlainText,
   validateBlockProps,
@@ -38,6 +43,8 @@ import {
   type AssetFlowMode,
   type EvidenceLink,
   type EvidenceLocator,
+  type EvidencePresentation,
+  type EvidenceRelation,
   type OutlineSyntaxNode,
   type SlotFillState,
   type StagedEvidence,
@@ -54,6 +61,7 @@ import {
   isAssetPath,
   parseOutlineJson,
   parseVAssetJson,
+  readVaultEvidenceSettings,
   resolveActiveStyleEntry,
   serializeVDocJson,
 } from "@vibe/vault-formats";
@@ -166,31 +174,119 @@ function requireSlot(doc: VDocDocument, slotId: unknown): VDocSlot {
 // --- 변경안 ---------------------------------------------------------------------------------------
 
 const EVIDENCE_KINDS = new Set(["backdata", "resource", "sector", "ref-region", "kcard"]);
+const EVIDENCE_PRESENTATIONS = new Set<EvidencePresentation>([
+  "footnote",
+  "inline-rationale",
+  "sidenote",
+  "quote-embed",
+  "matrix",
+  "bound-value",
+  "hidden",
+]);
+const EVIDENCE_RELATIONS = new Set<EvidenceRelation>(["supports", "derives", "quotes", "fulfills"]);
 
-function evidenceArg(raw: unknown): StagedEvidence[] | undefined {
+function normalizeEvidenceSourcePath(raw: unknown): string | undefined {
+  if (typeof raw !== "string") return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  if (/^https?:\/\//i.test(trimmed)) return undefined;
+  const unwrapped = trimmed.startsWith("vault://")
+    ? trimmed.slice("vault://".length)
+    : trimmed.startsWith("vault:")
+      ? trimmed.slice("vault:".length)
+      : trimmed;
+  return unwrapped.replace(/\\/g, "/").replace(/^\/+/, "");
+}
+
+function evidenceArg(raw: unknown, defaultPresentation?: EvidencePresentation): StagedEvidence[] | undefined {
   if (!Array.isArray(raw)) return undefined;
   const out: StagedEvidence[] = [];
   for (const item of raw as Record<string, unknown>[]) {
     if (!item || typeof item !== "object") continue;
-    const kind = String(item.kind ?? (item.cardId ? "kcard" : item.chunkId ? "backdata" : ""));
+    const rawSource = item.sourcePath ?? item.source ?? item.path;
+    const url =
+      typeof item.url === "string" && /^https?:\/\//i.test(item.url.trim())
+        ? item.url.trim()
+        : typeof rawSource === "string" && /^https?:\/\//i.test(rawSource.trim())
+          ? rawSource.trim()
+          : undefined;
+    const sourcePath = normalizeEvidenceSourcePath(rawSource);
+    const inferredKind = item.cardId
+      ? "kcard"
+      : item.chunkId
+        ? "backdata"
+        : sourcePath || url || item.resourceId
+          ? "resource"
+          : "";
+    const kind = String(item.kind ?? inferredKind);
     if (!EVIDENCE_KINDS.has(kind)) continue;
-    const refId = String(item.refId ?? item.chunkId ?? item.resourceId ?? item.id ?? "");
+    const refId = String(item.refId ?? item.chunkId ?? item.resourceId ?? item.id ?? sourcePath ?? url ?? "");
     if (!refId) continue;
-    const lines = Array.isArray(item.lines) && item.lines.length === 2 ? (item.lines.map(Number) as [number, number]) : undefined;
+    const lines =
+      Array.isArray(item.lines) && item.lines.length === 2 && item.lines.every((n) => Number.isFinite(Number(n)))
+        ? ([Number(item.lines[0]), Number(item.lines[1])] as [number, number])
+        : undefined;
+    const bbox =
+      Array.isArray(item.bbox) && item.bbox.length === 4 && item.bbox.every((n) => Number.isFinite(Number(n)))
+        ? ([Number(item.bbox[0]), Number(item.bbox[1]), Number(item.bbox[2]), Number(item.bbox[3])] as [number, number, number, number])
+        : undefined;
+    const presentation =
+      typeof item.presentation === "string" && EVIDENCE_PRESENTATIONS.has(item.presentation as EvidencePresentation)
+        ? (item.presentation as EvidencePresentation)
+        : defaultPresentation;
+    const relation =
+      typeof item.relation === "string" && EVIDENCE_RELATIONS.has(item.relation as EvidenceRelation)
+        ? (item.relation as EvidenceRelation)
+        : undefined;
+    const defaultLabel = sourcePath ? sourcePath.split("/").pop() || refId : url || refId;
     out.push({
       citationId: item.citationId != null ? String(item.citationId) : undefined,
       locator: {
         kind: kind as StagedEvidence["locator"]["kind"],
         refId,
-        label: String(item.label ?? refId),
+        label: String(item.label ?? defaultLabel),
         resourceId: item.resourceId ? String(item.resourceId) : undefined,
-        sourcePath: item.source ? String(item.source) : undefined,
-        page: item.page != null ? Number(item.page) : undefined,
+        sourcePath,
+        url,
+        deckId: item.deckId ? String(item.deckId) : undefined,
+        cardId: item.cardId ? String(item.cardId) : undefined,
+        nodeId: item.nodeId ? String(item.nodeId) : undefined,
+        slotId: item.slotId ? String(item.slotId) : undefined,
+        blockId: item.blockId ? String(item.blockId) : undefined,
+        page: item.page != null && Number.isFinite(Number(item.page)) ? Number(item.page) : undefined,
         lines,
+        bbox,
+        excerpt: typeof item.excerpt === "string" && item.excerpt.trim() ? item.excerpt.trim() : undefined,
+        presentation,
+        relation,
+        rationale: typeof item.rationale === "string" && item.rationale.trim() ? item.rationale.trim() : undefined,
+        boundValue: typeof item.boundValue === "string" && item.boundValue.trim() ? item.boundValue.trim() : undefined,
+        boundFormula: typeof item.boundFormula === "string" && item.boundFormula.trim() ? item.boundFormula.trim() : undefined,
+        requirementId: typeof item.requirementId === "string" && item.requirementId.trim() ? item.requirementId.trim() : undefined,
       },
     });
   }
   return out.length ? out : undefined;
+}
+
+function appendCitationMarkers(html: string, citationIds: readonly string[]): string {
+  let next = html;
+  const toAppend: string[] = [];
+  for (const cid of citationIds) {
+    const escaped = cid.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const markerRe = new RegExp(`data-cite=["']${escaped}["']`);
+    if (!markerRe.test(next)) {
+      toAppend.push(`<sup data-cite="${cid}"></sup>`);
+    }
+  }
+  if (toAppend.length === 0) return next;
+  const joined = toAppend.join("");
+  if (/<\/(p|li|h[1-6]|div)>\s*$/i.test(next)) {
+    next = next.replace(/(<\/(?:p|li|h[1-6]|div)>\s*)$/i, `${joined}$1`);
+  } else {
+    next = `${next}${joined}`;
+  }
+  return next;
 }
 
 export function buildSlotHtmlChange(
@@ -278,7 +374,7 @@ export function buildOutlinePatchChange(
 export function applyStagedChange(
   env: Pick<V2AiEnv, "vault">,
   change: V2StagedChange,
-  options?: { readonly recompileBoundVDocs?: boolean }
+  options?: { readonly recompileBoundVDocs?: boolean; readonly syncOutline?: boolean }
 ): VDocDocument | { outlinePath: string; viaLiveSession: boolean; updatedVDocs: readonly string[] } {
   if (change.targetKind === "outline-patch") {
     const res = applyOutlinePatchSafely(
@@ -293,6 +389,7 @@ export function applyStagedChange(
   const doc = readVDoc(env, change.path);
   if (!doc) throw new Error(`변경안의 대상 문서를 읽지 못했습니다: ${change.path}`);
   let next: VDocDocument;
+  let removedSourceNodeIds: Set<string> | undefined;
   if (change.targetKind === "slot-html") {
     const { slotId, html } = change.payload;
     if (!doc.slots[slotId]) throw new Error(`칸이 없어졌습니다: ${slotId}`);
@@ -307,6 +404,9 @@ export function applyStagedChange(
       createdAt: now,
       status: "ok",
       citationIds: e.citationId ? [e.citationId] : [],
+      ...(e.locator.relation ? { relation: e.locator.relation } : {}),
+      ...(e.locator.presentation ? { presentation: e.locator.presentation } : {}),
+      ...(e.locator.rationale ? { rationale: e.locator.rationale } : {}),
     }));
     next = addEvidenceLinks(withSlotFill(setSlotContent(doc, slotId, html), slotId, { author: "ai", harnessId: change.harnessId, runId: change.runId, at: now }), links);
   } else if (change.targetKind === "block-props") {
@@ -314,6 +414,13 @@ export function applyStagedChange(
   } else if (change.targetKind === "variables") {
     next = { ...doc, variables: { ...doc.variables, ...change.payload.variables } };
   } else if (change.targetKind === "asset-blocks") {
+    if (change.payload.mode === "replace" && Array.isArray(change.payload.replaceBlockIds)) {
+      removedSourceNodeIds = new Set<string>();
+      for (const bid of change.payload.replaceBlockIds) {
+        const prev = findBlock(doc, bid);
+        if (prev?.block.sourceNodeId) removedSourceNodeIds.add(prev.block.sourceNodeId);
+      }
+    }
     next = placeAssetBlocks(doc, change.payload);
     // 문서 바로 옆에 단일 동반 `.vstyle` 이 있는데 styleRef 가 비어 있으면 승인 시 자동 보존/연결한다.
     if (!next.styleRef) {
@@ -323,10 +430,21 @@ export function applyStagedChange(
         next = { ...next, styleRef: buildStyleRefForEntry(companionOrActive) };
       }
     }
+  } else if (change.targetKind === "style-change") {
+    next = applyStagedStyleChange(env.vault, change.path, doc, change.payload);
   } else {
     throw new Error(`v2 에서 아직 적용할 수 없는 변경안입니다: ${change.targetKind}`);
   }
   env.vault.write(change.path, serializeVDocJson(next));
+  if (change.targetKind === "asset-blocks" && next.outlineRef && options?.syncOutline !== false) {
+    const synced = syncVDocMeaningBackToOutline(env.vault, change.path, next, {
+      ...(removedSourceNodeIds && removedSourceNodeIds.size > 0 ? { removedSourceNodeIds } : {}),
+    });
+    if (synced) {
+      const refreshed = readVDoc(env, change.path);
+      if (refreshed) return refreshed;
+    }
+  }
   return next;
 }
 
@@ -359,6 +477,33 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
         const doc = readVDoc(env, path);
         const scope = doc ? toolScope(env, host, doc, ctx) : null;
         const ui = path ? env.vdocUiBridge.getState().getForPath(path) : null;
+        const workMode = ui?.workMode ?? null;
+        const outlineLink = doc?.outlineRef?.outlinePath
+          ? {
+              linked: true,
+              outlinePath: fromVaultUri(doc.outlineRef.outlinePath) ?? doc.outlineRef.outlinePath,
+              rootNodeId: doc.outlineRef.rootNodeId ?? null,
+            }
+          : null;
+        const modeGuidance =
+          workMode === "Structure"
+            ? {
+                mode: "Structure" as const,
+                strategy: outlineLink
+                  ? "구조 모드(아웃라인 연결 문서): 다중 섹션/문서 전체 개편은 .outline 의 <<doc:...>> DSL 을 먼저 수정(ol_propose_patch)→컴파일하고, 국소 블록/이미지 레이아웃 재편은 assets.propose({ dsl, records, replaceBlockIds, styleKey }) 인라인 .vsyntax DSL 선행 변경 후 .vstyle 을 재편하세요(일회성 변경은 assets.register 생략, 승인 시 .outline 자동 동기화)."
+                  : "구조 모드: 원시 HTML 직접 수정 대신 assets.propose({ dsl, records, replaceBlockIds, styleKey }) 인라인 .vsyntax DSL 선행 변경 후 style.upsertVariant / style.apply 로 .vstyle 을 재편하세요(반복 재사용 틀만 saveAsset: true 또는 assets.register).",
+                preferredTools: outlineLink
+                  ? ["schema.inspect", "ol_propose_patch", "assets.propose", "style.upsertVariant", "style.apply"]
+                  : ["schema.inspect", "assets.propose", "style.upsertVariant", "style.apply"],
+              }
+            : workMode === "Design"
+              ? {
+                  mode: "Design" as const,
+                  strategy:
+                    "디자인 모드: 기존 구조 골격을 유지하면서 style.inspect → style.upsertVariant / style.apply(.vstyle 4축), blocks.proposeProps(폭·정렬·최대높이·캡션), slots.proposeBatch(문구 다듬기·근거 연결)에 집중하세요. 구조 자체를 바꿔야 할 때만 assets.propose({ dsl }) 를 사용하세요.",
+                  preferredTools: ["style.inspect", "style.upsertVariant", "style.apply", "blocks.proposeProps", "slots.proposeBatch"],
+                }
+              : null;
         return {
           vault: { vaultId: env.vaultId, name: env.vault.name },
           document: doc
@@ -367,7 +512,9 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
               : { docId: doc.docId, vaultPath: path, title: doc.title, status: doc.status, pageCount: doc.pages.length }
             : null,
           activePageId: ui?.activePageId ?? null,
-          workMode: ui?.workMode ?? null,
+          workMode,
+          outlineLink,
+          modeGuidance,
           selectedSlot: ui?.selectedSlotId ? { slotId: ui.selectedSlotId, label: doc?.slots[ui.selectedSlotId]?.label ?? null } : null,
           selectedBlockId: ui?.selectedBlockId ?? null,
           openReferences: activeReferences(env).map((r) => r.refId),
@@ -434,7 +581,8 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
         const slot = requireSlot(doc, args.slotId);
         if (slot.constraints?.locked) throw new Error(`잠긴 슬롯입니다: ${slot.label}`);
         if (typeof args.html !== "string" || !args.html.trim()) throw new Error("html 이 비어 있습니다.");
-        const change = buildSlotHtmlChange(doc, path, slot, args.html, { reason: args.reason, evidence: evidenceArg(args.evidence), runId: ctx?.callId });
+        const defaultPres = readVaultEvidenceSettings(env.vault).defaultPresentation;
+        const change = buildSlotHtmlChange(doc, path, slot, args.html, { reason: args.reason, evidence: evidenceArg(args.evidence, defaultPres), runId: ctx?.callId });
         stage(env, [change]);
         return { staged: true, diffId: change.diffId, note: "Staged 대기열에 올렸습니다. 사용자가 승인하면 반영됩니다." };
       },
@@ -447,13 +595,15 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
         if (!Array.isArray(args.changes) || args.changes.length === 0) throw new Error("changes 가 비어 있습니다.");
         const staged: V2StagedChange[] = [];
         const skipped: { slotId: string; why: string }[] = [];
+        const defaultPres = readVaultEvidenceSettings(env.vault).defaultPresentation;
         for (const change of args.changes) {
           const slot = doc.slots[change?.slotId];
+          const parsedEvidence = evidenceArg(change?.evidence, defaultPres);
           if (!slot) skipped.push({ slotId: String(change?.slotId), why: "없는 슬롯" });
           else if (slot.constraints?.locked) skipped.push({ slotId: slot.slotId, why: "잠김" });
           else if (typeof change.html !== "string" || !change.html.trim()) skipped.push({ slotId: slot.slotId, why: "빈 html" });
-          else if (change.html.trim() === slot.content.trim()) skipped.push({ slotId: slot.slotId, why: "변경 없음" });
-          else staged.push(buildSlotHtmlChange(doc, path, slot, change.html, { reason: args.reason, evidence: evidenceArg(change.evidence), runId: ctx?.callId }));
+          else if (change.html.trim() === slot.content.trim() && !parsedEvidence?.length) skipped.push({ slotId: slot.slotId, why: "변경 없음" });
+          else staged.push(buildSlotHtmlChange(doc, path, slot, change.html, { reason: args.reason, evidence: parsedEvidence, runId: ctx?.callId }));
         }
         if (staged.length) stage(env, staged);
         return {
@@ -461,6 +611,73 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
           diffIds: staged.map((c) => c.diffId),
           skipped,
           note: staged.length ? `${staged.length}건을 Staged 대기열에 올렸습니다. 사용자가 한꺼번에 승인 · 거절할 수 있습니다.` : "올린 변경안이 없습니다.",
+        };
+      },
+    },
+    {
+      ...clientTool("slots.attachEvidence"),
+      describe: (args: { attachments?: unknown[]; reason?: string }) =>
+        `슬롯 ${Array.isArray(args.attachments) ? args.attachments.length : 0}개 리소스 근거 첨부${args.reason ? ` — ${args.reason}` : ""}`,
+      run: (
+        args: {
+          attachments: { slotId: string; evidence: unknown; appendCiteMarker?: boolean }[];
+          reason?: string;
+        },
+        ctx?: ToolRunContext
+      ) => {
+        const { path, doc } = requireDoc(env);
+        if (!Array.isArray(args.attachments) || args.attachments.length === 0) {
+          throw new Error("attachments 가 비어 있습니다.");
+        }
+        const staged: V2StagedChange[] = [];
+        const skipped: { slotId: string; why: string }[] = [];
+        const defaultPres = readVaultEvidenceSettings(env.vault).defaultPresentation;
+        for (const att of args.attachments) {
+          const slot = doc.slots[att?.slotId];
+          if (!slot) {
+            skipped.push({ slotId: String(att?.slotId), why: "없는 슬롯" });
+            continue;
+          }
+          if (slot.constraints?.locked) {
+            skipped.push({ slotId: slot.slotId, why: "잠김" });
+            continue;
+          }
+          const parsed = evidenceArg(att.evidence, defaultPres);
+          if (!parsed || parsed.length === 0) {
+            skipped.push({ slotId: slot.slotId, why: "유효한 evidence 없음 (sourcePath/url 필요)" });
+            continue;
+          }
+          const existingCount = (doc.evidenceLinks ?? []).filter((l) => l.slotId === slot.slotId).length;
+          const withCitations: StagedEvidence[] = parsed.map((e, idx) => ({
+            ...e,
+            citationId: e.citationId ?? String(existingCount + idx + 1),
+          }));
+          const appendMarker = att.appendCiteMarker !== false;
+          const nextHtml = appendMarker
+            ? appendCitationMarkers(
+                slot.content,
+                withCitations.map((e) => e.citationId!).filter(Boolean)
+              )
+            : slot.content;
+          const labels = withCitations.map((e) => e.locator.label).slice(0, 3).join(", ");
+          const change = buildSlotHtmlChange(doc, path, slot, nextHtml, {
+            reason: args.reason ?? `근거 ${withCitations.length}건 첨부 (${labels})`,
+            evidence: withCitations,
+            runId: ctx?.callId,
+          });
+          staged.push({
+            ...change,
+            afterSummary: `근거 ${withCitations.length}건 첨부 · ${labels}`,
+          });
+        }
+        if (staged.length) stage(env, staged);
+        return {
+          staged: staged.length,
+          diffIds: staged.map((c) => c.diffId),
+          skipped,
+          note: staged.length
+            ? `슬롯 ${staged.length}개에 리소스 근거 첨부 변경안을 Staged 대기열에 올렸습니다. 사용자가 승인하면 문서 근거(evidenceLinks)에 반영됩니다.`
+            : "첨부할 유효한 변경안이 없습니다.",
         };
       },
     },
@@ -653,13 +870,38 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
           });
         return {
           registryVersion: snap.version,
-          profiles: profiles.map((p) => ({ id: p.id, label: p.label, unitKind: p.unitKind, allowedElementIds: p.allowedElementIds })),
+          hierarchy: {
+            layers: ["document", "section", "block", "slot", "inline"],
+            rule:
+              "섹션 먼저: <<doc:프로필>> 바로 아래는 <<view:section:역할>> 만. 블록(글 · 그림 · 표 · 목록 · 제목)은 섹션 안에, 기본은 위에서 아래로 한 단 흐름. " +
+              "다단(나란히)은 사용자가 요청했거나 레퍼런스에 다단이 있을 때만 — 그 자리를 <<view:section:column>> 섹션으로 세우고 자식 불릿 하나를 한 단으로 쓴다(둘 이상). " +
+              "<<view:columns>> · <<col>> 은 폐기. 인용(<<resource:…>> · <<cite:…>>)은 섹션 · 블록 아래. " +
+              "요소마다 parents(담길 곳) · children(담는 것) 를 따른다. 섹션 = 구조 단위, A4 의 쪽은 출력 결과(섹션이 쪽을 넘어 흐른다).",
+          },
+          profiles: profiles.map((p) => ({
+            id: p.id,
+            label: p.label,
+            unitKind: p.unitKind,
+            structureUnit: p.structureUnit ?? "section",
+            outputUnit: p.outputUnit ?? (p.surface.kind === "paged" ? "page" : "scroll"),
+            allowedElementIds: p.allowedElementIds,
+          })),
           elements: snap.elements.map((e) => ({
             id: e.id,
             viewTag: `<<view:${e.viewTag}>>`,
             label: e.label,
+            layer: e.layer,
+            parents: e.parents,
             allowedInViews: e.allowedInViews,
-            rules: e.rules.map((r) => ({ id: r.id, symbol: r.symbol, primitive: r.primitive, position: r.position })),
+            rules: e.rules.map((r) => ({
+              id: r.id,
+              symbol: r.symbol,
+              primitive: r.primitive,
+              position: r.position,
+              ...(r.layer ? { layer: r.layer } : {}),
+              ...(r.parents ? { parents: r.parents } : {}),
+              ...(r.children ? { children: r.children } : {}),
+            })),
           })),
           assets,
         };
@@ -676,28 +918,164 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
         let roots: OutlineNode[] = base.rootNodes;
         let nodeEvidence = base.nodeEvidence ?? {};
         let patchFailedOps: readonly { index: number; error: string }[] = [];
-        if (args?.diffId) {
-          const staged = env.store.getState().queue.find((c) => c.diffId === args.diffId && c.targetKind === "outline-patch");
-          if (staged && staged.targetKind === "outline-patch") {
-            const preview = previewOutlinePatch(roots, staged.payload.requests as unknown as TreePatchRequest[]);
-            roots = preview.afterRoots;
-            patchFailedOps = preview.failedOps;
-            if (staged.payload.nodeEvidence) nodeEvidence = { ...nodeEvidence, ...staged.payload.nodeEvidence };
-          }
+        // diffId 를 주면 그 패치만, 안 주면 이 파일에 승인 대기 중인 아웃라인 패치 전부를 가상 적용해 잰다 —
+        // 에이전트는 ol_propose_patch 결과의 proposalId(olp-…) 만 알고 화면 대기열의 diffId 는 모르기 때문에.
+        const pending = env.store
+          .getState()
+          .queue.filter(
+            (c) =>
+              c.targetKind === "outline-patch" &&
+              (args?.diffId ? c.diffId === args.diffId : c.path === targetPath)
+          );
+        const previewedDiffIds: string[] = [];
+        for (const staged of pending) {
+          if (staged.targetKind !== "outline-patch") continue;
+          const preview = previewOutlinePatch(roots, staged.payload.requests as unknown as TreePatchRequest[]);
+          roots = preview.afterRoots;
+          patchFailedOps = [...patchFailedOps, ...preview.failedOps];
+          if (staged.payload.nodeEvidence) nodeEvidence = { ...nodeEvidence, ...staged.payload.nodeEvidence };
+          previewedDiffIds.push(staged.diffId);
         }
 
-        // 1) 트리 객관 측정치 (임의 하드코딩 Fail 없이 측정값 그대로 보고)
+        // 1) 트리 객관 측정치 + .vsyntax 근거 태그 린트
         let nodeCount = 0;
         let maxDepth = 0;
         let maxBulletChars = 0;
         let ungroundedNumericNodes = 0;
+        let resourceTagCount = 0;
+        let citeTagCount = 0;
+        const lintIssues: Array<{
+          code: string;
+          severity: "error" | "warning";
+          nodeId?: string;
+          message: string;
+        }> = [];
         const NUM_CLAIM = /\d+(?:[.,]\d+)?\s*(?:원|만원|억원|%|명|건|개|일|개월|년|km|m|kg|px|배)/;
+        const RES_TAG_RE = /<<\s*resource\s*:\s*([^>\n]*)\s*>>/gi;
+        const CITE_TAG_RE = /<<\s*cite(?:\s*:\s*[^>\n]+)?\s*>>/i;
+        const VCLIP_WIKI_RE = /\[\[[^[\]\n]*\.vclip(?:#[^[\]\n]*)?(?:\|[^[\]\n]*)?\]\]/i;
+
+        for (const [nid, locs] of Object.entries(nodeEvidence)) {
+          if (Array.isArray(locs) && locs.length > 0) {
+            lintIssues.push({
+              code: "LINT_LEGACY_NODE_EVIDENCE_SIDECAR",
+              severity: "error",
+              nodeId: nid,
+              message: `노드 ${nid} 에 숨겨진 nodeEvidence 사이드카(${locs.length}건)가 있습니다. 편집 가능한 <<resource:...>> 또는 <<cite:...>> 하위 불릿으로 전환하세요.`,
+            });
+          }
+        }
+
+        const outlineDir = targetPath.includes("/") ? targetPath.slice(0, targetPath.lastIndexOf("/")) : "";
+        const vaultExistsTarget = (rawTarget: string): boolean => {
+          const clean = (fromVaultUri(rawTarget) ?? rawTarget).replace(/^vault:/i, "").trim();
+          if (!clean) return false;
+          if (env.vault.exists(clean)) return true;
+          if (outlineDir) {
+            if (env.vault.exists(`${outlineDir}/${clean}`)) return true;
+            if (env.vault.exists(`${outlineDir}/sources/${clean}`)) return true;
+            if (env.vault.exists(`${outlineDir}/resources/${clean}`)) return true;
+          }
+          const needle = clean.toLowerCase();
+          const baseNeedle = needle.split("/").pop() ?? needle;
+          return env.vault.listAll().some((n) => {
+            const p = n.path.toLowerCase();
+            const b = p.split("/").pop() ?? p;
+            const stem = b.replace(/\.[^.]+$/, "");
+            return p === needle || p.endsWith(`/${needle}`) || b === baseNeedle || stem === baseNeedle;
+          });
+        };
+
         const walkStats = (nodes: readonly OutlineNode[], depth: number) => {
           for (const n of nodes) {
             nodeCount += 1;
             if (depth > maxDepth) maxDepth = depth;
             if (n.text.length > maxBulletChars) maxBulletChars = n.text.length;
-            if (NUM_CLAIM.test(n.text) && !(nodeEvidence[n.id]?.length)) ungroundedNumericNodes += 1;
+
+            const fileTarget = n.file?.target?.trim() ?? "";
+            if (fileTarget && /\.vclip$/i.test(fileTarget)) {
+              lintIssues.push({
+                code: "LINT_VCLIP_SET_FILE_ABUSE",
+                severity: "error",
+                nodeId: n.id,
+                message: `노드 ${n.id} 에 .vclip(${fileTarget})이 file 첨부 카드로 걸려 있습니다. <<resource: ${fileTarget} | 실제 발췌문>> 불릿으로 교체하세요.`,
+              });
+            }
+
+            const opened = (n.text.match(/<<\s*(?:resource|cite)\b/gi) ?? []).length;
+            const closed =
+              (n.text.match(/<<\s*resource\s*:\s*[^>\n]*\s*>>/gi) ?? []).length +
+              (n.text.match(/<<\s*cite(?:\s*:\s*[^>\n]+)?\s*>>/gi) ?? []).length;
+            if (opened > closed) {
+              lintIssues.push({
+                code: "LINT_UNTERMINATED_TAG",
+                severity: "error",
+                nodeId: n.id,
+                message: `노드 ${n.id} 의 근거 태그에 닫는 >> 가 없습니다 — 태그로 인식되지 않아 컴파일에서 인용이 사라집니다.`,
+              });
+            }
+            const hasCite = CITE_TAG_RE.test(n.text);
+            if (hasCite) citeTagCount += 1;
+            const outsideResource = n.text.replace(RES_TAG_RE, "");
+            if (!hasCite && VCLIP_WIKI_RE.test(outsideResource)) {
+              lintIssues.push({
+                code: "LINT_VCLIP_PLAIN_WIKILINK",
+                severity: "error",
+                nodeId: n.id,
+                message: `노드 ${n.id} 에 일반 [[...vclip]] 위키링크가 있습니다. 하이라이트가 작동하도록 <<resource: 대상.vclip | 실제 발췌문>> 태그를 사용하세요.`,
+              });
+            }
+
+            RES_TAG_RE.lastIndex = 0;
+            let rm: RegExpExecArray | null;
+            let nodeHasResource = false;
+            while ((rm = RES_TAG_RE.exec(n.text)) !== null) {
+              nodeHasResource = true;
+              resourceTagCount += 1;
+              const parsedRes = parseResourceTag(rm[0]);
+              if (!parsedRes) {
+                lintIssues.push({
+                  code: "LINT_MALFORMED_RESOURCE_TAG",
+                  severity: "error",
+                  nodeId: n.id,
+                  message: `노드 ${n.id} 의 <<resource:...>> 태그 문법이 올바르지 않습니다.`,
+                });
+                continue;
+              }
+              if (!parsedRes.isWebUrl && /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(parsedRes.target) && !parsedRes.bbox) {
+                lintIssues.push({
+                  code: "LINT_IMAGE_USE_OUTLINE_FILE",
+                  severity: "error",
+                  nodeId: n.id,
+                  message: `노드 ${n.id} 의 이미지(${parsedRes.target})가 <<resource:...>> 링크로 되어 있습니다. .outline 네이티브 이미지 첨부(set_file / file.target)로 바로 꽂으세요(#bbox 영역 인용만 예외).`,
+                });
+              }
+              if (!parsedRes.isWebUrl && !vaultExistsTarget(parsedRes.target)) {
+                lintIssues.push({
+                  code: "LINT_MISSING_RESOURCE_TARGET",
+                  severity: "error",
+                  nodeId: n.id,
+                  message: `노드 ${n.id} 의 <<resource: ${parsedRes.target}>> 대상이 볼트에 없습니다.`,
+                });
+              }
+              const hasLoc = Boolean(parsedRes.page || parsedRes.lines || parsedRes.bbox || parsedRes.nodeId || parsedRes.slotId || parsedRes.blockId);
+              if (!parsedRes.quote && !hasLoc) {
+                lintIssues.push({
+                  code: "LINT_RESOURCE_WITHOUT_QUOTE",
+                  severity: "warning",
+                  nodeId: n.id,
+                  message: `노드 ${n.id} 의 <<resource: ${parsedRes.target}>> 에 '| 발췌문' 또는 위치 앵커(#p/#L)가 없습니다.`,
+                });
+              }
+            }
+
+            const hasChildEvidence = n.children.some(
+              (c: OutlineNode) => /<<\s*(?:resource|cite)\b/i.test(c.text)
+            );
+            const isGrounded = nodeHasResource || hasCite || hasChildEvidence || Boolean(nodeEvidence[n.id]?.length);
+            if (!nodeHasResource && !hasCite && NUM_CLAIM.test(n.text) && !isGrounded) {
+              ungroundedNumericNodes += 1;
+            }
             if (n.children.length > 0) walkStats(n.children, depth + 1);
           }
         };
@@ -734,14 +1112,45 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
           if (!env.vault.exists(vdocRel)) missingBindings.push(`${nid}->${vdocRel}`);
         }
 
+        const lintErrorCount = lintIssues.filter((i) => i.severity === "error").length;
+
+        // 3) 계층(담기) 문법 — <<doc>> 가지면 섹션 → 컨테이너 → 블록 순서 · 컴파일 결과와의 동형
+        const targetIsDoc = Boolean(
+          targetNodeId && scanned.find((d) => d.nodeId === targetNodeId)?.directive.kind === "doc"
+        );
+        const hierarchy = targetIsDoc && targetNodeId
+          ? validateOutlineHierarchy(roots as OutlineSyntaxNode[], targetNodeId, loadVaultSyntaxRegistry(env.vault))
+          : null;
+        const isomorphism = hierarchy && compiled.doc ? measureOutlineVDocIsomorphism(hierarchy, compiled.doc) : null;
+
         return {
           path: targetPath,
           targetNodeId: targetNodeId ?? null,
+          previewedStagedDiffIds: previewedDiffIds,
+          lintPassed: lintErrorCount === 0,
+          lintIssues,
+          hierarchyPassed: hierarchy ? hierarchy.ok : null,
+          hierarchyIssues: hierarchy?.issues ?? [],
+          structure: hierarchy
+            ? {
+                sections: hierarchy.sectionNodeIds.length,
+                columnSections: hierarchy.columnSectionNodeIds.length,
+                blocks: hierarchy.blockCount,
+                citations: hierarchy.citationCount,
+                isomorphism: isomorphism
+                  ? { expected: isomorphism.expected, matched: isomorphism.matched, missingNodeIds: isomorphism.missingNodeIds }
+                  : null,
+              }
+            : null,
           measurements: {
             nodeCount,
             maxDepth,
             maxBulletChars,
             directiveCount: scanned.length,
+            resourceTagCount,
+            citeTagCount,
+            lintErrorCount,
+            lintWarningCount: lintIssues.length - lintErrorCount,
             compiledPageCount: compiled.doc?.pages.length ?? 0,
             compiledBlockCount,
             compiledSlotCount,
@@ -773,6 +1182,66 @@ export function createV2Tools(env: V2AiEnv, host: V2ToolHost): WorkspaceTool<any
           pages: res.doc?.pages.length ?? 0,
           blocks: res.doc ? res.doc.pages.reduce((n, p) => n + p.blocks.length, 0) : 0,
           slots: res.doc ? Object.keys(res.doc.slots).length : 0,
+        };
+      },
+    },
+    {
+      ...clientTool("outline.compileDoc"),
+      describe: (args: { docNodeId?: string }) => `<<doc>> 컴파일 · 바인딩 (${args?.docNodeId ?? "?"})`,
+      run: (args: { path?: string; docNodeId?: string; open?: boolean }) => {
+        const targetPath = args?.path?.trim() || activeOutlinePath(env);
+        const base = readOutline(env, targetPath);
+        if (!targetPath || !base) throw new Error("컴파일할 .outline 파일이 없습니다.");
+        const docNodeId = String(args?.docNodeId ?? "").trim();
+        if (!docNodeId) throw new Error("docNodeId(<<doc:…>> 노드 id)가 필요합니다.");
+
+        const scanned = scanOutlineDirectives(base.rootNodes as OutlineSyntaxNode[]);
+        const hit = scanned.find((d) => d.nodeId === docNodeId);
+        if (!hit) {
+          const pending = env.store
+            .getState()
+            .queue.some((c) => c.targetKind === "outline-patch" && JSON.stringify(c.payload).includes(docNodeId));
+          throw new Error(
+            pending
+              ? `노드 ${docNodeId} 는 아직 승인 대기(Staged) 중입니다 — 사용자가 승인한 뒤 다시 부르세요.`
+              : `노드 ${docNodeId} 가 ${targetPath} 에 없습니다. ol_map 으로 <<doc>> 노드 id 를 확인하세요.`
+          );
+        }
+        if (hit.directive.kind !== "doc") throw new Error(`노드 ${docNodeId} 는 <<doc:…>> 가 아닙니다 (${hit.directive.rawToken}).`);
+
+        const registry = loadVaultSyntaxRegistry(env.vault);
+        const report = validateOutlineHierarchy(base.rootNodes as OutlineSyntaxNode[], docNodeId, registry);
+        if (!report.ok) {
+          return {
+            compiled: false,
+            reason: "계층 문법 오류 — 섹션 · 컨테이너를 먼저 세우도록 ol_propose_patch 로 고친 뒤 다시 부른다.",
+            hierarchyIssues: report.issues.filter((i) => i.severity === "error"),
+          };
+        }
+
+        const res = materializeVDocFromOutlineDirective(
+          env.vault,
+          targetPath,
+          docNodeId,
+          args?.open === false ? undefined : (p: string) => host.openPath(p)
+        );
+        if (!res) throw new Error("컴파일 결과가 없습니다 (읽기 전용 볼트이거나 지시어를 해석하지 못했습니다).");
+        const doc = readVDoc(env, res.vdocPath);
+        const vreport = doc ? validateVDocHierarchy(doc) : null;
+        const iso = doc ? measureOutlineVDocIsomorphism(report, doc) : null;
+        return {
+          compiled: true,
+          created: res.created,
+          vdocPath: res.vdocPath,
+          docId: doc?.docId ?? null,
+          sections: report.sectionNodeIds.length,
+          columnSections: report.columnSectionNodeIds.length,
+          blocks: report.blockCount,
+          citations: report.citationCount,
+          evidenceLinks: doc?.evidenceLinks?.length ?? 0,
+          isomorphism: iso ? { expected: iso.expected, matched: iso.matched, missingNodeIds: iso.missingNodeIds } : null,
+          vdocIssues: vreport?.issues ?? [],
+          warnings: report.issues.filter((i) => i.severity === "warning"),
         };
       },
     },

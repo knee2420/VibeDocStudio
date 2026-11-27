@@ -300,3 +300,38 @@ def test_read_only_vault_blocks_agent_draft_writes(tmp_path: Path) -> None:
     tools = DocTools(FakeStore(_vault_state(readOnly=True)), "s1", api=FakeVaultApi("v1", {}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="읽기 전용"):
         tools.call("dc_new", {"title": "초안"})
+
+
+def test_rs_resource_import_copies_mounted_external_file_and_blocks_unmounted(tmp_path: Path) -> None:
+    tools, api, store, vault_dir = _setup(tmp_path)
+    ext_dir = tmp_path / "external_pm"
+    ext_dir.mkdir()
+    src_md = ext_dir / "사업_핵심_기획서.md"
+    src_md.write_text("# 사업 핵심 기획서\n\n예산: 12억원\n", encoding="utf-8")
+
+    unmounted_dir = tmp_path / "outside_secret"
+    unmounted_dir.mkdir()
+    secret_file = unmounted_dir / "secret.md"
+    secret_file.write_text("do not leak", encoding="utf-8")
+
+    # 마운트 전에는 외부 파일 임포트 차단
+    with pytest.raises(ValueError, match="마운트된 리소스 폴더 밖"):
+        tools.call("rs_resource_import", {"sourcePath": str(src_md)})
+
+    # 외부 폴더를 세션에 마운트한 뒤 임포트 성공
+    store.set_mount("s1", [MountItem(str(ext_dir), "ext:pm", "external_pm", kind="dir")])
+    out = tools.call("rs_resource_import", {"sourcePath": str(src_md), "folder": "입찰/sources"})
+    assert "vault://입찰/sources/사업_핵심_기획서.md" in out
+    assert "입찰/sources/사업_핵심_기획서.md" in api.files
+    assert "예산: 12억원" in api.files["입찰/sources/사업_핵심_기획서.md"]
+
+    # 볼트 내부 파일은 복제하지 않고 기존 볼트 상대 경로만 반환
+    in_vault = vault_dir / "입찰" / "sources" / "already.md"
+    in_vault.parent.mkdir(parents=True, exist_ok=True)
+    in_vault.write_text("already here", encoding="utf-8")
+    out_existing = tools.call("rs_resource_import", {"sourcePath": str(in_vault)})
+    assert "vault://입찰/sources/already.md" in out_existing
+
+    # 여전히 마운트 밖의 경로는 차단
+    with pytest.raises(ValueError, match="마운트된 리소스 폴더 밖"):
+        tools.call("rs_resource_import", {"sourcePath": str(secret_file)})

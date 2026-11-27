@@ -34,19 +34,31 @@ CONV_META_KEYS = ("antigravity.google/root_conversation_id", "antigravity.google
 class Server:
     def __init__(self, state_dir: str, session_id: str = "") -> None:
         self.store = WorkspaceStore(state_dir)
-        #: ACP 는 세션마다 이 서버를 따로 띄운다 — 띄울 때 받은 세션 id 로 마운트를 고정한다 (다른 세션 자료가 섞이지 않게)
+        #: --session 이 지정되면 해당 세션에 고정한다. 비어 있으면 단일 공유 MCP 서버로 동작하며
+        #: 호출 _meta 의 agy conversation_id 로 세션을 정확히 판별한다.
         self.session_id = session_id
         self._cache: dict[str, tuple[float, WorkspaceIndex]] = {}
         self.proposals = ProposalStore(state_dir)
+
+    def _resolve_session(self, conversation_id: str) -> str:
+        if self.session_id:
+            return self.session_id
+        return self.store.session_for_conversation(conversation_id or None)
 
     def index_for(self, conversation_id: str) -> tuple[WorkspaceIndex, list[str]]:
         if self.session_id and conversation_id:
             # 대화 id 를 처음 알게 된 순간 세션에 묶어 둔다 — 훅(read_file 가드 · 원장)도 바로 같은 마운트를 쓰게 된다
             self.store.bind_conversation(self.session_id, conversation_id)
             self.store.bind_workbench_conversation(self.session_id, conversation_id)
-        mount = self.store.mount_for(conversation_id or None, self.session_id or None)
+        explicit_session = self.session_id or self.store.session_for_conversation(conversation_id or None, allow_fallback=False)
+        session = explicit_session or self._resolve_session(conversation_id)
+        mount = self.store.mount_for(conversation_id or None, session or None)
+        # 대화 id 가 특정 세션(예: workbench 전용 .outline 세션)에 명시적으로 묶여 있는데
+        # 그 세션에 마운트가 없으면 다른 세션의 마운트를 빌려 쓰지 않는다.
+        if explicit_session and mount is not None and mount.session_id != explicit_session:
+            mount = None
         if mount is None or not mount.items:
-            wb = self.store.workbench_for_conversation(conversation_id or None, self.session_id or None) or {}
+            wb = self.store.workbench_for_conversation(conversation_id or None, session or None) or {}
             vault_root = str(wb.get("vaultRoot") or "").strip()
             if vault_root and os.path.isdir(vault_root):
                 abs_vr = os.path.abspath(vault_root)
@@ -71,35 +83,16 @@ class Server:
         index, conv_ids = self.index_for(conv)
         ids = set(conv_ids) | ({conv} if conv else set())
         reads = lambda: self.store.reads(conversation_ids=ids)  # noqa: E731
+        session = self._resolve_session(conv)
         if OutlineTools.handles(name):
-            session = self.session_id
-            if not session:
-                mount = self.store.mount_for(conv or None)
-                session = mount.session_id if mount else ""
-            tools = OutlineTools(self.store, session, proposals=self.proposals, reads=reads, conversation_id=conv)
+            tools = OutlineTools(self.store, session, proposals=self.proposals, reads=reads, conversation_id=conv, enforce_reads=True)
         elif VaultFsTools.handles(name):
-            session = self.session_id
-            if not session:
-                mount = self.store.mount_for(conv or None)
-                session = mount.session_id if mount else ""
             tools = VaultFsTools(self.store, session, conversation_id=conv)
         elif ResearchTools.handles(name):
-            session = self.session_id
-            if not session:
-                mount = self.store.mount_for(conv or None)
-                session = mount.session_id if mount else ""
             tools = ResearchTools(self.store, session, conversation_id=conv)
         elif DocTools.handles(name):
-            session = self.session_id
-            if not session:
-                mount = self.store.mount_for(conv or None)
-                session = mount.session_id if mount else ""
             tools = DocTools(self.store, session, index=index, reads=reads)
         elif WorkbenchTools.handles(name) or RefTools.handles(name):
-            session = self.session_id
-            if not session:
-                mount = self.store.mount_for(conv or None)
-                session = mount.session_id if mount else ""
             wb = Workbench.from_state(self.store.workbench_for(session))
             if RefTools.handles(name):
                 tools = RefTools(wb, self.store, session_id=session, conversation_id=conv)

@@ -1,13 +1,16 @@
 import { createStore, type StoreApi } from "zustand/vanilla";
 import {
+  CLIP_BUNDLE_EXT,
   PROJECT_FOLDER_EXT,
   basename,
   dirname,
   getAncestorPaths,
+  isClipBundleName,
   isDescendantPath,
   isProjectFolderName,
   joinPath,
   normalizeVaultPath,
+  stripClipBundleExt,
   stripProjectFolderExt,
   toggleProjectFolderName,
   validateEntryName,
@@ -118,6 +121,12 @@ function filterTreeByQuery(
   for (const item of nodes) {
     const selfMatches = item.node.name.toLowerCase().includes(lowerQuery);
     if (item.node.kind === "folder") {
+      if (isClipBundleName(item.node.name)) {
+        if (selfMatches) {
+          result.push({ node: item.node, children: [] });
+        }
+        continue;
+      }
       const matchedChildren = filterTreeByQuery(item.children, lowerQuery);
       if (selfMatches || matchedChildren.length > 0) {
         result.push({
@@ -168,8 +177,10 @@ function buildFlatRows(params: {
     for (const branch of branches) {
       const { node, children } = branch;
       const isFolder = node.kind === "folder";
-      const isExpanded = isFolder && (forceExpand || params.expandedPaths.has(node.path));
-      if (isFolder && params.expandedPaths.has(node.path)) {
+      const isClipBundle = isFolder && isClipBundleName(node.name);
+      const isExpandableFolder = isFolder && !isClipBundle;
+      const isExpanded = isExpandableFolder && (forceExpand || params.expandedPaths.has(node.path));
+      if (isExpandableFolder && params.expandedPaths.has(node.path)) {
         hasAnyExpandedFolder = true;
       }
       rows.push({
@@ -177,15 +188,16 @@ function buildFlatRows(params: {
         node,
         depth,
         isProjectFolder: isFolder && isProjectFolderName(node.name),
+        isClipBundle,
         isExpanded,
-        hasChildren: isFolder && children.length > 0,
+        hasChildren: isExpandableFolder && children.length > 0,
         isSelected: params.selectedPaths.has(node.path),
         isFocused: params.focusedPath === node.path,
         isActiveFile: params.activeFilePath === node.path,
         isRenaming: params.renamePath === node.path,
         recentBadge: params.recentBadges.get(node.path) ?? null,
       });
-      if (isFolder && isExpanded && children.length > 0) {
+      if (isExpandableFolder && isExpanded && children.length > 0) {
         visit(children, depth + 1);
       }
     }
@@ -256,6 +268,7 @@ export function createFileExplorerStore(
         x.isRenaming !== y.isRenaming ||
         x.recentBadge !== y.recentBadge ||
         x.isProjectFolder !== y.isProjectFolder ||
+        x.isClipBundle !== y.isClipBundle ||
         x.node.kind !== y.node.kind ||
         x.node.name !== y.node.name
       ) {
@@ -590,7 +603,7 @@ export function createFileExplorerStore(
         if (!focusedPath) return get().moveFocus("down");
         const row = rows.find((r) => r.path === focusedPath);
         if (!row) return null;
-        if (row.node.kind === "folder") {
+        if (row.node.kind === "folder" && !row.isClipBundle) {
           if (!row.isExpanded) {
             get().expandPath(row.path);
             return row.path;
@@ -627,10 +640,19 @@ export function createFileExplorerStore(
         const node = vault.getNode(norm);
         if (!node) return;
         const isProjFolder = node.kind === "folder" && isProjectFolderName(node.name);
+        const isClipFolder = node.kind === "folder" && isClipBundleName(node.name);
         const renameState: ExplorerInlineRenameState = {
           path: norm,
-          draft: isProjFolder ? stripProjectFolderExt(node.name) : node.name,
-          preservedSuffix: isProjFolder ? `.${PROJECT_FOLDER_EXT}` : undefined,
+          draft: isProjFolder
+            ? stripProjectFolderExt(node.name)
+            : isClipFolder
+              ? stripClipBundleExt(node.name)
+              : node.name,
+          preservedSuffix: isProjFolder
+            ? `.${PROJECT_FOLDER_EXT}`
+            : isClipFolder
+              ? `.${CLIP_BUNDLE_EXT}`
+              : undefined,
           error: null,
         };
         recompute({
